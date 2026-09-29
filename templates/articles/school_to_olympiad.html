@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% block title %}Пятёрка по математике — а на олимпиаде ноль. Что пошло не так? | FORMYLA.net{% endblock %}
+{% block meta_description %}История Макса: как перейти от школьной математики к олимпиадной. Четыре вопроса к любой задаче, разбор чётности, инварианта и принципа Дирихле, тренировка на 30 задач.{% endblock %}
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/article_school_to_olympiad.css') }}?v={{ asset_version }}">
+{% endblock %}
+{% block content %}
+<div class="fa">
+<div class="fa-progress" aria-hidden="true"><div class="fa-progress__bar" id="faBar"></div></div>
+
+<section class="fa-hero">
+  <img class="fa-hero__img" src="{{ url_for('static', filename='articles/cover-max.jpg') }}" alt="Макс в зелёной толстовке стоит перед огромным меловым лабиринтом с треугольниками, шахматной доской и доминошками; в лабиринте светится оранжевая дверь" width="1600" height="800">
+  <div class="fa-hero__shade"></div>
+  <div class="fa-hero__inner">
+    <p class="fa-kicker"><span>История</span> о том, как играть в другую игру · 12 минут</p>
+    <h1>Пятёрка по математике — а&nbsp;на олимпиаде ноль. Что пошло не так?</h1>
+    <p class="fa-hero__lead">Макс — отличник, который не решил на школьном этапе ни одной задачи. Идём за ним по уровням и учимся думать так, как думают на олимпиадах.</p>
+  </div>
+</section>
+
+<div class="fa-hud" id="faHud" role="navigation" aria-label="Карта статьи">
+  <ol>
+    <li><a href="#zadacha" data-step="0"><i>0</i><span>Старт</span></a></li>
+    <li><a href="#uroven1" data-step="1"><i>1</i><span>Чётность</span></a></li>
+    <li><a href="#uroven2" data-step="2"><i>2</i><span>Идеи</span></a></li>
+    <li><a href="#boss" data-step="3"><i>3</i><span>Босс</span></a></li>
+    <li><a href="#inventar" data-step="4"><i>★</i><span>Финиш</span></a></li>
+  </ol>
+</div>
+
+<div class="fa-page">
+  <article id="faArticle">
+
+    <section class="fa-chapter" id="zadacha" data-step="0">
+      <p class="fa-chapter__no">Глава 0 · Задача</p>
+      <h2>Сначала задача</h2>
+      <p>Вот доска 8×8 от шахмат. У неё вырезаны две противоположные угловые клетки: левая верхняя и правая нижняя. Остаётся 62 клетки. У тебя есть сколько угодно доминошек 1×2, каждая закрывает ровно две соседние клетки.</p>
+      <figure class="fa-fig fa-fig--narrow">
+        <svg viewBox="0 0 440 448" role="img" aria-labelledby="t1 d1" xmlns="http://www.w3.org/2000/svg"><title id="t1">Шахматная доска без двух угловых клеток</title><desc id="d1">Доска 8 на 8, у которой вырезаны две противоположные угловые клетки одного цвета. Остаётся 30 светлых и 32 тёмных клетки.</desc><rect x="29" y="15" width="46" height="46" fill="none" stroke="#f87171" stroke-width="2" stroke-dasharray="5 4" rx="4"/><path d="M41 27L63 49M63 27L41 49" stroke="#f87171" stroke-width="3" stroke-linecap="round"/><rect x="76" y="14" width="48" height="48" fill="#33477a"/><rect x="124" y="14" width="48" height="48" fill="#dbe4f0"/><rect x="172" y="14" width="48" height="48" fill="#33477a"/><rect x="220" y="14" width="48" height="48" fill="#dbe4f0"/><rect x="268" y="14" width="48" height="48" fill="#33477a"/><rect x="316" y="14" width="48" height="48" fill="#dbe4f0"/><rect x="364" y="14" width="48" height="48" fill="#33477a"/><rect x="28" y="62" width="48" height="48" fill="#33477a"/><rect x="76" y="62" width="48" height="48" fill="#dbe4f0"/><rect x="124" y="62" width="48" height="48" fill="#33477a"/><rect x="172" y="62" width="48" height="48" fill="#dbe4f0"/><rect x="220" y="62" width="48" height="48" fill="#33477a"/><rect x="268" y="62" width="48" height="48" fill="#dbe4f0"/><rect x="316" y="62" width="48" height="48" fill="#33477a"/><rect x="364" y="62" width="48" height="48" fill="#dbe4f0"/><rect x="28" y="110" width="48" height="48" fill="#dbe4f0"/><rect x="76" y="110" width="48" height="48" fill="#33477a"/><rect x="124" y="110" width="48" height="48" fill="#dbe4f0"/><rect x="172" y="110" width="48" height="48" fill="#33477a"/><rect x="220" y="110" width="48" height="48" fill="#dbe4f0"/><rect x="268" y="110" width="48" height="48" fill="#33477a"/><rect x="316" y="110" width="48" height="48" fill="#dbe4f0"/><rect x="364" y="110" width="48" height="48" fill="#33477a"/><rect x="28" y="158" width="48" height="48" fill="#33477a"/><rect x="76" y="158" width="48" height="48" fill="#dbe4f0"/><rect x="124" y="158" width="48" height="48" fill="#33477a"/><rect x="172" y="158" width="48" height="48" fill="#dbe4f0"/><rect x="220" y="158" width="48" height="48" fill="#33477a"/><rect x="268" y="158" width="48" height="48" fill="#dbe4f0"/><rect x="316" y="158" width="48" height="48" fill="#33477a"/><rect x="364" y="158" width="48" height="48" fill="#dbe4f0"/><rect x="28" y="206" width="48" height="48" fill="#dbe4f0"/><rect x="76" y="206" width="48" height="48" fill="#33477a"/><rect x="124" y="206" width="48" height="48" fill="#dbe4f0"/><rect x="172" y="206" width="48" height="48" fill="#33477a"/><rect x="220" y="206" width="48" height="48" fill="#dbe4f0"/><rect x="268" y="206" width="48" height="48" fill="#33477a"/><rect x="316" y="206" width="48" height="48" fill="#dbe4f0"/><rect x="364" y="206" width="48" height="48" fill="#33477a"/><rect x="28" y="254" width="48" height="48" fill="#33477a"/><rect x="76" y="254" width="48" height="48" fill="#dbe4f0"/><rect x="124" y="254" width="48" height="48" fill="#33477a"/><rect x="172" y="254" width="48" height="48" fill="#dbe4f0"/><rect x="220" y="254" width="48" height="48" fill="#33477a"/><rect x="268" y="254" width="48" height="48" fill="#dbe4f0"/><rect x="316" y="254" width="48" height="48" fill="#33477a"/><rect x="364" y="254" width="48" height="48" fill="#dbe4f0"/><rect x="28" y="302" width="48" height="48" fill="#dbe4f0"/><rect x="76" y="302" width="48" height="48" fill="#33477a"/><rect x="124" y="302" width="48" height="48" fill="#dbe4f0"/><rect x="172" y="302" width="48" height="48" fill="#33477a"/><rect x="220" y="302" width="48" height="48" fill="#dbe4f0"/><rect x="268" y="302" width="48" height="48" fill="#33477a"/><rect x="316" y="302" width="48" height="48" fill="#dbe4f0"/><rect x="364" y="302" width="48" height="48" fill="#33477a"/><rect x="28" y="350" width="48" height="48" fill="#33477a"/><rect x="76" y="350" width="48" height="48" fill="#dbe4f0"/><rect x="124" y="350" width="48" height="48" fill="#33477a"/><rect x="172" y="350" width="48" height="48" fill="#dbe4f0"/><rect x="220" y="350" width="48" height="48" fill="#33477a"/><rect x="268" y="350" width="48" height="48" fill="#dbe4f0"/><rect x="316" y="350" width="48" height="48" fill="#33477a"/><rect x="365" y="351" width="46" height="46" fill="none" stroke="#f87171" stroke-width="2" stroke-dasharray="5 4" rx="4"/><path d="M377 363L399 385M399 363L377 385" stroke="#f87171" stroke-width="3" stroke-linecap="round"/><rect x="79" y="17" width="90" height="42" rx="10" fill="#f4a259" fill-opacity=".92" stroke="#0b1428" stroke-width="2.5"/><line x1="124.0" y1="23" x2="124.0" y2="53" stroke="#0b1428" stroke-width="2"/><rect x="31" y="65" width="42" height="90" rx="10" fill="#f4a259" fill-opacity=".92" stroke="#0b1428" stroke-width="2.5"/><line x1="37" y1="110.0" x2="67" y2="110.0" stroke="#0b1428" stroke-width="2"/><rect x="175" y="161" width="90" height="42" rx="10" fill="#f4a259" fill-opacity=".92" stroke="#0b1428" stroke-width="2.5"/><line x1="220.0" y1="167" x2="220.0" y2="197" stroke="#0b1428" stroke-width="2"/><rect x="271" y="209" width="42" height="90" rx="10" fill="#f4a259" fill-opacity=".92" stroke="#0b1428" stroke-width="2.5"/><line x1="277" y1="254.0" x2="307" y2="254.0" stroke="#0b1428" stroke-width="2"/><rect x="79" y="305" width="90" height="42" rx="10" fill="#f4a259" fill-opacity=".92" stroke="#0b1428" stroke-width="2.5"/><line x1="124.0" y1="311" x2="124.0" y2="341" stroke="#0b1428" stroke-width="2"/><rect x="319" y="113" width="42" height="90" rx="10" fill="#f4a259" fill-opacity=".92" stroke="#0b1428" stroke-width="2.5"/><line x1="325" y1="158.0" x2="355" y2="158.0" stroke="#0b1428" stroke-width="2"/><rect x="28" y="414" width="20" height="20" rx="4" fill="#dbe4f0"/><text x="56" y="430" font-size="20" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">светлых: 30</text><rect x="218" y="414" width="20" height="20" rx="4" fill="#33477a"/><text x="246" y="430" font-size="20" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">тёмных: 32</text></svg>
+        <figcaption>Красным отмечены вырезанные клетки. Оранжевые доминошки показывают, как выглядит покрытие, но всю доску так закрыть не получится. Почему?</figcaption>
+      </figure>
+      <div class="fa-task"><span class="fa-task__tag">Задача</span><p><strong>Можно ли покрыть всю оставшуюся доску доминошками без наложений и выступов?</strong></p></div>
+      <p>Возьми листок и попробуй. Минут пять, не меньше. Ответ ждёт в конце статьи, но подглядывать не надо: мы вернёмся к этой задаче, когда у тебя уже будет нужный инструмент.</p>
+    </section>
+
+    <section class="fa-chapter" id="max" data-step="0">
+      <p class="fa-chapter__no">Глава 1 · Герой</p>
+      <h2>История Макса</h2>
+      <p>Макс учится в 7 классе. По математике у него пятёрка. Он щёлкает уравнения, знает формулы сокращённого умножения и на контрольных заканчивает первым.</p>
+      <p>В октябре Макс пошёл на школьный этап олимпиады. Уверенно. Легко. Ведь пятёрка же.</p>
+      <p>Дали 5 задач. Макс не решил ни одной. Не «решил, но с ошибкой», а вообще не понял, с какого края подступиться. Домой он пришёл с нулём и с мыслью: «Наверное, я тупой».</p>
+      <p class="fa-pull">Он не тупой. Просто Макс играл не в ту игру.</p>
+    </section>
+
+    <section class="fa-chapter fa-chapter--wide" id="igry" data-step="0">
+      <div class="fa-col">
+        <p class="fa-chapter__no">Глава 2 · Правила</p>
+        <h2>Две разные игры</h2>
+        <p>Школьная математика похожа на сборку мебели по инструкции. Есть схема, есть шаги, есть набор винтиков. Делай по порядку, и шкаф получится. Молодец, если ничего не перепутал.</p>
+        <p>Олимпиадная математика похожа на квест без подсказок. Тебе дают запертую комнату и говорят: «Выйди». Инструкции нет. Иногда даже не ясно, что в комнате есть дверь.</p>
+      </div>
+      <div class="fa-table-scroll">
+      <table>
+        <thead><tr><th></th><th>Школа</th><th>Олимпиада</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Что нужно</th><td>Получить ответ</td><td>Найти идею и доказать, что ответ верный</td></tr>
+          <tr><th scope="row">Задачи</th><td>Знакомого типа, отработаны на уроке</td><td>Нестандартные, «такого мы не решали»</td></tr>
+          <tr><th scope="row">Время на задачу</th><td>Минуты</td><td>От получаса до нескольких часов</td></tr>
+          <tr><th scope="row">За что баллы</th><td>За верный ответ</td><td>За полное и честное рассуждение</td></tr>
+          <tr><th scope="row">Что помогает</th><td>Заученный алгоритм</td><td>Перебор идей и упорство</td></tr>
+          <tr><th scope="row">Как выглядит успех</th><td>«Всё сошлось с ответом»</td><td>«Ага, вот оно!»</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="fa-col">
+        <p>Главное отличие в третьей строке. В школе ты приходишь с готовым способом. На олимпиаде способ надо придумать самому. Этому можно научиться, как учатся играть на гитаре, только вместо аккордов у тебя идеи.</p>
+      </div>
+    </section>
+
+    <section class="fa-chapter fa-chapter--wide" id="voprosy" data-step="0">
+      <div class="fa-col">
+        <p class="fa-chapter__no">Глава 3 · Инструменты</p>
+        <h2>Четыре вопроса к любой задаче</h2>
+        <p>У олимпиадника нет тайной книги рецептов. Есть привычка задавать задаче одни и те же вопросы. Вот четыре, с которых начинается почти любая попытка. Каждому из них дальше посвящён свой уровень.</p>
+      </div>
+      <ol class="fa-asks">
+        <li><span class="fa-asks__n">1</span><div><h3>А что будет, если поменьше?</h3><p>Возьми маленький случай. Вырежи из доски 2×2 два противоположных угла: останутся две клетки по диагонали, и доминошкой их не накрыть. Уже интересно: а почему так будет и на большой доске?</p></div></li>
+        <li><span class="fa-asks__n">2</span><div><h3>Что здесь не меняется?</h3><p>Если с объектом шаг за шагом что-то делают, ищи то, чего шаги не трогают: чётность, сумму, число клеток одного цвета. Это инвариант.</p></div></li>
+        <li><span class="fa-asks__n">3</span><div><h3>Кого больше: «кроликов» или «клеток»?</h3><p>Когда объектов больше, чем мест, куда их можно разложить, где-то окажется пара. Это принцип Дирихле.</p></div></li>
+        <li><span class="fa-asks__n">4</span><div><h3>Можно ли раскрасить или посчитать двумя способами?</h3><p>Раскраска и подсчёт одной величины двумя путями превращают «невозможно» в цифры, которые не сходятся. Так решается и задача с доской.</p></div></li>
+      </ol>
+    </section>
+
+    <section class="fa-chapter" id="uroven1" data-step="1">
+      <p class="fa-chapter__no">Уровень 1 · Разминка</p>
+      <h2>Чётность: самая простая идея</h2>
+      <p>Первая идея очень простая. Число либо чётное, либо нечётное. Чётное плюс чётное — чётное, нечётное плюс нечётное — тоже чётное. Звучит скучно? Посмотрим, что с этим можно сделать.</p>
+      <div class="fa-task"><span class="fa-task__tag">Задача</span><p>В классе 25 учеников. Может ли каждый дружить ровно с тремя одноклассниками?</p></div>
+      <p>Попробуй сначала нарисовать. Не выходит? Подумай так. Посчитаем, сколько «дружб» вообще есть. Каждый из 25 учеников друг для трёх, значит, всего 25 × 3 = 75 «концов дружбы». Но каждая дружба соединяет двоих, то есть считается дважды. Значит, общее число концов должно делиться на 2. А 75 — нечётное.</p>
+      <figure class="fa-fig">
+        <svg viewBox="0 0 440 240" role="img" aria-labelledby="t3 d3" xmlns="http://www.w3.org/2000/svg"><title id="t3">Дружба в группе из четырёх и из пяти человек</title><desc id="d3">Слева четверо учеников, каждый дружит с тремя: получается. Справа пятеро: одному из них не хватает одной дружбы.</desc><line x1="50" y1="50" x2="170" y2="50" stroke="#5eead4" stroke-width="3" stroke-opacity=".85"/><line x1="50" y1="50" x2="170" y2="150" stroke="#5eead4" stroke-width="3" stroke-opacity=".85"/><line x1="50" y1="50" x2="50" y2="150" stroke="#5eead4" stroke-width="3" stroke-opacity=".85"/><line x1="170" y1="50" x2="170" y2="150" stroke="#5eead4" stroke-width="3" stroke-opacity=".85"/><line x1="170" y1="50" x2="50" y2="150" stroke="#5eead4" stroke-width="3" stroke-opacity=".85"/><line x1="170" y1="150" x2="50" y2="150" stroke="#5eead4" stroke-width="3" stroke-opacity=".85"/><circle cx="50" cy="50" r="17" fill="#0f3d3e" stroke="#5eead4" stroke-width="2"/><text x="50" y="56" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">3</text><circle cx="170" cy="50" r="17" fill="#0f3d3e" stroke="#5eead4" stroke-width="2"/><text x="170" y="56" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">3</text><circle cx="170" cy="150" r="17" fill="#0f3d3e" stroke="#5eead4" stroke-width="2"/><text x="170" y="156" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">3</text><circle cx="50" cy="150" r="17" fill="#0f3d3e" stroke="#5eead4" stroke-width="2"/><text x="50" y="156" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">3</text><text x="110" y="200" text-anchor="middle" font-size="18" font-weight="700" fill="#4ade80" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">4 · 3 = 12: чётно</text><text x="110" y="226" text-anchor="middle" font-size="16" fill="#cbd5e1" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">6 дружб, всё сходится</text><line x1="330.0" y1="32.0" x2="394.7" y2="79.0" stroke="#5eead4" stroke-width="3" stroke-opacity=".85"/><line x1="394.7" y1="79.0" x2="370.0" y2="155.0" stroke="#5eead4" stroke-width="3" stroke-opacity=".85"/><line x1="370.0" y1="155.0" x2="290.0" y2="155.0" stroke="#5eead4" stroke-width="3" stroke-opacity=".85"/><line x1="290.0" y1="155.0" x2="265.3" y2="79.0" stroke="#5eead4" stroke-width="3" stroke-opacity=".85"/><line x1="265.3" y1="79.0" x2="330.0" y2="32.0" stroke="#5eead4" stroke-width="3" stroke-opacity=".85"/><line x1="330.0" y1="32.0" x2="370.0" y2="155.0" stroke="#5eead4" stroke-width="3" stroke-opacity=".85"/><line x1="394.7" y1="79.0" x2="290.0" y2="155.0" stroke="#5eead4" stroke-width="3" stroke-opacity=".85"/><circle cx="330.0" cy="32.0" r="17" fill="#0f3d3e" stroke="#5eead4" stroke-width="2"/><text x="330.0" y="38.0" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">3</text><circle cx="394.7" cy="79.0" r="17" fill="#0f3d3e" stroke="#5eead4" stroke-width="2"/><text x="394.7" y="85.0" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">3</text><circle cx="370.0" cy="155.0" r="17" fill="#0f3d3e" stroke="#5eead4" stroke-width="2"/><text x="370.0" y="161.0" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">3</text><circle cx="290.0" cy="155.0" r="17" fill="#0f3d3e" stroke="#5eead4" stroke-width="2"/><text x="290.0" y="161.0" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">3</text><circle cx="265.3" cy="79.0" r="17" fill="#7f1d1d" stroke="#f87171" stroke-width="2"/><text x="265.3" y="85.0" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">2</text><text x="330" y="200" text-anchor="middle" font-size="18" font-weight="700" fill="#f87171" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">5 · 3 = 15: нечётно</text><text x="330" y="226" text-anchor="middle" font-size="16" fill="#cbd5e1" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">7,5 дружбы не бывает</text></svg>
+        <figcaption>Цифра в кружке показывает, со сколькими друзьями дружит ученик. Для четверых всё сходится, для пятерых уже нет.</figcaption>
+      </figure>
+      <details class="fa-spoiler"><summary>Показать ответ</summary>
+        <div><p>Нет, нельзя. Сумма «концов дружбы» равна 75, а она обязана быть чётной, потому что каждая дружба учтена дважды. Противоречие.</p></div>
+      </details>
+      <p>Макс решил её за две минуты. Это его первая маленькая победа. Он впервые понял: здесь думают не формулами, а рассуждением.</p>
+      <aside class="fa-fact"><strong>А ты знал?</strong> Похожее рассуждение в математике называют «леммой о рукопожатиях»: в любой компании число людей, пожавших руку нечётное число раз, чётно.</aside>
+    </section>
+
+    <section class="fa-chapter" id="uroven2" data-step="2">
+      <p class="fa-chapter__no">Уровень 2 · Прокачка</p>
+      <h2>Инвариант и принцип Дирихле</h2>
+      <h3>Инвариант: что не меняется</h3>
+      <p>Инвариант — это то, что остаётся неизменным, пока с объектом что-то делают. Представь фокусника, который тасует карты. Что бы он ни делал, карт всегда 52.</p>
+      <div class="fa-task"><span class="fa-task__tag">Задача</span><p>На доске написаны числа 1, 2, 3, …, 10. Разрешено стереть любые два числа и записать вместо них их разность (большее минус меньшее). После девяти таких операций останется одно число. Может ли оно быть нулём?</p></div>
+      <p>Подумай, что не меняется при каждой операции. Подсказка: посмотри на чётность суммы всех чисел на доске.</p>
+      <details class="fa-spoiler"><summary>Показать решение</summary>
+        <div><p>Сумма чисел от 1 до 10 равна 55, то есть нечётная. Когда мы стираем числа a и b и пишем |a − b|, сумма уменьшается на a + b − |a − b|, то есть на 2·min(a, b). Это чётное число. Значит, чётность суммы не меняется. В конце на доске одно число, и оно нечётное. Ноль получиться не может.</p></div>
+      </details>
+
+      <h3>Принцип Дирихле: носки в темноте</h3>
+      <p>Ты утром в темноте достаёшь носки из ящика. В ящике чёрные и белые, а тебе нужна пара одного цвета. Сколько носков нужно взять, чтобы точно получилась пара?</p>
+      <p>Три. Даже если первые два разного цвета, третий обязательно совпадёт с одним из них.</p>
+      <p>Это и есть принцип Дирихле: если «кроликов» больше, чем «клеток», то в какой-то клетке окажется минимум два кролика. Звучит смешно. Но с его помощью решают задачи, на которые сначала смотришь и не знаешь, что делать.</p>
+      <figure class="fa-fig fa-fig--pic">
+        <img src="{{ url_for('static', filename='articles/max-thinking.jpg') }}" alt="Макс сидит ночью за столом при свете лампы, вокруг смятые листы, над головой светится лампочка" width="900" height="900" loading="lazy">
+        <figcaption>Ночь, лампа, смятые черновики. Так обычно выглядит момент перед идеей.</figcaption>
+      </figure>
+    </section>
+
+    <section class="fa-chapter" id="boss" data-step="3">
+      <p class="fa-chapter__no fa-chapter__no--boss">Уровень 3 · Первый босс</p>
+      <h2>Как Макс думает вслух</h2>
+      <div class="fa-task"><span class="fa-task__tag">Задача</span><p>Докажи, что среди любых 11 целых чисел найдутся два, разность которых делится на 10.</p></div>
+      <p>Макс думает вслух. Смотрим, как он рассуждает.</p>
+      <ol class="fa-think">
+        <li>«Разность делится на 10... Что это значит? Числа заканчиваются на одну цифру, скажем 13 и 43.»</li>
+        <li>«Попробовал взять 11 случайных чисел, посмотрел на последние цифры. Не вижу закономерности.»</li>
+        <li>«Стоп. Последних цифр всего десять: 0, 1, …, 9. А чисел одиннадцать.»</li>
+        <li>«Это же носки. Цифр десять, чисел одиннадцать. Значит, у каких-то двух чисел последняя цифра совпадёт.»</li>
+        <li>«А если последние цифры совпали, разность оканчивается на ноль, то есть делится на 10. Готово.»</li>
+      </ol>
+      <figure class="fa-fig fa-fig--narrow">
+        <svg viewBox="0 0 400 358" role="img" aria-labelledby="t2 d2" xmlns="http://www.w3.org/2000/svg"><title id="t2">Принцип Дирихле для последних цифр</title><desc id="d2">Десять ящиков с цифрами от 0 до 9 и одиннадцать чисел. В ящике с цифрой 3 оказались сразу два числа, 13 и 53.</desc><rect x="16" y="14" width="64" height="140" rx="12" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.28)" stroke-width="1.5"/><text x="48" y="46" text-anchor="middle" font-size="26" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">0</text><rect x="22" y="114" width="52" height="26" rx="13" fill="#1f2a44" stroke="#94a3b8" stroke-opacity=".6"/><text x="48" y="132" text-anchor="middle" font-size="17" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">100</text><rect x="92" y="14" width="64" height="140" rx="12" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.28)" stroke-width="1.5"/><text x="124" y="46" text-anchor="middle" font-size="26" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">1</text><rect x="98" y="114" width="52" height="26" rx="13" fill="#1f2a44" stroke="#94a3b8" stroke-opacity=".6"/><text x="124" y="132" text-anchor="middle" font-size="17" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">61</text><rect x="168" y="14" width="64" height="140" rx="12" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.28)" stroke-width="1.5"/><text x="200" y="46" text-anchor="middle" font-size="26" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">2</text><rect x="174" y="114" width="52" height="26" rx="13" fill="#1f2a44" stroke="#94a3b8" stroke-opacity=".6"/><text x="200" y="132" text-anchor="middle" font-size="17" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">82</text><rect x="244" y="14" width="64" height="140" rx="12" fill="rgba(244,162,89,.16)" stroke="#f4a259" stroke-width="2.5"/><text x="276" y="46" text-anchor="middle" font-size="26" font-weight="700" fill="#f4a259" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">3</text><rect x="250" y="114" width="52" height="26" rx="13" fill="#f4a259" stroke="#f4a259" stroke-opacity=".6"/><text x="276" y="132" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">13</text><rect x="250" y="82" width="52" height="26" rx="13" fill="#f4a259" stroke="#f4a259" stroke-opacity=".6"/><text x="276" y="100" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">53</text><rect x="320" y="14" width="64" height="140" rx="12" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.28)" stroke-width="1.5"/><text x="352" y="46" text-anchor="middle" font-size="26" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">4</text><rect x="326" y="114" width="52" height="26" rx="13" fill="#1f2a44" stroke="#94a3b8" stroke-opacity=".6"/><text x="352" y="132" text-anchor="middle" font-size="17" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">44</text><rect x="16" y="180" width="64" height="140" rx="12" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.28)" stroke-width="1.5"/><text x="48" y="212" text-anchor="middle" font-size="26" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">5</text><rect x="22" y="280" width="52" height="26" rx="13" fill="#1f2a44" stroke="#94a3b8" stroke-opacity=".6"/><text x="48" y="298" text-anchor="middle" font-size="17" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">95</text><rect x="92" y="180" width="64" height="140" rx="12" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.28)" stroke-width="1.5"/><text x="124" y="212" text-anchor="middle" font-size="26" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">6</text><rect x="98" y="280" width="52" height="26" rx="13" fill="#1f2a44" stroke="#94a3b8" stroke-opacity=".6"/><text x="124" y="298" text-anchor="middle" font-size="17" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">116</text><rect x="168" y="180" width="64" height="140" rx="12" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.28)" stroke-width="1.5"/><text x="200" y="212" text-anchor="middle" font-size="26" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">7</text><rect x="174" y="280" width="52" height="26" rx="13" fill="#1f2a44" stroke="#94a3b8" stroke-opacity=".6"/><text x="200" y="298" text-anchor="middle" font-size="17" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">27</text><rect x="244" y="180" width="64" height="140" rx="12" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.28)" stroke-width="1.5"/><text x="276" y="212" text-anchor="middle" font-size="26" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">8</text><rect x="250" y="280" width="52" height="26" rx="13" fill="#1f2a44" stroke="#94a3b8" stroke-opacity=".6"/><text x="276" y="298" text-anchor="middle" font-size="17" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">58</text><rect x="320" y="180" width="64" height="140" rx="12" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.28)" stroke-width="1.5"/><text x="352" y="212" text-anchor="middle" font-size="26" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">9</text><rect x="326" y="280" width="52" height="26" rx="13" fill="#1f2a44" stroke="#94a3b8" stroke-opacity=".6"/><text x="352" y="298" text-anchor="middle" font-size="17" font-weight="700" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">79</text><text x="200" y="348" text-anchor="middle" font-size="17" fill="#cbd5e1" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Ящик = последняя цифра. Чисел 11, ящиков 10.</text></svg>
+        <figcaption>Одиннадцать чисел раскладываем по десяти «ящикам» (последняя цифра). В одном ящике обязательно окажутся двое: здесь это 13 и 53, их разность 40.</figcaption>
+      </figure>
+      <details class="fa-spoiler"><summary>Как оформить решение</summary>
+        <div><p>Рассмотрим последние цифры 11 чисел. Возможных цифр всего 10 (от 0 до 9). По принципу Дирихле у каких-то двух чисел последние цифры одинаковы. Тогда их разность оканчивается на 0 и делится на 10. Что и требовалось доказать.</p></div>
+      </details>
+      <p>Обрати внимание: Макс не озарился с первой секунды. Он попробовал, не получилось, присмотрелся, заметил. Так решаются почти все олимпиадные задачи. Озарение приходит после нескольких минут (или часов) обычного поиска.</p>
+    </section>
+
+    <section class="fa-chapter" id="inventar" data-step="4">
+      <p class="fa-chapter__no">Глава 4 · Снаряжение</p>
+      <h2>Инвентарь героя: всё на FORMYLA.net</h2>
+      <p>Каждому герою нужно снаряжение. У Макса оно собрано в одном месте, в браузере и без установки. Вот что в нём лежит.</p>
+      <ul class="fa-gear">
+        <li><span class="fa-gear__tag">Меч</span><div><strong><a href="/daily_tasks/">Задачи дня</a></strong><span>10 новых олимпиадных задач каждый день. Серия не прерывается, а значит, тренировка из статьи «одна задача в день» превращается в привычку.</span></div></li>
+        <li><span class="fa-gear__tag">Щит</span><div><strong>Проверка решения</strong><span>ИИ проверяет не только ответ, но и само решение. Для олимпиады это главное: баллы дают за рассуждение.</span></div></li>
+        <li><span class="fa-gear__tag">Свитки</span><div><strong><a href="/olympiads/methods">Каталог методов (102)</a></strong><span>Инварианты, принцип Дирихле, индукция, оценки и другие идеи с разбором и задачами. Всё, что Макс проходил по уровням, разобрано здесь глубже.</span></div></li>
+        <li><span class="fa-gear__tag">Компас</span><div><strong><a href="/">Персональный план</a></strong><span>План подготовки под твой класс и цель, чтобы не гадать, за какую тему браться дальше.</span></div></li>
+        <li><span class="fa-gear__tag">Карта</span><div><strong><a href="/olympiad-prep/calendar">Календарь олимпиад</a></strong><span>Даты и этапы в одном месте: от школьного этапа до тренировочных олимпиад.</span></div></li>
+      </ul>
+      <p>Платформа бесплатная, поэтому начать можно уже сегодня.</p>
+    </section>
+
+    <section class="fa-chapter fa-chapter--wide" id="sezon" data-step="4">
+      <div class="fa-col">
+        <p class="fa-chapter__no">Глава 5 · Карта сезона</p>
+        <h2>Куда всё это ведёт</h2>
+        <p>Олимпиады идут по этапам, как уровни на карте мира. Для Всероссийской олимпиады школьников в сезоне 2026/27 ориентиры такие:</p>
+      </div>
+      <ol class="fa-stages">
+        <li><b>1</b><h3>Школьный</h3><p class="fa-stages__d">до 1 ноября</p></li>
+        <li><b>2</b><h3>Муниципальный</h3><p class="fa-stages__d">до 25 декабря</p><p class="fa-stages__c">7–11 классы</p></li>
+        <li><b>3</b><h3>Региональный</h3><p class="fa-stages__d">12 января — 28 февраля</p><p class="fa-stages__c">9–11 классы</p></li>
+        <li><b>4</b><h3>Заключительный</h3><p class="fa-stages__d">14 марта — 3 мая</p><p class="fa-stages__c">9–11 классы</p></li>
+      </ol>
+      <div class="fa-col">
+        <p class="fa-small">Даты стоит перепроверить на официальных страницах, они могут уточняться. Актуальный календарь олимпиад есть на <a href="/olympiad-prep/calendar">FORMYLA.net</a>.</p>
+        <p>Если школьный этап уже прошёл или вот-вот пройдёт, не грусти. Есть другие олимпиады для тренировки, например «Лучик», где можно проверить себя без давления.</p>
+      </div>
+    </section>
+
+    <section class="fa-chapter" id="lovushki" data-step="4">
+      <p class="fa-chapter__no">Глава 6 · Ловушки</p>
+      <h2>Не делай как Макс в октябре</h2>
+      <ul class="fa-traps">
+        <li><strong>Хвататься за сложное.</strong> Если начать с региональных задач, можно разочароваться. Начни с простого и поднимайся постепенно.</li>
+        <li><strong>Зубрить приёмы.</strong> Заученный приём без понимания не сработает на новой задаче.</li>
+        <li><strong>Пропускать доказательства.</strong> «Ответ и так очевиден» на олимпиаде не засчитывается. Баллы дают за обоснование.</li>
+        <li><strong>Заниматься рывками.</strong> Пять часов в воскресенье хуже, чем по 40 минут каждый день.</li>
+        <li><strong>Подглядывать в ответ через 10 минут.</strong> Дай задаче хотя бы полчаса.</li>
+        <li><strong>Не разбирать ошибки.</strong> Неверное решение самое ценное: там видно, чего не хватает.</li>
+      </ul>
+    </section>
+
+    <section class="fa-chapter" id="kvest" data-step="4">
+      <p class="fa-chapter__no">Глава 7 · Тренировка</p>
+      <h2>Тридцать задач подряд</h2>
+      <p>Одна задача в день. Бери задачи на чётность, инварианты и принцип Дирихле, а к концу месяца добавляй смешанные и пробуй сам угадать, какая идея нужна.</p>
+      <ul>
+        <li>Время на задачу — от 20 минут до часа. Не сдавайся раньше.</li>
+        <li>После решения запиши его своими словами, как в чистовике.</li>
+        <li>Если не вышло, посмотри подсказку, а не полный ответ. Потом реши заново.</li>
+      </ul>
+      <div class="fa-tracker" id="tracker">
+        <div class="fa-tracker__head"><strong>Мой трекер</strong><span id="trackerCount">0 из 30</span></div>
+        <div class="fa-tracker__days" id="trackerGrid" role="group" aria-label="Отметь решённые дни"></div>
+        <div class="fa-tracker__bar"><div id="trackerBar"></div></div>
+        <p class="fa-small" id="trackerMsg">Нажимай на дни, когда решил задачу.</p>
+      </div>
+      <p>Ориентир по времени: если ты серьёзно нацелен на олимпиады, около 5 часов в неделю вместе с самостоятельным решением задач — хороший темп. Если времени меньше, ничего страшного: 2–4 часа в неделю тоже дадут результат, только медленнее.</p>
+      <aside class="fa-signpost">
+        <p>Эта статья про то, как думать. А зачем всё это нужно и как выстроить первый месяц на платформе, рассказано отдельно.</p>
+        <a href="/olympiad-start">Читать «Как войти в олимпиадную математику» →</a>
+      </aside>
+    </section>
+
+    <section class="fa-chapter" id="final" data-step="4">
+      <p class="fa-chapter__no">Финал</p>
+      <h2>Доска из начала</h2>
+      <figure class="fa-fig fa-fig--pic">
+        <img src="{{ url_for('static', filename='articles/max-win.jpg') }}" alt="Макс радостно поднимает лист со звездой над головой перед светящейся дверью в меловом лабиринте" width="900" height="900" loading="lazy">
+        <figcaption>Через три месяца Макс проходит на муниципальный этап.</figcaption>
+      </figure>
+      <p>Через три месяца Макс прошёл на муниципальный этап. Не потому, что стал гением. Он просто выучил правила новой игры и каждый день делал по одной задаче.</p>
+      <p>А теперь вернёмся к доске из начала.</p>
+      <details class="fa-spoiler"><summary>Ответ на задачу про шахматную доску</summary>
+        <div>
+          <p><strong>Нет, покрыть нельзя.</strong></p>
+          <p>Раскрасим доску в шахматном порядке. Тогда светлых и тёмных клеток по 32. Две противоположные угловые клетки всегда одного цвета, допустим светлые. Значит, после вырезания останется 30 светлых и 32 тёмных.</p>
+          <p>Любая доминошка закрывает ровно одну светлую и одну тёмную клетку. Значит, k доминошек закроют k светлых и k тёмных. Но у нас разное число клеток каждого цвета, а значит, покрыть доску невозможно.</p>
+        </div>
+      </details>
+      <p>Видишь? Никаких формул. Только красивая идея — раскраска. И именно так выглядит олимпиадная математика: ты смотришь на знакомую вещь и вдруг видишь в ней то, чего раньше не замечал.</p>
+    </section>
+
+    <section class="fa-chapter" id="faq" data-step="4">
+      <p class="fa-chapter__no">Для родителей</p>
+      <h2>Вопросы родителей</h2>
+      <details class="fa-faq"><summary>Как помогать, если сам не решаешь такие задачи?</summary><div><p>Не решай за ребёнка, а задавай вопросы из главы 3: «А что будет, если поменьше?», «Что здесь не меняется?». Попроси объяснить решение вслух: если получается связно, значит, идея понята.</p></div></details>
+      <details class="fa-faq"><summary>Сколько времени давать на одну задачу?</summary><div><p>От двадцати минут до часа. Если за полчаса нет ни одной идеи, пусть посмотрит подсказку, а не полный ответ, и потом решит заново.</p></div></details>
+      <details class="fa-faq"><summary>Ответ верный, а баллов мало. Почему?</summary><div><p>На олимпиаде оценивают рассуждение, а не только ответ. Полезно после каждой задачи записывать решение так, чтобы его понял человек, который не видел условия.</p></div></details>
+      <details class="fa-faq"><summary>Как отнестись к нулю на первом этапе?</summary><div><p>Как Макс: ноль говорит о том, что нужна другая игра, а не о том, что ребёнок «не математик». Разбор задач после олимпиады даёт больше, чем очередной учебник.</p></div></details>
+    </section>
+
+    <section class="fa-finale" id="cta">
+      <p class="fa-finale__k">Твой ход</p>
+      <h2>Реши три задачи из статьи без подсказок</h2>
+      <p>Чётность, инвариант, Дирихле. Потом бери задачи на FORMYLA.net: тема выбрана, таймер на 30 минут, можно начинать. Даже если сегодня не получится, завтра у тебя будет чуть больше идей, чем вчера.</p>
+      <div class="fa-cta-row">
+        <a class="fa-btn-amber" href="/daily_tasks/">Перейти к задачам</a>
+        <a class="fa-btn-ghost" href="/olympiads/methods">Каталог методов</a>
+      </div>
+      <p class="fa-finale__end">Игра началась.</p>
+    </section>
+  </article>
+</div>
+
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/article_school_to_olympiad.js') }}?v={{ asset_version }}"></script>
+{% endblock %}
