@@ -111,3 +111,28 @@ def test_another_construction_never_repeats_an_old_one_when_the_expert_fails(mon
     r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False,
                  aux_history=first.expert_history)
     assert r.ok and r.plan["draw"]["aux_segments"] == []
+
+
+def test_finished_job_keeps_its_condition_and_is_found_again(tmp_path):
+    engine = jobs.create_engine(f"sqlite:///{tmp_path}/q.db")
+    jobs.init_db(engine)
+    q = jobs.Queue(engine, runner=lambda problem, with_aux: {"ok": True, "svg": "<svg/>"})
+    assert q.last_done("u1") is None
+    jid = q.submit("u1", "Условие задачи про треугольник.", True)
+    assert q.run_once()
+    got = q.get(jid, "u1")["result"]
+    assert got["problem_text"] == "Условие задачи про треугольник." and got["with_aux"] is True
+    assert q.last_done("u1") == jid and q.last_done("u2") is None and q.get(jid, "u2") is None
+    failed = jobs.Queue(engine, runner=lambda p, a: {"ok": False, "reason": "X"})
+    failed.submit("u3", "Ещё одно условие задачи.", False)
+    failed.run_once()
+    assert failed.last_done("u3") is None
+
+
+def test_expert_status_reports_why_there_is_no_construction(monkeypatch):
+    def fail(*a, **k):
+        raise llm.PlanError("EXPERT_HTTP", "HTTP 500")
+    monkeypatch.setattr(llm, "expert_text", fail)
+    monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: {"idea": "", "steps": []})
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False)
+    assert r.expert_status == "EXPERT_HTTP" and r.expert_history == []

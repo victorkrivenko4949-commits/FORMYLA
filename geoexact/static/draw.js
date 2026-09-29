@@ -40,7 +40,13 @@
     result = data;
     el("toggle").checked = true;
     el("toggle-wrap").hidden = !data.with_aux || !data.svg_base;
-    el("another").hidden = !(data.with_aux && Array.isArray(data.expert_history) && data.expert_history.length && lastJob);
+    el("another").hidden = !(data.with_aux && lastJob);
+    el("another").textContent = Array.isArray(data.expert_history) && data.expert_history.length
+      ? "Попробовать другое доп. построение" : "Повторить запрос доп. построения";
+    const fail = data.with_aux && data.expert_status && data.expert_status !== "OK";
+    el("expert-note").hidden = !fail;
+    el("expert-note").textContent = fail
+      ? "Gemini не дала доп. построение (код " + data.expert_status + "). Кнопка ниже повторит запрос." : "";
     el("result").hidden = false;
     const value = data.measured;
     el("measured").textContent = value == null ? "" :
@@ -283,6 +289,9 @@
         {credentials: "same-origin", cache: "no-store"}));
       if (data.status === "done" && data.result?.ok) {
         lastJob = job;
+        if (!el("problem").value && data.result.problem_text) el("problem").value = data.result.problem_text;
+        const radio = root.querySelector('input[name="gx-mode"][value="' + (data.result.with_aux ? "aux" : "base") + '"]');
+        if (radio && !saved.problem) radio.checked = true;
         show(data.result);
         if (saved.full === false && !el("toggle-wrap").hidden) { el("toggle").checked = false; render(); }
         status("Чертёж восстановлен после обновления страницы.");
@@ -295,7 +304,14 @@
   fetch(root.dataset.active, {credentials: "same-origin", cache: "no-store"})
     .then(jsonResponse).then(async data => {
       if (data.job_id) { activeJob = data.job_id; return poll(); }
-      if (saved.job) await restoreResult(saved.job);
+      // Последний готовый чертёж хранится на сервере: обновление страницы (и другое
+      // устройство) не теряет его, даже если браузер не сохранил своё состояние.
+      let job = saved.job;
+      if (!job) {
+        try { job = (await jsonResponse(await fetch(root.dataset.last,
+          {credentials: "same-origin", cache: "no-store"}))).job_id; } catch (e) { job = null; }
+      }
+      if (job) await restoreResult(job);
       el("submit").disabled = false;
     }).catch(error => { status(error.message); el("submit").disabled = false; });
 })();

@@ -114,9 +114,7 @@ def submit():
             return jsonify(error="Некорректный повторный запрос."), 400
         earlier = current_app.extensions["geoexact"].get(retry_of, str(current_user.get_id()))
         history = ((earlier or {}).get("result") or {}).get("expert_history")
-        history = clean_history(history)
-        if not history:
-            return jsonify(error="Не удалось продолжить прошлое построение. Постройте чертёж заново."), 400
+        history = clean_history(history)      # None: the expert had not answered, ask afresh
     try:
         jid = current_app.extensions["geoexact"].submit(
             str(current_user.get_id()), text, data.get("with_aux", False), history)
@@ -132,6 +130,12 @@ def status(jid):
     if result is None:
         abort(404)
     return jsonify(result)
+
+
+@bp.get("/last")
+@login_required
+def last():
+    return jsonify(job_id=current_app.extensions["geoexact"].last_done(str(current_user.get_id())))
 
 
 @bp.get("/active")

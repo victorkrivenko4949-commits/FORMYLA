@@ -7,6 +7,7 @@
 {% block content %}
 <section id="geoexact" class="gx" data-api="{{ url_for('geoexact.submit') }}"
          data-active="{{ url_for('geoexact.active') }}"
+         data-last="{{ url_for('geoexact.last') }}"
          data-recognize="{{ url_for('geoexact.recognize_photo') }}"
          data-user="{{ current_user.get_id() if current_user.is_authenticated else '' }}"
          data-csrf="{{ geoexact_csrf }}">
@@ -35,6 +36,7 @@
   <p id="gx-status" role="status" aria-live="polite"></p>
   <button id="gx-resume" type="button" hidden>Проверить готовность</button>
   <section id="gx-result" hidden aria-label="Результат">
+    <p id="gx-expert-note" class="gx-hint" hidden></p>
     <div class="gx-toolbar">
       <label id="gx-toggle-wrap" hidden><input id="gx-toggle" type="checkbox" checked> Показывать дополнительные построения</label>
       <button id="gx-another" type="button" hidden>Попробовать другое доп. построение</button>
