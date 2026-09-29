@@ -1,11 +1,12 @@
 """Concrete Flask-Login + FORMYLA CSRF integration, disabled unless opted in."""
 import os
+import re
 import time
 
 from flask import Blueprint, abort, current_app, jsonify, render_template, request
 from flask_login import current_user, login_required
 
-from .jobs import Queue, QueueFull, init_db, make_engine
+from .jobs import Queue, QueueFull, clean_history, init_db, make_engine
 
 bp = Blueprint("geoexact", __name__, url_prefix="/geometry/draw",
                template_folder="templates", static_folder="static")
@@ -104,9 +105,21 @@ def submit():
         return jsonify(error="Некорректный текст."), 400
     if not 10 <= len(text) <= 12000 or type(data.get("with_aux", False)) is not bool:
         return jsonify(error="Нужно от 10 до 12 000 символов и корректный режим."), 400
+    history = None
+    retry_of = data.get("retry_of")
+    if retry_of is not None:
+        # «Another construction»: continue the expert chat of the user's own earlier job.
+        if not isinstance(retry_of, str) or not re.fullmatch(r"[0-9a-f]{32}", retry_of) \
+                or not data.get("with_aux", False):
+            return jsonify(error="Некорректный повторный запрос."), 400
+        earlier = current_app.extensions["geoexact"].get(retry_of, str(current_user.get_id()))
+        history = ((earlier or {}).get("result") or {}).get("expert_history")
+        history = clean_history(history)
+        if not history:
+            return jsonify(error="Не удалось продолжить прошлое построение. Постройте чертёж заново."), 400
     try:
         jid = current_app.extensions["geoexact"].submit(
-            str(current_user.get_id()), text, data.get("with_aux", False))
+            str(current_user.get_id()), text, data.get("with_aux", False), history)
     except QueueFull as e:
         return jsonify(error=str(e)), 429
     return jsonify(job_id=jid, status="queued"), 202

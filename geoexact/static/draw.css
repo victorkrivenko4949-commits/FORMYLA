@@ -143,3 +143,6 @@
   .gx-toolbar a{width:100%;text-align:center;box-sizing:border-box}
 }
 .gx-mode-hint{margin:10px 2px 0}
+#gx-another{font:inherit;font-size:13.5px;padding:8px 14px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer}
+#gx-another:hover:not(:disabled){opacity:.8}
+#gx-another:disabled{opacity:.5;cursor:default}

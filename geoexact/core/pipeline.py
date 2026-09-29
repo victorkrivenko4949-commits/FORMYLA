@@ -52,6 +52,7 @@ class Result:
     cost_uncertain: bool = False
     verification: str = "constraints_only"
     measurement_range: list[float] = field(default_factory=list)
+    expert_history: list = field(default_factory=list)   # chat with the expert, for «another»
 
     def brief(self) -> str:
         head = "OK " if self.ok else f"ОТКАЗ[{self.stage}:{self.reason}] "
@@ -199,7 +200,9 @@ def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
                 model_failed = (not isinstance(data, dict)) or (asked and applied is None)
             except (PlanError, ValueError, TypeError, KeyError, AttributeError, OSError):
                 model_failed = True
-        if applied is None and model_failed and not getattr(_AUXJOB, "special", False):
+        if applied is None and model_failed and getattr(_AUXJOB, "retry", False):
+            plan = base if job is not None and getattr(_AUXJOB, "special", False) else plan
+        elif applied is None and model_failed and not getattr(_AUXJOB, "special", False):
             rule = auxplan.trapezoid_diagonals(plan, coords, text)
             if rule:
                 applied = auxplan.apply_aux(plan, coords, rule)
@@ -235,11 +238,15 @@ class _AuxJob:
     """
     EXPERT_WAIT = 100.0
 
-    def __init__(self, sess, text: str, deadline: float):
+    def __init__(self, sess, text: str, deadline: float, history: list | None = None):
         self.sess, self.text, self.deadline = sess, text, deadline
+        self.history = history or []
+        self.history_out: list = []
         self.started = time.time()
         self.slots = {}
-        for name in ("expert", "fast"):
+        # «Another construction»: only the expert is asked; the quick fallback would
+        # repeat the earlier construction.
+        for name in (("expert",) if self.history else ("expert", "fast")):
             slot = {"data": None, "error": None, "done": threading.Event(),
                     "budget": L.Budget(cap=0.06)}
             self.slots[name] = slot
@@ -250,7 +257,9 @@ class _AuxJob:
             L.set_deadline(self.deadline)
             from .auxplan import STATEMENT_ONLY
             if name == "expert":
-                said = L.expert_text(self.sess, self.text)
+                said = L.expert_text(self.sess, self.text, self.history)
+                self.history_out = L.expert_messages(self.text, self.history) + [
+                    {"role": "assistant", "content": said}]
                 slot["data"] = L.aux_plan_from_text(self.sess, self.text, said, slot["budget"])
             else:
                 slot["data"] = L.aux_plan(self.sess, self.text, STATEMENT_ONLY, slot["budget"])
@@ -263,11 +272,12 @@ class _AuxJob:
         """Usable answers in order of preference: [(name, data)]."""
         stop = min(self.deadline - 4, self.started + self.EXPERT_WAIT)
         self.slots["expert"]["done"].wait(max(0.0, stop - time.time()))
-        self.slots["fast"]["done"].wait(max(0.0, self.deadline - 4 - time.time()))
+        if "fast" in self.slots:
+            self.slots["fast"]["done"].wait(max(0.0, self.deadline - 4 - time.time()))
         out = []
         for name in ("expert", "fast"):
-            slot = self.slots[name]
-            if slot["done"].is_set():
+            slot = self.slots.get(name)
+            if slot is not None and slot["done"].is_set():
                 if main_budget is not None and slot["budget"].calls:
                     main_budget.calls.extend(slot["budget"].calls)
                     main_budget.spent += slot["budget"].spent
@@ -284,11 +294,17 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
         L.set_deadline(deadline)
         _AUXJOB.value = None
         _AUXJOB.special = False
+        history = kwargs.pop("aux_history", None) or None
+        _AUXJOB.retry = bool(history)
         if with_aux and isinstance(problem, str) and problem.strip():
             # The production worker passes no session; the job needs its own anyway.
             _AUXJOB.value = _AuxJob(kwargs.get("sess") or L.make_session(),
-                                    _norm(problem), deadline - 6)
-        return _generate(problem, with_aux, **kwargs)
+                                    _norm(problem), deadline - 6, history)
+        result = _generate(problem, with_aux, **kwargs)
+        job = _AUXJOB.value
+        if job is not None and job.history_out:
+            result.expert_history = job.history_out
+        return result
     except (KeyboardInterrupt, SystemExit):
         raise
     except Exception as exc:  # noqa: BLE001 - last line of defence for the user
@@ -306,6 +322,7 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
         L.set_deadline(None)
         _AUXJOB.value = None
         _AUXJOB.special = False
+        _AUXJOB.retry = False
 
 
 def _strip_invented_labels(text: str, plan) -> None:

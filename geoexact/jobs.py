@@ -68,6 +68,42 @@ def _lock(c):
         raise RuntimeError("Run python -m geoexact.manage init-db first")
 
 
+_HISTORY_MARK = "\x1eGXH1\x1e"
+
+
+def wrap_problem(problem, history):
+    """Job text with the expert chat attached (the jobs table has no spare column)."""
+    if not history:
+        return problem
+    return _HISTORY_MARK + json.dumps({"p": problem, "h": history}, ensure_ascii=False)
+
+
+def unwrap_problem(stored):
+    if isinstance(stored, str) and stored.startswith(_HISTORY_MARK):
+        try:
+            d = json.loads(stored[len(_HISTORY_MARK):])
+            return d["p"], d["h"]
+        except (ValueError, KeyError, TypeError):
+            return stored[len(_HISTORY_MARK):], None
+    return stored, None
+
+
+def clean_history(history):
+    """Only well-formed chat turns of bounded size; anything else is dropped."""
+    if not isinstance(history, list) or not 1 <= len(history) <= 40:
+        return None
+    out, total = [], 0
+    for i, m in enumerate(history):
+        if not (isinstance(m, dict) and m.get("role") == ("user" if i % 2 == 0 else "assistant")
+                and isinstance(m.get("content"), str)):
+            return None
+        total += len(m["content"])
+        out.append({"role": m["role"], "content": m["content"]})
+    if total > 60000 or out[-1]["role"] != "assistant":
+        return None
+    return out
+
+
 def failure(code, message):
     return {"ok": False, "reason": code, "detail": message}
 
@@ -91,7 +127,7 @@ class Queue:
         self._thread = None
         self._start_lock = threading.Lock()
 
-    def submit(self, owner, problem, with_aux):
+    def submit(self, owner, problem, with_aux, history=None):
         now = time.time()
         midnight = datetime.now(timezone.utc).replace(
             hour=0, minute=0, second=0, microsecond=0).timestamp()
@@ -118,7 +154,7 @@ class Queue:
                 raise QueueFull("Очередь заполнена. Попробуйте позже.")
             c.execute(insert(jobs).values(
                 id=jid, owner=owner, status="queued", created=now,
-                problem=problem, with_aux=int(with_aux)))
+                problem=wrap_problem(problem, history), with_aux=int(with_aux)))
         return jid
 
     def get(self, jid, owner):
@@ -211,12 +247,13 @@ def _sketch_payload(problem, with_aux):
 
 
 def run_generation(problem, with_aux):
+    problem, history = unwrap_problem(problem)
     env = dict(os.environ, OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1",
                MKL_NUM_THREADS="1")
     try:
         process = subprocess.run(
             [sys.executable, "-m", "geoexact.worker"],
-            input=json.dumps({"problem": problem, "with_aux": with_aux}),
+            input=json.dumps({"problem": problem, "with_aux": with_aux, "history": history}),
             text=True, capture_output=True, timeout=215, env=env,
         )
     except subprocess.TimeoutExpired:

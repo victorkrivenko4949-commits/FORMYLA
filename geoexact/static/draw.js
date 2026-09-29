@@ -29,6 +29,7 @@
     result = data;
     el("toggle").checked = true;
     el("toggle-wrap").hidden = !data.with_aux || !data.svg_base;
+    el("another").hidden = !(data.with_aux && Array.isArray(data.expert_history) && data.expert_history.length && lastJob);
     el("result").hidden = false;
     const value = data.measured;
     el("measured").textContent = value == null ? "" :
@@ -58,6 +59,7 @@
       ? "Войдите в аккаунт и обновите страницу." : "Ошибка сервера. Попробуйте позже."));
     return data;
   }
+  let lastJob = null;
   async function poll() {
     if (polling || !activeJob) return;
     polling = true; el("resume").hidden = true;
@@ -67,6 +69,7 @@
         const data = await jsonResponse(await fetch(api + "/" + activeJob,
           {credentials: "same-origin", cache: "no-store"}));
         if (data.status === "done" || data.status === "failed") {
+          lastJob = activeJob;
           activeJob = null;
           el("submit").disabled = false;
           if (data.result?.ok) {
@@ -94,10 +97,17 @@
       status(error.message); el("resume").hidden = false;
     } finally { polling = false; }
   }
-  el("form").addEventListener("submit", async event => {
+  el("another").addEventListener("click", () => {
+    if (activeJob || !lastJob) return;
+    submitJob(lastJob);
+  });
+  el("form").addEventListener("submit", event => {
     event.preventDefault();
+    submitJob(null);
+  });
+  async function submitJob(retryOf) {
     if (activeJob) return;
-    el("submit").disabled = true;
+    el("submit").disabled = true; el("another").disabled = true;
     el("result").hidden = true; clearUrls(); status("Отправляем запрос…");
     try {
       const userText = el("problem").value;
@@ -107,14 +117,15 @@
       const data = await jsonResponse(await fetch(api, {
         method: "POST", credentials: "same-origin",
         headers: {"Content-Type": "application/json", "X-CSRF-Token": root.dataset.csrf},
-        body: JSON.stringify({
+        body: JSON.stringify(Object.assign({
           problem,
-          with_aux: root.querySelector('input[name="gx-mode"]:checked').value === "aux"
-        })
+          with_aux: retryOf ? true : root.querySelector('input[name="gx-mode"]:checked').value === "aux"
+        }, retryOf ? {retry_of: retryOf} : {}))
       }));
       activeJob = data.job_id; await poll();
     } catch (error) { status(error.message); el("submit").disabled = false; }
-  });
+    finally { el("another").disabled = false; }
+  }
   el("resume").addEventListener("click", poll);
   el("toggle").addEventListener("change", render);
   window.addEventListener("pagehide", clearUrls);
