@@ -157,7 +157,7 @@ def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
         rule = auxplan.trapezoid_diagonals(plan, coords, text)
         if rule:
             candidates.append(rule)
-        elif auxplan.has_aux(plan):
+        elif auxplan.has_aux(plan) and not auxplan.mentions_construction(plan.notes):
             return plan, sol          # the model already drew its own construction
         applied = None
         for data in candidates:
@@ -171,6 +171,11 @@ def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
                 applied = auxplan.apply_aux(plan, coords, data)
             except (PlanError, ValueError, TypeError, KeyError, AttributeError, OSError):
                 applied = None
+        if not applied and not auxplan.has_aux(plan) and auxplan.mentions_construction(plan.notes):
+            # the text must not claim a construction that is not on the drawing
+            import copy
+            plan = copy.deepcopy(plan)
+            plan.notes = ""
         if applied:
             new_plan, new_coords = applied
             return new_plan, Solution(coords=new_coords, residual=sol.residual, ok=sol.ok,
@@ -539,6 +544,7 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
             plan = marked
         except Exception:  # noqa: BLE001
             pass
+        model_notes = plan.notes
         if with_aux and not special_plan:
             plan, sol = _auxiliary_layer(plan, sol, text, sess, budget, t_start)
         from .completion import complete_intersection_support
@@ -585,7 +591,7 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
             warn.append("DETAIL_VIEW: исходная фигура мала на общем виде; приложен увеличенный фрагмент")
         if simplified:
             warn.insert(0, "SIMPLIFIED: чертёж построен по упрощённой схеме; часть условий "
-                           "могла быть опущена" + (f" ({plan.notes})" if plan.notes else ""))
+                           "могла быть опущена" + (f" ({model_notes})" if model_notes else ""))
         return finish(Result(True, "9-render", "", "", svg=svg, plan=plan.to_dict(),
                              svg_base=svg_base, svg_detail=svg_detail, measurement_range=value_range,
                              measured=None if simplified else gate.measured,

@@ -200,3 +200,38 @@ def test_sketch_draws_both_named_diagonals():
     plan, _ = sketch_plan(TRAP)
     segs = {frozenset(s) for s in plan.draw.segments}
     assert frozenset("AC") in segs and frozenset("BD") in segs
+
+
+def _bare_triangle(notes):
+    return FigurePlan.from_dict({
+        "points": list("ABC"), "constructions": [{"op": "free_point", "out": n} for n in "ABC"],
+        "constraints": [{"type": "dist", "args": ["A", "B"], "value": 5},
+                        {"type": "dist", "args": ["B", "C"], "value": 6},
+                        {"type": "dist", "args": ["A", "C"], "value": 7}],
+        "draw": {"segments": [["A", "B"], ["B", "C"], ["C", "A"]]}, "scale_free": True,
+        "notes": notes})
+
+
+def test_text_never_claims_a_construction_that_is_not_drawn(monkeypatch, model):
+    model(_bare_triangle("Проведём через C прямую, параллельную AB, и продолжим сторону BA."),
+          {"idea": "", "steps": []})
+    r = generate("Треугольник ABC со сторонами 5, 6, 7.", True, sess=object(), use_cache=False)
+    assert r.ok and r.plan["notes"] == "" and "параллельную" not in r.svg
+    assert not r.plan["draw"]["aux_segments"]
+
+
+def test_planner_gets_the_models_own_words_and_text_matches_drawing(monkeypatch, model):
+    seen = {}
+    aux = {"idea": "Прямая через C параллельно AB", "steps": [
+        {"op": "parallel_point", "out": "P", "args": ["C", "A", "B"], "value": 1.0}],
+        "aux_segments": [["C", "P"]]}
+    model(_bare_triangle("Проведём через C прямую, параллельную AB."))
+
+    def planner(sess, text, figure, budget):
+        seen["figure"] = figure
+        return aux
+    monkeypatch.setattr(llm, "aux_plan", planner)
+    r = generate("Треугольник ABC со сторонами 5, 6, 7.", True, sess=object(), use_cache=False)
+    assert "параллельную AB" in seen["figure"]          # what the model said reaches the planner
+    assert ["C", "P"] in r.plan["draw"]["aux_segments"]
+    assert r.plan["notes"] == "Прямая через C параллельно AB"
