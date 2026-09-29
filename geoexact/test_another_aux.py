@@ -161,3 +161,20 @@ def test_expert_status_carries_the_reason(monkeypatch):
     monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: {"idea": "", "steps": []})
     r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False)
     assert r.expert_status == "EXPERT_HTTP: HTTP 404 model not found"
+
+
+def test_odirouter_key_wins_and_goes_to_odirouter(monkeypatch):
+    monkeypatch.setenv("ODIROUTER_API_KEY", "odi-key")
+    monkeypatch.setenv("GEMINI_API_KEY", "google-key")
+    monkeypatch.setenv("GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta/openai")
+    monkeypatch.delenv("ODIROUTER_BASE_URL", raising=False)
+    assert llm._expert_credentials() == ("odi-key", "https://api.odirouter.ai/v1/chat/completions")
+    monkeypatch.setenv("ODIROUTER_BASE_URL", "https://api.odirouter.ai/v1/")
+    assert llm._expert_credentials()[1] == "https://api.odirouter.ai/v1/chat/completions"
+
+
+def test_without_odirouter_key_the_shared_gemini_pair_is_used(monkeypatch):
+    monkeypatch.delenv("ODIROUTER_API_KEY", raising=False)
+    monkeypatch.setenv("GEMINI_API_KEY", "shared")
+    monkeypatch.setenv("GEMINI_API_BASE", "https://router.example/v1")
+    assert llm._expert_credentials() == ("shared", "https://router.example/v1/chat/completions")

@@ -658,11 +658,27 @@ def safe_detail(text, limit: int = 200) -> str:
     return t[:limit]
 
 
+def _expert_credentials() -> tuple[str, str]:
+    """(key, chat-completions URL) of the expert.
+
+    ODIROUTER_API_KEY is the OdiRouter key and always goes to OdiRouter (its own base
+    URL or the default). Only without it the shared GEMINI_API_KEY / GEMINI_API_BASE
+    pair of the rest of the site is used.
+    """
+    odi = (os.environ.get("ODIROUTER_API_KEY") or "").strip()
+    if odi:
+        key = odi
+        base = os.environ.get("ODIROUTER_BASE_URL") or "https://api.odirouter.ai/v1"
+    else:
+        key = (os.environ.get("GEMINI_API_KEY") or "").strip()
+        base = (os.environ.get("GEMINI_API_BASE") or os.environ.get("GEMINI_BASE_URL")
+                or os.environ.get("ODIROUTER_BASE_URL") or "https://api.odirouter.ai/v1")
+    base = base.strip().rstrip("/")
+    return key, (base if base.endswith("/chat/completions") else base + "/chat/completions")
+
+
 def _expert_url() -> str:
-    base = (os.environ.get("GEMINI_API_BASE") or os.environ.get("GEMINI_BASE_URL")
-            or os.environ.get("ODIROUTER_BASE_URL")
-            or "https://api.odirouter.ai/v1").strip().rstrip("/")
-    return base if base.endswith("/chat/completions") else base + "/chat/completions"
+    return _expert_credentials()[1]
 
 
 ANOTHER_AUX = "отлично! но давай использовать какое-нибудь другое тоже удобное доп построение"
@@ -686,15 +702,13 @@ def expert_messages(problem: str, history: list | None = None) -> list[dict]:
 
 def expert_text(sess, problem: str, history: list | None = None, max_out: int = 16000) -> str:
     """The expert's free-text auxiliary construction, in the user's own wording."""
-    # The OdiRouter key the site already uses (llm_router reads GEMINI_API_KEY);
-    # ODIROUTER_API_KEY is accepted as well, as in .env.example.
-    key = (os.environ.get("GEMINI_API_KEY") or os.environ.get("ODIROUTER_API_KEY") or "").strip()
+    key, url = _expert_credentials()
     if not key:
-        raise PlanError("NO_EXPERT_KEY", "нет ключа OdiRouter (GEMINI_API_KEY / ODIROUTER_API_KEY)")
+        raise PlanError("NO_EXPERT_KEY", "нет ключа OdiRouter (ODIROUTER_API_KEY / GEMINI_API_KEY)")
     payload = {"model": EXPERT_MODEL, "max_tokens": max_out, "stream": True,
                "messages": expert_messages(problem, history)}
     t0 = time.time()
-    r = sess.post(_expert_url(), json=payload, stream=True,
+    r = sess.post(url, json=payload, stream=True,
                   headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
                   timeout=(15, _read_timeout()))
     if r.status_code != 200:
