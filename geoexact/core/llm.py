@@ -230,6 +230,13 @@ SYS_FORMALIZE = """Ты переводишь условие планиметри
 12. Для точки НА ОТРЕЗКЕ используй on_segment, а не только collinear.
     Для выпуклого четырёхугольника контролируй расположение по сторонам
     диагоналей с помощью opposite_side. Не подменяй его перекрещенным.
+14. Точка P с условием «AP = AB и PB ∥ AC» (равенство длины И параллельность):
+    H=translate(B,A,C) (прямая BH ∥ AC), P=line_circle_other(B,H,A,B) — второе
+    пересечение этой прямой с окружностью (A, |AB|). НЕ задавай такую точку через
+    translate/parallel_point вместе с dist_eq: это сужает треугольник до частного случая.
+    Все вспомогательные точки (H, K и т. п.) ОБЯЗАТЕЛЬНО перечисли в points.
+    Если в условии нет числовых данных и слов «равнобедренный/правильный/прямоугольный»,
+    чертёж должен быть построен для ПРОИЗВОЛЬНОГО треугольника.
 13. circle_circle(out,[O,R1,P,R2],value): центры O и P, радиусы |OR1| и |PR2|.
     Это НЕ список двух центров, повторённый дважды! Для числовых радиусов создай
     R1=perp_point(O,O,P,r1), R2=perp_point(P,O,P,r2); скрой их подписи.
@@ -508,6 +515,7 @@ def formalize(sess, problem: str, cls: str, with_aux: bool, budget: Budget,
             and all(isinstance(n, str) for n in target.get("args", []))
             and set(target.get("args", [])) <= set(d.get("points", []))):
         d["target"] = {"kind": "none", "args": []}
+    _declare_helper_points(d)
     plan = FigurePlan.from_dict(d)
     warn = validate_plan(plan)          # этап 5
     if not (plan.draw.segments or plan.draw.lines or plan.draw.rays
@@ -553,6 +561,31 @@ def formalize_space(sess, problem: str, cls: str, with_aux: bool, budget: Budget
 
 
 # ------------------------------------------------------------------ доп. построение
+def _declare_helper_points(d) -> None:
+    """A construction output the model forgot to list in `points` is a helper point:
+    declare it (hidden unless drawn) instead of failing the whole answer."""
+    try:
+        points, cons = d.get("points"), d.get("constructions")
+        if not isinstance(points, list) or not isinstance(cons, list):
+            return
+        draw = d.get("draw") if isinstance(d.get("draw"), dict) else {}
+        drawn = set()
+        for key, val in draw.items():
+            if key in ("hide_labels", "length_marks", "angle_marks", "equal_marks", "arcs"):
+                continue
+            for item in val if isinstance(val, list) else []:
+                drawn.update(x for x in (item if isinstance(item, list) else [item]) if isinstance(x, str))
+        for c in cons:
+            out = c.get("out") if isinstance(c, dict) else None
+            if isinstance(out, str) and out and out not in points:
+                points.append(out)
+                if out not in drawn and isinstance(draw.get("hide_labels", []), list):
+                    draw.setdefault("hide_labels", []).append(out)
+                    d["draw"] = draw
+    except Exception:  # noqa: BLE001 - validation reports real problems
+        return
+
+
 def aux_plan(sess, problem: str, figure: str, budget: Budget) -> dict:
     """Separate, small request: only the auxiliary construction for a built figure."""
     from .auxplan import SYS_AUXPLAN

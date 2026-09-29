@@ -462,6 +462,35 @@ def sketch_plan(text: str):
         rules.append((m[1], "line_intersect", [a, c, b, d], None))
         draw += [(a, c), (b, d)]
 
+    # "точка P выбрана так, что AP = AB и PB ∥ AC": P is the second intersection of the
+    # line through B parallel to AC with the circle (A, AB) - valid for any triangle
+    for sent in re.split(r"[.;]", t):
+        mp = re.search(rf"точк\w*\s+({_P})", sent)
+        if not mp:
+            continue
+        p_ = mp[1]
+        for me in re.finditer(rf"(?<![A-Za-z0-9_])({_P0})({_P0})\s*=\s*({_P0})({_P0})(?![A-Za-z0-9_])", sent):
+            e1, e2, f1, f2 = me.groups()
+            if p_ not in (e1, e2) or (e1 == e2):
+                continue
+            x_ = e1 if e2 == p_ else e2                    # centre: XP
+            if x_ not in (f1, f2) or f1 == f2:
+                continue
+            y_ = f2 if f1 == x_ else f1                    # XY, the radius point
+            mpar = re.search(rf"(?<![A-Za-z0-9_])(?:{p_}{y_}|{y_}{p_})\s*(?:∥|параллельн\w*)\s*({_P0})({_P0})"
+                             rf"(?![A-Za-z0-9_])", sent)
+            if not mpar or mpar[1] == mpar[2]:
+                continue
+            z_, w_ = mpar[1], mpar[2]
+            helper = next((n for n in "HKLMNRSTUVWYZ" if n not in B.points and n not in t
+                           and n not in {r[0] for r in rules}), None)
+            if helper:
+                rules.append((helper, "translate", [y_, z_, w_], None))
+                rules.append((p_, "line_circle_other", [y_, helper, x_, y_], None))
+                B.hidden.append(helper)
+                draw += [(a_, b_) for a_, b_ in ((x_, p_), (p_, y_))]
+            break
+
     # interior point / centre of a triangle
     m = re.search(rf"точк\w*\s+({_P})\s+(?:лежит\s+)?внутри\s+треугольник", t)
     if m and len(B.polygon) == 3:
@@ -504,7 +533,7 @@ def sketch_plan(text: str):
                       if n not in B.points), None)
             if o and B.add("circumcenter", o, [a, b, c]):
                 B.circles.append([o, a])
-                if "O" == o and "O" not in text:
+                if "O" == o and "O" not in text and not re.search(r"центр\w*\s+описанн", t):
                     B.hidden.append(o)
 
     # chords / diameters / tangents on the first circle without a polygon

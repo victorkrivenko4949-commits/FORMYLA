@@ -198,6 +198,21 @@ def _line_circle(A, B, C, D, value=None):
     return A + t * d
 
 
+def _line_circle_other(A, B, C, D, value=None):
+    """Второе пересечение прямой AB с окружностью (центр C, радиус |CD|), A на окружности.
+
+    Не зависит от порядка корней: берётся корень, отличный от A. Касание даёт A.
+    """
+    _need_distinct(A, B, "line_circle_other (прямая AB)")
+    r = _norm(D - C)
+    if r <= _ABS_EPS:
+        raise PlanError("DEGENERATE", "line_circle_other: нулевой радиус")
+    if abs(_norm(A - C) - r) > 1e-6 * max(r, 1e-12):
+        raise PlanError("DEGENERATE", "line_circle_other: A не лежит на окружности")
+    d = _unit(B - A, "line_circle_other")
+    return A - 2.0 * _dot(d, A - C) * d
+
+
 def _bisector_circumcircle(A, B, C, value=None):
     """Second intersection of the internal A-angle bisector with (ABC).
 
@@ -343,6 +358,7 @@ OPS = {
     "orthocenter": _orthocenter,
     "line_intersect": _line_intersect,
     "line_circle": _line_circle,
+    "line_circle_other": _line_circle_other,
     "circle_circle": _circle_circle,
     "bisector_point": _bisector_point,
     "bisector_circumcircle": _bisector_circumcircle,
