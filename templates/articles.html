@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Статьи | FORMYLA.net{% endblock %}
+{% block meta_description %}Статьи FORMYLA.net об олимпиадной математике: как перейти от школьной математики к олимпиадной, разборы идей и тренировка.{% endblock %}
+{% block extra_css %}
+<style>
+  .art-list{max-width:1000px;margin:0 auto;padding:36px 0 60px}
+  .art-list__head{margin-bottom:32px}
+  .art-list__head h1{margin:0 0 10px;font-size:clamp(1.9em,4.5vw,2.6em);font-weight:800;color:#fff}
+  .art-list__head p{margin:0;color:rgba(255,255,255,.78);font-size:1.08em;line-height:1.6;max-width:640px}
+  .art-card{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);background:rgba(30,41,59,.94);border:1px solid rgba(255,255,255,.09);border-radius:22px;overflow:hidden;text-decoration:none;color:#fff;transition:transform .2s,border-color .2s,box-shadow .2s}
+  .art-card:hover{transform:translateY(-3px);border-color:rgba(244,162,89,.55);box-shadow:0 18px 44px rgba(0,0,0,.4)}
+  .art-card__img{width:100%;height:100%;min-height:220px;object-fit:cover;display:block}
+  .art-card__body{padding:28px 30px;display:flex;flex-direction:column;justify-content:center;gap:12px}
+  .art-card__meta{font-size:.85em;font-weight:700;color:#94a3b8}
+  .art-card__meta b{color:#f4a259;text-transform:uppercase;letter-spacing:.1em;margin-right:6px}
+  .art-card h2{margin:0;font-size:clamp(1.3em,2.6vw,1.75em);line-height:1.2;font-weight:800;color:#fff}
+  .art-card p{margin:0;color:rgba(255,255,255,.78);line-height:1.6}
+  .art-card__more{margin-top:6px;font-weight:800;color:#f4a259}
+  @media(max-width:720px){.art-card{grid-template-columns:1fr}.art-card__img{min-height:0;height:200px}.art-card__body{padding:22px 20px}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="art-list">
+  <div class="art-list__head">
+    <h1>📰 Статьи</h1>
+    <p>Истории и разборы для тех, кто идёт к олимпиадам: как думать над задачами, с чего начинать и как не бросить.</p>
+  </div>
+  <a class="art-card" href="/articles/ot-shkoly-k-olimpiadam">
+    <img class="art-card__img" src="{{ url_for('static', filename='articles/cover-max.jpg') }}" alt="Макс перед меловым лабиринтом со светящейся дверью" width="1600" height="800" loading="lazy">
+    <div class="art-card__body">
+      <div class="art-card__meta"><b>История</b> 12 минут</div>
+      <h2>Пятёрка по математике — а на олимпиаде ноль. Что пошло не так?</h2>
+      <p>Как перейти от школьной математики к олимпиадной: четыре вопроса к любой задаче, чётность, инвариант, принцип Дирихле и тренировка на 30 задач.</p>
+      <div class="art-card__more">Читать →</div>
+    </div>
+  </a>
+</div>
+{% endblock %}

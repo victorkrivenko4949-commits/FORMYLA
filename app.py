@@ -3239,6 +3239,7 @@ def force_intake_completion():
         # Необязательная анкета: «пропустить и почитать, что за сайт»
         '/about',
         '/olympiad-start',
+        '/articles',      # Раздел «Статьи» — публичные материалы
         '/api/track/page-time',
     ):
         if path == _p or path.startswith(_p):
@@ -4168,6 +4169,22 @@ def olympiad_start():
     ведёт пропуск анкеты.
     """
     return render_template("olympiad_start.html", need_intake=_user_needs_intake())
+
+
+@app.route("/articles")
+def articles_index():
+    """Раздел «Статьи»: список материалов. Публичная страница."""
+    return render_template("articles.html")
+
+
+@app.route("/articles/ot-shkoly-k-olimpiadam")
+def article_school_to_olympiad():
+    """Статья-история «Пятёрка по математике — а на олимпиаде ноль».
+
+    Публичная страница, отдельный шаблон и собственные CSS/JS
+    (static/css/article_school_to_olympiad.css, static/js/article_school_to_olympiad.js).
+    """
+    return render_template("articles/school_to_olympiad.html")
 
 
 @app.route("/api/track/page-time", methods=["POST"])
