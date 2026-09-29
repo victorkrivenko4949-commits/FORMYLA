@@ -17,6 +17,7 @@ from typing import Any, Dict, List
 
 from models import db
 from daily_tasks.models import DailyTaskSet, DailyTaskItem
+from utils.math_text_fixer import wrap_bare_math
 
 logger = logging.getLogger(__name__)
 
@@ -150,15 +151,18 @@ def get_debt_items(user_id: int) -> List[Dict[str, Any]]:
             if _svg:
                 figure_url = _svg if _svg.startswith('/') else f'/static/daily_figures/{_svg}'
 
+        # 2026-09-29: текст прогоняем через wrap_bare_math — иначе в модалке
+        # дол видит сырую математику (x^4, \\sqrt, голые cases), в отличие от
+        # грида задач дня, где текст обёрнут в \(...\)/\[...\] ещё на выдаче.
         result.append({
             'id': item.id,
             'position': item.position,
             'subject': item.subject,
             'topic': item.topic,
             'difficulty_level': item.difficulty_level,
-            'task_text': item.task_text,
+            'task_text': wrap_bare_math(item.task_text or ''),
             'correct_answer': item.correct_answer,
-            'solution': item.solution,
+            'solution': wrap_bare_math(item.solution or ''),
             'hints': item.hints,
             'issued_date': parent.target_date.isoformat() if parent else None,
             'debt_until': item.debt_until.isoformat() if item.debt_until else None,
@@ -201,9 +205,9 @@ def get_debt_items(user_id: int) -> List[Dict[str, Any]]:
                 'subject': 'math',
                 'topic': task.subtopic or task.section,
                 'difficulty_level': task.level,
-                'task_text': task.statement or '',
+                'task_text': wrap_bare_math(task.statement or ''),
                 'correct_answer': task.answer or '',
-                'solution': task.solution or '',
+                'solution': wrap_bare_math(task.solution or ''),
                 'hints': None,
                 'issued_date': bi.issued_date.isoformat(),
                 'debt_until': (bi.issued_date + timedelta(days=DEBT_TTL_DAYS)).isoformat(),
