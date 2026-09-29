@@ -35,7 +35,16 @@
       "Измерено на чертеже: " + Number(value).toLocaleString("ru-RU", {maximumSignificantDigits: 8}) +
       ". Это не доказанный ответ.";
     el("warnings").replaceChildren();
-    const warnings = [...(data.warnings || [])];
+    // Technical codes (APPROXIMATE:, SKETCH:, ...) are for logs; users see text.
+    const warnings = (data.warnings || [])
+      .filter(w => !/^(SKETCH|SIMPLIFIED):/.test(String(w)))
+      .map(w => String(w).replace(/^[A-Z_]+:\s*/, ""));
+    const notice = {
+      approximate: "Чертёж построен, но автоматическая проверка подтвердила не всё условие. Сверьте его с текстом задачи.",
+      simplified: "Чертёж построен по упрощённой схеме: часть условий могла быть не учтена.",
+      sketch: "Показан схематичный чертёж по ключевым словам условия; пропорции условные."
+    }[data.verification];
+    if (notice) warnings.unshift(notice);
     if (data.space === "space") warnings.push("Размеры и углы вычислены в 3D. Плоская проекция может выглядеть иначе.");
     warnings.forEach(text => {
       const li = document.createElement("li"); li.textContent = text;
@@ -59,7 +68,11 @@
         if (data.status === "done" || data.status === "failed") {
           activeJob = null;
           el("submit").disabled = false;
-          if (data.result?.ok) { show(data.result); status("Чертёж готов."); }
+          if (data.result?.ok) {
+            show(data.result);
+            status(["approximate", "simplified", "sketch"].includes(data.result.verification)
+              ? "Чертёж готов (приближённый)." : "Чертёж готов.");
+          }
           else status((data.result?.detail || "Не удалось построить чертёж.") +
             (data.result?.reason ? " Код: " + data.result.reason : ""));
           return;

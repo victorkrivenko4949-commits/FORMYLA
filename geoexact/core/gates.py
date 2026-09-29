@@ -721,8 +721,17 @@ def gate_readability(plan: FigurePlan, sol: Any, *, strict: bool = True) -> Gate
     # 6) полнота: каждая точка участвует в draw или скрыта (мягко)
     used = _used_points(plan)
     hidden = set(plan.draw.hide_labels)
+    drawn = [s for s in list(plan.draw.segments) + list(plan.draw.aux_segments)
+             if len(s) >= 2 and s[0] in live and s[1] in live]
     for p in plan.points:
         if p not in used and p not in hidden:
+            # An intersection such as O = AD ∩ BE is visible on the drawn
+            # segments even when it is not an endpoint of any element.
+            if p in live and any(
+                _point_seg_dist(live[p], live[a], live[b]) <= EXACT_INCIDENCE_FRAC * span
+                for a, b, *_ in drawn
+            ):
+                continue
             warns.append(f"ORPHAN_POINT: {p} не участвует ни в одном элементе draw")
 
     score = readability_score(plan, live)

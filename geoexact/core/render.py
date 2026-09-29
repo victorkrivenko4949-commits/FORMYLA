@@ -663,7 +663,22 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
     all_px = list(visible_q.values())
 
     order = [p for p in plan.points if p in visible_q] + [p for p in visible_q if p not in set(plan.points)]
+    # An unlabeled point whose only role is the radius witness of a circle is
+    # an implementation detail: drawing its dot suggests a meaningful point.
+    other_uses = set()
+    for group in (d.segments, d.aux_segments, d.lines, d.rays, d.aux_lines, d.aux_rays,
+                  d.extensions, d.aux_extensions, d.right_angles):
+        for it in group:
+            other_uses.update(it)
+    for m in list(d.angle_marks) + list(d.length_marks) + list(d.equal_marks):
+        other_uses.update(m.get("pts") or [])
+    other_uses.update(c[0] for c in list(d.circles) + list(d.aux_circles) if c)
+    other_uses.update(d.aux_points)
+    radius_only = {c[1] for c in list(d.circles) + list(d.aux_circles) if len(c) > 1} \
+        & hidden - other_uses
     for name in order:
+        if name in radius_only:
+            continue
         px, py = Q[name]
         layer = "aux" if name in aux_only else "main"
         labels.append(f'<circle class="pt" data-point="{_esc(name)}" data-layer="{layer}" '

@@ -490,6 +490,20 @@ def proof_equality(text: str) -> tuple[str, str] | None:
     return (match[1].upper(), match[2].upper()) if match else None
 
 
+_OPERATOR_BEFORE = re.compile(r"[:/·*×+\-^∙]\s*$")
+_OPERATOR_AFTER = re.compile(r"^(?:\s*[:/·*×+\-^∙]|[A-Za-zА-Яа-я(√])")
+
+
+def _plain_relation(text: str, start: int, end: int) -> bool:
+    """True for a bare 'XY = value' claim, not a term of a ratio/expression.
+
+    'BD : DC = 1 : 2' must not be read as DC = 1, and
+    'BD : DC = AE : EC' must not be read as DC = AE.
+    """
+    return not (_OPERATOR_BEFORE.search(text[max(0, start - 6):start])
+                or _OPERATOR_AFTER.match(text[end:end + 3]))
+
+
 def _statement_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
     """Check explicitly named 2D relationships independent of the LLM plan.
 
@@ -507,6 +521,10 @@ def _statement_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
         text, re.I,
     ):
         left, right = match[1].upper(), match[2].upper()
+        end = match.start() + len(re.match(r"[A-Z]{2}\s*=\s*[A-Z]{2}",
+                                           text[match.start():], re.I)[0])
+        if not _plain_relation(text, match.start(), end):
+            continue
         names = set(left + right)
         if not names <= P.keys():
             fails.append(f"отсутствуют точки равенства {left}={right}")
@@ -521,7 +539,7 @@ def _statement_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
         r"(?<![A-Z_])([A-Z]{2})\s*=\s*(\d+(?:[.,]\d+)?)\b", text, re.I,
     ):
         name, expected = match[1].upper(), numeric_mark_value(match[2])
-        if expected is None:
+        if expected is None or not _plain_relation(text, match.start(), match.end()):
             continue
         if not set(name) <= P.keys():
             fails.append(f"отсутствуют точки заданной длины {name}")
