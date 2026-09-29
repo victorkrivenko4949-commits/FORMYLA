@@ -52,6 +52,7 @@ class Result:
     cost_uncertain: bool = False
     verification: str = "constraints_only"
     measurement_range: list[float] = field(default_factory=list)
+    expert_status: str = ""                              # OK or why the expert gave nothing
     expert_history: list = field(default_factory=list)   # chat with the expert, for «another»
 
     def brief(self) -> str:
@@ -268,6 +269,13 @@ class _AuxJob:
         finally:
             slot["done"].set()
 
+    def expert_status(self) -> str:
+        slot = self.slots["expert"]
+        if not slot["done"].is_set():
+            return "TIME_LIMIT"
+        exc = slot["error"]
+        return "OK" if exc is None else str(getattr(exc, "code", "") or type(exc).__name__)
+
     def answers(self, main_budget=None):
         """Usable answers in order of preference: [(name, data)]."""
         stop = min(self.deadline - 4, self.started + self.EXPERT_WAIT)
@@ -302,8 +310,10 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
                                     _norm(problem), deadline - 6, history)
         result = _generate(problem, with_aux, **kwargs)
         job = _AUXJOB.value
-        if job is not None and job.history_out:
-            result.expert_history = job.history_out
+        if job is not None:
+            result.expert_status = job.expert_status()
+            if job.history_out:
+                result.expert_history = job.history_out
         return result
     except (KeyboardInterrupt, SystemExit):
         raise

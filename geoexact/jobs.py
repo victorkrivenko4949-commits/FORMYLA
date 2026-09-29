@@ -166,6 +166,15 @@ class Queue:
         return {"status": row.status,
                 "result": json.loads(row.payload) if row.payload else None}
 
+    def last_done(self, owner):
+        """Newest successful job of this owner that is still stored."""
+        with self.engine.connect() as c:
+            row = c.execute(select(jobs.c.id).where(
+                jobs.c.owner == owner, jobs.c.status == "done",
+                jobs.c.created > time.time() - 7 * 86400
+            ).order_by(jobs.c.created.desc()).limit(1)).first()
+        return row.id if row else None
+
     def claim(self):
         now = time.time()
         with self.engine.begin() as c:
@@ -199,6 +208,11 @@ class Queue:
             return False
         try:
             payload = self.runner(row["problem"], bool(row["with_aux"]))
+            if isinstance(payload, dict) and payload.get("ok"):
+                # The result is the user's own; it is kept 7 days so a refresh (or another
+                # device) shows the drawing together with its condition.
+                payload = dict(payload, problem_text=unwrap_problem(row["problem"])[0][:12000],
+                               with_aux=bool(row["with_aux"]))
         except Exception:
             payload = failure("WORKER_ERROR",
                 "Не удалось завершить генерацию. Автоматического повторения не было.")
