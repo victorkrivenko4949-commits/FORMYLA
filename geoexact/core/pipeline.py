@@ -464,6 +464,20 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
         from .annotations import enrich_annotations
         plain_plan = plan
         plan = enrich_annotations(plan, sol, with_aux=with_aux, problem_text=text)
+        # Given ratios as x / 2x marks, and in the auxiliary mode the standard
+        # parallel line for crossing cevians. Best effort: never breaks the drawing.
+        try:
+            from .ratios import add_parallel_aux, add_ratio_marks
+            from .solver import Solution as _Solution
+            marked = add_ratio_marks(plan, sol.coords, text)
+            if with_aux:
+                marked, extra = add_parallel_aux(marked, sol, text)
+                if len(extra) != len(sol.coords):
+                    sol = _Solution(coords=extra, residual=sol.residual, ok=sol.ok,
+                                    reason=sol.reason)
+            plan = marked
+        except Exception:  # noqa: BLE001
+            pass
         from .completion import complete_intersection_support
         plan, completion_warn = complete_intersection_support(plan, sol)
         warn.extend(completion_warn)
