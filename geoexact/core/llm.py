@@ -598,15 +598,19 @@ def _declare_helper_points(d) -> None:
 def aux_plan(sess, problem: str, figure: str, budget: Budget, deep: bool = True) -> dict:
     """Separate, small request: only the auxiliary construction for a built figure."""
     from .auxplan import SYS_AUXPLAN
-    user = f"Условие задачи:\n{problem}\n\nУже построенный чертёж:\n{figure}"
+    # The request wording is the user's own, proven fast formulation.
+    user = (f'Задача: "{problem}"\n'
+            "Здесь скорее всего есть доп. построения. Напиши только доп. построения, "
+            "которые нужно сделать, чтобы решить эту задачу, и проверь, что они самые "
+            "оптимальные. Ответь JSON по формату из системной инструкции.\n\n"
+            f"Чертёж: {figure}")
     # The strongest model with reasoning: the auxiliary construction is the hard
     # mathematical step, and reasoning tokens count toward max_tokens.
     # deep=False is the quick answer without reasoning, used when the reasoning
     # request does not finish in time.
     model, max_out = "deepseek-v4-pro", (12000 if deep else 6000)
     bound = len((SYS_AUXPLAN + user).encode("utf-8")) + 512
-    if not budget.can_afford(model, max_out, bound):
-        model, max_out = "deepseek-v4-flash", max_out
+    # Always the pro model (no silent downgrade); an unaffordable call raises BUDGET_EXCEEDED.
     txt, _ = _chat(sess, model, SYS_AUXPLAN, user, max_out, "aux-plan", budget,
                    thinking=deep, reason=deep)
     return _parse_json(txt)
