@@ -1,0 +1,202 @@
+"""The auxiliary layer: deterministic trapezoid rule, model steps, and validation."""
+import copy
+
+import numpy as np
+import pytest
+
+from geoexact.core import auxplan, llm
+from geoexact.core.pipeline import generate
+from geoexact.core.schema import FigurePlan
+from geoexact.core.solver import solve
+
+TRAP = ("В трапеции ABCD основания AD и BC. Диагонали AC = 6 и BD = 8, средняя линия равна 5.\n\n"
+        "Найдите:\n\n1. Угол между диагоналями.\n\n2. Площадь трапеции.\n\n3. Высоту трапеции.")
+
+
+def trap_plan(with_mid_aux=True):
+    return FigurePlan.from_dict({
+        "points": list("ABCDMN"),
+        "constructions": [{"op": "free_point", "out": n} for n in "ABCD"] + [
+            {"op": "midpoint", "out": "M", "args": ["A", "B"]},
+            {"op": "midpoint", "out": "N", "args": ["C", "D"]}],
+        "constraints": [{"type": "parallel", "args": ["A", "D", "B", "C"]},
+                        {"type": "dist", "args": ["A", "C"], "value": 6},
+                        {"type": "dist", "args": ["B", "D"], "value": 8},
+                        {"type": "dist", "args": ["M", "N"], "value": 5}],
+        "draw": {"segments": [["A", "B"], ["B", "C"], ["C", "D"], ["D", "A"], ["A", "C"], ["B", "D"]],
+                 "aux_segments": [["M", "N"]] if with_mid_aux else []},
+        "scale_free": True})
+
+
+@pytest.fixture
+def model(monkeypatch):
+    monkeypatch.setattr(llm, "classify", lambda *_: {"ok": True, "class": "M", "space": "plane"})
+
+    def set_plan(plan, aux=None):
+        monkeypatch.setattr(llm, "formalize", lambda *_, **__: (copy.deepcopy(plan), []))
+        if aux is None:
+            def fail(*_, **__):
+                raise AssertionError("the model must not be asked here")
+            monkeypatch.setattr(llm, "aux_plan", fail)
+        else:
+            monkeypatch.setattr(llm, "aux_plan", lambda *_, **__: aux)
+    return set_plan
+
+
+def solved(plan_dict):
+    plan = FigurePlan.from_dict(plan_dict)
+    sol = next(s for s in solve(plan, n_seeds=6) if s.ok)
+    return {k: np.asarray(v, float) for k, v in sol.coords.items()}
+
+
+def test_trapezoid_diagonal_is_translated_even_if_model_drew_only_midline(model):
+    model(trap_plan())
+    r = generate(TRAP, True, sess=object(), use_cache=False)
+    assert r.ok and r.verification == "constraints_only"
+    d = r.plan["draw"]
+    assert ["C", "E"] in d["aux_segments"] and ["D", "E"] in d["aux_segments"]
+    P = solved(r.plan)
+    cross = lambda u, v: u[0] * v[1] - u[1] * v[0]
+    assert abs(cross(P["E"] - P["A"], P["D"] - P["A"])) < 1e-8         # E on line AD
+    assert np.allclose(P["E"], P["D"] + (P["C"] - P["B"]))             # BD moved by BC
+    assert np.linalg.norm(P["C"] - P["E"]) == pytest.approx(np.linalg.norm(P["B"] - P["D"]))
+    ticks = {frozenset(m["pts"]) for m in d["equal_marks"]}
+    assert {frozenset("BD"), frozenset("CE")} <= ticks
+    assert r.plan["notes"] == "" or "диагонал" in r.plan["notes"].lower()
+
+
+def test_trapezoid_rule_absent_in_plain_mode(model):
+    model(trap_plan(False))
+    r = generate(TRAP, False, sess=object(), use_cache=False)
+    assert "E" not in r.plan["points"]
+
+
+def test_trapezoid_bases_ab_cd_are_rotated():
+    plan = trap_plan()
+    text = "В трапеции ABCD основания AB и CD. Диагонали AC = 6 и BD = 8."
+    coords = {"A": np.array([0., 0.]), "B": np.array([4., 0.]), "C": np.array([3., 2.]),
+              "D": np.array([1., 2.]), "M": np.array([2., 0.]), "N": np.array([2., 2.])}
+    data = auxplan.trapezoid_diagonals(plan, coords, text)
+    step = data["steps"][0]
+    assert step["op"] == "translate" and step["args"] == ["A", "C", "D"]      # bases BA and CD
+    plan2, out = auxplan.apply_aux(plan, coords, data)
+    assert np.allclose(out["E"], [-1., 0.]) or np.allclose(out["E"], coords["A"] + coords["D"] - coords["C"])
+
+
+def test_model_steps_median_doubling(model):
+    plan = FigurePlan.from_dict({
+        "points": list("ABCM"),
+        "constructions": [{"op": "free_point", "out": n} for n in "ABC"] + [
+            {"op": "midpoint", "out": "M", "args": ["B", "C"]}],
+        "constraints": [{"type": "dist", "args": ["A", "B"], "value": 5},
+                        {"type": "dist", "args": ["A", "C"], "value": 7},
+                        {"type": "dist", "args": ["A", "M"], "value": 4}],
+        "draw": {"segments": [["A", "B"], ["B", "C"], ["C", "A"], ["A", "M"]]}, "scale_free": True})
+    aux = {"idea": "Удвоение медианы", "steps": [{"op": "reflect_point", "out": "D", "args": ["A", "M"]}],
+           "aux_segments": [["B", "D"], ["C", "D"]]}      # the model forgot the segment MD
+    model(plan, aux)
+    r = generate("В треугольнике ABC AB = 5, AC = 7, медиана AM = 4. Найдите BC.", True,
+                 sess=object(), use_cache=False)
+    d = r.plan["draw"]
+    assert ["M", "D"] in d["aux_segments"]                # the continuation is added
+    P = solved(r.plan)
+    assert np.allclose(P["D"], 2 * P["M"] - P["A"])
+    assert np.allclose(P["A"] + P["D"], P["B"] + P["C"])  # ABDC is a parallelogram
+    labels = {frozenset(m["pts"]): m["text"] for m in d["length_marks"] if "text" in m}
+    assert labels.get(frozenset("MD")) == labels.get(frozenset("AM"))     # same length label
+
+
+@pytest.mark.parametrize("bad", [
+    None, "text", [], {}, {"steps": []}, {"steps": "x"},
+    {"steps": [{"op": "midpoint", "out": "D", "args": ["A"]}]},                       # arity
+    {"steps": [{"op": "eval", "out": "D", "args": ["A", "B"]}]},                      # unknown op
+    {"steps": [{"op": "midpoint", "out": "A", "args": ["B", "C"]}]},                  # name taken
+    {"steps": [{"op": "midpoint", "out": "d", "args": ["B", "C"]}]},                  # bad name
+    {"steps": [{"op": "midpoint", "out": "D", "args": ["B", "Z"]}]},                  # unknown point
+    {"steps": [{"op": "midpoint", "out": "D", "args": ["B", "C"]}]},                  # no primitives
+    {"steps": [{"op": "midpoint", "out": "D", "args": ["A", "A"]}], "aux_segments": [["A", "D"]]},
+    {"steps": [{"op": "divide_segment", "out": "D", "args": ["A", "B"], "value": "x"}],
+     "aux_segments": [["A", "D"]]},
+    {"steps": [{"op": "divide_segment", "out": "D", "args": ["A", "B"], "value": 1e9}],
+     "aux_segments": [["A", "D"]]},
+    {"steps": [{"op": "divide_segment", "out": "D", "args": ["A", "B"], "value": float("nan")}],
+     "aux_segments": [["A", "D"]]},
+    {"steps": [{"op": "homothety", "out": "D", "args": ["A", "B"], "value": 4}],
+     "aux_segments": [["A", "D"]]},                                                    # far away
+    {"steps": [{"op": "line_intersect", "out": "D", "args": ["A", "B", "A", "B"]}],
+     "aux_segments": [["A", "D"]]},                                                    # parallel
+    {"steps": [{"op": "midpoint", "out": f"P{i}", "args": ["A", "B"]} for i in range(9)],
+     "aux_segments": [["A", "P1"]]},                                                   # too many
+    {"steps": [{"op": "midpoint", "out": "D", "args": ["D", "B"]}], "aux_segments": [["B", "D"]]},
+])
+def test_invalid_aux_data_is_rejected(bad):
+    coords = {"A": np.array([0., 0.]), "B": np.array([4., 0.]), "C": np.array([1., 3.])}
+    plan = FigurePlan.from_dict({"points": list("ABC"),
+                                 "constructions": [{"op": "free_point", "out": n} for n in "ABC"],
+                                 "draw": {"segments": [["A", "B"], ["B", "C"], ["C", "A"]]},
+                                 "scale_free": True})
+    assert auxplan.apply_aux(plan, coords, bad) is None
+
+
+def test_coincident_point_is_rejected():
+    coords = {"A": np.array([0., 0.]), "B": np.array([4., 0.]), "C": np.array([1., 3.])}
+    plan = FigurePlan.from_dict({"points": list("ABC"),
+                                 "constructions": [{"op": "free_point", "out": n} for n in "ABC"],
+                                 "draw": {"segments": [["A", "B"]]}, "scale_free": True})
+    same = {"steps": [{"op": "reflect_point", "out": "D", "args": ["A", "A"]}],
+            "aux_segments": [["A", "D"]]}
+    assert auxplan.apply_aux(plan, coords, same) is None
+
+
+@pytest.mark.parametrize("failure", [
+    lambda *_, **__: (_ for _ in ()).throw(llm.PlanError("NETWORK_UNCERTAIN", "нет")),
+    lambda *_, **__: (_ for _ in ()).throw(RuntimeError("boom")),
+    lambda *_, **__: "not json",
+    lambda *_, **__: {"steps": [{"op": "eval"}]},
+])
+def test_planner_failure_keeps_main_figure(monkeypatch, failure):
+    monkeypatch.setattr(llm, "classify", lambda *_: {"ok": True, "class": "M", "space": "plane"})
+    plan = FigurePlan.from_dict({
+        "points": list("ABC"), "constructions": [{"op": "free_point", "out": n} for n in "ABC"],
+        "constraints": [{"type": "dist", "args": ["A", "B"], "value": 5},
+                        {"type": "dist", "args": ["B", "C"], "value": 6},
+                        {"type": "dist", "args": ["A", "C"], "value": 7}],
+        "draw": {"segments": [["A", "B"], ["B", "C"], ["C", "A"]]}, "scale_free": True})
+    monkeypatch.setattr(llm, "formalize", lambda *_, **__: (plan, []))
+    monkeypatch.setattr(llm, "aux_plan", failure)
+    r = generate("Треугольник ABC со сторонами 5, 6, 7.", True, sess=object(), use_cache=False)
+    assert r.ok and r.verification == "constraints_only" and r.plan["draw"]["aux_segments"] == []
+
+
+def test_planner_not_called_in_plain_mode_or_when_model_drew_aux(monkeypatch, model):
+    calls = []
+    plan = trap_plan(True)
+    model(plan, None)
+    monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: calls.append(1) or {})
+    generate("Треугольник ABC со сторонами 5, 6, 7.", False, sess=object(), use_cache=False)
+    generate("Дана трапеция ABCD, MN — средняя линия.", True, sess=object(), use_cache=False)
+    assert calls == []
+
+
+def test_collapsed_model_drawing_falls_back_to_sketch_with_construction(model):
+    plan = trap_plan()
+    plan.constraints.extend(FigurePlan.from_dict({
+        "points": ["A", "B", "C", "D"], "constructions": [],
+        "constraints": [{"type": "on_segment", "args": ["B", "A", "D"]},
+                        {"type": "on_segment", "args": ["C", "B", "C"]}]}).constraints)
+    model(plan, {"steps": []})
+    r = generate(TRAP, True, sess=object(), use_cache=False)
+    assert r.ok
+    d = r.plan["draw"]
+    if r.verification == "sketch":
+        assert {frozenset(s) for s in d["segments"]} >= {frozenset("AC"), frozenset("BD")}
+        assert "E" in r.plan["points"]
+        ticks = {frozenset(m["pts"]) for m in d["equal_marks"]}
+        assert {frozenset("BD"), frozenset("CE")} <= ticks
+
+
+def test_sketch_draws_both_named_diagonals():
+    from geoexact.core.sketch import sketch_plan
+    plan, _ = sketch_plan(TRAP)
+    segs = {frozenset(s) for s in plan.draw.segments}
+    assert frozenset("AC") in segs and frozenset("BD") in segs

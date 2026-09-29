@@ -567,6 +567,14 @@ def sketch_plan(text: str):
             and not re.search(rf"диагонал\w*\s+{_PP}", t):
         a, b, c, d = B.polygon
         B.seg(a, c), B.seg(b, d)
+    # "Диагонали AC = 6 и BD = 8": every named diagonal of the polygon in the clause
+    if len(B.polygon) == 4:
+        opposite = {frozenset((B.polygon[0], B.polygon[2])), frozenset((B.polygon[1], B.polygon[3]))}
+        for m in re.finditer(r"диагонал\w*([^.;,]*)", t):
+            for pq in re.findall(rf"(?<![A-Za-z0-9_])({_PP})", m[1]):
+                for a_, b_ in _pairs(pq):
+                    if frozenset((a_, b_)) in opposite:
+                        B.seg(a_, b_)
     # angles and asked segments: "угол AEF", "∠BOC", "найдите BM"
     for m in re.finditer(rf"(?:∠|уг(?:о)?л\w*\s+)\s*({_P0})({_P0})({_P0})(?![A-Za-z0-9_])", t):
         a, o, b = m.group(1, 2, 3)

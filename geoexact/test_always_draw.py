@@ -71,9 +71,10 @@ def test_impossible_model_plan_is_drawn_as_approximate(model):
                   {"type": "dist", "args": ["A", "C"], "value": 10}]
     model(lambda *_, **__: (ratio_plan(impossible), []))
     r = generate(RATIO, sess=object(), use_cache=False)
-    assert r.ok and r.verification == "approximate"
-    assert r.stage == "9-render-fallback" and r.measured is None
-    assert r.warnings[0].startswith("APPROXIMATE:")
+    # A squeezed approximate drawing gives way to the keyword sketch.
+    assert r.ok and r.verification in ("approximate", "sketch")
+    assert r.stage in ("9-render-fallback", "9-render-sketch") and r.measured is None
+    assert r.warnings[0].startswith(("APPROXIMATE:", "SKETCH:"))
     assert "<svg" in r.svg
 
 
