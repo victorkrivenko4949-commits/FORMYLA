@@ -133,4 +133,53 @@
   window.addEventListener('pagehide', function () { flush(true); });
 })();
 </script>
+<div id="artNext" role="status" aria-live="polite" hidden style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;width:min(92vw,520px);background:rgba(15,23,42,0.97);border:1px solid rgba(244,162,89,0.55);border-radius:16px;padding:16px 18px;box-shadow:0 18px 50px rgba(0,0,0,0.55);color:#fff;">
+  <div style="font-weight:800;margin-bottom:4px;">Дальше — история про то, как думать над задачами</div>
+  <div style="color:rgba(255,255,255,0.78);font-size:0.95em;line-height:1.5;margin-bottom:12px;">Переходим к статье «Пятёрка по математике — а на олимпиаде ноль» через <b id="artNextSec">5</b> с.</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <a href="/articles/ot-shkoly-k-olimpiadam" style="padding:10px 18px;border-radius:10px;background:#f4a259;color:#14213d;font-weight:800;text-decoration:none;">Открыть сейчас</a>
+    <button type="button" id="artNextStay" style="padding:10px 18px;border-radius:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:700;cursor:pointer;">Остаться здесь</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ARTICLE_NEXT_V1: после 60 секунд активного чтения этой страницы
+  // предлагаем статью и через 5 секунд переходим к ней (можно отменить).
+  // Срабатывает один раз на устройство, чтобы не «выгонять» при повторных заходах.
+  var TARGET = '/articles/ot-shkoly-k-olimpiadam';
+  var KEY = 'ft_start_to_article_done';
+  try { if (localStorage.getItem(KEY)) return; } catch (e) {}
+  var box = document.getElementById('artNext');
+  var secEl = document.getElementById('artNextSec');
+  var stay = document.getElementById('artNextStay');
+  if (!box) return;
+  var active = 0, countdown = null, cancelled = false;
+  function markDone() { try { localStorage.setItem(KEY, '1'); } catch (e) {} }
+  var timer = setInterval(function () {
+    if (document.visibilityState !== 'visible') return;
+    active += 1;
+    if (active >= 60) {
+      clearInterval(timer);
+      markDone();
+      var left = 5;
+      secEl.textContent = left;
+      box.hidden = false;
+      countdown = setInterval(function () {
+        left -= 1;
+        secEl.textContent = Math.max(left, 0);
+        if (left <= 0) {
+          clearInterval(countdown);
+          if (!cancelled) window.location.href = TARGET;
+        }
+      }, 1000);
+    }
+  }, 1000);
+  stay.addEventListener('click', function () {
+    cancelled = true;
+    if (countdown) clearInterval(countdown);
+    box.hidden = true;
+  });
+})();
+</script>
 {% endblock %}
