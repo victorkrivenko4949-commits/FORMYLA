@@ -178,6 +178,45 @@ def _pair_list(value, known, limit=8):
     return out[:limit]
 
 
+_SEG = r"([A-Z][A-Z0-9_']?)\s*([A-Z][A-Z0-9_']?)"
+
+
+def claims_hold(idea: str, coords: dict) -> bool:
+    """Numerically check equalities and parallelism the model states in words.
+
+    Only explicit claims about named points are checked («DG = BD», «EF ∥ CD»); a
+    claim that mentions an unknown point is ignored. False means the drawing
+    contradicts the model's own description, so it must not be shown.
+    """
+    if not isinstance(idea, str) or not idea:
+        return True
+    pt = {k: np.asarray(v, float) for k, v in coords.items()}
+    span = max((float(np.linalg.norm(a - b)) for a in pt.values() for b in pt.values()),
+               default=0.0)
+    if span <= 1e-9:
+        return True
+
+    def seg(a, b):
+        return (pt[a], pt[b]) if a in pt and b in pt else None
+
+    for m in re.finditer(rf"(?<![A-Za-z]){_SEG}\s*=\s*{_SEG}(?!\s*[=+\-*/\d])", idea):
+        s1, s2 = seg(m[1], m[2]), seg(m[3], m[4])
+        if s1 is None or s2 is None:
+            continue
+        l1, l2 = float(np.linalg.norm(s1[0] - s1[1])), float(np.linalg.norm(s2[0] - s2[1]))
+        if abs(l1 - l2) > 1e-3 * span:
+            return False
+    for m in re.finditer(rf"(?<![A-Za-z]){_SEG}\s*(?:∥|\|\||параллельн\w*)\s*{_SEG}", idea):
+        s1, s2 = seg(m[1], m[2]), seg(m[3], m[4])
+        if s1 is None or s2 is None:
+            continue
+        d1, d2 = s1[1] - s1[0], s2[1] - s2[0]
+        n1, n2 = float(np.linalg.norm(d1)), float(np.linalg.norm(d2))
+        if n1 > 1e-9 and n2 > 1e-9 and abs(d1[0] * d2[1] - d1[1] * d2[0]) > 1e-3 * n1 * n2:
+            return False
+    return True
+
+
 def apply_aux(plan, coords: dict, data) -> tuple | None:
     """Validate and execute an auxiliary plan. Returns (plan, coords) or None."""
     if not isinstance(data, dict) or not isinstance(data.get("steps"), list):

@@ -172,6 +172,8 @@ def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
             base = _strip_aux(plan) if getattr(_AUXJOB, "special", False) else plan
             for _name, data in answers:
                 applied = auxplan.apply_aux(base, coords, data)
+                if applied is not None and not auxplan.claims_hold(data.get("idea", ""), applied[1]):
+                    applied = None      # the words say one thing, the drawing another
                 asked = bool(data.get("steps") or data.get("aux_segments")
                              or data.get("aux_lines") or data.get("aux_circles"))
                 if applied is not None or not asked:
@@ -184,8 +186,11 @@ def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
                     model_failed = True
         elif not budget.uncertain and time.time() - t_start < TIME_LIMIT - 40:
             try:
-                data = L.aux_plan(sess, text, auxplan.describe_figure(plan, coords), budget)
+                data = L.aux_plan(sess, text, auxplan.describe_figure(plan, coords), budget,
+                                  deep=False)          # never a long reasoning request here
                 applied = auxplan.apply_aux(plan, coords, data)
+                if applied is not None and not auxplan.claims_hold(data.get("idea", ""), applied[1]):
+                    applied = None
                 # An empty or refused answer is the model's decision ("not needed");
                 # only a failed request or unusable steps fall back to the rules.
                 asked = isinstance(data, dict) and bool(
@@ -276,8 +281,10 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
         L.set_deadline(deadline)
         _AUXJOB.value = None
         _AUXJOB.special = False
-        if with_aux and isinstance(problem, str) and problem.strip() and kwargs.get("sess") is not None:
-            _AUXJOB.value = _AuxJob(kwargs["sess"], _norm(problem), deadline - 6)
+        if with_aux and isinstance(problem, str) and problem.strip():
+            # The production worker passes no session; the job needs its own anyway.
+            _AUXJOB.value = _AuxJob(kwargs.get("sess") or L.make_session(),
+                                    _norm(problem), deadline - 6)
         return _generate(problem, with_aux, **kwargs)
     except (KeyboardInterrupt, SystemExit):
         raise
