@@ -183,3 +183,20 @@ def test_aux_data_without_new_points_is_accepted():
                                "draw": {"segments": [["A", "B"]]}, "scale_free": True})
     out = auxplan.apply_aux(pl, coords, {"idea": "x", "steps": [], "aux_segments": [["B", "C"]]})
     assert out is not None and ["B", "C"] in out[0].draw.aux_segments
+
+
+def test_no_dimension_brackets_on_split_segments():
+    from geoexact.core.render import render_svg
+    from geoexact.core.solver import Solution
+    pl = FigurePlan.from_dict({
+        "points": list("ABCD"),
+        "constructions": [{"op": "free_point", "out": n} for n in "ABC"] + [
+            {"op": "midpoint", "out": "D", "args": ["A", "B"]}],
+        "draw": {"segments": [["A", "B"], ["B", "C"], ["C", "A"]],
+                 "equal_marks": [{"pts": ["A", "B"], "count": 1}, {"pts": ["B", "C"], "count": 1},
+                                 {"pts": ["B", "C"], "count": 2}, {"pts": ["A", "C"], "count": 2}]},
+        "scale_free": True})
+    coords = execute(pl, free_values=np.array([0, 0, 4, 0, 1., 3.]))
+    svg = render_svg(pl, Solution(coords=coords, residual=0.0, ok=True), gate=None, show_aux=False)
+    assert "data-kind=\"span\"" not in svg
+    assert svg.count('class="tick"') == 4       # only the 2-tick group (BC = AC); no lone tick
