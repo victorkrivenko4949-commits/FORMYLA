@@ -48,7 +48,8 @@ rotate(A,O,value=градусы) — поворот A вокруг O проти�
 circumcenter(A,B,C), incenter(A,B,C), centroid(A,B,C), orthocenter(A,B,C)."""
 
 SYS_AUXPLAN = """Ты помогаешь оформить чертёж школьной или олимпиадной геометрической задачи.
-Основной чертёж по условию УЖЕ построен и проверен. Твоя задача — ТОЛЬКО указать
+Основной чертёж по условию УЖЕ построен и проверен. Если в описании чертежа приведено
+построение, которое модель уже описала словами, нарисуй именно его. Твоя задача — ТОЛЬКО указать
 дополнительное построение, которое сделал бы хороший учитель при решении: то, что
 сводит задачу к известной конфигурации (параллельный перенос диагонали или стороны,
 удвоение медианы, параллельная прямая через точку, продолжение стороны, симметрия,
@@ -75,6 +76,15 @@ SYS_AUXPLAN = """Ты помогаешь оформить чертёж школ�
 5. Не пиши решение и ответ, не выдумывай данных, только построение."""
 
 
+_CUE = re.compile(r"провед|продол|достро|параллел|перенес|сдвин|симметр|удво|отложим|отметим|"
+                  r"опустим|высот[уа]|пересеч|описан|вписан|соедин|построим", re.I)
+
+
+def mentions_construction(notes) -> bool:
+    """Does the model's own text describe an auxiliary construction?"""
+    return isinstance(notes, str) and bool(_CUE.search(notes))
+
+
 def describe_figure(plan, coords) -> str:
     lines = ["Точки чертежа (имя: способ построения):"]
     by_out = {c.out: c for c in plan.constructions if c.out}
@@ -88,6 +98,9 @@ def describe_figure(plan, coords) -> str:
         lines.append("Нарисованы отрезки: " + ", ".join("".join(s) for s in plan.draw.segments))
     if plan.draw.circles:
         lines.append("Окружности [центр, точка]: " + ", ".join("".join(c) for c in plan.draw.circles))
+    if plan.notes and mentions_construction(plan.notes):
+        lines.append("Как модель уже описала построение (нарисуй именно его, если оно осмысленно): "
+                     + plan.notes[:600])
     return "\n".join(lines)
 
 
@@ -244,8 +257,8 @@ def apply_aux(plan, coords: dict, data) -> tuple | None:
     draw.aux_extensions += [e for e in extensions if e not in draw.aux_extensions]
     draw.aux_lines += lines
     draw.aux_circles += circles
-    if data.get("idea") and isinstance(data["idea"], str) and not plan.notes:
-        plan.notes = data["idea"][:300]
+    if data.get("idea") and isinstance(data["idea"], str):
+        plan.notes = data["idea"][:300]     # the text always matches what is drawn
     _verified_ticks(plan, known, new)
     return plan, known
 
