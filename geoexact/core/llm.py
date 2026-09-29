@@ -332,8 +332,9 @@ ok: false только если текст вообще не про геомет
 
 def _chat(sess, model: str, system: str, user: str, max_out: int,
           stage: str, budget: Budget, temperature: float = 0.0,
-          thinking: bool = False) -> tuple[str, Usage]:
-    # thinking здесь больше не управляет запросом: см. _THINKING_FIX ниже.
+          thinking: bool = False, reason: bool = False) -> tuple[str, Usage]:
+    # thinking по-прежнему не управляет запросом (см. _THINKING_FIX ниже);
+    # reason=True включает режим рассуждения явно, только для доп. построения.
     input_bound = len((system + user).encode("utf-8")) + 512
     if not budget.can_afford(model, max_out, input_bound):
         raise PlanError("BUDGET_EXCEEDED", f"остаток ${budget.left:.4f} не покрывает вызов {model}")
@@ -355,7 +356,9 @@ def _chat(sess, model: str, system: str, user: str, max_out: int,
                             {"role": "user", "content": user}],
                "response_format": {"type": "json_object"}}
     if model not in _THINKING_UNSUPPORTED:
-        payload["thinking"] = {"type": "disabled"}
+        payload["thinking"] = {"type": "enabled" if reason else "disabled"}
+        if reason:
+            payload.pop("temperature", None)     # ignored in reasoning mode
     try:
         r = _post_limited(sess, payload)
     except requests.RequestException as e:
@@ -586,12 +589,18 @@ def _declare_helper_points(d) -> None:
         return
 
 
-def aux_plan(sess, problem: str, figure: str, budget: Budget) -> dict:
+def aux_plan(sess, problem: str, figure: str, budget: Budget, deep: bool = True) -> dict:
     """Separate, small request: only the auxiliary construction for a built figure."""
     from .auxplan import SYS_AUXPLAN
     user = f"Условие задачи:\n{problem}\n\nУже построенный чертёж:\n{figure}"
-    model, max_out = "deepseek-v4-pro", 6000
-    if not budget.can_afford(model, max_out, len((SYS_AUXPLAN + user).encode("utf-8")) + 512):
-        model, max_out = "deepseek-v4-flash", 6000
-    txt, _ = _chat(sess, model, SYS_AUXPLAN, user, max_out, "aux-plan", budget, thinking=True)
+    # The strongest model with reasoning: the auxiliary construction is the hard
+    # mathematical step, and reasoning tokens count toward max_tokens.
+    # deep=False is the quick answer without reasoning, used when the reasoning
+    # request does not finish in time.
+    model, max_out = "deepseek-v4-pro", (12000 if deep else 6000)
+    bound = len((SYS_AUXPLAN + user).encode("utf-8")) + 512
+    if not budget.can_afford(model, max_out, bound):
+        model, max_out = "deepseek-v4-flash", max_out
+    txt, _ = _chat(sess, model, SYS_AUXPLAN, user, max_out, "aux-plan", budget,
+                   thinking=deep, reason=deep)
     return _parse_json(txt)
