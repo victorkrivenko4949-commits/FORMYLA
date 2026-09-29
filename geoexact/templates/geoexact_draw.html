@@ -8,6 +8,7 @@
 <section id="geoexact" class="gx" data-api="{{ url_for('geoexact.submit') }}"
          data-active="{{ url_for('geoexact.active') }}"
          data-recognize="{{ url_for('geoexact.recognize_photo') }}"
+         data-user="{{ current_user.get_id() if current_user.is_authenticated else '' }}"
          data-csrf="{{ geoexact_csrf }}">
   <header><p class="gx-kicker">ГЕОМЕТРИЯ · FORMYLA</p>
     <h1>Чертёж по условию</h1>

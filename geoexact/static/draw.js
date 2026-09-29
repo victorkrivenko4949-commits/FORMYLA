@@ -11,6 +11,17 @@
   // видит её же в читаемом виде без LaTeX.
   let recognized = null;
   const status = text => { el("status").textContent = text; };
+  // Обновление страницы не должно терять условие, режим и готовый чертёж: текст и
+  // номер последнего готового задания хранятся в браузере, сам результат — на сервере.
+  const storeKey = "gx-state:" + (root.dataset.user || "");
+  const loadState = () => {
+    try { return JSON.parse(localStorage.getItem(storeKey)) || {}; } catch (e) { return {}; }
+  };
+  const saveState = patch => {
+    try { localStorage.setItem(storeKey, JSON.stringify(Object.assign(loadState(), patch))); } catch (e) { /* private mode */ }
+  };
+  const currentMode = () => root.querySelector('input[name="gx-mode"]:checked')?.value || "base";
+  const persistForm = () => saveState({problem: el("problem").value, recognized, mode: currentMode()});
   function clearUrls() { urls.forEach(URL.revokeObjectURL); urls = []; }
   function imageURL(svg) {
     const url = URL.createObjectURL(new Blob([svg], {type: "image/svg+xml"}));
@@ -70,6 +81,7 @@
           {credentials: "same-origin", cache: "no-store"}));
         if (data.status === "done" || data.status === "failed") {
           lastJob = activeJob;
+          saveState({job: data.result?.ok ? lastJob : null});
           activeJob = null;
           el("submit").disabled = false;
           if (data.result?.ok) {
@@ -108,6 +120,7 @@
   async function submitJob(retryOf) {
     if (activeJob) return;
     el("submit").disabled = true; el("another").disabled = true;
+    persistForm(); saveState({job: null});
     el("result").hidden = true; clearUrls(); status("Отправляем запрос…");
     try {
       const userText = el("problem").value;
@@ -127,7 +140,9 @@
     finally { el("another").disabled = false; }
   }
   el("resume").addEventListener("click", poll);
-  el("toggle").addEventListener("change", render);
+  el("toggle").addEventListener("change", () => { saveState({full: el("toggle").checked}); render(); });
+  el("problem").addEventListener("input", persistForm);
+  root.querySelectorAll('input[name="gx-mode"]').forEach(r => r.addEventListener("change", persistForm));
   window.addEventListener("pagehide", clearUrls);
 
   // ── Распознавание фото (кнопка «Распознать по фото» + Ctrl+V) ────────
@@ -224,6 +239,7 @@
       if (raw.length < 10) throw new Error("На фото не найден текст условия.");
       recognized = {plain: latexToPlain(raw), raw};
       el("problem").value = recognized.plain;
+      persistForm();
       status("Фото распознано. Проверьте текст и нажмите «Построить чертёж».");
       el("problem").focus();
     } catch (error) {
@@ -253,10 +269,33 @@
   });
 
   // Refreshing the page must not force another paid generation.
+  const saved = loadState();
+  if (typeof saved.problem === "string" && !el("problem").value) {
+    el("problem").value = saved.problem;
+    if (saved.recognized && saved.recognized.plain && saved.recognized.raw) recognized = saved.recognized;
+    const radio = root.querySelector('input[name="gx-mode"][value="' + saved.mode + '"]');
+    if (radio) radio.checked = true;
+  }
+  async function restoreResult(job) {
+    // Готовый чертёж берётся с сервера повторно, без нового платного запроса.
+    try {
+      const data = await jsonResponse(await fetch(api + "/" + job,
+        {credentials: "same-origin", cache: "no-store"}));
+      if (data.status === "done" && data.result?.ok) {
+        lastJob = job;
+        show(data.result);
+        if (saved.full === false && !el("toggle-wrap").hidden) { el("toggle").checked = false; render(); }
+        status("Чертёж восстановлен после обновления страницы.");
+        return;
+      }
+    } catch (e) { /* задание удалено или недоступно */ }
+    saveState({job: null});
+  }
   el("submit").disabled = true;
   fetch(root.dataset.active, {credentials: "same-origin", cache: "no-store"})
-    .then(jsonResponse).then(data => {
+    .then(jsonResponse).then(async data => {
       if (data.job_id) { activeJob = data.job_id; return poll(); }
+      if (saved.job) await restoreResult(saved.job);
       el("submit").disabled = false;
     }).catch(error => { status(error.message); el("submit").disabled = false; });
 })();
