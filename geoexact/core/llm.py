@@ -550,3 +550,15 @@ def formalize_space(sess, problem: str, cls: str, with_aux: bool, budget: Budget
     if "error" in d:
         raise PlanError(str(d["error"]), str(d.get("notes", "")))
     return d
+
+
+# ------------------------------------------------------------------ доп. построение
+def aux_plan(sess, problem: str, figure: str, budget: Budget) -> dict:
+    """Separate, small request: only the auxiliary construction for a built figure."""
+    from .auxplan import SYS_AUXPLAN
+    user = f"Условие задачи:\n{problem}\n\nУже построенный чертёж:\n{figure}"
+    model, max_out = "deepseek-v4-pro", 6000
+    if not budget.can_afford(model, max_out, len((SYS_AUXPLAN + user).encode("utf-8")) + 512):
+        model, max_out = "deepseek-v4-flash", 6000
+    txt, _ = _chat(sess, model, SYS_AUXPLAN, user, max_out, "aux-plan", budget, thinking=True)
+    return _parse_json(txt)

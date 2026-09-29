@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import hashlib
+import numpy as np
 import math
 import json
 import pathlib
@@ -89,7 +90,25 @@ def _finite_coords(sol) -> bool:
     return len(coords) >= 2 and all(math.isfinite(v) and abs(v) < 1e9 for v in values)
 
 
-def _sketch_result(text: str, with_aux: bool, base: "Result | None") -> "Result | None":
+class _NoModel:
+    uncertain = True
+
+
+def _collapsed(sol) -> bool:
+    """A degenerate drawing: coinciding points or a figure squeezed into a line."""
+    try:
+        pts = np.array([np.asarray(v, float) for v in sol.coords.values()])
+        ext = np.ptp(pts, axis=0)
+        if ext.max() <= 0 or ext.min() < 0.03 * ext.max():
+            return True
+        span = float(ext.max())
+        d = np.linalg.norm(pts[:, None] - pts[None], axis=2) + np.eye(len(pts)) * 1e9
+        return bool(d.min() < 0.005 * span)
+    except Exception:  # noqa: BLE001
+        return True
+
+
+def _sketch_result(text: str, with_aux: bool, base: "Result | None", aux=None) -> "Result | None":
     """Deterministic keyword sketch when nothing else is drawable (no LLM)."""
     from .sketch import sketch_plan
     from .constructions import execute
@@ -104,6 +123,10 @@ def _sketch_result(text: str, with_aux: bool, base: "Result | None") -> "Result 
         sol = Solution(coords=coords, residual=0.0, ok=True)
         if not _finite_coords(sol):
             return None
+        if with_aux:
+            # sess/budget/start when the model may still be asked; otherwise rules only
+            sess, budget, t0 = aux or (None, _NoModel(), time.time())
+            plan, sol = _auxiliary_layer(plan, sol, text, sess, budget, t0)
         svg = render_svg(plan, sol, gate=None, show_aux=with_aux)
     except Exception:  # noqa: BLE001 - a sketch must never break the pipeline
         return None
@@ -117,6 +140,44 @@ def _sketch_result(text: str, with_aux: bool, base: "Result | None") -> "Result 
 
 def _key(text: str, with_aux: bool) -> str:
     return hashlib.sha256(f"{ENGINE_VERSION}|{text}|{int(with_aux)}".encode()).hexdigest()[:20]
+
+
+def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
+    """Auxiliary construction on the verified figure; never breaks the drawing.
+
+    Order: crossing-cevian rule (done earlier), classical trapezoid rule, then a
+    small separate model request that only proposes the auxiliary steps. Every
+    step is executed and checked by the engine before it is drawn.
+    """
+    from . import auxplan
+    from .solver import Solution
+    try:
+        coords = sol.coords
+        candidates = []
+        rule = auxplan.trapezoid_diagonals(plan, coords, text)
+        if rule:
+            candidates.append(rule)
+        elif auxplan.has_aux(plan):
+            return plan, sol          # the model already drew its own construction
+        applied = None
+        for data in candidates:
+            applied = auxplan.apply_aux(plan, coords, data)
+            if applied:
+                break
+        if (applied is None and not budget.uncertain
+                and time.time() - t_start < TIME_LIMIT - 45):
+            try:
+                data = L.aux_plan(sess, text, auxplan.describe_figure(plan, coords), budget)
+                applied = auxplan.apply_aux(plan, coords, data)
+            except (PlanError, ValueError, TypeError, KeyError, AttributeError, OSError):
+                applied = None
+        if applied:
+            new_plan, new_coords = applied
+            return new_plan, Solution(coords=new_coords, residual=sol.residual, ok=sol.ok,
+                                      reason=sol.reason)
+    except Exception:  # noqa: BLE001 - the auxiliary layer is optional
+        pass
+    return plan, sol
 
 
 _NUMERIC_ERRORS = (ValueError, TypeError, ZeroDivisionError, FloatingPointError,
@@ -478,6 +539,8 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
             plan = marked
         except Exception:  # noqa: BLE001
             pass
+        if with_aux and not special_plan:
+            plan, sol = _auxiliary_layer(plan, sol, text, sess, budget, t_start)
         from .completion import complete_intersection_support
         plan, completion_warn = complete_intersection_support(plan, sol)
         warn.extend(completion_warn)
@@ -536,6 +599,10 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
     # the most trustworthy drawing that exists, labelled as not fully checked.
     from .gates import measure_target
     for priority, _, cplan, csol, reasons in sorted(candidates, key=lambda c: c[:2]):
+        if priority >= 3 and _collapsed(csol) and _sketch_result(text, with_aux, None) is not None:
+            continue                      # a squeezed drawing is worse than the sketch
+        if with_aux and special_plan is None:
+            cplan, csol = _auxiliary_layer(cplan, csol, text, sess, budget, t_start)
         try:
             svg = render_svg(cplan, csol, gate=None, show_aux=with_aux)
             svg_base = render_svg(cplan, csol, gate=None, show_aux=False) if with_aux else svg
@@ -563,4 +630,4 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                              verification="approximate"))
 
     last = last or Result(False, "4-formalize", "UNKNOWN", "")
-    return finish(_sketch_result(text, with_aux, last) or last)
+    return finish(_sketch_result(text, with_aux, last, (sess, budget, t_start)) or last)
