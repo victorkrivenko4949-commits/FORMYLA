@@ -142,3 +142,4 @@
   .gx-toolbar{flex-direction:column;align-items:stretch;gap:10px}
   .gx-toolbar a{width:100%;text-align:center;box-sizing:border-box}
 }
+.gx-mode-hint{margin:10px 2px 0}

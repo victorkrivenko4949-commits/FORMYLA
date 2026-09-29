@@ -80,8 +80,12 @@
         }
         const sec = Math.round((Date.now() - started) / 1000);
         const clock = Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
+        const auxMode = root.querySelector('input[name="gx-mode"]:checked')?.value === "aux";
         status(data.status === "running"
-          ? "Строим и проверяем чертёж… " + clock + (sec > 90 ? " — сложная задача, не дольше 3 минут" : "")
+          ? "Строим и проверяем чертёж… " + clock + (auxMode
+              ? (sec > 60 ? " — сложная задача, около 100 секунд, не дольше 3 минут"
+                          : " — с доп. построением обычно около 50 секунд, сложные около 100")
+              : (sec > 90 ? " — сложная задача, не дольше 3 минут" : ""))
           : "Запрос в очереди… " + clock);
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
