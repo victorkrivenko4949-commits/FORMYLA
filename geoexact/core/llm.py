@@ -60,6 +60,25 @@ _LAST_START = 0.0
 _THINKING_UNSUPPORTED: set[str] = set()
 
 
+_DEADLINE = threading.local()
+
+
+def set_deadline(when: float | None) -> None:
+    """Wall-clock moment (time.time()) after which no API call may still run."""
+    _DEADLINE.value = when
+
+
+def _read_timeout() -> float:
+    when = getattr(_DEADLINE, "value", None)
+    if when is None:
+        return 180.0
+    left = when - time.time()
+    if left < 8:
+        # Not a network failure: nothing was sent, so no unknown cost.
+        raise PlanError("TIME_LIMIT", "время на построение исчерпано")
+    return min(180.0, left)
+
+
 def _post_limited(sess, payload):
     """Independent CPU workers, bounded API concurrency and safe 429 backoff."""
     global _LAST_START
@@ -70,7 +89,7 @@ def _post_limited(sess, payload):
                 if delay > 0:
                     time.sleep(delay)
                 _LAST_START = time.monotonic()
-            r = sess.post(f"{BASE}/chat/completions", timeout=(15, 180), json=payload)
+            r = sess.post(f"{BASE}/chat/completions", timeout=(15, _read_timeout()), json=payload)
             if r.status_code != 429 or attempt == 2:
                 return r
             try:

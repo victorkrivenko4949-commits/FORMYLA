@@ -74,6 +74,9 @@ SIMPLIFY_FEEDBACK = (
 
 # Wall-clock limit for starting one more LLM attempt (worker alarm is 590 s).
 _EXTRA_ATTEMPT_DEADLINE = 300.0
+# Whole request, all model attempts included. When it runs out the best
+# drawing found so far (or a keyword sketch) is returned instead of waiting.
+TIME_LIMIT = float(os.getenv("GEOEXACT_TIME_LIMIT", "170"))
 
 
 def _finite_coords(sol) -> bool:
@@ -123,6 +126,7 @@ _NUMERIC_ERRORS = (ValueError, TypeError, ZeroDivisionError, FloatingPointError,
 def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
     """Public entry point: never raises; an internal fault degrades to a sketch."""
     try:
+        L.set_deadline(time.time() + TIME_LIMIT)
         return _generate(problem, with_aux, **kwargs)
     except (KeyboardInterrupt, SystemExit):
         raise
@@ -137,6 +141,8 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
             sketch.warnings.append(f"INTERNAL: {type(exc).__name__}")
             return sketch
         return failed
+    finally:
+        L.set_deadline(None)
 
 
 def _coerce_formalized(res):
@@ -280,13 +286,15 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
     total_attempts = (1 if special_plan is not None else max_retries + 2)
     for attempt in range(total_attempts):
         simplified = False
+        if attempt and time.time() - t_start > TIME_LIMIT - 30:
+            break          # no time for another model answer: use what we have
         if special_plan is None and attempt == total_attempts - 1:
             # Last resort: a simplified but executable plan, only when no
             # earlier attempt produced anything drawable.
             if (candidates or budget.uncertain
-                    or time.time() - t_start > _EXTRA_ATTEMPT_DEADLINE
+                    or time.time() - t_start > min(_EXTRA_ATTEMPT_DEADLINE, TIME_LIMIT - 60)
                     or (last is not None and last.reason in
-                        ("BUDGET_EXCEEDED", "API_ERROR", "NETWORK_UNCERTAIN"))):
+                        ("BUDGET_EXCEEDED", "API_ERROR", "NETWORK_UNCERTAIN", "TIME_LIMIT"))):
                 break
             feedback = SIMPLIFY_FEEDBACK + (f" Предыдущая ошибка: {feedback}" if feedback else "")
             prev_code = "SIMPLIFY"
@@ -312,7 +320,7 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                           cls=cls, with_aux=with_aux, retries=attempt)
             feedback = str(e)
             prev_code = e.code
-            if budget.uncertain or e.code in ("BUDGET_EXCEEDED", "API_ERROR"):
+            if budget.uncertain or e.code in ("BUDGET_EXCEEDED", "API_ERROR", "TIME_LIMIT"):
                 break
             continue
 

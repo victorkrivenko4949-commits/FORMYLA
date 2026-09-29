@@ -61,6 +61,7 @@
   async function poll() {
     if (polling || !activeJob) return;
     polling = true; el("resume").hidden = true;
+    const started = Date.now();
     try {
       for (let i = 0; i < 620; i++) {
         const data = await jsonResponse(await fetch(api + "/" + activeJob,
@@ -77,7 +78,11 @@
             (data.result?.reason ? " Код: " + data.result.reason : ""));
           return;
         }
-        status(data.status === "running" ? "Строим и проверяем чертёж…" : "Запрос в очереди…");
+        const sec = Math.round((Date.now() - started) / 1000);
+        const clock = Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
+        status(data.status === "running"
+          ? "Строим и проверяем чертёж… " + clock + (sec > 90 ? " — сложная задача, не дольше 3 минут" : "")
+          : "Запрос в очереди… " + clock);
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
       throw new Error("Ожидание затянулось. Можно проверить готовность без нового платного запроса.");

@@ -139,7 +139,7 @@ class Queue:
                 "Генерация прервана или истекло время ожидания. "
                 "Автоматического платного повторения не было.")
             c.execute(update(jobs).where(
-                ((jobs.c.status == "running") & (jobs.c.started < now - 900)) |
+                ((jobs.c.status == "running") & (jobs.c.started < now - 400)) |
                 ((jobs.c.status == "queued") & (jobs.c.created < now - 1800))
             ).values(status="failed", payload=json.dumps(expired, ensure_ascii=False),
                      problem=""))
@@ -194,6 +194,22 @@ class Queue:
             time.sleep(.2 if worked else 3)
 
 
+def _sketch_payload(problem, with_aux):
+    """Model-free keyword sketch (milliseconds) when the worker ran out of time."""
+    try:
+        from dataclasses import asdict
+        from .core.pipeline import _norm, _sketch_result
+        res = _sketch_result(_norm(problem), bool(with_aux), None)
+    except Exception:  # noqa: BLE001 - fallback must never break the queue
+        return None
+    if res is None:
+        return None
+    payload = asdict(res)
+    for field in ("plan", "usage", "cost", "seconds", "retries", "cls"):
+        payload.pop(field, None)
+    return payload
+
+
 def run_generation(problem, with_aux):
     env = dict(os.environ, OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1",
                MKL_NUM_THREADS="1")
@@ -201,10 +217,10 @@ def run_generation(problem, with_aux):
         process = subprocess.run(
             [sys.executable, "-m", "geoexact.worker"],
             input=json.dumps({"problem": problem, "with_aux": with_aux}),
-            text=True, capture_output=True, timeout=600, env=env,
+            text=True, capture_output=True, timeout=300, env=env,
         )
     except subprocess.TimeoutExpired:
-        return failure("TIMEOUT",
+        return _sketch_payload(problem, with_aux) or failure("TIMEOUT",
             "Превышено время генерации. Возможен расход API; автоматического повторения нет.")
     if process.returncode != 0:
         return failure("WORKER_ERROR", "Не удалось завершить генерацию.")
