@@ -85,6 +85,31 @@ def _read_timeout() -> float:
     return min(180.0, left)
 
 
+def _bounded_call(fn, limit: float):
+    """Run fn() and give up after `limit` seconds in total.
+
+    A socket read timeout only limits the gap between bytes: a provider that keeps
+    the connection alive (keep-alive lines) can hold a request for minutes past the
+    deadline. The abandoned call finishes in a daemon thread and is ignored.
+    """
+    box: dict = {}
+
+    def run():
+        try:
+            box["value"] = fn()
+        except BaseException as exc:  # noqa: BLE001 - re-raised in the caller
+            box["error"] = exc
+
+    th = threading.Thread(target=run, daemon=True)
+    th.start()
+    th.join(max(0.0, limit))
+    if th.is_alive():
+        raise requests.Timeout(f"общее время запроса превысило {limit:.0f} с")
+    if "error" in box:
+        raise box["error"]
+    return box["value"]
+
+
 def _post_limited(sess, payload):
     """Independent CPU workers, bounded API concurrency and safe 429 backoff."""
     global _LAST_START
@@ -95,7 +120,9 @@ def _post_limited(sess, payload):
                 if delay > 0:
                     time.sleep(delay)
                 _LAST_START = time.monotonic()
-            r = sess.post(f"{BASE}/chat/completions", timeout=(15, _read_timeout()), json=payload)
+            left = _read_timeout()
+            r = _bounded_call(lambda: sess.post(f"{BASE}/chat/completions",
+                                                timeout=(15, left), json=payload), left)
             if r.status_code != 429 or attempt == 2:
                 return r
             try:
