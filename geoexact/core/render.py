@@ -521,6 +521,30 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
 
     # Equality ticks are strokes, not the character '/' (which changes with font).
     seen_ticks = set()
+
+    def is_divided(pts) -> bool:
+        pa, pb = np.array(Q[pts[0]]), np.array(Q[pts[1]])
+        pt = pb - pa
+        pl = float(np.linalg.norm(pt))
+        if pl < 1e-9:
+            return False
+        for name, point in visible_q.items():
+            if name in pts:
+                continue
+            q = np.asarray(point)
+            frac_on = float(np.dot(q - pa, pt) / (pl * pl))
+            if 0.05 < frac_on < 0.95 and abs(float(np.linalg.det(np.array([pt, q - pa])))) / pl < 1.0:
+                return True
+        return False
+
+    # A group whose member is split by a visible point is not drawn at all: no
+    # bracket, and no lone tick on the partner.
+    skipped_groups = set()
+    for m in getattr(d, "equal_marks", []):
+        pts_ = m.get("pts", [])
+        if len(pts_) == 2 and all(p in Q for p in pts_) and is_divided(pts_) \
+                and not (mark_layer(m) == "aux" and not show_aux):
+            skipped_groups.add((mark_layer(m), _count(m)))
     for m in getattr(d, "equal_marks", []):
         layer = mark_layer(m)
         if layer == "aux" and not show_aux:
@@ -530,6 +554,8 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
             notes.append(f"SKIPPED_EQUAL_MARK: {pts}")
             continue
         count = _count(m)
+        if (layer, count) in skipped_groups:
+            continue
         key = (tuple(sorted(pts)), count)
         if key in seen_ticks:
             continue
@@ -556,34 +582,10 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
                 divided = True
                 break
         if divided:
-            def clearance(sign):
-                probe = (a + b) / 2 + n * (sign * 12.0)
-                values = []
-                for start, end in px_segs:
-                    v = np.asarray(end) - np.asarray(start)
-                    den = float(v @ v)
-                    if den < 1e-9:
-                        continue
-                    f = float(np.clip(np.dot(probe - start, v) / den, 0, 1))
-                    values.append(float(np.linalg.norm(probe - (np.asarray(start) + f * v))))
-                return min(values, default=20.0)
-            side = max((-1, 1), key=clearance)
-            offset = n * (side * 12.0)
-            start, finish = a + offset, b + offset
-            marks.append(
-                f'<path class="span" data-layer="{layer}" data-kind="span" '
-                f'd="M {_f(a[0])} {_f(a[1])} L {_f(start[0])} {_f(start[1])} '
-                f'L {_f(finish[0])} {_f(finish[1])} '
-                f'L {_f(b[0])} {_f(b[1])}"/>')
-            # A long dimension line has a large bounding box, but its empty
-            # interior must not block point labels such as D on AB.
-            mark_segments.extend(((a, start), (start, finish), (finish, b)))
-            geometry_boxes.append((min(a[0], start[0], finish[0], b[0]) - 2,
-                                   min(a[1], start[1], finish[1], b[1]) - 2,
-                                   max(a[0], start[0], finish[0], b[0]) + 2,
-                                   max(a[1], start[1], finish[1], b[1]) + 2))
-            a, b = start, finish
-            t = b - a
+            # No dimension bracket. A tick on one part of the segment would read as an
+            # equality for that part only, so the whole group is not drawn (a lone tick
+            # on the partner would look unpaired); the statement already gives it.
+            continue
         gap, half = min(4.0, length / (count + 2)), min(5.0, length * 0.2)
         # Move a tick away from both point dots and crossing strokes. Merely
         # avoiding dots can put a tick directly over a transversal and make an
