@@ -669,7 +669,13 @@
 <div class="page-daily-tasks" style="max-width:1200px;margin:0 auto;padding:24px 16px 60px;">
 
   <!-- Page header -->
-  <h2 style="font-size:26px;font-weight:700;margin-bottom:16px;color:var(--text);">Задачи дня</h2>
+  <div style="font-size:20px;font-weight:800;margin:0 0 6px;display:inline-block;background:linear-gradient(90deg,#8ea2ff,#5eead4,#ffc36b);-webkit-background-clip:text;background-clip:text;color:transparent;">Главное — возвращаться каждый день</div>
+  <h2 style="font-size:26px;font-weight:700;margin-bottom:12px;color:var(--text);">Задачи дня</h2>
+  <label class="dt-pledge" style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;margin-bottom:16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:14px;line-height:1.45;cursor:pointer;">
+    <input type="checkbox" id="dt-pledge" style="width:18px;height:18px;margin-top:2px;flex:none;accent-color:#4f6cff;cursor:pointer;">
+    <span>Согласен: постараюсь заходить как можно чаще, ведь успех — в стабильности.</span>
+  </label>
+  <script>(function(){var c=document.getElementById('dt-pledge'),k='dt_pledge';try{c.checked=localStorage.getItem(k)==='1';c.addEventListener('change',function(){localStorage.setItem(k,c.checked?'1':'0');});}catch(e){}})();</script>
 
   <!-- Two-column layout -->
   <div class="dt-layout">
