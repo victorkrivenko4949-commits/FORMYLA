@@ -372,3 +372,22 @@ def test_parallel_intersect_and_stray_value_are_normalised():
     assert apply_aux(plan, coords, {"idea": "", "steps": [
         {"op": "parallel_point", "out": "P", "args": ["D", "A", "C", 1]}],
         "aux_segments": [["D", "P"]]}) is not None
+
+
+def test_expert_accepts_the_odirouter_key_name(monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.setenv("ODIROUTER_API_KEY", "odi")
+    seen = {}
+
+    class R:
+        status_code = 200
+
+        def iter_lines(self, decode_unicode=True):
+            yield 'data: {"choices":[{"delta":{"content":"ok"},"finish_reason":"stop"}]}'
+
+    class S:
+        def post(self, url, **kw):
+            seen.update(url=url, auth=kw["headers"]["Authorization"])
+            return R()
+    assert llm.expert_text(S(), "задача") == "ok"
+    assert seen["auth"] == "Bearer odi" and seen["url"].endswith("/chat/completions")
