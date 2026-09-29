@@ -135,4 +135,29 @@ def test_expert_status_reports_why_there_is_no_construction(monkeypatch):
     monkeypatch.setattr(llm, "expert_text", fail)
     monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: {"idea": "", "steps": []})
     r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False)
-    assert r.expert_status == "EXPERT_HTTP" and r.expert_history == []
+    assert r.expert_status == "EXPERT_HTTP: HTTP 500" and r.expert_history == []
+
+
+def test_expert_http_error_is_reported_with_status_and_body_but_without_keys(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "secretkey")
+
+    class R:
+        status_code = 401
+        text = '{"error":"Incorrect API key provided: sk-abcdef123456789"}'
+
+    class S:
+        def post(self, *a, **k):
+            return R()
+    with pytest.raises(llm.PlanError) as e:
+        llm.expert_text(S(), "задача")
+    msg = str(e.value)
+    assert "HTTP 401" in msg and "Incorrect API key" in msg and "abcdef123456789" not in msg
+
+
+def test_expert_status_carries_the_reason(monkeypatch):
+    def fail(*a, **k):
+        raise llm.PlanError("EXPERT_HTTP", "HTTP 404 model not found")
+    monkeypatch.setattr(llm, "expert_text", fail)
+    monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: {"idea": "", "steps": []})
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False)
+    assert r.expert_status == "EXPERT_HTTP: HTTP 404 model not found"

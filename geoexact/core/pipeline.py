@@ -274,7 +274,14 @@ class _AuxJob:
         if not slot["done"].is_set():
             return "TIME_LIMIT"
         exc = slot["error"]
-        return "OK" if exc is None else str(getattr(exc, "code", "") or type(exc).__name__)
+        if exc is None:
+            return "OK"
+        code = str(getattr(exc, "code", "") or type(exc).__name__)
+        detail = str(exc)
+        if detail.startswith(code + ": "):
+            detail = detail[len(code) + 2:]
+        detail = L.safe_detail(detail)
+        return f"{code}: {detail}" if detail else code
 
     def answers(self, main_budget=None):
         """Usable answers in order of preference: [(name, data)]."""

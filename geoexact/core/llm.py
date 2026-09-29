@@ -650,6 +650,14 @@ def aux_plan(sess, problem: str, figure: str, budget: Budget, deep: bool = False
 EXPERT_MODEL = "gemini-3.8-flash"
 
 
+def safe_detail(text, limit: int = 200) -> str:
+    """Short error text for the user: one line, no key-like tokens."""
+    import re
+    t = re.sub(r"\s+", " ", str(text or "")).strip()
+    t = re.sub(r"(?i)(sk|key|token|bearer)[-_ :=]*[A-Za-z0-9._-]{8,}", r"\1-…", t)
+    return t[:limit]
+
+
 def _expert_url() -> str:
     base = (os.environ.get("GEMINI_API_BASE") or os.environ.get("GEMINI_BASE_URL")
             or os.environ.get("ODIROUTER_BASE_URL")
@@ -690,7 +698,11 @@ def expert_text(sess, problem: str, history: list | None = None, max_out: int = 
                   headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
                   timeout=(15, _read_timeout()))
     if r.status_code != 200:
-        raise PlanError("EXPERT_HTTP", f"HTTP {r.status_code}")
+        try:
+            body = r.text[:300]
+        except Exception:  # noqa: BLE001
+            body = ""
+        raise PlanError("EXPERT_HTTP", f"HTTP {r.status_code} {safe_detail(body)}".strip())
     parts: list[str] = []
     finish = None
     for raw in r.iter_lines(decode_unicode=True):
