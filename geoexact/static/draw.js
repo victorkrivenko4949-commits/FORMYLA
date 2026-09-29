@@ -42,11 +42,11 @@
     el("toggle-wrap").hidden = !data.with_aux || !data.svg_base;
     el("another").hidden = !(data.with_aux && lastJob);
     el("another").textContent = Array.isArray(data.expert_history) && data.expert_history.length
-      ? "Попробовать другое доп. построение" : "Повторить запрос доп. построения";
+      ? "Отлично! Но давай другое доп. построение" : "Gemini не ответила: повторить запрос";
     const fail = data.with_aux && data.expert_status && data.expert_status !== "OK";
     el("expert-note").hidden = !fail;
     el("expert-note").textContent = fail
-      ? "Gemini не дала доп. построение (код " + data.expert_status + "). Кнопка ниже повторит запрос." : "";
+      ? "Gemini не дала доп. построение (код " + data.expert_status + "). Кнопка ниже отправит запрос заново." : "";
     el("result").hidden = false;
     const value = data.measured;
     el("measured").textContent = value == null ? "" :
