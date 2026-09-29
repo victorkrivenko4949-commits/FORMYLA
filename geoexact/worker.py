@@ -9,7 +9,7 @@ def main():
     # Enforce a wall-clock limit even if Gunicorn dies and this child is orphaned.
     import signal
     signal.signal(signal.SIGALRM, lambda *_: os._exit(124))
-    signal.alarm(590)
+    signal.alarm(290)
     from .jobs import failure
     if not os.environ.get("DEEPSEEK_API_KEY"):
         print(json.dumps(failure("NOT_CONFIGURED", "Сервис ещё не настроен.")))
