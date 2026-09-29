@@ -625,15 +625,18 @@ EXPERT_MODEL = "gemini-3.8-flash"
 
 def _expert_url() -> str:
     base = (os.environ.get("GEMINI_API_BASE") or os.environ.get("GEMINI_BASE_URL")
+            or os.environ.get("ODIROUTER_BASE_URL")
             or "https://api.odirouter.ai/v1").strip().rstrip("/")
     return base if base.endswith("/chat/completions") else base + "/chat/completions"
 
 
 def expert_text(sess, problem: str, max_out: int = 16000) -> str:
     """The expert's free-text auxiliary construction, in the user's own wording."""
-    key = os.environ.get("GEMINI_API_KEY")
+    # The OdiRouter key the site already uses (llm_router reads GEMINI_API_KEY);
+    # ODIROUTER_API_KEY is accepted as well, as in .env.example.
+    key = (os.environ.get("GEMINI_API_KEY") or os.environ.get("ODIROUTER_API_KEY") or "").strip()
     if not key:
-        raise PlanError("NO_EXPERT_KEY", "нет GEMINI_API_KEY")
+        raise PlanError("NO_EXPERT_KEY", "нет ключа OdiRouter (GEMINI_API_KEY / ODIROUTER_API_KEY)")
     prompt = ("вероятно тут есть доп построение - напиши все доп построения которые тут требуются\n"
               f'"{problem}"\n'
               "напиши только доп построение и что в итоге получится\n"
