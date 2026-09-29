@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import hashlib
+import threading
 import numpy as np
 import math
 import json
@@ -160,24 +161,43 @@ def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
     from .solver import Solution
     try:
         coords = sol.coords
-        candidates = []
-        rule = auxplan.trapezoid_diagonals(plan, coords, text)
-        if rule:
-            candidates.append(rule)
-        elif auxplan.has_aux(plan) and not auxplan.mentions_construction(plan.notes):
-            return plan, sol          # the model already drew its own construction
         applied = None
-        for data in candidates:
-            applied = auxplan.apply_aux(plan, coords, data)
-            if applied:
-                break
-        if (applied is None and not budget.uncertain
-                and time.time() - t_start < TIME_LIMIT - 45):
+        model_failed = True
+        job = getattr(_AUXJOB, "value", None)
+        if job is not None:
+            answers = job.answers(budget)
+            model_failed = not answers
+            # A hand-written figure keeps its own auxiliary lines only when the model
+            # gave nothing usable; otherwise they are replaced by the model's.
+            base = _strip_aux(plan) if getattr(_AUXJOB, "special", False) else plan
+            for _name, data in answers:
+                applied = auxplan.apply_aux(base, coords, data)
+                asked = bool(data.get("steps") or data.get("aux_segments")
+                             or data.get("aux_lines") or data.get("aux_circles"))
+                if applied is not None or not asked:
+                    # a usable answer, or the model's own "nothing to add"
+                    model_failed = False
+                    if applied is not None:
+                        break
+                    plan = base          # "nothing to add": no built-in lines either
+                else:
+                    model_failed = True
+        elif not budget.uncertain and time.time() - t_start < TIME_LIMIT - 40:
             try:
                 data = L.aux_plan(sess, text, auxplan.describe_figure(plan, coords), budget)
                 applied = auxplan.apply_aux(plan, coords, data)
+                # An empty or refused answer is the model's decision ("not needed");
+                # only a failed request or unusable steps fall back to the rules.
+                asked = isinstance(data, dict) and bool(
+                    data.get("steps") or data.get("aux_segments") or data.get("aux_lines")
+                    or data.get("aux_circles"))
+                model_failed = (not isinstance(data, dict)) or (asked and applied is None)
             except (PlanError, ValueError, TypeError, KeyError, AttributeError, OSError):
-                applied = None
+                model_failed = True
+        if applied is None and model_failed and not getattr(_AUXJOB, "special", False):
+            rule = auxplan.trapezoid_diagonals(plan, coords, text)
+            if rule:
+                applied = auxplan.apply_aux(plan, coords, rule)
         if not applied and not auxplan.has_aux(plan) and auxplan.mentions_construction(plan.notes):
             # the text must not claim a construction that is not on the drawing
             import copy
@@ -196,10 +216,68 @@ _NUMERIC_ERRORS = (ValueError, TypeError, ZeroDivisionError, FloatingPointError,
                    OverflowError, ArithmeticError, KeyError, IndexError, AttributeError)
 
 
+_AUXJOB = threading.local()
+
+
+class _AuxJob:
+    """The model's auxiliary construction, requested in parallel with the figure.
+
+    Two requests to the strongest model start at once: one with reasoning (the
+    mathematically better answer, which on a hard problem can take over a minute)
+    and one quick answer without reasoning. The reasoning answer is used when it
+    arrives in time and is usable; otherwise the quick one. The answer is checked
+    against the real coordinates before anything is drawn. Each request has its own
+    small budget, and a request is never repeated.
+    """
+    DEEP_WAIT = 110.0
+
+    def __init__(self, sess, text: str, deadline: float):
+        self.sess, self.text, self.deadline = sess, text, deadline
+        self.started = time.time()
+        self.slots = {}
+        for name, deep in (("deep", True), ("fast", False)):
+            slot = {"data": None, "error": None, "done": threading.Event(),
+                    "budget": L.Budget(cap=0.06)}
+            self.slots[name] = slot
+            threading.Thread(target=self._run, args=(slot, deep), daemon=True).start()
+
+    def _run(self, slot, deep):
+        try:
+            L.set_deadline(self.deadline)
+            from .auxplan import STATEMENT_ONLY
+            slot["data"] = L.aux_plan(self.sess, self.text, STATEMENT_ONLY, slot["budget"], deep=deep)
+        except Exception as exc:  # noqa: BLE001 - reported through the slot
+            slot["error"] = exc
+        finally:
+            slot["done"].set()
+
+    def answers(self, main_budget=None):
+        """Usable answers in order of preference: [(name, data)]."""
+        stop = min(self.deadline - 4, self.started + self.DEEP_WAIT)
+        self.slots["deep"]["done"].wait(max(0.0, stop - time.time()))
+        self.slots["fast"]["done"].wait(max(0.0, self.deadline - 4 - time.time()))
+        out = []
+        for name in ("deep", "fast"):
+            slot = self.slots[name]
+            if slot["done"].is_set():
+                if main_budget is not None and slot["budget"].calls:
+                    main_budget.calls.extend(slot["budget"].calls)
+                    main_budget.spent += slot["budget"].spent
+                    slot["budget"].calls = []
+                if slot["error"] is None and isinstance(slot["data"], dict):
+                    out.append((name, slot["data"]))
+        return out
+
+
 def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
     """Public entry point: never raises; an internal fault degrades to a sketch."""
     try:
-        L.set_deadline(time.time() + TIME_LIMIT)
+        deadline = time.time() + TIME_LIMIT
+        L.set_deadline(deadline)
+        _AUXJOB.value = None
+        _AUXJOB.special = False
+        if with_aux and isinstance(problem, str) and problem.strip() and kwargs.get("sess") is not None:
+            _AUXJOB.value = _AuxJob(kwargs["sess"], _norm(problem), deadline - 6)
         return _generate(problem, with_aux, **kwargs)
     except (KeyboardInterrupt, SystemExit):
         raise
@@ -216,6 +294,8 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
         return failed
     finally:
         L.set_deadline(None)
+        _AUXJOB.value = None
+        _AUXJOB.special = False
 
 
 def _strip_invented_labels(text: str, plan) -> None:
@@ -228,6 +308,18 @@ def _strip_invented_labels(text: str, plan) -> None:
                                   if not re.search(r"\d", str(m.get("text", "")))]
     except Exception:  # noqa: BLE001
         return
+
+
+def _strip_aux(plan):
+    import copy
+    plan = copy.deepcopy(plan)
+    d = plan.draw
+    for f in ("aux_segments", "aux_lines", "aux_rays", "aux_extensions", "aux_circles", "aux_points"):
+        setattr(d, f, [])
+    for f in ("length_marks", "angle_marks", "equal_marks"):
+        setattr(d, f, [m for m in getattr(d, f) if m.get("layer", "main") != "aux"])
+    d.arcs = [a for a in d.arcs if a.get("layer", "main") != "aux"]
+    return plan
 
 
 def _connect_orphans(plan) -> None:
@@ -340,6 +432,10 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                     or common_plan(text, with_aux)
                     or proof_parallelogram_plan(text, with_aux)
                     or trisected_parallel_plan(text, with_aux))
+    if special_plan is not None and with_aux:
+        # The hand-written figure stays (it is verified), but its built-in auxiliary
+        # constructions are not ours to decide: the model proposes them below.
+        _AUXJOB.special = True
     if special_plan is None:
         # ------------------------------------------------------ этап 2
         try:
@@ -607,7 +703,7 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                 sol = _Sol(coords=_c, residual=sol.residual, ok=sol.ok, reason=sol.reason)
         except Exception:  # noqa: BLE001 - an optional addition
             pass
-        if with_aux and not special_plan:
+        if with_aux:
             plan, sol = _auxiliary_layer(plan, sol, text, sess, budget, t_start)
         from .completion import complete_intersection_support
         plan, completion_warn = complete_intersection_support(plan, sol)
@@ -669,7 +765,7 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
     for priority, _, cplan, csol, reasons in sorted(candidates, key=lambda c: c[:2]):
         if priority >= 3 and _collapsed(csol) and _sketch_result(text, with_aux, None) is not None:
             continue                      # a squeezed drawing is worse than the sketch
-        if with_aux and special_plan is None:
+        if with_aux:
             cplan, csol = _auxiliary_layer(cplan, csol, text, sess, budget, t_start)
         try:
             svg = render_svg(cplan, csol, gate=None, show_aux=with_aux)

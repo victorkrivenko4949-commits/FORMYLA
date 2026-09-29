@@ -168,14 +168,17 @@ def test_planner_failure_keeps_main_figure(monkeypatch, failure):
     assert r.ok and r.verification == "constraints_only" and r.plan["draw"]["aux_segments"] == []
 
 
-def test_planner_not_called_in_plain_mode_or_when_model_drew_aux(monkeypatch, model):
+def test_planner_not_called_in_plain_mode_but_always_asked_with_aux(monkeypatch, model):
     calls = []
     plan = trap_plan(True)
     model(plan, None)
-    monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: calls.append(1) or {})
+    monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: calls.append(k.get("deep")) or {})
     generate("Треугольник ABC со сторонами 5, 6, 7.", False, sess=object(), use_cache=False)
-    generate("Дана трапеция ABCD, MN — средняя линия.", True, sess=object(), use_cache=False)
     assert calls == []
+    generate("Дана трапеция ABCD, MN — средняя линия.", True, sess=object(), use_cache=False)
+    # even when the figure already has auxiliary lines, the model decides: one request
+    # with reasoning and one quick request
+    assert sorted(calls, key=bool) == [False, True]
 
 
 def test_collapsed_model_drawing_falls_back_to_sketch_with_construction(model):
@@ -184,7 +187,7 @@ def test_collapsed_model_drawing_falls_back_to_sketch_with_construction(model):
         "points": ["A", "B", "C", "D"], "constructions": [],
         "constraints": [{"type": "on_segment", "args": ["B", "A", "D"]},
                         {"type": "on_segment", "args": ["C", "B", "C"]}]}).constraints)
-    model(plan, {"steps": []})
+    model(plan, None)                    # request failed: the classical rule is the fallback
     r = generate(TRAP, True, sess=object(), use_cache=False)
     assert r.ok
     d = r.plan["draw"]
@@ -220,18 +223,39 @@ def test_text_never_claims_a_construction_that_is_not_drawn(monkeypatch, model):
     assert not r.plan["draw"]["aux_segments"]
 
 
-def test_planner_gets_the_models_own_words_and_text_matches_drawing(monkeypatch, model):
+def test_model_answer_is_drawn_and_text_matches_drawing(monkeypatch, model):
     seen = {}
     aux = {"idea": "Прямая через C параллельно AB", "steps": [
         {"op": "parallel_point", "out": "P", "args": ["C", "A", "B"], "value": 1.0}],
         "aux_segments": [["C", "P"]]}
     model(_bare_triangle("Проведём через C прямую, параллельную AB."))
 
-    def planner(sess, text, figure, budget):
+    def planner(sess, text, figure, budget, deep=True):
         seen["figure"] = figure
         return aux
     monkeypatch.setattr(llm, "aux_plan", planner)
     r = generate("Треугольник ABC со сторонами 5, 6, 7.", True, sess=object(), use_cache=False)
-    assert "параллельную AB" in seen["figure"]          # what the model said reaches the planner
+    assert "имена точек из условия" in seen["figure"]
     assert ["C", "P"] in r.plan["draw"]["aux_segments"]
     assert r.plan["notes"] == "Прямая через C параллельно AB"
+
+
+def test_builtin_theorem_gets_its_auxiliary_from_the_model_not_from_code(monkeypatch):
+    """The hand-written figure stays, but its fixed auxiliary lines are not drawn."""
+    from geoexact.core.semantics import _PARALLELOGRAM_PROOF
+    monkeypatch.setattr(llm, "classify", lambda *_: (_ for _ in ()).throw(AssertionError))
+    answers = {"idea": "Средняя линия", "steps": [
+        {"op": "midpoint", "out": "N", "args": ["B", "F"]}],
+        "aux_segments": [["D", "N"]]}
+    monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: answers)
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False)
+    segs = {frozenset(s) for s in r.plan["draw"]["aux_segments"]}
+    assert frozenset("BM") not in segs and frozenset("DF") not in segs
+    assert frozenset("DN") in segs
+
+
+def test_builtin_theorem_model_says_nothing_to_add(monkeypatch):
+    from geoexact.core.semantics import _PARALLELOGRAM_PROOF
+    monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: {"idea": "", "steps": []})
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False)
+    assert r.plan["draw"]["aux_segments"] == []

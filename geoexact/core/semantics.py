@@ -196,8 +196,9 @@ def proof_parallelogram_plan(text: str, with_aux: bool) -> FigurePlan | None:
             "segments": [["A", "B"], ["B", "C"], ["C", "A"],
                          ["C", "D"], ["D", "E"], ["E", "F"], ["F", "C"],
                          ["B", "E"], ["B", "F"]],
-            "aux_segments": [["B", "M"], ["D", "F"]] if with_aux else [],
-            "aux_points": ["M"],
+            # No hand-written auxiliary lines: the model proposes them (pipeline).
+            "aux_segments": [],
+            "aux_points": [],
             "hide_labels": ["M", "R"],
             "equal_marks": [
                 {"pts": ["A", "B"], "count": 1},
