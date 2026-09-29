@@ -13,9 +13,6 @@ bp = Blueprint("geoexact", __name__, url_prefix="/geometry/draw",
 # In-memory rate-limit для распознавания фото: ≤ 20 фото/час на пользователя.
 _PHOTO_RATE_LIMIT = {}
 
-# Vision-модели, для которых провайдер не принял параметр thinking
-# (HTTP 400 с упоминанием «thinking») — повтор идёт без параметра.
-_VISION_THINKING_UNSUPPORTED: set[str] = set()
 
 # Промпт распознавания: полный текст условия, формулы в LaTeX.
 # В конвейер уходит эта версия, а пользователь видит её без LaTeX
@@ -175,46 +172,11 @@ def recognize_photo():
     if len(raw_bytes) > 10 * 1024 * 1024:
         return jsonify(error="Фото слишком большое."), 413
 
-    # ── Шаг 1: DeepSeek vision (основной распознаватель) ────────────────
-    try:
-        import requests as _rq
-        model = os.getenv("DEEPSEEK_VISION_MODEL",
-                           "deepseek-v4-flash-vision-exp").strip()
-        # GEOEXACT_THINKING_FIX (см. geoexact/core/llm.py): без отключения
-        # «думания» vision-модель рассуждает перед ответом десятки секунд,
-        # а при исчерпании 60-секундного таймаута запрос молча уходит в
-        # резервный Tesseract — отсюда «Распознаём фото…» на минуты.
-        # Отключаем тем же параметром, что уже работает в проде
-        # (services/llm_router.py); max_tokens 2048: текст условия короткий,
-        # а большой лимит лишь даёт разгон «размышлениям».
-        payload = {"model": model, "max_tokens": 2048, "messages": [
-            {"role": "user", "content": [
-                {"type": "text", "text": _VISION_PROMPT},
-                {"type": "image_url",
-                 "image_url": {"url": f"data:{mime};base64,{img_b64}"}},
-            ]},
-        ]}
-        headers = {"Authorization": "Bearer " + os.environ["DEEPSEEK_API_KEY"],
-                    "Content-Type": "application/json"}
-        if model not in _VISION_THINKING_UNSUPPORTED:
-            payload["thinking"] = {"type": "disabled"}
-        r = _rq.post("https://api.deepseek.com/v1/chat/completions",
-                     headers=headers, json=payload, timeout=(15, 60))
-        if r.status_code == 400 and model not in _VISION_THINKING_UNSUPPORTED \
-                and "thinking" in (r.text or "").lower():
-            # Провайдер не знает параметр thinking — повторяем без него.
-            _VISION_THINKING_UNSUPPORTED.add(model)
-            payload.pop("thinking", None)
-            r = _rq.post("https://api.deepseek.com/v1/chat/completions",
-                         headers=headers, json=payload, timeout=(15, 60))
-        if r.status_code == 200:
-            body = r.json()
-            if body.get("choices"):
-                text = (body["choices"][0].get("message", {}) or {}).get("content") or ""
-                if text.strip():
-                    return jsonify(text=text.strip(), engine="deepseek_vision")
-    except Exception:
-        pass
+    # ── Шаг 1: DeepSeek vision (общий декодер services/deepseek_vision.py) ──
+    from services.deepseek_vision import decode_photo
+    text = decode_photo(img_b64, mime, _VISION_PROMPT, max_tokens=2048)
+    if text:
+        return jsonify(text=text, engine="deepseek_vision")
 
     # ── Шаг 2: локальный Tesseract OCR (резерв) ────────────────────
     try:

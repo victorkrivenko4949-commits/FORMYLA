@@ -290,54 +290,16 @@ def _ocr_gemini_vision(b64: str, task_text: str) -> Optional[str]:
 
 
 def _ocr_deepseek_vision(b64: str, task_text: str) -> Optional[str]:
-    """DeepSeek vision (deepseek-v4-flash-vision-exp) — распознавание рукописных решений.
+    """DeepSeek vision через общий декодер GeoExact (services/deepseek_vision.py).
 
-    OCR_PRIMARY_V1: ОСНОВНОЙ распознаватель задач дня — ровно та же
-    конфигурация, что в проверенной системе «Генерация чертежей»
-    (routes/figures.py fig_recognize_photo) и в ИИ-тьюторе
-    (ai_tutor_review.transcribe_photos): api.deepseek.com,
-    DEEPSEEK_VISION_MODEL, тот же промпт и параметры. Прямой вызов с
-    image_url; корректно читает LaTeX-дроби и знаки неравенств.
-    None при сбое.
+    Тот же код, что распознаёт фото в генераторе чертежей: thinking отключён,
+    повтор без параметра при отказе провайдера. None при сбое.
     """
-    try:
-        import os as _os
-        import requests as _requests
-        _key = _os.environ.get("DEEPSEEK_API_KEY", "").strip()
-        if not _key:
-            return None
-        _model = _os.getenv("DEEPSEEK_VISION_MODEL", "deepseek-v4-flash-vision-exp").strip()
-        _mime = _mime_from_b64(b64)
-        # Промпт и параметры — один в один из работающей системы чертежей.
-        _prompt = "Верни текст с изображения, формулы в LaTeX."
-        if task_text:
-            _prompt += f"\n\nДля контекста, задача: {task_text[:600]}"
-        _resp = _requests.post(
-            "https://api.deepseek.com/v1/chat/completions",
-            headers={"Authorization": f"Bearer {_key}", "Content-Type": "application/json"},
-            json={
-                "model": _model,
-                "messages": [
-                    {"role": "user", "content": [
-                        {"type": "text", "text": _prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:{_mime};base64,{b64}"}},
-                    ]},
-                ],
-                "temperature": 0.7,
-                "max_tokens": 8192,
-            },
-            timeout=(15, 60),
-        )
-        if _resp.status_code != 200:
-            logger.warning("[solution_ocr] deepseek vision HTTP %s: %s", _resp.status_code, _resp.text[:200])
-            return None
-        _body = _resp.json()
-        if not _body.get("choices"):
-            return None
-        return (_body["choices"][0].get("message", {}) or {}).get("content") or None
-    except Exception as e:
-        logger.warning("[solution_ocr] deepseek vision failed: %s", e)
-        return None
+    from services.deepseek_vision import decode_photo
+    prompt = "Верни текст с изображения, формулы в LaTeX."
+    if task_text:
+        prompt += f"\n\nДля контекста, задача: {task_text[:600]}"
+    return decode_photo(b64, _mime_from_b64(b64), prompt, max_tokens=8192)
 
 
 def _normalize(text: str) -> Tuple[str, bool]:
