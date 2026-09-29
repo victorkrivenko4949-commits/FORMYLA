@@ -335,7 +335,7 @@ def _incidence_claims(plan: FigurePlan) -> tuple[list[tuple[str, str, str]],
         elif c.op == "line_intersect":
             on_line.append((out, a[0], a[1]))
             on_line.append((out, a[2], a[3]))
-        elif c.op == "line_circle":
+        elif c.op in ("line_circle", "line_circle_other"):
             on_line.append((out, a[0], a[1]))
             on_circle.append((out, a[2], None, a[3]))
         elif c.op == "circle_circle":

@@ -31,6 +31,7 @@ CONSTRUCTIONS: dict[str, dict[str, Any]] = {
     "orthocenter":     {"args": 3, "doc": "ортоцентр ABC"},
     # --- пересечения ---
     "line_intersect":  {"args": 4, "doc": "пересечение прямых AB и CD"},
+    "line_circle_other": {"args": 4, "value": False, "doc": "второе пересечение прямой AB с окружностью (центр C, радиус |CD|), когда A лежит на этой окружности; A — не ответ"},
     "line_circle":     {"args": 4, "value": True, "doc": "пересечение AB с окружностью (центр C, радиус |CD|); value=0/1 выбор корня"},
     "circle_circle":   {"args": 4, "value": True, "doc": "пересечение окружностей (C1=A,r=|AB|),(C2=C,r=|CD|); value=0/1"},
     # --- биссектрисы и параллели ---

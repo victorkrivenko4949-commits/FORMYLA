@@ -740,9 +740,66 @@ def _ratio_and_point_failures(text: str, P: dict) -> list[str]:
     return list(dict.fromkeys(fails))
 
 
+_SPECIAL_WORDS = re.compile(r"правильн|равносторон|квадрат|ромб|прямоугольн|равнобедренн|"
+                            r"параллелограмм|трапец|хорд|касательн|вписанн", re.I)
+
+
+def _generic_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
+    """A proof about an arbitrary figure must not be drawn for one rigid shape.
+
+    Free points are counted; each independent constraint (non-zero Jacobian
+    row at the solution) removes a degree of freedom. Constraints that hold
+    identically do not. If three or more free points end up with zero shape
+    freedom although the text has no numbers and names no special shape, the
+    plan has specialised the figure (e.g. translate + a length constraint).
+    """
+    try:
+        from .constructions import execute
+        from .solver import residuals
+        names = re.sub(r"[A-Z](?:_?\d{1,2})?(?![A-Za-z])", "", text)
+        if re.search(r"\d", names) or not re.search(r"докаж|доказать|покаж", text, re.I) \
+                or _SPECIAL_WORDS.search(text):
+            return []
+        free = [c.out for c in plan.constructions if c.op == "free_point"]
+        if len(free) < 3 or not plan.constraints:
+            return []
+        x0 = np.array([v for n in free for v in np.asarray(coords[n], float)])
+        span = max(float(np.ptp(np.array([np.asarray(v, float) for v in coords.values()]), axis=0).max()), 1e-9)
+
+        # Numeric distances/angles the model chose are an instance (scale, sample
+        # triangle), not a specialisation forced by the statement: leave them out.
+        from .schema import Constraint
+        qualitative = [c for c in plan.constraints
+                       if not (c.type in ("dist", "angle") and c.value is not None)]
+        if not qualitative:
+            return []
+        import copy
+        sub = copy.copy(plan)
+        sub.constraints = qualitative
+
+        def res(x):
+            return residuals(sub, execute(plan, free_values=x))
+
+        base = res(x0)
+        eps = 1e-6 * span
+        J = np.zeros((len(base), len(x0)))
+        for i in range(len(x0)):
+            dx = np.zeros_like(x0)
+            dx[i] = eps
+            J[:, i] = (res(x0 + dx) - res(x0 - dx)) / (2 * eps)
+        sv = np.linalg.svd(J * span, compute_uv=False)
+        rank = int(np.sum(sv > 1e-5 * max(sv.max(), 1e-12))) if sv.size and sv.max() > 1e-9 else 0
+        if 2 * len(free) - 4 - rank <= 0:      # rigid motion (3) and scale (1) are free
+            return ["OVER_SPECIALIZED: условие без чисел, а фигура получилась жёстко "
+                    "определённой (частный случай)"]
+    except Exception:  # noqa: BLE001 - a heuristic must never break the pipeline
+        return []
+    return []
+
+
 def semantic_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
     """Independently check the named incenter, circle and equality claims."""
-    fails = (_incircle_failures(text, plan, coords)
+    fails = (_generic_failures(text, plan, coords) + _incircle_failures(text, plan, coords)
              + _circumcircle_failures(text, plan, coords)
              + _rhombus_failures(text, plan, coords)
              + _statement_failures(text, plan, coords))

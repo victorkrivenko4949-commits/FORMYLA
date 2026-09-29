@@ -123,6 +123,13 @@ def _sketch_result(text: str, with_aux: bool, base: "Result | None", aux=None) -
         sol = Solution(coords=coords, residual=0.0, ok=True)
         if not _finite_coords(sol):
             return None
+        try:
+            from .auxplan import add_named_circles
+            plan, _c = add_named_circles(plan, sol.coords, text)
+            if len(_c) != len(sol.coords):
+                sol = Solution(coords=_c, residual=sol.residual, ok=sol.ok)
+        except Exception:  # noqa: BLE001 - an optional addition
+            pass
         if with_aux:
             # sess/budget/start when the model may still be asked; otherwise rules only
             sess, budget, t0 = aux or (None, _NoModel(), time.time())
@@ -209,6 +216,46 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
         return failed
     finally:
         L.set_deadline(None)
+
+
+def _strip_invented_labels(text: str, plan) -> None:
+    """Numbers on the drawing must come from the statement: a number-free problem
+    gets no numeric length labels the model made up for its sample sizes."""
+    try:
+        if re.search(r"\d", re.sub(r"[A-Z](?:_?\d{1,2})?(?![A-Za-z])", "", text)):
+            return
+        plan.draw.length_marks = [m for m in plan.draw.length_marks
+                                  if not re.search(r"\d", str(m.get("text", "")))]
+    except Exception:  # noqa: BLE001
+        return
+
+
+def _connect_orphans(plan) -> None:
+    """A point that is constructed but touches nothing on the drawing (a bisector
+    continued to the circle, a reflected point, a foot) is joined to the point it
+    was built from, so it does not float in the picture."""
+    try:
+        d = plan.draw
+        touched = set()
+        for f in ("segments", "aux_segments", "lines", "aux_lines", "rays", "aux_rays",
+                  "extensions", "aux_extensions", "circles", "aux_circles"):
+            for item in getattr(d, f):
+                touched.update(x for x in item if isinstance(x, str))
+        for c in plan.constructions:
+            if c.out in touched or c.out in d.hide_labels or c.out in d.aux_points:
+                continue
+            src = None
+            if c.op in ("line_circle", "line_circle_other") and len(c.args) == 4:
+                src = c.args[0]
+            elif c.op == "foot" and len(c.args) == 3:
+                src = c.args[0]
+            elif c.op == "reflect_point" and len(c.args) == 2:
+                src = c.args[0]
+            if src and src in plan.points and src != c.out:
+                d.segments.append([src, c.out])
+                touched.update((src, c.out))
+    except Exception:  # noqa: BLE001
+        return
 
 
 def _coerce_formalized(res):
@@ -375,6 +422,8 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                 try:
                     plan, warn = _coerce_formalized(
                         L.formalize(sess, text, cls, with_aux, budget, feedback, prev_code))
+                    _strip_invented_labels(text, plan)
+                    _connect_orphans(plan)
                     validate_plan(plan)
                 except PlanError:
                     raise
@@ -478,6 +527,11 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                 advice = (". Построй невырожденный ромб с равными сторонами "
                           "AB=BC=CD=DA и покажи все четыре стороны в draw.segments. "
                           "Не ссылайся на точки до их построения.")
+            elif "OVER_SPECIALIZED" in details:
+                advice = (". Ты сузил фигуру до частного случая. Не задавай точку сразу через "
+                          "translate/parallel_point и равенство длин dist_eq: для «AP = AB и "
+                          "PB ∥ AC» строй H=translate(B,A,C), P=line_circle_other(B,H,A,B). "
+                          "Свободных точек A,B,C достаточно, произвольный треугольник.")
             elif _claims_bisector_arc(text):
                 advice = (". Используй bisector_circumcircle(W,[A,B,C]), "
                           "не bisector_point; не выдумывай длины сторон.")
@@ -545,6 +599,14 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
         except Exception:  # noqa: BLE001
             pass
         model_notes = plan.notes
+        try:
+            from .auxplan import add_named_circles
+            from .solver import Solution as _Sol
+            plan, _c = add_named_circles(plan, sol.coords, text)
+            if len(_c) != len(sol.coords):
+                sol = _Sol(coords=_c, residual=sol.residual, ok=sol.ok, reason=sol.reason)
+        except Exception:  # noqa: BLE001 - an optional addition
+            pass
         if with_aux and not special_plan:
             plan, sol = _auxiliary_layer(plan, sol, text, sess, budget, t_start)
         from .completion import complete_intersection_support

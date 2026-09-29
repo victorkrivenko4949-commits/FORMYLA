@@ -166,7 +166,7 @@ def _pair_list(value, known, limit=8):
 
 def apply_aux(plan, coords: dict, data) -> tuple | None:
     """Validate and execute an auxiliary plan. Returns (plan, coords) or None."""
-    if not isinstance(data, dict) or not isinstance(data.get("steps"), list) or not data["steps"]:
+    if not isinstance(data, dict) or not isinstance(data.get("steps"), list):
         return None
     if len(data["steps"]) > MAX_NEW_POINTS:
         return None
@@ -305,3 +305,45 @@ def _verified_ticks(plan, coords, new) -> None:
         used.add(count)
         for p in group:
             d.equal_marks.append({"pts": list(p), "count": count, "layer": "aux"})
+
+
+# ---------------------------------------------------------------- circles named in the text
+_CIRCLE = re.compile(r"окружност\w*\s*\(?\s*([A-Z])\s*([A-Z])\s*([A-Z])\s*\)?(?![A-Za-z0-9_])")
+
+
+def add_named_circles(plan, coords: dict, text: str):
+    """The circle the statement names by three points, e.g. "окружности (PXQ)",
+    belongs to the main drawing: build its centre exactly and draw it."""
+    from .constructions import _circumcenter
+    done = plan
+    coords = dict(coords)
+    for m in _CIRCLE.finditer(text):
+        a, b, c = m.groups()
+        if len({a, b, c}) != 3 or not all(n in coords for n in (a, b, c)):
+            continue
+        P = [np.asarray(coords[n], float) for n in (a, b, c)]
+        try:
+            centre = _circumcenter(*P)
+        except Exception:  # noqa: BLE001 - collinear points
+            continue
+        r = float(np.linalg.norm(centre - P[0]))
+        if not np.all(np.isfinite(centre)) or r <= 1e-9:
+            continue
+        drawn = False
+        for k, ref in list(done.draw.circles) + list(done.draw.aux_circles):
+            if k in coords and abs(np.linalg.norm(np.asarray(coords[k]) - centre)) < 1e-6 * r \
+                    and abs(np.linalg.norm(np.asarray(coords[k]) - np.asarray(coords[ref])) - r) < 1e-6 * r:
+                drawn = True
+        if drawn:
+            continue
+        name = next((n for n in ("Z", "Y", "W", "V", "U", "T", "S", "R") if n not in coords
+                     and n not in done.points), None)
+        if name is None:
+            return done, coords
+        done = copy.deepcopy(done)
+        done.points.append(name)
+        done.constructions.append(Construction(op="circumcenter", out=name, args=[a, b, c]))
+        done.draw.circles.append([name, a])
+        done.draw.hide_labels.append(name)
+        coords[name] = centre
+    return done, coords
