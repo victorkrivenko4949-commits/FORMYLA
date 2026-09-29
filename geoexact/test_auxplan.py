@@ -259,3 +259,35 @@ def test_builtin_theorem_model_says_nothing_to_add(monkeypatch):
     monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: {"idea": "", "steps": []})
     r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False)
     assert r.plan["draw"]["aux_segments"] == []
+
+
+def test_claims_hold_rejects_words_that_contradict_the_drawing():
+    from geoexact.core.auxplan import claims_hold
+    c = {"B": (0, 0), "D": (1, 0), "G": (3, 0), "C": (0, 4), "E": (1, 4)}
+    assert claims_hold("Продлить так, что DG = BD", {**c, "G": (2, 0)})
+    assert not claims_hold("Продлить так, что DG = BD", c)          # DG = 2, BD = 1
+    assert claims_hold("CE ∥ BD", c) and not claims_hold("CG ∥ BD", c)
+    assert claims_hold("точка Q такая, что PQ = AB", c)              # unknown points ignored
+    assert claims_hold("", c) and claims_hold(None, c)
+
+
+def test_production_worker_path_starts_model_request_without_session(monkeypatch):
+    """The web worker calls generate() without sess; the model must still be asked."""
+    from geoexact.core import pipeline
+    from geoexact.core.semantics import _PARALLELOGRAM_PROOF
+    calls = []
+    monkeypatch.setattr(llm, "make_session", lambda: object())
+    monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: calls.append(k.get("deep")) or
+                        {"idea": "", "steps": []})
+    r = generate(_PARALLELOGRAM_PROOF, True, use_cache=False)
+    assert r.ok and sorted(calls, key=bool) == [False, True]
+
+
+def test_drawing_that_contradicts_the_models_words_is_not_shown(monkeypatch):
+    from geoexact.core.semantics import _PARALLELOGRAM_PROOF
+    monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: {
+        "idea": "Продлить CD за D до G так, что DG = BD", "steps": [
+            {"op": "divide_segment", "out": "G", "args": ["C", "D"], "value": 2}],
+        "aux_segments": [["B", "G"]]})
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False)
+    assert r.plan["draw"]["aux_segments"] == [] and "G" not in r.plan["points"]
