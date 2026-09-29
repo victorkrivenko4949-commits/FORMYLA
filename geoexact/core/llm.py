@@ -595,7 +595,7 @@ def _declare_helper_points(d) -> None:
         return
 
 
-def aux_plan(sess, problem: str, figure: str, budget: Budget, deep: bool = True) -> dict:
+def aux_plan(sess, problem: str, figure: str, budget: Budget, deep: bool = False) -> dict:
     """Separate, small request: only the auxiliary construction for a built figure."""
     from .auxplan import SYS_AUXPLAN
     # The request wording is the user's own, proven fast formulation.
@@ -614,3 +614,74 @@ def aux_plan(sess, problem: str, figure: str, budget: Budget, deep: bool = True)
     txt, _ = _chat(sess, model, SYS_AUXPLAN, user, max_out, "aux-plan", budget,
                    thinking=deep, reason=deep)
     return _parse_json(txt)
+
+
+# --------------------------------------------------------------------------
+# Expert: Gemini 3.8 through OdiRouter (OpenAI-compatible, same key/host as the
+# rest of the site: GEMINI_API_KEY / GEMINI_API_BASE). The router answers a
+# plain request with 504 after ~60 s, so the answer is always streamed.
+EXPERT_MODEL = "gemini-3.8-flash"
+
+
+def _expert_url() -> str:
+    base = (os.environ.get("GEMINI_API_BASE") or os.environ.get("GEMINI_BASE_URL")
+            or "https://api.odirouter.ai/v1").strip().rstrip("/")
+    return base if base.endswith("/chat/completions") else base + "/chat/completions"
+
+
+def expert_text(sess, problem: str, max_out: int = 16000) -> str:
+    """The expert's free-text auxiliary construction, in the user's own wording."""
+    key = os.environ.get("GEMINI_API_KEY")
+    if not key:
+        raise PlanError("NO_EXPERT_KEY", "нет GEMINI_API_KEY")
+    prompt = ("вероятно тут есть доп построение - напиши все доп построения которые тут требуются\n"
+              f'"{problem}"\n'
+              "напиши только доп построение и что в итоге получится\n"
+              "выбери самое оптимальное при котором легче всего решить задачу")
+    payload = {"model": EXPERT_MODEL, "max_tokens": max_out, "stream": True,
+               "messages": [{"role": "user", "content": prompt}]}
+    t0 = time.time()
+    r = sess.post(_expert_url(), json=payload, stream=True,
+                  headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
+                  timeout=(15, _read_timeout()))
+    if r.status_code != 200:
+        raise PlanError("EXPERT_HTTP", f"HTTP {r.status_code}")
+    parts: list[str] = []
+    finish = None
+    for raw in r.iter_lines(decode_unicode=True):
+        if time.time() - t0 > 150:
+            raise PlanError("TIME_LIMIT", "эксперт не уложился во время")
+        line = (raw.decode("utf-8", "replace") if isinstance(raw, bytes) else raw or "").strip()
+        if not line.startswith("data:"):
+            continue
+        chunk = line[5:].strip()
+        if chunk == "[DONE]":
+            break
+        try:
+            d = json.loads(chunk)
+        except json.JSONDecodeError:
+            continue
+        for ch in d.get("choices") or []:
+            piece = (ch.get("delta") or {}).get("content")
+            if piece:
+                parts.append(piece)
+            finish = ch.get("finish_reason") or finish
+    text = "".join(parts).strip()
+    if finish == "length" or not text:
+        raise PlanError("EXPERT_EMPTY", f"эксперт не дал ответа (finish={finish}, символов={len(text)})")
+    return text
+
+
+def aux_plan_from_text(sess, problem: str, expert: str, budget: Budget) -> dict:
+    """Turn the expert's words into our checked JSON steps (same points, same idea)."""
+    from .auxplan import SYS_AUXPLAN
+    user = (f'Задача: "{problem}"\n\nЭксперт предложил такое доп. построение:\n{expert}\n\n'
+            "Переведи именно это построение в JSON по формату из системной инструкции: "
+            "сохрани имена точек эксперта, ничего своего не придумывай. «Через P провести прямую, "
+            "параллельную AB, до пересечения с CD» — это одна операция parallel_intersect(P,A,B,C,D). "
+            "Число пиши в поле value, а не в args. В поле idea — одно-два "
+            "предложения: что построено и что в итоге получится.")
+    txt, _ = _chat(sess, "deepseek-v4-pro", SYS_AUXPLAN, user, 6000, "aux-from-text", budget)
+    data = _parse_json(txt)
+    data["_expert_text"] = expert
+    return data

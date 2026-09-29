@@ -172,7 +172,7 @@ def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
             base = _strip_aux(plan) if getattr(_AUXJOB, "special", False) else plan
             for _name, data in answers:
                 applied = auxplan.apply_aux(base, coords, data)
-                if applied is not None and not auxplan.claims_hold(data.get("idea", ""), applied[1]):
+                if applied is not None and not auxplan.claims_hold((data.get("idea", "") or "") + " " + (data.get("_expert_text", "") or ""), applied[1]):
                     applied = None      # the words say one thing, the drawing another
                 asked = bool(data.get("steps") or data.get("aux_segments")
                              or data.get("aux_lines") or data.get("aux_circles"))
@@ -189,7 +189,7 @@ def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
                 data = L.aux_plan(sess, text, auxplan.describe_figure(plan, coords), budget,
                                   deep=False)          # never a long reasoning request here
                 applied = auxplan.apply_aux(plan, coords, data)
-                if applied is not None and not auxplan.claims_hold(data.get("idea", ""), applied[1]):
+                if applied is not None and not auxplan.claims_hold((data.get("idea", "") or "") + " " + (data.get("_expert_text", "") or ""), applied[1]):
                     applied = None
                 # An empty or refused answer is the model's decision ("not needed");
                 # only a failed request or unusable steps fall back to the rules.
@@ -225,32 +225,35 @@ _AUXJOB = threading.local()
 
 
 class _AuxJob:
-    """The model's auxiliary construction, requested in parallel with the figure.
+    """The auxiliary construction, requested in parallel with the figure.
 
-    Two requests to the strongest model start at once: one with reasoning (the
-    mathematically better answer, which on a hard problem can take over a minute)
-    and one quick answer without reasoning. The reasoning answer is used when it
-    arrives in time and is usable; otherwise the quick one. The answer is checked
-    against the real coordinates before anything is drawn. Each request has its own
-    small budget, and a request is never repeated.
+    Two requests start at once. The expert (Gemini 3.8, the user's own wording, a
+    free-text construction) is turned into checked steps by deepseek-v4-pro; a quick
+    deepseek-v4-pro answer is the fallback. The expert answer is used when it arrives
+    in time and survives the coordinate checks. Each request has its own small budget
+    and is never repeated.
     """
-    DEEP_WAIT = 110.0
+    EXPERT_WAIT = 100.0
 
     def __init__(self, sess, text: str, deadline: float):
         self.sess, self.text, self.deadline = sess, text, deadline
         self.started = time.time()
         self.slots = {}
-        for name, deep in (("deep", True), ("fast", False)):
+        for name in ("expert", "fast"):
             slot = {"data": None, "error": None, "done": threading.Event(),
                     "budget": L.Budget(cap=0.06)}
             self.slots[name] = slot
-            threading.Thread(target=self._run, args=(slot, deep), daemon=True).start()
+            threading.Thread(target=self._run, args=(name, slot), daemon=True).start()
 
-    def _run(self, slot, deep):
+    def _run(self, name, slot):
         try:
             L.set_deadline(self.deadline)
             from .auxplan import STATEMENT_ONLY
-            slot["data"] = L.aux_plan(self.sess, self.text, STATEMENT_ONLY, slot["budget"], deep=deep)
+            if name == "expert":
+                said = L.expert_text(self.sess, self.text)
+                slot["data"] = L.aux_plan_from_text(self.sess, self.text, said, slot["budget"])
+            else:
+                slot["data"] = L.aux_plan(self.sess, self.text, STATEMENT_ONLY, slot["budget"])
         except Exception as exc:  # noqa: BLE001 - reported through the slot
             slot["error"] = exc
         finally:
@@ -258,11 +261,11 @@ class _AuxJob:
 
     def answers(self, main_budget=None):
         """Usable answers in order of preference: [(name, data)]."""
-        stop = min(self.deadline - 4, self.started + self.DEEP_WAIT)
-        self.slots["deep"]["done"].wait(max(0.0, stop - time.time()))
+        stop = min(self.deadline - 4, self.started + self.EXPERT_WAIT)
+        self.slots["expert"]["done"].wait(max(0.0, stop - time.time()))
         self.slots["fast"]["done"].wait(max(0.0, self.deadline - 4 - time.time()))
         out = []
-        for name in ("deep", "fast"):
+        for name in ("expert", "fast"):
             slot = self.slots[name]
             if slot["done"].is_set():
                 if main_budget is not None and slot["budget"].calls:
