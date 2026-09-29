@@ -657,19 +657,34 @@ def _expert_url() -> str:
     return base if base.endswith("/chat/completions") else base + "/chat/completions"
 
 
-def expert_text(sess, problem: str, max_out: int = 16000) -> str:
+ANOTHER_AUX = "отлично! но давай использовать какое-нибудь другое тоже удобное доп построение"
+MAX_HISTORY = 7      # first prompt + three (answer, request) exchanges
+
+
+def expert_messages(problem: str, history: list | None = None) -> list[dict]:
+    """The chat sent to the expert: the user's prompt; on «another construction»
+    the earlier answers followed by the user's own follow-up."""
+    if history:
+        msgs = [dict(m) for m in history]
+        if len(msgs) > MAX_HISTORY:
+            msgs = msgs[:1] + msgs[-(MAX_HISTORY - 1):]
+        return msgs + [{"role": "user", "content": ANOTHER_AUX}]
+    prompt = ("вероятно тут есть доп построение - напиши все доп построения которые тут требуются\n"
+              f'"{problem}"\n'
+              "напиши только доп построение и что в итоге получится\n"
+              "выбери самое оптимальное при котором легче всего решить задачу")
+    return [{"role": "user", "content": prompt}]
+
+
+def expert_text(sess, problem: str, history: list | None = None, max_out: int = 16000) -> str:
     """The expert's free-text auxiliary construction, in the user's own wording."""
     # The OdiRouter key the site already uses (llm_router reads GEMINI_API_KEY);
     # ODIROUTER_API_KEY is accepted as well, as in .env.example.
     key = (os.environ.get("GEMINI_API_KEY") or os.environ.get("ODIROUTER_API_KEY") or "").strip()
     if not key:
         raise PlanError("NO_EXPERT_KEY", "нет ключа OdiRouter (GEMINI_API_KEY / ODIROUTER_API_KEY)")
-    prompt = ("вероятно тут есть доп построение - напиши все доп построения которые тут требуются\n"
-              f'"{problem}"\n'
-              "напиши только доп построение и что в итоге получится\n"
-              "выбери самое оптимальное при котором легче всего решить задачу")
     payload = {"model": EXPERT_MODEL, "max_tokens": max_out, "stream": True,
-               "messages": [{"role": "user", "content": prompt}]}
+               "messages": expert_messages(problem, history)}
     t0 = time.time()
     r = sess.post(_expert_url(), json=payload, stream=True,
                   headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
