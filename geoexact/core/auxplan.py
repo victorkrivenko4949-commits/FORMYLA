@@ -197,7 +197,7 @@ def _pair_list(value, known, limit=8):
 _SEG = r"([A-Z][A-Z0-9_']?)\s*([A-Z][A-Z0-9_']?)"
 
 
-def claims_hold(idea: str, coords: dict, why: list | None = None) -> bool:
+def claims_hold(idea: str, coords: dict, why: list | None = None, involve: set | None = None) -> bool:
     """Numerically check equalities and parallelism the model states in words.
 
     Only explicit claims about named points are checked («DG = BD», «EF ∥ CD»); a
@@ -219,6 +219,8 @@ def claims_hold(idea: str, coords: dict, why: list | None = None) -> bool:
         s1, s2 = seg(m[1], m[2]), seg(m[3], m[4])
         if s1 is None or s2 is None:
             continue
+        if involve is not None and not ({m[1], m[2], m[3], m[4]} & involve):
+            continue                # a claim about the original figure only: not ours to veto
         l1, l2 = float(np.linalg.norm(s1[0] - s1[1])), float(np.linalg.norm(s2[0] - s2[1]))
         if abs(l1 - l2) > 1e-3 * span:
             if why is not None:
@@ -228,6 +230,8 @@ def claims_hold(idea: str, coords: dict, why: list | None = None) -> bool:
         s1, s2 = seg(m[1], m[2]), seg(m[3], m[4])
         if s1 is None or s2 is None:
             continue
+        if involve is not None and not ({m[1], m[2], m[3], m[4]} & involve):
+            continue                # a claim about the original figure only: not ours to veto
         d1, d2 = s1[1] - s1[0], s2[1] - s2[0]
         n1, n2 = float(np.linalg.norm(d1)), float(np.linalg.norm(d2))
         if n1 > 1e-9 and n2 > 1e-9 and abs(d1[0] * d2[1] - d1[1] * d2[0]) > 1e-3 * n1 * n2:
