@@ -238,3 +238,28 @@ def test_pipeline_missing_point_is_reported_not_hidden(model):
     assert r.ok                                    # чертёж есть
     assert r.verification == "approximate"          # но не полностью проверен
     assert any("STATEMENT_MISSING" in w and "AM" in w for w in r.warnings)
+
+
+def test_missing_named_point_costs_at_most_one_retry(model):
+    """Пропущенная названная точка не должна гонять платные запросы до лимита."""
+    calls = []
+
+    def no_m(sess, text, cls, with_aux, budget, feedback="", prev=""):
+        calls.append(feedback)
+        plan = triangle_plan()
+        d = plan.to_dict()
+        d["points"] = ["A", "B", "C"]
+        d["constructions"] = [c for c in d["constructions"] if c["out"] != "M"]
+        return FigurePlan.from_dict(d), []
+
+    model(no_m)
+    for aux in (False, True):
+        calls.clear()
+        r = generate("В треугольнике ABC угол B равен 60°, угол C равен 50°. "
+                     "Проведена медиана AM. Найдите угол BAM.",
+                     aux, sess=object(), use_cache=False)
+        assert r.ok
+        assert len(calls) == 2, calls            # первый ответ и одна целевая подсказка
+        assert "M=midpoint" in calls[1]          # подсказка про недостающую точку
+        assert r.verification == "approximate"   # честно: условие показано не полностью
+        assert any("STATEMENT_MISSING" in w and "AM" in w for w in r.warnings)

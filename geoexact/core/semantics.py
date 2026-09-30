@@ -690,11 +690,16 @@ def _statement_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
     for label, (x, y) in named_segments(text):
         miss = [n for n in (x, y) if _point_key(n, P) is None]
         if miss:
-            fails.append(f"нет точки {' и '.join(miss)} для названного "
+            fails.append(f"{SOFT_STATEMENT_PREFIX}нет точки {' и '.join(miss)} для названного "
                          f"в условии отрезка {label}")
     fails += _ratio_and_point_failures(_math_text(text), P)
     return fails
 
+
+# Пропуск названной точки — неполный ПОКАЗ условия, а не неверная геометрия. Такая
+# ошибка мягкая: конвейер просит модель один раз, а потом принимает чертёж с
+# предупреждением STATEMENT_MISSING, а не гоняет платные «думающие» запросы до лимита.
+SOFT_STATEMENT_PREFIX = "STATEMENT_POINT: "
 
 _NAME = r"[A-Z](?:_?\d{1,2})?"
 _HYPOTHETICAL = re.compile(r"может\s+ли|верно\s+ли|возможно\s+ли|если\s+бы|предполож|неверно",
