@@ -132,6 +132,40 @@ def status(jid):
     return jsonify(result)
 
 
+@bp.post("/solution")
+@login_required
+def solution():
+    """«Полное решение»: тот же диалог с экспертом (Луна) продолжается
+    просьбой решить задачу; DeepSeek оформляет ответ в LaTeX."""
+    from services.security import validate_csrf
+    if not validate_csrf(request.headers.get("X-CSRF-Token", "")):
+        return jsonify(error="Обновите страницу и повторите запрос."), 403
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        return jsonify(error="Генератор ещё не настроен."), 503
+    if not request.is_json:
+        return jsonify(error="Требуется JSON."), 400
+    data = request.get_json(silent=True) or {}
+    jid = data.get("job_id")
+    if not isinstance(jid, str) or not re.fullmatch(r"[0-9a-f]{32}", jid):
+        return jsonify(error="Некорректный запрос решения."), 400
+    earlier = current_app.extensions["geoexact"].get(jid, str(current_user.get_id()))
+    if not earlier or earlier.get("status") != "done":
+        return jsonify(error="Сначала постройте чертёж."), 404
+    result = earlier.get("result") or {}
+    if not result.get("ok") or result.get("kind") == "solution":
+        return jsonify(error="Сначала постройте чертёж."), 404
+    problem = result.get("problem_text")
+    if not isinstance(problem, str) or not problem.strip():
+        return jsonify(error="У задания не сохранилось условие."), 404
+    history = clean_history(result.get("expert_history"))
+    try:
+        jid = current_app.extensions["geoexact"].submit_solution(
+            str(current_user.get_id()), problem, history)
+    except QueueFull as e:
+        return jsonify(error=str(e)), 429
+    return jsonify(job_id=jid, status="queued"), 202
+
+
 @bp.get("/last")
 @login_required
 def last():

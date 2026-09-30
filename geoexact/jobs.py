@@ -69,6 +69,7 @@ def _lock(c):
 
 
 _HISTORY_MARK = "\x1eGXH1\x1e"
+_SOLUTION_MARK = "\x1eGXS1\x1e"    # задача «полное решение»: другой исполнитель
 
 
 def wrap_problem(problem, history):
@@ -76,6 +77,26 @@ def wrap_problem(problem, history):
     if not history:
         return problem
     return _HISTORY_MARK + json.dumps({"p": problem, "h": history}, ensure_ascii=False)
+
+
+def wrap_solution(problem, history):
+    """Job text of a «full solution» request (same column, different marker)."""
+    return _SOLUTION_MARK + json.dumps({"p": problem, "h": history or []},
+                                       ensure_ascii=False)
+
+
+def unwrap_solution(stored):
+    if isinstance(stored, str) and stored.startswith(_SOLUTION_MARK):
+        try:
+            d = json.loads(stored[len(_SOLUTION_MARK):])
+            return d["p"], (d.get("h") or None)
+        except (ValueError, KeyError, TypeError):
+            return stored[len(_SOLUTION_MARK):], None
+    return stored, None
+
+
+def is_solution_job(stored) -> bool:
+    return isinstance(stored, str) and stored.startswith(_SOLUTION_MARK)
 
 
 def unwrap_problem(stored):
@@ -128,6 +149,25 @@ class Queue:
         self._start_lock = threading.Lock()
 
     def submit(self, owner, problem, with_aux, history=None):
+        jid = self._admit(owner)
+        now = time.time()
+        with self.engine.begin() as c:
+            c.execute(insert(jobs).values(
+                id=jid, owner=owner, status="queued", created=now,
+                problem=wrap_problem(problem, history), with_aux=int(with_aux)))
+        return jid
+
+    def submit_solution(self, owner, problem, history=None):
+        """«Полное решение»: те же лимиты и одна незавершённая задача на пользователя."""
+        jid = self._admit(owner)
+        now = time.time()
+        with self.engine.begin() as c:
+            c.execute(insert(jobs).values(
+                id=jid, owner=owner, status="queued", created=now,
+                problem=wrap_solution(problem, history), with_aux=2))
+        return jid
+
+    def _admit(self, owner):
         now = time.time()
         midnight = datetime.now(timezone.utc).replace(
             hour=0, minute=0, second=0, microsecond=0).timestamp()
@@ -152,9 +192,6 @@ class Queue:
                 raise QueueFull("Дневной лимит сервиса исчерпан.")
             if count(jobs.c.status.in_(["queued", "running"])) >= self.queue_size:
                 raise QueueFull("Очередь заполнена. Попробуйте позже.")
-            c.execute(insert(jobs).values(
-                id=jid, owner=owner, status="queued", created=now,
-                problem=wrap_problem(problem, history), with_aux=int(with_aux)))
         return jid
 
     def get(self, jid, owner):
@@ -167,10 +204,12 @@ class Queue:
                 "result": json.loads(row.payload) if row.payload else None}
 
     def last_done(self, owner):
-        """Newest successful job of this owner that is still stored."""
+        """Newest successful DRAWING job of this owner that is still stored
+        (with_aux=2 is a «full solution» job, not a drawing to restore)."""
         with self.engine.connect() as c:
             row = c.execute(select(jobs.c.id).where(
                 jobs.c.owner == owner, jobs.c.status == "done",
+                jobs.c.with_aux != 2,
                 jobs.c.created > time.time() - 7 * 86400
             ).order_by(jobs.c.created.desc()).limit(1)).first()
         return row.id if row else None
@@ -207,11 +246,14 @@ class Queue:
         if row is None:
             return False
         try:
-            payload = self.runner(row["problem"], bool(row["with_aux"]))
+            payload = self.runner(row["problem"], int(row["with_aux"]))
             if isinstance(payload, dict) and payload.get("ok"):
                 # The result is the user's own; it is kept 7 days so a refresh (or another
                 # device) shows the drawing together with its condition.
-                payload = dict(payload, problem_text=unwrap_problem(row["problem"])[0][:12000],
+                source = (unwrap_solution(row["problem"])[0]
+                          if is_solution_job(row["problem"])
+                          else unwrap_problem(row["problem"])[0])
+                payload = dict(payload, problem_text=source[:12000],
                                with_aux=bool(row["with_aux"]))
         except Exception:
             payload = failure("WORKER_ERROR",
@@ -261,6 +303,26 @@ def _sketch_payload(problem, with_aux):
 
 
 def run_generation(problem, with_aux):
+    if is_solution_job(problem):
+        # «Полное решение»: продолжение того же диалога с экспертом + LaTeX.
+        problem, history = unwrap_solution(problem)
+        env = dict(os.environ, OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1",
+                   MKL_NUM_THREADS="1")
+        try:
+            process = subprocess.run(
+                [sys.executable, "-m", "geoexact.worker"],
+                input=json.dumps({"solution": True, "problem": problem,
+                                  "history": history}),
+                text=True, capture_output=True, timeout=200, env=env,
+            )
+        except subprocess.TimeoutExpired:
+            return {"ok": False, "kind": "solution", "reason": "TIMEOUT",
+                    "detail": "Превышено время получения решения. Возможен расход API; "
+                              "автоматического повторения нет."}
+        if process.returncode != 0:
+            return {"ok": False, "kind": "solution", "reason": "WORKER_ERROR",
+                    "detail": "Не удалось получить полное решение."}
+        return json.loads(process.stdout)
     problem, history = unwrap_problem(problem)
     env = dict(os.environ, OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1",
                MKL_NUM_THREADS="1")

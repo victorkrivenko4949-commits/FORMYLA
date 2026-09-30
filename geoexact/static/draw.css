@@ -146,3 +146,19 @@
 #gx-another{font:inherit;font-size:13.5px;padding:8px 14px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer}
 #gx-another:hover:not(:disabled){opacity:.8}
 #gx-another:disabled{opacity:.5;cursor:default}
+
+/* Полное решение: кнопка в панели инструментов и блок с LaTeX-решением */
+#gx-solution{font:inherit;font-size:13.5px;font-weight:600;padding:8px 14px;border-radius:8px;
+  border:1px solid rgba(125,141,252,.4);background:rgba(66,94,216,.12);color:#9db4ff;cursor:pointer;
+  transition:all .18s}
+#gx-solution:hover:not(:disabled){background:rgba(66,94,216,.22);border-color:#5a7bef}
+#gx-solution:disabled{opacity:.5;cursor:default}
+#gx-solution-box{margin-top:24px;padding:18px 20px;border-radius:14px;
+  border:1px solid rgba(125,141,252,.25);background:rgba(2,6,23,.35)}
+#gx-solution-box h2{font-size:18px;margin:0 0 10px}
+#gx-solution-text{font-size:15px;line-height:1.65}
+#gx-solution-text p{margin:10px 0}
+#gx-solution-text h3{font-size:15.5px;margin:18px 0 8px}
+#gx-solution-text ul,#gx-solution-text ol{margin:8px 0;padding-left:22px}
+#gx-solution-text li{margin:6px 0}
+#gx-solution-text .katex-display{margin:14px 0;overflow-x:auto}
