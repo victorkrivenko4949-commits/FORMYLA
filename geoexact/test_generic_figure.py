@@ -199,4 +199,4 @@ def test_no_dimension_brackets_on_split_segments():
     coords = execute(pl, free_values=np.array([0, 0, 4, 0, 1., 3.]))
     svg = render_svg(pl, Solution(coords=coords, residual=0.0, ok=True), gate=None, show_aux=False)
     assert "data-kind=\"span\"" not in svg
-    assert svg.count('class="tick"') == 4       # only the 2-tick group (BC = AC); no lone tick
+    assert svg.count('class="tick') == 4       # only the 2-tick group (BC = AC); no lone tick

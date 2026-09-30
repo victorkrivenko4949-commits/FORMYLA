@@ -34,7 +34,7 @@ def test_exact_proof_is_fast_verified_and_labelled(aux, monkeypatch):
     }
     assert 'data-point="F"' in result.svg
     # AB is split by D: no bracket and no lone tick; the AB = BC group is not drawn
-    assert result.svg.count('class="tick"') == 4  # BD = CF: 2+2 strokes
+    assert result.svg.count('class="tick') == 4  # BD = CF: 2+2 strokes
     assert 'data-kind="span"' not in result.svg
     assert result.plan["draw"]["aux_segments"] == []  # the model, not code, adds them
     assert result.plan["constraints"] == [

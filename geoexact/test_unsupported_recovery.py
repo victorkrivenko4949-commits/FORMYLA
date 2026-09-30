@@ -70,7 +70,7 @@ def test_trisector_cosine_builds_verified_geometry_without_model(aux, monkeypatc
     assert result.measured == pytest.approx(4 * math.sqrt(6), rel=1e-6)
     assert result.measurement_range[1] - result.measurement_range[0] < 1e-5
     # CD contains A: a group with a split member is not drawn, and there is no bracket
-    assert result.svg.count('class="tick"') == 3
+    assert result.svg.count('class="tick') == 3
     assert 'data-kind="span"' not in result.svg
     assert result.plan["target"] == {"kind": "dist", "args": ["A", "B"]}
     assert len(result.plan["draw"]["aux_segments"]) == int(aux)
