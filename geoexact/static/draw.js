@@ -42,7 +42,7 @@
     el("toggle-wrap").hidden = !data.with_aux || !data.svg_base;
     el("another").hidden = !(data.with_aux && lastJob);
     el("another").textContent = Array.isArray(data.expert_history) && data.expert_history.length
-      ? "Отлично! Но давай другое доп. построение" : "Gemini не ответила: повторить запрос";
+      ? "Использовать другое доп. построение" : "Gemini не ответила: повторить запрос";
     const fail = data.with_aux && data.expert_status && data.expert_status !== "OK";
     el("expert-note").hidden = !fail;
     el("expert-note").textContent = fail
