@@ -42,11 +42,14 @@
     el("toggle-wrap").hidden = !data.with_aux || !data.svg_base;
     el("another").hidden = !(data.with_aux && lastJob);
     el("another").textContent = Array.isArray(data.expert_history) && data.expert_history.length
-      ? "Отлично! Но давай другое доп. построение" : "Gemini не ответила: повторить запрос";
+      ? "Использовать другое доп. построение" : "Gemini не ответила: повторить запрос";
     const fail = data.with_aux && data.expert_status && data.expert_status !== "OK";
     el("expert-note").hidden = !fail;
-    el("expert-note").textContent = fail
-      ? "Gemini не дала доп. построение (код " + data.expert_status + "). Кнопка ниже отправит запрос заново." : "";
+    const rejected = fail && String(data.expert_status).startsWith("REJECTED:");
+    el("expert-note").textContent = !fail ? "" : rejected
+      ? "Gemini предложила построение, но его не удалось нарисовать (" + data.expert_status.slice(9).trim() +
+        "). Кнопка ниже попросит другое."
+      : "Gemini не дала доп. построение (код " + data.expert_status + "). Кнопка ниже отправит запрос заново.";
     el("result").hidden = false;
     const value = data.measured;
     el("measured").textContent = value == null ? "" :

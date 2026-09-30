@@ -31,7 +31,13 @@ ALLOWED = {
     "foot": (3, False), "homothety": (2, True), "rotate": (2, True),
     "circumcenter": (3, False), "incenter": (3, False), "centroid": (3, False),
     "orthocenter": (3, False),
+    # построения, которые эксперт часто предлагает вторым вариантом
+    "bisector_point": (3, False), "bisector_circumcircle": (3, False),
+    "external_bisector_point": (3, False), "line_circle_other": (4, False),
+    "line_circle": (4, True), "circle_circle": (4, True),
+    "tangent_point": (3, True), "excenter": (3, True),
 }
+_ROOT_OPS = {"line_circle": (0, 1), "circle_circle": (0, 1), "tangent_point": (0, 1), "excenter": (0, 1, 2)}
 MAX_NEW_POINTS = 6
 _NAME = re.compile(r"^[A-Z](?:_?\d{1,2})?$")
 
@@ -48,7 +54,14 @@ parallel_intersect(P,A,B,C,D) — точка пересечения прямой
 foot(P,A,B) — основание перпендикуляра из P на прямую AB;
 homothety(A,O,value=k) — O+k·(A−O);
 rotate(A,O,value=градусы) — поворот A вокруг O против часовой стрелки;
-circumcenter(A,B,C), incenter(A,B,C), centroid(A,B,C), orthocenter(A,B,C)."""
+circumcenter(A,B,C), incenter(A,B,C), centroid(A,B,C), orthocenter(A,B,C);
+bisector_point(A,B,C) — пересечение биссектрисы угла A со стороной BC;
+bisector_circumcircle(A,B,C) — второе пересечение биссектрисы угла A с описанной окружностью ABC;
+external_bisector_point(A,B,C) — пересечение внешней биссектрисы угла A с прямой BC;
+line_circle_other(A,B,C,D) — второе пересечение прямой AB с окружностью (центр C, радиус CD), A на окружности;
+line_circle(A,B,C,D,value=0|1), circle_circle(A,B,C,D,value=0|1) — пересечения с окружностями;
+tangent_point(A,B,C,value=0|1) — точка касания из A к окружности (центр B, радиус BC);
+excenter(A,B,C,value=0|1|2) — центр вневписанной окружности напротив A/B/C."""
 
 SYS_AUXPLAN = """Ты помогаешь оформить чертёж школьной или олимпиадной геометрической задачи.
 Основной чертёж по условию УЖЕ построен и проверен. Если в описании чертежа приведено
@@ -184,7 +197,7 @@ def _pair_list(value, known, limit=8):
 _SEG = r"([A-Z][A-Z0-9_']?)\s*([A-Z][A-Z0-9_']?)"
 
 
-def claims_hold(idea: str, coords: dict) -> bool:
+def claims_hold(idea: str, coords: dict, why: list | None = None) -> bool:
     """Numerically check equalities and parallelism the model states in words.
 
     Only explicit claims about named points are checked («DG = BD», «EF ∥ CD»); a
@@ -208,6 +221,8 @@ def claims_hold(idea: str, coords: dict) -> bool:
             continue
         l1, l2 = float(np.linalg.norm(s1[0] - s1[1])), float(np.linalg.norm(s2[0] - s2[1]))
         if abs(l1 - l2) > 1e-3 * span:
+            if why is not None:
+                why.append(f"равенство {m[1]}{m[2]} = {m[3]}{m[4]} в тексте не выполняется на чертеже")
             return False
     for m in re.finditer(rf"(?<![A-Za-z]){_SEG}\s*(?:∥|\|\||параллельн\w*)\s*{_SEG}", idea):
         s1, s2 = seg(m[1], m[2]), seg(m[3], m[4])
@@ -216,6 +231,8 @@ def claims_hold(idea: str, coords: dict) -> bool:
         d1, d2 = s1[1] - s1[0], s2[1] - s2[0]
         n1, n2 = float(np.linalg.norm(d1)), float(np.linalg.norm(d2))
         if n1 > 1e-9 and n2 > 1e-9 and abs(d1[0] * d2[1] - d1[1] * d2[0]) > 1e-3 * n1 * n2:
+            if why is not None:
+                why.append(f"параллельность {m[1]}{m[2]} и {m[3]}{m[4]} в тексте не выполняется на чертеже")
             return False
     return True
 
@@ -248,50 +265,65 @@ def _expand_steps(steps, taken: set):
     return out
 
 
-def apply_aux(plan, coords: dict, data) -> tuple | None:
-    """Validate and execute an auxiliary plan. Returns (plan, coords) or None."""
+def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None:
+    """Validate and execute an auxiliary plan. Returns (plan, coords) or None.
+
+    Every refusal appends a short human-readable reason to `why` (if given): a silent
+    refusal used to leave the drawing without construction and nobody knew why."""
+    def no(reason):
+        if why is not None:
+            why.append(reason)
+        return None
+
     if not isinstance(data, dict) or not isinstance(data.get("steps"), list):
-        return None
+        return no("ответ не в формате шагов")
     if len(data["steps"]) > MAX_NEW_POINTS:
-        return None
+        return no(f"больше {MAX_NEW_POINTS} новых точек")
     known = {k: np.asarray(v, float) for k, v in coords.items()}
     pts = np.array(list(known.values()))
     span = float(np.max(np.ptp(pts, axis=0))) if len(pts) else 0.0
     if span <= 1e-9:
-        return None
+        return no("чертёж вырожден")
     centre = pts.mean(axis=0)
     new: list[Construction] = []
     steps = _expand_steps(data["steps"], set(known) | set(plan.points))
     if steps is None:
-        return None
+        return no("шаги не разобраны")
     for step in steps:
         if not isinstance(step, dict):
-            return None
+            return no("шаг не объект")
         op, out, args = step.get("op"), step.get("out"), step.get("args")
         value = step.get("value")
-        if op not in ALLOWED or not isinstance(out, str) or not _NAME.match(out) \
-                or out in known or out in plan.points or not isinstance(args, list):
-            return None
+        if op not in ALLOWED:
+            return no(f"операция «{op}» не поддерживается")
+        if not isinstance(out, str) or not _NAME.match(out) or out in known or out in plan.points \
+                or not isinstance(args, list):
+            return no(f"имя новой точки «{out}» занято или недопустимо")
         need, needs_value = ALLOWED[op]
-        if len(args) != need or not all(isinstance(a, str) and a in known for a in args):
-            return None
+        if len(args) != need:
+            return no(f"{op}: нужно {need} точек, дано {len(args)}")
+        missing = [a for a in args if not (isinstance(a, str) and a in known)]
+        if missing:
+            return no(f"{op}: на чертеже нет точек {', '.join(map(str, missing))}")
         if needs_value:
             if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
-                return None
+                return no(f"{op}: нужно число value")
             if op == "divide_segment" and not -3 <= value <= 4:
-                return None
+                return no("divide_segment: value вне [-3, 4]")
             if op in ("parallel_point", "homothety") and not -4 <= value <= 4:
-                return None
+                return no(f"{op}: value вне [-4, 4]")
+            if op in _ROOT_OPS and value not in _ROOT_OPS[op]:
+                return no(f"{op}: value должно быть одним из {_ROOT_OPS[op]}")
         else:
             value = None
         try:
             p = np.asarray(OPS[op](*[known[a] for a in args], value=value), dtype=float).reshape(2)
         except Exception:  # noqa: BLE001 - degenerate step
-            return None
+            return no(f"{op}({', '.join(args)}): построение невозможно на этом чертеже")
         if not np.all(np.isfinite(p)) or float(np.linalg.norm(p - centre)) > 3.0 * span:
-            return None
+            return no(f"точка {out} далеко за пределами чертежа")
         if any(float(np.linalg.norm(p - q)) < 1e-6 * span for q in known.values()):
-            return None                      # coincides with an existing point
+            return no(f"точка {out} совпадает с уже существующей")
         known[out] = p
         new.append(Construction(op=op, out=out, args=list(args),
                                 value=float(value) if value is not None else None))
@@ -317,13 +349,13 @@ def apply_aux(plan, coords: dict, data) -> tuple | None:
     lines = _pair_list(data.get("aux_lines"), names, 4)
     circles = _pair_list(data.get("aux_circles"), names, 2)
     if not (segments or extensions or lines or circles):
-        return None
+        return no("нет ни одного отрезка, прямой или окружности для рисования")
     expect = data.get("_expect_collinear")
     if expect:
         a, b, c = (known[n] for n in expect)
         d = b - a
         if abs(d[0] * (c - a)[1] - d[1] * (c - a)[0]) > 2e-2 * float(d @ d) ** 0.5 * span:
-            return None
+            return no("ожидаемая коллинеарность не выполняется")
 
     plan = copy.deepcopy(plan)
     draw = plan.draw

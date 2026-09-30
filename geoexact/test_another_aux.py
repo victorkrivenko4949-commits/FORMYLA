@@ -178,3 +178,49 @@ def test_without_odirouter_key_the_shared_gemini_pair_is_used(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "shared")
     monkeypatch.setenv("GEMINI_API_BASE", "https://router.example/v1")
     assert llm._expert_credentials() == ("shared", "https://router.example/v1/chat/completions")
+
+
+def test_second_variant_with_bisector_op_is_drawn_and_unknown_points_get_a_reason():
+    from geoexact.core import auxplan
+    from geoexact.core.semantics import proof_parallelogram_plan
+    from geoexact.core.solver import solve
+    plan = proof_parallelogram_plan(_PARALLELOGRAM_PROOF, True)
+    coords = [s for s in solve(plan, n_seeds=4, seed=0) if s.ok][0].coords
+    why = []
+    ok = auxplan.apply_aux(plan, coords, {"idea": "", "steps": [
+        {"op": "bisector_point", "out": "K", "args": ["A", "B", "C"]}], "aux_segments": [["A", "K"]]}, why)
+    assert ok is not None and why == []
+    why = []
+    assert auxplan.apply_aux(plan, coords, {"idea": "", "steps": [
+        {"op": "midpoint", "out": "K", "args": ["Z", "B"]}], "aux_segments": [["Z", "K"]]}, why) is None
+    assert "нет точек Z" in why[0]
+    why = []
+    assert auxplan.apply_aux(plan, coords, {"idea": "", "steps": [
+        {"op": "magic", "out": "K", "args": ["A", "B"]}]}, why) is None and "magic" in why[0]
+
+
+def test_refused_answer_is_repaired_once_and_reason_is_reported(monkeypatch):
+    first = _first_round(monkeypatch, "Первый ответ.")
+    monkeypatch.setattr(llm, "expert_text", lambda *a, **k: "Возьмём точку Z из прошлого ответа.")
+    bad = {"idea": "x", "steps": [{"op": "midpoint", "out": "G", "args": ["Z", "B"]}],
+           "aux_segments": [["Z", "G"]]}
+    monkeypatch.setattr(llm, "aux_plan_from_text", lambda *a, **k: dict(bad, _expert_text="t"))
+    seen = {}
+
+    def repair(sess, problem, expert, figure, reasons, budget):
+        seen["reasons"], seen["figure"] = reasons, figure
+        return {"idea": "Отразить B относительно D.", "steps": [
+            {"op": "reflect_point", "out": "G", "args": ["B", "D"]}],
+            "aux_segments": [["B", "G"]], "_expert_text": expert}
+    monkeypatch.setattr(llm, "aux_plan_repair", repair)
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False, aux_history=first.expert_history)
+    assert "нет точек Z" in seen["reasons"][0] and "Точки чертежа" in seen["figure"]
+    assert ["B", "G"] in r.plan["draw"]["aux_segments"] and r.expert_status == "OK"
+
+    def broken(*a, **k):
+        raise llm.PlanError("BAD_JSON", "x")
+    monkeypatch.setattr(llm, "aux_plan_repair", broken)
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False, aux_history=first.expert_history)
+    assert r.plan["draw"]["aux_segments"] == [] and r.expert_status.startswith("REJECTED:")
+    assert "нет точек Z" in r.expert_status
+    assert [m["role"] for m in r.expert_history] == ["user", "assistant", "user", "assistant"]
