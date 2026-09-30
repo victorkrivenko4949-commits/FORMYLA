@@ -664,10 +664,10 @@ def aux_plan(sess, problem: str, figure: str, budget: Budget, deep: bool = False
 # does not know the model (HTTP 400/404/503), the next one is tried.
 EXPERT_MODEL = (os.environ.get("GEOEXACT_EXPERT_MODEL") or "").strip() or "gpt-6-luna"
 EXPERT_FALLBACKS = ("gpt-6-sol", "gemini-3.7-flash-thinking", "gemini-3.7-flash")
-# Галочка «Сол» на странице: тот же эксперт с теми же промптами, но модель GPT-6.1 Sol.
+# Галочка «Сол» на странице: тот же эксперт с теми же промптами, но модель GPT-6 Sol.
 # GEOEXACT_SOL_MODEL меняет имя без правки кода. При недоступности модели пробуется только
 # семейство Sol: молча подменять её Луной нельзя, пользователь выбрал именно Сола.
-SOL_MODEL = (os.environ.get("GEOEXACT_SOL_MODEL") or "").strip() or "gpt-6.1-sol"
+SOL_MODEL = (os.environ.get("GEOEXACT_SOL_MODEL") or "").strip() or "gpt-6-sol"
 SOL_FALLBACKS = ("gpt-6-sol",)
 EXPERTS = ("luna", "sol")
 

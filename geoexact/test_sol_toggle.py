@@ -9,9 +9,9 @@ from geoexact.core.solution import generate_solution
 
 def test_sol_models_do_not_fall_back_to_luna():
     sol = llm.expert_models("sol")
-    assert sol[0] == llm.SOL_MODEL and "gpt-6-luna" not in sol
+    assert sol == ["gpt-6-sol"] and "gpt-6-luna" not in sol
     luna = llm.expert_models("luna")
-    assert luna[0] == "gpt-6-luna" and llm.SOL_MODEL not in luna
+    assert luna[0] == "gpt-6-luna"     # Луна по-прежнему может откатиться на Сол, Сол на Луну — нет
     assert llm.expert_models() == luna
 
 
