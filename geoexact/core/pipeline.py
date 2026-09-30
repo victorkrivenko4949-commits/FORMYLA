@@ -25,7 +25,7 @@ from . import llm as L
 
 CACHE = pathlib.Path(__file__).resolve().parent.parent / "cache"
 CACHE.mkdir(exist_ok=True)
-ENGINE_VERSION = "2.6"
+ENGINE_VERSION = "2.7"   # 2.7: условие целиком проведено и отмечено (statement.py)
 
 
 @dataclass
@@ -807,6 +807,16 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
             plan = marked
         except Exception:  # noqa: BLE001
             pass
+        # «Проведено и отмечено»: всё, что сказано в условии, достраивается
+        # по уже проверенным координатам — названные отрезки, данные равенства,
+        # длины, углы и прямые углы. Каждая добавка проверена численно до
+        # попадания в чертёж, поэтому гейт после отметок её пропускает.
+        try:
+            from .statement import complete_statement_display
+            plan, statement_notes = complete_statement_display(plan, sol.coords, text)
+            warn.extend(statement_notes)
+        except Exception:  # noqa: BLE001 - достройка не должна ломать чертёж
+            pass
         model_notes = plan.notes
         try:
             from .auxplan import add_named_circles
@@ -880,6 +890,12 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
             continue                      # a squeezed drawing is worse than the sketch
         if with_aux:
             cplan, csol = _auxiliary_layer(cplan, csol, text, sess, budget, t_start)
+        # The best-effort drawing must keep the statement drawn and marked too.
+        try:
+            from .statement import complete_statement_display
+            cplan, statement_notes = complete_statement_display(cplan, csol.coords, text)
+        except Exception:  # noqa: BLE001
+            statement_notes = []
         try:
             svg = render_svg(cplan, csol, gate=None, show_aux=with_aux)
             svg_base = render_svg(cplan, csol, gate=None, show_aux=False) if with_aux else svg
@@ -898,6 +914,7 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                      + ("; ".join(reasons) or "часть условия")]
         if priority >= 3:
             warns.append("Размеры и углы на рисунке могут быть неточными.")
+        warns.extend(statement_notes)
         return finish(Result(True, "9-render-fallback", "", "", svg=svg,
                              svg_base=svg_base, plan=cplan.to_dict(),
                              measured=measured if isinstance(measured, (int, float))
