@@ -40,7 +40,12 @@
     const raw = full ? result.svg : result.svg_base;
     const url = imageURL(withTicks(raw, el("ticks").checked));
     el("image").src = url; el("download").href = url;
-    el("ticks-wrap").hidden = !raw || raw.indexOf('<path class="tick') < 0;
+    // Переключатель виден всегда, пока есть чертёж; без черточек он неактивен.
+    const hasTicks = !!raw && raw.indexOf('<path class="tick') >= 0;
+    el("ticks-wrap").hidden = false;
+    el("ticks").disabled = !hasTicks;
+    el("ticks-wrap").title = hasTicks ? "" : "В этом чертеже нет черточек равенства";
+    el("ticks-wrap").style.opacity = hasTicks ? "" : "0.5";
     el("detail").hidden = !full || !result.svg_detail;
     if (full && result.svg_detail)
       el("detail-image").src = imageURL(withTicks(result.svg_detail, el("ticks").checked));

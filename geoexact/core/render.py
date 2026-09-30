@@ -274,10 +274,15 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
     # Черточки можно скрыть на клиенте — равенство останется видимым по цвету,
     # поэтому раскраска живёт в самом SVG, а не в переключателе.
     eq_group: dict[frozenset, int] = {}
+    eq_layer: dict[frozenset, str] = {}
     for m in getattr(d, "equal_marks", []):
         pts = m.get("pts") or []
         if len(pts) == 2 and pts[0] != pts[1]:
-            eq_group.setdefault(frozenset(pts), int(m.get("count", 1)))
+            key = frozenset(pts)
+            if key not in eq_group:
+                eq_group[key] = int(m.get("count", 1))
+                eq_layer[key] = mark_layer(m)
+    eq_painted: set = set()        # пары, которые уже нарисованы отдельной цветной линией
     eq_color = {count: EQ_COLORS[i % len(EQ_COLORS)]
                 for i, count in enumerate(sorted(set(eq_group.values())))}
 
@@ -296,6 +301,8 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
             a, b = Q[s[0]], Q[s[1]]
             line_cls = cls + (f" eqc-{eq_group[frozenset((s[0], s[1]))]}"
                               if frozenset((s[0], s[1])) in eq_group else "")
+            if frozenset((s[0], s[1])) in eq_group and kind == "segments":
+                eq_painted.add(frozenset((s[0], s[1])))
             if math.dist(a, b) < 1e-9:
                 notes.append(f"SKIPPED_SEGMENT: {list(s)} нулевая длина")
                 continue
@@ -365,6 +372,38 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
         emit_segments(getattr(d, "aux_lines", []), aux, "aux-seg", "lines")
         emit_segments(getattr(d, "aux_rays", []), aux, "aux-seg", "rays")
         emit_circles(d.aux_circles, aux, "aux-circ")
+
+    # Равный отрезок может быть лишь частью нарисованной линии (половина стороны,
+    # проведённой целиком): он красится цветным слоем поверх неё — в обоих режимах.
+    def _on_drawn_line(p, q) -> bool:
+        def near(pt, a, b) -> bool:
+            ab = (b[0] - a[0], b[1] - a[1])
+            den = ab[0] ** 2 + ab[1] ** 2
+            if den < 1e-12:
+                return False
+            u = ((pt[0] - a[0]) * ab[0] + (pt[1] - a[1]) * ab[1]) / den
+            if not -1e-6 <= u <= 1 + 1e-6:
+                return False
+            return math.dist(pt, (a[0] + u * ab[0], a[1] + u * ab[1])) < 0.6
+        return any(near(p, a, b) and near(q, a, b) for a, b in straight_segs)
+
+    for key, count in eq_group.items():
+        if key in eq_painted or len(key) != 2:
+            continue
+        x, y = sorted(key)
+        if x not in Q or y not in Q or (eq_layer[key] == "aux" and not show_aux):
+            continue
+        a, b = Q[x], Q[y]
+        if math.dist(a, b) < 1e-9 or not _on_drawn_line(a, b):
+            continue
+        overlay = (f'<line class="seg eqc-{count}" data-kind="eq-part" x1="{_f(a[0])}" '
+                   f'y1="{_f(a[1])}" x2="{_f(b[0])}" y2="{_f(b[1])}"/>')
+        (aux if eq_layer[key] == "aux" else main).append(overlay)
+
+    # Цветные линии — поверх чёрных: иначе дубль целой стороны, нарисованный
+    # позже, закрывает раскрашенные половины.
+    for layer_items in (main, aux):
+        layer_items.sort(key=lambda s: ' eqc-' in s.split('data-kind', 1)[0])
 
     for arc in getattr(d, "arcs", []):
         layer = arc.get("layer", "main")
