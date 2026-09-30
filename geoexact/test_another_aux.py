@@ -242,3 +242,16 @@ def test_claim_about_original_figure_is_advice_but_claim_about_new_point_vetoes(
     r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False, aux_history=first.expert_history)
     assert r.plan["draw"]["aux_segments"] == [] and r.expert_status.startswith("REJECTED:")
     assert "DG = AB" in r.expert_status
+
+
+def test_expert_timeout_status_says_where_gemini_was_silent():
+    import time
+    from geoexact.core.pipeline import _AuxJob
+    slot = {"diag": {}}
+    assert "не начался" in _AuxJob._diag_text(slot)
+    slot["diag"] = {"t0": time.time() - 100, "headers": None}
+    assert "заголовками" in _AuxJob._diag_text(slot)
+    slot["diag"] = {"t0": time.time() - 100, "headers": 0.8, "first": None, "reasoning": 4000}
+    assert "текст не пошёл" in _AuxJob._diag_text(slot) and "4000" in _AuxJob._diag_text(slot)
+    slot["diag"] = {"t0": time.time() - 100, "headers": 0.8, "first": 9.5, "chars": 1200}
+    assert "1200" in _AuxJob._diag_text(slot)

@@ -289,7 +289,7 @@ class _AuxJob:
         # repeat the earlier construction.
         for name in (("expert",) if self.history else ("expert", "fast")):
             slot = {"data": None, "error": None, "done": threading.Event(),
-                    "budget": L.Budget(cap=0.06)}
+                    "budget": L.Budget(cap=0.06), "diag": {}}
             self.slots[name] = slot
             threading.Thread(target=self._run, args=(name, slot), daemon=True).start()
 
@@ -298,7 +298,7 @@ class _AuxJob:
             L.set_deadline(self.deadline)
             from .auxplan import STATEMENT_ONLY
             if name == "expert":
-                said = L.expert_text(self.sess, self.text, self.history)
+                said = L.expert_text(self.sess, self.text, self.history, diag=slot["diag"])
                 self.history_out = L.expert_messages(self.text, self.history) + [
                     {"role": "assistant", "content": said}]
                 slot["data"] = L.aux_plan_from_text(self.sess, self.text, said, slot["budget"])
@@ -309,15 +309,30 @@ class _AuxJob:
         finally:
             slot["done"].set()
 
+    @staticmethod
+    def _diag_text(slot) -> str:
+        d = slot.get("diag") or {}
+        if not d.get("t0"):
+            return "запрос к Gemini не начался"
+        spent = round(time.time() - d["t0"], 1)
+        if d.get("headers") is None:
+            return f"за {spent} с Gemini не ответила даже заголовками (сеть или роутер)"
+        if d.get("first") is None:
+            return (f"заголовки через {d['headers']} с, текст не пошёл за {spent} с "
+                    f"(рассуждение {d.get('reasoning', 0)} симв.)")
+        return f"текст пошёл через {d['first']} с, получено {d.get('chars', 0)} симв. за {spent} с"
+
     def expert_status(self) -> str:
         slot = self.slots["expert"]
         if not slot["done"].is_set():
-            return "TIME_LIMIT"
+            return "TIME_LIMIT: " + self._diag_text(slot)
         exc = slot["error"]
         if exc is None:
             return "OK"
         code = str(getattr(exc, "code", "") or type(exc).__name__)
         detail = str(exc)
+        if slot["diag"].get("t0"):
+            detail += " [" + self._diag_text(slot) + "]"
         if detail.startswith(code + ": "):
             detail = detail[len(code) + 2:]
         detail = L.safe_detail(detail)
