@@ -198,8 +198,30 @@
   // Сжатие/конвертация фото (HEIC с iPhone и тяжёлые JPEG -> JPEG ≤1600px),
   // тот же приём, что и у загрузки фото-решений.
   function compressPhoto(file) {
-    if (typeof createImageBitmap !== "function") return Promise.resolve(file);
-    return createImageBitmap(file).then(bitmap => {
+    // Некоторые мобильные браузеры не умеют createImageBitmap или не
+    // декодируют им HEIC/нестандартные файлы с камеры. Резерв — обычный
+    // <img> через object URL: он декодирует всё, что показывает браузер,
+    // а canvas заодно убирает EXIF-поворот и перекодирует в JPEG.
+    const loadViaImg = () => new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve({width: img.naturalWidth, height: img.naturalHeight,
+          draw: (cv, w, h) => cv.getContext("2d").drawImage(img, 0, 0, w, h)});
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(
+        "Браузер не смог открыть фото. Сохраните его как JPEG/PNG и попробуйте снова.")); };
+      img.src = url;
+    });
+    const loadBitmap = typeof createImageBitmap === "function"
+      ? () => createImageBitmap(file, {imageOrientation: "from-image"})
+          .then(bitmap => ({width: bitmap.width, height: bitmap.height,
+            draw: (cv, w, h) => cv.getContext("2d").drawImage(bitmap, 0, 0, w, h),
+            close: () => bitmap.close && bitmap.close()}))
+          .catch(loadViaImg)
+      : loadViaImg;
+    return loadBitmap().then(bitmap => {
       const maxDim = 1600, quality = 0.82;
       let w = bitmap.width, h = bitmap.height;
       if (Math.max(w, h) > maxDim) {
@@ -208,16 +230,19 @@
       }
       const cv = document.createElement("canvas");
       cv.width = w; cv.height = h;
-      cv.getContext("2d").drawImage(bitmap, 0, 0, w, h);
+      bitmap.draw(cv, w, h);
       if (bitmap.close) bitmap.close();
-      return new Promise(resolve => {
+      return new Promise((resolve, reject) => {
         cv.toBlob(blob => {
-          if (!blob) { resolve(file); return; }
+          // Пустой blob (приватный режим iOS и др.) — отправлять исходный
+          // файл нельзя: сервер может не понять его формат. Честная ошибка
+          // полезнее молчаливой отправки неподдерживаемых байтов.
+          if (!blob) { reject(new Error("Не удалось подготовить фото. Попробуйте снимок меньшего размера.")); return; }
           const nm = (file.name || "photo").replace(/\.[^.]+$/, "");
           resolve(new File([blob], nm + ".jpg", {type: "image/jpeg"}));
         }, "image/jpeg", quality);
       });
-    }).catch(() => file);
+    });
   }
 
   function fileToBase64(file) {
@@ -231,7 +256,11 @@
 
   let recognizing = false;
   async function recognizePhoto(file) {
-    if (!file || !(file.type || "").startsWith("image/")) return;
+    // На части мобильных браузеров file.type пуст даже для корректного JPEG
+    // с камеры — нельзя молча выходить: фото обязано попасть в конвейер.
+    const looksImage = !file.type || file.type.startsWith("image/") ||
+      /\.(jpe?g|png|webp|heic|heif|bmp|gif)$/i.test(file.name || "");
+    if (!file || !looksImage) return;
     if (recognizing || activeJob) return;
     recognizing = true; el("submit").disabled = true;
     status("Распознаём фото…");
