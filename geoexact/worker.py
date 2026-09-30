@@ -18,6 +18,12 @@ def main():
     from .core.pipeline import generate
     from .core.llm import Budget
     data = json.load(sys.stdin)
+    if data.get("solution"):
+        # «Полное решение»: тот же диалог с экспертом + оформление LaTeX.
+        from .core.solution import generate_solution
+        payload = generate_solution(data["problem"], data.get("history") or None)
+        print(json.dumps(payload, ensure_ascii=False))
+        return
     result = generate(data["problem"], data["with_aux"],
                       budget=Budget(cap=.10), use_cache=False,
                       aux_history=data.get("history") or None)

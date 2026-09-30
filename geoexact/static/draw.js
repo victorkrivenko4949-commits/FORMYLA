@@ -5,7 +5,11 @@
   const el = id => document.getElementById("gx-" + id);
   const api = root.dataset.api;
   const recognizeApi = root.dataset.recognize;
+  const solutionApi = root.dataset.solution;
   let activeJob = null, result = null, polling = false, urls = [];
+  // Задание «полное решение»: тот же диалог с Луной продолжается просьбой
+  // решить задачу, DeepSeek оформляет ответ в LaTeX, KaTeX рисует формулы.
+  let solutionJob = null;
   // Распознанное фото: {plain, raw}. Если пользователь не редактировал текст,
   // в конвейер уходит raw-версия (полная, с LaTeX-формулами), а пользователь
   // видит её же в читаемом виде без LaTeX.
@@ -56,15 +60,18 @@
     el("toggle").checked = true;
     el("toggle-wrap").hidden = !data.with_aux || !data.svg_base;
     el("another").hidden = !(data.with_aux && lastJob);
+    // Полное решение доступно для любого готового чертежа: сервер продолжит
+    // диалог с Луной, если он был, или начнёт новый по этому условию.
+    el("solution").hidden = !lastJob;
     el("another").textContent = Array.isArray(data.expert_history) && data.expert_history.length
-      ? "Использовать другое доп. построение" : "Gemini не ответила: повторить запрос";
+      ? "Использовать другое доп. построение" : "Луна не ответила: повторить запрос";
     const fail = data.with_aux && data.expert_status && data.expert_status !== "OK";
     el("expert-note").hidden = !fail;
     const rejected = fail && String(data.expert_status).startsWith("REJECTED:");
     el("expert-note").textContent = !fail ? "" : rejected
-      ? "Gemini предложила построение, но его не удалось нарисовать (" + data.expert_status.slice(9).trim() +
+      ? "Луна предложила построение, но его не удалось нарисовать (" + data.expert_status.slice(9).trim() +
         "). Кнопка ниже попросит другое."
-      : "Gemini не дала доп. построение (код " + data.expert_status + "). Кнопка ниже отправит запрос заново.";
+      : "Луна не дала доп. построение (код " + data.expert_status + "). Кнопка ниже отправит запрос заново.";
     el("result").hidden = false;
     const value = data.measured;
     el("measured").textContent = value == null ? "" :
@@ -95,15 +102,62 @@
     return data;
   }
   let lastJob = null;
+  // Markdown решения от DeepSeek -> безопасный HTML (формулы $...$ остаются
+  // для KaTeX). Экранирование сначала, теги внутри — только наши.
+  function solutionHTML(markdown) {
+    const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const lines = esc(String(markdown || "")).split(/\r?\n/);
+    const out = [];
+    let list = null, para = [];
+    const flushPara = () => {
+      if (para.length) { out.push("<p>" + para.join("<br>") + "</p>"); para = []; } };
+    const flushList = () => { if (list) { out.push("</" + list + ">"); list = null; } };
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t) { flushPara(); flushList(); continue; }
+      const bold = s => s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      const h = t.match(/^#{1,4}\s+(.*)$/);
+      if (h) { flushPara(); flushList(); out.push("<h3>" + bold(h[1]) + "</h3>"); continue; }
+      const ul = t.match(/^[-*]\s+(.*)$/);
+      if (ul) { flushPara(); if (list !== "ul") { flushList(); out.push("<ul>"); list = "ul"; } out.push("<li>" + bold(ul[1]) + "</li>"); continue; }
+      const ol = t.match(/^\d+[.)]\s+(.*)$/);
+      if (ol) { flushPara(); if (list !== "ol") { flushList(); out.push("<ol>"); list = "ol"; } out.push("<li>" + bold(ol[1]) + "</li>"); continue; }
+      para.push(bold(t));
+    }
+    flushPara(); flushList();
+    return out.join("\n");
+  }
+  function renderSolution(res) {
+    const box = el("solution-box"), text = el("solution-text");
+    text.innerHTML = solutionHTML(res.markdown);
+    box.hidden = false;
+    try { if (typeof reRenderMath === "function") reRenderMath(text); } catch (e) { /* KaTeX не загрузился — формулы останутся текстом */ }
+    box.scrollIntoView({behavior: "smooth", block: "nearest"});
+  }
   async function poll() {
     if (polling || !activeJob) return;
     polling = true; el("resume").hidden = true;
     const started = Date.now();
+    const isSolution = activeJob === solutionJob;
     try {
       for (let i = 0; i < 620; i++) {
         const data = await jsonResponse(await fetch(api + "/" + activeJob,
           {credentials: "same-origin", cache: "no-store"}));
         if (data.status === "done" || data.status === "failed") {
+          if (data.result?.kind === "solution") {
+            // Решение (успешное или нет) не становится «последним чертежом»:
+            // кнопки «другое построение» и «полное решение» продолжают
+            // ссылаться на исходный чертёж.
+            activeJob = null;
+            el("submit").disabled = false;
+            if (data.result.ok) {
+              renderSolution(data.result);
+              status("Полное решение готово.");
+            }
+            else status((data.result.detail || "Не удалось получить полное решение.") +
+              (data.result.reason ? " Код: " + data.result.reason : ""));
+            return;
+          }
           lastJob = activeJob;
           saveState({job: data.result?.ok ? lastJob : null});
           activeJob = null;
@@ -121,10 +175,10 @@
         const clock = Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
         const auxMode = root.querySelector('input[name="gx-mode"]:checked')?.value === "aux";
         status(data.status === "running"
-          ? "Строим и проверяем чертёж… " + clock + (auxMode
-              ? (sec > 60 ? " — сложная задача, около 100 секунд, не дольше 3 минут"
-                          : " — с доп. построением обычно около 50 секунд, сложные около 100")
-              : (sec > 90 ? " — сложная задача, не дольше 3 минут" : ""))
+          ? (isSolution ? "Луна пишет полное решение, DeepSeek оформляет его в LaTeX… " + clock
+              : "Строим и проверяем чертёж… " + clock + (!auxMode ? "" : (sec > 60
+              ? " — сложная задача, около 100 секунд, не дольше 3 минут"
+              : " — с доп. построением обычно около 50 секунд, сложные около 100")))
           : "Запрос в очереди… " + clock);
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
@@ -136,6 +190,25 @@
   el("another").addEventListener("click", () => {
     if (activeJob || !lastJob) return;
     submitJob(lastJob);
+  });
+  el("solution").addEventListener("click", async () => {
+    // «Запросить полное решение»: тот же диалог с Луной продолжается
+    // просьбой решить задачу; кнопка не делает нового чертежа.
+    if (activeJob || !lastJob) return;
+    el("solution").disabled = true;
+    el("solution-box").hidden = true;
+    status("Запрашиваем полное решение…");
+    try {
+      const data = await jsonResponse(await fetch(solutionApi, {
+        method: "POST", credentials: "same-origin",
+        headers: {"Content-Type": "application/json", "X-CSRF-Token": root.dataset.csrf},
+        body: JSON.stringify({job_id: lastJob})
+      }));
+      solutionJob = data.job_id;
+      activeJob = data.job_id;
+      await poll();
+    } catch (error) { status(error.message); }
+    finally { el("solution").disabled = false; }
   });
   el("form").addEventListener("submit", event => {
     event.preventDefault();
@@ -336,7 +409,8 @@
     try {
       const data = await jsonResponse(await fetch(api + "/" + job,
         {credentials: "same-origin", cache: "no-store"}));
-      if (data.status === "done" && data.result?.ok) {
+      if (data.status === "done" && data.result?.ok
+          && data.result.kind !== "solution") {
         lastJob = job;
         if (!el("problem").value && data.result.problem_text) el("problem").value = data.result.problem_text;
         const radio = root.querySelector('input[name="gx-mode"][value="' + (data.result.with_aux ? "aux" : "base") + '"]');

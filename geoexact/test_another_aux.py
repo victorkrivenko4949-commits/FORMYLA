@@ -257,9 +257,9 @@ def test_expert_timeout_status_says_where_gemini_was_silent():
     assert "1200" in _AuxJob._diag_text(slot)
 
 
-def test_expert_is_gemini_3_6_thinking_and_falls_back_when_router_does_not_know_it(monkeypatch):
+def test_expert_is_gpt_6_luna_and_falls_back_when_router_does_not_know_it(monkeypatch):
     monkeypatch.setenv("ODIROUTER_API_KEY", "odi")
-    assert llm.EXPERT_MODEL == "gemini-3.7-flash-thinking" and "gemini-3.6-flash" in llm.EXPERT_FALLBACKS
+    assert llm.EXPERT_MODEL == "gpt-6-luna" and "gpt-6-sol" in llm.EXPERT_FALLBACKS
     tried = []
 
     class R:
@@ -272,15 +272,15 @@ def test_expert_is_gemini_3_6_thinking_and_falls_back_when_router_does_not_know_
     class S:
         def post(self, url, **kw):
             tried.append(kw["json"]["model"])
-            return R(404 if kw["json"]["model"].endswith("thinking") else 200)
+            return R(404 if kw["json"]["model"] != "gpt-6-luna" else 200)
     assert llm.expert_text(S(), "задача") == "ok"
-    assert tried == ["gemini-3.7-flash-thinking", "gemini-3.7-flash"]
+    assert tried == ["gpt-6-luna"]
     tried.clear()
     S.post = lambda self, url, **kw: (tried.append(kw["json"]["model"]),
-                                      R(200 if kw["json"]["model"] == "gemini-3.6-flash" else 404))[1]
+                                      R(200 if kw["json"]["model"] == "gemini-3.7-flash" else 404))[1]
     assert llm.expert_text(S(), "задача") == "ok"
-    assert tried == ["gemini-3.7-flash-thinking", "gemini-3.7-flash", "gemini-3.6-flash-thinking",
-                     "gemini-3.6-flash"]
+    assert tried == ["gpt-6-luna", "gpt-6-sol", "gemini-3.7-flash-thinking",
+                     "gemini-3.7-flash"]
 
 
 def test_steps_in_odd_shapes_are_understood_or_named():

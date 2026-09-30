@@ -272,7 +272,7 @@ _AUXJOB = threading.local()
 class _AuxJob:
     """The auxiliary construction, requested in parallel with the figure.
 
-    Two requests start at once. The expert (Gemini 3.6 flash thinking, the user's own wording, a
+    Two requests start at once. The expert (GPT-6 Luna, the user's own wording, a
     free-text construction) is turned into checked steps by deepseek-v4-pro; a quick
     deepseek-v4-pro answer is the fallback. The expert answer is used when it arrives
     in time and survives the coordinate checks. Each request has its own small budget
@@ -314,10 +314,10 @@ class _AuxJob:
     def _diag_text(slot) -> str:
         d = slot.get("diag") or {}
         if not d.get("t0"):
-            return "запрос к Gemini не начался"
+            return "запрос к Луне не начался"
         spent = round(time.time() - d["t0"], 1)
         if d.get("headers") is None:
-            return f"за {spent} с Gemini не ответила даже заголовками (сеть или роутер)"
+            return f"за {spent} с Луна не ответила даже заголовками (сеть или роутер)"
         if d.get("first") is None:
             return (f"{d.get('model', '')}: заголовки через {d['headers']} с, текст не пошёл за {spent} с "
                     f"(рассуждение {d.get('reasoning', 0)} симв.)")
@@ -384,7 +384,7 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
             result.expert_status = job.expert_status()
             note = getattr(_AUXJOB, "claim_note", "")
             if note and result.ok and auxplan_has_aux(result):
-                result.warnings.append("AUX_CLAIM: Gemini пишет, что " + note.replace(" в тексте не выполняется на чертеже", "")
+                result.warnings.append("AUX_CLAIM: Луна пишет, что " + note.replace(" в тексте не выполняется на чертеже", "")
                                        + ", но на чертеже это не выполняется. Линии построены точно; проверьте утверждение сами.")
             reject = getattr(_AUXJOB, "reject", "")
             if reject and result.expert_status == "OK" and not auxplan_has_aux(result):

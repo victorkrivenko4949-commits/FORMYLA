@@ -373,7 +373,8 @@ ok: false только если текст вообще не про геомет
 
 def _chat(sess, model: str, system: str, user: str, max_out: int,
           stage: str, budget: Budget, temperature: float = 0.0,
-          thinking: bool = False, reason: bool = False) -> tuple[str, Usage]:
+          thinking: bool = False, reason: bool = False,
+          json_mode: bool = True) -> tuple[str, Usage]:
     # thinking по-прежнему не управляет запросом (см. _THINKING_FIX ниже);
     # reason=True включает режим рассуждения явно, только для доп. построения.
     input_bound = len((system + user).encode("utf-8")) + 512
@@ -394,8 +395,11 @@ def _chat(sess, model: str, system: str, user: str, max_out: int,
     # помечаем и повторяем без него.
     payload = {"model": model, "max_tokens": max_out, "temperature": temperature,
                "messages": [{"role": "system", "content": system},
-                            {"role": "user", "content": user}],
-               "response_format": {"type": "json_object"}}
+                            {"role": "user", "content": user}]}
+    if json_mode:
+        # json_object — сайт уже использует это в проде; для свободного текста
+        # (оформление решения в LaTeX) режим JSON выключается.
+        payload["response_format"] = {"type": "json_object"}
     if model not in _THINKING_UNSUPPORTED:
         payload["thinking"] = {"type": "enabled" if reason else "disabled"}
         if reason:
@@ -652,14 +656,14 @@ def aux_plan(sess, problem: str, figure: str, budget: Budget, deep: bool = False
 
 
 # --------------------------------------------------------------------------
-# Expert: Gemini 3.7 flash (thinking) through OdiRouter (OpenAI-compatible, same key/host as the
+# Expert: GPT-6 Luna through OdiRouter (OpenAI-compatible, same key/host as the
 # rest of the site: GEMINI_API_KEY / GEMINI_API_BASE). The router answers a
 # plain request with 504 after ~60 s, so the answer is always streamed.
-# Gemini 3.8 gave trouble (silence / no answer): the expert is Gemini 3.7 flash thinking.
+# Gemini 3.7/3.8 gave trouble (silence / no answer): the expert is GPT-6 Luna.
 # GEOEXACT_EXPERT_MODEL overrides the first choice without a deploy of code; if the router
 # does not know the model (HTTP 400/404/503), the next one is tried.
-EXPERT_MODEL = (os.environ.get("GEOEXACT_EXPERT_MODEL") or "").strip() or "gemini-3.7-flash-thinking"
-EXPERT_FALLBACKS = ("gemini-3.7-flash", "gemini-3.6-flash-thinking", "gemini-3.6-flash")
+EXPERT_MODEL = (os.environ.get("GEOEXACT_EXPERT_MODEL") or "").strip() or "gpt-6-luna"
+EXPERT_FALLBACKS = ("gpt-6-sol", "gemini-3.7-flash-thinking", "gemini-3.7-flash")
 
 
 def safe_detail(text, limit: int = 200) -> str:
@@ -694,17 +698,19 @@ def _expert_url() -> str:
 
 
 ANOTHER_AUX = "отлично! но давай использовать какое-нибудь другое тоже удобное доп построение"
+SOLUTION_REQUEST = "а теперь давай полное решение этой задачи"
 MAX_HISTORY = 7      # first prompt + three (answer, request) exchanges
 
 
-def expert_messages(problem: str, history: list | None = None) -> list[dict]:
+def expert_messages(problem: str, history: list | None = None,
+                    followup: str | None = None) -> list[dict]:
     """The chat sent to the expert: the user's prompt; on «another construction»
     the earlier answers followed by the user's own follow-up."""
     if history:
         msgs = [dict(m) for m in history]
         if len(msgs) > MAX_HISTORY:
             msgs = msgs[:1] + msgs[-(MAX_HISTORY - 1):]
-        return msgs + [{"role": "user", "content": ANOTHER_AUX}]
+        return msgs + [{"role": "user", "content": followup or ANOTHER_AUX}]
     prompt = ("вероятно тут есть доп построение - напиши все доп построения которые тут требуются\n"
               f'"{problem}"\n'
               "напиши только доп построение и что в итоге получится\n"
@@ -712,8 +718,24 @@ def expert_messages(problem: str, history: list | None = None) -> list[dict]:
     return [{"role": "user", "content": prompt}]
 
 
-def expert_text(sess, problem: str, history: list | None = None, max_out: int = 16000, diag: dict | None = None) -> str:
-    """The expert's free-text auxiliary construction, in the user's own wording."""
+def solution_messages(problem: str, history: list | None = None) -> list[dict]:
+    """The «full solution» request: the SAME expert chat continues with the
+    user's own words; without an earlier chat the problem is asked afresh."""
+    if history:
+        return expert_messages(problem, history, followup=SOLUTION_REQUEST)
+    prompt = ("опираясь на построенный чертёж, реши задачу полностью\n"
+              f'"{problem}"\n'
+              "напиши полное решение: все шаги с обоснованиями и ответ")
+    return [{"role": "user", "content": prompt}]
+
+
+def expert_text(sess, problem: str, history: list | None = None, max_out: int = 16000,
+                diag: dict | None = None, messages: list | None = None) -> str:
+    """The expert's free-text auxiliary construction, in the user's own wording.
+
+    `messages` replaces the built-in prompt pair (problem, history): the
+    full-solution request sends its own chat into the same expert channel.
+    """
     key, url = _expert_credentials()
     if not key:
         raise PlanError("NO_EXPERT_KEY", "нет ключа OdiRouter (ODIROUTER_API_KEY / GEMINI_API_KEY)")
@@ -723,7 +745,7 @@ def expert_text(sess, problem: str, history: list | None = None, max_out: int = 
     models = [EXPERT_MODEL] + [m for m in EXPERT_FALLBACKS if m != EXPERT_MODEL]
     for i, model in enumerate(models):
         payload = {"model": model, "max_tokens": max_out, "stream": True,
-                   "messages": expert_messages(problem, history)}
+                   "messages": messages if messages is not None else expert_messages(problem, history)}
         diag["model"] = model
         r = sess.post(url, json=payload, stream=True,
                       headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
@@ -771,6 +793,40 @@ def expert_text(sess, problem: str, history: list | None = None, max_out: int = 
     if finish == "length" or not text:
         raise PlanError("EXPERT_EMPTY", f"эксперт не дал ответа (finish={finish}, символов={len(text)})")
     return text
+
+
+# Оформление полного решения в LaTeX: те же правила KaTeX, что и у этапа 4
+# конвейера задач дня (services/pipeline/prompts/stage4.py), но короче —
+# модель получает уже готовый текст решения, а не условие.
+SYS_LATEX = (
+    "Ты — редактор математических текстов. Тебе дают полное решение"
+    " геометрической задачи. Оформи его как Markdown с формулами LaTeX"
+    " для рендеринга KaTeX 0.16 в браузере.\n"
+    "Правила:\n"
+    "- inline-формула: $...$; отдельной строкой: $$...$$; парные $ обязательны.\n"
+    "- команды с аргументами — всегда в фигурных скобках: \\frac{a}{b}, \\sqrt{a+b}.\n"
+    "- степени и индексы из 2+ символов — в скобках: x^{10}, a_{n+1}.\n"
+    "- символы командами: \\angle, \\triangle, \\circ, \\cdot, \\times, \\perp,"
+    " \\parallel, \\cong, \\sim, \\Rightarrow, \\geq, \\leq, \\neq, \\pm.\n"
+    "- обычный текст не оборачивай в $; русский язык и смысл решения не меняй.\n"
+    "- верни только готовый Markdown без пояснений и без ```-ограждений.")
+
+
+def latex_solution(sess, solution: str, budget: Budget, max_out: int = 8000) -> str:
+    """Полное решение от Луны -> Markdown с LaTeX (DeepSeek, свободный текст)."""
+    user = ("Оформи следующее полное решение задачи в Markdown с LaTeX для KaTeX.\n"
+            "Не меняй математическое содержание, только оформление.\n\n"
+            f"{solution}")
+    txt, _ = _chat(sess, "deepseek-v4-flash", SYS_LATEX, user, max_out,
+                   "solution-latex", budget, temperature=0.1, json_mode=False)
+    txt = txt.strip()
+    # модель иногда оборачивает ответ в ```markdown ... ``` — снимаем ограждение
+    if txt.startswith("```"):
+        txt = re.sub(r"^```[a-zA-Z]*\s*", "", txt)
+        txt = re.sub(r"\s*```$", "", txt).strip()
+    if not txt:
+        raise PlanError("LATEX_EMPTY", "DeepSeek не вернул оформленное решение")
+    return txt
 
 
 def aux_plan_from_text(sess, problem: str, expert: str, budget: Budget) -> dict:

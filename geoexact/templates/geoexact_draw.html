@@ -9,6 +9,7 @@
          data-active="{{ url_for('geoexact.active') }}"
          data-last="{{ url_for('geoexact.last') }}"
          data-recognize="{{ url_for('geoexact.recognize_photo') }}"
+         data-solution="{{ url_for('geoexact.solution') }}"
          data-user="{{ current_user.get_id() if current_user.is_authenticated else '' }}"
          data-csrf="{{ geoexact_csrf }}">
   <header><p class="gx-kicker">ГЕОМЕТРИЯ · FORMYLA</p>
@@ -41,9 +42,15 @@
       <label id="gx-toggle-wrap" hidden><input id="gx-toggle" type="checkbox" checked> Показывать дополнительные построения</label>
       <label id="gx-ticks-wrap"><input id="gx-ticks" type="checkbox" checked> Черточки равных отрезков</label>
       <button id="gx-another" type="button" hidden>Использовать другое доп. построение</button>
+      <button id="gx-solution" type="button" hidden>Полное решение</button>
       <a id="gx-download" download="formyla-drawing.svg">Скачать SVG</a>
     </div>
     <img id="gx-image" alt="Геометрический чертёж по условию задачи">
+    <section id="gx-solution-box" hidden aria-label="Полное решение задачи">
+      <h2>Полное решение</h2>
+      <div id="gx-solution-text" data-katex></div>
+      <p class="gx-hint">Решение подготовлено ИИ по этому чертежу. Проверьте ключевые шаги самостоятельно.</p>
+    </section>
     <section id="gx-detail" hidden><h2>Увеличенный фрагмент</h2>
       <p class="gx-hint">Это отдельное увеличение. Полный чертёж показан выше.</p>
       <img id="gx-detail-image" alt="Увеличенный фрагмент геометрического чертежа">
