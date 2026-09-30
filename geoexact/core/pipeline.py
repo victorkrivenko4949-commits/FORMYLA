@@ -25,7 +25,7 @@ from . import llm as L
 
 CACHE = pathlib.Path(__file__).resolve().parent.parent / "cache"
 CACHE.mkdir(exist_ok=True)
-ENGINE_VERSION = "2.8"   # 2.8: равные отрезки — равные цвета (eqc-группы)
+ENGINE_VERSION = "2.9"   # 2.9: пропуск названной точки — мягкая ошибка, не более одного повтора
 
 
 @dataclass
@@ -78,6 +78,7 @@ SIMPLIFY_FEEDBACK = (
 
 # Wall-clock limit for starting one more LLM attempt (worker alarm is 590 s).
 _EXTRA_ATTEMPT_DEADLINE = 300.0
+_SOFT_RETRY_WINDOW = 45.0   # после этого мягкая ошибка принимается без повтора
 # Whole request, all model attempts included. When it runs out the best
 # drawing found so far (or a keyword sketch) is returned instead of waiting.
 TIME_LIMIT = float(os.getenv("GEOEXACT_TIME_LIMIT", "170"))
@@ -540,7 +541,7 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                             requests_circumcircle,
                             requests_incircle, requests_rhombus,
                             _claims_incenter_arc_bisector as _claims_bisector_arc,
-                            semantic_failures, theorem_plan)
+                            semantic_failures, theorem_plan, SOFT_STATEMENT_PREFIX)
     special_plan = (theorem_plan(text, with_aux)
                     or common_plan(text, with_aux)
                     or proof_parallelogram_plan(text, with_aux)
@@ -717,6 +718,13 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                 semantic_errors.extend(failures)
             else:
                 faithful.append(s)
+        # Мягкая ошибка (пропущена названная в условии точка) не стоит новых платных
+        # запросов: одна подсказка модели, затем чертёж принимается, а недостающее
+        # честно отмечается предупреждением STATEMENT_MISSING на этапе показа.
+        if (not faithful and semantic_errors
+                and all(e.startswith(SOFT_STATEMENT_PREFIX) for e in semantic_errors)
+                and (attempt >= 1 or time.time() - t_start > _SOFT_RETRY_WINDOW)):
+            faithful = list(good)
         if not faithful:
             details = "; ".join(dict.fromkeys(semantic_errors))
             ranked_any = rank_solutions(plan, good, strict_readability=False)
@@ -736,6 +744,11 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                 advice = (". Построй невырожденный ромб с равными сторонами "
                           "AB=BC=CD=DA и покажи все четыре стороны в draw.segments. "
                           "Не ссылайся на точки до их построения.")
+            elif all(e.startswith(SOFT_STATEMENT_PREFIX) for e in semantic_errors):
+                advice = (". Добавь названную точку конструкцией и проведи отрезок в "
+                          "draw.segments основного слоя: медиана AM — M=midpoint(B,C); "
+                          "высота CH — H=foot(C,A,B); биссектриса BK — K=line_intersect "
+                          "по биссектрисе угла B и стороне AC. Ничего другого не меняй.")
             elif "OVER_SPECIALIZED" in details:
                 advice = (". Ты сузил фигуру до частного случая. Не задавай точку сразу через "
                           "translate/parallel_point и равенство длин dist_eq: для «AP = AB и "
@@ -879,7 +892,10 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                              cls=cls, with_aux=with_aux,
                              retries=attempt, warnings=warn + gate.warnings + render_warn,
                              notes=plan.notes,
-                             verification="simplified" if simplified else "constraints_only"))
+                             verification=("simplified" if simplified else
+                                           "approximate" if any(w.startswith("STATEMENT_MISSING")
+                                                                for w in warn)
+                                           else "constraints_only")))
 
     # ------------------------------------------------------ best-effort
     # Strict verification failed on every attempt. Instead of an error, show
