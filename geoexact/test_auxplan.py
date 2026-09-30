@@ -141,13 +141,86 @@ def test_invalid_aux_data_is_rejected(bad):
 
 
 def test_coincident_point_is_rejected():
+    """A fully degenerate construction (reflect A about A) still adds nothing:
+    the aliased point drops out and no new line remains."""
     coords = {"A": np.array([0., 0.]), "B": np.array([4., 0.]), "C": np.array([1., 3.])}
     plan = FigurePlan.from_dict({"points": list("ABC"),
                                  "constructions": [{"op": "free_point", "out": n} for n in "ABC"],
                                  "draw": {"segments": [["A", "B"]]}, "scale_free": True})
     same = {"steps": [{"op": "reflect_point", "out": "D", "args": ["A", "A"]}],
             "aux_segments": [["A", "D"]]}
-    assert auxplan.apply_aux(plan, coords, same) is None
+    why: list = []
+    assert auxplan.apply_aux(plan, coords, same, why) is None
+    assert any("уже есть на чертеже" in w for w in why)
+
+
+def _midpoint_figure():
+    coords = {"A": np.array([0., 0.]), "B": np.array([4., 0.]), "C": np.array([2., 3.]),
+              "M": np.array([2., 0.])}      # M — already the midpoint of AB
+    plan = FigurePlan.from_dict({
+        "points": list("ABCM"),
+        "constructions": [{"op": "free_point", "out": n} for n in "ABC"]
+        + [{"op": "midpoint", "out": "M", "args": ["A", "B"]}],
+        "draw": {"segments": [["A", "B"], ["B", "C"], ["C", "A"]]}, "scale_free": True})
+    return plan, coords
+
+
+def test_construction_landing_on_an_existing_point_uses_it():
+    """The model re-derives a point the figure already has (K = midpoint AB = M):
+    the existing point is used and the rest of the construction is drawn."""
+    plan, coords = _midpoint_figure()
+    data = {"idea": "медиана из C", "steps": [
+        {"op": "midpoint", "out": "K", "args": ["A", "B"]}],
+        "aux_segments": [["C", "K"]]}
+    out = auxplan.apply_aux(plan, coords, data)
+    assert out is not None
+    new_plan, new_coords = out
+    assert ["C", "M"] in [list(s) for s in new_plan.draw.aux_segments]
+    assert "K" not in new_coords and "K" not in new_plan.points
+    assert data["_alias"] == {"K": "M"}
+
+
+def test_taken_name_that_rebuilds_the_same_point_is_accepted():
+    """out = an existing point's name, and the construction gives exactly it."""
+    plan, coords = _midpoint_figure()
+    data = {"idea": "медиана из C", "steps": [
+        {"op": "midpoint", "out": "M", "args": ["A", "B"]}],
+        "aux_segments": [["C", "M"]]}
+    out = auxplan.apply_aux(plan, coords, data)
+    assert out is not None
+    new_plan, new_coords = out
+    assert ["C", "M"] in [list(s) for s in new_plan.draw.aux_segments]
+    assert set(new_coords) == set(coords)          # no point was added
+
+
+def test_taken_name_at_another_place_is_still_rejected():
+    plan, coords = _midpoint_figure()
+    data = {"steps": [{"op": "midpoint", "out": "C", "args": ["A", "B"]}],
+            "aux_segments": [["A", "C"]]}
+    why: list = []
+    assert auxplan.apply_aux(plan, coords, data, why) is None
+    assert any("занято" in w for w in why)
+
+
+def test_alias_feeds_later_steps_and_lists():
+    """A later step and aux list refer to the aliased name: they resolve to the
+    existing point, not to a missing one."""
+    plan, coords = _midpoint_figure()
+    data = {"steps": [
+        {"op": "midpoint", "out": "K", "args": ["A", "B"]},
+        {"op": "translate", "out": "G", "args": ["K", "B", "C"]}],    # G = K + (C-B)
+        "aux_segments": [["C", "K"], ["C", "G"]]}
+    out = auxplan.apply_aux(plan, coords, data)
+    assert out is not None
+    new_plan, new_coords = out
+    assert ["C", "M"] in [list(s) for s in new_plan.draw.aux_segments]
+    assert "G" in new_coords and data["_alias"] == {"K": "M"}
+
+
+def test_statement_points_extracts_figure_letters():
+    assert auxplan.statement_points("В треугольнике ABC проведена медиана AM.") == list("ABCM")
+    assert auxplan.statement_points("В трапеции ABCD основания AD и BC.") == list("ABCD")
+    assert auxplan.statement_points("") == []
 
 
 @pytest.mark.parametrize("failure", [

@@ -18,8 +18,9 @@ def test_first_request_is_the_users_prompt_and_retry_appends_the_followup():
     history = first + [{"role": "assistant", "content": "Через D параллельно AC."}]
     again = llm.expert_messages("Условие задачи.", history)
     assert again[:2] == history
-    assert again[-1] == {"role": "user", "content":
-                         "отлично! но давай использовать какое-нибудь другое тоже удобное доп построение"}
+    assert again[-1] == {"role": "user", "content": llm.ANOTHER_AUX}
+    assert again[-1]["content"].startswith("отлично! но давай")
+    assert "не такое, как в прошлых" in again[-1]["content"]
     assert history == first + [{"role": "assistant", "content": "Через D параллельно AC."}]  # not mutated
 
 
@@ -111,6 +112,25 @@ def test_another_construction_never_repeats_an_old_one_when_the_expert_fails(mon
     r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False,
                  aux_history=first.expert_history)
     assert r.ok and r.plan["draw"]["aux_segments"] == []
+
+
+def test_expert_point_landing_on_an_existing_point_is_drawn(monkeypatch):
+    """The expert re-derives a point the figure already has (midpoint of AC):
+    the drawing uses the existing point, the rest of the construction is drawn
+    and the user is told about the match."""
+    said = "Соединим B с серединой M основания AC."
+    monkeypatch.setattr(llm, "expert_text", lambda *a, **k: said)
+    monkeypatch.setattr(llm, "aux_plan_from_text", lambda *a, **k: {
+        "idea": "Соединим B с серединой M основания AC.", "steps": [
+            {"op": "midpoint", "out": "K", "args": ["A", "C"]}],
+        "aux_segments": [["B", "K"]], "_expert_text": said})
+    monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: {"idea": "", "steps": []})
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False)
+    assert r.ok
+    assert ["B", "M"] in r.plan["draw"]["aux_segments"]
+    assert "K" not in r.plan["points"]
+    assert any(w.startswith("AUX_ALIAS:") and "K" in w and "M" in w for w in r.warnings)
+    assert r.notes == "Соединим B с серединой M основания AC."
 
 
 def test_finished_job_keeps_its_condition_and_is_found_again(tmp_path):

@@ -693,8 +693,33 @@ def _expert_url() -> str:
     return _expert_credentials()[1]
 
 
-ANOTHER_AUX = "отлично! но давай использовать какое-нибудь другое тоже удобное доп построение"
+ANOTHER_AUX = ("отлично! но давай использовать какое-нибудь другое тоже удобное доп построение — "
+                "не такое, как в прошлых ответах. Используй только точки из условия задачи; "
+                "новые точки называй буквами, которых в условии нет; пиши конкретно, "
+                "что именно и через какие точки провести")
 MAX_HISTORY = 7      # first prompt + three (answer, request) exchanges
+
+
+def _point_rules(problem: str) -> str:
+    """The figure context the expert needs before it proposes a construction.
+
+    The expert answers in parallel with the figure build, so the exact point list
+    is not known yet — the statement's own letters are a safe lower bound.
+    """
+    from .auxplan import statement_points
+    pts = statement_points(problem)
+    lines = ["Построение будет проверено геометрическим движком и нарисовано на чертеже — "
+             "пиши его так, чтобы его можно было выполнить точно:",
+             "1. Используй только точки, названные в условии"]
+    if pts:
+        lines[1] += " (здесь это: " + ", ".join(pts) + ")"
+    lines.append("2. Каждую новую точку обозначай буквой, которой нет в условии; "
+                 "точку, которая на чертеже уже есть, не строй заново.")
+    lines.append("3. Формулируй конкретно: что и через какие точки провести "
+                 "(параллельную, перпендикуляр, биссектрису), какие точки соединить, "
+                 "что отразить, продолжить, описать окружность — не «проведём "
+                 "вспомогательную линию» без пояснений.")
+    return "\n".join(lines)
 
 
 def expert_messages(problem: str, history: list | None = None) -> list[dict]:
@@ -708,7 +733,8 @@ def expert_messages(problem: str, history: list | None = None) -> list[dict]:
     prompt = ("вероятно тут есть доп построение - напиши все доп построения которые тут требуются\n"
               f'"{problem}"\n'
               "напиши только доп построение и что в итоге получится\n"
-              "выбери самое оптимальное при котором легче всего решить задачу")
+              "выбери самое оптимальное при котором легче всего решить задачу\n\n"
+              + _point_rules(problem))
     return [{"role": "user", "content": prompt}]
 
 
@@ -775,9 +801,16 @@ def expert_text(sess, problem: str, history: list | None = None, max_out: int = 
 
 def aux_plan_from_text(sess, problem: str, expert: str, budget: Budget) -> dict:
     """Turn the expert's words into our checked JSON steps (same points, same idea)."""
-    from .auxplan import SYS_AUXPLAN
+    from .auxplan import SYS_AUXPLAN, statement_points
+    pts = statement_points(problem)
+    known = ""
+    if pts:
+        known = ("Точки, которые уже есть на чертеже (из условия): " + ", ".join(pts)
+                 + ". Новые точки называй только буквами НЕ из этого списка; точку из "
+                   "списка используй по её имени. ")
     user = (f'Задача: "{problem}"\n\nЭксперт предложил такое доп. построение:\n{expert}\n\n'
-            "Переведи именно это построение в JSON по формату из системной инструкции: "
+            + known
+            + "Переведи именно это построение в JSON по формату из системной инструкции: "
             "сохрани имена точек эксперта, ничего своего не придумывай. «Через P провести прямую, "
             "параллельную AB, до пересечения с CD» — это одна операция parallel_intersect(P,A,B,C,D). "
             "Число пиши в поле value, а не в args. В поле idea — одно-два "
@@ -792,13 +825,26 @@ def aux_plan_repair(sess, problem: str, expert: str, figure: str, reasons: list,
     """One corrective request: the engine refused the first translation; say why and
     show the real figure, so the same idea is re-expressed with existing points only."""
     from .auxplan import SYS_AUXPLAN
+    joined = "; ".join(reasons[:4])
+    if "уже есть на чертеже" in joined:
+        # The construction is drawn already: asking for the same one again is
+        # pointless — take the NEXT construction from the expert's answer.
+        instruction = ("Это построение уже нарисовано на чертеже. Возьми из ответа эксперта "
+                       "ДРУГОЕ доп. построение (если там было несколько), либо предложи новое: "
+                       "только разрешённые операции, только существующие точки и точки, созданные "
+                       "выше; новые имена — буквы, которых нет на чертеже. Верни JSON по формату "
+                       "из системной инструкции.")
+    else:
+        instruction = ("Переведи ТО ЖЕ построение заново: только разрешённые операции, только "
+                       "существующие точки и точки, созданные выше; новые имена — буквы, которых "
+                       "нет на чертеже. Если нужная точка на чертеже уже есть — используй её имя, "
+                       "а не создавай новую. Если что-то построено ранее в диалоге, повтори его "
+                       "шаги. Верни JSON по формату из системной инструкции.")
     user = (f'Задача: "{problem}"\n\nЭксперт предложил такое доп. построение:\n{expert}\n\n'
             f"Чертёж (в нём есть ТОЛЬКО эти точки; точек из прошлых ответов эксперта здесь нет, "
             f"их нужно построить заново):\n{figure}\n\n"
-            "Прошлый перевод в шаги отклонён движком: " + "; ".join(reasons[:4]) + ".\n"
-            "Переведи ТО ЖЕ построение заново: только разрешённые операции, только существующие точки "
-            "и точки, созданные выше; новые имена — буквы, которых нет на чертеже. Если что-то "
-            "построено ранее в диалоге, повтори его шаги. Верни JSON по формату из системной инструкции.")
+            "Прошлый перевод в шаги отклонён движком: " + joined + ".\n"
+            + instruction)
     txt, _ = _chat(sess, "deepseek-v4-pro", SYS_AUXPLAN, user, 6000, "aux-repair", budget)
     data = _parse_json(txt)
     data["_expert_text"] = expert
