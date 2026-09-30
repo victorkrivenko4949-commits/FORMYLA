@@ -336,7 +336,7 @@ def test_expert_stream_is_parsed(monkeypatch):
     class R:
         status_code = 200
 
-        def iter_lines(self, decode_unicode=True):
+        def iter_lines(self, decode_unicode=True, chunk_size=512):
             yield 'data: {"choices":[{"delta":{"content":"Провести "}}]}'
             yield ""
             yield 'data: {"choices":[{"delta":{"content":"BE"},"finish_reason":"stop"}]}'
@@ -382,7 +382,7 @@ def test_expert_accepts_the_odirouter_key_name(monkeypatch):
     class R:
         status_code = 200
 
-        def iter_lines(self, decode_unicode=True):
+        def iter_lines(self, decode_unicode=True, chunk_size=512):
             yield 'data: {"choices":[{"delta":{"content":"ok"},"finish_reason":"stop"}]}'
 
     class S:

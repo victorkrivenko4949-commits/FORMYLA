@@ -700,7 +700,7 @@ def expert_messages(problem: str, history: list | None = None) -> list[dict]:
     return [{"role": "user", "content": prompt}]
 
 
-def expert_text(sess, problem: str, history: list | None = None, max_out: int = 16000) -> str:
+def expert_text(sess, problem: str, history: list | None = None, max_out: int = 16000, diag: dict | None = None) -> str:
     """The expert's free-text auxiliary construction, in the user's own wording."""
     key, url = _expert_credentials()
     if not key:
@@ -708,9 +708,12 @@ def expert_text(sess, problem: str, history: list | None = None, max_out: int = 
     payload = {"model": EXPERT_MODEL, "max_tokens": max_out, "stream": True,
                "messages": expert_messages(problem, history)}
     t0 = time.time()
+    diag = diag if diag is not None else {}
+    diag.update(t0=t0, headers=None, first=None, chars=0, lines=0, reasoning=0)
     r = sess.post(url, json=payload, stream=True,
                   headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
                   timeout=(15, _read_timeout()))
+    diag["headers"] = round(time.time() - t0, 1)
     if r.status_code != 200:
         try:
             body = r.text[:300]
@@ -719,7 +722,9 @@ def expert_text(sess, problem: str, history: list | None = None, max_out: int = 
         raise PlanError("EXPERT_HTTP", f"HTTP {r.status_code} {safe_detail(body)}".strip())
     parts: list[str] = []
     finish = None
-    for raw in r.iter_lines(decode_unicode=True):
+    # chunk_size=1: the default 512 bytes would hold small SSE events back
+    for raw in r.iter_lines(chunk_size=1, decode_unicode=True):
+        diag["lines"] += 1
         if time.time() - t0 > 150:
             raise PlanError("TIME_LIMIT", "эксперт не уложился во время")
         line = (raw.decode("utf-8", "replace") if isinstance(raw, bytes) else raw or "").strip()
@@ -733,8 +738,14 @@ def expert_text(sess, problem: str, history: list | None = None, max_out: int = 
         except json.JSONDecodeError:
             continue
         for ch in d.get("choices") or []:
-            piece = (ch.get("delta") or {}).get("content")
+            delta = ch.get("delta") or {}
+            if delta.get("reasoning_content") or delta.get("reasoning"):
+                diag["reasoning"] += len(delta.get("reasoning_content") or delta.get("reasoning") or "")
+            piece = delta.get("content")
             if piece:
+                if diag["first"] is None:
+                    diag["first"] = round(time.time() - t0, 1)
+                diag["chars"] += len(piece)
                 parts.append(piece)
             finish = ch.get("finish_reason") or finish
     text = "".join(parts).strip()
