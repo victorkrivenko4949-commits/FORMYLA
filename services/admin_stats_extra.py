@@ -456,3 +456,93 @@ def roles_stats() -> dict:
     except Exception as e:
         logger.warning('roles_stats failed: %r', e)
     return out
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 9. DT_PLEDGE_V1 (30.09.2026): чекбокс «Согласен» на странице задач дня.
+# Сколько раз нажали, кто нажал и статистика каждого по задачам дня.
+# События пишутся роутом POST /daily_tasks/pledge в site_events (kind='dt_pledge').
+# ORM-запросы — одинаково работают на PostgreSQL (Render) и SQLite.
+# ──────────────────────────────────────────────────────────────────────────────
+
+def pledge_stats() -> dict:
+    out = {'total': 0, 'users_count': 0, 'today': 0, 'week': 0, 'users': []}
+    try:
+        from models import db, User
+        from sqlalchemy import text, func
+        from daily_tasks.models import DailyTaskSet, DailyTaskItem
+
+        today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        week_ago = datetime.utcnow() - timedelta(days=7)
+
+        # Нажатия чекбокса по каждому пользователю (только отметки, не снятия)
+        press_rows = db.session.execute(text('''
+            SELECT user_id, COUNT(*) AS presses,
+                   MIN(ts) AS first_at, MAX(ts) AS last_at
+            FROM site_events
+            WHERE kind = 'dt_pledge'
+            GROUP BY user_id
+        ''')).fetchall()
+        if not press_rows:
+            return out
+
+        today_rows = db.session.execute(text(
+            'SELECT user_id, COUNT(*) FROM site_events '
+            "WHERE kind = 'dt_pledge' AND ts >= :d GROUP BY user_id"
+        ), {'d': today}).fetchall()
+        today_map = {r[0]: int(r[1] or 0) for r in today_rows}
+        week_rows = db.session.execute(text(
+            'SELECT user_id, COUNT(*) FROM site_events '
+            "WHERE kind = 'dt_pledge' AND ts >= :d GROUP BY user_id"
+        ), {'d': week_ago}).fetchall()
+        week_map = {r[0]: int(r[1] or 0) for r in week_rows}
+
+        user_ids = [r[0] for r in press_rows]
+        users_map = {u.id: u for u in User.query.filter(User.id.in_(user_ids)).all()}
+
+        # Статистика каждого нажавшего по задачам дня
+        sets_map = dict(
+            db.session.query(DailyTaskSet.user_id, func.count(DailyTaskSet.id))
+            .filter(DailyTaskSet.user_id.in_(user_ids))
+            .group_by(DailyTaskSet.user_id).all())
+        ans_map = dict(
+            db.session.query(DailyTaskSet.user_id, func.count(DailyTaskItem.id))
+            .join(DailyTaskItem, DailyTaskItem.daily_set_id == DailyTaskSet.id)
+            .filter(DailyTaskSet.user_id.in_(user_ids))
+            .filter(DailyTaskItem.is_correct.isnot(None))
+            .group_by(DailyTaskSet.user_id).all())
+        corr_map = dict(
+            db.session.query(DailyTaskSet.user_id, func.count(DailyTaskItem.id))
+            .join(DailyTaskItem, DailyTaskItem.daily_set_id == DailyTaskSet.id)
+            .filter(DailyTaskSet.user_id.in_(user_ids))
+            .filter(DailyTaskItem.is_correct.is_(True))
+            .group_by(DailyTaskSet.user_id).all())
+
+        out['users_count'] = len(press_rows)
+        for uid, presses, first_raw, last_raw in press_rows:
+            u = users_map.get(uid)
+            first, last = _parse_dt(first_raw), _parse_dt(last_raw)
+            answered_n = int(ans_map.get(uid, 0) or 0)
+            correct_n = int(corr_map.get(uid, 0) or 0)
+            out['users'].append({
+                'user_id': uid,
+                'nickname': (u.nickname if u else None) or '—',
+                'email': (u.email if u else None) or '—',
+                'is_guest': bool(u.is_guest) if u else False,
+                'presses': int(presses or 0),
+                'today': today_map.get(uid, 0),
+                'week': week_map.get(uid, 0),
+                'first': first.strftime('%d.%m.%Y %H:%M') if first else '—',
+                'last': last.strftime('%d.%m.%Y %H:%M') if last else '—',
+                'dt_sets': int(sets_map.get(uid, 0) or 0),
+                'dt_answered': answered_n,
+                'dt_correct': correct_n,
+                'dt_accuracy': _pct(correct_n, answered_n),
+            })
+        out['users'].sort(key=lambda x: x['presses'], reverse=True)
+        out['total'] = sum(x['presses'] for x in out['users'])
+        out['today'] = sum(x['today'] for x in out['users'])
+        out['week'] = sum(x['week'] for x in out['users'])
+    except Exception as e:
+        logger.warning('pledge_stats failed: %r', e)
+    return out

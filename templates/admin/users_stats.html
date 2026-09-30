@@ -405,6 +405,44 @@
   {% endif %}
   {% endif %}
 
+  {% if pledge %}
+  <div class="us-sec">Обещание регулярности — чекбокс «Согласен» (задачи дня)</div>
+  <div class="us-summary">
+    <div class="us-card"><div class="us-card-num">{{ pledge.total }}</div><div class="us-card-label">нажатий всего</div></div>
+    <div class="us-card"><div class="us-card-num">{{ pledge.users_count }}</div><div class="us-card-label">нажали хотя бы раз</div></div>
+    <div class="us-card"><div class="us-card-num">{{ pledge.today }}</div><div class="us-card-label">нажатий сегодня</div></div>
+    <div class="us-card"><div class="us-card-num">{{ pledge.week }}</div><div class="us-card-label">нажатий за 7 дней</div></div>
+  </div>
+  {% if pledge.users %}
+  <div class="us-table-wrap">
+    <table class="us-table">
+      <thead><tr>
+        <th>Пользователь</th><th>Нажатий</th><th>Сегодня</th><th>За 7 дней</th>
+        <th>Первое</th><th>Последнее</th>
+        <th>Сетов дня</th><th>Отвечено</th><th>Верно</th><th>% верных</th>
+      </tr></thead>
+      <tbody>
+      {% for p in pledge.users %}
+        <tr>
+          <td><strong>{{ p.nickname }}</strong>{% if p.is_guest %} <span style="font-size:11px;padding:1px 6px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--faint,#999);">гость</span>{% endif %}
+              <div style="font-size:12px;color:var(--faint,#888);">{{ p.email }}</div></td>
+          <td style="text-align:center;">{{ p.presses }}</td>
+          <td style="text-align:center;">{{ p.today }}</td>
+          <td style="text-align:center;">{{ p.week }}</td>
+          <td style="text-align:center;">{{ p.first }}</td>
+          <td style="text-align:center;">{{ p.last }}</td>
+          <td style="text-align:center;">{{ p.dt_sets }}</td>
+          <td style="text-align:center;">{{ p.dt_answered }}</td>
+          <td style="text-align:center;">{{ p.dt_correct }}</td>
+          <td style="text-align:center;">{{ p.dt_accuracy }}%</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+  {% endif %}
+
   {% if roles %}
   <div class="us-sec">Роли — учителя и родители</div>
   <div class="us-summary">

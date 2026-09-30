@@ -1069,6 +1069,29 @@ def take_day_off_route():
 
 
 # ──────────────────────────────────────────────────────────────────────
+# POST /daily_tasks/pledge — нажатие чекбокса «Согласен» (DT_PLEDGE_V1)
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/pledge", methods=["POST"])
+@login_required
+def pledge_route():
+    """DT_PLEDGE_V1: фиксируем каждое нажатие (отметку) чекбокса
+    «Согласен: постараюсь заходить как можно чаще» на странице задач дня.
+    Событие пишется в site_events (kind='dt_pledge') и попадает
+    в админ-статистику /admin/users (блок «Обещание регулярности»).
+    Снятие галочки не считается нажатием.
+    """
+    try:
+        from routes.admin_support import log_site_event
+        log_site_event(current_user.id, "dt_pledge")
+    except Exception as _pe:
+        current_app.logger.warning("dt_pledge log failed: %r", _pe)
+        return jsonify({"success": False}), 200
+    return jsonify({"success": True}), 200
+
+
+# ──────────────────────────────────────────────────────────────────────
 # POST /daily_tasks/regenerate
 # ──────────────────────────────────────────────────────────────────────
 

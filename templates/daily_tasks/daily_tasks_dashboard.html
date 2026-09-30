@@ -675,7 +675,7 @@
     <input type="checkbox" id="dt-pledge" style="width:18px;height:18px;margin-top:2px;flex:none;accent-color:#4f6cff;cursor:pointer;">
     <span>Согласен: постараюсь заходить как можно чаще, ведь успех — в стабильности.</span>
   </label>
-  <script>(function(){var c=document.getElementById('dt-pledge'),k='dt_pledge';try{c.checked=localStorage.getItem(k)==='1';c.addEventListener('change',function(){localStorage.setItem(k,c.checked?'1':'0');});}catch(e){}})();</script>
+  <script>(function(){var c=document.getElementById('dt-pledge'),k='dt_pledge';try{c.checked=localStorage.getItem(k)==='1';c.addEventListener('change',function(){localStorage.setItem(k,c.checked?'1':'0');if(c.checked){try{fetch('/daily_tasks/pledge',{method:'POST',credentials:'include'}).catch(function(){});}catch(e){}}});}catch(e){}})();</script>
 
   <!-- Two-column layout -->
   <div class="dt-layout">

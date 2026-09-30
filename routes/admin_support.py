@@ -1448,6 +1448,7 @@ def admin_users_stats():
             'streaks': _ase.streak_stats(),
             'ai_tutor': _ase.ai_tutor_stats(),
             'roles': _ase.roles_stats(),
+            'pledge': _ase.pledge_stats(),
         }
     except Exception as _ase_err:
         current_app.logger.warning('admin_users_stats: extra stats failed: %r',
