@@ -25,7 +25,7 @@ from . import llm as L
 
 CACHE = pathlib.Path(__file__).resolve().parent.parent / "cache"
 CACHE.mkdir(exist_ok=True)
-ENGINE_VERSION = "2.6"
+ENGINE_VERSION = "2.7"   # 2.7: условие целиком проведено и отмечено (statement.py)
 
 
 @dataclass
