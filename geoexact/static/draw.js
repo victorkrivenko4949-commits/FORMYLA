@@ -144,11 +144,18 @@
         const data = await jsonResponse(await fetch(api + "/" + activeJob,
           {credentials: "same-origin", cache: "no-store"}));
         if (data.status === "done" || data.status === "failed") {
-          if (data.result?.ok && data.result.kind === "solution") {
+          if (data.result?.kind === "solution") {
+            // Решение (успешное или нет) не становится «последним чертежом»:
+            // кнопки «другое построение» и «полное решение» продолжают
+            // ссылаться на исходный чертёж.
             activeJob = null;
             el("submit").disabled = false;
-            renderSolution(data.result);
-            status("Полное решение готово.");
+            if (data.result.ok) {
+              renderSolution(data.result);
+              status("Полное решение готово.");
+            }
+            else status((data.result.detail || "Не удалось получить полное решение.") +
+              (data.result.reason ? " Код: " + data.result.reason : ""));
             return;
           }
           lastJob = activeJob;
