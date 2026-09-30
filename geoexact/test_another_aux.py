@@ -259,7 +259,7 @@ def test_expert_timeout_status_says_where_gemini_was_silent():
 
 def test_expert_is_gemini_3_6_thinking_and_falls_back_when_router_does_not_know_it(monkeypatch):
     monkeypatch.setenv("ODIROUTER_API_KEY", "odi")
-    assert llm.EXPERT_MODEL == "gemini-3.6-flash-thinking" and "gemini-3.6-flash" in llm.EXPERT_FALLBACKS
+    assert llm.EXPERT_MODEL == "gemini-3.7-flash-thinking" and "gemini-3.6-flash" in llm.EXPERT_FALLBACKS
     tried = []
 
     class R:
@@ -274,7 +274,13 @@ def test_expert_is_gemini_3_6_thinking_and_falls_back_when_router_does_not_know_
             tried.append(kw["json"]["model"])
             return R(404 if kw["json"]["model"].endswith("thinking") else 200)
     assert llm.expert_text(S(), "задача") == "ok"
-    assert tried == ["gemini-3.6-flash-thinking", "gemini-3.6-flash"]
+    assert tried == ["gemini-3.7-flash-thinking", "gemini-3.7-flash"]
+    tried.clear()
+    S.post = lambda self, url, **kw: (tried.append(kw["json"]["model"]),
+                                      R(200 if kw["json"]["model"] == "gemini-3.6-flash" else 404))[1]
+    assert llm.expert_text(S(), "задача") == "ok"
+    assert tried == ["gemini-3.7-flash-thinking", "gemini-3.7-flash", "gemini-3.6-flash-thinking",
+                     "gemini-3.6-flash"]
 
 
 def test_steps_in_odd_shapes_are_understood_or_named():
@@ -299,3 +305,17 @@ def test_steps_in_odd_shapes_are_understood_or_named():
     assert auxplan.apply_aux(plan, coords, {"idea": "", "steps": [
         {"op": "parallel_intersect", "out": "K", "args": ["D", "A"]}]}, why) is None
     assert "5 точек" in why[0] and "args" in why[0]
+
+
+def test_primed_point_names_are_drawn_end_to_end(monkeypatch):
+    first = _first_round(monkeypatch, "Первый ответ.")
+    steps = {"idea": "Отразить B относительно D: точка B′.", "steps": [
+        {"op": "reflect_point", "out": "B′", "args": ["B", "D"]},
+        {"op": "midpoint", "out": "M'", "args": ["B", "D"]}],
+        "aux_segments": [["B", "B′"], ["D", "M'"]], "_expert_text": "Отразим B относительно D, получим B′."}
+    monkeypatch.setattr(llm, "expert_text", lambda *a, **k: "Отразим B относительно D, получим B′.")
+    monkeypatch.setattr(llm, "aux_plan_from_text", lambda *a, **k: dict(steps))
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False, aux_history=first.expert_history)
+    assert r.ok and r.expert_status == "OK"
+    assert ["B", "B'"] in r.plan["draw"]["aux_segments"] and "B'" in r.plan["points"]
+    assert "B&#x27;" in r.svg or "B'" in r.svg or "B&#39;" in r.svg

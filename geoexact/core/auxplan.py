@@ -39,7 +39,22 @@ ALLOWED = {
 }
 _ROOT_OPS = {"line_circle": (0, 1), "circle_circle": (0, 1), "tangent_point": (0, 1), "excenter": (0, 1, 2)}
 MAX_NEW_POINTS = 6
-_NAME = re.compile(r"^[A-Z](?:_?\d{1,2})?$")
+# A', A'' (the reflected/translated point of a textbook) are ordinary names too.
+_NAME = re.compile(r"^[A-Z](?:_?\d{1,2}|'{1,2})?$")
+_PRIMES = str.maketrans({"′": "'", "’": "'", "`": "'", "´": "'", "″": "''"})
+
+
+def _clean_names(value):
+    """Typographic primes (A′, A’) and stray spaces in point names -> plain ASCII names."""
+    if isinstance(value, str):
+        return value.translate(_PRIMES).strip()
+    if isinstance(value, list):
+        return [_clean_names(v) for v in value]
+    if isinstance(value, dict):
+        return {k: (_clean_names(v) if k in ("out", "args", "steps", "aux_segments", "aux_extensions",
+                                             "aux_lines", "aux_circles") else v)
+                for k, v in value.items()}
+    return value
 
 OP_DOC = """Разрешённые операции (out — НОВОЕ имя точки, args — уже существующие точки; число k/t/градусы
 пишется ОТДЕЛЬНЫМ полем "value", а не в args):
@@ -241,8 +256,8 @@ def claims_hold(idea: str, coords: dict, why: list | None = None, involve: set |
     return True
 
 
-_POINT_TOKEN = re.compile(r"[A-Z](?:_?\d{1,2})?")
-_STEP_TEXT = re.compile(r"^\s*(?:([A-Z](?:_?\d{1,2})?)\s*=\s*)?([a-z_]+)\s*\((.*)\)\s*$")
+_POINT_TOKEN = re.compile(r"[A-Z](?:_?\d{1,2}|'{1,2})?")
+_STEP_TEXT = re.compile(r"^\s*(?:([A-Z](?:_?\d{1,2}|'{1,2})?)\s*=\s*)?([a-z_]+)\s*\((.*)\)\s*$")
 
 
 def _flatten_points(args, need):
@@ -334,6 +349,7 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
 
     if not isinstance(data, dict) or not isinstance(data.get("steps"), list):
         return no("ответ не в формате шагов")
+    data = _clean_names(data)
     if len(data["steps"]) > MAX_NEW_POINTS:
         return no(f"больше {MAX_NEW_POINTS} новых точек")
     known = {k: np.asarray(v, float) for k, v in coords.items()}

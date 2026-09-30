@@ -644,14 +644,14 @@ def aux_plan(sess, problem: str, figure: str, budget: Budget, deep: bool = False
 
 
 # --------------------------------------------------------------------------
-# Expert: Gemini 3.6 flash (thinking) through OdiRouter (OpenAI-compatible, same key/host as the
+# Expert: Gemini 3.7 flash (thinking) through OdiRouter (OpenAI-compatible, same key/host as the
 # rest of the site: GEMINI_API_KEY / GEMINI_API_BASE). The router answers a
 # plain request with 504 after ~60 s, so the answer is always streamed.
-# Gemini 3.8 gave trouble (silence / no answer), the expert is Gemini 3.6 flash thinking.
+# Gemini 3.8 gave trouble (silence / no answer): the expert is Gemini 3.7 flash thinking.
 # GEOEXACT_EXPERT_MODEL overrides the first choice without a deploy of code; if the router
 # does not know the model (HTTP 400/404/503), the next one is tried.
-EXPERT_MODEL = (os.environ.get("GEOEXACT_EXPERT_MODEL") or "").strip() or "gemini-3.6-flash-thinking"
-EXPERT_FALLBACKS = ("gemini-3.6-flash",)
+EXPERT_MODEL = (os.environ.get("GEOEXACT_EXPERT_MODEL") or "").strip() or "gemini-3.7-flash-thinking"
+EXPERT_FALLBACKS = ("gemini-3.7-flash", "gemini-3.6-flash-thinking", "gemini-3.6-flash")
 
 
 def safe_detail(text, limit: int = 200) -> str:
