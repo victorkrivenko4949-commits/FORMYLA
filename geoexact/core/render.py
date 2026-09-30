@@ -24,6 +24,10 @@ COL_MAIN = "#111111"
 COL_AUX = "#1f6feb"
 COL_MARK = "#111111"
 COL_LABEL = "#111111"
+# Равные отрезки — равные цвета: у каждой группы равенства свой цвет.
+# Порядок устойчив (группы сортируются по count), палитра читается на белом
+# и отличается от основного чёрного и вспомогательного синего.
+EQ_COLORS = ("#d81e3f", "#1273b5", "#0f9d58", "#e8890c", "#8e44ad", "#0e8a84")
 PT_R = 3.2
 LABEL_FS = 15.0
 MARK_FS = 12.5
@@ -266,6 +270,17 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
     visible_q = {k: Q[k] for k in visible}
     span_px = max(w_data, h_data) * scale
 
+    # ---- равные отрезки: каждая группа равенства получает свой цвет.
+    # Черточки можно скрыть на клиенте — равенство останется видимым по цвету,
+    # поэтому раскраска живёт в самом SVG, а не в переключателе.
+    eq_group: dict[frozenset, int] = {}
+    for m in getattr(d, "equal_marks", []):
+        pts = m.get("pts") or []
+        if len(pts) == 2 and pts[0] != pts[1]:
+            eq_group.setdefault(frozenset(pts), int(m.get("count", 1)))
+    eq_color = {count: EQ_COLORS[i % len(EQ_COLORS)]
+                for i, count in enumerate(sorted(set(eq_group.values())))}
+
     # ---- слой main / aux: сегменты и окружности
     main: list[str] = []
     aux: list[str] = []
@@ -279,6 +294,8 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
                 notes.append(f"SKIPPED_SEGMENT: {list(s)}")
                 continue
             a, b = Q[s[0]], Q[s[1]]
+            line_cls = cls + (f" eqc-{eq_group[frozenset((s[0], s[1]))]}"
+                              if frozenset((s[0], s[1])) in eq_group else "")
             if math.dist(a, b) < 1e-9:
                 notes.append(f"SKIPPED_SEGMENT: {list(s)} нулевая длина")
                 continue
@@ -300,7 +317,7 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
             straight_segs.append((a, b))
             geometry_boxes.append((min(a[0], b[0]) - 1, min(a[1], b[1]) - 1,
                                    max(a[0], b[0]) + 1, max(a[1], b[1]) + 1))
-            out.append(f'<line class="{cls}" data-kind="{kind}" x1="{_f(a[0])}" y1="{_f(a[1])}" '
+            out.append(f'<line class="{line_cls}" data-kind="{kind}" x1="{_f(a[0])}" y1="{_f(a[1])}" '
                        f'x2="{_f(b[0])}" y2="{_f(b[1])}"/>')
 
     def emit_circles(items, out: list[str], cls: str) -> None:
@@ -612,7 +629,7 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
         for index in range(count):
             mid = a + t * frac + u * (index - (count - 1) / 2) * gap
             p, q = mid - n * half, mid + n * half
-            marks.append(f'<path class="tick" data-layer="{layer}" d="M {_f(p[0])} {_f(p[1])} '
+            marks.append(f'<path class="tick eqc-{count}" data-layer="{layer}" d="M {_f(p[0])} {_f(p[1])} '
                          f'L {_f(q[0])} {_f(q[1])}"/>')
             reserve_path([p, q])
 
@@ -755,6 +772,12 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
     .arc, .rt, .tick {{ stroke: {COL_MARK}; stroke-width: 1.15; fill: none; stroke-linecap: round; }}
     .span {{ stroke: {COL_MARK}; stroke-width: 0.9; fill: none; opacity: 0.8; }}
   </style>"""
+    # Правила цветов групп равенства идут ПОСЛЕ .seg/.tick: одинаковая
+    # специфичность, побеждает последний — равные отрезки получают свой цвет.
+    # Вставлять нужно ВНУТРЬ <style>: после </style> правило не применяется.
+    eq_rules = "".join(f"\n    .eqc-{count} {{ stroke: {color}; }}"
+                       for count, color in sorted(eq_color.items()))
+    style = style.replace("  </style>", eq_rules + "\n  </style>")
 
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{_f(output_height)}" '

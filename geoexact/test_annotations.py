@@ -1,4 +1,5 @@
 """Verified annotations, including the exterior angle-bisectors of an excenter."""
+import re
 from types import SimpleNamespace
 
 import numpy as np
@@ -42,7 +43,7 @@ def test_equal_constraints_add_visible_marks_only_when_verified():
     assert validate_plan(enriched) is not None
     assert gate_correctness(enriched, sol).ok
     svg = render_svg(enriched, sol, show_aux=False)
-    assert svg.count('class="tick"') == 2
+    assert svg.count('class="tick') == 2
     assert svg.count('class="arc"') >= 2
     wrong = solved(plan, 0, 1, -1, 0, 1.4, 0)
     assert not enrich_annotations(plan, wrong, with_aux=False).draw.equal_marks
@@ -60,7 +61,7 @@ def test_excenter_shows_short_extensions_and_true_exterior_halves(aux):
     assert {tuple(m["pts"]) for m in draw["equal_marks"]} == {
         ("W", p) for p in ("B", "C", "I", "I_A")
     }
-    assert result.svg.count('class="tick"') == 4
+    assert result.svg.count('class="tick') == 4
     assert {tuple(s) for s in draw["aux_extensions"]} == (
         {("A", "B"), ("A", "C")} if aux else set()
     )
@@ -147,14 +148,15 @@ def test_analytic_rhombus_and_circumcircle_get_ticks():
                        with_aux=False, sess=object(), use_cache=False)
     assert rhombus.ok
     assert len(rhombus.plan["draw"]["equal_marks"]) == 4
-    assert rhombus.svg.count('class="tick"') == 4
+    assert rhombus.svg.count('class="tick') == 4
     circle = generate("Постройте описанную окружность треугольника ABC.",
                       with_aux=True, sess=object(), use_cache=False)
     assert circle.ok
     radii = circle.plan["draw"]["equal_marks"]
     assert {tuple(m["pts"]) for m in radii} == {("O", p) for p in "ABC"}
     assert all(m["layer"] == "aux" for m in radii)
-    assert 'class="tick" data-layer="aux"' not in circle.svg_base
+    # у базового чертежа нет черточек вспомогательного слоя
+    assert re.search(r'class="tick[^"]*" data-layer="aux"', circle.svg_base) is None
 
 
 @pytest.mark.parametrize("opposite", [0, 1, 2])

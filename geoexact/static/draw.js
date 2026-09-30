@@ -27,13 +27,23 @@
     const url = URL.createObjectURL(new Blob([svg], {type: "image/svg+xml"}));
     urls.push(url); return url;
   }
+  // Черточки равных отрезков можно скрыть: равенство остаётся видимым
+  // по цвету (цвета групп зашиты в сам SVG серверным рендером).
+  // Правило дописывается в <style> картинки — она остаётся обычным <img>.
+  function withTicks(svg, show) {
+    if (show || !svg || svg.indexOf("</style>") < 0) return svg;
+    return svg.replace("</style>", "\n    .tick { display: none; }\n  </style>");
+  }
   function render() {
     clearUrls();
     const full = !result.svg_base || el("toggle").checked;
-    const url = imageURL(full ? result.svg : result.svg_base);
+    const raw = full ? result.svg : result.svg_base;
+    const url = imageURL(withTicks(raw, el("ticks").checked));
     el("image").src = url; el("download").href = url;
+    el("ticks-wrap").hidden = !raw || raw.indexOf('<path class="tick') < 0;
     el("detail").hidden = !full || !result.svg_detail;
-    if (full && result.svg_detail) el("detail-image").src = imageURL(result.svg_detail);
+    if (full && result.svg_detail)
+      el("detail-image").src = imageURL(withTicks(result.svg_detail, el("ticks").checked));
     else el("detail-image").removeAttribute("src");
   }
   function show(data) {
@@ -150,6 +160,7 @@
   }
   el("resume").addEventListener("click", poll);
   el("toggle").addEventListener("change", () => { saveState({full: el("toggle").checked}); render(); });
+  el("ticks").addEventListener("change", () => { saveState({ticks: el("ticks").checked}); render(); });
   el("problem").addEventListener("input", persistForm);
   root.querySelectorAll('input[name="gx-mode"]').forEach(r => r.addEventListener("change", persistForm));
   window.addEventListener("pagehide", clearUrls);
@@ -313,6 +324,7 @@
     if (saved.recognized && saved.recognized.plain && saved.recognized.raw) recognized = saved.recognized;
     const radio = root.querySelector('input[name="gx-mode"][value="' + saved.mode + '"]');
     if (radio) radio.checked = true;
+    if (typeof saved.ticks === "boolean") el("ticks").checked = saved.ticks;
   }
   async function restoreResult(job) {
     // Готовый чертёж берётся с сервера повторно, без нового платного запроса.
