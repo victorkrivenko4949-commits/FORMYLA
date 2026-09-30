@@ -54,6 +54,7 @@ class Result:
     measurement_range: list[float] = field(default_factory=list)
     expert_status: str = ""                              # OK or why the expert gave nothing
     expert_history: list = field(default_factory=list)   # chat with the expert, for «another»
+    expert: str = "luna"                                 # which expert answered: luna | sol
 
     def brief(self) -> str:
         head = "OK " if self.ok else f"ОТКАЗ[{self.stage}:{self.reason}] "
@@ -280,8 +281,10 @@ class _AuxJob:
     """
     EXPERT_WAIT = 100.0
 
-    def __init__(self, sess, text: str, deadline: float, history: list | None = None):
+    def __init__(self, sess, text: str, deadline: float, history: list | None = None,
+                 expert: str = "luna"):
         self.sess, self.text, self.deadline = sess, text, deadline
+        self.expert = expert
         self.history = history or []
         self.history_out: list = []
         self.started = time.time()
@@ -299,7 +302,8 @@ class _AuxJob:
             L.set_deadline(self.deadline)
             from .auxplan import STATEMENT_ONLY
             if name == "expert":
-                said = L.expert_text(self.sess, self.text, self.history, diag=slot["diag"])
+                extra = {"expert": self.expert} if self.expert != "luna" else {}
+                said = L.expert_text(self.sess, self.text, self.history, diag=slot["diag"], **extra)
                 self.history_out = L.expert_messages(self.text, self.history) + [
                     {"role": "assistant", "content": said}]
                 slot["data"] = L.aux_plan_from_text(self.sess, self.text, said, slot["budget"])
@@ -311,13 +315,13 @@ class _AuxJob:
             slot["done"].set()
 
     @staticmethod
-    def _diag_text(slot) -> str:
+    def _diag_text(slot, expert: str = "luna") -> str:
         d = slot.get("diag") or {}
         if not d.get("t0"):
-            return "запрос к Луне не начался"
+            return f"запрос к эксперту ({L.expert_label(expert)}) не начался"
         spent = round(time.time() - d["t0"], 1)
         if d.get("headers") is None:
-            return f"за {spent} с Луна не ответила даже заголовками (сеть или роутер)"
+            return f"за {spent} с {L.expert_label(expert)} не ответила даже заголовками (сеть или роутер)"
         if d.get("first") is None:
             return (f"{d.get('model', '')}: заголовки через {d['headers']} с, текст не пошёл за {spent} с "
                     f"(рассуждение {d.get('reasoning', 0)} симв.)")
@@ -326,14 +330,14 @@ class _AuxJob:
     def expert_status(self) -> str:
         slot = self.slots["expert"]
         if not slot["done"].is_set():
-            return "TIME_LIMIT: " + self._diag_text(slot)
+            return "TIME_LIMIT: " + self._diag_text(slot, self.expert)
         exc = slot["error"]
         if exc is None:
             return "OK"
         code = str(getattr(exc, "code", "") or type(exc).__name__)
         detail = str(exc)
         if slot["diag"].get("t0"):
-            detail += " [" + self._diag_text(slot) + "]"
+            detail += " [" + self._diag_text(slot, self.expert) + "]"
         if detail.startswith(code + ": "):
             detail = detail[len(code) + 2:]
         detail = L.safe_detail(detail)
@@ -371,17 +375,20 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
         _AUXJOB.value = None
         _AUXJOB.special = False
         history = kwargs.pop("aux_history", None) or None
+        expert = kwargs.pop("expert", "luna")
+        expert = expert if expert in L.EXPERTS else "luna"
         _AUXJOB.retry = bool(history)
         _AUXJOB.reject = ""
         _AUXJOB.claim_note = ""
         if with_aux and isinstance(problem, str) and problem.strip():
             # The production worker passes no session; the job needs its own anyway.
             _AUXJOB.value = _AuxJob(kwargs.get("sess") or L.make_session(),
-                                    _norm(problem), deadline - 6, history)
+                                    _norm(problem), deadline - 6, history, expert)
         result = _generate(problem, with_aux, **kwargs)
         job = _AUXJOB.value
         if job is not None:
             result.expert_status = job.expert_status()
+            result.expert = expert
             note = getattr(_AUXJOB, "claim_note", "")
             if note and result.ok and auxplan_has_aux(result):
                 result.warnings.append("AUX_CLAIM: Луна пишет, что " + note.replace(" в тексте не выполняется на чертеже", "")
