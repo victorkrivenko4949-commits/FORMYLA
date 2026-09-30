@@ -152,6 +152,26 @@ def _key(text: str, with_aux: bool) -> str:
     return hashlib.sha256(f"{ENGINE_VERSION}|{text}|{int(with_aux)}".encode()).hexdigest()[:20]
 
 
+def _claims_ok(data, coords, why, old=()) -> bool:
+    """The short description of the drawn construction must agree with the drawing.
+
+    The expert's long free text is advisory where it speaks only about the original
+    figure (it often states what is to be proved, or hypotheses): that does not veto an
+    exactly built construction, it becomes a note for the user. A claim about a point the
+    construction created must hold, otherwise the translation into steps is wrong."""
+    from . import auxplan
+    if not auxplan.claims_hold(data.get("idea", "") or "", coords, why):
+        return False
+    new = set(coords) - set(old)
+    text = data.get("_expert_text", "") or ""
+    if new and not auxplan.claims_hold(text, coords, why, involve=new):
+        return False
+    note: list = []
+    if not auxplan.claims_hold(text, coords, note) and note:
+        _AUXJOB.claim_note = note[0]
+    return True
+
+
 def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
     """Auxiliary construction on the verified figure; never breaks the drawing.
 
@@ -175,7 +195,7 @@ def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
             for _name, data in answers:
                 why: list = []
                 applied = auxplan.apply_aux(base, coords, data, why)
-                if applied is not None and not auxplan.claims_hold((data.get("idea", "") or "") + " " + (data.get("_expert_text", "") or ""), applied[1], why):
+                if applied is not None and not _claims_ok(data, applied[1], why, coords):
                     applied = None      # the words say one thing, the drawing another
                 if applied is None and why and _name == "expert" and data.get("_expert_text") \
                         and time.time() - t_start < TIME_LIMIT - 45:
@@ -186,7 +206,7 @@ def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
                                                   auxplan.describe_figure(base, coords), why, budget)
                         why2: list = []
                         applied = auxplan.apply_aux(base, coords, fixed, why2)
-                        if applied is not None and not auxplan.claims_hold((fixed.get("idea", "") or "") + " " + (fixed.get("_expert_text", "") or ""), applied[1], why2):
+                        if applied is not None and not _claims_ok(fixed, applied[1], why2, coords):
                             applied = None
                         if applied is not None:
                             data, why = fixed, []
@@ -211,7 +231,7 @@ def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
                 data = L.aux_plan(sess, text, auxplan.describe_figure(plan, coords), budget,
                                   deep=False)          # never a long reasoning request here
                 applied = auxplan.apply_aux(plan, coords, data)
-                if applied is not None and not auxplan.claims_hold((data.get("idea", "") or "") + " " + (data.get("_expert_text", "") or ""), applied[1]):
+                if applied is not None and not _claims_ok(data, applied[1], [], coords):
                     applied = None
                 # An empty or refused answer is the model's decision ("not needed");
                 # only a failed request or unusable steps fall back to the rules.
@@ -337,6 +357,7 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
         history = kwargs.pop("aux_history", None) or None
         _AUXJOB.retry = bool(history)
         _AUXJOB.reject = ""
+        _AUXJOB.claim_note = ""
         if with_aux and isinstance(problem, str) and problem.strip():
             # The production worker passes no session; the job needs its own anyway.
             _AUXJOB.value = _AuxJob(kwargs.get("sess") or L.make_session(),
@@ -345,6 +366,10 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
         job = _AUXJOB.value
         if job is not None:
             result.expert_status = job.expert_status()
+            note = getattr(_AUXJOB, "claim_note", "")
+            if note and result.ok and auxplan_has_aux(result):
+                result.warnings.append("AUX_CLAIM: Gemini пишет, что " + note.replace(" в тексте не выполняется на чертеже", "")
+                                       + ", но на чертеже это не выполняется. Линии построены точно; проверьте утверждение сами.")
             reject = getattr(_AUXJOB, "reject", "")
             if reject and result.expert_status == "OK" and not auxplan_has_aux(result):
                 result.expert_status = "REJECTED: " + L.safe_detail(reject, 240)

@@ -224,3 +224,21 @@ def test_refused_answer_is_repaired_once_and_reason_is_reported(monkeypatch):
     assert r.plan["draw"]["aux_segments"] == [] and r.expert_status.startswith("REJECTED:")
     assert "нет точек Z" in r.expert_status
     assert [m["role"] for m in r.expert_history] == ["user", "assistant", "user", "assistant"]
+
+
+def test_claim_about_original_figure_is_advice_but_claim_about_new_point_vetoes(monkeypatch):
+    first = _first_round(monkeypatch, "Первый ответ.")
+    steps = {"idea": "Отразить B относительно D.", "steps": [
+        {"op": "reflect_point", "out": "G", "args": ["B", "D"]}], "aux_segments": [["B", "G"]]}
+    monkeypatch.setattr(llm, "aux_plan_repair", lambda *a, **k: (_ for _ in ()).throw(llm.PlanError("BAD_JSON", "x")))
+    # about the original figure only: drawn, with a note
+    monkeypatch.setattr(llm, "expert_text", lambda *a, **k: "Докажем, что AB = AD.")
+    monkeypatch.setattr(llm, "aux_plan_from_text", lambda *a, **k: dict(steps, _expert_text="Докажем, что AB = AD."))
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False, aux_history=first.expert_history)
+    assert ["B", "G"] in r.plan["draw"]["aux_segments"] and r.expert_status == "OK"
+    assert any(w.startswith("AUX_CLAIM:") and "AB = AD" in w for w in r.warnings)
+    # about the new point G (false): the translation is wrong, not drawn, reason shown
+    monkeypatch.setattr(llm, "aux_plan_from_text", lambda *a, **k: dict(steps, _expert_text="Отложим G так, что DG = AB."))
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False, aux_history=first.expert_history)
+    assert r.plan["draw"]["aux_segments"] == [] and r.expert_status.startswith("REJECTED:")
+    assert "DG = AB" in r.expert_status
