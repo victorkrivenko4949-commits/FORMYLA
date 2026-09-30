@@ -255,3 +255,67 @@ def test_expert_timeout_status_says_where_gemini_was_silent():
     assert "текст не пошёл" in _AuxJob._diag_text(slot) and "4000" in _AuxJob._diag_text(slot)
     slot["diag"] = {"t0": time.time() - 100, "headers": 0.8, "first": 9.5, "chars": 1200}
     assert "1200" in _AuxJob._diag_text(slot)
+
+
+def test_expert_is_gemini_3_6_thinking_and_falls_back_when_router_does_not_know_it(monkeypatch):
+    monkeypatch.setenv("ODIROUTER_API_KEY", "odi")
+    assert llm.EXPERT_MODEL == "gemini-3.7-flash-thinking" and "gemini-3.6-flash" in llm.EXPERT_FALLBACKS
+    tried = []
+
+    class R:
+        def __init__(self, code):
+            self.status_code, self.text = code, "model not found"
+
+        def iter_lines(self, decode_unicode=True, chunk_size=512):
+            yield 'data: {"choices":[{"delta":{"content":"ok"},"finish_reason":"stop"}]}'
+
+    class S:
+        def post(self, url, **kw):
+            tried.append(kw["json"]["model"])
+            return R(404 if kw["json"]["model"].endswith("thinking") else 200)
+    assert llm.expert_text(S(), "задача") == "ok"
+    assert tried == ["gemini-3.7-flash-thinking", "gemini-3.7-flash"]
+    tried.clear()
+    S.post = lambda self, url, **kw: (tried.append(kw["json"]["model"]),
+                                      R(200 if kw["json"]["model"] == "gemini-3.6-flash" else 404))[1]
+    assert llm.expert_text(S(), "задача") == "ok"
+    assert tried == ["gemini-3.7-flash-thinking", "gemini-3.7-flash", "gemini-3.6-flash-thinking",
+                     "gemini-3.6-flash"]
+
+
+def test_steps_in_odd_shapes_are_understood_or_named():
+    from geoexact.core import auxplan
+    from geoexact.core.semantics import proof_parallelogram_plan
+    from geoexact.core.solver import solve
+    plan = proof_parallelogram_plan(_PARALLELOGRAM_PROOF, True)
+    coords = [s for s in solve(plan, n_seeds=4, seed=0) if s.ok][0].coords
+    # glued names: parallel_intersect(D, AC, BC)
+    ok = auxplan.apply_aux(plan, coords, {"idea": "", "steps": [
+        {"op": "parallel_intersect", "out": "K", "args": ["D", "AC", "BC"]}], "aux_segments": [["D", "K"]]})
+    assert ok is not None
+    # a step written as text
+    ok = auxplan.apply_aux(plan, coords, {"idea": "", "steps": ["K = midpoint(B, D)"],
+                                          "aux_segments": [["B", "K"]]})
+    assert ok is not None
+    # nonsense: the reason names the offending step
+    why = []
+    assert auxplan.apply_aux(plan, coords, {"idea": "", "steps": [42]}, why) is None
+    assert "шаги не разобраны" in why[0] and "42" in why[0]
+    why = []
+    assert auxplan.apply_aux(plan, coords, {"idea": "", "steps": [
+        {"op": "parallel_intersect", "out": "K", "args": ["D", "A"]}]}, why) is None
+    assert "5 точек" in why[0] and "args" in why[0]
+
+
+def test_primed_point_names_are_drawn_end_to_end(monkeypatch):
+    first = _first_round(monkeypatch, "Первый ответ.")
+    steps = {"idea": "Отразить B относительно D: точка B′.", "steps": [
+        {"op": "reflect_point", "out": "B′", "args": ["B", "D"]},
+        {"op": "midpoint", "out": "M'", "args": ["B", "D"]}],
+        "aux_segments": [["B", "B′"], ["D", "M'"]], "_expert_text": "Отразим B относительно D, получим B′."}
+    monkeypatch.setattr(llm, "expert_text", lambda *a, **k: "Отразим B относительно D, получим B′.")
+    monkeypatch.setattr(llm, "aux_plan_from_text", lambda *a, **k: dict(steps))
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False, aux_history=first.expert_history)
+    assert r.ok and r.expert_status == "OK"
+    assert ["B", "B'"] in r.plan["draw"]["aux_segments"] and "B'" in r.plan["points"]
+    assert "B&#x27;" in r.svg or "B'" in r.svg or "B&#39;" in r.svg

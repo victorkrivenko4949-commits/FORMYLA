@@ -39,7 +39,22 @@ ALLOWED = {
 }
 _ROOT_OPS = {"line_circle": (0, 1), "circle_circle": (0, 1), "tangent_point": (0, 1), "excenter": (0, 1, 2)}
 MAX_NEW_POINTS = 6
-_NAME = re.compile(r"^[A-Z](?:_?\d{1,2})?$")
+# A', A'' (the reflected/translated point of a textbook) are ordinary names too.
+_NAME = re.compile(r"^[A-Z](?:_?\d{1,2}|'{1,2})?$")
+_PRIMES = str.maketrans({"′": "'", "’": "'", "`": "'", "´": "'", "″": "''"})
+
+
+def _clean_names(value):
+    """Typographic primes (A′, A’) and stray spaces in point names -> plain ASCII names."""
+    if isinstance(value, str):
+        return value.translate(_PRIMES).strip()
+    if isinstance(value, list):
+        return [_clean_names(v) for v in value]
+    if isinstance(value, dict):
+        return {k: (_clean_names(v) if k in ("out", "args", "steps", "aux_segments", "aux_extensions",
+                                             "aux_lines", "aux_circles") else v)
+                for k, v in value.items()}
+    return value
 
 OP_DOC = """Разрешённые операции (out — НОВОЕ имя точки, args — уже существующие точки; число k/t/градусы
 пишется ОТДЕЛЬНЫМ полем "value", а не в args):
@@ -241,26 +256,79 @@ def claims_hold(idea: str, coords: dict, why: list | None = None, involve: set |
     return True
 
 
-def _expand_steps(steps, taken: set):
-    """Normalise model steps: a stray numeric last argument becomes `value`, and the
-    compound «parallel_intersect(P,A,B,C,D)» becomes two ordinary steps."""
+_POINT_TOKEN = re.compile(r"[A-Z](?:_?\d{1,2}|'{1,2})?")
+_STEP_TEXT = re.compile(r"^\s*(?:([A-Z](?:_?\d{1,2}|'{1,2})?)\s*=\s*)?([a-z_]+)\s*\((.*)\)\s*$")
+
+
+def _flatten_points(args, need):
+    """["D","AC","BC"] -> ["D","A","C","B","C"] when the model glued point names together."""
+    out = []
+    for a in args:
+        if not isinstance(a, str):
+            return None
+        toks = _POINT_TOKEN.findall(a) if _POINT_TOKEN.sub("", a) == "" else None
+        if not toks:
+            return None
+        out += toks
+    return out if len(out) == need else None
+
+
+def _step_from_text(text):
+    """«K = translate(D, B, C)» written as a string instead of an object."""
+    m = _STEP_TEXT.match(text)
+    if not m:
+        return None
+    out, op, raw = m.groups()
+    args, value = [], None
+    for part in (x.strip() for x in raw.split(",") if x.strip()):
+        try:
+            value = float(part)
+        except ValueError:
+            args.append(part.strip("\"' "))
+    return {"op": op, "out": out, "args": args, **({"value": value} if value is not None else {})}
+
+
+def _expand_steps(steps, taken: set, why: list | None = None):
+    """Normalise model steps: a stray numeric last argument becomes `value`, glued point
+    names are split, a step written as text is parsed, and the compound
+    «parallel_intersect(P,A,B,C,D)» becomes two ordinary steps. On failure returns None and
+    says which step was unusable (a silent None left nobody knowing the real format)."""
+    def bad(reason, step):
+        if why is not None:
+            raw = str(step)
+            why.append(f"{reason}: {raw[:110]}")
+        return None
     out = []
     for step in steps:
+        if isinstance(step, str):
+            parsed = _step_from_text(step)
+            if parsed is None:
+                return bad("шаг записан не как объект", step)
+            step = parsed
         if not isinstance(step, dict):
-            return None
+            return bad("шаг не объект", step)
         step = dict(step)
         op, args = step.get("op"), step.get("args")
+        if op == "parallel_intersect" and isinstance(args, list) and len(args) != 5:
+            flat = _flatten_points(args, 5)
+            if flat:
+                args = step["args"] = flat
+        elif op in ALLOWED and isinstance(args, list) and len(args) != ALLOWED[op][0] \
+                and not (ALLOWED[op][1] and len(args) == ALLOWED[op][0] + 1 and isinstance(args[-1], (int, float))):
+            flat = _flatten_points(args, ALLOWED[op][0])
+            if flat:
+                args = step["args"] = flat
         if op in ALLOWED and isinstance(args, list) and ALLOWED[op][1] and step.get("value") is None \
                 and len(args) == ALLOWED[op][0] + 1 and isinstance(args[-1], (int, float)) \
                 and not isinstance(args[-1], bool):
             step["value"], step["args"] = args[-1], args[:-1]
         if op == "parallel_intersect":
             if not (isinstance(args, list) and len(args) == 5 and all(isinstance(a, str) for a in args)):
-                return None
+                return bad("parallel_intersect: нужно ровно 5 точек P,A,B,C,D", step)
             p, a, b, c, d = args
             helper = next((f"Z_{i}" for i in range(1, 100) if f"Z_{i}" not in taken), None)
             if helper is None:
-                return None
+                return bad("нет свободного имени для вспомогательной точки", step)
             taken.add(helper)
             out.append({"op": "translate", "out": helper, "args": [p, a, b]})
             out.append({"op": "line_intersect", "out": step.get("out"), "args": [p, helper, c, d]})
@@ -281,6 +349,7 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
 
     if not isinstance(data, dict) or not isinstance(data.get("steps"), list):
         return no("ответ не в формате шагов")
+    data = _clean_names(data)
     if len(data["steps"]) > MAX_NEW_POINTS:
         return no(f"больше {MAX_NEW_POINTS} новых точек")
     known = {k: np.asarray(v, float) for k, v in coords.items()}
@@ -290,9 +359,10 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
         return no("чертёж вырожден")
     centre = pts.mean(axis=0)
     new: list[Construction] = []
-    steps = _expand_steps(data["steps"], set(known) | set(plan.points))
+    bad_steps: list = []
+    steps = _expand_steps(data["steps"], set(known) | set(plan.points), bad_steps)
     if steps is None:
-        return no("шаги не разобраны")
+        return no("шаги не разобраны — " + (bad_steps[0] if bad_steps else "неизвестная форма"))
     for step in steps:
         if not isinstance(step, dict):
             return no("шаг не объект")
