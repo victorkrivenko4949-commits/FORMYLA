@@ -682,6 +682,16 @@ def _statement_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
             sides = {frozenset((names[i], names[(i + 1) % 4])) for i in range(4)}
             if not sides <= {frozenset(s) for s in plan.draw.segments}:
                 fails.append(f"не все стороны параллелограмма {names} показаны")
+    # Всё, что сказано в условии, должно быть проведено: если у названного
+    # отрезка (медиана AM, биссектриса BK, «отрезки AD и BE») нет хотя бы
+    # одной точки, чертёж условие не показывает — движок не может достроить
+    # отрезок сам, и модель обязана вернуть недостающую точку.
+    from .statement import named_segments
+    for label, (x, y) in named_segments(text):
+        miss = [n for n in (x, y) if _point_key(n, P) is None]
+        if miss:
+            fails.append(f"нет точки {' и '.join(miss)} для названного "
+                         f"в условии отрезка {label}")
     fails += _ratio_and_point_failures(_math_text(text), P)
     return fails
 

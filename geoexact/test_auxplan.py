@@ -60,8 +60,10 @@ def test_trapezoid_diagonal_is_translated_even_if_model_drew_only_midline(model)
     assert abs(cross(P["E"] - P["A"], P["D"] - P["A"])) < 1e-8         # E on line AD
     assert np.allclose(P["E"], P["D"] + (P["C"] - P["B"]))             # BD moved by BC
     assert np.linalg.norm(P["C"] - P["E"]) == pytest.approx(np.linalg.norm(P["B"] - P["D"]))
-    ticks = {frozenset(m["pts"]) for m in d["equal_marks"]}
-    assert {frozenset("BD"), frozenset("CE")} <= ticks
+    # данные длины подписаны, равенство перенесённой диагонали — той же цифрой
+    labels = {frozenset(m["pts"]): m["text"] for m in d["length_marks"]}
+    assert labels[frozenset("AC")] == "6" and labels[frozenset("BD")] == "8"
+    assert labels[frozenset("CE")] == labels[frozenset("BD")] == "8"
     assert r.plan["notes"] == "" or "диагонал" in r.plan["notes"].lower()
 
 
