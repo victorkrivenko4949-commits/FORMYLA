@@ -255,3 +255,23 @@ def test_expert_timeout_status_says_where_gemini_was_silent():
     assert "текст не пошёл" in _AuxJob._diag_text(slot) and "4000" in _AuxJob._diag_text(slot)
     slot["diag"] = {"t0": time.time() - 100, "headers": 0.8, "first": 9.5, "chars": 1200}
     assert "1200" in _AuxJob._diag_text(slot)
+
+
+def test_expert_is_gemini_3_6_thinking_and_falls_back_when_router_does_not_know_it(monkeypatch):
+    monkeypatch.setenv("ODIROUTER_API_KEY", "odi")
+    assert llm.EXPERT_MODEL == "gemini-3.6-flash-thinking" and "gemini-3.6-flash" in llm.EXPERT_FALLBACKS
+    tried = []
+
+    class R:
+        def __init__(self, code):
+            self.status_code, self.text = code, "model not found"
+
+        def iter_lines(self, decode_unicode=True, chunk_size=512):
+            yield 'data: {"choices":[{"delta":{"content":"ok"},"finish_reason":"stop"}]}'
+
+    class S:
+        def post(self, url, **kw):
+            tried.append(kw["json"]["model"])
+            return R(404 if kw["json"]["model"].endswith("thinking") else 200)
+    assert llm.expert_text(S(), "задача") == "ok"
+    assert tried == ["gemini-3.6-flash-thinking", "gemini-3.6-flash"]

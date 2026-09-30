@@ -644,10 +644,14 @@ def aux_plan(sess, problem: str, figure: str, budget: Budget, deep: bool = False
 
 
 # --------------------------------------------------------------------------
-# Expert: Gemini 3.8 through OdiRouter (OpenAI-compatible, same key/host as the
+# Expert: Gemini 3.6 flash (thinking) through OdiRouter (OpenAI-compatible, same key/host as the
 # rest of the site: GEMINI_API_KEY / GEMINI_API_BASE). The router answers a
 # plain request with 504 after ~60 s, so the answer is always streamed.
-EXPERT_MODEL = "gemini-3.8-flash"
+# Gemini 3.8 gave trouble (silence / no answer), the expert is Gemini 3.6 flash thinking.
+# GEOEXACT_EXPERT_MODEL overrides the first choice without a deploy of code; if the router
+# does not know the model (HTTP 400/404/503), the next one is tried.
+EXPERT_MODEL = (os.environ.get("GEOEXACT_EXPERT_MODEL") or "").strip() or "gemini-3.6-flash-thinking"
+EXPERT_FALLBACKS = ("gemini-3.6-flash",)
 
 
 def safe_detail(text, limit: int = 200) -> str:
@@ -705,21 +709,28 @@ def expert_text(sess, problem: str, history: list | None = None, max_out: int = 
     key, url = _expert_credentials()
     if not key:
         raise PlanError("NO_EXPERT_KEY", "нет ключа OdiRouter (ODIROUTER_API_KEY / GEMINI_API_KEY)")
-    payload = {"model": EXPERT_MODEL, "max_tokens": max_out, "stream": True,
-               "messages": expert_messages(problem, history)}
     t0 = time.time()
     diag = diag if diag is not None else {}
-    diag.update(t0=t0, headers=None, first=None, chars=0, lines=0, reasoning=0)
-    r = sess.post(url, json=payload, stream=True,
-                  headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
-                  timeout=(15, _read_timeout()))
-    diag["headers"] = round(time.time() - t0, 1)
+    diag.update(t0=t0, headers=None, first=None, chars=0, lines=0, reasoning=0, model=EXPERT_MODEL)
+    models = [EXPERT_MODEL] + [m for m in EXPERT_FALLBACKS if m != EXPERT_MODEL]
+    for i, model in enumerate(models):
+        payload = {"model": model, "max_tokens": max_out, "stream": True,
+                   "messages": expert_messages(problem, history)}
+        diag["model"] = model
+        r = sess.post(url, json=payload, stream=True,
+                      headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
+                      timeout=(15, _read_timeout()))
+        diag["headers"] = round(time.time() - t0, 1)
+        # the router does not know this model name: try the next one, not a failure yet
+        if r.status_code in (400, 404, 503) and i + 1 < len(models):
+            continue
+        break
     if r.status_code != 200:
         try:
             body = r.text[:300]
         except Exception:  # noqa: BLE001
             body = ""
-        raise PlanError("EXPERT_HTTP", f"HTTP {r.status_code} {safe_detail(body)}".strip())
+        raise PlanError("EXPERT_HTTP", f"{diag.get('model', '')} HTTP {r.status_code} {safe_detail(body)}".strip())
     parts: list[str] = []
     finish = None
     # chunk_size=1: the default 512 bytes would hold small SSE events back

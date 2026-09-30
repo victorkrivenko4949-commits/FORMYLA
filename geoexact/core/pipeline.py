@@ -271,7 +271,7 @@ _AUXJOB = threading.local()
 class _AuxJob:
     """The auxiliary construction, requested in parallel with the figure.
 
-    Two requests start at once. The expert (Gemini 3.8, the user's own wording, a
+    Two requests start at once. The expert (Gemini 3.6 flash thinking, the user's own wording, a
     free-text construction) is turned into checked steps by deepseek-v4-pro; a quick
     deepseek-v4-pro answer is the fallback. The expert answer is used when it arrives
     in time and survives the coordinate checks. Each request has its own small budget
@@ -318,9 +318,9 @@ class _AuxJob:
         if d.get("headers") is None:
             return f"за {spent} с Gemini не ответила даже заголовками (сеть или роутер)"
         if d.get("first") is None:
-            return (f"заголовки через {d['headers']} с, текст не пошёл за {spent} с "
+            return (f"{d.get('model', '')}: заголовки через {d['headers']} с, текст не пошёл за {spent} с "
                     f"(рассуждение {d.get('reasoning', 0)} симв.)")
-        return f"текст пошёл через {d['first']} с, получено {d.get('chars', 0)} симв. за {spent} с"
+        return f"{d.get('model', '')}: текст пошёл через {d['first']} с, получено {d.get('chars', 0)} симв. за {spent} с"
 
     def expert_status(self) -> str:
         slot = self.slots["expert"]
