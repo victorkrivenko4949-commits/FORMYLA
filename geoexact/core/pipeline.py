@@ -173,9 +173,29 @@ def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
             # gave nothing usable; otherwise they are replaced by the model's.
             base = _strip_aux(plan) if getattr(_AUXJOB, "special", False) else plan
             for _name, data in answers:
-                applied = auxplan.apply_aux(base, coords, data)
-                if applied is not None and not auxplan.claims_hold((data.get("idea", "") or "") + " " + (data.get("_expert_text", "") or ""), applied[1]):
+                why: list = []
+                applied = auxplan.apply_aux(base, coords, data, why)
+                if applied is not None and not auxplan.claims_hold((data.get("idea", "") or "") + " " + (data.get("_expert_text", "") or ""), applied[1], why):
                     applied = None      # the words say one thing, the drawing another
+                if applied is None and why and _name == "expert" and data.get("_expert_text") \
+                        and time.time() - t_start < TIME_LIMIT - 45:
+                    # One corrective round: tell the model why the engine refused and show
+                    # the real figure. Without it a refused answer silently meant "no lines".
+                    try:
+                        fixed = L.aux_plan_repair(sess, text, data["_expert_text"],
+                                                  auxplan.describe_figure(base, coords), why, budget)
+                        why2: list = []
+                        applied = auxplan.apply_aux(base, coords, fixed, why2)
+                        if applied is not None and not auxplan.claims_hold((fixed.get("idea", "") or "") + " " + (fixed.get("_expert_text", "") or ""), applied[1], why2):
+                            applied = None
+                        if applied is not None:
+                            data, why = fixed, []
+                        else:
+                            why = why + ["после исправления: " + "; ".join(why2[:2])]
+                    except Exception as exc:  # noqa: BLE001 - the repair is optional
+                        why = why + [f"исправление не удалось ({type(exc).__name__})"]
+                if applied is None and why:
+                    _AUXJOB.reject = "; ".join(dict.fromkeys(why))[:240]
                 asked = bool(data.get("steps") or data.get("aux_segments")
                              or data.get("aux_lines") or data.get("aux_circles"))
                 if applied is not None or not asked:
@@ -302,6 +322,11 @@ class _AuxJob:
         return out
 
 
+def auxplan_has_aux(result) -> bool:
+    d = (result.plan or {}).get("draw") or {}
+    return any(d.get(k) for k in ("aux_segments", "aux_lines", "aux_rays", "aux_extensions", "aux_circles"))
+
+
 def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
     """Public entry point: never raises; an internal fault degrades to a sketch."""
     try:
@@ -311,6 +336,7 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
         _AUXJOB.special = False
         history = kwargs.pop("aux_history", None) or None
         _AUXJOB.retry = bool(history)
+        _AUXJOB.reject = ""
         if with_aux and isinstance(problem, str) and problem.strip():
             # The production worker passes no session; the job needs its own anyway.
             _AUXJOB.value = _AuxJob(kwargs.get("sess") or L.make_session(),
@@ -319,6 +345,9 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
         job = _AUXJOB.value
         if job is not None:
             result.expert_status = job.expert_status()
+            reject = getattr(_AUXJOB, "reject", "")
+            if reject and result.expert_status == "OK" and not auxplan_has_aux(result):
+                result.expert_status = "REJECTED: " + L.safe_detail(reject, 240)
             if job.history_out:
                 result.expert_history = job.history_out
         return result

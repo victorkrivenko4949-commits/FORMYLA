@@ -756,3 +756,20 @@ def aux_plan_from_text(sess, problem: str, expert: str, budget: Budget) -> dict:
     data = _parse_json(txt)
     data["_expert_text"] = expert
     return data
+
+
+def aux_plan_repair(sess, problem: str, expert: str, figure: str, reasons: list, budget: Budget) -> dict:
+    """One corrective request: the engine refused the first translation; say why and
+    show the real figure, so the same idea is re-expressed with existing points only."""
+    from .auxplan import SYS_AUXPLAN
+    user = (f'Задача: "{problem}"\n\nЭксперт предложил такое доп. построение:\n{expert}\n\n'
+            f"Чертёж (в нём есть ТОЛЬКО эти точки; точек из прошлых ответов эксперта здесь нет, "
+            f"их нужно построить заново):\n{figure}\n\n"
+            "Прошлый перевод в шаги отклонён движком: " + "; ".join(reasons[:4]) + ".\n"
+            "Переведи ТО ЖЕ построение заново: только разрешённые операции, только существующие точки "
+            "и точки, созданные выше; новые имена — буквы, которых нет на чертеже. Если что-то "
+            "построено ранее в диалоге, повтори его шаги. Верни JSON по формату из системной инструкции.")
+    txt, _ = _chat(sess, "deepseek-v4-pro", SYS_AUXPLAN, user, 6000, "aux-repair", budget)
+    data = _parse_json(txt)
+    data["_expert_text"] = expert
+    return data
