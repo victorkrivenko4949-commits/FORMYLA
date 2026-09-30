@@ -105,6 +105,9 @@ def submit():
         return jsonify(error="Некорректный текст."), 400
     if not 10 <= len(text) <= 12000 or type(data.get("with_aux", False)) is not bool:
         return jsonify(error="Нужно от 10 до 12 000 символов и корректный режим."), 400
+    expert = data.get("expert", "luna")
+    if expert not in ("luna", "sol"):
+        return jsonify(error="Неизвестный эксперт."), 400
     history = None
     retry_of = data.get("retry_of")
     if retry_of is not None:
@@ -113,11 +116,14 @@ def submit():
                 or not data.get("with_aux", False):
             return jsonify(error="Некорректный повторный запрос."), 400
         earlier = current_app.extensions["geoexact"].get(retry_of, str(current_user.get_id()))
-        history = ((earlier or {}).get("result") or {}).get("expert_history")
+        earlier_result = (earlier or {}).get("result") or {}
+        history = earlier_result.get("expert_history")
+        # the chat continues with the model that started it
+        expert = "sol" if earlier_result.get("expert") == "sol" else "luna"
         history = clean_history(history)      # None: the expert had not answered, ask afresh
     try:
         jid = current_app.extensions["geoexact"].submit(
-            str(current_user.get_id()), text, data.get("with_aux", False), history)
+            str(current_user.get_id()), text, data.get("with_aux", False), history, expert)
     except QueueFull as e:
         return jsonify(error=str(e)), 429
     return jsonify(job_id=jid, status="queued"), 202
@@ -160,7 +166,8 @@ def solution():
     history = clean_history(result.get("expert_history"))
     try:
         jid = current_app.extensions["geoexact"].submit_solution(
-            str(current_user.get_id()), problem, history)
+            str(current_user.get_id()), problem, history,
+            "sol" if result.get("expert") == "sol" else "luna")
     except QueueFull as e:
         return jsonify(error=str(e)), 429
     return jsonify(job_id=jid, status="queued"), 202

@@ -72,17 +72,31 @@ _HISTORY_MARK = "\x1eGXH1\x1e"
 _SOLUTION_MARK = "\x1eGXS1\x1e"    # задача «полное решение»: другой исполнитель
 
 
-def wrap_problem(problem, history):
-    """Job text with the expert chat attached (the jobs table has no spare column)."""
-    if not history:
+def wrap_problem(problem, history, expert="luna"):
+    """Job text with the expert chat and the chosen expert attached (the jobs table has
+    no spare column). A plain Luna job without history stays the bare problem text."""
+    if not history and expert != "sol":
         return problem
-    return _HISTORY_MARK + json.dumps({"p": problem, "h": history}, ensure_ascii=False)
+    return _HISTORY_MARK + json.dumps({"p": problem, "h": history or [], "e": expert},
+                                      ensure_ascii=False)
 
 
-def wrap_solution(problem, history):
+def wrap_solution(problem, history, expert="luna"):
     """Job text of a «full solution» request (same column, different marker)."""
-    return _SOLUTION_MARK + json.dumps({"p": problem, "h": history or []},
+    return _SOLUTION_MARK + json.dumps({"p": problem, "h": history or [], "e": expert},
                                        ensure_ascii=False)
+
+
+def unwrap_expert(stored):
+    """Which expert a stored job asked for; old jobs without the field are Luna."""
+    for mark in (_HISTORY_MARK, _SOLUTION_MARK):
+        if isinstance(stored, str) and stored.startswith(mark):
+            try:
+                e = json.loads(stored[len(mark):]).get("e")
+            except (ValueError, AttributeError, TypeError):
+                return "luna"
+            return e if e == "sol" else "luna"
+    return "luna"
 
 
 def unwrap_solution(stored):
@@ -103,7 +117,7 @@ def unwrap_problem(stored):
     if isinstance(stored, str) and stored.startswith(_HISTORY_MARK):
         try:
             d = json.loads(stored[len(_HISTORY_MARK):])
-            return d["p"], d["h"]
+            return d["p"], (d["h"] or None)
         except (ValueError, KeyError, TypeError):
             return stored[len(_HISTORY_MARK):], None
     return stored, None
@@ -148,23 +162,23 @@ class Queue:
         self._thread = None
         self._start_lock = threading.Lock()
 
-    def submit(self, owner, problem, with_aux, history=None):
+    def submit(self, owner, problem, with_aux, history=None, expert="luna"):
         jid = self._admit(owner)
         now = time.time()
         with self.engine.begin() as c:
             c.execute(insert(jobs).values(
                 id=jid, owner=owner, status="queued", created=now,
-                problem=wrap_problem(problem, history), with_aux=int(with_aux)))
+                problem=wrap_problem(problem, history, expert), with_aux=int(with_aux)))
         return jid
 
-    def submit_solution(self, owner, problem, history=None):
+    def submit_solution(self, owner, problem, history=None, expert="luna"):
         """«Полное решение»: те же лимиты и одна незавершённая задача на пользователя."""
         jid = self._admit(owner)
         now = time.time()
         with self.engine.begin() as c:
             c.execute(insert(jobs).values(
                 id=jid, owner=owner, status="queued", created=now,
-                problem=wrap_solution(problem, history), with_aux=2))
+                problem=wrap_solution(problem, history, expert), with_aux=2))
         return jid
 
     def _admit(self, owner):
@@ -305,6 +319,7 @@ def _sketch_payload(problem, with_aux):
 def run_generation(problem, with_aux):
     if is_solution_job(problem):
         # «Полное решение»: продолжение того же диалога с экспертом + LaTeX.
+        expert = unwrap_expert(problem)
         problem, history = unwrap_solution(problem)
         env = dict(os.environ, OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1",
                    MKL_NUM_THREADS="1")
@@ -312,7 +327,8 @@ def run_generation(problem, with_aux):
             process = subprocess.run(
                 [sys.executable, "-m", "geoexact.worker"],
                 input=json.dumps({"solution": True, "problem": problem,
-                                  "history": history}),
+                                  "history": history,
+                                  **({"expert": "sol"} if expert == "sol" else {})}),
                 text=True, capture_output=True, timeout=200, env=env,
             )
         except subprocess.TimeoutExpired:
@@ -323,13 +339,15 @@ def run_generation(problem, with_aux):
             return {"ok": False, "kind": "solution", "reason": "WORKER_ERROR",
                     "detail": "Не удалось получить полное решение."}
         return json.loads(process.stdout)
+    expert = unwrap_expert(problem)
     problem, history = unwrap_problem(problem)
     env = dict(os.environ, OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1",
                MKL_NUM_THREADS="1")
     try:
         process = subprocess.run(
             [sys.executable, "-m", "geoexact.worker"],
-            input=json.dumps({"problem": problem, "with_aux": with_aux, "history": history}),
+            input=json.dumps({"problem": problem, "with_aux": with_aux, "history": history,
+                              **({"expert": "sol"} if expert == "sol" else {})}),
             text=True, capture_output=True, timeout=215, env=env,
         )
     except subprocess.TimeoutExpired:

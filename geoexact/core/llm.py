@@ -664,6 +664,23 @@ def aux_plan(sess, problem: str, figure: str, budget: Budget, deep: bool = False
 # does not know the model (HTTP 400/404/503), the next one is tried.
 EXPERT_MODEL = (os.environ.get("GEOEXACT_EXPERT_MODEL") or "").strip() or "gpt-6-luna"
 EXPERT_FALLBACKS = ("gpt-6-sol", "gemini-3.7-flash-thinking", "gemini-3.7-flash")
+# Галочка «Сол» на странице: тот же эксперт с теми же промптами, но модель GPT-6 Sol.
+# GEOEXACT_SOL_MODEL меняет имя без правки кода. При недоступности модели пробуется только
+# семейство Sol: молча подменять её Луной нельзя, пользователь выбрал именно Сола.
+SOL_MODEL = (os.environ.get("GEOEXACT_SOL_MODEL") or "").strip() or "gpt-6-sol"
+SOL_FALLBACKS = ("gpt-6-sol",)
+EXPERTS = ("luna", "sol")
+
+
+def expert_models(expert: str = "luna") -> list:
+    """Models to try, in order, for the chosen expert («luna» by default)."""
+    if expert == "sol":
+        return [SOL_MODEL] + [m for m in SOL_FALLBACKS if m != SOL_MODEL]
+    return [EXPERT_MODEL] + [m for m in EXPERT_FALLBACKS if m != EXPERT_MODEL]
+
+
+def expert_label(expert: str = "luna") -> str:
+    return "Сол" if expert == "sol" else "Луна"
 
 
 def safe_detail(text, limit: int = 200) -> str:
@@ -730,7 +747,8 @@ def solution_messages(problem: str, history: list | None = None) -> list[dict]:
 
 
 def expert_text(sess, problem: str, history: list | None = None, max_out: int = 16000,
-                diag: dict | None = None, messages: list | None = None) -> str:
+                diag: dict | None = None, messages: list | None = None,
+                expert: str = "luna") -> str:
     """The expert's free-text auxiliary construction, in the user's own wording.
 
     `messages` replaces the built-in prompt pair (problem, history): the
@@ -741,8 +759,8 @@ def expert_text(sess, problem: str, history: list | None = None, max_out: int = 
         raise PlanError("NO_EXPERT_KEY", "нет ключа OdiRouter (ODIROUTER_API_KEY / GEMINI_API_KEY)")
     t0 = time.time()
     diag = diag if diag is not None else {}
-    diag.update(t0=t0, headers=None, first=None, chars=0, lines=0, reasoning=0, model=EXPERT_MODEL)
-    models = [EXPERT_MODEL] + [m for m in EXPERT_FALLBACKS if m != EXPERT_MODEL]
+    models = expert_models(expert)
+    diag.update(t0=t0, headers=None, first=None, chars=0, lines=0, reasoning=0, model=models[0])
     for i, model in enumerate(models):
         payload = {"model": model, "max_tokens": max_out, "stream": True,
                    "messages": messages if messages is not None else expert_messages(problem, history)}

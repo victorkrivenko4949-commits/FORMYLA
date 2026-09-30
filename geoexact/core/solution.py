@@ -13,7 +13,7 @@ from .schema import PlanError
 TIME_LIMIT = 150.0        # общий срок: Луна пишет решение, DeepSeek оформляет
 
 
-def generate_solution(problem: str, history: list | None = None) -> dict:
+def generate_solution(problem: str, history: list | None = None, expert: str = "luna") -> dict:
     """Никогда не бросает исключений; результат — payload для очереди."""
     out = {"ok": False, "kind": "solution"}
     if not isinstance(problem, str) or not problem.strip():
@@ -24,7 +24,8 @@ def generate_solution(problem: str, history: list | None = None) -> dict:
     try:
         L.set_deadline(time.time() + TIME_LIMIT)
         said = L.expert_text(sess, problem, history, max_out=12000, diag=diag,
-                             messages=L.solution_messages(problem, history))
+                             messages=L.solution_messages(problem, history),
+                             **({"expert": "sol"} if expert == "sol" else {}))
         budget = L.Budget(cap=0.10)
         markdown = L.latex_solution(sess, said, budget)
         out.update(ok=True, markdown=markdown,
