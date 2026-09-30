@@ -535,10 +535,44 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
                 notes.append(f"DUPLICATE_ANGLE_TEXT: {old['text']} / {text}")
             old["text"] = old["text"] or text
 
+    # Один квадратик прямого угла на вершину. Если прямой угол отмечен
+    # дважды с разными лучами (∠AHB и ∠BHC у основания высоты), две отметки
+    # по разные стороны линии выглядят странно: остаётся одна — та, чей
+    # квадратик меньше перекрыт другими линиями чертежа.
+    centroid_px = (float(np.mean([q[0] for q in visible_q.values()])),
+                   float(np.mean([q[1] for q in visible_q.values()])))
+    rt_groups: dict[tuple, list] = {}
+    for rec in angle_records.values():
+        if rec["right"]:
+            key = (round(float(rec["B"][0]), 6), round(float(rec["B"][1]), 6))
+            rt_groups.setdefault(key, []).append(rec)
+
+    def _square_clutter(rec) -> tuple:
+        B_, u_, v_ = rec["B"], rec["u"], rec["v"]
+        side_ = min(sq, rec["short"] * 0.25)
+        c_ = B_ + (u_ + v_) * (side_ / 2)
+        h_ = side_ * 0.45
+        box_ = (float(c_[0]) - h_, float(c_[1]) - h_, float(c_[0]) + h_, float(c_[1]) + h_)
+        cross = sum(1 for a_, b_ in px_segs if _rect_seg_hit(box_, a_, b_))
+        # стороны самого угла и их продолжения идут по границе квадратика и
+        # во внутренний бокс не попадают; луч внутри угла (высота) — попадает.
+        far = math.hypot(float(c_[0]) - centroid_px[0], float(c_[1]) - centroid_px[1])
+        return (cross, far)
+
+    rt_drawn: set = set()
+    for recs in rt_groups.values():
+        best = min(recs, key=_square_clutter)
+        for rec in recs:
+            if rec is not best:
+                best["text"] = best["text"] or rec["text"]
+        rt_drawn.add(id(best))
+
     for rec in angle_records.values():
         B, u, v = rec["B"], rec["u"], rec["v"]
         delta, count, layer = rec["delta"], rec["count"], rec["layer"]
         start = math.atan2(float(u[1]), float(u[0]))
+        if rec["right"] and id(rec) not in rt_drawn:
+            continue          # на этой вершине уже нарисован другой квадратик
         if rec["right"]:
             side = min(sq, rec["short"] * 0.25)
             p1, p2, p3 = B + u * side, B + (u + v) * side, B + v * side

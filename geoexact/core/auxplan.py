@@ -259,6 +259,33 @@ def claims_hold(idea: str, coords: dict, why: list | None = None, involve: set |
 _POINT_TOKEN = re.compile(r"[A-Z](?:_?\d{1,2}|'{1,2})?")
 _STEP_TEXT = re.compile(r"^\s*(?:([A-Z](?:_?\d{1,2}|'{1,2})?)\s*=\s*)?([a-z_]+)\s*\((.*)\)\s*$")
 
+# Точки, которые текст Луны вводит как новые: «обозначим точку N», «продлим
+# … до точки N», «пусть N — середина», «получим M и N».
+_INTRO_LIST = re.compile(r"(?<![A-Za-zА-Яа-яЁё])(?:[Тт]очк[а-яё]*(?:\s+пересечени[а-яё]*)?|[Дд]о)\s+"
+                         r"([A-Z](?:_?\d{1,2}|'{1,2})?(?:(?:\s*,\s*|\s+и\s+)"
+                         r"[A-Z](?:_?\d{1,2}|'{1,2})?)*)")
+_INTRO_VERB = re.compile(r"(?<![A-Za-zА-Яа-яЁё])(?:[Оо]бозначим|[Нн]азов[а-яё]*|[Пп]олуч[а-яё]*|"
+                         r"[Вв]вед[а-яё]*|[Оо]тметим|[Пп]усть)\s+"
+                         r"(?:(?:нов[а-яё]+|её|его|за|пересечени[а-яё]+)\s+|[Тт]очк[а-яё]*\s+)*"
+                         r"([A-Z](?:_?\d{1,2}|'{1,2})?)(?![A-Za-z0-9_])")
+
+
+def introduced_names(text) -> set:
+    """Новые имена точек, которые эксперт называет в своём тексте.
+
+    Это единственный источник правды о том, КАК зовут новую точку: если шаги
+    построят её под другим именем, чертёж разойдётся со словами Луны.
+    """
+    if not isinstance(text, str):
+        return set()
+    text = text.translate(_PRIMES)
+    names: set = set()
+    for m in _INTRO_LIST.finditer(text):
+        names.update(_POINT_TOKEN.findall(m[1]))
+    for m in _INTRO_VERB.finditer(text):
+        names.add(m[1])
+    return names
+
 
 def _flatten_points(args, need):
     """["D","AC","BC"] -> ["D","A","C","B","C"] when the model glued point names together."""
@@ -353,6 +380,10 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
     if len(data["steps"]) > MAX_NEW_POINTS:
         return no(f"больше {MAX_NEW_POINTS} новых точек")
     known = {k: np.asarray(v, float) for k, v in coords.items()}
+    # Луна называет новые точки своими именами: если перевод в шаги их теряет
+    # или переименовывает, пользователь видит не то, о чём написано в ответе.
+    expect = {n for n in introduced_names(data.get("_expert_text"))
+              if n not in known and n not in plan.points}
     pts = np.array(list(known.values()))
     span = float(np.max(np.ptp(pts, axis=0))) if len(pts) else 0.0
     if span <= 1e-9:
@@ -401,6 +432,11 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
         known[out] = p
         new.append(Construction(op=op, out=out, args=list(args),
                                 value=float(value) if value is not None else None))
+
+    missing = expect - {c.out for c in new}
+    if missing:
+        return no("в ответе Луны названа точка " + ", ".join(sorted(missing))
+                  + ", но в шагах она не построена")
 
     names = set(known)
     segments = _pair_list(data.get("aux_segments"), names)
