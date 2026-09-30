@@ -25,7 +25,7 @@ from . import llm as L
 
 CACHE = pathlib.Path(__file__).resolve().parent.parent / "cache"
 CACHE.mkdir(exist_ok=True)
-ENGINE_VERSION = "2.9"   # 2.9: пропуск названной точки — мягкая ошибка, не более одного повтора
+ENGINE_VERSION = "3.0"   # 3.0: цвета равных отрезков в обоих режимах, середина словами
 
 
 @dataclass

@@ -49,6 +49,14 @@ _PERP = re.compile(rf"\b({_PAIR})\s*(?:⊥|перпендикулярн\w*\s+(?:
                    re.I)
 _RIGHT_WORD = re.compile(r"\b(?:с\s+)?прямым\s+углом\s+([A-Z])\b", re.I)
 _MEDIAN = re.compile(rf"\bмедиан\w*\s+({_PAIRS})\b", re.I)
+# «M — середина стороны BC», «точка M является серединой отрезка BC»,
+# «M и N — середины сторон AB и AC».
+_OF = r"(?:(?:сторон|отрезк|гипотенуз|основани|катет|диагонал|хорд)\w*\s+)?"
+_MIDPOINT = re.compile(
+    rf"\b({_NAME})\s*(?:[—–-]|является|—\s*это)?\s*середин\w*\s+{_OF}({_PAIR})\b(?!\s*и\s*{_PAIR})", re.I)
+_MIDPOINTS2 = re.compile(
+    rf"\b({_NAME})\s*(?:и|,)\s*({_NAME})\s*(?:[—–-]|являются)?\s*середин\w*\s+{_OF}"
+    rf"({_PAIR})\s*(?:и|,)\s*({_PAIR})\b", re.I)
 _BISECTOR = re.compile(rf"\bбиссектрис\w*\s+({_PAIRS})\b", re.I)
 _HEIGHT = re.compile(rf"\bвысот\w*\s+({_PAIRS})\b", re.I)
 
@@ -399,6 +407,34 @@ def _add_derived_marks(plan, Q, text, cover, used_lengths, used_angles, messages
     def dist(a, b) -> float:
         return float(np.linalg.norm(Q[a] - Q[b]))
 
+    def mark_halves(f, u, w) -> bool:
+        """Точка f делит отрезок uw пополам: половины получают общие засечки."""
+        if f not in Q or u not in Q or w not in Q or len({f, u, w}) != 3:
+            return False
+        t = _point_on(Q[f], Q[u], Q[w])
+        if t is None or not 0.01 < t < 0.99:
+            return False
+        if abs(dist(u, f) - dist(f, w)) > 1e-5 * max(dist(u, f), 1e-9):
+            return False
+        halves = ([u, f], [f, w])
+        if any(_has_equal_mark(d, h) or _has_length_mark(d, h) for h in halves):
+            return True
+        count = _free_count(used_lengths)
+        if count is None:
+            return False
+        # сторону, проведённую целиком, делим на две половины
+        for i, s in enumerate(d.segments):
+            if {s[0], s[1]} == {u, w}:
+                d.segments[i:i + 1] = halves
+                break
+        else:
+            if not (cover(u, f) and cover(f, w)):
+                return False
+        for h in halves:
+            d.equal_marks.append({"pts": h, "count": count})
+        used_lengths.add(count)
+        return True
+
     # медиана VM: половины стороны равны — засечки на них
     for m in _MEDIAN.finditer(text):
         for v, f in _split_pairs(m[1]):
@@ -407,32 +443,24 @@ def _add_derived_marks(plan, Q, text, cover, used_lengths, used_angles, messages
             for u, w in _side_pairs(Q):
                 if v in (u, w) or f in (u, w):
                     continue
-                t = _point_on(Q[f], Q[u], Q[w])
-                if t is None or not 0.01 < t < 0.99:
-                    continue
-                if abs(dist(u, f) - dist(f, w)) > 1e-5 * max(dist(u, f), 1e-9):
-                    continue
-                halves = ([u, f], [f, w])
-                if any(_has_equal_mark(d, h) or _has_length_mark(d, h) for h in halves):
+                if mark_halves(f, u, w):
+                    draw_pair(v, f, "медиана названа в условии")
+                    messages.append(f"STATEMENT_MARK: медиана {v}{f} — половины стороны "
+                                    f"{u}{f} и {f}{w} отмечены равными")
                     break
-                count = _free_count(used_lengths)
-                if count is None:
-                    break
-                # сторону, проведённую целиком, делим на две половины
-                for i, s in enumerate(d.segments):
-                    if {s[0], s[1]} == {u, w}:
-                        d.segments[i:i + 1] = halves
-                        break
-                else:
-                    if not (cover(u, f) and cover(f, w)):
-                        continue
-                for h in halves:
-                    d.equal_marks.append({"pts": h, "count": count})
-                used_lengths.add(count)
-                draw_pair(v, f, "медиана названа в условии")
-                messages.append(f"STATEMENT_MARK: медиана {v}{f} — половины стороны "
-                                f"{u}{f} и {f}{w} отмечены равными")
-                break
+
+    # «M — середина BC»: половины равны, даже если медиана не названа
+    for m in _MIDPOINT.finditer(text):
+        f, pair = m[1].upper(), _split_pairs(m[2])
+        if pair and mark_halves(f, pair[0][0], pair[0][1]):
+            messages.append(f"STATEMENT_MARK: {f} — середина {pair[0][0]}{pair[0][1]}, "
+                            f"половины отмечены равными")
+    for m in _MIDPOINTS2.finditer(text):
+        first, second = _split_pairs(m[3]), _split_pairs(m[4])
+        for f, pair in ((m[1].upper(), first), (m[2].upper(), second)):
+            if pair and mark_halves(f, pair[0][0], pair[0][1]):
+                messages.append(f"STATEMENT_MARK: {f} — середина {pair[0][0]}{pair[0][1]}, "
+                                f"половины отмечены равными")
 
     # биссектриса VF: половины угла равны — дуги с одинаковым числом штрихов
     for m in _BISECTOR.finditer(text):

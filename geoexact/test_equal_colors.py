@@ -5,6 +5,7 @@ eqc-<count> + CSS-правила), поэтому равенство остаё�
 пользователь скрыл черточки переключателем на клиенте.
 """
 import copy
+import re
 import pathlib
 import shutil
 import subprocess
@@ -102,3 +103,75 @@ console.log('OK');
                          text=True, capture_output=True, timeout=10)
     assert out.returncode == 0, out.stderr
     assert "OK" in out.stdout
+
+
+# ---------------------------------------------- цвета в обоих режимах
+
+from geoexact.core.schema import FigurePlan  # noqa: E402
+
+
+def _generate(monkeypatch, text, aux, plan):
+    monkeypatch.setattr(llm, "classify",
+                        lambda *_: {"ok": True, "class": "M", "space": "plane"})
+    monkeypatch.setattr(llm, "formalize", lambda *_, **__: (copy.deepcopy(plan), []))
+    return generate(text, aux, sess=object(), use_cache=False)
+
+
+@pytest.mark.parametrize("aux", [False, True])
+@pytest.mark.parametrize("text", [
+    "В треугольнике ABC углы B=60°, C=50°, M — середина стороны BC. Найдите угол A.",
+    "В треугольнике ABC углы B=60°, C=50°, проведена медиана AM.",
+])
+def test_halves_are_colored_in_both_modes(monkeypatch, text, aux):
+    """Половины стороны, проведённой целиком, красятся и получают засечки."""
+    r = _generate(monkeypatch, text, aux, triangle_plan())
+    assert r.ok
+    assert r.svg.count('class="tick eqc-1') == 2
+    colored = re.findall(r'<line class="[^"]*eqc-1[^"]*"', r.svg)
+    assert len(colored) == 2, r.svg
+
+
+@pytest.mark.parametrize("aux", [False, True])
+def test_isosceles_sides_are_colored_in_both_modes(monkeypatch, aux):
+    plan = FigurePlan.from_dict({
+        "points": ["A", "B", "C"],
+        "constructions": [{"op": "free_point", "out": n} for n in "ABC"],
+        "constraints": [{"type": "dist_eq", "args": ["A", "B", "A", "C"]},
+                        {"type": "angle", "args": ["B", "A", "C"], "value": 40}],
+        "draw": {"segments": [["A", "B"], ["B", "C"], ["C", "A"]]},
+        "scale_free": True})
+    r = _generate(monkeypatch, "В треугольнике ABC AB = AC, угол A равен 40°.", aux, plan)
+    assert r.ok
+    assert len(re.findall(r'<line class="[^"]*eqc-1[^"]*"', r.svg)) == 2
+    assert r.svg.count('class="tick eqc-1') == 2
+
+
+def test_aux_part_of_line_is_colored_only_with_aux_layer(monkeypatch):
+    """Слой доп. построений скрыт — его цветной слой тоже не рисуется."""
+    plan = triangle_plan()
+    plan.draw.equal_marks = [{"pts": ["B", "M"], "count": 1, "layer": "aux"},
+                             {"pts": ["M", "C"], "count": 1, "layer": "aux"}]
+    sol = _solved(plan)
+    shown = render_svg(plan, sol, show_aux=True)
+    hidden = render_svg(plan, sol, show_aux=False)
+    assert len(re.findall(r'<line class="[^"]*eqc-1[^"]*"', shown)) == 2
+    assert 'data-kind="eq-part"' not in hidden
+    assert 'class="tick' not in hidden
+
+
+def test_midpoint_phrases_are_recognized():
+    from geoexact.core.statement import _MIDPOINT, _MIDPOINTS2
+    assert _MIDPOINT.search("M — середина стороны BC.")[1] == "M"
+    assert _MIDPOINT.search("точка K является серединой отрезка AB")[2] == "AB"
+    assert _MIDPOINTS2.search("M и N — середины сторон AB и AC")[4] == "AC"
+
+
+def test_colored_lines_are_drawn_on_top_of_black_duplicates():
+    plan = triangle_plan()
+    plan.draw.segments = [["A", "B"], ["B", "M"], ["M", "C"], ["C", "A"], ["B", "C"]]
+    plan.draw.equal_marks = [{"pts": ["B", "M"], "count": 1}, {"pts": ["M", "C"], "count": 1}]
+    svg = render_svg(plan, _solved(plan))
+    lines = re.findall(r'<line class="([^"]*)"', svg)
+    last_plain = max(i for i, c in enumerate(lines) if "eqc-" not in c)
+    first_colored = min(i for i, c in enumerate(lines) if "eqc-" in c)
+    assert first_colored > last_plain
