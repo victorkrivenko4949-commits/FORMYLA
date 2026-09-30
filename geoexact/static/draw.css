@@ -143,6 +143,9 @@
   .gx-toolbar a{width:100%;text-align:center;box-sizing:border-box}
 }
 .gx-mode-hint{margin:10px 2px 0}
+/* Идея доп. построения (слова модели) — заметная, но спокойная плашка */
+.gx #gx-idea{font-size:14px;line-height:1.55;margin:14px 0 0;padding:10px 14px;border-radius:10px;
+  background:rgba(90,123,239,.08);border:1px solid rgba(90,123,239,.25)}
 #gx-another{font:inherit;font-size:13.5px;padding:8px 14px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer}
 #gx-another:hover:not(:disabled){opacity:.8}
 #gx-another:disabled{opacity:.5;cursor:default}

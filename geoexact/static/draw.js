@@ -43,13 +43,31 @@
     el("another").hidden = !(data.with_aux && lastJob);
     el("another").textContent = Array.isArray(data.expert_history) && data.expert_history.length
       ? "Использовать другое доп. построение" : "Gemini не ответила: повторить запрос";
+    // Что именно предложено и нарисовано: идея построения из ответа модели.
+    const idea = data.with_aux && typeof data.notes === "string" ? data.notes.trim() : "";
+    el("idea").hidden = !idea;
+    el("idea").textContent = idea ? "Идея доп. построения: " + idea : "";
     const fail = data.with_aux && data.expert_status && data.expert_status !== "OK";
     el("expert-note").hidden = !fail;
     const rejected = fail && String(data.expert_status).startsWith("REJECTED:");
-    el("expert-note").textContent = !fail ? "" : rejected
-      ? "Gemini предложила построение, но его не удалось нарисовать (" + data.expert_status.slice(9).trim() +
-        "). Кнопка ниже попросит другое."
-      : "Gemini не дала доп. построение (код " + data.expert_status + "). Кнопка ниже отправит запрос заново.";
+    const rejectText = rejected ? data.expert_status.slice(9).trim() : "";
+    // Последний ответ Gemini — даже если нарисовать не удалось, пользователь видит слова модели.
+    const said = (data.expert_history || []).filter(m => m.role === "assistant").pop();
+    if (!fail) el("expert-note").textContent = "";
+    else if (/уже есть на чертеже/.test(rejectText))
+      el("expert-note").textContent = "Gemini предложила построение, которое уже показано на чертеже ("
+        + rejectText + "). Кнопка ниже попросит другое.";
+    else if (rejected)
+      el("expert-note").textContent = "Gemini предложила построение, но его не удалось нарисовать ("
+        + rejectText + "). Кнопка ниже попросит другое.";
+    else
+      el("expert-note").textContent = "Gemini не дала доп. построение (код " + data.expert_status
+        + "). Кнопка ниже отправит запрос заново.";
+    if (fail && said && typeof said.content === "string" && said.content.trim()) {
+      const words = said.content.replace(/\s+/g, " ").trim();
+      el("expert-note").textContent += " Gemini предлагала: «" +
+        (words.length > 400 ? words.slice(0, 400) + "…" : words) + "»";
+    }
     el("result").hidden = false;
     const value = data.measured;
     el("measured").textContent = value == null ? "" :
@@ -79,7 +97,7 @@
       ? "Войдите в аккаунт и обновите страницу." : "Ошибка сервера. Попробуйте позже."));
     return data;
   }
-  let lastJob = null;
+  let lastJob = null, retrying = false;
   async function poll() {
     if (polling || !activeJob) return;
     polling = true; el("resume").hidden = true;
@@ -92,6 +110,7 @@
           lastJob = activeJob;
           saveState({job: data.result?.ok ? lastJob : null});
           activeJob = null;
+          retrying = false;
           el("submit").disabled = false;
           if (data.result?.ok) {
             show(data.result);
@@ -106,10 +125,12 @@
         const clock = Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
         const auxMode = root.querySelector('input[name="gx-mode"]:checked')?.value === "aux";
         status(data.status === "running"
-          ? "Строим и проверяем чертёж… " + clock + (auxMode
-              ? (sec > 60 ? " — сложная задача, около 100 секунд, не дольше 3 минут"
-                          : " — с доп. построением обычно около 50 секунд, сложные около 100")
-              : (sec > 90 ? " — сложная задача, не дольше 3 минут" : ""))
+          ? (retrying
+              ? "Gemini подбирает другое построение, перестраиваем чертёж… " + clock
+              : "Строим и проверяем чертёж… " + clock + (auxMode
+                  ? (sec > 60 ? " — сложная задача, около 100 секунд, не дольше 3 минут"
+                              : " — с доп. построением обычно около 50 секунд, сложные около 100")
+                  : (sec > 90 ? " — сложная задача, не дольше 3 минут" : "")))
           : "Запрос в очереди… " + clock);
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
@@ -128,9 +149,11 @@
   });
   async function submitJob(retryOf) {
     if (activeJob) return;
+    retrying = Boolean(retryOf);
     el("submit").disabled = true; el("another").disabled = true;
     persistForm(); saveState({job: null});
-    el("result").hidden = true; clearUrls(); status("Отправляем запрос…");
+    el("result").hidden = true; clearUrls();
+    status(retryOf ? "Спрашиваем Gemini о другом построении…" : "Отправляем запрос…");
     try {
       const userText = el("problem").value;
       // Текст после распознавания не меняли — конвейер получает полную
@@ -146,7 +169,7 @@
       }));
       activeJob = data.job_id; await poll();
     } catch (error) { status(error.message); el("submit").disabled = false; }
-    finally { el("another").disabled = false; }
+    finally { el("another").disabled = false; retrying = false; }
   }
   el("resume").addEventListener("click", poll);
   el("toggle").addEventListener("change", () => { saveState({full: el("toggle").checked}); render(); });

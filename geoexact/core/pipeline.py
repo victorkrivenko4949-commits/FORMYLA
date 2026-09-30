@@ -222,6 +222,12 @@ def _auxiliary_layer(plan, sol, text, sess, budget, t_start):
                     # a usable answer, or the model's own "nothing to add"
                     model_failed = False
                     if applied is not None:
+                        # The construction landed on existing points: say so, the
+                        # drawing still follows the expert's words.
+                        same = {k: v for k, v in (data.get("_alias") or {}).items() if k != v}
+                        if same:
+                            _AUXJOB.alias_note = ", ".join(
+                                f"{k} совпала с {v}" for k, v in list(same.items())[:4])
                         break
                     plan = base          # "nothing to add": no built-in lines either
                 else:
@@ -373,6 +379,7 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
         _AUXJOB.retry = bool(history)
         _AUXJOB.reject = ""
         _AUXJOB.claim_note = ""
+        _AUXJOB.alias_note = ""
         if with_aux and isinstance(problem, str) and problem.strip():
             # The production worker passes no session; the job needs its own anyway.
             _AUXJOB.value = _AuxJob(kwargs.get("sess") or L.make_session(),
@@ -385,6 +392,10 @@ def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
             if note and result.ok and auxplan_has_aux(result):
                 result.warnings.append("AUX_CLAIM: Gemini пишет, что " + note.replace(" в тексте не выполняется на чертеже", "")
                                        + ", но на чертеже это не выполняется. Линии построены точно; проверьте утверждение сами.")
+            same = getattr(_AUXJOB, "alias_note", "")
+            if same and result.ok and auxplan_has_aux(result):
+                result.warnings.append("AUX_ALIAS: предложенные точки " + same
+                                       + " — на чертеже использованы уже имеющиеся точки.")
             reject = getattr(_AUXJOB, "reject", "")
             if reject and result.expert_status == "OK" and not auxplan_has_aux(result):
                 result.expert_status = "REJECTED: " + L.safe_detail(reject, 240)

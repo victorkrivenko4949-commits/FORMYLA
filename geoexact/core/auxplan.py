@@ -39,6 +39,10 @@ ALLOWED = {
 }
 _ROOT_OPS = {"line_circle": (0, 1), "circle_circle": (0, 1), "tangent_point": (0, 1), "excenter": (0, 1, 2)}
 MAX_NEW_POINTS = 6
+# A construction that lands on an existing point is NOT a failure: the engine
+# uses the existing point (an alias) and keeps drawing the rest. Only a fresh
+# name closer than this to a known point triggers the alias.
+_ALIAS_TOL = 1e-3
 # A', A'' (the reflected/translated point of a textbook) are ordinary names too.
 _NAME = re.compile(r"^[A-Z](?:_?\d{1,2}|'{1,2})?$")
 _PRIMES = str.maketrans({"′": "'", "’": "'", "`": "'", "´": "'", "″": "''"})
@@ -121,6 +125,24 @@ def mentions_construction(notes) -> bool:
 
 STATEMENT_ONLY = ("(чертёж по условию строится автоматически параллельно; используй имена точек "
                   "из условия, новые точки называй буквами, которых в условии нет)")
+
+
+_RUN = re.compile(r"(?<![A-Za-z])[A-Z]{1,4}(?![A-Za-z])")
+
+
+def statement_points(text: str) -> list[str]:
+    """Point names the statement itself names («треугольник ABC» -> A, B, C).
+
+    The figure is built in parallel with the expert request, so its exact point
+    list is not known yet; the statement's own letters are a safe lower bound —
+    new points must not take these names.
+    """
+    seen: list[str] = []
+    for m in _RUN.finditer(text or ""):
+        for ch in m.group(0):
+            if ch not in seen:
+                seen.append(ch)
+    return seen[:16]
 
 
 def describe_figure(plan, coords) -> str:
@@ -349,6 +371,7 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
 
     if not isinstance(data, dict) or not isinstance(data.get("steps"), list):
         return no("ответ не в формате шагов")
+    orig_data = data                    # _clean_names returns a copy; the caller reads the original
     data = _clean_names(data)
     if len(data["steps"]) > MAX_NEW_POINTS:
         return no(f"больше {MAX_NEW_POINTS} новых точек")
@@ -359,6 +382,7 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
         return no("чертёж вырожден")
     centre = pts.mean(axis=0)
     new: list[Construction] = []
+    alias: dict[str, str] = {}      # proposed name -> existing point it landed on
     bad_steps: list = []
     steps = _expand_steps(data["steps"], set(known) | set(plan.points), bad_steps)
     if steps is None:
@@ -370,9 +394,10 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
         value = step.get("value")
         if op not in ALLOWED:
             return no(f"операция «{op}» не поддерживается")
-        if not isinstance(out, str) or not _NAME.match(out) or out in known or out in plan.points \
-                or not isinstance(args, list):
-            return no(f"имя новой точки «{out}» занято или недопустимо")
+        if not isinstance(out, str) or not _NAME.match(out) or not isinstance(args, list):
+            return no(f"имя новой точки «{out}» недопустимо")
+        # an earlier step may have landed on an existing point: its name is an alias
+        args = [alias.get(a, a) if isinstance(a, str) else a for a in args]
         need, needs_value = ALLOWED[op]
         if len(args) != need:
             return no(f"{op}: нужно {need} точек, дано {len(args)}")
@@ -396,15 +421,38 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
             return no(f"{op}({', '.join(args)}): построение невозможно на этом чертеже")
         if not np.all(np.isfinite(p)) or float(np.linalg.norm(p - centre)) > 3.0 * span:
             return no(f"точка {out} далеко за пределами чертежа")
-        if any(float(np.linalg.norm(p - q)) < 1e-6 * span for q in known.values()):
-            return no(f"точка {out} совпадает с уже существующей")
+        # A construction that lands on an existing point is the model re-deriving
+        # it (a height foot, a midpoint the figure already has). That used to kill
+        # the whole construction; now the existing point is used instead.
+        near, best = None, _ALIAS_TOL * span
+        for name, q in known.items():
+            d = float(np.linalg.norm(p - q))
+            if d < best:
+                near, best = name, d
+        if out in known or out in plan.points:
+            if out in known and near == out:
+                alias[out] = out        # the step rebuilds a point that is already drawn
+                continue
+            return no(f"имя «{out}» уже занято точкой в другом месте — назови новую точку "
+                      f"другой буквой")
+        if near is not None:
+            alias[out] = near         # lands exactly on an existing point: use it
+            continue
         known[out] = p
         new.append(Construction(op=op, out=out, args=list(args),
                                 value=float(value) if value is not None else None))
 
     names = set(known)
-    segments = _pair_list(data.get("aux_segments"), names)
-    extensions = _pair_list(data.get("aux_extensions"), names)
+
+    def remap(value):
+        """Pairs/lists that name an aliased point use the existing point's name."""
+        if not isinstance(value, list):
+            return value
+        return [[alias.get(n, n) if isinstance(n, str) else n for n in item]
+                if isinstance(item, list) else item for item in value]
+
+    segments = _pair_list(remap(data.get("aux_segments")), names)
+    extensions = _pair_list(remap(data.get("aux_extensions")), names)
     # A continuation "PQ beyond Q up to a new point R" is just the segment QR.
     for p, q in extensions:
         for c in new:
@@ -420,9 +468,11 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
             segments.append([c.args[1], c.out])
         elif c.op == "divide_segment" and (c.value or 0) > 1:
             segments.append([c.args[1], c.out])
-    lines = _pair_list(data.get("aux_lines"), names, 4)
-    circles = _pair_list(data.get("aux_circles"), names, 2)
+    lines = _pair_list(remap(data.get("aux_lines")), names, 4)
+    circles = _pair_list(remap(data.get("aux_circles")), names, 2)
     if not (segments or extensions or lines or circles):
+        if alias:
+            return no("это построение уже есть на чертеже — новых линий нет")
         return no("нет ни одного отрезка, прямой или окружности для рисования")
     expect = data.get("_expect_collinear")
     if expect:
@@ -452,6 +502,11 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
     draw.aux_circles += circles
     if data.get("idea") and isinstance(data["idea"], str):
         plan.notes = data["idea"][:300]     # the text always matches what is drawn
+    if alias:
+        # for the user: what matched what (a step rebuilding its own point is not a match)
+        same = {k: v for k, v in alias.items() if k != v}
+        if same:
+            orig_data["_alias"] = same
     _verified_ticks(plan, known, new)
     return plan, known
 
