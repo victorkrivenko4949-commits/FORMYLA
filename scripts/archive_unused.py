@@ -1,27 +1,39 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""FORMYLA: безопасный перенос неиспользуемых файлов в _archive/.
-
-НИЧЕГО не удаляет — использует `git mv` (с fallback на os.rename),
-сохраняя структуру папок внутри _archive/. Git-история остаётся страховкой.
-
-Запуск (из корня репозитория, в ветке ai-edits):
-    python scripts/archive_unused.py --dry-run   # показать, что будет перенесено
-    python scripts/archive_unused.py             # выполнить перенос
-
-Можно откатить:  git checkout main -- .   (или revert коммита)
 """
-import argparse
+FORMYLA: перенос неиспользуемых файлов в папку _archive/.
+
+Что делает:
+  1) переносит явный список подтверждённых мёртвых файлов/папок;
+  2) находит недостижимые .py (строит граф импортов от app.py);
+  3) находит шаблоны, которые не вызываются через render_template();
+  4) переносит всё в _archive/<относительный_путь> через shutil.move;
+  5) пишет _archive/MOVED_FILES.txt (журнал).
+
+Безопасность:
+  - НИЧЕГО не удаляет — только перемещает. git-история сохраняет всё.
+  - НЕ трогает: migrations/, docs/, static/, data/, конфиги, банк задач.
+
+Как вернуть всё назад одной командой:
+  git checkout -- .        (или:  git restore .)
+
+Запуск:
+  python scripts/archive_unused.py
+"""
+import ast
 import os
 import shutil
-import subprocess
-import sys
+from collections import deque
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ARCHIVE = os.path.join(ROOT, "_archive")
+os.chdir(ROOT)
 
-# 1) Файлы с 100%-й уверенностью (проверены вручную по app.py)
-CONFIRMED_FILES = [
+ARCHIVE = os.path.join(ROOT, "_archive")
+ENTRY = ["app.py", "main.py", "wsgi.py", "run.py", "server.py"]
+
+# Явно подтверждённые неиспользуемые пути (читал register_blueprint в app.py).
+EXPLICIT = [
+    "figures_archive",
     "routes/admin_daily_pool.py",
     "routes/admin_daily_tasks_stats.py",
     "routes/admin_olympiads.py",
@@ -33,127 +45,141 @@ CONFIRMED_FILES = [
     "routes/handwriting.py",
 ]
 
-# 2) Папки целиком
-CONFIRMED_DIRS = [
-    "figures_archive",
-]
-
-# 3) Корневой мусор — по точным именам (видимые артефакты shell-команд)
-ROOT_JUNK = [
-    "$null",
-    "'2026-08-31",
-    "'2026-09-03",
-    ".coverage",
-    ".migrated",
-    "1",
-    "20",
-    "5",
-    "148",
-    "Get-ChildItem",
-    "Select-String",
-    "VICTOR2.0",
-    "FORMYLA_AUDIT_FIX_FINAL.py",
-]
-
-# 4) Корневой мусор — по префиксу/суффиксу (шаблоны)
-ROOT_PATTERNS_PREFIX = [
-    "_",           # _*.py, _*.txt, _*.json, _*.html
-    "diag_",
-    "chk_",
-    "dump_",
-    "EVIDENCE_",
-    "_bak_before_",
-    "_6figs",
-    "_deliverables",
-]
-ROOT_PATTERNS_SUFFIX = [
-    ".bak",
-    ".zip",
-    "_FINAL_REPORT.md",
-]
-
-# 5) Папки-артефакты в корне
-ROOT_JUNK_DIRS = [
-    "_6figs",
-    "_deliverables",
-    "_bak_before_e21",
-    "_bak_before_e8e11",
-]
+IGNORE_DIRS = {
+    ".git", "__pycache__", "venv", ".venv", "env", "node_modules",
+    ".idea", ".vscode", "instance", "_archive", "migrations", "docs",
+    "static", "templates", "data", "logs",
+}
 
 
-def git_mv(src, dst):
-    """Переместить через git mv, fallback на os.rename."""
+def py_files():
+    out = []
+    for dp, dns, fns in os.walk(ROOT):
+        dns[:] = [d for d in dns if d not in IGNORE_DIRS]
+        for fn in fns:
+            if fn.endswith(".py"):
+                out.append(os.path.relpath(os.path.join(dp, fn), ROOT).replace(os.sep, "/"))
+    return out
+
+
+def mod_of(path):
+    if path.endswith("/__init__.py"):
+        return path[: -len("/__init__.py")].replace("/", ".")
+    return path[:-3].replace("/", ".")
+
+
+def imports_of(path):
+    res = set()
     try:
-        subprocess.check_call(["git", "-C", ROOT, "mv", src, dst])
-        return True
+        tree = ast.parse(open(path, encoding="utf-8").read())
     except Exception:
-        pass
-    try:
-        os.makedirs(os.path.dirname(dst), exist_ok=True)
-        os.rename(src, dst)
-        return True
-    except Exception as e:
-        print(f"  ! Ошибка переноса {src}: {e}")
-        return False
+        return res
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for a in node.names:
+                res.add(a.name)
+        elif isinstance(node, ast.ImportFrom):
+            if node.level:
+                base = mod_of(path).rsplit(".", node.level - 1)[0]
+                res.add(base + ("." + node.module if node.module else ""))
+            elif node.module:
+                res.add(node.module)
+    return res
 
 
-def collect():
-    """Собрать список (src, dst) для переноса."""
-    plan = []
+def unreachable_py():
+    files = py_files()
+    mod2file = {mod_of(f): f for f in files}
+    graph = {f: set() for f in files}
+    for f in files:
+        for m in imports_of(f):
+            if m in mod2file:
+                graph[f].add(mod2file[m])
 
-    for f in CONFIRMED_FILES:
-        src = os.path.join(ROOT, f)
-        if os.path.exists(src):
-            plan.append((src, os.path.join(ARCHIVE, f)))
+    seen = set()
+    q = deque()
+    for e in ENTRY:
+        if e in files:
+            seen.add(e)
+            q.append(e)
+    while q:
+        cur = q.popleft()
+        for nxt in graph.get(cur, ()):
+            if nxt not in seen:
+                seen.add(nxt)
+                q.append(nxt)
+    return sorted(f for f in files if f not in seen)
 
-    for d in CONFIRMED_DIRS:
-        src = os.path.join(ROOT, d)
-        if os.path.isdir(src):
-            plan.append((src, os.path.join(ARCHIVE, d)))
 
-    for d in ROOT_JUNK_DIRS:
-        src = os.path.join(ROOT, d)
-        if os.path.isdir(src):
-            plan.append((src, os.path.join(ARCHIVE, d)))
-
-    # Корневые файлы
-    root_entries = os.listdir(ROOT)
-    for name in root_entries:
-        src = os.path.join(ROOT, name)
-        if not os.path.isfile(src):
+def unused_templates():
+    used = set()
+    for f in py_files():
+        try:
+            tree = ast.parse(open(f, encoding="utf-8").read())
+        except Exception:
             continue
-        hit = name in ROOT_JUNK
-        if not hit:
-            hit = any(name.startswith(p) for p in ROOT_PATTERNS_PREFIX)
-        if not hit:
-            hit = any(name.endswith(s) for s in ROOT_PATTERNS_SUFFIX)
-        if hit:
-            plan.append((src, os.path.join(ARCHIVE, name)))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                fn = getattr(node.func, "attr", None) or getattr(node.func, "id", None)
+                if fn == "render_template" and node.args:
+                    a0 = node.args[0]
+                    if isinstance(a0, ast.Constant) and isinstance(a0.value, str):
+                        used.add("templates/" + a0.value)
 
-    return plan
+    tdir = os.path.join(ROOT, "templates")
+    tpls = []
+    if os.path.isdir(tdir):
+        for dp, dns, fns in os.walk(tdir):
+            for fn in fns:
+                tpls.append(os.path.relpath(os.path.join(dp, fn), ROOT).replace(os.sep, "/"))
+    return sorted(t for t in tpls if t not in used)
 
 
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--dry-run", action="store_true", help="только показать план")
-    args = ap.parse_args()
+    targets = []
 
-    plan = collect()
-    print(f"К переносу: {len(plan)} элементов\n")
+    # 1) явный список (файлы и папки)
+    for p in EXPLICIT:
+        full = os.path.join(ROOT, p)
+        if os.path.isdir(full):
+            for dp, dns, fns in os.walk(full):
+                for fn in fns:
+                    targets.append(os.path.relpath(os.path.join(dp, fn), ROOT).replace(os.sep, "/"))
+        elif os.path.isfile(full):
+            targets.append(p)
 
-    moved = 0
-    for src, dst in plan:
-        rel = os.path.relpath(src, ROOT)
-        print(f"  {'[dry-run] ' if args.dry_run else ''}{rel} -> _archive/")
-        if not args.dry_run:
-            os.makedirs(os.path.dirname(dst), exist_ok=True)
-            if git_mv(src, dst):
-                moved += 1
+    # 2) недостижимые .py (в т.ч. scripts/*, корневые _*.py и т.п.)
+    targets += unreachable_py()
 
-    if args.dry_run:
-        print(f"\nЭто режим просмотра. Запусти без --dry-run для переноса.")
-    else:
-        print(f"\nПеренесено: {moved}. Не забудь закоммитить: git add -A && git commit")
+    # 3) неиспользуемые шаблоны
+    targets += unused_templates()
+
+    targets = sorted(set(targets))
+
+    moved = []
+    skipped = []
+    for t in targets:
+        src = os.path.join(ROOT, t)
+        if not os.path.isfile(src):
+            skipped.append(t)
+            continue
+        dst = os.path.join(ARCHIVE, t)
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.move(src, dst)
+        moved.append(t)
+
+    os.makedirs(ARCHIVE, exist_ok=True)
+    log = os.path.join(ARCHIVE, "MOVED_FILES.txt")
+    with open(log, "w", encoding="utf-8") as f:
+        f.write("# Перенесено в _archive/ (shutil.move, НЕ удалено)\n")
+        f.write("# Вернуть назад:  git checkout -- .\n")
+        f.write(f"# Всего перенесено: {len(moved)}\n\n")
+        f.write("\n".join(moved) + "\n")
+
+    print(f"Перенесено файлов: {len(moved)}")
+    print(f"Пропущено (не найдено): {len(skipped)}")
+    print(f"Журнал: {log}")
+    print("\nВернуть всё назад:  git checkout -- .")
 
 
 if __name__ == "__main__":
