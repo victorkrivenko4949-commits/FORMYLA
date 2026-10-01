@@ -768,7 +768,7 @@ function openTaskModal(item, index) {
         html += '<div class="dt-result-icon">' + resultIcon + '</div>';
         html += '<div class="dt-result-text">' + resultText + '</div>';
         if (item.correct_answer) {
-            html += '<div class="dt-result-correct-answer">Правильный ответ: ' + escapeHtml(item.correct_answer) + '</div>';
+            html += '<div class="dt-result-correct-answer">Правильный ответ: ' + formatAnswerMath(item.correct_answer, escapeHtml) + '</div>';
         }
         // Если ответ не принят — показываем требования к формату записи,
         // чтобы ученик понял, в каком виде ожидался ответ.
@@ -847,7 +847,7 @@ function submitAnswer(itemId) {
         resultHtml += '<div class="dt-result-icon">' + resultIcon + '</div>';
         resultHtml += '<div class="dt-result-text">' + resultText + '</div>';
         if (result.correct_answer) {
-            resultHtml += '<div class="dt-result-correct-answer">Правильный ответ: ' + escapeHtmlPreserveLatex(result.correct_answer) + '</div>';
+            resultHtml += '<div class="dt-result-correct-answer">Правильный ответ: ' + formatAnswerMath(result.correct_answer, escapeHtmlPreserveLatex) + '</div>';
         }
         if (!result.is_correct && result.correct_answer) {
             resultHtml += buildAnswerFormatHint(result.correct_answer);
@@ -1067,6 +1067,21 @@ function renderMath(root, opts) {
 function getCsrfToken() {
     var meta = document.querySelector('meta[name="csrf-token"]');
     return meta ? meta.getAttribute('content') : '';
+}
+
+/**
+ * Правильный ответ часто хранится голым LaTeX (1-\sqrt{2}, 1+\sqrt{2}) без
+ * разделителей — KaTeX auto-render его не видит. Оборачиваем в \(...\),
+ * если есть команда/степень/индекс и нет своих разделителей.
+ */
+function formatAnswerMath(ans, esc) {
+    if (ans === null || ans === undefined) return '';
+    var t = String(ans).trim();
+    if (!t) return '';
+    var hasDelim = /\$|\\\(|\\\[/.test(t);
+    var looksTex = /\\[a-zA-Z]+|[\^_]\{|\^\d/.test(t);
+    if (!hasDelim && looksTex) return '\\(' + esc(t) + '\\)';
+    return esc(t);
 }
 
 function escapeHtml(text) {
