@@ -1,16 +1,21 @@
-"""Оценка сложности задачи перед запросом к эксперту.
+"""Оценка сложности задачи перед запросом к эксперту и сторож первого токена.
 
-deepseek-v4-flash (без рассуждений) отвечает одним числом 1..10. По числу
-выбирается модель эксперта: 1..5 — обычная (gpt-6-luna), 6..10 — «тяжёлая»
-(gpt-6-sol). Порог задаётся GEOEXACT_HARD_THRESHOLD (по умолчанию 6).
+1) deepseek-v4-flash (без рассуждений) отвечает одним числом 1..10. По числу
+   выбирается модель эксперта: 1..5 — обычная (gpt-6-luna), 6..10 — «тяжёлая»
+   (gpt-6-sol). Порог задаётся GEOEXACT_HARD_THRESHOLD (по умолчанию 6).
+2) Сторож: если после заголовков ответа за FIRST_TOKEN_LIMIT секунд не пришло
+   ни символа текста, ни символа рассуждения, соединение закрывается и тот же
+   запрос уходит следующей модели из списка. Именно так выглядит зависание
+   роутера: «заголовки через 16 с, текст не пошёл за 100 с (рассуждение 0 симв.)».
 
-Этап не должен становиться новой точкой отказа: любая ошибка (сеть, тайм-аут,
-не число в ответе, нет ключа) даёт None, и выбор модели идёт как раньше.
-Платный вызов один, без повторов.
+Оба этапа не должны становиться новой точкой отказа: любая ошибка оценки даёт
+None (порядок моделей как раньше), сторож срабатывает только при полной тишине.
+Платный вызов оценки один, без повторов.
 """
 from __future__ import annotations
 
 import os
+import queue
 import re
 import threading
 import time
@@ -22,10 +27,13 @@ RATE_MODEL = (os.environ.get("GEOEXACT_RATE_MODEL") or "").strip() or "deepseek-
 HARD_MODEL = (os.environ.get("GEOEXACT_EXPERT_HARD_MODEL") or "").strip() or "gpt-6-sol"
 # Оценка >= порога уходит в HARD_MODEL. По умолчанию 6: 1..5 -> Луна, 6..10 -> Sol.
 HARD_THRESHOLD = int(os.environ.get("GEOEXACT_HARD_THRESHOLD", "6"))
-# Секунд на весь этап. Flash обычно отвечает за 1-3 с.
+# Секунд на весь этап оценки. Flash обычно отвечает за 1-3 с.
 RATE_TIMEOUT = float(os.environ.get("GEOEXACT_RATE_TIMEOUT", "8"))
-# GEOEXACT_DIFFICULTY_ROUTER=0 выключает этап целиком без деплоя кода.
+# GEOEXACT_DIFFICULTY_ROUTER=0 выключает оценку сложности без деплоя кода.
 ENABLED = (os.environ.get("GEOEXACT_DIFFICULTY_ROUTER") or "1").strip().lower() not in ("0", "no", "off")
+# Сторож первого токена: секунд тишины после заголовков до смены модели.
+# GEOEXACT_FIRST_TOKEN_LIMIT=0 выключает сторож.
+FIRST_TOKEN_LIMIT = float(os.environ.get("GEOEXACT_FIRST_TOKEN_LIMIT", "25"))
 
 RATE_PROMPT = (
     "Оцени сложность геометрической задачи по шкале от 1 до 10, "
@@ -118,25 +126,115 @@ def diag_text(diag: dict | None) -> str:
     n = diag.get("difficulty")
     if n is None:
         err = diag.get("rate_error", "")
-        return f"сложность не оценена ({err})" if err else "сложность не оценена"
-    target = HARD_MODEL if n >= HARD_THRESHOLD else "обычная модель"
-    return f"сложность {n} -> {target} ({diag.get('rate_seconds', '?')} с)"
+        out = f"сложность не оценена ({err})" if err else "сложность не оценена"
+    else:
+        target = HARD_MODEL if n >= HARD_THRESHOLD else "обычная модель"
+        out = f"сложность {n} -> {target} ({diag.get('rate_seconds', '?')} с)"
+    if diag.get("silent"):
+        out += "; молчали: " + ", ".join(diag["silent"])
+    return out
+
+
+# --------------------------------------------------------------------------
+# Сторож первого токена.
+#
+# expert_text читает поток через r.iter_lines() и по ходу пишет в diag поля
+# first (секунда первого символа текста) и reasoning (символов рассуждения).
+# Прокси сессии подменяет ответ: строки читаются во вспомогательном потоке,
+# а генератор ждёт их с тайм-аутом. Пока diag не показал ни текста, ни
+# рассуждения, а после заголовков прошло больше FIRST_TOKEN_LIMIT секунд,
+# соединение закрывается и поднимается ExpertSilent — обёртка expert_text
+# ловит её и повторяет запрос следующей моделью.
+
+class ExpertSilent(Exception):
+    """Модель прислала заголовки, но за FIRST_TOKEN_LIMIT с не прислала ни символа."""
+    code = "EXPERT_SILENT"
+
+    def __init__(self, model: str, seconds: float):
+        self.model, self.seconds = model, seconds
+        super().__init__(f"{model}: ни текста, ни рассуждения за {seconds:.0f} с после заголовков")
+
+
+class _ResponseProxy:
+    def __init__(self, real, diag: dict, limit: float):
+        self._real, self._diag, self._limit = real, diag, limit
+
+    def __getattr__(self, name):
+        return getattr(self._real, name)
+
+    def _close(self):
+        close = getattr(self._real, "close", None)
+        if callable(close):
+            try:
+                close()
+            except Exception:  # noqa: BLE001 — соединение уже бесполезно
+                pass
+
+    def _started(self) -> bool:
+        return self._diag.get("first") is not None or bool(self._diag.get("reasoning"))
+
+    def iter_lines(self, *args, **kwargs):
+        q: queue.Queue = queue.Queue()
+
+        def reader():
+            try:
+                for line in self._real.iter_lines(*args, **kwargs):
+                    q.put(("line", line))
+                q.put(("end", None))
+            except BaseException as e:  # noqa: BLE001 — передаём в основной поток
+                q.put(("err", e))
+
+        threading.Thread(target=reader, daemon=True).start()
+        t_headers = time.time()
+        started = False
+        while True:
+            try:
+                kind, value = q.get(timeout=0.25)
+            except queue.Empty:
+                kind, value = None, None
+            if kind == "line":
+                yield value
+                # expert_text обработал строку и обновил diag до следующего next()
+            elif kind == "end":
+                return
+            elif kind == "err":
+                raise value
+            if not started:
+                started = self._started()
+                if not started and time.time() - t_headers > self._limit:
+                    self._close()
+                    raise ExpertSilent(str(self._diag.get("model", "")), time.time() - t_headers)
+
+
+class _SessionProxy:
+    def __init__(self, real, diag: dict, limit: float):
+        self._real, self._diag, self._limit = real, diag, limit
+
+    def __getattr__(self, name):
+        return getattr(self._real, name)
+
+    def post(self, url, **kwargs):
+        r = self._real.post(url, **kwargs)
+        if kwargs.get("stream"):
+            return _ResponseProxy(r, self._diag, self._limit)
+        return r
 
 
 # --------------------------------------------------------------------------
 # Подключение к llm.expert_text без правки llm.py.
 #
 # expert_text строит список моделей из глобальных EXPERT_MODEL / EXPERT_FALLBACKS
-# в момент вызова. install() оборачивает функцию: сначала Flash оценивает задачу,
-# затем на время одного вызова глобальные подменяются порядком из pick_expert()
-# и восстанавливаются в finally. Замок нужен, чтобы два параллельных вызова
+# в момент вызова. install() оборачивает функцию: Flash оценивает задачу,
+# на время одного вызова глобальные подменяются нужным порядком и
+# восстанавливаются в finally; при ExpertSilent запрос повторяется со
+# следующей модели списка. Замок нужен, чтобы два параллельных вызова
 # (доп. построение и «полное решение» в одном процессе) не путали порядок.
 # Вызывается из geoexact/core/__init__.py при импорте пакета.
 _lock = threading.Lock()
 
 
 def install(llm_module) -> bool:
-    """Обернуть llm_module.expert_text оценкой сложности. Повторный вызов — no-op."""
+    """Обернуть llm_module.expert_text оценкой сложности и сторожем. Повторный вызов — no-op."""
     original = getattr(llm_module, "expert_text", None)
     if original is None or getattr(original, "_difficulty_routed", False):
         return False
@@ -144,20 +242,23 @@ def install(llm_module) -> bool:
     def expert_text(sess, problem, history=None, max_out=16000, diag=None, messages=None):
         if diag is None:
             diag = {}
-        order = None
-        if ENABLED:
-            n = rate_difficulty(problem, diag)
-            if n is not None and n >= HARD_THRESHOLD:
-                order = pick_expert(n, llm_module.EXPERT_MODEL, llm_module.EXPERT_FALLBACKS)
-        if order is None:
-            return original(sess, problem, history, max_out=max_out, diag=diag, messages=messages)
-        with _lock:
-            saved = (llm_module.EXPERT_MODEL, llm_module.EXPERT_FALLBACKS)
-            llm_module.EXPERT_MODEL, llm_module.EXPERT_FALLBACKS = order[0], tuple(order[1:])
-            try:
-                return original(sess, problem, history, max_out=max_out, diag=diag, messages=messages)
-            finally:
-                llm_module.EXPERT_MODEL, llm_module.EXPERT_FALLBACKS = saved
+        n = rate_difficulty(problem, diag) if ENABLED else None
+        models = pick_expert(n, llm_module.EXPERT_MODEL, llm_module.EXPERT_FALLBACKS)
+        guarded = _SessionProxy(sess, diag, FIRST_TOKEN_LIMIT) if FIRST_TOKEN_LIMIT > 0 else sess
+        last = None
+        for i, model in enumerate(models):
+            with _lock:
+                saved = (llm_module.EXPERT_MODEL, llm_module.EXPERT_FALLBACKS)
+                llm_module.EXPERT_MODEL, llm_module.EXPERT_FALLBACKS = model, tuple(models[i + 1:])
+                try:
+                    return original(guarded, problem, history, max_out=max_out, diag=diag,
+                                    messages=messages)
+                except ExpertSilent as e:
+                    diag.setdefault("silent", []).append(e.model or model)
+                    last = e
+                finally:
+                    llm_module.EXPERT_MODEL, llm_module.EXPERT_FALLBACKS = saved
+        raise last if last is not None else RuntimeError("expert_text: нет моделей")
 
     expert_text._difficulty_routed = True
     expert_text._original = original
