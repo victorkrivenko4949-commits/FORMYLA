@@ -122,3 +122,16 @@
         init();
     }
 })();
+
+
+// Shared UI enhancement: load only where the authenticated tutor widget exists.
+(function () {
+    'use strict';
+    if (!document.getElementById('tutorWidget') || document.getElementById('tutor-direct-script')) return;
+    var current = document.currentScript;
+    if (!current || !current.src) return;
+    var script = document.createElement('script');
+    script.id = 'tutor-direct-script';
+    script.src = new URL('tutor_direct.js?v=direct-chat-1', current.src).href;
+    document.head.appendChild(script);
+})();
