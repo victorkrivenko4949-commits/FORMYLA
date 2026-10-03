@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Статистика по разделам — Админ FORMYLA.net{% endblock %}
+{% block extra_css %}
+<style>
+  .ss-wrap { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+  .ss-title { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+  .ss-sub { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+  .ss-cards { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; }
+  .ss-card { flex: 1 1 170px; min-width: 160px; background: var(--card, rgba(255,255,255,0.04));
+             border: 1px solid var(--border, rgba(255,255,255,0.08)); border-radius: 12px; padding: 14px 16px; }
+  .ss-card-num { font-size: 24px; font-weight: 800; }
+  .ss-card-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .ss-sec { font-size: 17px; font-weight: 800; margin: 26px 0 10px; }
+  .ss-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border, rgba(255,255,255,0.08)); }
+  .ss-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .ss-table th { text-align: left; padding: 10px 12px; font-size: 11px; letter-spacing: .5px; text-transform: uppercase;
+                 color: var(--muted); border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
+                 background: rgba(255,255,255,0.03); white-space: nowrap; }
+  .ss-table td { padding: 9px 12px; border-bottom: 1px solid var(--border, rgba(255,255,255,0.06)); white-space: nowrap; }
+  .ss-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .ss-dim { color: var(--muted); }
+  .ss-tag { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; }
+  .ss-tag-ok { background: rgba(74,222,128,0.15); color:#4ade80; }
+  .ss-tag-wait { background: rgba(244,185,66,0.15); color:#F4B942; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="ss-wrap">
+  <a href="/admin/users" style="font-size:13px;color:var(--muted);">← Общая таблица пользователей</a>
+  <h1 class="ss-title">Статистика по разделам</h1>
+  <div class="ss-sub">Активное время (вкладка видна, пользователь не простаивает) по разделам:
+    общая · задачи дня · 102 метода · генераторы чертежей. Опрос «{{ fb_question }}» задаётся после 15 минут внутри методов.</div>
+
+  <div class="ss-cards">
+    <div class="ss-card"><div class="ss-card-num">{{ totals.general }}</div><div class="ss-card-label">{{ titles.general }} — всего</div></div>
+    <div class="ss-card"><div class="ss-card-num">{{ totals.daily }}</div><div class="ss-card-label">{{ titles.daily }}</div></div>
+    <div class="ss-card"><div class="ss-card-num">{{ totals.methods }}</div><div class="ss-card-label">{{ titles.methods }} · {{ totals.methods_users }} чел. заходили, {{ totals.methods_15 }} — дольше 15 мин</div></div>
+    <div class="ss-card"><div class="ss-card-num">{{ totals.generators }}</div><div class="ss-card-label">{{ titles.generators }} · сгенерировано чертежей: <b>{{ totals.drawings }}</b></div></div>
+    <div class="ss-card"><div class="ss-card-num">{{ totals.fb_avg }}</div><div class="ss-card-label">средняя оценка понятности методов ({{ totals.fb_answered }} ответов)</div></div>
+  </div>
+
+  <div class="ss-sec">По каждому пользователю ({{ totals.users }})</div>
+  <div class="ss-table-wrap">
+    <table class="ss-table">
+      <thead><tr>
+        <th>ID</th><th>Ник</th>
+        <th>Общая</th><th>Задачи дня</th><th>102 метода</th><th>Генераторы</th><th>Остальное</th>
+        <th>Чертежей</th><th>Понятность методов</th>
+      </tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td class="ss-dim">{{ r.id }}</td>
+          <td><strong>{{ r.nickname }}</strong></td>
+          <td><strong>{{ r.general_f }}</strong></td>
+          <td>{{ r.daily_f }}</td>
+          <td>{{ r.methods_f }}{% if r.methods >= 900 %} <span class="ss-tag ss-tag-ok">15+</span>{% endif %}</td>
+          <td>{{ r.generators_f }}</td>
+          <td class="ss-dim">{{ r.other_f }}</td>
+          <td style="text-align:center;"><strong>{{ r.drawings }}</strong></td>
+          <td>
+            {% if r.methods_fb and r.methods_fb.answered %}
+              <span style="color:#F4B942;">{{ '★' * (r.methods_fb.rating or 0) }}</span>
+              {% if r.methods_fb.text %}<div style="white-space:normal;max-width:320px;font-size:12px;color:var(--muted);">{{ r.methods_fb.text }}</div>{% endif %}
+            {% elif r.methods_fb %}
+              <span class="ss-tag ss-tag-wait">вопрос задан, ждём</span>
+            {% else %}<span class="ss-dim">—</span>{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
