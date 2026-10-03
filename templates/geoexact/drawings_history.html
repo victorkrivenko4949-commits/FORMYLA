@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Мои чертежи — FORMYLA.net{% endblock %}
+{% block extra_css %}
+<style>
+  .dh-wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px 60px; }
+  .dh-title { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+  .dh-sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .dh-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .dh-card { background: var(--card, rgba(255,255,255,0.04)); border: 1px solid var(--border, rgba(255,255,255,0.08));
+             border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .dh-svg { background: #fff; border-radius: 10px; padding: 8px; min-height: 180px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .dh-svg svg { max-width: 100%; height: auto; max-height: 260px; }
+  .dh-problem { font-size: 13px; line-height: 1.5; color: var(--text-soft, rgba(255,255,255,0.8)); max-height: 96px; overflow: hidden; }
+  .dh-meta { display:flex; justify-content:space-between; align-items:center; font-size: 12px; color: var(--muted); gap: 8px; flex-wrap: wrap; }
+  .dh-btn { background: none; border: 1px solid rgba(255,255,255,0.15); color: inherit; border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 12px; }
+  .dh-btn:hover { border-color: rgba(255,255,255,0.4); }
+  .dh-empty { text-align:center; padding: 60px 20px; color: var(--muted); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="dh-wrap">
+  <a href="/geometry/draw/" style="font-size:13px;color:var(--muted);">← К генератору чертежей</a>
+  <h1 class="dh-title">Мои чертежи</h1>
+  <div class="dh-sub">Все чертежи, которые ты сгенерировал: {{ total }}. Хранятся без ограничения по времени.</div>
+
+  {% if items %}
+  <div class="dh-grid">
+    {% for it in items %}
+    <div class="dh-card" id="dh-{{ it.id }}">
+      <div class="dh-svg">{{ it.svg | safe }}</div>
+      <div class="dh-problem">{{ it.problem }}</div>
+      <div class="dh-meta">
+        <span>{{ it.created }}{% if it.with_aux %} · с доп. построением{% endif %}{% if it.measured %} · {{ it.measured }}{% endif %}</span>
+        <span style="display:flex;gap:6px;">
+          <button class="dh-btn" onclick="dhOpen({{ it.id }})">Открыть</button>
+          <button class="dh-btn" onclick="dhDownload({{ it.id }})">SVG</button>
+          <button class="dh-btn" onclick="dhDelete({{ it.id }})" title="Удалить">✕</button>
+        </span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="dh-empty">Пока ни одного чертежа. <a href="/geometry/draw/" style="color:#7dd3fc;">Сгенерировать первый →</a></div>
+  {% endif %}
+</div>
+<script>
+function dhSvg(id){ var c=document.querySelector('#dh-'+id+' .dh-svg'); return c?c.innerHTML:''; }
+function dhOpen(id){ var w=window.open('about:blank'); if(!w)return; w.document.write('<html><body style="margin:0;background:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;">'+dhSvg(id)+'</body></html>'); w.document.close(); }
+function dhDownload(id){ var b=new Blob([dhSvg(id)],{type:'image/svg+xml'}); var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='formyla-drawing-'+id+'.svg'; a.click(); }
+function dhDelete(id){ if(!confirm('Удалить чертёж из истории?'))return; fetch('/geometry/drawings/'+id+'/delete',{method:'POST',credentials:'include'}).then(function(r){return r.json();}).then(function(d){ if(d&&d.ok){ var c=document.getElementById('dh-'+id); if(c)c.remove(); } }); }
+</script>
+{% endblock %}
