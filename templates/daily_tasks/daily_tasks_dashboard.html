@@ -1417,9 +1417,12 @@
       '<button id="dt-modal-close" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:26px;cursor:pointer;line-height:1;">\u00d7</button>' +
       '<div class="dt-modal-title" id="dt-modal-title" style="font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:var(--accent-hi);margin-bottom:10px;"></div>' +
       '<div class="dt-modal-body" id="dt-modal-statement" style="font-size:16px;line-height:1.6;margin-bottom:18px;white-space:pre-wrap;"></div>' +
-      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">' +
-        '<input type="text" id="dt-answer-input" data-kb data-kb-label="\u041e\u0442\u0432\u0435\u0442" placeholder="\u0422\u0432\u043e\u0439 \u043e\u0442\u0432\u0435\u0442 (\u043d\u0430\u043f\u0440. 0.25 \u0438\u043b\u0438 1/4)" autocomplete="off" style="flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#070C18;color:var(--text);font-size:16px;">' +
-        '<button type="button" class="kb-field-btn" data-kb-target="dt-answer-input" onclick="openKbFor(\'dt-answer-input\')" title="\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0443">\u2328\ufe0f</button>' +
+      '<div style="margin-bottom:14px;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">' +
+          '<div style="font-size:13px;color:var(--muted);">Твой ответ</div>' +
+          '<button type="button" class="kb-field-btn" data-kb-target="dt-answer-input" onclick="openKbFor(\'dt-answer-input\')" title="Открыть клавиатуру" style="font-size:13px;min-width:32px;height:30px;">\u2328\ufe0f</button>' +
+        '</div>' +
+        '<textarea id="dt-answer-input" class="dt-answer-field" data-kb data-kb-label="Ответ" placeholder="Твой ответ (напр. 0.25 или 1/4)" autocomplete="off" rows="3" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#070C18;color:var(--text);font-size:16px;box-sizing:border-box;"></textarea>' +
       '</div>' +
       '<div style="margin-bottom:14px;">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">' +
