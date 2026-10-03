@@ -1638,7 +1638,9 @@
       $('dt-submit-btn').disabled = false;
       $('dt-submit-btn').textContent = 'Проверить';
       $('dt-submit-btn').onclick = submitAnswer;
-      inp.onkeydown = function(e) { if (e.key === 'Enter') submitAnswer(); };
+      inp.onkeydown = function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitAnswer(); }
+      };
       // Автосохранение черновика при вводе (ответ и решение).
       inp.oninput = function() { if (dtCurrentItem) dtSaveDraft(dtCurrentItem.id); };
       if (sol) {
