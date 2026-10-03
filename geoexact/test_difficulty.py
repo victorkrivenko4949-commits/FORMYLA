@@ -1,4 +1,5 @@
 import json
+import types
 
 import pytest
 
@@ -85,3 +86,86 @@ def test_diag_text_without_rating():
     assert D.diag_text({}) == "" and D.diag_text(None) == ""
     assert "не оценена" in D.diag_text({"difficulty": None, "rate_error": "x"})
     assert D.diag_text({"difficulty": 6, "rate_seconds": 1.2}) == "сложность 6 -> gpt-6-sol (1.2 с)"
+
+
+# --- install(): обёртка над llm.expert_text ---------------------------------
+
+def _fake_llm(tried):
+    m = types.ModuleType("fake_llm")
+    m.EXPERT_MODEL = "gpt-6-luna"
+    m.EXPERT_FALLBACKS = ("gpt-6-sol", "gemini-3.7-flash-thinking", "gemini-3.7-flash")
+
+    def expert_text(sess, problem, history=None, max_out=16000, diag=None, messages=None):
+        """doc"""
+        tried.append([m.EXPERT_MODEL, *m.EXPERT_FALLBACKS])
+        return "ok"
+    m.expert_text = expert_text
+    return m
+
+
+def test_install_routes_hard_tasks_to_sol_and_restores_globals(monkeypatch):
+    tried = []
+    m = _fake_llm(tried)
+    assert D.install(m) is True and D.install(m) is False      # повторно — no-op
+    assert m.expert_text.__doc__ == "doc"
+
+    def rate(problem, diag=None):
+        diag["difficulty"] = 8
+        return 8
+    monkeypatch.setattr(D, "rate_difficulty", rate)
+    diag = {}
+    assert m.expert_text(object(), "задача", diag=diag) == "ok"
+    assert tried[-1] == ["gpt-6-sol", "gpt-6-luna", "gemini-3.7-flash-thinking", "gemini-3.7-flash"]
+    assert (m.EXPERT_MODEL, m.EXPERT_FALLBACKS) == (
+        "gpt-6-luna", ("gpt-6-sol", "gemini-3.7-flash-thinking", "gemini-3.7-flash"))
+    assert diag["difficulty"] == 8
+
+
+def test_install_keeps_luna_first_for_easy_or_unrated(monkeypatch):
+    tried = []
+    m = _fake_llm(tried)
+    D.install(m)
+    for n in (None, 3, 5):
+        monkeypatch.setattr(D, "rate_difficulty", lambda problem, diag=None, n=n: n)
+        assert m.expert_text(object(), "задача") == "ok"
+        assert tried[-1][0] == "gpt-6-luna"
+
+
+def test_install_restores_globals_when_expert_fails(monkeypatch):
+    m = _fake_llm([])
+
+    def boom(*a, **k):
+        raise RuntimeError("expert down")
+    m.expert_text = boom
+    D.install(m)
+    monkeypatch.setattr(D, "rate_difficulty", lambda problem, diag=None: 9)
+    with pytest.raises(RuntimeError):
+        m.expert_text(object(), "задача")
+    assert m.EXPERT_MODEL == "gpt-6-luna"
+
+
+def test_install_does_not_call_deepseek_without_key(monkeypatch):
+    monkeypatch.delenv("DEEPSEEK_API_KEY")
+    calls = []
+    monkeypatch.setattr(D.requests, "post", lambda *a, **k: calls.append(1))
+    tried = []
+    m = _fake_llm(tried)
+    D.install(m)
+    assert m.expert_text(object(), "задача") == "ok"
+    assert calls == [] and tried[-1][0] == "gpt-6-luna"
+
+
+def test_router_can_be_switched_off(monkeypatch):
+    monkeypatch.setattr(D, "ENABLED", False)
+    called = []
+    monkeypatch.setattr(D, "rate_difficulty", lambda problem, diag=None: called.append(1) or 10)
+    tried = []
+    m = _fake_llm(tried)
+    D.install(m)
+    assert m.expert_text(object(), "задача") == "ok"
+    assert called == [] and tried[-1][0] == "gpt-6-luna"
+
+
+def test_core_package_installs_router():
+    from geoexact.core import llm
+    assert getattr(llm.expert_text, "_difficulty_routed", False) is True

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import re
+import threading
 import time
 
 import requests
@@ -23,6 +24,8 @@ HARD_MODEL = (os.environ.get("GEOEXACT_EXPERT_HARD_MODEL") or "").strip() or "gp
 HARD_THRESHOLD = int(os.environ.get("GEOEXACT_HARD_THRESHOLD", "6"))
 # Секунд на весь этап. Flash обычно отвечает за 1-3 с.
 RATE_TIMEOUT = float(os.environ.get("GEOEXACT_RATE_TIMEOUT", "8"))
+# GEOEXACT_DIFFICULTY_ROUTER=0 выключает этап целиком без деплоя кода.
+ENABLED = (os.environ.get("GEOEXACT_DIFFICULTY_ROUTER") or "1").strip().lower() not in ("0", "no", "off")
 
 RATE_PROMPT = (
     "Оцени сложность геометрической задачи по шкале от 1 до 10, "
@@ -118,3 +121,47 @@ def diag_text(diag: dict | None) -> str:
         return f"сложность не оценена ({err})" if err else "сложность не оценена"
     target = HARD_MODEL if n >= HARD_THRESHOLD else "обычная модель"
     return f"сложность {n} -> {target} ({diag.get('rate_seconds', '?')} с)"
+
+
+# --------------------------------------------------------------------------
+# Подключение к llm.expert_text без правки llm.py.
+#
+# expert_text строит список моделей из глобальных EXPERT_MODEL / EXPERT_FALLBACKS
+# в момент вызова. install() оборачивает функцию: сначала Flash оценивает задачу,
+# затем на время одного вызова глобальные подменяются порядком из pick_expert()
+# и восстанавливаются в finally. Замок нужен, чтобы два параллельных вызова
+# (доп. построение и «полное решение» в одном процессе) не путали порядок.
+# Вызывается из geoexact/core/__init__.py при импорте пакета.
+_lock = threading.Lock()
+
+
+def install(llm_module) -> bool:
+    """Обернуть llm_module.expert_text оценкой сложности. Повторный вызов — no-op."""
+    original = getattr(llm_module, "expert_text", None)
+    if original is None or getattr(original, "_difficulty_routed", False):
+        return False
+
+    def expert_text(sess, problem, history=None, max_out=16000, diag=None, messages=None):
+        if diag is None:
+            diag = {}
+        order = None
+        if ENABLED:
+            n = rate_difficulty(problem, diag)
+            if n is not None and n >= HARD_THRESHOLD:
+                order = pick_expert(n, llm_module.EXPERT_MODEL, llm_module.EXPERT_FALLBACKS)
+        if order is None:
+            return original(sess, problem, history, max_out=max_out, diag=diag, messages=messages)
+        with _lock:
+            saved = (llm_module.EXPERT_MODEL, llm_module.EXPERT_FALLBACKS)
+            llm_module.EXPERT_MODEL, llm_module.EXPERT_FALLBACKS = order[0], tuple(order[1:])
+            try:
+                return original(sess, problem, history, max_out=max_out, diag=diag, messages=messages)
+            finally:
+                llm_module.EXPERT_MODEL, llm_module.EXPERT_FALLBACKS = saved
+
+    expert_text._difficulty_routed = True
+    expert_text._original = original
+    expert_text.__doc__ = original.__doc__
+    expert_text.__name__ = "expert_text"
+    llm_module.expert_text = expert_text
+    return True
