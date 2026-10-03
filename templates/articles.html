@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Статьи | FORMYLA.net{% endblock %}
-{% block meta_description %}Статьи FORMYLA.net об олимпиадной математике: как перейти от школьной математики к олимпиадной, разборы идей и тренировка.{% endblock %}
+{% block meta_description %}Статьи FORMYLA.net об олимпиадной математике: как перейти от школьной математики к олимпиадной, разбор олимпиады «Физтех» по разделам, идеи и тренировка.{% endblock %}
 {% block extra_css %}
 <style>
   .art-list{max-width:1000px;margin:0 auto;padding:36px 0 60px}
@@ -8,8 +8,9 @@
   .art-list__head h1{margin:0 0 10px;font-size:clamp(1.9em,4.5vw,2.6em);font-weight:800;color:#fff}
   .art-list__head p{margin:0;color:rgba(255,255,255,.78);font-size:1.08em;line-height:1.6;max-width:640px}
   .art-card{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);background:rgba(30,41,59,.94);border:1px solid rgba(255,255,255,.09);border-radius:22px;overflow:hidden;text-decoration:none;color:#fff;transition:transform .2s,border-color .2s,box-shadow .2s}
+  .art-card+.art-card{margin-top:22px}
   .art-card:hover{transform:translateY(-3px);border-color:rgba(244,162,89,.55);box-shadow:0 18px 44px rgba(0,0,0,.4)}
-  .art-card__img{width:100%;height:100%;min-height:220px;object-fit:cover;display:block}
+  .art-card__img{width:100%;height:100%;min-height:220px;object-fit:cover;display:block;background:#0b1428}
   .art-card__body{padding:28px 30px;display:flex;flex-direction:column;justify-content:center;gap:12px}
   .art-card__meta{font-size:.85em;font-weight:700;color:#94a3b8}
   .art-card__meta b{color:#f4a259;text-transform:uppercase;letter-spacing:.1em;margin-right:6px}
@@ -25,6 +26,15 @@
     <h1>📰 Статьи</h1>
     <p>Истории и разборы для тех, кто идёт к олимпиадам: как думать над задачами, с чего начинать и как не бросить.</p>
   </div>
+  <a class="art-card" href="/articles/fiztech">
+    <img class="art-card__img" src="{{ url_for('static', filename='articles/cover-fiztech.svg') }}" alt="Чертёж треугольника с высотами и окружностью на тёмной доске" width="800" height="800" loading="lazy">
+    <div class="art-card__body">
+      <div class="art-card__meta"><b>Разбор</b> 15 минут · 9–11 класс</div>
+      <h2>«Физтех» по математике: та же школьная программа, только с приёмами</h2>
+      <p>Мы разобрали варианты заключительного этапа 2024–2026 для 9, 10 и 11 классов по разделам: алгебра, числа, комбинаторика, геометрия, параметры. Шесть реальных задач с решениями и чертежами.</p>
+      <div class="art-card__more">Читать →</div>
+    </div>
+  </a>
   <a class="art-card" href="/articles/ot-shkoly-k-olimpiadam">
     <img class="art-card__img" src="{{ url_for('static', filename='articles/cover-max.jpg') }}" alt="Макс перед меловым лабиринтом со светящейся дверью" width="1600" height="800" loading="lazy">
     <div class="art-card__body">
