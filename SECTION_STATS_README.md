@@ -1,12 +1,16 @@
 # SECTION_STATS_V1 — подключение
 
-Добавь ОДНУ строку в самый конец `app.py` (после регистрации всех blueprint'ов, перед `if __name__ == '__main__':`):
+**На проде (Render, `gunicorn app:app`) ничего делать не нужно.** Файл `gunicorn.conf.py` в корне репо gunicorn читает сам; в хуке `post_worker_init` он вызывает `services.site_stats.register(app)` для уже загруженного приложения. app.py не трогаем.
+
+Отключить без деплоя: env `SECTION_STATS_DISABLED=1`.
+
+Для локального запуска `python app.py` (без gunicorn) — одна строка в конце `app.py`:
 
 ```python
 from services.site_stats import register as _register_site_stats; _register_site_stats(app)
 ```
 
-Больше ничего править не нужно: модуль сам
+Модуль сам
 - создаёт таблицы `site_time_sections`, `site_time_beat`, `section_feedback`, `geo_drawing_history` (Postgres и SQLite);
 - вставляет трекер `/static/js/site_time.js` в каждую HTML-страницу (after_request);
 - переопределяет старый `/api/track/site-time` из base.html (он больше не начисляет секунды — иначе был бы двойной счёт);
@@ -41,6 +45,7 @@ from services.site_stats import register as _register_site_stats; _register_site
 «Насколько понятно объяснены методы?» — 1 = слишком сложно, 5 = всё ясно + поле «какой метод было тяжело понять». Текст меняется в константах `METHODS_FEEDBACK_QUESTION` / `METHODS_FEEDBACK_SUBTITLE` в `services/site_stats.py`.
 
 ## Проверка после деплоя
+0. В логе старта Render: `SECTION_STATS_V1: registered via gunicorn.conf.py`.
 1. Зайти под обычным пользователем на /olympiads/methods, подождать 25–40 сек → в БД `site_time_sections` появится строка `methods`.
 2. Свернуть вкладку на 2 минуты → секунды не растут. Вернуться → растут.
 3. Открыть сайт в двух вкладках → суммарное время растёт как в одной.
