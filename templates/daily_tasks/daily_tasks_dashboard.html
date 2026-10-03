@@ -17,6 +17,15 @@
   #dt-modal-result{min-height:0 !important;height:auto !important;}
   #dt-modal-result:empty{display:none !important;margin:0 !important;}
 
+  /* Поле ответа: крупнее и тянется по вертикали (комп-версия) */
+  .dt-answer-field {
+    min-height: 90px;
+    resize: vertical;
+  }
+  @media (min-width: 768px) {
+    .dt-answer-field { min-height: 140px; }
+  }
+
   .dt-latex-fallback {
     font-style: italic;
     color: var(--text);
