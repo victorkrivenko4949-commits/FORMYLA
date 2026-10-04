@@ -74,7 +74,7 @@ PROVIDER_BASE_URLS = {
 ROLE_DEFAULT_MODEL = {
     # REC-5: структурный JSON и извлечение — Gemini (flash) через OdiRouter.
     "base": "gemini-3.7-flash",
-    "aux": "gemini-3.7-flash",
+    "aux": "gpt-5.4",
     "audit": "gemini-3.7-flash",
     "repair": "deepseek-v4-pro",
     "legacy_reasoner": "deepseek-v4-pro",
