@@ -44,6 +44,9 @@ PROVIDER_MODEL_MAP = {
         "gpt-5.6-sol": "gpt-5.6-sol",
         "gpt-5.5": "gpt-5.5",
         "gpt-5.4": "gpt-5.4",
+        # GPT Luna (пользователь просил ставить «ГПТ Луна» на доп. построения).
+        "gpt-6-luna": "gpt-6-luna",
+        "gpt-5.6-luna": "gpt-5.6-luna",
     },
 }
 
