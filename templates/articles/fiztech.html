@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}Олимпиада «Физтех» по математике: та же школьная программа, только с приёмами | FORMYLA.net{% endblock %}
-{% block meta_description %}Разбор олимпиады «Физтех» по математике по разделам: алгебра, теория чисел, комбинаторика, геометрия, параметры, тригонометрия и стереометрия. Мы проанализировали варианты заключительного этапа и показываем, какие приёмы повторяются из года в год.{% endblock %}
+{% block title %}Олимпиада «Физтех» по математике: разбор 9, 10 и 11 классов по разделам | FORMYLA.net{% endblock %}
+{% block meta_description %}Разбор заключительного этапа олимпиады «Физтех» по математике за 2019–2026 годы: 165 задач, 24 варианта, отдельно для 9, 10 и 11 классов. Алгебра, теория чисел, комбинаторика, геометрия, параметры, тригонометрия и стереометрия — какие приёмы повторяются и 33 задачи с решениями.{% endblock %}
 {% block extra_css %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,11 +23,11 @@
   .fa .fa-verdict p b{color:var(--amber)}
   .fa .fa-sol{margin:0 0 14px;color:var(--soft)}
   .fa .fa-sol p{margin-bottom:12px!important}
+  .fa .fa-sol .fa-key{color:var(--teal);font-weight:800}
   .fa .fa-ans{display:inline-block;margin-top:4px;padding:6px 14px;border-radius:10px;background:rgba(56,239,125,.12);border:1px solid rgba(56,239,125,.4);color:#86efac;font-weight:800}
-  .fa .fa-tools{list-style:none;padding:0!important;display:grid;gap:10px;margin:18px 0 22px!important}
-  .fa .fa-tools li{margin:0;padding:12px 16px 12px 44px;position:relative;background:var(--field);border:1px solid var(--border-mid);border-radius:12px;color:#e2e8f0}
-  .fa .fa-tools li::before{content:"🔧";position:absolute;left:14px;top:11px}
-  .fa .fa-tools li b{color:#fff}
+  .fa .fa-grade{margin:34px 0 8px;padding:14px 18px;border-radius:14px;background:rgba(94,234,212,.07);border:1px solid rgba(94,234,212,.3)}
+  .fa .fa-grade h3{margin:0 0 6px!important;color:var(--teal)}
+  .fa .fa-grade p{margin:0!important;font-size:.95rem}
   .fa sup{font-size:.72em}
 </style>
 {% endblock %}
@@ -39,20 +39,19 @@
   <img class="fa-hero__img" src="{{ url_for('static', filename='articles/cover-fiztech.svg') }}" alt="Чертёж: треугольник с высотами и окружностью на меловой доске, рядом формулы" width="800" height="800">
   <div class="fa-hero__shade"></div>
   <div class="fa-hero__inner">
-    <p class="fa-kicker"><span>Разбор</span> олимпиады по разделам · 15 минут</p>
+    <p class="fa-kicker"><span>Разбор</span> 9, 10 и 11 классы · 25 минут</p>
     <h1>«Физтех» по математике: та&nbsp;же школьная программа, только с&nbsp;приёмами</h1>
-    <p class="fa-hero__lead">Мы прорешали варианты заключительного этапа «Физтеха» для 9, 10 и 11 классов и разложили их по полочкам: алгебра, числа, комбинаторика, геометрия, параметры. Вывод короткий: страшных тем там нет, есть приёмы, которые повторяются из года в год.</p>
+    <p class="fa-hero__lead">Мы прорешали все варианты заключительного этапа «Физтеха» с 2019 по 2026 год для 9, 10 и 11 классов: 24 варианта, 165 задач. Разложили их по разделам и показываем на 33 задачах, какие приёмы повторяются из года в год.</p>
   </div>
 </section>
 
 <div class="fa-hud" id="faHud" role="navigation" aria-label="Карта статьи">
   <ol>
     <li><a href="#start" data-step="0"><i>0</i><span>Старт</span></a></li>
-    <li><a href="#algebra" data-step="1"><i>1</i><span>Алгебра</span></a></li>
-    <li><a href="#numbers" data-step="2"><i>2</i><span>Числа</span></a></li>
-    <li><a href="#geometry" data-step="3"><i>3</i><span>Геометрия</span></a></li>
-    <li><a href="#params" data-step="4"><i>4</i><span>Параметры</span></a></li>
-    <li><a href="#plan" data-step="5"><i>★</i><span>План</span></a></li>
+    <li><a href="#g9" data-step="1"><i>9</i><span>9 класс</span></a></li>
+    <li><a href="#g10" data-step="2"><i>10</i><span>10 класс</span></a></li>
+    <li><a href="#g11" data-step="3"><i>11</i><span>11 класс</span></a></li>
+    <li><a href="#plan" data-step="4"><i>★</i><span>План</span></a></li>
   </ol>
 </div>
 
@@ -63,223 +62,55 @@
       <div class="fa-col">
         <p class="fa-chapter__no">Глава 0 · Что это за олимпиада</p>
         <h2>Сначала факты</h2>
-        <p>«Физтех» проводит МФТИ для 9–11 классов. Осенью идут онлайн-туры отборочного этапа, в феврале очный заключительный. На финале по математике 7 задач и 4 часа. Олимпиада входит в перечень РСОШ, поэтому диплом даёт льготы при поступлении не только в МФТИ.</p>
-        <p>Главное отличие от ВсОШ: здесь не просят доказывать теоремы про бесконечные цилиндры. Задачи «Физтеха» выросли из вступительных экзаменов в МФТИ, поэтому они похожи на очень сильную школьную контрольную. Если ты уверенно решаешь профильный ЕГЭ до 18 задачи включительно, половина варианта тебе уже по силам.</p>
+        <p>«Физтех» проводит МФТИ для 9–11 классов. Осенью идут онлайн-туры отборочного этапа, в феврале очный заключительный. На финале по математике 7 задач и 4 часа; формат не меняется уже больше десяти лет, только в 2021 году было 6 задач. Олимпиада входит в перечень РСОШ, диплом даёт льготы при поступлении не только в МФТИ.</p>
+        <p>Задачи «Физтеха» выросли из вступительных экзаменов в МФТИ, поэтому они похожи на очень сильную школьную контрольную. Если ты уверенно решаешь профильный ЕГЭ до 18 задачи включительно, половина варианта тебе уже по силам.</p>
       </div>
       <ul class="fa-kpi">
-        <li><b>7</b><span>задач в варианте финала, все примерно равноценны</span></li>
-        <li><b>4 ч</b><span>на всю работу, то есть около 35 минут на задачу</span></li>
+        <li><b>8 лет</b><span>финалы 2019–2026, по одному варианту каждого класса</span></li>
+        <li><b>165</b><span>задач разобрано и разложено по разделам</span></li>
         <li><b>≈50%</b><span>баллов обычно хватает на диплом призёра</span></li>
-        <li><b>63</b><span>задачи финалов 2024–2026 мы разобрали для этой статьи</span></li>
+        <li><b>33</b><span>задачи с решениями в этой статье, по 11 на класс</span></li>
       </ul>
-      <div class="fa-col">
-        <p>Мы взяли все варианты заключительного этапа за 2024, 2025 и 2026 годы для 9, 10 и 11 классов, решили их и отметили, какой раздел и какой приём нужен в каждой задаче. Вот что получилось.</p>
-      </div>
       <figure class="fa-fig">
-        <svg viewBox="0 0 640 350" role="img" aria-labelledby="tb db" xmlns="http://www.w3.org/2000/svg"><title id="tb">Из чего состоят 63 задачи финалов 2024–2026</title><desc id="db">Планиметрия 14, алгебра 13, теория чисел 11, комбинаторика и вероятность 10, параметры и графики 8, тригонометрия 3, стереометрия 3, текстовая задача 1.</desc><text x="250" y="31" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Планиметрия</text><rect x="262" y="12" width="300" height="26" rx="7" fill="#f4a259" fill-opacity=".9"/><text x="572" y="31" font-size="15" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">14</text><text x="250" y="71" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Алгебра</text><rect x="262" y="52" width="279" height="26" rx="7" fill="#f4a259" fill-opacity=".9"/><text x="551" y="71" font-size="15" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">13</text><text x="250" y="111" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Теория чисел</text><rect x="262" y="92" width="236" height="26" rx="7" fill="#f4a259" fill-opacity=".9"/><text x="508" y="111" font-size="15" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">11</text><text x="250" y="151" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Комбинаторика и вероятность</text><rect x="262" y="132" width="214" height="26" rx="7" fill="#f4a259" fill-opacity=".9"/><text x="486" y="151" font-size="15" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">10</text><text x="250" y="191" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Параметры и графики</text><rect x="262" y="172" width="171" height="26" rx="7" fill="#5eead4" fill-opacity=".9"/><text x="443" y="191" font-size="15" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">8</text><text x="250" y="231" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Тригонометрия (11 кл.)</text><rect x="262" y="212" width="64" height="26" rx="7" fill="#5eead4" fill-opacity=".9"/><text x="336" y="231" font-size="15" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">3</text><text x="250" y="271" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Стереометрия (11 кл.)</text><rect x="262" y="252" width="64" height="26" rx="7" fill="#5eead4" fill-opacity=".9"/><text x="336" y="271" font-size="15" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">3</text><text x="250" y="311" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Текстовая задача</text><rect x="262" y="292" width="21" height="26" rx="7" fill="#5eead4" fill-opacity=".9"/><text x="293" y="311" font-size="15" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">1</text></svg>
-        <figcaption>Темы 63 задач заключительного этапа 2024–2026. Оранжевым выделены четыре раздела, которые есть в каждом варианте любого класса.</figcaption>
+        <svg viewBox="0 0 680 438" role="img" aria-labelledby="tb db" xmlns="http://www.w3.org/2000/svg"><title id="tb">Темы 165 задач финалов 2019–2026 по классам</title><desc id="db">Для каждого раздела три столбца: 9, 10 и 11 класс. Планиметрия 14/15/8, алгебра 12/16/13, параметры 10/9/7, теория чисел 10/6/5, комбинаторика 8/8/7, тригонометрия 0/0/7, стереометрия 0/0/8, текстовые 1/1/0.</desc><rect x="250" y="10" width="16" height="16" rx="4" fill="#f4a259"/><text x="272" y="23" font-size="14" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">9 класс</text><rect x="370" y="10" width="16" height="16" rx="4" fill="#5eead4"/><text x="392" y="23" font-size="14" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">10 класс</text><rect x="490" y="10" width="16" height="16" rx="4" fill="#c4b5fd"/><text x="512" y="23" font-size="14" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">11 класс</text><text x="240" y="68" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Планиметрия</text><rect x="252" y="44" width="332" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><text x="590" y="53" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">14</text><rect x="252" y="56" width="356" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><text x="614" y="65" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">15</text><rect x="252" y="68" width="190" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="448" y="77" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">8</text><text x="240" y="114" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Алгебра</text><rect x="252" y="90" width="285" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><text x="543" y="99" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">12</text><rect x="252" y="102" width="380" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><text x="638" y="111" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">16</text><rect x="252" y="114" width="309" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="567" y="123" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">13</text><text x="240" y="160" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Параметры и графики</text><rect x="252" y="136" width="238" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><text x="496" y="145" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">10</text><rect x="252" y="148" width="214" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><text x="472" y="157" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">9</text><rect x="252" y="160" width="166" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="424" y="169" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">7</text><text x="240" y="206" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Теория чисел</text><rect x="252" y="182" width="238" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><text x="496" y="191" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">10</text><rect x="252" y="194" width="142" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><text x="400" y="203" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">6</text><rect x="252" y="206" width="119" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="377" y="215" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">5</text><text x="240" y="252" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Комбинаторика</text><rect x="252" y="228" width="190" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><text x="448" y="237" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">8</text><rect x="252" y="240" width="190" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><text x="448" y="249" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">8</text><rect x="252" y="252" width="166" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="424" y="261" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">7</text><text x="240" y="298" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Тригонометрия</text><rect x="252" y="274" width="2" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><rect x="252" y="286" width="2" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><rect x="252" y="298" width="166" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="424" y="307" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">7</text><text x="240" y="344" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Стереометрия</text><rect x="252" y="320" width="2" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><rect x="252" y="332" width="2" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><rect x="252" y="344" width="190" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="448" y="353" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">8</text><text x="240" y="390" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Текстовая задача</text><rect x="252" y="366" width="24" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><text x="282" y="375" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">1</text><rect x="252" y="378" width="24" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><text x="282" y="387" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">1</text><rect x="252" y="390" width="2" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/></svg>
+        <figcaption>Темы 165 задач заключительного этапа 2019–2026. Для каждого раздела три столбца: 9, 10 и 11 класс. Планиметрия и алгебра лидируют везде; тригонометрия и стереометрия есть только у выпускников.</figcaption>
       </figure>
       <div class="fa-col">
-        <div class="fa-verdict"><p><b>Мы проанализировали все эти годы и можем сказать:</b> в каждом варианте обязательно есть одна планиметрия (чаще две), одна задача на целые числа, одна комбинаторика или вероятность, одна задача с параметром и одна-две алгебраические. Одиннадцатиклассникам добавляют тригонометрию и стереометрию. Больше ничего. Ни одной темы, которой нет в школьной программе.</p></div>
-        <p>Отличие от школы в другом: каждая задача собрана из двух-трёх шагов, и первый шаг нужно увидеть самому. Этот первый шаг и есть «приём». Ниже разбираем раздел за разделом, что это за приёмы и как они выглядят на настоящих задачах.</p>
+        <div class="fa-verdict"><p><b>Мы проанализировали все эти годы и можем сказать:</b> в каждом варианте есть одна-две планиметрии, одна задача на целые числа или комбинаторику (часто обе), одна задача с параметром или фигурой на координатной плоскости и одна-две алгебраические. Одиннадцатиклассникам добавляют тригонометрию и стереометрию, и это всё. Ни одной темы, которой нет в школьной программе.</p></div>
+        <p>Отличие от школы в другом: каждая задача собрана из двух-трёх шагов, и первый шаг нужно увидеть самому. Этот первый шаг и есть «приём». Ниже три раздела, по одному на класс, и в каждом те приёмы, которые в этом классе спрашивают чаще всего.</p>
+        <div class="fa-fact"><strong>Как читать.</strong> У каждой задачи указан год, класс и номер в варианте. Сначала попробуй решить сам, потом открывай спойлер: там решение и, зелёным, приём, на котором оно держится.</div>
       </div>
     </section>
 
-    <section class="fa-chapter" id="algebra" data-step="1">
-      <p class="fa-chapter__no">Раздел 1 · Алгебра</p>
-      <h2>Алгебра: квадратные трёхчлены, прогрессии, системы</h2>
-      <div class="fa-chips"><span class="fa-chip">13 задач из 63</span><span class="fa-chip fa-chip--teal">обычно №1 в варианте</span></div>
-      <p>Первая задача варианта почти всегда алгебраическая и почти всегда решается за десять минут, если знать, за что хвататься. В 2026 году все три класса открывались задачей про квадратные трёхчлены, в 2024 — про прогрессии, в 2025 — про системы и целые числа.</p>
-      <ul class="fa-tools">
-        <li><b>Теорема Виета и симметрические суммы.</b> Если в условии есть a+b+c и ab+bc+ca, то a²+b²+c² = (a+b+c)² − 2(ab+bc+ca). На «Физтехе» это используют каждый год.</li>
-        <li><b>Прогрессия как уравнение.</b> Три члена арифметической прогрессии связаны одним равенством: разности между ними пропорциональны разности номеров. Дальше обычная замена переменной.</li>
-        <li><b>Замена и оценка.</b> В системах с корнями и модулями сначала ищут, что можно обозначить одной буквой, а потом оценивают: левая часть не меньше чего-то, правая не больше.</li>
-      </ul>
-      <div class="fa-task"><span class="fa-task__tag">Физтех 2026 · 11 класс · №1</span><p>Даны три различных числа a, b, c. Рассмотрим трёхчлены f₁(x) = (x−a)(x−b), f₂(x) = (x−b)(x−c), f₃(x) = (x−c)(x−a). Известно, что сумма f₁ + f₂ + f₃ при x = 0 равна 11, а её наименьшее значение равно −1. Найдите a² + b² + c².</p></div>
-      <details class="fa-spoiler"><summary>Решение в три строки</summary>
-        <div class="fa-sol">
-          <p>Раскроем скобки и сложим: f(x) = 3x² − 2(a+b+c)x + (ab+bc+ca). Обозначим s = a+b+c, тогда f(0) = ab+bc+ca = 11.</p>
-          <p>Наименьшее значение параболы 3x² − 2sx + 11 достигается при x = s/3 и равно 11 − s²/3. По условию оно равно −1, значит s² = 36.</p>
-          <p>Остаётся Виета: a²+b²+c² = s² − 2(ab+bc+ca) = 36 − 22 = 14.</p>
-          <span class="fa-ans">Ответ: 14</span>
-        </div>
-      </details>
-      <p>Обрати внимание: ни одной нешкольной идеи. Раскрыть скобки, вершина параболы, формула квадрата суммы. Разница с учебником только в том, что эти три шага нужно собрать самому.</p>
-      <details class="fa-spoiler"><summary>Ещё одна: прогрессия (2024, 10 класс, №1)</summary>
-        <div class="fa-sol">
-          <p>В арифметической прогрессии третий член равен 3x+3, пятый (x²+2x)², девятый 3x². Найти x.</p>
-          <p>Приём: a₉ − a₃ = 6d, a₅ − a₃ = 2d, значит a₉ − a₃ = 3(a₅ − a₃). Подставляем, сокращаем на 3 и получаем (x²+2x)² = x²+2x+2. Замена t = x²+2x даёт t² − t − 2 = 0, то есть t = 2 или t = −1.</p>
-          <span class="fa-ans">Ответ: x = −1, x = −1 ± √3</span>
-        </div>
-      </details>
-    </section>
+    {% include "articles/_fiztech_g9.html" %}
+    {% include "articles/_fiztech_g10.html" %}
+    {% include "articles/_fiztech_g11.html" %}
 
-    <section class="fa-chapter" id="numbers" data-step="2">
-      <p class="fa-chapter__no">Раздел 2 · Целые числа</p>
-      <h2>Теория чисел: делимость, остатки, факториалы</h2>
-      <div class="fa-chips"><span class="fa-chip">11 задач из 63</span><span class="fa-chip fa-chip--teal">есть в каждом варианте</span></div>
-      <p>Это раздел, которого школьники боятся больше всего, потому что в школе его почти нет. Но на «Физтехе» теория чисел очень приземлённая: разложить на множители, посмотреть остатки, перебрать делители. В 9 классе 2025 года таких задач было сразу три.</p>
-      <ul class="fa-tools">
-        <li><b>Вынести общий множитель.</b> Суммы вида n! + (n+1)! + (n+2)! сворачиваются в n!·(n+2)². После этого вопрос о делимости становится очевидным.</li>
-        <li><b>Квадраты и кубы по последним цифрам.</b> Квадрат не оканчивается на 2, 3, 7, 8; квадрат нечётного числа даёт остаток 1 при делении на 8. Половина задач про «может ли число быть квадратом» решается этим.</li>
-        <li><b>Маленький пример вместо большого.</b> Если в условии число из 40 000 девяток, посчитай для 9, 99 и 999 и найди закономерность. Потом объясни её формулой.</li>
-      </ul>
-      <div class="fa-task"><span class="fa-task__tag">Физтех 2025 · 9 класс · №1</span><p>Найдите наименьшее натуральное n, при котором число n! + (n+1)! + (n+2)! делится на 361.</p></div>
-      <details class="fa-spoiler"><summary>Решение</summary>
-        <div class="fa-sol">
-          <p>361 = 19². Вынесем n!: n!·(1 + (n+1) + (n+1)(n+2)) = n!·(n+2 + (n+1)(n+2)) = n!·(n+2)².</p>
-          <p>Пока n &lt; 17, ни n!, ни (n+2) не делятся на 19, так что нужная степень не наберётся. При n = 17 множитель (n+2)² = 19² даёт ровно 361.</p>
-          <span class="fa-ans">Ответ: 17</span>
-        </div>
-      </details>
-      <details class="fa-spoiler"><summary>Ещё одна: сколько девяток (2025, 10 класс, №2)</summary>
-        <div class="fa-sol">
-          <p>Сколько цифр 9 в десятичной записи числа (10<sup>40000</sup> − 1)³?</p>
-          <p>Считаем маленькие случаи: 9³ = 729 (одна девятка), 99³ = 970299 (три), 999³ = 997002999 (пять). Закономерность 2k − 1 видна сразу, а объясняется раскрытием куба разности: 10<sup>3k</sup> − 3·10<sup>2k</sup> + 3·10<sup>k</sup> − 1.</p>
-          <span class="fa-ans">Ответ: 79 999</span>
-        </div>
-      </details>
-      <aside class="fa-fact"><strong>Что повторяется.</strong> За три года в задачах про целые числа трижды встречались факториалы, трижды суммы квадратов и трижды уравнения вида «степень двойки плюс число равно квадрату». Это не случайность, а стиль составителей.</aside>
-    </section>
-
-    <section class="fa-chapter" id="combi" data-step="2">
-      <p class="fa-chapter__no">Раздел 3 · Комбинаторика</p>
-      <h2>Комбинаторика и вероятность: выбрать, расставить, вычесть лишнее</h2>
-      <div class="fa-chips"><span class="fa-chip">10 задач из 63</span><span class="fa-chip fa-chip--teal">ровно одна в варианте</span></div>
-      <p>Комбинаторика «Физтеха» бытовая: цифры, шарики в коробках, билеты, раскраски. Ни графов, ни индукции здесь почти не бывает. Нужны формулы сочетаний и аккуратность.</p>
-      <ul class="fa-tools">
-        <li><b>Сначала выбираем, потом расставляем.</b> Выбрать, какие цифры участвуют (сочетания), затем расставить их по позициям (перестановки с повторениями).</li>
-        <li><b>Вычесть плохие случаи.</b> Числа с нулём в начале, соседние одинаковые цвета, пустые коробки: считаем всё, потом убираем лишнее.</li>
-        <li><b>Вероятность как дробь из сочетаний.</b> Благоприятные исходы делим на все. Часто ответ не зависит от неизвестного n, и это подсказка, что решение верное.</li>
-      </ul>
-      <div class="fa-task"><span class="fa-task__tag">Физтех 2026 · 11 класс · №2</span><p>Сколько существует шестизначных чисел, в записи которых участвуют только цифры 0, 1, 2, 3, 7, 8, 9, причём ровно две из этих цифр встречаются по два раза, а остальные не более одного раза?</p></div>
-      <details class="fa-spoiler"><summary>Решение</summary>
-        <div class="fa-sol">
-          <p>Без ограничения на первую цифру: выбираем две «двойные» цифры C(7,2) = 21, две одиночные из оставшихся пяти C(5,2) = 10, расставляем шесть цифр 6!/(2!·2!) = 180. Всего 21·10·180 = 37 800.</p>
-          <p>Теперь вычтем числа, начинающиеся с нуля. Если 0 двойная цифра: вторая двойная выбирается 6 способами, одиночные C(5,2) = 10, оставшиеся пять позиций заполняются 5!/2! = 60 способами, итого 3600. Если 0 одиночная: двойные C(6,2) = 15, вторая одиночная 4 способами, расстановка 5!/(2!·2!) = 30, итого 1800.</p>
-          <p>37 800 − 3600 − 1800 = 32 400.</p>
-          <span class="fa-ans">Ответ: 32 400</span>
-        </div>
-      </details>
-      <details class="fa-spoiler"><summary>Ещё одна: коробки (2025, 10 класс, №4)</summary>
-        <div class="fa-sol">
-          <p>Среди n коробок ровно в трёх лежат шарики. Игрок открывает наугад 5 коробок или 6 коробок. Во сколько раз вероятность найти все три шарика при шести открытых больше, чем при пяти?</p>
-          <p>P₅ = C(n−3, 2)/C(n, 5), P₆ = C(n−3, 3)/C(n, 6). Делим одно на другое, почти всё сокращается: отношение равно 2 при любом n ≥ 6.</p>
-          <span class="fa-ans">Ответ: в 2 раза</span>
-        </div>
-      </details>
-    </section>
-
-    <section class="fa-chapter fa-chapter--wide" id="geometry" data-step="3">
+    <section class="fa-chapter fa-chapter--wide" id="plan" data-step="4">
       <div class="fa-col">
-        <p class="fa-chapter__no">Раздел 4 · Геометрия</p>
-        <h2>Планиметрия: окружности, высоты, биссектрисы</h2>
-        <div class="fa-chips"><span class="fa-chip">14 задач из 63</span><span class="fa-chip fa-chip--teal">самый большой раздел</span></div>
-        <p>Геометрия на «Физтехе» занимает больше всего места: в каждом варианте одна-две задачи, а в 9 классе часто две. Она же приносит больше всего баллов тем, кто знает пять-шесть стандартных конфигураций. Вот они, в порядке частоты:</p>
-      </div>
-      <div class="fa-col">
-      <ul class="fa-tools">
-        <li><b>Окружность на отрезке как на диаметре.</b> Если из точки отрезок виден под прямым углом, точка лежит на окружности с этим диаметром. Две высоты треугольника сразу дают две такие окружности: на BH и на AC.</li>
-        <li><b>Вписанный угол и касательная.</b> Угол между касательной и хордой равен вписанному углу на эту хорду. Этим проверяют, что прямая касается окружности.</li>
-        <li><b>Середина гипотенузы.</b> Она равноудалена от всех вершин прямоугольного треугольника, то есть является центром окружности на AC.</li>
-        <li><b>Биссектриса и описанная окружность.</b> Продолжение биссектрисы проходит через середину дуги, а внешний угол треугольника равен сумме двух внутренних.</li>
-        <li><b>Теорема синусов с радиусом.</b> BC = 2R·sin A. Если дан радиус описанной окружности, это первое, что надо записать.</li>
-      </ul>
-      </div>
-      <div class="fa-col">
-      <div class="fa-task"><span class="fa-task__tag">Физтех 2026 · 9 класс · №5</span><p>В остроугольном треугольнике ABC проведены высоты AD и CE, пересекающиеся в точке H. Около треугольника DHE описана окружность ω радиуса 10. Касательные к ω в точках D и E пересекаются в точке K. Известно, что ∠B = 60°. Найдите AK.</p></div>
-      </div>
-      <figure class="fa-fig fa-fig--narrow">
-        <svg viewBox="0 0 520 400" role="img" aria-labelledby="tg dg" xmlns="http://www.w3.org/2000/svg"><title id="tg">Треугольник ABC, высоты AD и CE, окружность на BH и точка K</title><desc id="dg">Остроугольный треугольник ABC с высотами AD и CE, пересекающимися в точке H. Окружность через D, H и E построена на BH как на диаметре. Касательные к ней в точках D и E пересекаются в точке K — середине стороны AC.</desc><circle cx="160.0" cy="333.9" r="97.7" fill="rgba(94,234,212,.06)" stroke="#5eead4" stroke-width="2.5"/><line x1="382.0" y1="372.0" x2="70.0" y2="372.0" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round"/><line x1="70.0" y1="372.0" x2="250.0" y2="60.2" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round"/><line x1="250.0" y1="60.2" x2="382.0" y2="372.0" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round"/><line x1="382.0" y1="372.0" x2="148.0" y2="236.9" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 5"/><line x1="250.0" y1="60.2" x2="250.0" y2="372.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 5"/><line x1="70.0" y1="372.0" x2="250.0" y2="295.8" stroke="#5eead4" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 5"/><line x1="316.0" y1="216.1" x2="148.0" y2="236.9" stroke="#f4a259" stroke-width="2.5" stroke-linecap="round"/><line x1="316.0" y1="216.1" x2="250.0" y2="372.0" stroke="#f4a259" stroke-width="2.5" stroke-linecap="round"/><line x1="316.0" y1="216.1" x2="382.0" y2="372.0" stroke="#f4a259" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 5"/><polyline points="157.4,242.3 152.0,251.7 142.6,246.3" fill="none" stroke="#94a3b8" stroke-width="1.5"/><polyline points="250.0,361.2 260.8,361.2 260.8,372.0" fill="none" stroke="#94a3b8" stroke-width="1.5"/><path d="M 92.0 372.0 A 22 22 0 0 0 81.0 352.9" fill="none" stroke="#f4a259" stroke-width="2"/><text x="98.0" y="364.0" font-size="15" fill="#f4a259" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">60°</text><circle cx="382.0" cy="372.0" r="4.5" fill="#fff"/><text x="390.0" y="394.0" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">A</text><circle cx="70.0" cy="372.0" r="4.5" fill="#fff"/><text x="48.0" y="394.0" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">B</text><circle cx="250.0" cy="60.2" r="4.5" fill="#fff"/><text x="244.0" y="48.2" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">C</text><circle cx="148.0" cy="236.9" r="4.5" fill="#fff"/><text x="124.0" y="230.9" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">D</text><circle cx="250.0" cy="372.0" r="4.5" fill="#fff"/><text x="244.0" y="396.0" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">E</text><circle cx="250.0" cy="295.8" r="4.5" fill="#5eead4"/><text x="258.0" y="287.8" font-size="20" font-weight="700" fill="#5eead4" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">H</text><circle cx="316.0" cy="216.1" r="4.5" fill="#f4a259"/><text x="326.0" y="212.1" font-size="20" font-weight="700" fill="#f4a259" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">K</text><text x="84" y="300" font-size="15" fill="#5eead4" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">ω, R = 10</text></svg>
-        <figcaption>Окружность ω проходит через D, H, E и через вершину B: отрезок BH виден из D и E под прямым углом. Оранжевые касательные из K встречаются в середине AC.</figcaption>
-      </figure>
-      <div class="fa-col">
-      <details class="fa-spoiler"><summary>Решение по шагам</summary>
-        <div class="fa-sol">
-          <p><strong>Шаг 1.</strong> ∠BDH = ∠BEH = 90°, значит B лежит на ω, а BH — её диаметр: BH = 20.</p>
-          <p><strong>Шаг 2.</strong> Пусть M — середина AC. Так как ∠AEC = ∠ADC = 90°, точки A, E, D, C лежат на окружности с диаметром AC, и MD = ME = MA = MC.</p>
-          <p><strong>Шаг 3.</strong> Проверим, что MD касается ω. Треугольник MDC равнобедренный, поэтому ∠MDC = ∠MCD = ∠C, а ∠HDC = 90°, значит угол между MD и хордой DH равен ∠MDH = 90° − ∠C. Вписанный угол на дугу DH равен ∠DBH = 90° − ∠C. Углы равны, значит MD — касательная. Точно так же ME. Следовательно, K = M.</p>
-          <p><strong>Шаг 4.</strong> В треугольнике с углом B = 60° отрезок BH = 2R·cos B = R, где R — радиус описанной окружности ABC. Значит R = 20, и AC = 2R·sin 60° = 20√3. Тогда AK = AC/2.</p>
-          <span class="fa-ans">Ответ: 10√3</span>
-        </div>
-      </details>
-      <p>Четыре шага, и каждый из них — отдельный школьный факт. Новое здесь одно: нужно догадаться, что K это середина AC. Если ты решил три-четыре задачи с окружностью на BH, догадка приходит сама.</p>
-      <aside class="fa-fact"><strong>Что ещё повторялось.</strong> Биссектриса, продолженная до описанной окружности (2026, 11 класс); окружности, построенные на медиане и биссектрисе (2024, 10 класс); две касающиеся окружности и общая касательная (2024, 11 класс); ортоцентр и точка, симметричная ему относительно стороны (2026, 10 класс). Чертёж к каждой из них можно построить в <a href="/geometry/draw/">генераторе чертежей FORMYLA</a>.</aside>
-      </div>
-    </section>
-
-    <section class="fa-chapter" id="params" data-step="4">
-      <p class="fa-chapter__no">Раздел 5 · Параметры</p>
-      <h2>Параметры: рисуй, а не считай</h2>
-      <div class="fa-chips"><span class="fa-chip">8 задач из 63</span><span class="fa-chip fa-chip--teal">обычно №6 или №7</span></div>
-      <p>Задача с параметром стоит в конце варианта и считается самой трудной. На деле это тот же приём, что в 18 задаче ЕГЭ: переводим уравнения в картинку на плоскости и смотрим, когда картинки пересекаются нужным образом. В 2026 году системе с окружностью и модулем посвятили последнюю задачу сразу в 10 и 11 классах.</p>
-      <ul class="fa-tools">
-        <li><b>x² + y² = a² — это окружность,</b> а значит x меняется на отрезке [−|a|, |a|]. Любая функция от x на окружности превращается в функцию на отрезке.</li>
-        <li><b>Модули — это ломаные.</b> Выражение |x| − |x − a| кусочно-линейно, рисуй его по участкам.</li>
-        <li><b>Разбирай знак параметра отдельно.</b> Половина потерянных баллов в этих задачах — забытый случай a &lt; 0.</li>
-      </ul>
-      <div class="fa-task"><span class="fa-task__tag">Физтех 2025 · 9 класс · №6</span><p>Найдите все значения a, при которых наибольшее значение выражения x² − 6x + a на окружности x² + y² = a² равно 8.</p></div>
-      <figure class="fa-fig">
-        <svg viewBox="0 0 520 330" role="img" aria-labelledby="tp dp" xmlns="http://www.w3.org/2000/svg"><title id="tp">Окружность и парабола: где максимум</title><desc id="dp">Слева окружность x²+y²=a², выделена самая левая точка x = −|a|. Справа парабола y = x² − 6x + a с вершиной в x = 3: на отрезке от −|a| до |a| она убывает, поэтому максимум в левом конце.</desc><line x1="30" y1="170" x2="270" y2="170" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/><line x1="150" y1="40" x2="150" y2="300" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/><circle cx="150" cy="170" r="110" fill="rgba(94,234,212,.06)" stroke="#5eead4" stroke-width="2.5"/><circle cx="40" cy="170" r="6" fill="#f4a259"/><text x="32" y="198" font-size="16" fill="#f4a259" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">x = −|a|</text><text x="250" y="198" font-size="16" fill="#cbd5e1" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">|a|</text><text x="156" y="50" font-size="16" fill="#cbd5e1" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">x²+y²=a²</text><line x1="300" y1="290" x2="505" y2="290" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/><polyline points="300.0,60.0 303.4,71.5 306.8,82.8 310.2,93.7 313.6,104.4 316.9,114.8 320.3,124.8 323.7,134.6 327.1,144.0 330.5,153.2 333.9,162.1 337.3,170.7 340.7,178.9 344.1,186.9 347.5,194.6 350.8,202.0 354.2,209.1 357.6,215.8 361.0,222.3 364.4,228.5 367.8,234.4 371.2,240.0 374.6,245.3 378.0,250.3 381.4,255.0 384.7,259.5 388.1,263.6 391.5,267.4 394.9,270.9 398.3,274.1 401.7,277.0 405.1,279.7 408.5,282.0 411.9,284.0 415.3,285.8 418.6,287.2 422.0,288.3 425.4,289.2 428.8,289.7 432.2,290.0 435.6,289.9 439.0,289.6 442.4,288.9 445.8,288.0 449.2,286.8 452.5,285.2 455.9,283.4 459.3,281.3 462.7,278.8 466.1,276.1 469.5,273.1 472.9,269.8 476.3,266.1 479.7,262.2 483.1,258.0 486.4,253.5 489.8,248.7 493.2,243.6 496.6,238.2 500.0,232.5" fill="none" stroke="#e2e8f0" stroke-width="2.5"/><polyline points="322.2,130.3 325.3,139.0 328.4,147.4 331.4,155.6 334.5,163.6 337.5,171.3 340.6,178.8 343.7,186.0 346.7,193.0 349.8,199.7 352.9,206.2 355.9,212.5 359.0,218.5 362.1,224.3 365.1,229.8 368.2,235.1 371.3,240.2 374.3,245.0 377.4,249.5 380.5,253.8 383.5,257.9 386.6,261.7 389.7,265.3 392.7,268.7 395.8,271.8 398.9,274.6 401.9,277.2 405.0,279.6 408.0,281.7 411.1,283.6" fill="none" stroke="#f4a259" stroke-width="5" stroke-linecap="round"/><circle cx="322.2" cy="130.3" r="6" fill="#f4a259"/><text x="314.2" y="118.3" font-size="16" fill="#f4a259" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">max</text><text x="427.3" y="310" font-size="15" fill="#cbd5e1" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">3</text><text x="312.2" y="310" font-size="15" fill="#cbd5e1" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">−|a|</text><text x="405.1" y="310" font-size="15" fill="#cbd5e1" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">|a|</text><text x="330" y="60" font-size="16" fill="#cbd5e1" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">g(x) = x² − 6x + a</text></svg>
-        <figcaption>На окружности абсцисса пробегает отрезок от −|a| до |a|. Парабола g(x) = x² − 6x + a с вершиной в x = 3 на этом отрезке убывает, поэтому максимум в левом конце.</figcaption>
-      </figure>
-      <details class="fa-spoiler"><summary>Решение</summary>
-        <div class="fa-sol">
-          <p>Если a = 0, окружность вырождается в точку и значение равно 0, не подходит. Иначе x ∈ [−|a|, |a|], а вершина параболы x = 3 правее середины отрезка, значит максимум в точке x = −|a|: a² + 6|a| + a = 8.</p>
-          <p>При a &gt; 0: a² + 7a − 8 = 0, откуда a = 1 (корень −8 не подходит по знаку). При a &lt; 0: a² − 5a − 8 = 0, подходит только отрицательный корень a = (5 − √57)/2.</p>
-          <span class="fa-ans">Ответ: a = 1, a = (5 − √57)/2</span>
-        </div>
-      </details>
-    </section>
-
-    <section class="fa-chapter" id="eleven" data-step="4">
-      <p class="fa-chapter__no">Раздел 6 · Только 11 класс</p>
-      <h2>Тригонометрия и стереометрия</h2>
-      <div class="fa-chips"><span class="fa-chip">3 + 3 задачи</span><span class="fa-chip fa-chip--teal">по одной в каждом варианте 11 класса</span></div>
-      <p>Выпускникам к шести «общим» разделам добавляют два. Тригонометрия на «Физтехе» почти никогда не бывает уравнением «в лоб»: это либо неравенство, которое превращается в сумму неотрицательных слагаемых, либо уравнение с параметром и подсчётом целых решений.</p>
-      <div class="fa-task"><span class="fa-task__tag">Физтех 2026 · 11 класс · №5</span><p>Решите неравенство (1 − cos x·cos(π/8))² − sin²x·sin²(π/8) + (2 sin 2x − √2)² ≤ 0.</p></div>
-      <details class="fa-spoiler"><summary>Решение</summary>
-        <div class="fa-sol">
-          <p>Первые два слагаемых — разность квадратов: (1 − cos(x − π/8))·(1 − cos(x + π/8)). Каждый множитель неотрицателен, третье слагаемое тоже квадрат. Сумма неотрицательных чисел не больше нуля только когда все они нули.</p>
-          <p>Значит sin 2x = √2/2 и одновременно cos(x − π/8) = 1 или cos(x + π/8) = 1. Подходит только серия x = π/8 + 2πk: при x = −π/8 + 2πk синус двойного угла отрицателен.</p>
-          <span class="fa-ans">Ответ: x = π/8 + 2πk, k ∈ ℤ</span>
-        </div>
-      </details>
-      <p>Стереометрия замыкает вариант. Три года подряд это были тела с вписанными или касающимися шарами и объём наклонной призмы. Приём один: искать перпендикулярное сечение и переходить к плоской задаче.</p>
-      <details class="fa-spoiler"><summary>Пример: наклонная призма (2024, 11 класс, №7)</summary>
-        <div class="fa-sol">
-          <p>В основании призмы правильный треугольник площади 1, площади боковых граней 3, 3 и 2. Найти объём.</p>
-          <p>Объём наклонной призмы равен площади перпендикулярного сечения, умноженной на боковое ребро l. Стороны сечения равны 3/l, 3/l, 2/l, его площадь по Герону 2√2/l², поэтому V = 2√2/l. Чтобы найти l, раскладываем стороны основания на составляющую вдоль ребра и поперёк: получается l² = 8√3/3.</p>
-          <span class="fa-ans">Ответ: ⁴√3</span>
-        </div>
-      </details>
-    </section>
-
-    <section class="fa-chapter fa-chapter--wide" id="plan" data-step="5">
-      <div class="fa-col">
-        <p class="fa-chapter__no">Глава 7 · Итог</p>
+        <p class="fa-chapter__no">Глава 4 · Итог</p>
         <h2>Школа и «Физтех»: одна программа, разные привычки</h2>
       </div>
       <div class="fa-table-scroll">
       <table>
         <thead><tr><th>Раздел</th><th>Что спрашивают в школе</th><th>Что спрашивает «Физтех»</th></tr></thead>
         <tbody>
-          <tr><th scope="row">Алгебра</th><td>Решить уравнение по алгоритму</td><td>Собрать уравнение из условия, увидеть замену</td></tr>
-          <tr><th scope="row">Целые числа</th><td>Признаки делимости</td><td>Разложить на множители и посмотреть остатки</td></tr>
-          <tr><th scope="row">Комбинаторика</th><td>Формулы C и P</td><td>Те же формулы плюс вычитание плохих случаев</td></tr>
-          <tr><th scope="row">Геометрия</th><td>Одна теорема на задачу</td><td>Три-четыре теоремы подряд и одна догадка</td></tr>
-          <tr><th scope="row">Параметры</th><td>Редко</td><td>Каждый год, через картинку на плоскости</td></tr>
-          <tr><th scope="row">11 класс</th><td>Уравнение тригонометрии, объём по формуле</td><td>Оценка через сумму квадратов, перпендикулярное сечение</td></tr>
+          <tr><th scope="row">Алгебра</th><td>Решить уравнение по алгоритму</td><td>Собрать уравнение из условия, увидеть замену или разность квадратов</td></tr>
+          <tr><th scope="row">Целые числа</th><td>Признаки делимости</td><td>Показатели простых по отдельности, оценки сумм</td></tr>
+          <tr><th scope="row">Комбинаторика</th><td>Формулы C и P</td><td>Классы остатков, наборы цифр, вычитание плохих случаев</td></tr>
+          <tr><th scope="row">Геометрия</th><td>Одна теорема на задачу</td><td>Окружность на диаметре, касательные, три-четыре теоремы подряд</td></tr>
+          <tr><th scope="row">Параметры</th><td>Редко</td><td>Каждый год: квадраты из модулей, окружности, прямая между графиками</td></tr>
+          <tr><th scope="row">11 класс</th><td>Уравнение тригонометрии, объём по формуле</td><td>Сумма квадратов, свёртка в произведение, перпендикулярное сечение</td></tr>
         </tbody>
       </table>
       </div>
       <div class="fa-col">
-        <p>Поэтому мы и говорим: «Физтех» — это усложнённая версия школьной программы. Не другая математика, а та же, в которой каждая задача требует двух-трёх шагов вместо одного. Такие шаги тренируются.</p>
+        <p>Поэтому мы и говорим: «Физтех» — усложнённая версия школьной программы. Не другая математика, а та же, в которой каждая задача требует двух-трёх шагов вместо одного. Эти шаги повторяются из года в год, а значит, тренируются.</p>
         <h3>Как готовиться за два месяца</h3>
         <ol>
           <li>Прорешай один вариант прошлого года своего класса на время. Отметь, в каких разделах ноль.</li>
-          <li>По каждому «нулевому» разделу разбери 10 задач «Физтеха» прошлых лет. Не чужих олимпиад, именно этой: приёмы у составителей постоянные.</li>
-          <li>Геометрию решай с чертежом в масштабе. Половина догадок (что K это середина AC) видна на аккуратном рисунке.</li>
+          <li>По каждому «нулевому» разделу разбери 10 задач «Физтеха» прошлых лет именно своего класса: приёмы у составителей постоянные, а наборы по классам отличаются.</li>
+          <li>Геометрию решай с чертежом в масштабе. Половина догадок (что K это середина AC, что PM и TN медианы) видна на аккуратном рисунке.</li>
           <li>За неделю до тура снова реши вариант на время. Цель на диплом призёра: уверенно 3–4 задачи из 7.</li>
         </ol>
         <aside class="fa-signpost">
@@ -291,12 +122,12 @@
 
     <section class="fa-finale" id="cta">
       <p class="fa-finale__k">Твой ход</p>
-      <h2>Проверь себя на задачах из этой статьи</h2>
-      <p>Шесть задач выше — это реальные задачи финала. Реши их без спойлеров, потом открывай. Дальше — задачи дня и каталог методов на FORMYLA: там разделы «Физтеха» разобраны глубже, а решение проверяет ИИ.</p>
+      <h2>Реши 11 задач своего класса без спойлеров</h2>
+      <p>Все задачи выше — реальные задачи финалов. Дальше — задачи дня и каталог методов на FORMYLA: там разделы «Физтеха» разобраны глубже, а решение проверяет ИИ. Чертежи к геометрии можно строить в генераторе чертежей.</p>
       <div class="fa-cta-row">
         <a class="fa-btn-amber" href="/daily_tasks/">Перейти к задачам</a>
         <a class="fa-btn-ghost" href="/olympiads/methods">Каталог методов</a>
-        <a class="fa-btn-ghost" href="/olympiad-prep/calendar">Календарь олимпиад</a>
+        <a class="fa-btn-ghost" href="/geometry/draw/">Генератор чертежей</a>
       </div>
       <p class="fa-finale__end">Приёмы повторяются. Используй это.</p>
     </section>

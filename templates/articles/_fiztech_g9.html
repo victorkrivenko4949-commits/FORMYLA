@@ -1,0 +1,125 @@
+    <section class="fa-chapter fa-chapter--wide" id="g9" data-step="1">
+      <div class="fa-col">
+        <p class="fa-chapter__no">Раздел 1 · 9 класс</p>
+        <h2>9 класс: числа, окружности и аккуратная алгебра</h2>
+        <div class="fa-chips"><span class="fa-chip">55 задач за 8 лет</span><span class="fa-chip fa-chip--teal">геометрия 14 · алгебра 12 · числа 10 · параметры 10 · комбинаторика 8</span></div>
+        <p>Девятый класс самый «арифметичный»: в каждом варианте одна-две задачи на делимость, а в 2025 году их было сразу три. Геометрия почти всегда двойная, причём одна из двух задач про вписанную или касающуюся окружность. Тригонометрии нет совсем, параметры даются через картинку на координатной плоскости.</p>
+      </div>
+
+      <div class="fa-col">
+      <div class="fa-grade"><h3>Алгебра</h3><p>Приёмы: разность квадратов в уравнениях с корнями; дискриминант через разность корней; системы, которые сводятся к симметрическим.</p></div>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2023 · 9 класс · №3</span><p>Решите уравнение √(2x² − 3x + 4) − √(2x² + x + 3) = 1 − 4x.</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> разность подкоренных выражений равна правой части: (2x² − 3x + 4) − (2x² + x + 3) = 1 − 4x. Обозначим A и B подкоренные выражения, тогда уравнение имеет вид √A − √B = A − B = (√A − √B)(√A + √B).</p>
+          <p>Либо √A = √B, тогда 1 − 4x = 0 и x = 1/4 (проверка: A = B, обе части нули). Либо √A + √B = 1, но A = 2x² − 3x + 4 &gt; 2 при всех x, так что √A &gt; 1 и этот случай невозможен.</p>
+          <span class="fa-ans">Ответ: x = 1/4</span>
+        </div>
+      </details>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2019 · 9 класс · №1</span><p>Даны квадратные трёхчлены f₁ = x² − ax − 3, f₂ = x² + 2x − b, f₃ = 3x² + (2 − 2a)x − 6 − b, f₄ = 3x² + (4 − a)x − 3 − 2b. Разности корней равны A, B, C, D соответственно, |C| ≠ |D|. Найдите (A² − B²)/(C² − D²).</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> квадрат разности корней трёхчлена px² + qx + r равен дискриминанту, делённому на p²: (x₁ − x₂)² = (q² − 4pr)/p².</p>
+          <p>A² = a² + 12, B² = 4 + 4b, поэтому A² − B² = a² − 4b + 8. Для f₃ и f₄: C² = ((2 − 2a)² + 12(6 + b))/9, D² = ((4 − a)² + 12(3 + 2b))/9. Вычитаем и упрощаем: C² − D² = (3a² − 12b + 24)/9 = (a² − 4b + 8)/3.</p>
+          <span class="fa-ans">Ответ: 3</span>
+        </div>
+      </details>
+
+      <div class="fa-grade"><h3>Теория чисел</h3><p>Приёмы: вынести общий множитель из факториалов; считать показатели простых по отдельности; оценки «сумма трёх попарных сумм».</p></div>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2025 · 9 класс · №1</span><p>Найдите наименьшее натуральное n, при котором n! + (n+1)! + (n+2)! делится на 361.</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> вынести n!: n!·(1 + (n+1) + (n+1)(n+2)) = n!·(n+2)². А 361 = 19².</p>
+          <p>Пока n &lt; 17, ни n!, ни n + 2 не делятся на 19. При n = 17 множитель (n+2)² = 19² даёт ровно 361.</p>
+          <span class="fa-ans">Ответ: 17</span>
+        </div>
+      </details>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2023 · 9 класс · №1</span><p>Натуральные a, b, c таковы, что ab делится на 3¹¹·7¹¹, bc делится на 3¹⁸·7¹⁶, ac делится на 3²¹·7³⁸. Найдите наименьшее возможное значение abc.</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> каждое простое число рассматриваем отдельно. Пусть показатели тройки при 3 равны x, y, z. Тогда x + y ≥ 11, y + z ≥ 18, x + z ≥ 21. Складываем: 2(x + y + z) ≥ 50, то есть x + y + z ≥ 25, и это достигается (x = 7, y = 4, z = 14).</p>
+          <p>Для семёрки: x + y ≥ 11, y + z ≥ 16, x + z ≥ 38. Здесь сильнее третье условие само по себе: x + y + z ≥ 38, достигается при y = 0, x = 22, z = 16.</p>
+          <span class="fa-ans">Ответ: 3²⁵·7³⁸</span>
+        </div>
+      </details>
+
+      <div class="fa-grade"><h3>Комбинаторика</h3><p>Приёмы: разбить на классы по остаткам; «сначала выбираем набор цифр, потом расставляем».</p></div>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2019 · 9 класс · №4</span><p>На столе 100 карточек с числами 3, 6, 9, …, 300. Сколькими способами можно выбрать две карточки так, чтобы сумма чисел делилась на 5?</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> числа имеют вид 3k, k = 1…100, и 3(k₁ + k₂) делится на 5 тогда и только тогда, когда k₁ + k₂ делится на 5. Остатки k при делении на 5 дают пять классов по 20 чисел.</p>
+          <p>Пары из класса 0: C(20,2) = 190. Пары «остаток 1 + остаток 4»: 20·20 = 400, «2 + 3»: ещё 400.</p>
+          <span class="fa-ans">Ответ: 990</span>
+        </div>
+      </details>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2020 · 9 класс · №5</span><p>Найдите количество восьмизначных чисел, произведение цифр которых равно 1400.</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> 1400 = 2³·5²·7. Цифры 7, 5, 5 обязательны, а 2³ раскладывается по цифрам тремя способами: 8; 4 и 2; 2, 2, 2. Остальные цифры единицы.</p>
+          <p>Набор {8, 7, 5, 5, 1, 1, 1, 1}: 8!/(2!·4!) = 840. Набор {4, 2, 7, 5, 5, 1, 1, 1}: 8!/(2!·3!) = 3360. Набор {2, 2, 2, 7, 5, 5, 1, 1}: 8!/(3!·2!·2!) = 1680.</p>
+          <span class="fa-ans">Ответ: 5880</span>
+        </div>
+      </details>
+
+      <div class="fa-grade"><h3>Геометрия</h3><p>Приёмы: окружность на отрезке как на диаметре; подобие прямоугольных треугольников у вписанной окружности; касательная и хорда.</p></div>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2022 · 9 класс · №5</span><p>В прямоугольном треугольнике ABC (∠C = 90°) на катете AC и гипотенузе AB отмечены точки D и E так, что DE ⊥ AB. Найдите AD : AC и площадь треугольника AED, если AC = √7, BC = 2√(7/3), ∠CED = 30°.</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> ∠DCB = ∠DEB = 90°, значит C, D, E, B лежат на окружности с диаметром BD, и ∠CBD = ∠CED = 30° как вписанные углы на дугу CD.</p>
+          <p>Тогда CD = BC·tg 30° = 2√7/3, AD = √7 − 2√7/3 = √7/3, то есть AD : AC = 1 : 3. Треугольники ADE и ABC подобны (общий угол A, прямые углы), AB = √(7 + 28/3) = 7/√3, коэффициент k = AD/AB = 1/√21. Площадь ABC равна ½·√7·2√(7/3) = 7/√3, площадь ADE в 21 раз меньше.</p>
+          <span class="fa-ans">Ответ: AD : AC = 1 : 3, S = √3/9</span>
+        </div>
+      </details>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2019 · 9 класс · №3</span><p>В прямоугольный треугольник ABC (∠B = 90°) вписана окружность с центром I, касающаяся AB и BC в точках K и L. Прямая через I пересекает AB и BC в точках M и N. Найдите радиус, если MK = 144, NL = 25. Найдите AC, если дополнительно MN ∥ AC.</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> BKIL — квадрат со стороной r, поэтому IL ∥ AB, и прямоугольные треугольники MKI и ILN подобны (∠KMI = ∠LIN). Отсюда MK/KI = IL/LN, то есть r² = MK·NL = 144·25, r = 60.</p>
+          <p>Второй вопрос. BM = 204, BN = 85, MN = 221. Расстояние от B до MN равно BM·BN/MN = 1020/13. Треугольник MBN подобен ABC с коэффициентом k = AC/MN, а расстояние между параллельными MN и AC равно r = 60 (точка I лежит на MN и удалена от AC на r). Значит (k − 1)·1020/13 = 60, k = 30/17, AC = 221·30/17 = 390.</p>
+          <span class="fa-ans">Ответ: r = 60, AC = 390</span>
+        </div>
+      </details>
+      </div>
+      <div class="fa-col">
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2026 · 9 класс · №5</span><p>В остроугольном треугольнике ABC проведены высоты AD и CE, пересекающиеся в точке H. Около треугольника DHE описана окружность ω радиуса 10. Касательные к ω в точках D и E пересекаются в точке K. Известно, что ∠B = 60°. Найдите AK.</p></div>
+      </div>
+      <figure class="fa-fig fa-fig--narrow">
+        <svg viewBox="0 0 520 400" role="img" aria-labelledby="tg dg" xmlns="http://www.w3.org/2000/svg"><title id="tg">Треугольник ABC, высоты AD и CE, окружность на BH и точка K</title><desc id="dg">Остроугольный треугольник ABC с высотами AD и CE, пересекающимися в точке H. Окружность через D, H и E построена на BH как на диаметре. Касательные к ней в точках D и E пересекаются в точке K — середине стороны AC.</desc><circle cx="160.0" cy="333.9" r="97.7" fill="rgba(94,234,212,.06)" stroke="#5eead4" stroke-width="2.5"/><line x1="382.0" y1="372.0" x2="70.0" y2="372.0" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round"/><line x1="70.0" y1="372.0" x2="250.0" y2="60.2" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round"/><line x1="250.0" y1="60.2" x2="382.0" y2="372.0" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round"/><line x1="382.0" y1="372.0" x2="148.0" y2="236.9" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 5"/><line x1="250.0" y1="60.2" x2="250.0" y2="372.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 5"/><line x1="70.0" y1="372.0" x2="250.0" y2="295.8" stroke="#5eead4" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 5"/><line x1="316.0" y1="216.1" x2="148.0" y2="236.9" stroke="#f4a259" stroke-width="2.5" stroke-linecap="round"/><line x1="316.0" y1="216.1" x2="250.0" y2="372.0" stroke="#f4a259" stroke-width="2.5" stroke-linecap="round"/><line x1="316.0" y1="216.1" x2="382.0" y2="372.0" stroke="#f4a259" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 5"/><polyline points="157.4,242.3 152.0,251.7 142.6,246.3" fill="none" stroke="#94a3b8" stroke-width="1.5"/><polyline points="250.0,361.2 260.8,361.2 260.8,372.0" fill="none" stroke="#94a3b8" stroke-width="1.5"/><path d="M 92.0 372.0 A 22 22 0 0 0 81.0 352.9" fill="none" stroke="#f4a259" stroke-width="2"/><text x="98.0" y="364.0" font-size="15" fill="#f4a259" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">60°</text><circle cx="382.0" cy="372.0" r="4.5" fill="#fff"/><text x="390.0" y="394.0" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">A</text><circle cx="70.0" cy="372.0" r="4.5" fill="#fff"/><text x="48.0" y="394.0" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">B</text><circle cx="250.0" cy="60.2" r="4.5" fill="#fff"/><text x="244.0" y="48.2" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">C</text><circle cx="148.0" cy="236.9" r="4.5" fill="#fff"/><text x="124.0" y="230.9" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">D</text><circle cx="250.0" cy="372.0" r="4.5" fill="#fff"/><text x="244.0" y="396.0" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">E</text><circle cx="250.0" cy="295.8" r="4.5" fill="#5eead4"/><text x="258.0" y="287.8" font-size="20" font-weight="700" fill="#5eead4" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">H</text><circle cx="316.0" cy="216.1" r="4.5" fill="#f4a259"/><text x="326.0" y="212.1" font-size="20" font-weight="700" fill="#f4a259" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">K</text><text x="84" y="300" font-size="15" fill="#5eead4" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">ω, R = 10</text></svg>
+        <figcaption>Окружность ω проходит через D, H, E и через вершину B: отрезок BH виден из D и E под прямым углом. Оранжевые касательные из K встречаются в середине AC.</figcaption>
+      </figure>
+      <div class="fa-col">
+      <details class="fa-spoiler"><summary>Решение по шагам</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> ∠BDH = ∠BEH = 90°, значит B лежит на ω, а BH её диаметр: BH = 20.</p>
+          <p>Пусть M середина AC. Так как ∠AEC = ∠ADC = 90°, точки A, E, D, C лежат на окружности с диаметром AC, и MD = ME = MA = MC. Треугольник MDC равнобедренный, ∠MDC = ∠C, а ∠HDC = 90°, значит угол между MD и хордой DH равен 90° − ∠C. Вписанный угол на дугу DH равен ∠DBH = 90° − ∠C. Углы равны, MD — касательная; так же ME. Следовательно, K = M.</p>
+          <p>В треугольнике с углом B = 60° отрезок BH = 2R·cos B = R, где R радиус описанной окружности ABC. Значит R = 20, AC = 2R·sin 60° = 20√3, AK = AC/2.</p>
+          <span class="fa-ans">Ответ: 10√3</span>
+        </div>
+      </details>
+
+      <div class="fa-grade"><h3>Параметры и координаты</h3><p>Приём: уравнение окружности задаёт отрезок изменения x, дальше работаем с функцией на отрезке.</p></div>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2025 · 9 класс · №6</span><p>Найдите все значения a, при которых наибольшее значение выражения x² − 6x + a на окружности x² + y² = a² равно 8.</p></div>
+      </div>
+      <figure class="fa-fig">
+        <svg viewBox="0 0 600 340" role="img" aria-labelledby="tp dp" xmlns="http://www.w3.org/2000/svg"><title id="tp">Окружность и парабола: где максимум</title><desc id="dp">Слева окружность x²+y²=a², отмечена самая левая точка x = −|a|. Справа парабола g(x) = x² − 6x + a с вершиной в x = 3: на отрезке от −|a| до |a| она убывает, поэтому максимум в левом конце.</desc><line x1="70" y1="175" x2="330" y2="175" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/><line x1="200" y1="40" x2="200" y2="310" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/><circle cx="200" cy="175" r="110" fill="rgba(94,234,212,.06)" stroke="#5eead4" stroke-width="2.5"/><circle cx="90" cy="175" r="6" fill="#f4a259"/><text x="80" y="161" text-anchor="end" font-size="16" fill="#f4a259" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">x = −|a|</text><circle cx="310" cy="175" r="4" fill="#cbd5e1"/><text x="320" y="161" font-size="16" fill="#cbd5e1" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">|a|</text><text x="212" y="53" font-size="16" fill="#cbd5e1" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">x² + y² = a²</text><line x1="360" y1="300" x2="590" y2="300" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/><polyline points="370.0,70.0 373.0,79.9 376.1,89.6 379.1,99.0 382.2,108.3 385.2,117.3 388.3,126.1 391.3,134.7 394.3,143.0 397.4,151.2 400.4,159.1 403.5,166.8 406.5,174.3 409.6,181.6 412.6,188.7 415.7,195.5 418.7,202.2 421.7,208.6 424.8,214.8 427.8,220.8 430.9,226.5 433.9,232.1 437.0,237.4 440.0,242.5 443.0,247.4 446.1,252.1 449.1,256.5 452.2,260.8 455.2,264.8 458.3,268.6 461.3,272.2 464.3,275.5 467.4,278.7 470.4,281.6 473.5,284.3 476.5,286.8 479.6,289.1 482.6,291.2 485.7,293.0 488.7,294.7 491.7,296.1 494.8,297.3 497.8,298.3 500.9,299.0 503.9,299.6 507.0,299.9 510.0,300.0 513.0,299.9 516.1,299.6 519.1,299.0 522.2,298.3 525.2,297.3 528.3,296.1 531.3,294.7 534.3,293.0 537.4,291.2 540.4,289.1 543.5,286.8 546.5,284.3 549.6,281.6 552.6,278.7 555.7,275.5 558.7,272.2 561.7,268.6 564.8,264.8 567.8,260.8 570.9,256.5 573.9,252.1 577.0,247.4 580.0,242.5" fill="none" stroke="#e2e8f0" stroke-width="2.5"/><polyline points="393.3,140.3 396.6,149.0 399.8,157.4 403.0,165.6 406.2,173.6 409.4,181.3 412.6,188.8 415.9,196.0 419.1,203.0 422.3,209.7 425.5,216.2 428.7,222.5 432.0,228.5 435.2,234.3 438.4,239.8 441.6,245.1 444.8,250.2 448.0,255.0 451.3,259.5 454.5,263.8 457.7,267.9 460.9,271.7 464.1,275.3 467.4,278.7 470.6,281.8 473.8,284.6 477.0,287.2 480.2,289.6 483.4,291.7 486.7,293.6" fill="none" stroke="#f4a259" stroke-width="5" stroke-linecap="round"/><circle cx="393.3" cy="140.3" r="6" fill="#f4a259"/><text x="405.3" y="136.3" font-size="16" fill="#f4a259" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">max</text><line x1="510.0" y1="300" x2="510.0" y2="242.5" stroke="rgba(255,255,255,.3)" stroke-dasharray="4 4"/><text x="510.0" y="236.1" text-anchor="middle" font-size="14" fill="#94a3b8" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">вершина x = 3</text><text x="393.3" y="322" text-anchor="middle" font-size="15" fill="#f4a259" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">−|a|</text><text x="486.7" y="322" text-anchor="middle" font-size="15" fill="#f4a259" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">|a|</text><text x="370" y="42" font-size="16" fill="#cbd5e1" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">g(x) = x² − 6x + a</text></svg>
+        <figcaption>На окружности абсцисса пробегает отрезок от −|a| до |a|. Парабола g(x) = x² − 6x + a с вершиной в x = 3 на этом отрезке убывает, поэтому максимум в левом конце.</figcaption>
+      </figure>
+      <div class="fa-col">
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p>Если a = 0, окружность вырождается в точку, значение равно 0, не подходит. Иначе x ∈ [−|a|, |a|], вершина параболы x = 3 правее середины отрезка, поэтому максимум в точке x = −|a|: a² + 6|a| + a = 8.</p>
+          <p>При a &gt; 0: a² + 7a − 8 = 0, a = 1. При a &lt; 0: a² − 5a − 8 = 0, подходит только отрицательный корень.</p>
+          <span class="fa-ans">Ответ: a = 1, a = (5 − √57)/2</span>
+        </div>
+      </details>
+
+      <div class="fa-grade"><h3>Текстовая задача</h3><p>Редкий гость (две за восемь лет), но в 9 классе была. Приём: три неизвестных, три уравнения, одно из них делится на другое.</p></div>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2023 · 9 класс · №6</span><p>Из A в B одновременно выезжают велосипедист и мотоциклист. Мотоциклист прибывает на 2 часа раньше. Если бы каждый ехал столько времени, сколько потратил другой, мотоциклист проехал бы на 96 км больше. Если бы скорость каждого выросла на 6 км/ч, велосипедист приехал бы на 1 ч 15 мин позже мотоциклиста. Найдите расстояние AB.</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p>Пусть S расстояние, v и u скорости велосипедиста и мотоциклиста. Условия: S/v − S/u = 2; u·S/v − v·S/u = 96, то есть S(u² − v²)/(uv) = 96; S/(v + 6) − S/(u + 6) = 5/4.</p>
+          <p><span class="fa-key">Приём:</span> разделим второе уравнение на первое: S(u² − v²)/(uv) : S(u − v)/(uv) = u + v = 48. Теперь из первого S = 2uv/(u − v), подставляем u = 48 − v в третье и получаем квадратное уравнение с корнем v = 18. Тогда u = 30, S = 2·18·30/12 = 90.</p>
+          <span class="fa-ans">Ответ: 90 км</span>
+        </div>
+      </details>
+      </div>
+    </section>
