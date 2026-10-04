@@ -1,0 +1,109 @@
+    <section class="fa-chapter fa-chapter--wide" id="g10" data-step="2">
+      <div class="fa-col">
+        <p class="fa-chapter__no">Раздел 2 · 10 класс</p>
+        <h2>10 класс: прогрессии, оценки и две геометрии</h2>
+        <div class="fa-chips"><span class="fa-chip">55 задач за 8 лет</span><span class="fa-chip fa-chip--teal">алгебра 16 · геометрия 15 · параметры 9 · комбинаторика 8 · числа 6</span></div>
+        <p>В десятом классе алгебры больше всего: прогрессии, системы с корнями, неравенства с модулем. Теории чисел меньше, чем в 9 классе, зато параметр почти всегда «геометрический»: фигура на плоскости или прямая между двумя графиками. Геометрия двойная в каждом варианте.</p>
+      </div>
+      <div class="fa-col">
+      <div class="fa-grade"><h3>Алгебра</h3><p>Приёмы: записать член прогрессии через первый и знаменатель, а потом сократить; выразить две суммы через b и q и поделить; разности членов арифметической прогрессии пропорциональны разности номеров.</p></div>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2022 · 10 класс · №1</span><p>Числа a, b, c — первый, второй и третий члены геометрической прогрессии, а четвёртый член является корнем уравнения ax² + 2bx + c = 0. Найдите третий член прогрессии.</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> b = aq, c = aq², четвёртый член aq³. Подставляем: a·(aq³)² + 2aq·aq³ + aq² = aq²·(a²q⁴ + 2aq² + 1) = aq²·(aq² + 1)².</p>
+          <p>Это равно нулю только при aq² = −1, а aq² и есть третий член.</p>
+          <span class="fa-ans">Ответ: −1</span>
+        </div>
+      </details>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2019 · 10 класс · №3</span><p>Найдите первый член и знаменатель бесконечно убывающей геометрической прогрессии, если отношение суммы кубов всех её членов к сумме членов равно 48/7, а отношение суммы четвёртых степеней к сумме квадратов равно 144/17.</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> кубы членов образуют прогрессию со знаменателем q³, квадраты — с q², четвёртые степени — с q⁴. Тогда S₃/S₁ = b²(1 − q)/(1 − q³) = b²/(1 + q + q²) = 48/7 и S₄/S₂ = b²/(1 + q²) = 144/17.</p>
+          <p>Делим второе на первое: (1 + q + q²)/(1 + q²) = 21/17, откуда 4q² − 17q + 4 = 0, q = 1/4 (корень 4 не подходит, прогрессия убывающая). Тогда b² = 144/17·17/16 = 9.</p>
+          <span class="fa-ans">Ответ: b₁ = ±3, q = 1/4</span>
+        </div>
+      </details>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2024 · 10 класс · №1</span><p>В арифметической прогрессии третий член равен 3x + 3, пятый (x² + 2x)², девятый 3x². Найдите x.</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> a₉ − a₃ = 6d и a₅ − a₃ = 2d, значит a₉ − a₃ = 3(a₅ − a₃). После сокращения на 3: (x² + 2x)² = x² + 2x + 2. Замена t = x² + 2x даёт t² − t − 2 = 0, t = 2 или t = −1.</p>
+          <span class="fa-ans">Ответ: x = −1, x = −1 ± √3</span>
+        </div>
+      </details>
+
+      <div class="fa-grade"><h3>Теория чисел</h3><p>Приёмы: общий делитель числителя и знаменателя делит их комбинацию; большое число заменить маленьким примером.</p></div>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2023 · 10 класс · №2</span><p>Дробь a/b несократима (a, b натуральные). На доске записана дробь (a + b)/(a² − 6ab + b²). При каком наибольшем m числитель и знаменатель могут оказаться кратными m?</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> a² − 6ab + b² = (a + b)² − 8ab. Если d делит a + b и знаменатель, то d делит 8ab. Простой делитель d не может делить a (иначе он делит и b = (a + b) − a), поэтому d взаимно прост с ab и d делит 8.</p>
+          <p>Пример, когда 8 достигается: a = 3, b = 5 дают 8 и 9 − 90 + 25 = −56.</p>
+          <span class="fa-ans">Ответ: 8</span>
+        </div>
+      </details>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2025 · 10 класс · №2</span><p>Сколько цифр 9 в десятичной записи числа (10<sup>40000</sup> − 1)³?</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> маленькие случаи: 9³ = 729 (одна девятка), 99³ = 970299 (три), 999³ = 997002999 (пять). Закономерность 2k − 1 объясняется кубом разности: 10<sup>3k</sup> − 3·10<sup>2k</sup> + 3·10<sup>k</sup> − 1.</p>
+          <span class="fa-ans">Ответ: 79 999</span>
+        </div>
+      </details>
+
+      <div class="fa-grade"><h3>Комбинаторика и вероятность</h3><p>Приёмы: остатки по модулю; наборы цифр; вероятность как отношение сочетаний.</p></div>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2019 · 10 класс · №5</span><p>На столе 140 карточек с числами 3, 6, 9, …, 420. Сколькими способами можно выбрать две карточки так, чтобы сумма делилась на 7?</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p>Числа 3k, k = 1…140, нужно k₁ + k₂ ⋮ 7. Семь классов остатков по 20 чисел. Пары внутри класса 0: C(20,2) = 190; пары «1 + 6», «2 + 5», «3 + 4»: по 400.</p>
+          <span class="fa-ans">Ответ: 1390</span>
+        </div>
+      </details>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2020 · 10 класс · №1</span><p>Найдите количество восьмизначных чисел, произведение цифр которых равно 700.</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p>700 = 2²·5²·7. Цифры 7, 5, 5 и либо 4, либо 2 и 2. Набор {4, 7, 5, 5, 1, 1, 1, 1}: 8!/(2!·4!) = 840. Набор {2, 2, 7, 5, 5, 1, 1, 1}: 8!/(2!·2!·3!) = 1680.</p>
+          <span class="fa-ans">Ответ: 2520</span>
+        </div>
+      </details>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2025 · 10 класс · №4</span><p>Среди n коробок ровно в трёх лежат шарики. Игрок открывает наугад 5 коробок или 6 коробок. Во сколько раз вероятность найти все три шарика при шести открытых больше, чем при пяти?</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p>P₅ = C(n−3, 2)/C(n, 5), P₆ = C(n−3, 3)/C(n, 6). Отношение P₆/P₅ = [(n − 5)/3]·[6/(n − 5)] = 2 при любом n ≥ 6. <span class="fa-key">Приём:</span> если ответ не зависит от n, скорее всего, вы всё сделали правильно.</p>
+          <span class="fa-ans">Ответ: в 2 раза</span>
+        </div>
+      </details>
+
+      <div class="fa-grade"><h3>Геометрия</h3><p>Приёмы: окружность на отрезке как на диаметре плюс медиана к гипотенузе; координаты, когда конфигурация с двумя окружностями.</p></div>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2021 · 10 класс · №1</span><p>Точка D лежит на стороне AC треугольника ABC. Окружность с диаметром BD пересекает AB и BC в точках P и T. Точки M и N — середины AD и CD, причём PM ∥ TN. а) Найдите ∠ABC. б) Пусть MP = 1/2, NT = 5/2, BD = 2. Найдите площадь треугольника.</p></div>
+      </div>
+      <figure class="fa-fig fa-fig--narrow">
+        <svg viewBox="0 0 520 380" role="img" aria-labelledby="t10 d10" xmlns="http://www.w3.org/2000/svg"><title id="t10">Окружность на BD как на диаметре</title><desc id="d10">Треугольник ABC с прямым углом B. Точка D на стороне AC, окружность с диаметром BD пересекает AB в точке P и BC в точке T. M и N — середины AD и DC, отрезки PM и TN параллельны.</desc><circle cx="92.7" cy="268.1" r="70.0" fill="rgba(94,234,212,.06)" stroke="#5eead4" stroke-width="2.5"/><line x1="60.0" y1="181.5" x2="60.0" y2="330.0" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round"/><line x1="60.0" y1="330.0" x2="452.9" y2="330.0" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round"/><line x1="452.9" y1="330.0" x2="60.0" y2="181.5" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round"/><line x1="60.0" y1="330.0" x2="125.5" y2="206.3" stroke="#5eead4" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 5"/><line x1="125.5" y1="206.3" x2="60.0" y2="206.3" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 5"/><line x1="125.5" y1="206.3" x2="125.5" y2="330.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 5"/><line x1="60.0" y1="206.3" x2="92.7" y2="193.9" stroke="#f4a259" stroke-width="3" stroke-linecap="round"/><line x1="125.5" y1="330.0" x2="289.2" y2="268.1" stroke="#f4a259" stroke-width="3" stroke-linecap="round"/><polyline points="60.0,314.6 75.4,314.6 75.4,330.0" fill="none" stroke="#94a3b8" stroke-width="1.5"/><polyline points="60.0,221.7 75.4,221.7 75.4,206.3" fill="none" stroke="#94a3b8" stroke-width="1.5"/><polyline points="110.1,330.0 110.1,314.6 125.5,314.6" fill="none" stroke="#94a3b8" stroke-width="1.5"/><circle cx="60.0" cy="181.5" r="4.5" fill="#fff"/><text x="36.0" y="187.5" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">A</text><circle cx="60.0" cy="330.0" r="4.5" fill="#fff"/><text x="36.0" y="352.0" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">B</text><circle cx="452.9" cy="330.0" r="4.5" fill="#fff"/><text x="462.9" y="352.0" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">C</text><circle cx="125.5" cy="206.3" r="4.5" fill="#5eead4"/><text x="133.5" y="196.3" font-size="20" font-weight="700" fill="#5eead4" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">D</text><circle cx="60.0" cy="206.3" r="4.5" fill="#fff"/><text x="36.0" y="214.3" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">P</text><circle cx="125.5" cy="330.0" r="4.5" fill="#fff"/><text x="119.5" y="354.0" font-size="20" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">T</text><circle cx="92.7" cy="193.9" r="4.5" fill="#f4a259"/><text x="86.7" y="181.9" font-size="20" font-weight="700" fill="#f4a259" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">M</text><circle cx="289.2" cy="268.1" r="4.5" fill="#f4a259"/><text x="293.2" y="256.1" font-size="20" font-weight="700" fill="#f4a259" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">N</text></svg>
+        <figcaption>P и T лежат на окружности с диаметром BD, поэтому DP ⊥ AB и DT ⊥ BC. Оранжевые отрезки PM и TN — медианы прямоугольных треугольников APD и CTD.</figcaption>
+      </figure>
+      <div class="fa-col">
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> ∠BPD = ∠BTD = 90°, так что PM и TN — медианы к гипотенузам, PM = MA = MD, TN = ND = NC. Тогда ∠PMD = 2∠A и ∠TND = 2∠C как внешние углы равнобедренных треугольников.</p>
+          <p>а) PM ∥ TN, а AC — секущая, поэтому ∠PMD + ∠TND = 180°, то есть 2∠A + 2∠C = 180° и ∠B = 90°.</p>
+          <p>б) AD = 2MP = 1, DC = 2NT = 5, AC = 6, BD = 2. По теореме Стюарта для чевианы BD: AB²·5 + BC²·1 = 6·(4 + 1·5) = 54, а AB² + BC² = 36. Отсюда AB² = 9/2, BC² = 63/2, площадь ½·AB·BC = ½·√(567/4) = 9√7/4.</p>
+          <span class="fa-ans">Ответ: а) 90°; б) 9√7/4</span>
+        </div>
+      </details>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2023 · 10 класс · №3</span><p>Центр окружности ω лежит на окружности Ω, хорда AB окружности Ω касается ω в точке C так, что AC : CB = 7. Найдите AB, если радиусы ω и Ω равны 1 и 5.</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p><span class="fa-key">Приём:</span> когда в задаче две окружности и отрезки с числами, координаты часто быстрее синтетики. Пусть AB лежит на оси x, M = (0; 0) середина AB, AB = 8x, тогда C = (3x; 0). Центр Ω в точке O = (0; d), 25 = 16x² + d². Центр ω — точка O′ = (3x; ±1) (радиус ω равен 1 и O′C ⊥ AB), и O′ лежит на Ω: 9x² + (d ∓ 1)² = 25.</p>
+          <p>Вычитаем уравнения: ∓2d + 1 = 7x². Подставляем d в 25 = 16x² + d² и получаем 49x⁴ + 50x² − 99 = 0, откуда x² = 1 при любом знаке. AB = 8x = 8.</p>
+          <span class="fa-ans">Ответ: 8</span>
+        </div>
+      </details>
+
+      <div class="fa-grade"><h3>Параметры</h3><p>Приём: если линейная функция зажата между двумя графиками на отрезке, проверь её в трёх точках: концы отрезка и излом.</p></div>
+      <div class="fa-task"><span class="fa-task__tag">Физтех 2022 · 10 класс · №6</span><p>Найдите все пары (a; b), при которых неравенство 2x² − x − 1 ≤ ax + b ≤ x + |2x − 1| выполнено для всех x на отрезке [−1/4; 3/2].</p></div>
+      <details class="fa-spoiler"><summary>Решение</summary>
+        <div class="fa-sol">
+          <p>Обозначим ℓ(x) = ax + b. На концах отрезка нижняя парабола равна −5/8 и 2, поэтому ℓ(−1/4) ≥ −5/8 и ℓ(3/2) ≥ 2. Верхняя функция x + |2x − 1| имеет минимум в изломе x = 1/2 и равна там 1/2, поэтому ℓ(1/2) ≤ 1/2.</p>
+          <p><span class="fa-key">Приём:</span> точка 1/2 делит отрезок в отношении 3 : 4, и для линейной функции ℓ(1/2) = (4/7)·ℓ(−1/4) + (3/7)·ℓ(3/2) ≥ (4/7)(−5/8) + (3/7)·2 = 1/2. Значит ℓ(1/2) = 1/2 и оба неравенства на концах обращаются в равенства. Прямая проходит через (−1/4; −5/8) и (3/2; 2): a = 3/2, b = −1/4. Проверка: парабола выпукла, поэтому её хорда лежит выше неё на всём отрезке, а ниже ломаной прямая лежит по построению.</p>
+          <span class="fa-ans">Ответ: a = 3/2, b = −1/4</span>
+        </div>
+      </details>
+      </div>
+    </section>
