@@ -553,6 +553,8 @@ MODEL_PRICES_USD_PER_MTOK = {
     "gemini-3.7-flash":  {"in": 0.75,   "out": 3.75},
     "gemini-3.8-flash":  {"in": 0.75,   "out": 3.75},
     "kimi-k3":           {"in": 0.60,   "out": 2.50},
+    "gpt-6-luna":        {"in": 0.60,   "out": 2.50},
+    "gpt-5.6-luna":      {"in": 0.60,   "out": 2.50},
 }
 
 
