@@ -114,7 +114,7 @@ PROVIDER_BASE_URLS = {
 # структурные роли генерации чертежей. gemini-3.8-flash — fallback для лёгких.
 ROLE_DEFAULT_MODEL = {
     "base": "kimi-k3",
-    "aux": "gpt-5.4",
+    "aux": "gpt-6-luna",
     "audit": "kimi-k3",
     "repair": "kimi-k3",
     "legacy_reasoner": "kimi-k3",
