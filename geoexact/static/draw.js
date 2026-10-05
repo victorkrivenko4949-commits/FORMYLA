@@ -25,7 +25,15 @@
     try { localStorage.setItem(storeKey, JSON.stringify(Object.assign(loadState(), patch))); } catch (e) { /* private mode */ }
   };
   const currentMode = () => root.querySelector('input[name="gx-mode"]:checked')?.value || "base";
-  const persistForm = () => saveState({problem: el("problem").value, recognized, mode: currentMode()});
+  const persistForm = () => saveState({problem: el("problem").value, recognized, mode: currentMode(),
+    sol: !!(el("sol") && el("sol").checked)});
+  // Имя эксперта для подписей: «Луна» по умолчанию, «Сол» при включённой галочке.
+  const fem = data => (data && data.expert ? data.expert === "sol" : !!(el("sol") && el("sol").checked)) ? "" : "а";
+  const expertName = (kind, data) => {
+    const sol = (data && data.expert ? data.expert === "sol" : !!(el("sol") && el("sol").checked));
+    return kind === "gen" ? (sol ? "Сол" : "Луна") : kind === "dat" ? (sol ? "Солом" : "Луной")
+      : (sol ? "Сола" : "Луны");
+  };
   function clearUrls() { urls.forEach(URL.revokeObjectURL); urls = []; }
   function imageURL(svg) {
     const url = URL.createObjectURL(new Blob([svg], {type: "image/svg+xml"}));
@@ -64,14 +72,14 @@
     // диалог с Луной, если он был, или начнёт новый по этому условию.
     el("solution").hidden = !lastJob;
     el("another").textContent = Array.isArray(data.expert_history) && data.expert_history.length
-      ? "Использовать другое доп. построение" : "Луна не ответила: повторить запрос";
+      ? "Использовать другое доп. построение" : expertName("gen", data) + " не ответил" + fem(data) + ": повторить запрос";
     const fail = data.with_aux && data.expert_status && data.expert_status !== "OK";
     el("expert-note").hidden = !fail;
     const rejected = fail && String(data.expert_status).startsWith("REJECTED:");
     el("expert-note").textContent = !fail ? "" : rejected
-      ? "Луна предложила построение, но его не удалось нарисовать (" + data.expert_status.slice(9).trim() +
+      ? expertName("gen", data) + " предложил" + fem(data) + " построение, но его не удалось нарисовать (" + data.expert_status.slice(9).trim() +
         "). Кнопка ниже попросит другое."
-      : "Луна не дала доп. построение (код " + data.expert_status + "). Кнопка ниже отправит запрос заново.";
+      : expertName("gen", data) + " не дал" + fem(data) + " доп. построение (код " + data.expert_status + "). Кнопка ниже отправит запрос заново.";
     el("result").hidden = false;
     const value = data.measured;
     el("measured").textContent = value == null ? "" :
@@ -175,7 +183,7 @@
         const clock = Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
         const auxMode = root.querySelector('input[name="gx-mode"]:checked')?.value === "aux";
         status(data.status === "running"
-          ? (isSolution ? "Луна пишет полное решение, DeepSeek оформляет его в LaTeX… " + clock
+          ? (isSolution ? expertName("gen") + " пишет полное решение, DeepSeek оформляет его в LaTeX… " + clock
               : "Строим и проверяем чертёж… " + clock + (!auxMode ? "" : (sec > 60
               ? " — сложная задача, около 100 секунд, не дольше 3 минут"
               : " — с доп. построением обычно около 50 секунд, сложные около 100")))
@@ -229,7 +237,8 @@
         headers: {"Content-Type": "application/json", "X-CSRF-Token": root.dataset.csrf},
         body: JSON.stringify(Object.assign({
           problem,
-          with_aux: retryOf ? true : root.querySelector('input[name="gx-mode"]:checked').value === "aux"
+          with_aux: retryOf ? true : root.querySelector('input[name="gx-mode"]:checked').value === "aux",
+          expert: el("sol") && el("sol").checked ? "sol" : "luna"
         }, retryOf ? {retry_of: retryOf} : {}))
       }));
       activeJob = data.job_id; await poll();
@@ -241,6 +250,7 @@
   el("ticks").addEventListener("change", () => { saveState({ticks: el("ticks").checked}); render(); });
   el("problem").addEventListener("input", persistForm);
   root.querySelectorAll('input[name="gx-mode"]').forEach(r => r.addEventListener("change", persistForm));
+  if (el("sol")) el("sol").addEventListener("change", persistForm);
   window.addEventListener("pagehide", clearUrls);
 
   // ── Распознавание фото (кнопка «Распознать по фото» + Ctrl+V) ────────
@@ -403,6 +413,7 @@
     const radio = root.querySelector('input[name="gx-mode"][value="' + saved.mode + '"]');
     if (radio) radio.checked = true;
     if (typeof saved.ticks === "boolean") el("ticks").checked = saved.ticks;
+    if (el("sol") && typeof saved.sol === "boolean") el("sol").checked = saved.sol;
   }
   async function restoreResult(job) {
     // Готовый чертёж берётся с сервера повторно, без нового платного запроса.

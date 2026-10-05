@@ -162,3 +162,6 @@
 #gx-solution-text ul,#gx-solution-text ol{margin:8px 0;padding-left:22px}
 #gx-solution-text li{margin:6px 0}
 #gx-solution-text .katex-display{margin:14px 0;overflow-x:auto}
+
+.gx-sol{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;cursor:pointer;opacity:.85}
+.gx-sol:hover{opacity:1}

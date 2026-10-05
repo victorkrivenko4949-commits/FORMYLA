@@ -21,12 +21,14 @@ def main():
     if data.get("solution"):
         # «Полное решение»: тот же диалог с экспертом + оформление LaTeX.
         from .core.solution import generate_solution
-        payload = generate_solution(data["problem"], data.get("history") or None)
+        payload = generate_solution(data["problem"], data.get("history") or None,
+                                    data.get("expert") or "luna")
         print(json.dumps(payload, ensure_ascii=False))
         return
     result = generate(data["problem"], data["with_aux"],
                       budget=Budget(cap=.10), use_cache=False,
-                      aux_history=data.get("history") or None)
+                      aux_history=data.get("history") or None,
+                      expert=data.get("expert") or "luna")
     payload = asdict(result)
     # No model plans, token logs, internal API errors, costs or traces in the client.
     for field in ("plan", "usage", "cost", "seconds", "retries", "cls"):
