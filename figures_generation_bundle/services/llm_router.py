@@ -517,6 +517,8 @@ MODEL_PRICES_USD_PER_MTOK = {
     "deepseek-v4-pro":   {"in": 0.5693, "out": 1.139},
     "deepseek-v4-flash": {"in": 0.03,   "out": 0.10},
     "gemini-3.7-flash":  {"in": 0.75,   "out": 3.75},
+    "gpt-6-luna":        {"in": 0.60,   "out": 2.50},
+    "gpt-5.6-luna":      {"in": 0.60,   "out": 2.50},
 }
 
 
