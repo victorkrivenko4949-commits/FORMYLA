@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ u.name }} — База — Админ FORMYLA.net{% endblock %}
+{% block extra_css %}
+<style>
+  .ab-wrap { max-width: 1240px; margin: 24px auto; padding: 0 16px; color: var(--text, #e2e8f0); }
+  .ab-title { font-size: 26px; font-weight: 800; margin-bottom: 4px; }
+  .ab-sub { color: var(--muted, #94a3b8); font-size: 14px; margin-bottom: 14px; }
+  .ab-tabs { display:flex; gap:8px; flex-wrap:wrap; margin: 10px 0 18px; }
+  .ab-tabs a { padding:8px 14px; border-radius:10px; background: var(--card, #141a2e); border:1px solid rgba(255,255,255,.08); color: var(--text,#e2e8f0); text-decoration:none; font-weight:600; font-size:14px; }
+  .ab-cards { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:12px; margin-bottom: 18px; }
+  .ab-card { background: var(--card, #141a2e); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px 14px; }
+  .ab-card .v { font-size: 24px; font-weight: 800; }
+  .ab-card .l { color: var(--muted,#94a3b8); font-size: 12px; margin-top:2px; }
+  .ab-sec { margin: 24px 0 8px; font-size: 17px; font-weight: 800; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .ab-sec small { color: var(--muted,#94a3b8); font-weight: 500; font-size: 13px; }
+  table.ab { width:100%; border-collapse: collapse; font-size: 13px; background: var(--card,#141a2e); border-radius: 12px; overflow:hidden; }
+  table.ab th, table.ab td { padding: 7px 9px; border-bottom:1px solid rgba(255,255,255,.06); text-align:left; vertical-align: top; }
+  table.ab th { color: var(--muted,#94a3b8); font-weight:600; font-size:11.5px; text-transform: uppercase; letter-spacing:.03em; }
+  table.ab tr:hover td { background: rgba(255,255,255,.03); }
+  .ab-pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11.5px; background: rgba(244,185,66,.15); color:#f4b942; font-weight:700; }
+  .ab-pill.b { background: rgba(96,165,250,.15); color:#93c5fd; }
+  .ab-mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: var(--muted,#94a3b8); word-break: break-word; }
+  .ab-cell { max-width: 360px; white-space: pre-wrap; word-break: break-word; }
+  .ab-thumb { width:56px; height:56px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,.12); margin:2px; background:#fff; }
+  .ab-gallery { display:flex; flex-wrap:wrap; gap:8px; }
+  .ab-gallery a { display:block; }
+  .ab-gallery img { width:150px; height:150px; object-fit:contain; background:#fff; border-radius:10px; border:1px solid rgba(255,255,255,.12); }
+  .ab-profile { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:6px 18px; font-size:13px; background: var(--card,#141a2e); border-radius: 12px; padding: 12px 14px; border:1px solid rgba(255,255,255,.08); }
+  .ab-profile b { color: var(--muted,#94a3b8); font-weight:600; }
+  details.ab-raw summary { cursor:pointer; color:#93c5fd; font-size:12px; }
+  details.ab-raw pre { white-space: pre-wrap; word-break: break-word; font-size:11.5px; background: rgba(0,0,0,.25); padding:8px; border-radius:8px; max-height: 320px; overflow:auto; }
+  .ab-err { color:#f87171; font-size: 12px; }
+  .ab-muted { color: var(--muted,#94a3b8); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="ab-wrap">
+  <div class="ab-tabs">
+    <a href="/admin/base">← База</a>
+    <a href="/admin/users">Статистика пользователей</a>
+    <a href="/admin/base/api/user/{{ u.user_id }}" target="_blank">JSON</a>
+    <a href="/admin/base/user/{{ u.user_id }}?n=1000">показать до 1000 записей на таблицу</a>
+  </div>
+
+  <div class="ab-title">👤 {{ u.name }} <span class="ab-mono">id={{ u.user_id }}</span></div>
+  <div class="ab-sub">Всего записей, связанных с пользователем: <b>{{ u.total }}</b> · показано до {{ per_table }} последних на таблицу</div>
+
+  <div class="ab-cards">
+    {% for c in u.by_category %}
+      <div class="ab-card"><div class="v">{{ c.count }}</div><div class="l">{{ c.category }}</div></div>
+    {% endfor %}
+  </div>
+
+  {% if u.profile %}
+  <div class="ab-sec">Профиль</div>
+  <div class="ab-profile">
+    {% for k, v in u.profile.items() %}<div><b>{{ k }}:</b> {{ v if v is not none else '—' }}</div>{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if u.gallery %}
+  <div class="ab-sec">Фото решений и чертежи <small>{{ u.gallery|length }} шт.</small></div>
+  <div class="ab-gallery">
+    {% for g in u.gallery %}
+      <a href="{{ g.url }}" target="_blank" title="{{ g.label }} · {{ g.when }}"><img src="{{ g.url }}" loading="lazy" alt=""></a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% for s in u.sections %}
+  <div class="ab-sec" id="t-{{ s.table }}">
+    <span class="ab-pill b">{{ s.category }}</span> {{ s.label }}
+    <small>{{ s.table }} · {{ s.count }} записей</small>
+  </div>
+  {% if s.error %}<div class="ab-err">{{ s.error }}</div>{% endif %}
+  {% if s.rows %}
+  <table class="ab">
+    <thead><tr>{% for c in s.columns %}<th>{{ c }}</th>{% endfor %}<th>фото / чертёж</th><th></th></tr></thead>
+    <tbody>
+    {% for r in s.rows %}
+      <tr>
+        {% for c in s.columns %}<td class="ab-cell">{{ r.cells[c] if r.cells[c] is not none else '—' }}</td>{% endfor %}
+        <td>{% for img in r.images %}<a href="{{ img }}" target="_blank"><img class="ab-thumb" src="{{ img }}" loading="lazy" alt=""></a>{% endfor %}</td>
+        <td><details class="ab-raw"><summary>все поля</summary><pre>{% for k, v in r.raw.items() %}{{ k }}: {{ v }}
+{% endfor %}</pre></details></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  {% endfor %}
+
+  {% if u.timeline %}
+  <div class="ab-sec">Хронология <small>последние {{ u.timeline|length }} действий по всем таблицам</small></div>
+  <table class="ab">
+    <thead><tr><th>Когда</th><th>Что</th><th>Детали</th></tr></thead>
+    <tbody>
+    {% for e in u.timeline %}
+      <tr>
+        <td class="ab-mono" style="white-space:nowrap">{{ e.when }}</td>
+        <td><span class="ab-pill b">{{ e.category }}</span> <a href="#t-{{ e.table }}" style="color:inherit">{{ e.label }}</a> <span class="ab-mono">id={{ e.id }}</span></td>
+        <td class="ab-mono">{{ e.summary }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if not u.sections %}
+  <p class="ab-muted">У этого пользователя пока нет записей ни в одной таблице с привязкой к user_id.</p>
+  {% endif %}
+</div>
+{% endblock %}
