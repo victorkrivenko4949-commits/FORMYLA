@@ -22,6 +22,8 @@ __all__ = ["execute", "count_free_points", "OPS"]
 # абсолютный порог «нуля» и относительный порог вырожденности
 _ABS_EPS = 1e-12
 _REL_EPS = 1e-12
+# корень пересечения, совпавший с уже известной точкой, — не новая точка
+_TRIVIAL_ROOT_REL = 1e-9
 
 
 # ------------------------------------------------------------------ утилиты
@@ -74,6 +76,26 @@ def _finite(p: np.ndarray, op: str) -> np.ndarray:
     if not np.all(np.isfinite(p)):
         raise PlanError("DEGENERATE", f"{op}: получены неконечные координаты")
     return p
+
+
+def _pick_root(roots, k: int, known, scale: float) -> np.ndarray:
+    """Корень номер k, если он не совпадает с уже построенной точкой.
+
+    Прямая через точку окружности (или две окружности с общей известной
+    точкой) всегда пересекаются в этой точке; модель, выбирая value=0/1,
+    часто попадает именно в неё. Такой «новой» точке на чертеже негде
+    появиться (D совпадает с C), поэтому берётся другой корень — если он
+    действительно другой. Касание (оба корня совпали) не трогаем.
+    """
+    tol = _TRIVIAL_ROOT_REL * max(scale, 1e-12)
+    chosen, other = roots[k], roots[1 - k]
+    if _norm(other - chosen) <= tol:
+        return chosen
+    def trivial(p):
+        return any(_norm(p - q) <= tol for q in known)
+    if trivial(chosen) and not trivial(other):
+        return other
+    return chosen
 
 
 # ------------------------------------------------------------------ операции
@@ -180,6 +202,8 @@ def _line_circle(A, B, C, D, value=None):
     """Пересечение прямой AB с окружностью (центр C, радиус |CD|).
 
     Корни упорядочены по возрастанию параметра t вдоль направления A->B.
+    Если выбранный корень совпал с A, B или D (точка уже есть на чертеже),
+    а второй корень — новая точка, берётся второй: см. _pick_root.
     """
     k = _root_index(value, "line_circle")
     _need_distinct(A, B, "line_circle (прямая AB)")
@@ -194,8 +218,8 @@ def _line_circle(A, B, C, D, value=None):
     if disc < -max(_ABS_EPS, _REL_EPS * r * r):
         raise PlanError("DEGENERATE", "line_circle: прямая не пересекает окружность")
     sq = math.sqrt(max(disc, 0.0))
-    t = (-b - sq) if k == 0 else (-b + sq)
-    return A + t * d
+    roots = (A + (-b - sq) * d, A + (-b + sq) * d)
+    return _pick_root(roots, k, (A, B, D), max(r, _norm(B - A)))
 
 
 def _line_circle_other(A, B, C, D, value=None):
@@ -230,7 +254,9 @@ def _bisector_circumcircle(A, B, C, value=None):
 
 def _circle_circle(A, B, C, D, value=None):
     """Пересечение окружностей (A, |AB|) и (C, |CD|); корни по возрастанию
-    проекции на нормаль к линии центров (сначала «минус», потом «плюс»)."""
+    проекции на нормаль к линии центров (сначала «минус», потом «плюс»).
+    Корень, совпавший с B или D (общая известная точка окружностей),
+    заменяется вторым корнем: см. _pick_root."""
     k = _root_index(value, "circle_circle")
     r1, r2 = _norm(B - A), _norm(D - C)
     if r1 <= _ABS_EPS or r2 <= _ABS_EPS:
@@ -250,7 +276,8 @@ def _circle_circle(A, B, C, D, value=None):
     h = math.sqrt(max(h2, 0.0))
     base = A + a * u
     n = _perp(u)
-    return base + (-h if k == 0 else h) * n
+    roots = (base - h * n, base + h * n)
+    return _pick_root(roots, k, (B, D), max(r1, r2, d))
 
 
 def _bisector_point(A, B, C, value=None):
