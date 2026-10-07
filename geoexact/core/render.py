@@ -704,13 +704,22 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
         text = _mark_text(m.get("text", ""))
         box = _text_box(text, (0, 0), MARK_FS)
         off = max(12.0, 0.035 * span_px, abs(n[0]) * box[2] + abs(n[1]) * box[3] + 4)
+        # Подпись длины у именованной точки на самом отрезке (середина M, точка
+        # деления) читается как подпись этой точки («M = 12»), а не как длина
+        # всего отрезка. Такие позиции штрафуются: подпись уходит к четверти.
+        crowd_r = off + MARK_FS * 1.4
+        interior_pts = [np.asarray(q) for name, q in visible_q.items() if name not in pts]
+        def crowded(foot) -> float:
+            return sum(1.0 for q in interior_pts if float(np.linalg.norm(q - foot)) < crowd_r)
         candidates = []
-        for frac in (0.5, 0.38, 0.62, 0.28, 0.72):
+        for frac in (0.5, 0.38, 0.62, 0.28, 0.72, 0.2, 0.8):
             for sgn in (1.0, -1.0):
                 for extra in (0, 8, 18):
-                    cand = A + t * frac + n * (off + extra) * sgn
+                    foot = A + t * frac
+                    cand = foot + n * (off + extra) * sgn
                     interior = float(np.linalg.norm(cand - cen_px)) < float(np.linalg.norm(mid - cen_px))
-                    preference = 1.0 * interior + abs(frac - 0.5) + extra * 0.02
+                    preference = (1.0 * interior + abs(frac - 0.5) + extra * 0.02
+                                  + 3.0 * crowded(foot))
                     candidates.append((preference, cand))
         emit_text(text, candidates, layer)
 
