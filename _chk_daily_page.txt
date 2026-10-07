@@ -1,8 +1,0 @@
-len 57903
-Задач: True
-автоматически: True
-обнови: True
-срез: True
-no_set: False
-blocked: True
-empty: True

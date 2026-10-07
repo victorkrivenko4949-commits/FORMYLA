@@ -376,7 +376,7 @@ flask_app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
 [`.env.migration`](.env.migration):
 
 ```
-EXTERNAL_DATABASE_URL=postgresql://formyla_user:HwFVHpWWNFZzLvB1m6aXAKfeijKLqtGe@dpg-d7n8uo0g4nts73b1n9k0-a.ohio-postgres.render.com/formyla?sslmode=require
+EXTERNAL_DATABASE_URL=postgresql://formyla_user:<REDACTED-ROTATE-ME>@dpg-d7n8uo0g4nts73b1n9k0-a.ohio-postgres.render.com/formyla?sslmode=require
 ```
 
 **Внимание**: переменная называется `EXTERNAL_DATABASE_URL`, а импортёр ожидает
@@ -386,12 +386,12 @@ EXTERNAL_DATABASE_URL=postgresql://formyla_user:HwFVHpWWNFZzLvB1m6aXAKfeijKLqtGe
 
 **Windows (CMD)**:
 ```cmd
-set DATABASE_URL=postgresql://formyla_user:HwFVHpWWNFZzLvB1m6aXAKfeijKLqtGe@dpg-d7n8uo0g4nts73b1n9k0-a.ohio-postgres.render.com/formyla?sslmode=require
+set DATABASE_URL=postgresql://formyla_user:<REDACTED-ROTATE-ME>@dpg-d7n8uo0g4nts73b1n9k0-a.ohio-postgres.render.com/formyla?sslmode=require
 ```
 
 **PowerShell**:
 ```powershell
-$env:DATABASE_URL="postgresql://formyla_user:HwFVHpWWNFZzLvB1m6aXAKfeijKLqtGe@dpg-d7n8uo0g4nts73b1n9k0-a.ohio-postgres.render.com/formyla?sslmode=require"
+$env:DATABASE_URL="postgresql://formyla_user:<REDACTED-ROTATE-ME>@dpg-d7n8uo0g4nts73b1n9k0-a.ohio-postgres.render.com/formyla?sslmode=require"
 ```
 
 ## Шаг 6.1 — Контрольный SELECT: убедиться, что подключение ведёт в прод
@@ -402,7 +402,7 @@ $env:DATABASE_URL="postgresql://formyla_user:HwFVHpWWNFZzLvB1m6aXAKfeijKLqtGe@dp
 ```bash
 python -c "
 import os
-os.environ['DATABASE_URL'] = 'postgresql://formyla_user:HwFVHpWWNFZzLvB1m6aXAKfeijKLqtGe@dpg-d7n8uo0g4nts73b1n9k0-a.ohio-postgres.render.com/formyla?sslmode=require'
+os.environ['DATABASE_URL'] = 'postgresql://formyla_user:<REDACTED-ROTATE-ME>@dpg-d7n8uo0g4nts73b1n9k0-a.ohio-postgres.render.com/formyla?sslmode=require'
 from app import app
 with app.app_context():
     from models import AdaptiveTask
