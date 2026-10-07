@@ -51,8 +51,28 @@
         if (!registration || !registration.pushManager) return;
         registration.pushManager.getSubscription().then(function (subscription) {
             if (subscription) {
+                // VAPID-ключ сменился? Подписка привязана к старому applicationServerKey —
+                // её нельзя использовать: отписываемся и создаём новую.
+                var expected = _urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+                var current = null;
+                try {
+                    current = subscription.options && subscription.options.applicationServerKey
+                        ? new Uint8Array(subscription.options.applicationServerKey) : null;
+                } catch (e) { current = null; }
+                var same = !!(current && current.length === expected.length &&
+                    expected.every(function (v, i) { return v === current[i]; }));
+                if (!same) {
+                    console.log('[Push] VAPID key changed — resubscribing');
+                    subscription.unsubscribe().catch(function () {}).then(function () {
+                        _subscribe(registration);
+                    });
+                    return;
+                }
                 console.log('[Push] Found existing subscription, refreshing on server');
                 _sendSubscriptionToServer(subscription);
+            } else {
+                // разрешение выдано, но подписки нет — создаём
+                _subscribe(registration);
             }
         });
     }
