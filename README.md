@@ -1,113 +1,151 @@
 # FORMYLA
 
-Онлайн-платформа для подготовки школьников 5–11 классов к олимпиадам по математике (ВсОШ, Эйлер, Ломоносов, Турнир городов, Физтех, Курчатов). Flask + SQLAlchemy + DeepSeek API.
+Платформа подготовки школьников 5–11 классов к математическим олимпиадам.
+Основной стек: Flask, SQLAlchemy, Jinja, KaTeX; ИИ-функции подключают внешние API.
 
-## Быстрый старт (локально)
+## Локальный запуск без production-ключей
 
-Требуется Python 3.11+ (см. `runtime.txt`).
+Используйте **Python 3.12.7**, как в `runtime.txt`, и отдельную копию репозитория.
+Ниже профиль для разработки с пустой локальной SQLite, а не инструкция восстановления production.
+
+### Linux / macOS
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate            # Windows: venv\Scripts\activate
-pip install -r requirements.txt      # включает requirements-geoexact.txt
-cp .env.example .env                # заполнить ключи (см. таблицу ниже)
-flask db upgrade --directory alembic_migrations   # применить миграции (идемпотентно)
-python app.py                       # или: flask run --host=127.0.0.1 --port=5000
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+# Только в новой копии, где нет собственного .env:
+cp config/local.env.example .env
+mkdir -p instance
+python -m flask --app app run --host 127.0.0.1 --port 5000 --no-reload
 ```
 
-Проверка, что всё поднялось: откройте `http://localhost:5000/healthz` — должно вернуть 200 без обращения к БД.
+### Windows PowerShell
 
-- БД локально — SQLite (`instance/formyla.db`). В production — PostgreSQL через `DATABASE_URL` (Render).
-- Файл `.env` никогда не коммитится (см. `.gitignore`); ключи — только через переменные окружения.
-
-## Известные особенности локального запуска
-
-- **`FORMYLA_L1_L5_TOP5.jsonl`** — app.py читает его в корне при отправке ответа в олимпиадном тесте. Если файла нет, восстановите его из бэкапа `archive/root_data/FORMYLA_L1_L5_TOP5.jsonl.bak_5level` (копия под рабочим именем) или выключите этот маршрут.
-- **`secrets_dump.json`** — методический дамп для сидирования `olympiad_secrets` при пустой таблице; лежит в корне, app.py открывает его по пути от `__file__`. Это контент, не ключи.
-- Без ключей API (DeepSeek/OpenRouter) приложение стартует, но ИИ-функции выключены — каждый сервис включается только при наличии своей переменной.
-- GeoExact (генерация геометрических чертежей, `/geometry/draw/`) — флаг `GEOEXACT_ENABLED=1`.
-- OCR (распознавание фото решений) использует модели из `tessdata/` (в репозитории).
-
-## Структура проекта
-
-```
-app.py                — главный Flask-аппликейшн (~650 КБ), регистрация blueprint-ов
-models.py             — основные модели (User, Friendship, AdaptiveTask и т.д.)
-models_olympiad.py    — модели олимпиадной части (Probnik, TheoryBlock, OlympiadTask)
-models_curator.py     — модели ИИ-куратора
-models_grade.py       — задачи 5–6 класса (GradeTask)
-models_insights.py    — модели инсайтов/статистики
-olympiads.py / problems.py / problem_images.py / simple_prefetch.py — данные и хелперы каталога
-routes/               — Flask Blueprints (olympiad, prep, parent_teacher, wb_meet, telegram_auth, ...)
-services/             — бизнес-логика (daily_task_rotation, email_service, telegram_notify, figures_service, ...)
-ai/                   — DeepSeek-клиент и логика тьютора
-assistant/            — ИИ-ассистент и база знаний
-curator/              — ИИ-куратор (monthly_cycle, push_service)
-daily_tasks/          — задачи дня: модели, пул, ротация, банк (formyla_bank.py)
-geoexact/             — генерация геометрических чертежей SVG (GEOEXACT_ENABLED=1)
-utils/                — утилиты (mail, tutor_lookup, seed_secrets_utils)
-migrations/           — legacy-идемпотентные миграции (импортируются app.py при старте)
-alembic_migrations/   — миграции Alembic (flask db upgrade --directory alembic_migrations)
-config/, schemas/     — конфигурация и JSON-схемы пайплайнов
-scripts/              — одноразовые импортёры и утилиты
-tests/                — pytest-тесты (conftest.py, фикстуры)
-verify/               — инвариант-чекер генерации задач (используется тестами)
-docs/                 — техническая документация (deploy notes, cloudflare setup)
-templates/            — Jinja-шаблоны
-static/               — CSS / JS / изображения
-data/                 — сиды данных (olympiads, anchors.jsonl и т.п.)
-tessdata/             — модели Tesseract OCR
-uploads/              — пользовательские файлы (НЕ в git)
-archive/              — исторические скрипты, логи, бэкапы (не используется приложением)
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+# Только если собственного .env ещё нет:
+Copy-Item config/local.env.example .env
+New-Item -ItemType Directory -Force instance
+python -m flask --app app run --host 127.0.0.1 --port 5000 --no-reload
 ```
 
-Рабочие данные в корне: `FORMYLA_BANK.jsonl` (банк 8 000+ задач), `olympiad_tasks_PERFECT.json` (каталог олимпиадных задач), `secrets_dump.json` (методический дамп), `FORMYLA_SREZ_банк_среза.zip` (срез банка).
+В другом терминале:
+
+```bash
+curl -f http://127.0.0.1:5000/healthz
+curl -f http://127.0.0.1:5000/__version
+```
+
+Текущий `app.py` создаёт таблицы и выполняет legacy-инициализацию при импорте.
+Первый запуск не пустой: он может заполнить локальную БД данными из репозитория.
+Профиль отключает APScheduler и переключаемые массовые сидеры, но не все фоновые
+службы приложения. Не используйте этот запуск против production-БД.
+
+Без `DATABASE_URL` база находится в `instance/formyla.db` этой копии проекта.
+`load_dotenv(override=True)` в `app.py` означает, что существующий `.env` может
+перекрыть значения из оболочки: проверьте его перед любыми тестами.
+
+## Важное ограничение миграций и Render
+
+В проверенной исходной версии команда
+`flask --app app db upgrade --directory alembic_migrations` возвращает
+`No such command 'db'`: расширение Flask-Migrate не зарегистрировано в приложении.
+Кроме того, ревизия `v11_schema_migration_log` ссылается на отсутствующую
+`7bcac3b72db9`. Поэтому эту команду нельзя считать проверенным шагом установки.
+
+`render.yaml` содержит именно такой pre-start шаг перед Gunicorn. Это существовавшее
+до cleanup несоответствие, а не доказательство текущего сбоя сайта: фактическая команда
+в Render Dashboard здесь не проверена. Не меняйте схему production и не выполняйте
+`stamp head` вслепую; восстановление цепочки миграций требует отдельной проверки
+состояния БД и резервной копии.
+
+После согласования миграций штатный сервер в `render.yaml` настроен так:
+
+```bash
+gunicorn app:app --workers 1 --threads 4 --worker-class gthread \
+  --timeout 120 --graceful-timeout 30 --bind 0.0.0.0:$PORT
+```
+
+Health check: `/healthz`. Число worker-процессов нельзя увеличивать без проверки
+планировщика, сидеров и комнат звонков в памяти.
+Очистка репозитория не подтверждает успешный деплой: его принимают отдельно после merge.
+
+## Структура
+
+| Путь | Назначение |
+|---|---|
+| `app.py`, `wsgi.py` | Приложение и WSGI entrypoint |
+| `models*.py` | ORM-модели |
+| `routes/`, `services/`, `utils/` | Маршруты, бизнес-логика и вспомогательные функции |
+| `ai/`, `assistant/`, `curator/` | ИИ-клиенты, ассистент и куратор |
+| `daily_tasks/`, `tasks/` | Задачи дня и фоновые задачи; `tasks/` нужен тестам |
+| `geoexact/`, `geometric_engine/`, `_svg_to_png.py` | Геометрия и рендер; не архивировать |
+| `templates/`, `static/` | Интерфейс |
+| `config/`, `schemas/` | Конфигурация и схемы |
+| `data/`, `tessdata/` | Данные и OCR-ресурсы |
+| `migrations/` | Legacy-миграции, выполняемые приложением |
+| `alembic_migrations/` | Неполная Alembic-цепочка; ограничение описано выше |
+| `tests/`, `verify/`, `tools/` | Тесты, проверка инвариантов, утилиты атласа |
+| `scripts/`, `regression_night.py` | Служебные сценарии; запускать только после изучения |
+| `docs/` | Документация и отчёт перепроверки |
+| `archive/` | Исторические материалы; не запускать без проверки путей и секретов |
+| `instance/`, `uploads/` | Runtime-данные, новые файлы не должны попадать в git |
+
+Рабочие данные в корне: `FORMYLA_BANK.jsonl`, `olympiad_tasks_PERFECT.json`,
+`secrets_dump.json`, `FORMYLA_SREZ_банк_среза.zip`. Имя `secrets_dump.json` относится
+к математическим приёмам, а не к паролям. Пять файлов `audit_*.json` сохранены
+для существующих `scripts/audit_total.py` и `scripts/check_audit_resume.py`.
+
+## Известные ограничения
+
+- `FORMYLA_L1_L5_TOP5.jsonl` отсутствует в исходном checkout, хотя один POST-маршрут
+  в `app.py` открывает его без обработки отсутствия. Не копируйте старый `.bak`
+  под рабочим именем без проверки формата и содержания.
+- `static/figures/MANIFEST.json` и `adaptive_data.py` также отсутствуют в проверенной
+  исходной версии; приложение сообщает об ограничениях соответствующих функций.
+- Без настоящих API-ключей ИИ, почта, OAuth и внешние сервисы не проверены.
+  Успешный `/healthz` не означает готовность этих функций или всего сайта.
+- Архивация не сокращает историю git и сама по себе не уменьшает размер клона.
+  Все отслеживаемые файлы архива по-прежнему входят в checkout.
+- Удаление фото из HEAD не гарантирует их сохранность при следующем деплое.
+  Перед merge проверьте persistent disk/внешнее хранилище `uploads/` и резервную копию.
+- Старые секреты и фото остаются в истории публичного репозитория. Ротация ключей
+  и политика очистки истории являются отдельными действиями.
 
 ## Переменные окружения
 
-Полный список с комментариями — в `.env.example`. Обязательный минимум:
+`config/local.env.example` содержит безопасный стартовый профиль без API-ключей.
+Полный перечень интеграций с комментариями находится в `.env.example`.
 
 | Переменная | Назначение |
 |---|---|
-| `SECRET_KEY` | подпись сессий Flask (обязательна в production) |
-| `DATABASE_URL` | PostgreSQL (Render подставляет автоматически) |
-| `DEEPSEEK_API_KEY` | DeepSeek — ИИ-тьютор, куратор, разметка |
-| `OPENROUTER_API_KEY` | пайплайн генерации задач дня и адаптивного теста |
-| `RESEND_API_KEY`, `MAIL_DEFAULT_SENDER` | транзакционные email |
-| `SEED_ADMIN_TOKEN` | защита админ-ручек (случайная строка) |
+| `SECRET_KEY` | Подпись сессий; в production только случайное секретное значение |
+| `DATABASE_URL` | Подключение БД; локально не задавать для отдельной SQLite |
+| `DEEPSEEK_API_KEY`, `OPENROUTER_API_KEY` | ИИ-функции |
+| `RESEND_API_KEY`, `MAIL_DEFAULT_SENDER` | Почта |
+| `GEOEXACT_ENABLED` | Флаг геометрического модуля |
+| `ENABLE_SCHEDULER` | `0` для локальной проверки без cron-задач |
+| `OLYMPIAD_AUTOSEED`, `VSOSH9_2027_FORCE_IMPORT`, `VSOSH10_2027_FORCE_IMPORT`, `ADAPTIVE_FORCE_IMPORT` | Переключаемые сидеры; локально `0` |
 
-Опциональные (каждый выключен без ключа): `SENTRY_DSN`, `TELEGRAM_BOT_TOKEN`/`TELEGRAM_BOT_USERNAME`, `YANDEX_CLIENT_ID`/`YANDEX_CLIENT_SECRET`, `BREVO_API_KEY`, `PLAUSIBLE_DOMAIN`, `KIMI_API_KEY`, `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`, `LIVEKIT_URL`/`LIVEKIT_API_KEY`/`LIVEKIT_API_SECRET`, `GEOEXACT_ENABLED`, `GEMINI_API_KEY`, `ATLAS_TUTOR_API_KEY`, `DB_UPLOAD_TOKEN`, `ADMIN_EMAILS`.
+Не публикуйте `.env`, URL с паролями или дампы пользовательских БД. Уже tracked
+файлы остаются tracked независимо от `.gitignore`; исключение `!archive/**` не нужно.
 
-## Деплой (Render)
+## Тесты и правила разработки
 
-Автодеплой из `main`. Конфигурация — `render.yaml`:
-
-- build: `pip install -r requirements.txt`
-- start: `flask db upgrade --directory alembic_migrations && gunicorn app:app --workers 1 --threads 4 --worker-class gthread --timeout 120 --graceful-timeout 30 --bind 0.0.0.0:$PORT`
-- health check: `/healthz` (не `/` и не `/profile`)
-- БД: PostgreSQL `formyla-db`, `DATABASE_URL` подставляется Render.
-
-Важно: строго `--workers 1` — APScheduler, сидеры и in-memory комнаты звонков рассчитаны на один процесс.
-
-## Внешние сервисы
-
-Каждый сервис включается через переменные окружения. Если ключ не задан — блок просто выключен, приложение запускается без него.
-
-- **Sentry** — отлов ошибок + perf-трейсинг: `SENTRY_DSN`. Тест: `GET /debug-sentry` (только при `FLASK_ENV != production`).
-- **Cloudflare** — CDN + DDoS + HTTPS: настраивается через dashboard, гайд в `docs/cloudflare_setup.md`. В коде — `ProxyFix` + security headers.
-- **Resend** — транзакционные email: `RESEND_API_KEY` (HTTP API, рекомендуется) или SMTP-вариант (см. `.env.example`). Gmail SMTP не поддерживается.
-- **Telegram Login Widget** — авторизация: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`; callback `POST /auth/telegram/callback` с HMAC-проверкой.
-- **Plausible Analytics** — приватная аналитика: `PLAUSIBLE_DOMAIN`, скрипт в `templates/base.html`, хелпер `static/js/analytics.js`.
-
-## Разработка
+Быстрая целевая проверка зависимостей, атласа, геометрии и фоновых задач:
 
 ```bash
-pytest                      # тесты (business-логика)
-pytest tests/test_solver_aux_regressions.py   # регрессии генерации (verify/)
+python -m pytest tests/test_cleanup_integrity.py tests/test_methods_atlas_visuals.py \
+  tests/test_engine.py tests/test_condition_coverage.py tests/test_prep_tasks.py -q
 ```
 
-Правила: новый код — в отдельных blueprint-модулях, не в `app.py`; миграции — через Alembic (`alembic_migrations/`); ничего не коммитить в `main` без явного разрешения — только ветки `chore/…`, `feat/…`, `refactor/…` и PR.
+Полный набор: `python -m pytest tests`. Не используйте простой `pytest` из корня:
+исторический архив также содержит старые тестовые скрипты.
+Полный набор имеет существующие ошибки и таймауты; результат целевого набора не
+заменяет полный regression suite. Подробности и точные результаты: `docs/CLEANUP_VERIFICATION.md`.
 
-## Лицензия и контакты
-
-Проект автора: Виктор. По вопросам сотрудничества — через форму поддержки на странице /about.
+Новый код размещается в отдельных модулях, изменения схемы проектируются через Alembic.
+Работа идёт в ветках и PR; слияние в `main` требует явного разрешения.

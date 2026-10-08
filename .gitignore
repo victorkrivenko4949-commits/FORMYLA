@@ -73,9 +73,7 @@ formyla.db
 _wheelhouse.zip
 qa_shots/
 _latest_screen_*.png
-*.png
-!static/**/*.png
-!templates/**/*.png
+# Screenshots are ignored above; real image assets may be added normally.
 
 # ── Мусорные shell-имена (ошибки редиректов) ────────────
 /import
@@ -94,6 +92,5 @@ Thumbs.db
 .idea/
 .vscode/
 
-# ── Архив перенесённых файлов ──────────────────────────
-# archive/ трекаем целиком: правила выше НЕ распространяются на него
-!archive/**
+# Already tracked archive files remain tracked automatically.
+# Do not exempt archive/**: secrets and generated files must stay ignored there.
