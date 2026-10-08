@@ -129,6 +129,17 @@ def failure(code, message):
     return {"ok": False, "reason": code, "detail": message}
 
 
+# Результаты, которые не стоит показывать, если есть проверенный чертёж той же
+# задачи: эскиз по ключевым словам и сбои без чертежа вовсе.
+_WEAK_VERIFICATION = ("sketch",)
+_REPLACEABLE_FAILURES = ("TIMEOUT", "WORKER_ERROR", "PIPELINE_CRASH", "INTERRUPTED")
+
+
+def _same_problem(a, b) -> bool:
+    norm = lambda s: " ".join(str(s or "").split()).casefold()  # noqa: E731
+    return bool(a) and norm(a) == norm(b)
+
+
 class Queue:
     def __init__(self, engine, *, per_hour=0, per_day=0, daily_usd="0",
                  queue_size=8, runner=None):
@@ -214,6 +225,58 @@ class Queue:
             ).order_by(jobs.c.created.desc()).limit(1)).first()
         return row.id if row else None
 
+    def previous_drawing(self, owner, problem, with_aux):
+        """Последний ПРОВЕРЕННЫЙ чертёж этой же задачи (тот же текст, тот же режим).
+
+        Используется, когда новый запуск дал только эскиз или упал: показать
+        проверенный результат недельной давности честнее, чем эскиз без углов и
+        длин. Возвращает (payload, created) или None.
+        """
+        with self.engine.connect() as c:
+            rows = c.execute(select(jobs.c.payload, jobs.c.created).where(
+                jobs.c.owner == owner, jobs.c.status == "done",
+                jobs.c.with_aux == int(bool(with_aux)),
+                jobs.c.created > time.time() - 7 * 86400
+            ).order_by(jobs.c.created.desc()).limit(30)).all()
+        for payload, created in rows:
+            try:
+                data = json.loads(payload) if payload else None
+            except ValueError:
+                continue
+            if not isinstance(data, dict) or not data.get("ok") or data.get("kind") == "solution":
+                continue
+            if data.get("verification") in _WEAK_VERIFICATION or data.get("reused_from"):
+                continue
+            if _same_problem(data.get("problem_text"), problem) and data.get("svg"):
+                return data, created
+        return None
+
+    def _reuse_if_better(self, row, payload):
+        """Эскиз или сбой при наличии проверенного чертежа той же задачи → тот чертёж."""
+        if is_solution_job(row["problem"]):
+            return payload
+        weak_ok = isinstance(payload, dict) and payload.get("ok") \
+            and payload.get("verification") in _WEAK_VERIFICATION
+        failed = isinstance(payload, dict) and not payload.get("ok") \
+            and payload.get("reason") in _REPLACEABLE_FAILURES
+        if not (weak_ok or failed):
+            return payload
+        problem = unwrap_problem(row["problem"])[0]
+        found = self.previous_drawing(row["owner"], problem, row["with_aux"])
+        if found is None:
+            return payload
+        earlier, created = found
+        age = max(1, int((time.time() - created) / 60))
+        when = (f"{age} мин назад" if age < 120 else f"{age // 60} ч назад"
+                if age < 2880 else f"{age // 1440} дн назад")
+        why = (payload.get("detail") or payload.get("reason") or "эскиз по ключевым словам") \
+            if failed else "получился только схематичный эскиз"
+        reused = dict(earlier)
+        reused["reused_from"] = when
+        reused["warnings"] = [f"Показан предыдущий проверенный чертёж этой задачи ({when}): "
+                              f"новый запуск не удался — {why}."] + list(earlier.get("warnings") or [])
+        return reused
+
     def claim(self):
         now = time.time()
         with self.engine.begin() as c:
@@ -258,6 +321,10 @@ class Queue:
         except Exception:
             payload = failure("WORKER_ERROR",
                 "Не удалось завершить генерацию. Автоматического повторения не было.")
+        try:
+            payload = self._reuse_if_better(row, payload)
+        except Exception:  # noqa: BLE001 - подмена результата никогда не ломает очередь
+            pass
         with self.engine.begin() as c:
             c.execute(update(jobs).where(
                 jobs.c.id == row["id"], jobs.c.status == "running"
