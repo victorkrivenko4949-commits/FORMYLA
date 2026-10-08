@@ -38,6 +38,10 @@
 | Тот же набор в чистом checkout | 99 passed, 2 subtests passed |
 | `git diff --check` | Без ошибок |
 
+После включения актуального `main` (`e1915ed8`) в ветку cleanup выполнен повторный
+прогон этого набора плюс `geoexact/test_coincident_alias.py`: **101 passed,
+2 subtests passed**. Изменения main сохранены; сам main не изменялся.
+
 Команда целевых тестов:
 
 ```bash
