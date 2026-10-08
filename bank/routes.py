@@ -1,8 +1,9 @@
 """Extracted legacy routes; URL, authentication and response contracts preserved."""
-from datetime import datetime
+
+
 from flask import Blueprint, jsonify, render_template, request
-from flask_login import current_user, login_required
-from models import db, User, Mentorship
+from flask_login import login_required
+from models import db
 
 bp = Blueprint('bank', __name__)
 
