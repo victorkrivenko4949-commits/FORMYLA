@@ -29,10 +29,37 @@ def test_cleanup_preserves_importable_dependencies(module):
     "secrets_dump.json",
     "FORMYLA_SREZ_банк_среза.zip",
     "requirements-geoexact.txt",
+    "gunicorn.conf.py",
     "templates/login.html",
 ])
 def test_cleanup_preserves_required_paths(path):
     assert (ROOT / path).is_file(), path
+
+
+def test_gunicorn_automatically_loads_stats_hook(monkeypatch):
+    from gunicorn.app.wsgiapp import WSGIApplication
+    monkeypatch.chdir(ROOT)
+    monkeypatch.setattr("sys.argv", ["gunicorn", "app:app"])
+    server = WSGIApplication()
+    assert server.cfg.post_worker_init.__module__ == "__config__"
+    assert server.cfg.post_worker_init.__name__ == "post_worker_init"
+
+
+def test_stats_hook_registers_once(monkeypatch):
+    import runpy
+    import sys
+    from types import SimpleNamespace
+    from flask import Flask
+    calls = []
+    monkeypatch.delenv("SECTION_STATS_DISABLED", raising=False)
+    monkeypatch.setitem(sys.modules, "services.site_stats",
+                        SimpleNamespace(register=lambda app: calls.append(app)))
+    hook = runpy.run_path(str(ROOT / "gunicorn.conf.py"))["post_worker_init"]
+    app = Flask(__name__)
+    worker = SimpleNamespace(wsgi=app)
+    hook(worker)
+    hook(worker)
+    assert calls == [app]
 
 
 def test_archive_does_not_disable_secret_ignore_rules(tmp_path):
