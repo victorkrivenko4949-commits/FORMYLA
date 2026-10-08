@@ -444,9 +444,26 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
             segments.append([c.args[1], c.out])
     lines = _pair_list(unalias(data.get("aux_lines")), names, 4)
     circles = _pair_list(unalias(data.get("aux_circles")), names, 2)
+    # Окружность, нужная лишь для построения точки пересечения (D на BC с AD = AC),
+    # целиком занимает весь чертёж и прячет саму фигуру. Вместо неё рисуется дуга
+    # той же окружности от исходной точки радиуса до построенной точки: равенство
+    # радиусов видно, фигура — тоже.
+    arcs: list[dict] = []
+    for c in new:
+        if c.op in ("line_circle", "line_circle_other"):
+            discs = [(c.args[2], c.args[3])]
+        elif c.op == "circle_circle":
+            discs = [(c.args[0], c.args[1]), (c.args[2], c.args[3])]
+        else:
+            continue
+        for centre_name, radius_pt in discs:
+            kept = [k for k in circles if not (k[0] == centre_name and k[1] in (radius_pt, c.out))]
+            if len(kept) != len(circles) and radius_pt != c.out:
+                arcs.append({"center": centre_name, "start": radius_pt, "end": c.out, "layer": "aux"})
+            circles = kept
     have_now = {frozenset(s) for s in plan.draw.segments + plan.draw.aux_segments}
     fresh = [s for s in segments if frozenset(s) not in have_now]
-    if not (fresh or extensions or lines or circles):
+    if not (fresh or extensions or lines or circles or arcs):
         if alias:
             return no("построение совпадает с уже нарисованным: "
                       + ", ".join(f"{k} = {v}" for k, v in alias.items()))
@@ -464,6 +481,7 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
         plan.points.append(c.out)
         plan.constructions.append(c)
     used = {n for grp in (segments, extensions, lines, circles) for pr in grp for n in pr}
+    used |= {arc[k] for arc in arcs for k in ("start", "end")}
     for c in new:
         if c.out in used:
             draw.aux_points.append(c.out)
@@ -477,6 +495,7 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
     draw.aux_extensions += [e for e in extensions if e not in draw.aux_extensions]
     draw.aux_lines += lines
     draw.aux_circles += circles
+    draw.arcs += arcs
     if data.get("idea") and isinstance(data["idea"], str):
         plan.notes = data["idea"][:300]     # the text always matches what is drawn
     if alias:
@@ -491,6 +510,9 @@ def _verified_ticks(plan, coords, new) -> None:
     d = plan.draw
     used = {m.get("count", 1) for m in d.equal_marks}
     pairs: list[list[tuple[str, str]]] = []
+    arrays = {k: np.asarray(v, float) for k, v in coords.items()}
+    span = max((float(np.linalg.norm(a - b)) for a in arrays.values() for b in arrays.values()),
+               default=1.0) or 1.0
     for c in new:
         a = c.args
         if c.op in ("translate", "parallel_point") and (c.op == "translate" or c.value == 1.0):
@@ -500,6 +522,16 @@ def _verified_ticks(plan, coords, new) -> None:
             pairs.append([(a[0], c.out), (c.out, a[1])])
         elif c.op == "reflect_point":
             pairs.append([(a[1], a[0]), (a[1], c.out)])
+            # Удвоение медианы: отражение A относительно середины M стороны XY даёт
+            # параллелограмм AXDY, то есть XD = YA и YD = XA. Эти равенства
+            # (и подписи длин, если стороны подписаны) переносятся на новые отрезки.
+            centre = arrays[a[1]]
+            others = [n for n in arrays if n not in (a[0], a[1], c.out)]
+            for i, x in enumerate(others):
+                for y in others[i + 1:]:
+                    if float(np.linalg.norm(arrays[x] + arrays[y] - 2 * centre)) < 1e-6 * span:
+                        pairs.append([(y, a[0]), (x, c.out)])
+                        pairs.append([(x, a[0]), (y, c.out)])
     length = lambda p: float(np.linalg.norm(coords[p[0]] - coords[p[1]]))
     for group in pairs:
         if any(p[0] not in coords or p[1] not in coords for p in group):
