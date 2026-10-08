@@ -702,6 +702,11 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
         n = np.array([-t[1], t[0]]) / nt
         mid = (A + B) / 2
         text = _mark_text(m.get("text", ""))
+        # Если на отрезке стоит видимая точка (середина M, точка деления), подпись
+        # длины у любой его части читается как длина этой части («MB = 12»).
+        # Называем отрезок явно: «BC = 12».
+        if text and "=" not in text and is_divided(pts):
+            text = f"{pts[0]}{pts[1]} = {text}"
         box = _text_box(text, (0, 0), MARK_FS)
         off = max(12.0, 0.035 * span_px, abs(n[0]) * box[2] + abs(n[1]) * box[3] + 4)
         # Подпись длины у именованной точки на самом отрезке (середина M, точка
