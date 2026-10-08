@@ -2,6 +2,7 @@
 import json
 import os
 import sys
+import traceback
 from dataclasses import asdict
 
 
@@ -24,9 +25,28 @@ def main():
         payload = generate_solution(data["problem"], data.get("history") or None)
         print(json.dumps(payload, ensure_ascii=False))
         return
-    result = generate(data["problem"], data["with_aux"],
-                      budget=Budget(cap=.10), use_cache=False,
-                      aux_history=data.get("history") or None)
+    try:
+        result = generate(data["problem"], data["with_aux"],
+                          budget=Budget(cap=.10), use_cache=False,
+                          aux_history=data.get("history") or None)
+    except Exception as exc:  # noqa: BLE001 - показать место падения, а не «не удалось»
+        # Раньше любое исключение конвейера давало безликое WORKER_ERROR по коду
+        # возврата, и найти причину можно было только в логах сервера. Теперь
+        # traceback уходит в stderr (журнал), а пользователь видит класс ошибки
+        # и модуль: по ним понятно, что сломалось, без утечки внутренних путей.
+        traceback.print_exc(file=sys.stderr)
+        tb = traceback.extract_tb(exc.__traceback__)
+        where = ""
+        for frame in reversed(tb):
+            if "geoexact" in frame.filename.replace("\\", "/"):
+                where = f" ({os.path.basename(frame.filename)}:{frame.lineno}, {frame.name})"
+                break
+        print(json.dumps(failure(
+            "PIPELINE_CRASH",
+            f"Внутренняя ошибка построения: {type(exc).__name__}{where}. "
+            "Повторите запрос; если повторяется — это ошибка кода, а не условия."),
+            ensure_ascii=False))
+        return
     payload = asdict(result)
     # No model plans, token logs, internal API errors, costs or traces in the client.
     for field in ("plan", "usage", "cost", "seconds", "retries", "cls"):

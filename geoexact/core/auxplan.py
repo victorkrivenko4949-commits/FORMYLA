@@ -359,6 +359,10 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
         return no("чертёж вырожден")
     centre = pts.mean(axis=0)
     new: list[Construction] = []
+    # Новая точка, совпавшая с уже существующей, — не ошибка, а результат построения:
+    # «D на BC с AD = AC» при ∠C = 60° даёт ровно середину M. Такая точка становится
+    # псевдонимом существующей: шаги и отрезки ниже ссылаются на настоящую точку.
+    alias: dict[str, str] = {}
     bad_steps: list = []
     steps = _expand_steps(data["steps"], set(known) | set(plan.points), bad_steps)
     if steps is None:
@@ -368,6 +372,8 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
             return no("шаг не объект")
         op, out, args = step.get("op"), step.get("out"), step.get("args")
         value = step.get("value")
+        if isinstance(args, list):
+            args = [alias.get(a, a) if isinstance(a, str) else a for a in args]
         if op not in ALLOWED:
             return no(f"операция «{op}» не поддерживается")
         if not isinstance(out, str) or not _NAME.match(out) or out in known or out in plan.points \
@@ -396,15 +402,31 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
             return no(f"{op}({', '.join(args)}): построение невозможно на этом чертеже")
         if not np.all(np.isfinite(p)) or float(np.linalg.norm(p - centre)) > 3.0 * span:
             return no(f"точка {out} далеко за пределами чертежа")
-        if any(float(np.linalg.norm(p - q)) < 1e-6 * span for q in known.values()):
-            return no(f"точка {out} совпадает с уже существующей")
+        same = next((name for name, q in known.items()
+                     if float(np.linalg.norm(p - q)) < 1e-6 * span), None)
+        if same is not None:
+            alias[out] = same
+            continue
         known[out] = p
         new.append(Construction(op=op, out=out, args=list(args),
                                 value=float(value) if value is not None else None))
 
     names = set(known)
-    segments = _pair_list(data.get("aux_segments"), names)
-    extensions = _pair_list(data.get("aux_extensions"), names)
+
+    def unalias(value):
+        if not isinstance(value, list):
+            return value
+        out_pairs = []
+        for item in value:
+            if isinstance(item, list):
+                item = [alias.get(n, n) if isinstance(n, str) else n for n in item]
+                if len(item) == 2 and item[0] == item[1]:
+                    continue        # отрезок схлопнулся в точку
+            out_pairs.append(item)
+        return out_pairs
+
+    segments = _pair_list(unalias(data.get("aux_segments")), names)
+    extensions = _pair_list(unalias(data.get("aux_extensions")), names)
     # A continuation "PQ beyond Q up to a new point R" is just the segment QR.
     for p, q in extensions:
         for c in new:
@@ -420,13 +442,18 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
             segments.append([c.args[1], c.out])
         elif c.op == "divide_segment" and (c.value or 0) > 1:
             segments.append([c.args[1], c.out])
-    lines = _pair_list(data.get("aux_lines"), names, 4)
-    circles = _pair_list(data.get("aux_circles"), names, 2)
-    if not (segments or extensions or lines or circles):
+    lines = _pair_list(unalias(data.get("aux_lines")), names, 4)
+    circles = _pair_list(unalias(data.get("aux_circles")), names, 2)
+    have_now = {frozenset(s) for s in plan.draw.segments + plan.draw.aux_segments}
+    fresh = [s for s in segments if frozenset(s) not in have_now]
+    if not (fresh or extensions or lines or circles):
+        if alias:
+            return no("построение совпадает с уже нарисованным: "
+                      + ", ".join(f"{k} = {v}" for k, v in alias.items()))
         return no("нет ни одного отрезка, прямой или окружности для рисования")
     expect = data.get("_expect_collinear")
     if expect:
-        a, b, c = (known[n] for n in expect)
+        a, b, c = (known[alias.get(n, n)] for n in expect)
         d = b - a
         if abs(d[0] * (c - a)[1] - d[1] * (c - a)[0]) > 2e-2 * float(d @ d) ** 0.5 * span:
             return no("ожидаемая коллинеарность не выполняется")
@@ -452,6 +479,9 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
     draw.aux_circles += circles
     if data.get("idea") and isinstance(data["idea"], str):
         plan.notes = data["idea"][:300]     # the text always matches what is drawn
+    if alias:
+        note = "Точка " + "; ".join(f"{k} совпадает с {v}" for k, v in alias.items()) + "."
+        plan.notes = ((plan.notes + " ") if plan.notes else "") + note
     _verified_ticks(plan, known, new)
     return plan, known
 
