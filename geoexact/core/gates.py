@@ -346,6 +346,33 @@ def _incidence_claims(plan: FigurePlan) -> tuple[list[tuple[str, str, str]],
     return on_line, on_circle
 
 
+# ---------------------------------------------------------------- псевдонимы
+def coincident_aliases(plan: FigurePlan, P: dict[str, np.ndarray]) -> dict[str, str]:
+    """Скрытая построенная точка, совпавшая с другой точкой чертежа, — её псевдоним.
+
+    Формализатор часто вводит служебную точку (D на луче BC на расстоянии 12),
+    которая в данных задачи совпадает с уже существующей вершиной (C). Подписи у
+    неё нет, на чертеже она неотличима от C, и для проверки читаемости это одна
+    и та же точка: отрезок BD — это отрезок BC. Возвращает {псевдоним: точка}.
+    Видимые (подписанные) совпадения псевдонимами не считаются — это уже дефект.
+    """
+    free = {c.out for c in plan.constructions if c.op == "free_point"}
+    hidden = set(plan.draw.hide_labels)
+    names = [p for p in plan.points if p in P and np.all(np.isfinite(P[p]))]
+    span = _span({n: P[n] for n in names})
+    alias: dict[str, str] = {}
+    for i, b in enumerate(names):
+        if b in free or b not in hidden:
+            continue
+        for a in names[:i]:
+            if a in alias:
+                continue
+            if _d(P[a], P[b]) <= 1e-9 * span:
+                alias[b] = a
+                break
+    return alias
+
+
 # ---------------------------------------------------------------- ГЕЙТ 7
 def gate_correctness(plan: FigurePlan, sol: Any) -> GateResult:
     """Этап 7: чертёж действительно удовлетворяет условию задачи."""
@@ -425,12 +452,17 @@ def gate_correctness(plan: FigurePlan, sol: Any) -> GateResult:
 
     # 5) невырожденность: совпадающие точки
     names = [p for p in plan.points if p in P]
+    alias = coincident_aliases(plan, P)
     for i in range(len(names)):
         for j in range(i + 1, len(names)):
             if _d(P[names[i]], P[names[j]]) <= 1e-10 * span:
                 a, b = names[i], names[j]
                 if a in free_names and b in free_names:
                     fails.append(f"COINCIDENT_POINTS: {a} и {b} совпали")
+                elif alias.get(b) == a or alias.get(a) == b:
+                    # Скрытая служебная точка легла на вершину: на чертеже её
+                    # нет, пользователю сообщать не о чем.
+                    continue
                 else:
                     # E.g. right-triangle orthocenter at its right vertex,
                     # circumcenter at a midpoint, or an inversion fixed point.
@@ -635,7 +667,11 @@ def gate_readability(plan: FigurePlan, sol: Any, *, strict: bool = True) -> Gate
 
     used = _used_points(plan)
     hidden = set(plan.draw.hide_labels) - used
-    live = {p: P[p] for p in plan.points if p in P and p not in hidden
+    # Скрытая точка, совпавшая с вершиной, — та же вершина под другим именем:
+    # для наглядности её не существует, а BD при D≡C — это отрезок BC.
+    alias = coincident_aliases(plan, P)
+    res = lambda n: alias.get(n, n)  # noqa: E731
+    live = {p: P[p] for p in plan.points if p in P and p not in hidden and p not in alias
             and P[p].shape[0] >= 2
             and np.all(np.isfinite(P[p]))}
     if len(live) < 2:
@@ -674,7 +710,8 @@ def gate_readability(plan: FigurePlan, sol: Any, *, strict: bool = True) -> Gate
                      f"< {MIN_POINT_DIST_FRAC * 100:.0f}%")
 
     # 4) точка почти на НЕ инцидентной ей нарисованной прямой
-    segs = _drawn_segments(plan)
+    segs = [[res(s[0]), res(s[1])] + list(s[2:]) for s in _drawn_segments(plan)]
+    segs = [s for s in segs if s[0] != s[1]]
     declared = _declared_on_line(plan)
     for p, xy in live.items():
         for s in segs:
@@ -712,7 +749,9 @@ def gate_readability(plan: FigurePlan, sol: Any, *, strict: bool = True) -> Gate
         if len(s) < 2 or s[0] == s[1]:
             fails.append(f"BAD_SEGMENT: вырожденный отрезок {s}")
             continue
-        a, b = s[0], s[1]
+        a, b = res(s[0]), res(s[1])
+        if a == b:
+            continue        # дубль уже нарисованной точки: отрезок нулевой длины не рисуется
         if a not in live or b not in live:
             fails.append(f"UNDRAWABLE_SEGMENT: {a}{b} — нет координат")
         elif _d(live[a], live[b]) <= COINCIDE_TOL * span:
@@ -721,9 +760,11 @@ def gate_readability(plan: FigurePlan, sol: Any, *, strict: bool = True) -> Gate
     # 6) полнота: каждая точка участвует в draw или скрыта (мягко)
     used = _used_points(plan)
     hidden = set(plan.draw.hide_labels)
-    drawn = [s for s in list(plan.draw.segments) + list(plan.draw.aux_segments)
-             if len(s) >= 2 and s[0] in live and s[1] in live]
+    drawn = [[res(s[0]), res(s[1])] for s in list(plan.draw.segments) + list(plan.draw.aux_segments)
+             if len(s) >= 2 and res(s[0]) in live and res(s[1]) in live and res(s[0]) != res(s[1])]
     for p in plan.points:
+        if p in alias:
+            continue
         if p not in used and p not in hidden:
             # An intersection such as O = AD ∩ BE is visible on the drawn
             # segments even when it is not an endpoint of any element.
