@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Метрики · FORMYLA{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_metrics.css') }}">
+<main class="metrics">
+  <header class="metrics-header">
+    <div><p class="metrics-eyebrow">FORMYLA / АДМИНИСТРАТОР</p><h1>Метрики платформы</h1>
+    <p>Факты из БД. Дни по Москве, гости исключены.</p></div>
+    <a href="{{ url_for('admin_metrics.metrics_json', date=metrics.as_of, days=days) }}" id="metrics-json">JSON</a>
+  </header>
+  <form method="get" class="metrics-filter">
+    <label>Дата <input type="date" name="date" value="{{ metrics.as_of }}" required></label>
+    <label>Дней <input type="number" min="1" max="31" name="days" value="{{ days }}" required></label>
+    <button type="submit">Показать</button>
+  </form>
+  {% macro value(v) %}{{ v if v is not none else 'Нет данных' }}{% endmacro %}
+  <section class="metrics-grid" aria-label="Основные показатели">
+    {% for label, val, detail in [
+      ('Регистрации', metrics.registrations, 'На конец выбранного дня'),
+      ('Новые за день', metrics.registrations_day, 'Дата создания аккаунта'),
+      ('DAU · отслеженный', metrics.tracked_dau, 'Положительное активное время'),
+      ('WAU · отслеженный', metrics.tracked_wau, 'Уникальные за 7 дней'),
+      ('Учителя сейчас', metrics.teachers_current, 'Роль teacher'),
+      ('Telegram привязан', metrics.telegram_linked_current, 'Не подписчики канала'),
+      ('Начали триал за день', metrics.trials_started_day, 'По trial_started_at'),
+      ('Платящие', metrics.paying_users, 'Нет платёжного источника')
+    ] %}
+    <article><h2>{{ label }}</h2><strong>{{ value(val) }}</strong><p>{{ detail }}</p></article>
+    {% endfor %}
+  </section>
+  <section class="metrics-data">
+    <h2>Решения и активность по дням</h2>
+    <p>Серверный итог доступен только при наличии всех пяти источников. Результаты клиента показаны отдельно.</p>
+    <div class="metrics-scroll" tabindex="0" role="region" aria-label="Таблица метрик с горизонтальной прокруткой">
+      <table><thead><tr><th scope="col">Дата</th><th scope="col">DAU</th><th scope="col">Серверный итог</th>
+      <th scope="col">Задачи дня</th><th scope="col">Банк</th><th scope="col">Олимпиады</th>
+      <th scope="col">Проверенные</th><th scope="col">Отработка</th><th scope="col">Клиент</th></tr></thead>
+      <tbody>{% for row in metrics.series %}<tr><th scope="row">{{ row.date }}</th>
+      <td>{{ value(row.tracked_dau) }}</td><td>{{ value(row.server_solved) }}</td>
+      {% for key in ['daily','bank','olympiad','verified','insight','client_practice'] %}<td>{{ value(row.solved_by_source[key]) }}</td>{% endfor %}
+      </tr>{% endfor %}</tbody></table>
+    </div>
+  </section>
+  {% if metrics.unavailable %}<aside class="metrics-warning"><h2>Неполные источники</h2>
+    <p>Отсутствующие таблицы или поля не заменены нулями:</p><code>{{ metrics.unavailable | join(', ') }}</code></aside>{% endif %}
+  <details class="metrics-definitions"><summary>Как считаются показатели и какие есть ограничения</summary>
+    {% for text in metrics.definitions.values() %}<p>{{ text }}</p>{% endfor %}
+    <p>Сформировано: {{ metrics.generated_at }}. Выбранный текущий день ещё не завершён.</p>
+  </details>
+</main>
+{% endblock %}

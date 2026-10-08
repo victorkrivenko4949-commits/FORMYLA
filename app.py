@@ -10384,127 +10384,12 @@ def api_social_friend_request():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@app.route("/api/social/mentorship/request", methods=["POST"])
-@login_required
-def send_mentorship_request():
-    """Отправить заявку учитель-ученик"""
-    try:
-        data = request.get_json()
-        student_id = data.get('student_id')
-        
-        if not student_id:
-            return jsonify({'success': False, 'error': 'Student ID required'}), 400
-        
-        # Проверка существования пользователя
-        student = User.query.get(student_id)
-        if not student:
-            return jsonify({'success': False, 'error': 'Student not found'}), 404
-        
-        # Создаем заявку (текущий пользователь = учитель)
-        mentorship = Mentorship.create_mentorship_request(current_user.id, student_id)
-        db.session.add(mentorship)
-        db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'mentorship_id': mentorship.id,
-            'status': mentorship.status
-        })
-    
-    except ValueError as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 400
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@app.route("/api/social/mentorship/respond", methods=["POST"])
-@login_required
-def respond_mentorship_request():
-    """Принять или отклонить заявку учитель-ученик"""
-    try:
-        data = request.get_json()
-        mentorship_id = data.get('mentorship_id')
-        action = data.get('action')  # 'accept' or 'reject'
-        
-        if not mentorship_id or action not in ['accept', 'reject']:
-            return jsonify({'success': False, 'error': 'Invalid parameters'}), 400
-        
-        mentorship = Mentorship.query.get(mentorship_id)
-        if not mentorship:
-            return jsonify({'success': False, 'error': 'Mentorship not found'}), 404
-        
-        # Проверка прав (только ученик может принять/отклонить)
-        if mentorship.student_id != current_user.id:
-            return jsonify({'success': False, 'error': 'Not authorized'}), 403
-        
-        if action == 'accept':
-            mentorship.accept()
-        else:
-            mentorship.reject()
-        
-        db.session.commit()
-        
-        return jsonify({'success': True, 'status': mentorship.status})
-    
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@app.route("/api/social/mentorship/students")
-@login_required
-def list_students():
-    """Получить список учеников (для учителя)"""
-    try:
-        mentorships = Mentorship.query.filter_by(
-            teacher_id=current_user.id,
-            status='accepted'
-        ).all()
-        
-        students = []
-        for m in mentorships:
-            student = User.query.get(m.student_id)
-            if student:
-                students.append({
-                    'id': student.id,
-                    'nickname': student.nickname,
-                    'name': student.name,
-                    'avatar_url': student.avatar_url
-                })
-        
-        return jsonify({'success': True, 'students': students})
-    
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@app.route("/api/social/mentorship/teachers")
-@login_required
-def list_teachers():
-    """Получить список учителей (для ученика)"""
-    try:
-        mentorships = Mentorship.query.filter_by(
-            student_id=current_user.id,
-            status='accepted'
-        ).all()
-        
-        teachers = []
-        for m in mentorships:
-            teacher = User.query.get(m.teacher_id)
-            if teacher:
-                teachers.append({
-                    'id': teacher.id,
-                    'nickname': teacher.nickname,
-                    'name': teacher.name,
-                    'avatar_url': teacher.avatar_url
-                })
-        
-        return jsonify({'success': True, 'teachers': teachers})
-    
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 # ============================================================
@@ -10672,177 +10557,20 @@ def add_student():
     return redirect(url_for('profile'))
 
 
-@app.route("/accept_request/<int:mentorship_id>", methods=["POST"])
-@login_required
-def accept_request(mentorship_id):
-    """Принять заявку на менторство"""
-    mentorship = Mentorship.query.get_or_404(mentorship_id)
-    
-    # Проверка прав (только ученик может принять)
-    if mentorship.student_id != current_user.id:
-        flash('У вас нет прав для этого действия', 'error')
-        return redirect(url_for('profile'))
-    
-    try:
-        mentorship.accept()
-        db.session.commit()
-        teacher = User.query.get(mentorship.teacher_id)
-        flash(f'Вы приняли заявку от @{teacher.nickname or teacher.email}!', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Ошибка: {str(e)}', 'error')
-    
-    return redirect(url_for('profile'))
 
 
-@app.route("/reject_request/<int:mentorship_id>", methods=["POST"])
-@login_required
-def reject_request(mentorship_id):
-    """Отклонить заявку на менторство"""
-    mentorship = Mentorship.query.get_or_404(mentorship_id)
-    
-    # Проверка прав (только ученик может отклонить)
-    if mentorship.student_id != current_user.id:
-        flash('У вас нет прав для этого действия', 'error')
-        return redirect(url_for('profile'))
-    
-    try:
-        mentorship.reject()
-        db.session.commit()
-        flash('Заявка отклонена', 'info')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Ошибка: {str(e)}', 'error')
-    
-    return redirect(url_for('profile'))
 
 
-@app.route("/student/<int:student_id>")
-@login_required
-def student_profile(student_id):
-    """Просмотр профиля друга — показывает ВСЮ информацию"""
-    # Проверяем дружбу
-    is_friend = Friendship.query.filter(
-        db.or_(
-            db.and_(Friendship.requester_id == current_user.id,
-                    Friendship.addressee_id == student_id),
-            db.and_(Friendship.requester_id == student_id,
-                    Friendship.addressee_id == current_user.id),
-        ),
-        Friendship.status == 'accepted'
-    ).first()
-    
-    if not is_friend:
-        flash('Этот пользователь не в ваших друзьях', 'error')
-        return redirect(url_for('profile'))
-    
-    friend = User.query.get_or_404(student_id)
-    
-    # Собираем полную статистику друга
-    from models import AdaptiveTestResult, TopicMastery
-    
-    # Тесты
-    all_tests = AdaptiveTestResult.query.filter_by(user_id=friend.id).order_by(
-        AdaptiveTestResult.completed_at.desc()
-    ).limit(10).all()
-    
-    # Мастерство по темам
-    mastery_data = TopicMastery.query.filter_by(user_id=friend.id).all()
-    
-    return render_template('student_profile.html',
-        student=friend,
-        teacher=current_user,
-        tests=all_tests,
-        mastery=mastery_data
-    )
 
 
 # ============================================================================
 # OLYMPIAD SECRETS (База знаний олимпиадной математики)
 # ============================================================================
 
-@app.route("/secrets")
-@login_required
-def secrets():
-    """Главная страница раздела 'Секреты олимпиадной математики'"""
-    from models import OlympiadSecret
-    
-    # Получаем выбранную категорию из параметров
-    selected_topic = request.args.get('topic', 'all')
-    
-    # Получаем все уникальные категории
-    topics = db.session.query(OlympiadSecret.topic).distinct().order_by(OlympiadSecret.topic).all()
-    topics = [t[0] for t in topics]
-    
-    # Фильтруем статьи по категории
-    if selected_topic == 'all':
-        secrets_list = OlympiadSecret.query.order_by(OlympiadSecret.topic, OlympiadSecret.title).all()
-    else:
-        secrets_list = OlympiadSecret.query.filter_by(topic=selected_topic).order_by(OlympiadSecret.title).all()
-    
-    # Группируем статьи по категориям для отображения
-    secrets_by_topic = {}
-    for secret in secrets_list:
-        if secret.topic not in secrets_by_topic:
-            secrets_by_topic[secret.topic] = []
-        secrets_by_topic[secret.topic].append(secret)
-    
-    return render_template('secrets.html',
-        topics=topics,
-        selected_topic=selected_topic,
-        secrets_by_topic=secrets_by_topic,
-        total_count=len(secrets_list)
-    )
 
 
-@app.route("/secrets/<int:secret_id>")
-def secret_detail(secret_id):
-    """Страница отдельной статьи"""
-    from models import OlympiadSecret
-    
-    secret = OlympiadSecret.query.get_or_404(secret_id)
-    
-    # Получаем похожие статьи из той же категории
-    related_secrets = OlympiadSecret.query.filter(
-        OlympiadSecret.topic == secret.topic,
-        OlympiadSecret.id != secret.id
-    ).limit(3).all()
-    
-    return render_template('secret_detail.html',
-        secret=secret,
-        related_secrets=related_secrets
-    )
 
 
-@app.route("/api/secrets")
-@login_required
-def api_secrets():
-    """API для получения списка секретов (для будущих фич)"""
-    from models import OlympiadSecret
-    
-    topic = request.args.get('topic')
-    difficulty = request.args.get('difficulty', type=int)
-    
-    query = OlympiadSecret.query
-    
-    if topic:
-        query = query.filter_by(topic=topic)
-    if difficulty:
-        query = query.filter_by(difficulty_level=difficulty)
-    
-    secrets_list = query.all()
-    
-    return jsonify({
-        'success': True,
-        'count': len(secrets_list),
-        'secrets': [{
-            'id': s.id,
-            'topic': s.topic,
-            'title': s.title,
-            'difficulty_level': s.difficulty_level,
-            'preview': s.content[:200] + '...' if len(s.content) > 200 else s.content
-        } for s in secrets_list]
-    })
 
 
 # ============================================================
@@ -13060,17 +12788,6 @@ def api_progress(user_id):
 # ПОДПИСКА / SUBSCRIBE
 # ============================================================
 
-@app.route('/subscribe')
-@login_required
-def subscribe_page():
-    """Страница выбора тарифа."""
-    current_plan = current_user.current_plan or 'free'
-    plan_expires_at = getattr(current_user, 'plan_expires_at', None)
-    if plan_expires_at:
-        plan_expires_at = str(plan_expires_at)[:10]
-    return render_template('subscribe.html',
-                           current_plan=current_plan,
-                           plan_expires_at=plan_expires_at)
 
 
 # Канонические значения current_plan в БД:
@@ -13083,30 +12800,10 @@ def subscribe_page():
 # после успешной активации. Унифицируем: сохраняем 'premium', а вариант тарифа
 # хранится только в логе/ответе (для аналитики).
 
-PREMIUM_PLAN_CODES = ('premium', 'premium_monthly', 'premium_yearly')
 
 
-def _is_premium_plan(plan_value):
-    """True, если строка тарифа считается Premium-доступом."""
-    return (plan_value or '').strip().lower() in PREMIUM_PLAN_CODES
 
 
-@app.context_processor
-def _inject_subscription_flags():
-    """Глобальный флаг is_premium для всех шаблонов.
-
-    Использовать в Jinja: {% if is_premium %}…{% endif %}.
-    Также нормализует устаревшие значения 'premium_monthly' / 'premium_yearly'
-    для текущего рендера (только в памяти — БД не трогаем здесь).
-    """
-    try:
-        if current_user.is_authenticated:
-            return {
-                'is_premium': _is_premium_plan(current_user.current_plan),
-            }
-    except Exception:
-        pass
-    return {'is_premium': False}
 
 
 @app.context_processor
@@ -13125,57 +12822,8 @@ def _inject_user_helpers():
     return helpers
 
 
-@app.route('/api/subscribe', methods=['POST'])
-@login_required
-def api_subscribe():
-    """API активации Premium (демо — без оплаты).
-
-    Тело: {plan: 'premium_monthly'|'premium_yearly'}.
-    В БД сохраняем КАНОНИЧЕСКОЕ значение 'premium' — чтобы все шаблоны,
-    проверяющие `current_plan == 'premium'`, отображали статус корректно
-    после reload страницы.
-    """
-    data = request.get_json() or {}
-    requested = data.get('plan', 'premium_monthly')
-
-    if requested not in ('premium_monthly', 'premium_yearly'):
-        return jsonify({'error': 'Неизвестный тариф'}), 400
-
-    from datetime import timedelta
-    if requested == 'premium_monthly':
-        expires = datetime.utcnow() + timedelta(days=30)
-    else:
-        expires = datetime.utcnow() + timedelta(days=365)
-
-    # КАНОНИЗАЦИЯ: всегда 'premium' в БД. Срок — в plan_expires_at.
-    current_user.current_plan = 'premium'
-    current_user.plan_expires_at = expires
-    db.session.commit()
-
-    return jsonify({
-        'ok': True,
-        'plan': 'premium',
-        'plan_variant': requested,  # для аналитики/UI: monthly|yearly
-        'expires_at': str(expires)[:10],
-        'message': 'Premium активирован!'
-    })
 
 
-@app.route('/api/cancel_subscription', methods=['POST'])
-@login_required
-def api_cancel_subscription():
-    """API отмены подписки Premium."""
-    if not current_user.current_plan or current_user.current_plan == 'free':
-        return jsonify({'error': 'У вас нет активной подписки'}), 400
-
-    current_user.current_plan = 'free'
-    current_user.plan_expires_at = None
-    db.session.commit()
-
-    return jsonify({
-        'ok': True,
-        'message': 'Подписка отменена. Вы переведены на бесплатный тариф.'
-    })
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -14146,6 +13794,19 @@ def matstat():
     return render_template("matstat.html")
 
 
+
+
+# Domain modules retain legacy URL-building endpoints for existing templates.
+from utils.blueprint_compat import register_legacy_blueprint
+from teacher.routes import bp as teacher_bp, LEGACY_ENDPOINTS as teacher_endpoints
+from billing.routes import bp as billing_bp, LEGACY_ENDPOINTS as billing_endpoints
+from billing.routes import PREMIUM_PLAN_CODES, _is_premium_plan
+from bank.routes import bp as bank_bp, LEGACY_ENDPOINTS as bank_endpoints
+register_legacy_blueprint(app, teacher_bp, teacher_endpoints)
+register_legacy_blueprint(app, billing_bp, billing_endpoints)
+register_legacy_blueprint(app, bank_bp, bank_endpoints)
+from admin_metrics.routes import bp as admin_metrics_bp
+app.register_blueprint(admin_metrics_bp)
 
 if __name__ == '__main__':
     # Auto-reloader is disabled by default because long-running endpoints

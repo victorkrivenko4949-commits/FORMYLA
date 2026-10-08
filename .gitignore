@@ -94,3 +94,4 @@ Thumbs.db
 
 # Already tracked archive files remain tracked automatically.
 # Do not exempt archive/**: secrets and generated files must stay ignored there.
+archive/root_scripts/_p*_result*.txt
