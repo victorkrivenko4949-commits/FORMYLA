@@ -15,6 +15,122 @@ import numpy as np
 from .gates import _angle_deg
 
 
+def _pts(mark):
+    return list(mark["pts"]) if isinstance(mark, dict) else list(mark)
+
+
+def _ray_key(coords, vertex, toward):
+    d = coords[toward] - coords[vertex]
+    n = float(np.linalg.norm(d))
+    if n <= 1e-12:
+        return None
+    d = d / n
+    return (vertex, round(float(d[0]), 6), round(float(d[1]), 6))
+
+
+def dedupe_right_angles(draw, coords) -> None:
+    """Два прямых угла при одной точке по обе стороны от одной прямой (∠AFC и ∠CFB
+    у основания высоты F) рисуются двумя квадратиками и сливаются в прямоугольник
+    «насквозь». Факт один — перпендикуляр — и квадратик нужен один."""
+    kept: list = []
+    seen_rays: list[tuple] = []
+    for mark in draw.right_angles:
+        pts = _pts(mark)
+        if len(pts) != 3 or any(p not in coords for p in pts):
+            kept.append(mark)
+            continue
+        a, v, b = pts
+        ka, kb = _ray_key(coords, v, a), _ray_key(coords, v, b)
+        if ka is None or kb is None:
+            kept.append(mark)
+            continue
+        duplicate = False
+        for (v2, ra, rb) in seen_rays:
+            if v2 != v:
+                continue
+            rays = {ra, rb}
+            # общий луч и противоположный второй — тот же перпендикуляр
+            def opposite(k1, k2):
+                return abs(k1[1] + k2[1]) < 1e-5 and abs(k1[2] + k2[2]) < 1e-5
+            if (ka in rays and any(opposite(kb, r) for r in rays)) or \
+                    (kb in rays and any(opposite(ka, r) for r in rays)):
+                duplicate = True
+                break
+            if ka in rays and kb in rays:
+                duplicate = True
+                break
+        if duplicate:
+            continue
+        seen_rays.append((v, ka, kb))
+        kept.append(mark)
+    draw.right_angles[:] = kept
+
+
+def mark_perpendiculars(draw, coords, *, limit: int = 4) -> int:
+    """Проверенные прямые углы между нарисованными отрезками.
+
+    Серединный перпендикуляр OM к стороне BC, высота, касательная к радиусу —
+    если два нарисованных отрезка действительно перпендикулярны (не «почти», а
+    точно, с невязкой 1e-9) и имеют общую точку (общий конец или конец одного
+    лежит на другом), ставится один квадратик. Углы, уже отмеченные при этой
+    вершине вдоль этих лучей, не дублируются.
+    """
+    segs = [list(s) for s in list(draw.segments) + list(draw.aux_segments)
+            if len(s) == 2 and s[0] != s[1] and all(p in coords for p in s)]
+    marked: set = set()
+    for group in (draw.right_angles, draw.angle_marks):
+        for mark in group:
+            pts = _pts(mark)
+            if len(pts) == 3 and all(p in coords for p in pts):
+                for end in (pts[0], pts[2]):
+                    key = _ray_key(coords, pts[1], end)
+                    if key is not None:
+                        marked.add(key)
+
+    def unit(p, q):
+        d = coords[q] - coords[p]
+        n = float(np.linalg.norm(d))
+        return None if n <= 1e-12 else d / n
+
+    added = 0
+    for p, q in segs:
+        for vertex, other in ((q, p), (p, q)):
+            u = unit(vertex, other)
+            if u is None:
+                continue
+            for a, b in segs:
+                if {a, b} == {p, q}:
+                    continue
+                w = unit(a, b)
+                if w is None or abs(float(np.dot(u, w))) > 1e-9:
+                    continue
+                if vertex in (a, b):
+                    far = b if vertex == a else a
+                else:
+                    # конец одного отрезка лежит строго внутри другого
+                    ab = coords[b] - coords[a]
+                    length = float(np.linalg.norm(ab))
+                    rel = coords[vertex] - coords[a]
+                    t = float(np.dot(rel, ab)) / (length * length)
+                    off = abs(float(ab[0] * rel[1] - ab[1] * rel[0])) / length
+                    if not (0.02 < t < 0.98) or off > 1e-9 * length:
+                        continue
+                    far = b if t < 0.5 else a
+                k_other = _ray_key(coords, vertex, other)
+                k_far = _ray_key(coords, vertex, far)
+                k_near = _ray_key(coords, vertex, a if far == b else b) if vertex not in (a, b) else None
+                if k_other in marked or k_far in marked or (k_near is not None and k_near in marked):
+                    continue
+                if abs(_angle_deg(coords[other], coords[vertex], coords[far]) - 90.0) > 1e-6:
+                    continue
+                draw.right_angles.append([other, vertex, far])
+                marked.update(k for k in (k_other, k_far, k_near) if k is not None)
+                added += 1
+                if added >= limit:
+                    return added
+    return added
+
+
 def enrich_annotations(plan, solution, *, with_aux: bool, problem_text: str = ""):
     plan = copy.deepcopy(plan)
     draw = plan.draw
@@ -172,4 +288,14 @@ def enrich_annotations(plan, solution, *, with_aux: bool, problem_text: str = ""
                     extension = [opposite, vertex]
                     if extension not in draw.aux_extensions:
                         draw.aux_extensions.append(extension)
+
+    # Перпендикуляры между нарисованными отрезками (серединный перпендикуляр OM,
+    # высота, радиус к касательной) — один квадратик на факт, без дублей по обе
+    # стороны от прямой.
+    try:
+        dedupe_right_angles(draw, coords)
+        mark_perpendiculars(draw, coords)
+        dedupe_right_angles(draw, coords)
+    except Exception:  # noqa: BLE001 - отметки не должны ронять построение
+        pass
     return plan
