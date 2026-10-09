@@ -172,7 +172,7 @@ services:
     property: connectionString
 ```
 
-Render **автоматически инжектит** `DATABASE_URL` в переменные окружения сервиса из привязанной managed database `formyla-db`. Строка подключения имеет формат `postgres://user:pass@host:port/dbname`.
+Render **автоматически инжектит** `DATABASE_URL` в переменные окружения сервиса из привязанной managed database `formyla-db`. Строка подключения имеет формат `postgresql://user:<REDACTED-ROTATE-ME>@host:port/dbname`.
 
 В коде [`app.py:178-183`](app.py:178) URL преобразуется:
 ```python
@@ -195,7 +195,7 @@ if _database_url.startswith('postgres://'):
 
 Строка подключения найдена в файле [`.env.migration`](.env.migration):
 ```
-EXTERNAL_DATABASE_URL=postgresql://formyla_user:...@dpg-...ohio-postgres.render.com/formyla?sslmode=require
+EXTERNAL_DATABASE_URL=postgresql://formyla_user:<REDACTED-ROTATE-ME>@dpg-...ohio-postgres.render.com/formyla?sslmode=require
 ```
 
 ### Результаты (только SELECT, read-only)
@@ -419,7 +419,7 @@ pg_dump $DATABASE_URL > /tmp/formyla_backup_$(date +%Y%m%d_%H%M%S).sql
 
 **Ручной бэкап через внешнюю строку** (локально):
 ```bash
-pg_dump "postgresql://formyla_user:...@dpg-...ohio-postgres.render.com/formyla?sslmode=require" > formyla_backup.sql
+pg_dump "postgresql://formyla_user:<REDACTED-ROTATE-ME>@dpg-...ohio-postgres.render.com/formyla?sslmode=require" > formyla_backup.sql
 ```
 
 ### Сводка рисков по каждому варианту

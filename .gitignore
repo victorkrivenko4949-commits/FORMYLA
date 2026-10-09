@@ -1,4 +1,4 @@
-# Python
+# ── Python ──────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
@@ -7,174 +7,90 @@ __pycache__/
 venv/
 env/
 ENV/
+.venv/
 build/
 develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
-
-# Flask
+.eggs/
+.pytest_cache/
+.coverage
+htmlcov/
 instance/
-.webassets-cache
-flask_session/
 
-# Environment
+# ── Секреты и окружение ────────────────────────────────
+# НИКОГДА не коммитить .env — ключи только через Render env
 .env
 .env.*
 !.env.example
-.venv
+*env_backup*
+*_env_backup*
 
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Uploads
-static/uploads/*
-!static/uploads/.gitkeep
-
-# Logs
+# ── Временные диагностические артефакты (не попадают в git) ──
+_diag_*.py
+_fix_*.py
+_test_*.py
+_chk*.py
+_chk*.txt
+_backup_*.py
+_bak_*.py
+_probe_*.py
+_probe_*.txt
+_inspect_*.py
+_inspect_*.txt
+_gen_stdout.txt
+*_stdout*.txt
+paste*.txt
+*_grep*.txt
+flask_output*.txt
+*_output*.txt
 *.log
 logs/
 
-# Temporary files and reports
-bad_tasks_report.json
-grade5_deficit_report.json
-*_RAW.jsonl
-*_TEMP.jsonl
-*.jsonl.backup
-
-# Generated data
-# NOTE: use data/* (not data/) so git walks into the dir and per-child exceptions work.
-data/*
-# Exception: olympiad section data files are tracked (small, hand-curated).
-!data/olympiads/
-!data/olympiads/**
-# Exception: olympiads_db.py — extracted data dict used by olympiad Blueprint.
-!data/olympiads_db.py
-# Exception: runtime-required curated data files (анкета/куратор/консьерж).
-# Без них на Render якоря анкеты и справочники тем не грузятся.
-!data/anchors.jsonl
-!data/anchors_solutions.json
-!data/theme_to_section.json
-!data/theme_titles.json
-!data/curator_faq.json
-!data/site_kb.json
-# Exception: adaptive bank seed (9120 калиброванных задач L1..L8).
-# Используется services/adaptive_full_seed.py при ADAPTIVE_FORCE_IMPORT=1.
-!data/adaptive/
-!data/adaptive/**
-# Exception: figure-generation prompts are small hand-curated text files and are
-# REQUIRED at runtime (routes/figures_generator.py, services/solution_generator.py).
-!data/figures/
-!data/figures/*.txt
-*.jsonl
-!FORMYLA_BANK.jsonl
-# Exception: якоря анкеты — маленький hand-curated файл, обязателен на Render.
-!data/anchors.jsonl
+# ── Бэкапы ──────────────────────────────────────────────
 *.bak
-checkpoint.json
+*.bak_*
+*.db.bak*
+*.db.copy*
+formyla.db.copy_*
+olympiads.py.bak*
+olympiads_backup*.py
+FORMYLA_L1_L5_TOP5.jsonl.bak_5level
+*.zip.bak
+# дубликаты рабочего файла (точные имена):
+/olympiad_tasks_PERFECT (1).json
+/olympiad_tasks_PERFECT (3).json
+# ВНИМАНИЕ: рабочие файлы НЕ игнорировать:
+#   FORMYLA_BANK.jsonl — читается daily_tasks/formyla_bank.py
+#   olympiad_tasks_PERFECT.json — читается olympiads.py
+#   secrets_dump.json — читается app.py (сидирование olympiad_secrets)
 
-# Render temp
-.render_token_TEMP.txt
-
-# Database files (never commit these!)
-*.db
-*.db-shm
-*.db-wal
+# ── Runtime-данные и тяжёлые артефакты ─────────────────
+uploads/
+formyla.db
 *.sqlite
 *.sqlite3
+_wheelhouse.zip
+qa_shots/
+_latest_screen_*.png
+# Screenshots are ignored above; real image assets may be added normally.
 
-# Secrets (never commit these!)
-*secret*
-*.key
-secrets_local*
+# ── Мусорные shell-имена (ошибки редиректов) ────────────
+/import
+/level
+/python
+/1
+/20
+/148
+/'2026-*
+/{total}')
 
-# Cleanup trash
-_TRASH_*/
-_audit_cleanup.csv
-_git_tracked.txt
-_run_audit.py
-_do_cleanup.py
-*.bak
-*.bak.*
+# ── ОС / редакторы ─────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
 
-# Leaked-secret cleanup (never track debug probes / env dumps again)
-scripts/verify/out/
-_ch31_*
-_test_*
-_diag_*
-_scan_*
-_pma_*
-_secret_scan.py
-
-# Patches
-*.patch
-
-# Screenshots and adaptive_data byproducts
-screenshots/
-adaptive_data/_backups/
-adaptive_data/generated/
-adaptive_data/generated_C2d/
-adaptive_data/generated_F/
-adaptive_data/audit/
-
-# Debug / temporary HTML pages
-debug_catalog.html
-prod_page.html
-page.html
-local.html
-local2.html
-now.html
-lander.html
-
-# Local diag / response dumps
-flask_err.txt
-flask_log.txt
-headers.txt
-response_body.txt
-diag.txt
-
-# Investigation / garbage check artifacts (root-level)
-
-# Recon reports and investigation files (local only, not for repo)
-_recon/
-
-/_GARBAGE_*
-/_check_*
-/_investigate*
-/_old_*
-/_b_review_*
-/_backup_check_*
-/_diff_*
-/_garbage_*
-/200
-/bad_*.txt
-/check_out*.txt
-/diff_app.txt
-/do_commit.bat
-/models.json
-/topics_by_grade.txt
-
-# Corrupted / junk filenames
-/{,
-/n{,
-/Главная*,
-/РАЗДЕЛЫ_*
-"figures_archive/env_backup.txt"  
+# Already tracked archive files remain tracked automatically.
+# Do not exempt archive/**: secrets and generated files must stay ignored there.
