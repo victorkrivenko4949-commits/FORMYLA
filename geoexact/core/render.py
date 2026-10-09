@@ -573,7 +573,7 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
                 samples = [B + r * np.array([math.cos(t), math.sin(t)])
                            for t in np.linspace(start, start + delta, max(12, int(abs(delta) * 18)))]
                 reserve_path(samples)
-        angle_texts.append((rec["text"], B, start + delta / 2, delta, outer, layer))
+        angle_texts.append((rec["text"], B, start + delta / 2, delta, outer, layer, u, v))
 
     # Equality ticks are strokes, not the character '/' (which changes with font).
     seen_ticks = set()
@@ -672,7 +672,7 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
                          f'L {_f(q[0])} {_f(q[1])}"/>')
             reserve_path([p, q])
 
-    for text, B, middle, delta, outer, layer in angle_texts:
+    for text, B, middle, delta, outer, layer, u, v in angle_texts:
         box = _text_box(text, (0, 0), MARK_FS)
         halfdiag = math.hypot(box[2], box[3])
         # Text stays outside all nested arcs. Search radially first, then move
@@ -683,7 +683,19 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
             direction = np.array([math.cos(theta), math.sin(theta)])
             for step in range(18):
                 distance = outer + halfdiag + 5 + step * 9
-                candidates.append((step * 0.11 + abs(offset) * 3, B + direction * distance))
+                # Каждый шаг от вершины дорог: подпись должна стоять у своего угла,
+                # а не уезжать к середине стороны.
+                candidates.append((step * 0.45 + abs(offset) * 3, B + direction * distance))
+        # Узкий угол (20°, 30°): между лучами подпись не помещается и раньше
+        # уезжала далеко от вершины. Кандидаты снаружи угла, вплотную к дуге
+        # у каждого луча: подпись остаётся рядом с вершиной и своей дугой.
+        for ray, other in ((u, v), (v, u)):
+            normal = np.array([-ray[1], ray[0]])
+            if float(np.dot(normal, other)) > 0:
+                normal = -normal
+            for k in range(3):
+                point = B + ray * (outer + halfdiag * 0.7 + k * 7) + normal * (halfdiag + 3)
+                candidates.append((0.8 + k * 0.4, point))
         emit_text(text, candidates, layer)
 
     cen_px = np.mean(np.array(list(visible_q.values()), dtype=float), axis=0)
