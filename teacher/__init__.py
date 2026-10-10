@@ -1,0 +1,1 @@
+"""FORMYLA teacher domain."""
