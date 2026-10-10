@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} | FORMYLA.net{% endblock %}
+{% block extra_css %}
+<style>
+  .wl{max-width:1000px;margin:0 auto;padding:20px 12px 60px;color:#fff}
+  .wl h1{margin:0 0 14px;font-size:clamp(1.4em,3.5vw,2em);font-weight:800;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .wl-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .wl-filters select{min-height:44px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:#0f172a;color:#fff;padding:0 10px;font:inherit;flex:1 1 160px}
+  .wl-btn{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;border:0;background:#f4a259;color:#14213d;font-weight:800;text-decoration:none;font:inherit;cursor:pointer}
+  .wl-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;background:rgba(30,41,59,.94);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+  .wl-row h3{margin:0 0 4px;font-size:1.05em}.wl-row h3 a{color:#fff;text-decoration:none}
+  .wl-meta{color:#94a3b8;font-size:.85em;display:flex;gap:8px;flex-wrap:wrap}
+  .wl-st{padding:2px 8px;border-radius:6px;font-weight:800;font-size:.75em}
+  .wl-st-draft{background:rgba(148,163,184,.2);color:#cbd5e1}.wl-st-assigned{background:rgba(56,239,125,.18);color:#86efac}.wl-st-closed{background:rgba(248,113,113,.18);color:#fca5a5}
+  .wl-acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .wl-acts a,.wl-acts button{min-height:36px;padding:0 10px;border-radius:8px;border:1px solid rgba(255,255,255,.16);background:transparent;color:#e2e8f0;font:inherit;font-size:.85em;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+  .wl-empty{padding:40px;text-align:center;color:#94a3b8}
+  @media(max-width:600px){.wl-row{grid-template-columns:1fr}.wl-acts{justify-content:flex-start}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="wl">
+  <h1>📚 Мои листки <a class="wl-btn" href="/teacher/worksheet/new">+ Новый</a></h1>
+  <div class="wl-filters">
+    <select id="lGroup"><option value="">Все группы</option>{% for g in groups %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}</select>
+    <select id="lStatus"><option value="">Любой статус</option><option value="draft">Черновик</option><option value="assigned">Выдан</option><option value="closed">Закрыт</option></select>
+  </div>
+  <div id="wlList"><div class="wl-empty">Загрузка…</div></div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+  var ST={draft:'Черновик',assigned:'Выдан',closed:'Закрыт'};
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function load(){ var q=[]; var g=document.getElementById('lGroup').value, s=document.getElementById('lStatus').value; if(g) q.push('group_id='+g); if(s) q.push('status='+s);
+    fetch('/api/teacher/worksheets'+(q.length?'?'+q.join('&'):''),{credentials:'same-origin'}).then(function(r){return r.json();}).then(function(d){
+      var box=document.getElementById('wlList'); if(!d.worksheets||!d.worksheets.length){ box.innerHTML='<div class="wl-empty">Листков пока нет</div>'; return; }
+      box.innerHTML=d.worksheets.map(function(w){ return '<div class="wl-row"><div><h3><a href="/teacher/worksheet/'+w.worksheet_id+'">'+esc(w.title)+'</a></h3><div class="wl-meta"><span class="wl-st wl-st-'+w.status+'">'+(ST[w.status]||w.status)+'</span><span>'+w.grade+' класс</span><span>'+w.tasks_count+' задач</span>'+(w.topics.length?'<span>'+esc(w.topics.join(', '))+'</span>':'<span>разнобой</span>')+(w.assigned?'<span>выдан '+w.assigned+' уч.</span>':'')+'<span>'+(w.created_at||'').slice(0,10)+'</span></div></div>'
+        +'<div class="wl-acts"><a href="/teacher/worksheet/'+w.worksheet_id+'">Открыть</a><a href="/teacher/worksheet/'+w.worksheet_id+'.pdf" target="_blank">PDF</a><button data-dup="'+w.worksheet_id+'">Дублировать</button></div></div>'; }).join('');
+    }); }
+  document.getElementById('wlList').addEventListener('click',function(e){ var b=e.target.closest('button[data-dup]'); if(!b) return; b.disabled=true;
+    fetch('/api/teacher/worksheet/'+b.dataset.dup+'/duplicate',{method:'POST',credentials:'same-origin'}).then(function(r){return r.json();}).then(function(d){ if(d.worksheet_id) location.href='/teacher/worksheet/'+d.worksheet_id; else { b.disabled=false; alert(d.error||'Ошибка'); } }); });
+  document.getElementById('lGroup').addEventListener('change',load); document.getElementById('lStatus').addEventListener('change',load); load();
+})();
+</script>
+{% endblock %}
