@@ -1,0 +1,5 @@
+# Зависимости конструктора листка (спринт 1, этап 5). На Render ставится автоматически
+# при первом запросе PDF (teacher/worksheets/pdf.py::_ensure_reportlab), либо:
+#   pip install -r requirements-worksheets.txt
+# Лучше — перенести строку в requirements.txt.
+reportlab>=4.0
