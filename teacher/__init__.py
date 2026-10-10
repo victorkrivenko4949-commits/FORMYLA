@@ -12,5 +12,6 @@ teacher_bp = Blueprint("teacher", __name__, template_folder="templates")
 from teacher.worksheets import models as _worksheet_models  # noqa: E402,F401
 from teacher.worksheets import api as _worksheet_api        # noqa: E402,F401
 from teacher.worksheets import pages as _worksheet_pages    # noqa: E402,F401
+from teacher.worksheets import pdf as _worksheet_pdf        # noqa: E402,F401
 
 __all__ = ["teacher_bp"]
