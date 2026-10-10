@@ -2,11 +2,12 @@
 """PDF листка (этап 5): GET /teacher/worksheet/<id>.pdf?with_solutions=0|1&space=<мм>
 
 reportlab + DejaVuSans, A4. Шапка (название, класс, дата, учитель), задачи с номерами,
-место под решение. Формулы: серверного рендера KaTeX в проекте нет (только клиентский
-KaTeX в base.html) -> fallback: LaTeX приводится к читаемому тексту (\\frac -> a/b,
-\\cdot -> ·, ^{2} -> ², ...), в подвале warning. with_solutions=1 -> только владелец:
-раздел «Решения» + диагональный водяной знак «для учителя»; ученику -> 403.
-Доступ к with_solutions=0: владелец или ученик с назначением на этот листок.
+место под решение. Формулы: серверного KaTeX в проекте нет -> рендер через
+matplotlib.mathtext (teacher/worksheets/mathrender.py): настоящие дроби, корни, индексы,
+шрифт Computer Modern, картинки встраиваются в абзац по базовой линии. Если matplotlib
+недоступен или формула не разобрана -> fallback latex_to_text() + warning в подвале.
+with_solutions=1 -> только владелец: раздел «Решения» + диагональный водяной знак
+«для учителя»; ученику -> 403. with_solutions=0: владелец или ученик с назначением.
 """
 from __future__ import annotations
 
@@ -14,8 +15,10 @@ import io
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -24,7 +27,7 @@ from flask_login import current_user, login_required
 
 from models import db
 from teacher import teacher_bp
-from teacher.worksheets import bank_index, selector
+from teacher.worksheets import bank_index, mathrender, selector
 from teacher.worksheets.models import Worksheet, WorksheetAssignment
 
 logger = logging.getLogger(__name__)
@@ -39,27 +42,42 @@ _FONT_CANDIDATES = [
     "C:/Windows/Fonts/DejaVuSans.ttf",
     "/Library/Fonts/DejaVuSans.ttf",
 ]
+_PIP_PACKAGES = ("reportlab>=4.0", "matplotlib>=3.7", "numpy", "Pillow")
 
 
 # ───────────────────────── зависимости и шрифт ──────────────────────────────
 
-def _ensure_reportlab():
-    """reportlab импортируется лениво. Если его нет и мы на Render (env RENDER)
-    или WORKSHEETS_PIP_AUTOINSTALL=1 — один раз ставим pip'ом (как AUTO-MIGRATION:
-    без ручных шагов). Иначе — ImportError наверх (-> 503)."""
+def _autoinstall_allowed() -> bool:
+    v = os.environ.get("WORKSHEETS_PIP_AUTOINSTALL")
+    if v is not None:
+        return v == "1"
+    return bool(os.environ.get("RENDER"))
+
+
+def _ensure_deps():
+    """reportlab (обязателен) и matplotlib (для формул) импортируются лениво. Если их нет и
+    разрешена автоустановка (Render или WORKSHEETS_PIP_AUTOINSTALL=1) — один раз ставим pip'ом,
+    как AUTO-MIGRATION: без ручных шагов. Иначе ImportError (-> 503) только по reportlab."""
+    missing = []
     try:
         import reportlab  # noqa: F401
-        return
     except ImportError:
-        pass
-    allow = os.environ.get("WORKSHEETS_PIP_AUTOINSTALL") or ("1" if os.environ.get("RENDER") else "0")
-    if allow != "1":
+        missing.append("reportlab>=4.0")
+    if not mathrender.available():
+        missing += ["matplotlib>=3.7", "numpy", "Pillow"]
+    if missing and _autoinstall_allowed():
+        logger.warning("worksheets.pdf: ставлю зависимости: %s", missing)
+        try:
+            subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", *missing], check=True, timeout=300)
+            import importlib
+            importlib.invalidate_caches()
+            mathrender._available = None
+        except Exception as e:  # noqa: BLE001
+            logger.warning("worksheets.pdf: pip install failed: %r", e)
+    try:
+        import reportlab  # noqa: F401
+    except ImportError:
         raise ImportError("reportlab не установлен: добавьте reportlab>=4.0 в requirements.txt")
-    logger.warning("worksheets.pdf: reportlab отсутствует — устанавливаю (pip install reportlab)")
-    subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "reportlab>=4.0"], check=True, timeout=180)
-    import importlib
-    importlib.invalidate_caches()
-    import reportlab  # noqa: F401
 
 
 def _font_path() -> Optional[str]:
@@ -91,7 +109,7 @@ def _register_fonts() -> Tuple[str, str, List[str]]:
     return FONT_NAME, FONT_BOLD, warnings
 
 
-# ───────────────────────── формулы: LaTeX -> текст ──────────────────────────────
+# ───────────────────────── формулы: текстовый fallback ──────────────────────
 
 _SUP = str.maketrans("0123456789+-=()n", "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁿ")
 _SUB = str.maketrans("0123456789+-=()", "₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎")
@@ -106,7 +124,7 @@ _SYMBOLS = {
     r"\left": "", r"\right": "", r"\big": "", r"\Big": "", r"\displaystyle": "", r"\mid": "|", r"\div": "÷",
     r"\equiv": "≡", r"\approx": "≈", r"\sum": "Σ", r"\prod": "Π", r"\frac": "", r"\dfrac": "", r"\tfrac": "",
 }
-_DELIMS = re.compile(r"\$\$(.+?)\$\$|\\\[(.+?)\\\]|\\\((.+?)\\\)|\$(.+?)\$", re.S)
+_DELIMS = mathrender.DELIMS
 _FRAC = re.compile(r"\\[dt]?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}")
 _TEXT = re.compile(r"\\(?:text|mathrm|mathbf|mathbb|mathcal|operatorname|textbf|textit)\s*\{([^{}]*)\}")
 _SUPB = re.compile(r"\^\{([^{}]*)\}")
@@ -115,7 +133,7 @@ _OVERLINE = re.compile(r"\\overline\s*\{([^{}]*)\}")
 
 
 def latex_to_text(s: str) -> Tuple[str, bool]:
-    """Грубое, но читаемое приведение формул к Unicode-тексту. Возвращает (text, had_math)."""
+    """Грубое, но читаемое приведение формул к Unicode-тексту (fallback). -> (text, had_math)."""
     had = False
 
     def conv(m):
@@ -170,10 +188,34 @@ def _teacher_name(ws: Worksheet) -> str:
         return getattr(u, "email", "") or f"id {ws.teacher_id}"
 
 
+class _Math:
+    """Абзац с формулами: mathtext-картинки, а при недоступности — текстовый fallback."""
+
+    def __init__(self, tmpdir: str, fontsize: float, warnings: List[str]):
+        self.tmpdir, self.fontsize, self.warnings = tmpdir, fontsize, warnings
+        self.rendered = 0
+        self.fallbacks = 0
+
+    def html(self, text: str, fontsize: Optional[float] = None) -> str:
+        if not mathrender.available():
+            t, had = latex_to_text(text)
+            if had:
+                self.fallbacks += 1
+            return _esc(t)
+        html, had, warns = mathrender.paragraph_html(text, self.tmpdir, fontsize=fontsize or self.fontsize,
+                                                     fallback=latex_to_text, escape=_esc)
+        if had:
+            self.rendered += 1
+        if warns:
+            self.fallbacks += len(warns)
+            for w in warns:
+                logger.info("worksheets.pdf: %s", w)
+        return html
+
+
 def build_pdf(ws: Worksheet, with_solutions: bool = False, space_mm: int = 60) -> Tuple[bytes, List[str]]:
-    _ensure_reportlab()
+    _ensure_deps()
     from reportlab.lib import colors
-    from reportlab.lib.enums import TA_CENTER
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import ParagraphStyle
     from reportlab.lib.units import mm
@@ -181,98 +223,89 @@ def build_pdf(ws: Worksheet, with_solutions: bool = False, space_mm: int = 60) -
                                     TableStyle)
 
     font, bold, warnings = _register_fonts()
-    had_math_any = False
+    tmpdir = tempfile.mkdtemp(prefix="ws_pdf_")
+    math = _Math(tmpdir, 11, warnings)
+    try:
+        st_title = ParagraphStyle("t", fontName=bold, fontSize=16, leading=20, spaceAfter=2)
+        st_meta = ParagraphStyle("m", fontName=font, fontSize=9.5, leading=12, textColor=colors.HexColor("#444444"))
+        st_num = ParagraphStyle("n", fontName=bold, fontSize=11, leading=14)
+        st_body = ParagraphStyle("b", fontName=font, fontSize=11, leading=16)
+        st_src = ParagraphStyle("s", fontName=font, fontSize=8.5, leading=11, textColor=colors.HexColor("#666666"))
+        st_h2 = ParagraphStyle("h", fontName=bold, fontSize=14, leading=18, spaceBefore=6, spaceAfter=6)
 
-    st_title = ParagraphStyle("t", fontName=bold, fontSize=16, leading=20, spaceAfter=2)
-    st_meta = ParagraphStyle("m", fontName=font, fontSize=9.5, leading=12, textColor=colors.HexColor("#444444"))
-    st_num = ParagraphStyle("n", fontName=bold, fontSize=11, leading=14)
-    st_body = ParagraphStyle("b", fontName=font, fontSize=11, leading=15)
-    st_src = ParagraphStyle("s", fontName=font, fontSize=8.5, leading=11, textColor=colors.HexColor("#666666"))
-    st_h2 = ParagraphStyle("h", fontName=bold, fontSize=14, leading=18, spaceBefore=6, spaceAfter=6)
-    st_center = ParagraphStyle("c", fontName=font, fontSize=8, leading=10, alignment=TA_CENTER,
-                               textColor=colors.HexColor("#888888"))
+        rows = sorted(ws.tasks, key=lambda r: r.position)
+        recs = [(r, bank_index.get(r.task_id)) for r in rows]
+        story: List[Any] = []
 
-    rows = sorted(ws.tasks, key=lambda r: r.position)
-    recs = [(r, bank_index.get(r.task_id)) for r in rows]
-    story: List[Any] = []
+        story.append(Paragraph(_esc(ws.title), st_title))
+        meta = f"{ws.grade} класс · {datetime.utcnow().strftime('%d.%m.%Y')} · Учитель: {_esc(_teacher_name(ws))}"
+        if ws.group is not None:
+            meta += f" · Группа: {_esc(ws.group.name)}"
+        story.append(Paragraph(meta, st_meta))
+        story.append(Table([[""]], colWidths=[170 * mm], rowHeights=[2],
+                           style=TableStyle([("LINEBELOW", (0, 0), (-1, -1), 0.8, colors.HexColor("#f4a259"))])))
+        story.append(Spacer(1, 6 * mm))
 
-    story.append(Paragraph(_esc(ws.title), st_title))
-    meta = f"{ws.grade} класс · {datetime.utcnow().strftime('%d.%m.%Y')} · Учитель: {_esc(_teacher_name(ws))}"
-    if ws.group is not None:
-        meta += f" · Группа: {_esc(ws.group.name)}"
-    story.append(Paragraph(meta, st_meta))
-    story.append(Table([[""]], colWidths=[170 * mm], rowHeights=[2],
-                       style=TableStyle([("LINEBELOW", (0, 0), (-1, -1), 0.8, colors.HexColor("#f4a259"))])))
-    story.append(Spacer(1, 6 * mm))
-
-    for row, rec in recs:
-        if rec is None:
-            block = [Paragraph(f"Задача {row.position}", st_num),
-                     Paragraph("<i>задача не найдена в банке</i>", st_body)]
-        else:
-            text, had = latex_to_text(rec.get("task_text") or "")
-            had_math_any |= had
-            t = selector.to_task(rec, row.target_level)
-            head = f"Задача {row.position}"
-            src = _source_line(t["source"])
-            block = [Paragraph(head + f"  <font size=8 color='#888888'>уровень {t['level']}</font>", st_num),
-                     Paragraph(_esc(text), st_body)]
-            if src:
-                block.append(Paragraph(_esc(src), st_src))
-            if t["has_figure"]:
-                block.append(Paragraph("<i>к задаче есть чертёж — см. на сайте</i>", st_src))
-        if not with_solutions and space_mm > 0:
-            block.append(Spacer(1, space_mm * mm))
-        else:
-            block.append(Spacer(1, 4 * mm))
-        story.append(KeepTogether(block))
-
-    if with_solutions:
-        story.append(PageBreak())
-        story.append(Paragraph("Решения (для учителя)", st_h2))
         for row, rec in recs:
             if rec is None:
-                continue
-            ans, h1 = latex_to_text(str(rec.get("correct_answer") or ""))
-            sol, h2 = latex_to_text(str(rec.get("solution") or ""))
-            had_math_any |= (h1 or h2)
-            block = [Paragraph(f"Задача {row.position}", st_num)]
-            if ans:
-                block.append(Paragraph("<b>Ответ:</b> " + _esc(ans), st_body))
-            if sol:
-                for para in [p for p in sol.split("\n") if p.strip()]:
-                    block.append(Paragraph(_esc(para), st_body))
-            block.append(Spacer(1, 4 * mm))
+                block = [Paragraph(f"Задача {row.position}", st_num),
+                         Paragraph("<i>задача не найдена в банке</i>", st_body)]
+            else:
+                t = selector.to_task(rec, row.target_level)
+                src = _source_line(t["source"])
+                block = [Paragraph(f"Задача {row.position}  <font size=8 color='#888888'>уровень {t['level']}</font>", st_num),
+                         Paragraph(math.html(rec.get("task_text") or ""), st_body)]
+                if src:
+                    block.append(Paragraph(_esc(src), st_src))
+                if t["has_figure"]:
+                    block.append(Paragraph("<i>к задаче есть чертёж — см. на сайте</i>", st_src))
+            block.append(Spacer(1, (space_mm if (not with_solutions and space_mm > 0) else 4) * mm))
             story.append(KeepTogether(block))
 
-    if had_math_any:
-        warnings.append("Формулы выведены текстом (серверного рендера KaTeX в проекте нет)")
-
-    footer_note = " · ".join(warnings) if warnings else ""
-
-    def on_page(canvas, doc):
-        canvas.saveState()
-        canvas.setFont(font, 8)
-        canvas.setFillColor(colors.HexColor("#888888"))
-        canvas.drawRightString(A4[0] - 15 * mm, 10 * mm, f"стр. {doc.page}")
-        canvas.drawString(15 * mm, 10 * mm, "FORMYLA.net")
-        if footer_note:
-            canvas.setFont(font, 7)
-            canvas.drawCentredString(A4[0] / 2, 6 * mm, footer_note[:160])
         if with_solutions:
-            canvas.setFont(bold, 54)
-            canvas.setFillColor(colors.Color(0.85, 0.3, 0.1, alpha=0.13))
-            canvas.translate(A4[0] / 2, A4[1] / 2)
-            canvas.rotate(35)
-            canvas.drawCentredString(0, 0, "ДЛЯ УЧИТЕЛЯ")
-        canvas.restoreState()
+            story.append(PageBreak())
+            story.append(Paragraph("Решения (для учителя)", st_h2))
+            for row, rec in recs:
+                if rec is None:
+                    continue
+                block = [Paragraph(f"Задача {row.position}", st_num)]
+                ans = str(rec.get("correct_answer") or "").strip()
+                if ans:
+                    block.append(Paragraph("<b>Ответ:</b> " + math.html(ans), st_body))
+                for para in [p for p in str(rec.get("solution") or "").split("\n") if p.strip()]:
+                    block.append(Paragraph(math.html(para), st_body))
+                block.append(Spacer(1, 4 * mm))
+                story.append(KeepTogether(block))
 
-    buf = io.BytesIO()
-    doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=20 * mm, rightMargin=20 * mm,
-                            topMargin=18 * mm, bottomMargin=18 * mm,
-                            title=ws.title, author="FORMYLA.net")
-    doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
-    return buf.getvalue(), warnings
+        if math.fallbacks:
+            warnings.append(f"часть формул выведена текстом ({math.fallbacks})" if math.rendered
+                            else "формулы выведены текстом (matplotlib недоступен)")
+        footer_note = " · ".join(warnings) if warnings else ""
+
+        def on_page(canvas, doc):
+            canvas.saveState()
+            canvas.setFont(font, 8)
+            canvas.setFillColor(colors.HexColor("#888888"))
+            canvas.drawRightString(A4[0] - 15 * mm, 10 * mm, f"стр. {doc.page}")
+            canvas.drawString(15 * mm, 10 * mm, "FORMYLA.net")
+            if footer_note:
+                canvas.setFont(font, 7)
+                canvas.drawCentredString(A4[0] / 2, 6 * mm, footer_note[:160])
+            if with_solutions:
+                canvas.setFont(bold, 54)
+                canvas.setFillColor(colors.Color(0.85, 0.3, 0.1, alpha=0.13))
+                canvas.translate(A4[0] / 2, A4[1] / 2)
+                canvas.rotate(35)
+                canvas.drawCentredString(0, 0, "ДЛЯ УЧИТЕЛЯ")
+            canvas.restoreState()
+
+        buf = io.BytesIO()
+        doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=20 * mm, rightMargin=20 * mm,
+                                topMargin=18 * mm, bottomMargin=18 * mm, title=ws.title, author="FORMYLA.net")
+        doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
+        return buf.getvalue(), warnings
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 # ───────────────────────────────── роут ─────────────────────────────────────

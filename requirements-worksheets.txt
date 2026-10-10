@@ -1,5 +1,8 @@
-# Зависимости конструктора листка (спринт 1, этап 5). На Render ставится автоматически
-# при первом запросе PDF (teacher/worksheets/pdf.py::_ensure_reportlab), либо:
-#   pip install -r requirements-worksheets.txt
-# Лучше — перенести строку в requirements.txt.
+# Зависимости конструктора листка (спринт 1, этап 5).
+# На Render ставятся автоматически при первом запросе PDF (teacher/worksheets/pdf.py::_ensure_deps),
+# локально: pip install -r requirements-worksheets.txt. Лучше — перенести строки в requirements.txt.
 reportlab>=4.0
+# формулы «как в учебнике» (matplotlib.mathtext -> PNG, встраиваются в абзац по базовой линии)
+matplotlib>=3.7
+numpy
+Pillow
