@@ -77,6 +77,51 @@
   <h1 class="us-title">Статистика пользователей</h1>
   <div class="us-subtitle">Онлайн, активность по дням, пики, топы. Даты и граница «сегодня» здесь в UTC. Обновляется с каждым heartbeat (~30 сек).</div>
 
+  {# ══ USER_RETURNS_V1 (11.10.2026): сколько людей пришли 2-й, 3-й, 4-й… раз. ══ #}
+  {# ══ Визит = серия действий с паузами ≤ 60 мин; пауза > 60 мин = новый визит. ══ #}
+  {% set ret = user_returns_block() if user_returns_block is defined else none %}
+  {% if ret %}
+  <div class="us-sec">Возвращения — сколько раз приходили
+    <span style="font-size:12px;font-weight:400;color:var(--muted);">(новый визит, если пауза между действиями &gt; {{ ret.gap_min }} мин)</span>
+    <a href="/admin/users/returns" style="font-size:12px;font-weight:400;margin-left:8px;">подробно и по ученикам →</a>
+  </div>
+  <div class="us-summary">
+    <div class="us-card"><div class="us-card-num">{{ ret.users_with_events }}</div><div class="us-card-label">пользователей с действиями</div></div>
+    <div class="us-card"><div class="us-card-num">{{ ret.returned_at_least_once }}</div><div class="us-card-label">вернулись хотя бы раз</div><div class="us-card-sub">{{ ret.retention_pct }}% — пришли 2-й раз и более</div></div>
+    {% for r in ret.rows if r.n in [3, 4, 5] %}
+    <div class="us-card"><div class="us-card-num">{{ r.at_least }}</div><div class="us-card-label">пришли {{ r.n }}-й раз и более</div><div class="us-card-sub">{{ r.share_at_least }}% · вернулись {{ r.n - 1 }}+ раз</div></div>
+    {% endfor %}
+    <div class="us-card"><div class="us-card-num">{{ ret.total_visits }}</div><div class="us-card-label">всего визитов</div><div class="us-card-sub">{{ ret.avg_visits_per_user }} на пользователя, максимум {{ ret.max_visits }}</div></div>
+  </div>
+  <div class="us-table-wrap" style="margin-bottom:6px">
+    <table class="us-table">
+      <thead>
+        <tr>
+          <th>Визитов</th><th>Что это</th>
+          <th title="exact[n] = |{ u : S(u) = n }|">Ровно столько</th>
+          <th title="atleast[n] = |{ u : S(u) ≥ n }|">Столько и более</th>
+          <th title="retention_n = atleast[n] / |U|">% от всех</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for r in ret.rows %}
+        <tr>
+          <td><strong>{{ r.n }}</strong></td>
+          <td>{% if r.n == 1 %}только первый визит, не возвращались{% else %}пришли {{ r.n }}-й раз — вернулись {{ r.n - 1 }} раз{% endif %}</td>
+          <td style="text-align:center;">{{ r.exact }}</td>
+          <td style="text-align:center;"><strong>{{ r.at_least }}</strong></td>
+          <td style="text-align:center;">{{ r.share_at_least }}%</td>
+        </tr>
+      {% endfor %}
+      {% if ret.more_than_max %}
+        <tr><td><strong>&gt;{{ ret.rows[-1].n }}</strong></td><td>больше {{ ret.rows[-1].n }} визитов</td><td style="text-align:center;">{{ ret.more_than_max }}</td><td style="text-align:center;">—</td><td style="text-align:center;">—</td></tr>
+      {% endif %}
+      </tbody>
+    </table>
+  </div>
+  <div class="us-legend">Формулы: <b>S(u)</b> = 1 + число пауз &gt; {{ ret.gap_min }} мин между действиями; <b>R(u)</b> = S(u) − 1 возвращений; «столько и более» = |{u : S(u) ≥ n}|; % = от {{ ret.users_with_events }} пользователей с действиями. Считаются действия, оставившие след в БД (решения, задачи дня, сообщения, чертежи…).</div>
+  {% endif %}
+
   <div class="us-sec">Прямо сейчас</div>
   <div class="us-summary">
     <div class="us-card"><div class="us-card-num online"><span class="us-dot"></span>{{ total.online_now }}</div><div class="us-card-label">онлайн сейчас</div></div>
