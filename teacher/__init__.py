@@ -15,5 +15,6 @@ from teacher.worksheets import pages as _worksheet_pages    # noqa: E402,F401
 from teacher.worksheets import pdf as _worksheet_pdf        # noqa: E402,F401
 from teacher.worksheets import student as _worksheet_student  # noqa: E402,F401
 from teacher.worksheets import marks as _worksheet_marks      # noqa: E402,F401
+from teacher.worksheets import marks_sync as _worksheet_marks_sync  # noqa: E402,F401
 
 __all__ = ["teacher_bp"]
