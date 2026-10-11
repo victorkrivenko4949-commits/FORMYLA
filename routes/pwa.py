@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-routes/pwa.py — PWA_INSTALL_V1 (11.10.2026).
+routes/pwa.py — PWA_INSTALL_V2 (11.10.2026).
 
 Делает сайт устанавливаемым приложением (PWA) без правки app.py и base.html:
   * GET /sw.js            — service worker с корневым scope «/»
@@ -21,7 +21,7 @@ routes/pwa.py — PWA_INSTALL_V1 (11.10.2026).
 Когда будет удобно править base.html — добавьте в <head>:
     <link rel="manifest" href="/site.webmanifest">
 и перед </body>:
-    <script defer src="/static/js/pwa_install.js?v=1"></script>
+    <script defer src="/static/js/pwa_install.js?v=2"></script>
 Инжектор увидит, что теги уже есть, и ничего вставлять не будет.
 """
 from __future__ import annotations
@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 pwa_bp = Blueprint("pwa", __name__)
 
-PWA_VERSION = "1"
+PWA_VERSION = "2"
 _MANIFEST_TAG = '<link rel="manifest" href="/site.webmanifest">'
 _SCRIPT_TAG = '<script defer src="/static/js/pwa_install.js?v=%s"></script>' % PWA_VERSION
 _HEAD_RE = re.compile(r"<head(\s[^>]*)?>", re.IGNORECASE)
