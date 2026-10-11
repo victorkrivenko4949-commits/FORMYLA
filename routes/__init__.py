@@ -1,21 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-routes/__init__.py — ADMIN_BASE_V1 (06.10.2026).
+routes/__init__.py — ADMIN_BASE_V1 (06.10.2026) + PWA_INSTALL_V1 (11.10.2026).
 
-Автоматическая регистрация blueprint «База» (routes/admin_base.py) без правки
-app.py. Файл превращает `routes/` в обычный пакет (раньше был namespace
-package); все существующие импорты `from routes.xxx import ...` работают
-как прежде.
+Автоматическая регистрация blueprint «База» (routes/admin_base.py) и
+blueprint PWA (routes/pwa.py) без правки app.py. Файл превращает `routes/`
+в обычный пакет (раньше был namespace package); все существующие импорты
+`from routes.xxx import ...` работают как прежде.
 
 Как это работает: при первом `app.register_blueprint(...)` любого другого
-blueprint мы один раз дорегистрируем `admin_base_bp` в это же приложение и
-вешаем after_request, который добавляет кнопку «База» на существующие
-админ-страницы статистики (/admin/users, /admin/stats*, /admin/daily*).
+blueprint мы один раз дорегистрируем `admin_base_bp` и `pwa_bp` в это же
+приложение и вешаем after_request-хуки.
 
-Отключить: переменная окружения ADMIN_BASE_AUTOREG=0.
+Отключить: ADMIN_BASE_AUTOREG=0 и/или PWA_AUTOREG=0.
 Ручная регистрация (эквивалент):
     from routes.admin_base import admin_base_bp
     app.register_blueprint(admin_base_bp)
+    from routes.pwa import install_pwa
+    install_pwa(app)
 """
 from __future__ import annotations
 
@@ -33,7 +34,22 @@ _NAV_SNIPPET = (
 _NAV_PATHS = ("/admin/users", "/admin/stats", "/admin/daily", "/admin/sections", "/admin/support")
 
 
+def _install_pwa(app) -> None:
+    """PWA_INSTALL_V1: /sw.js, /site.webmanifest, /offline + инжектор тегов."""
+    if os.environ.get("PWA_AUTOREG", "1") == "0":
+        return
+    if getattr(app, "_pwa_installed", False):
+        return
+    try:
+        from routes.pwa import install_pwa
+        install_pwa(app)
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[pwa] auto-register failed: %r", e)
+
+
 def _install(app) -> None:
+    _install_pwa(app)
+
     if getattr(app, "_admin_base_installed", False):
         return
     app._admin_base_installed = True
@@ -78,7 +94,7 @@ try:
 
         def _patched_register_blueprint(self, blueprint, **options):
             result = _ORIG_REGISTER(self, blueprint, **options)
-            if getattr(blueprint, "name", "") != "admin_base":
+            if getattr(blueprint, "name", "") not in ("admin_base", "pwa"):
                 _install(self)
             return result
 
