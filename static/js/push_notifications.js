@@ -1,7 +1,7 @@
 /**
  * push_notifications.js — Web Push Notifications client.
  *
- * 1. Registers the Service Worker (static/sw.js).
+ * 1. Registers the Service Worker (/sw.js, scope «/» — PWA_INSTALL_V1).
  * 2. On first visit after login, asks for Notification permission.
  * 3. On grant, subscribes via the Push API and sends the subscription
  *    to the server (POST /api/push/subscribe).
@@ -91,7 +91,10 @@
     function init() {
         if (!VAPID_PUBLIC_KEY) { console.log('[Push] VAPID key not set, skipping'); return; }
         if (!('serviceWorker' in navigator)) { console.log('[Push] Service Workers not supported'); return; }
-        navigator.serviceWorker.register('/static/sw.js').then(function (registration) {
+        // PWA_INSTALL_V1: единый SW на корневом scope. Раньше регистрировался /static/sw.js
+        // со scope /static/ — из-за этого Chrome не предлагал установку сайта как приложения.
+        // pwa_install.js регистрирует тот же /sw.js; register() идемпотентен — вернёт ту же регистрацию.
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function (registration) {
             swRegistration = registration;
             console.log('[Push] SW registered');
             _requestPermission(registration);
