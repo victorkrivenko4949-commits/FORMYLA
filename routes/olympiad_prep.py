@@ -4,14 +4,17 @@ Blueprint: Подготовка к олимпиадам (olympiad_prep)
 
 Endpoints:
   GET /olympiad-prep              — редирект на календарь (каталог упразднён)
-  GET /olympiad-prep/calendar     — календарь олимпиад (заглушка)
+  GET /olympiad-prep/calendar     — календарь олимпиад (точные даты, регистрация, инструкции)
   GET /olympiad-prep/<slug>       — страница конкретной олимпиады
 """
+
+from datetime import date
 
 from flask import Blueprint, render_template, abort, redirect, url_for
 from flask_login import current_user
 
 from models import OlympiadPrep, PrepPlan
+from olympiad_calendar_data import build_calendar, SEASON
 
 olympiad_prep_bp = Blueprint(
     'olympiad_prep',
@@ -28,14 +31,31 @@ def index():
 
 @olympiad_prep_bp.route('/olympiad-prep/calendar')
 def calendar():
-    """Календарь олимпиад России — расписание этапов."""
-    olympiads = (
-        OlympiadPrep.query
-        .filter_by(is_active=True)
-        .order_by(OlympiadPrep.sort_order)
-        .all()
+    """Календарь олимпиад России — точные даты, статус регистрации, инструкции.
+
+    Статические данные сезона (olympiad_calendar_data.OLYMPIADS) объединяются
+    с записями OlympiadPrep из БД (цвет, slug, ссылка на страницу олимпиады).
+    Если БД недоступна, календарь всё равно рендерится из статических данных.
+    """
+    try:
+        olympiads = (
+            OlympiadPrep.query
+            .filter_by(is_active=True)
+            .order_by(OlympiadPrep.sort_order)
+            .all()
+        )
+    except Exception:
+        olympiads = []
+
+    cards, summary, today = build_calendar(olympiads, date.today())
+    return render_template(
+        'olympiad_prep/calendar.html',
+        cards=cards,
+        summary=summary,
+        today=today,
+        season=SEASON,
+        olympiads=olympiads,
     )
-    return render_template('olympiad_prep/calendar.html', olympiads=olympiads)
 
 
 @olympiad_prep_bp.route('/olympiad-prep/<slug>')

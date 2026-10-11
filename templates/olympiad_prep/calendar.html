@@ -4,147 +4,119 @@
 
 {% block extra_css %}
 <style>
-.opc-wrapper {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 32px 20px 60px;
-}
-.opc-back {
-    margin-bottom: 24px;
-}
-.opc-back a {
-    color: #8b5cf6;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: .9rem;
-    transition: color .2s;
-}
+.opc-wrapper { max-width: 960px; margin: 0 auto; padding: 32px 20px 60px; }
+.opc-back { margin-bottom: 24px; }
+.opc-back a { color: #8b5cf6; text-decoration: none; font-weight: 600; font-size: .9rem; transition: color .2s; }
 .opc-back a:hover { color: #a78bfa; }
 
-.opc-header {
-    text-align: center;
-    margin-bottom: 36px;
-}
-.opc-icon {
-    font-size: 3rem;
-    margin-bottom: 12px;
-}
-.opc-header h1 {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: #fff;
-    margin: 0 0 10px;
-}
+.opc-header { text-align: center; margin-bottom: 32px; }
+.opc-header h1 { font-size: 1.8rem; font-weight: 800; color: #fff; margin: 0 0 10px; }
 .opc-header h1 span { color: #22d3a6; }
-.opc-desc {
-    color: #94a3b8;
-    font-size: 1rem;
-    line-height: 1.6;
-    max-width: 560px;
-    margin: 0 auto;
-}
+.opc-desc { color: #94a3b8; font-size: 1rem; line-height: 1.6; max-width: 620px; margin: 0 auto; }
+.opc-today { color: #64748b; font-size: .82rem; margin-top: 8px; }
 
-/* Olympiad timeline cards */
-.opc-timeline {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+/* ── Блок «Вы уже решили, какие олимпиады писать?» ── */
+.opc-decide {
+    background: linear-gradient(135deg, rgba(34,211,166,.12) 0%, rgba(139,92,246,.12) 100%);
+    border: 1px solid rgba(139,92,246,.35);
+    border-radius: 16px;
+    padding: 22px 22px 18px;
+    margin-bottom: 32px;
 }
+.opc-decide h2 { color: #fff; font-size: 1.25rem; font-weight: 800; margin: 0 0 6px; }
+.opc-decide p { color: #cbd5e1; font-size: .92rem; line-height: 1.55; margin: 0 0 14px; }
+.opc-decide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.opc-decide-col { background: rgba(15,23,42,.55); border-radius: 12px; padding: 12px 14px; }
+.opc-decide-col h3 { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 8px; }
+.opc-decide-col.open h3 { color: #22d3a6; }
+.opc-decide-col.upcoming h3 { color: #fbbf24; }
+.opc-decide-col.closed h3 { color: #f87171; }
+.opc-decide-col.none h3 { color: #94a3b8; }
+.opc-decide-col ul { list-style: none; margin: 0; padding: 0; }
+.opc-decide-col li { margin: 0 0 6px; font-size: .88rem; }
+.opc-decide-col li a { color: #e2e8f0; text-decoration: none; border-bottom: 1px dashed rgba(226,232,240,.35); }
+.opc-decide-col li a:hover { color: #fff; border-bottom-color: #fff; }
+.opc-decide-col li small { color: #94a3b8; display: block; font-size: .76rem; margin-top: 1px; }
+.opc-decide-empty { color: #64748b; font-size: .84rem; }
 
-.opc-olympiad {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 14px;
-    overflow: hidden;
-    transition: border-color .2s;
-}
-.opc-olympiad:hover {
-    border-color: var(--accent, #334155);
-}
+/* ── Фильтры ── */
+.opc-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.opc-filter { background: #1e293b; border: 1px solid #334155; color: #cbd5e1; border-radius: 999px; padding: 6px 14px; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .15s; }
+.opc-filter:hover { border-color: #8b5cf6; color: #fff; }
+.opc-filter.active { background: #8b5cf6; border-color: #8b5cf6; color: #fff; }
+
+/* ── Карточки ── */
+.opc-timeline { display: flex; flex-direction: column; gap: 16px; }
+.opc-olympiad { background: #1e293b; border: 1px solid #334155; border-radius: 14px; overflow: hidden; transition: border-color .2s; }
+.opc-olympiad:hover, .opc-olympiad.is-open { border-color: var(--accent, #334155); }
+.opc-olympiad[hidden] { display: none; }
 
 .opc-olympiad-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 18px 20px;
-    border-bottom: 1px solid #334155;
-    text-decoration: none;
+    display: flex; align-items: center; gap: 14px; padding: 16px 20px; width: 100%;
+    background: none; border: none; cursor: pointer; text-align: left; color: #fff; font: inherit;
 }
-.opc-olympiad-header:hover {
-    background: rgba(255,255,255,.02);
-}
-.opc-olympiad-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-.opc-olympiad-name {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #fff;
-    flex: 1;
-}
-.opc-olympiad-grades {
-    color: #64748b;
-    font-size: .82rem;
-    font-weight: 500;
-}
+.opc-olympiad-header:hover { background: rgba(255,255,255,.02); }
+.opc-olympiad-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.opc-olympiad-title { flex: 1; min-width: 0; }
+.opc-olympiad-name { font-size: 1.05rem; font-weight: 700; color: #fff; display: block; }
+.opc-olympiad-meta { color: #64748b; font-size: .8rem; font-weight: 500; display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 4px; }
+.opc-chevron { color: #64748b; transition: transform .2s; flex-shrink: 0; }
+.opc-olympiad.is-open .opc-chevron { transform: rotate(180deg); }
 
-.opc-stages {
-    padding: 4px 20px 12px;
-    display: flex;
-    flex-direction: column;
-}
-.opc-stage-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(51,65,85,.4);
-}
-.opc-stage-row:last-child {
-    border-bottom: none;
-}
-.opc-stage-num {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--accent, #22d3a6);
-    color: #0f172a;
-    font-size: .72rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-.opc-stage-name {
-    flex: 1;
-    font-size: .9rem;
-    font-weight: 600;
-    color: #cbd5e1;
-}
-.opc-stage-date {
-    font-size: .82rem;
-    color: #94a3b8;
-    font-weight: 400;
-    white-space: nowrap;
-}
+.opc-badge { display: inline-block; border-radius: 999px; padding: 3px 10px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
+.opc-badge.open { background: rgba(34,211,166,.15); color: #22d3a6; }
+.opc-badge.upcoming { background: rgba(251,191,36,.15); color: #fbbf24; }
+.opc-badge.closed { background: rgba(248,113,113,.15); color: #f87171; }
+.opc-badge.none { background: rgba(148,163,184,.15); color: #94a3b8; }
+.opc-badge.past { background: rgba(100,116,139,.2); color: #94a3b8; }
 
-/* Empty state */
-.opc-empty {
-    text-align: center;
-    padding: 40px 20px;
-    color: #64748b;
-    font-size: 1rem;
-}
+/* Сложность */
+.opc-diff { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; color: #94a3b8; }
+.opc-diff-dots { display: inline-flex; gap: 2px; }
+.opc-diff-dots i { width: 8px; height: 8px; border-radius: 50%; background: #334155; display: inline-block; }
+.opc-diff-dots i.on { background: var(--accent, #22d3a6); }
+
+/* Этапы */
+.opc-stages { padding: 4px 20px 14px; display: flex; flex-direction: column; border-top: 1px solid #334155; }
+.opc-stage-row { display: flex; align-items: flex-start; gap: 14px; padding: 10px 0; border-bottom: 1px solid rgba(51,65,85,.4); }
+.opc-stage-row:last-child { border-bottom: none; }
+.opc-stage-row.past { opacity: .55; }
+.opc-stage-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent, #22d3a6); color: #0f172a; font-size: .72rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.opc-stage-row.reg .opc-stage-num { background: transparent; border: 2px solid var(--accent, #22d3a6); color: var(--accent, #22d3a6); }
+.opc-stage-body { flex: 1; min-width: 0; }
+.opc-stage-name { font-size: .9rem; font-weight: 600; color: #cbd5e1; }
+.opc-stage-note { font-size: .78rem; color: #64748b; margin-top: 2px; }
+.opc-stage-date { font-size: .84rem; color: #e2e8f0; font-weight: 600; white-space: nowrap; text-align: right; }
+.opc-stage-date small { display: block; color: #64748b; font-weight: 400; font-size: .72rem; }
+.opc-approx { color: #fbbf24; font-size: .7rem; font-weight: 600; }
+
+/* Раскрывающаяся панель */
+.opc-details { display: none; padding: 6px 20px 20px; border-top: 1px solid #334155; }
+.opc-olympiad.is-open .opc-details { display: block; }
+.opc-details h4 { color: var(--accent, #22d3a6); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; margin: 18px 0 8px; }
+.opc-details p, .opc-details li { color: #cbd5e1; font-size: .9rem; line-height: 1.6; }
+.opc-details p { margin: 0 0 6px; }
+.opc-details ol, .opc-details ul { margin: 0; padding-left: 20px; }
+.opc-details li { margin-bottom: 5px; }
+.opc-details ul.mistakes li::marker { color: #f87171; }
+.opc-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+.opc-sites { display: flex; flex-wrap: wrap; gap: 8px; }
+.opc-sites a { display: inline-block; background: #0f172a; border: 1px solid #334155; color: #e2e8f0; text-decoration: none; border-radius: 8px; padding: 7px 12px; font-size: .84rem; font-weight: 600; }
+.opc-sites a:hover { border-color: var(--accent, #22d3a6); color: #fff; }
+.opc-regbox { background: #0f172a; border: 1px solid #334155; border-left: 4px solid var(--accent, #22d3a6); border-radius: 10px; padding: 12px 14px; margin-top: 8px; }
+.opc-regbox p { margin: 0 0 4px; }
+.opc-tip { background: rgba(34,211,166,.08); border-radius: 10px; padding: 10px 14px; color: #cbd5e1; font-size: .88rem; }
+.opc-detail-link { display: inline-block; margin-top: 16px; padding: 9px 18px; border: 1px solid var(--accent, #22d3a6); color: var(--accent, #22d3a6); text-decoration: none; border-radius: 8px; font-size: .88rem; font-weight: 600; }
+.opc-detail-link:hover { background: var(--accent, #22d3a6); color: #0f172a; }
+
+.opc-empty { text-align: center; padding: 40px 20px; color: #64748b; font-size: 1rem; }
 
 @media (max-width: 640px) {
     .opc-wrapper { padding: 24px 12px 40px; }
     .opc-header h1 { font-size: 1.4rem; }
-    .opc-stage-row { flex-direction: column; align-items: flex-start; gap: 4px; }
-    .opc-stage-date { white-space: normal; }
+    .opc-stage-row { flex-wrap: wrap; }
+    .opc-stage-date { white-space: normal; text-align: left; width: 100%; padding-left: 38px; }
+    .opc-grid2 { grid-template-columns: 1fr; }
 }
 </style>
 {% endblock %}
@@ -156,12 +128,12 @@
     </div>
 
     <div class="opc-header">
-        <div class="opc-icon"></div>
         <h1>Календарь <span>олимпиад</span> России</h1>
         <p class="opc-desc">
-            Расписание ключевых математических олимпиад на учебный год 2026/2027:
-            даты регистрации, проведения этапов и объявления результатов.
+            Точные даты регистрации и этапов математических олимпиад на учебный год {{ season }}.
+            Нажми на олимпиаду — откроется подробная информация: как регистрироваться, какие ошибки не допускать и насколько она сложная.
         </p>
+        <p class="opc-today">Сегодня {{ today.strftime('%d.%m.%Y') }} · статусы обновляются автоматически</p>
         {% if current_user.is_authenticated %}
         <p style="margin-top:14px;">
             <a href="/daily_tasks" style="display:inline-block;padding:12px 26px;background:linear-gradient(135deg,#38ef7d 0%,#11998e 100%);color:#0f172a;text-decoration:none;border-radius:10px;font-weight:700;">Перейти к задачам дня</a>
@@ -170,43 +142,250 @@
         {% endif %}
     </div>
 
-    {% if olympiads %}
+    {# ───────── Новый раздел: Вы уже решили, какие олимпиады писать? ───────── #}
+    <section class="opc-decide" id="decide">
+        <h2>Вы уже решили, какие олимпиады писать?</h2>
+        <p>
+            На некоторые олимпиады регистрация уже закрыта, на другие — закрывается на днях.
+            Проверь список и выбери свои: на каждую можно нажать и прочитать, как зарегистрироваться.
+        </p>
+        <div class="opc-decide-grid">
+            <div class="opc-decide-col open">
+                <h3>Регистрация идёт</h3>
+                {% if summary.open %}
+                <ul>
+                    {% for c in summary.open %}
+                    <li><a href="#olympiad-{{ c.key }}" data-open="{{ c.key }}">{{ c.short }}</a>
+                        <small>{% if c.reg_days_left is not none %}{% if c.reg_days_left == 0 %}последний день сегодня{% else %}осталось {{ c.reg_days_left }} дн.{% endif %}{% else %}{{ c.registration.text }}{% endif %}</small></li>
+                    {% endfor %}
+                </ul>
+                {% else %}<div class="opc-decide-empty">Сейчас открытых регистраций нет</div>{% endif %}
+            </div>
+            <div class="opc-decide-col upcoming">
+                <h3>Скоро откроется</h3>
+                {% if summary.upcoming %}
+                <ul>
+                    {% for c in summary.upcoming %}
+                    <li><a href="#olympiad-{{ c.key }}" data-open="{{ c.key }}">{{ c.short }}</a>
+                        <small>{{ c.registration.text }}</small></li>
+                    {% endfor %}
+                </ul>
+                {% else %}<div class="opc-decide-empty">—</div>{% endif %}
+            </div>
+            <div class="opc-decide-col closed">
+                <h3>Регистрация закрыта</h3>
+                {% if summary.closed %}
+                <ul>
+                    {% for c in summary.closed %}
+                    <li><a href="#olympiad-{{ c.key }}" data-open="{{ c.key }}">{{ c.short }}</a>
+                        <small>закрылась {{ c.registration.end.strftime('%d.%m.%Y') }}</small></li>
+                    {% endfor %}
+                </ul>
+                {% else %}<div class="opc-decide-empty">—</div>{% endif %}
+            </div>
+            <div class="opc-decide-col none">
+                <h3>Без личной регистрации</h3>
+                {% if summary.none %}
+                <ul>
+                    {% for c in summary.none %}
+                    <li><a href="#olympiad-{{ c.key }}" data-open="{{ c.key }}">{{ c.short }}</a>
+                        <small>{{ c.registration.text or 'через школу' }}</small></li>
+                    {% endfor %}
+                </ul>
+                {% else %}<div class="opc-decide-empty">—</div>{% endif %}
+            </div>
+        </div>
+    </section>
+
+    {% if cards %}
+    <div class="opc-filters" id="opc-filters">
+        <button class="opc-filter active" data-filter="all">Все</button>
+        <button class="opc-filter" data-filter="open">Регистрация идёт</button>
+        <button class="opc-filter" data-filter="upcoming">Скоро</button>
+        <button class="opc-filter" data-filter="closed">Закрыта</button>
+        <button class="opc-filter" data-filter="d-easy">Сложность 1–2</button>
+        <button class="opc-filter" data-filter="d-mid">Сложность 3</button>
+        <button class="opc-filter" data-filter="d-hard">Сложность 4–5</button>
+    </div>
+
     <div class="opc-timeline">
-        {% for o in olympiads %}
-        <div class="opc-olympiad" style="--accent: {{ o.color_hex }};">
-            <a href="{{ url_for('olympiad_prep.detail', slug=o.slug) }}" class="opc-olympiad-header">
-                <span class="opc-olympiad-dot" style="background: {{ o.color_hex }};"></span>
-                <span class="opc-olympiad-name">{{ o.name }}</span>
-                <span class="opc-olympiad-grades">{{ o.grades_display }}</span>
-            </a>
-            {% if o.stages_list %}
-            <div class="opc-stages">
-                {% for stage in o.stages_list %}
-                <div class="opc-stage-row">
-                    <span class="opc-stage-num">{{ loop.index }}</span>
-                    <span class="opc-stage-name">
-                        {% if stage is mapping %}{{ stage.name }}{% else %}{{ stage }}{% endif %}
+        {% for c in cards %}
+        {% set dgroup = 'd-easy' if c.difficulty and c.difficulty <= 2 else ('d-mid' if c.difficulty == 3 else ('d-hard' if c.difficulty else '')) %}
+        <div class="opc-olympiad" id="olympiad-{{ c.key }}" style="--accent: {{ c.color }};" data-status="{{ c.reg_status }}" data-diff="{{ dgroup }}">
+            <button class="opc-olympiad-header" type="button" aria-expanded="false" aria-controls="details-{{ c.key }}">
+                <span class="opc-olympiad-dot" style="background: {{ c.color }};"></span>
+                <span class="opc-olympiad-title">
+                    <span class="opc-olympiad-name">{{ c.name }}</span>
+                    <span class="opc-olympiad-meta">
+                        <span>{{ c.grades }}</span>
+                        {% if c.difficulty %}
+                        <span class="opc-diff">Сложность
+                            <span class="opc-diff-dots">{% for i in range(1, 6) %}<i class="{{ 'on' if i <= c.difficulty else '' }}"></i>{% endfor %}</span>
+                            {{ c.difficulty }}/5 · {{ c.difficulty_label }}
+                        </span>
+                        {% endif %}
                     </span>
-                    {% if stage is mapping and stage.date_range %}
-                    <span class="opc-stage-date"> {{ stage.date_range }}</span>
-                    {% endif %}
+                </span>
+                {% if c.reg_status == 'open' %}
+                    <span class="opc-badge open">Регистрация идёт{% if c.reg_days_left is not none %}{% if c.reg_days_left == 0 %} · сегодня последний день{% else %} · {{ c.reg_days_left }} дн.{% endif %}{% endif %}</span>
+                {% elif c.reg_status == 'upcoming' %}
+                    <span class="opc-badge upcoming">Регистрация скоро{% if c.reg_days_until is not none %} · через {{ c.reg_days_until }} дн.{% endif %}</span>
+                {% elif c.reg_status == 'closed' %}
+                    <span class="opc-badge closed">Регистрация закрыта</span>
+                {% else %}
+                    <span class="opc-badge none">Через школу</span>
+                {% endif %}
+                <svg class="opc-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+
+            <div class="opc-stages">
+                {% set reg = c.registration %}
+                {% if reg.text %}
+                <div class="opc-stage-row reg {% if c.reg_status == 'closed' %}past{% endif %}">
+                    <span class="opc-stage-num">Р</span>
+                    <span class="opc-stage-body">
+                        <span class="opc-stage-name">Регистрация</span>
+                        {% if reg.url %}<div class="opc-stage-note"><a href="{{ reg.url }}" target="_blank" rel="noopener" style="color:#94a3b8;">{{ reg.url | replace('https://','') | replace('http://','') | trim('/') }}</a></div>{% endif %}
+                    </span>
+                    <span class="opc-stage-date">{{ reg.text }}
+                        <small>{% if c.reg_status == 'open' %}открыта{% elif c.reg_status == 'closed' %}завершена{% elif c.reg_status == 'upcoming' %}ещё не началась{% else %}через школу{% endif %}</small>
+                    </span>
+                </div>
+                {% endif %}
+                {% for s in c.stages %}
+                <div class="opc-stage-row {% if s.status == 'closed' %}past{% endif %}">
+                    <span class="opc-stage-num">{{ loop.index }}</span>
+                    <span class="opc-stage-body">
+                        <span class="opc-stage-name">{{ s.name }}</span>
+                        {% if s.note %}<div class="opc-stage-note">{{ s.note }}</div>{% endif %}
+                    </span>
+                    <span class="opc-stage-date">{{ s.text }}
+                        <small>
+                            {% if s.status == 'closed' %}прошёл{% elif s.status == 'open' %}идёт сейчас{% elif s.status == 'upcoming' and s.days_until is not none %}через {{ s.days_until }} дн.{% endif %}
+                            {% if c.static and not s.exact %}<span class="opc-approx">· дата уточняется</span>{% endif %}
+                        </small>
+                    </span>
                 </div>
                 {% endfor %}
             </div>
-            {% endif %}
-            {% if current_user.is_authenticated %}
-            <a href="/daily_tasks"
-               style="display:inline-block;margin-top:12px;padding:9px 18px;border:1px solid {{ o.color_hex }};color:{{ o.color_hex }};text-decoration:none;border-radius:8px;font-size:.88rem;font-weight:600;">
-                Готовиться к этой олимпиаде →
-            </a>
-            {% endif %}
+
+            <div class="opc-details" id="details-{{ c.key }}">
+                {% if c.about %}
+                <h4>Об олимпиаде</h4>
+                <p>{{ c.about }}</p>
+                {% if c.level %}<p style="color:#94a3b8;font-size:.84rem;">{{ c.level }}</p>{% endif %}
+                {% endif %}
+
+                {% if c.difficulty %}
+                <h4>Сложность — {{ c.difficulty }}/5, {{ c.difficulty_label }}</h4>
+                <p>{{ c.difficulty_note }}</p>
+                {% endif %}
+
+                {% if c.format %}
+                <h4>Формат</h4>
+                <p>{{ c.format }}</p>
+                {% endif %}
+
+                {% if c.registration.how %}
+                <h4>Регистрация</h4>
+                <div class="opc-regbox">
+                    <p><strong style="color:#fff;">Сроки:</strong> {{ c.registration.text }}
+                        {% if c.reg_status == 'open' %}<span class="opc-badge open" style="margin-left:6px;">открыта</span>
+                        {% elif c.reg_status == 'closed' %}<span class="opc-badge closed" style="margin-left:6px;">закрыта</span>
+                        {% elif c.reg_status == 'upcoming' %}<span class="opc-badge upcoming" style="margin-left:6px;">скоро</span>{% endif %}
+                    </p>
+                    <p>{{ c.registration.how }}</p>
+                    {% if c.registration.url %}<p><a href="{{ c.registration.url }}" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">Перейти к регистрации →</a></p>{% endif %}
+                </div>
+                {% endif %}
+
+                {% if c.steps %}
+                <h4>Как зарегистрироваться: по шагам</h4>
+                <ol>{% for st in c.steps %}<li>{{ st }}</li>{% endfor %}</ol>
+                {% endif %}
+
+                {% if c.mistakes %}
+                <h4>Какие ошибки не допускать</h4>
+                <ul class="mistakes">{% for m in c.mistakes %}<li>{{ m }}</li>{% endfor %}</ul>
+                {% endif %}
+
+                <div class="opc-grid2">
+                    {% if c.gives %}
+                    <div>
+                        <h4>Что даёт</h4>
+                        <p>{{ c.gives }}</p>
+                    </div>
+                    {% endif %}
+                    {% if c.docs %}
+                    <div>
+                        <h4>Документы</h4>
+                        <p>{{ c.docs }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if c.sites %}
+                <h4>Сайты</h4>
+                <div class="opc-sites">
+                    {% for s in c.sites %}<a href="{{ s.url }}" target="_blank" rel="noopener">{{ s.title }}</a>{% endfor %}
+                </div>
+                {% endif %}
+
+                {% if c.tip %}
+                <h4>Совет</h4>
+                <div class="opc-tip">{{ c.tip }}</div>
+                {% endif %}
+
+                {% if c.slug %}
+                <a class="opc-detail-link" href="{{ url_for('olympiad_prep.detail', slug=c.slug) }}">Страница олимпиады на FORMYLA →</a>
+                {% endif %}
+            </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="opc-empty">
-        Олимпиады пока не добавлены.
-    </div>
+    <div class="opc-empty">Олимпиады пока не добавлены.</div>
     {% endif %}
 </div>
+
+<script>
+(function () {
+    function toggle(card, force) {
+        var open = typeof force === 'boolean' ? force : !card.classList.contains('is-open');
+        card.classList.toggle('is-open', open);
+        var btn = card.querySelector('.opc-olympiad-header');
+        if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    document.querySelectorAll('.opc-olympiad-header').forEach(function (btn) {
+        btn.addEventListener('click', function () { toggle(btn.closest('.opc-olympiad')); });
+    });
+    document.querySelectorAll('[data-open]').forEach(function (a) {
+        a.addEventListener('click', function () {
+            var card = document.getElementById('olympiad-' + a.getAttribute('data-open'));
+            if (card) { card.hidden = false; toggle(card, true); }
+        });
+    });
+    function openFromHash() {
+        if (!location.hash || location.hash.indexOf('#olympiad-') !== 0) return;
+        var card = document.getElementById(location.hash.slice(1));
+        if (card) { card.hidden = false; toggle(card, true); card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    }
+    openFromHash();
+    window.addEventListener('hashchange', openFromHash);
+
+    var filters = document.getElementById('opc-filters');
+    if (filters) {
+        filters.addEventListener('click', function (e) {
+            var b = e.target.closest('.opc-filter'); if (!b) return;
+            filters.querySelectorAll('.opc-filter').forEach(function (x) { x.classList.remove('active'); });
+            b.classList.add('active');
+            var f = b.getAttribute('data-filter');
+            document.querySelectorAll('.opc-olympiad').forEach(function (card) {
+                var show = f === 'all' || card.getAttribute('data-status') === f || card.getAttribute('data-diff') === f;
+                card.hidden = !show;
+            });
+        });
+    }
+})();
+</script>
 {% endblock %}
