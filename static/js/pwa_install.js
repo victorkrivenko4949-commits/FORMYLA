@@ -1,5 +1,5 @@
 /**
- * pwa_install.js — PWA_INSTALL_V2 (11.10.2026).
+ * pwa_install.js — PWA_INSTALL_V3 (11.10.2026).
  *
  * Состояния кнопки:
  *   install    — «📲 Скачать приложение» (пришёл beforeinstallprompt или это iOS)
@@ -12,6 +12,13 @@
  *   3) флаг в localStorage с прошлого раза.
  *   Если Chrome всё же присылает beforeinstallprompt — значит НЕ установлено, верим ему.
  *
+ * Статистика: факт установки отправляется один раз на POST /api/pwa/installed
+ * (appinstalled на Android/десктопе; первый запуск в standalone — на iPhone).
+ *
+ * Обновления: при каждом открытии и возврате на вкладку проверяем новую версию
+ * service worker; как только она активируется — страница перезагружается один раз,
+ * чтобы приложение всегда было на той же версии, что и сайт.
+ *
  * Внутри установленного приложения (standalone): кнопок нет, показываем заставку.
  * Подключается автоматически (routes/pwa.py) только разрешённым пользователям (PWA_ALLOWED_USERS).
  */
@@ -22,6 +29,7 @@
   var state = 'hidden';
   var LS_INSTALLED = 'formyla_pwa_installed';
   var LS_DISMISSED = 'formyla_pwa_fab_dismissed';
+  var LS_REPORTED = 'formyla_pwa_install_reported';
   var SS_SPLASH = 'formyla_pwa_splash_shown';
   var installingTimer = null;
 
@@ -34,11 +42,31 @@
     var iPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
     return /iPhone|iPad|iPod/i.test(ua) || iPadOS;
   }
+  function platform() {
+    if (isIOS()) return 'ios';
+    if (/Android/i.test(navigator.userAgent || '')) return 'android';
+    return 'desktop';
+  }
   function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
   function lsSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
   function ssGet(key) { try { return sessionStorage.getItem(key); } catch (e) { return null; } }
   function ssSet(key, val) { try { sessionStorage.setItem(key, val); } catch (e) {} }
   function track(name) { try { if (window.plausible) window.plausible(name); } catch (e) {} }
+
+  /* ───── 0. Статистика установок ───── */
+  function reportInstall(source) {
+    if (lsGet(LS_REPORTED) === '1') return;
+    try {
+      fetch('/api/pwa/installed', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: source, platform: platform() })
+      }).then(function (r) {
+        if (r.ok) lsSet(LS_REPORTED, '1');
+      }).catch(function () {});
+    } catch (e) {}
+  }
 
   var LOGO_SVG =
     '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
@@ -49,14 +77,42 @@
     '<line class="pwa-line" x1="50" y1="50" x2="70" y2="40" stroke="url(#pwaGrad)" stroke-width="5"/>' +
     '<circle class="pwa-dot" cx="50" cy="50" r="5" fill="#fff"/></svg>';
 
-  /* ───── 1. Service worker (корневой scope) ───── */
+  /* ───── 1. Service worker + автообновление ───── */
   if ('serviceWorker' in navigator) {
+    var hadController = !!navigator.serviceWorker.controller;
+    var refreshing = false;
+    // Новый SW взял управление → перезагружаем страницу один раз, чтобы подтянуть новую версию.
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!hadController || refreshing) { hadController = true; return; }
+      refreshing = true;
+      console.log('[PWA] new version activated — reloading');
+      window.location.reload();
+    });
+
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function (reg) {
         console.log('[PWA] SW registered, scope:', reg.scope);
         navigator.serviceWorker.getRegistrations().then(function (regs) {
           regs.forEach(function (r) { if (r.scope.indexOf('/static/') !== -1) r.unregister(); });
         }).catch(function () {});
+
+        function check() { try { reg.update().catch(function () {}); } catch (e) {} }
+        check();
+        setInterval(check, 30 * 60 * 1000);                       // раз в 30 минут
+        document.addEventListener('visibilitychange', function () { // и при возврате в приложение
+          if (document.visibilityState === 'visible') check();
+        });
+        // Если новая версия уже скачана и ждёт — активируем её сразу.
+        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        reg.addEventListener('updatefound', function () {
+          var nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', function () {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              nw.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
       }).catch(function (e) { console.warn('[PWA] SW registration failed:', e); });
     });
   }
@@ -102,6 +158,7 @@
 
   if (isStandalone()) {
     lsSet(LS_INSTALLED, '1');
+    reportInstall('standalone_launch');   // iPhone не шлёт appinstalled — считаем первый запуск
     if (document.body) showSplash(); else document.addEventListener('DOMContentLoaded', showSplash);
     return;
   }
@@ -149,8 +206,8 @@
   }
 
   /* ───── 4. Разметка ───── */
-  var buttons = [];   // элементы, у которых меняем видимость/состояние
-  var labels = [];    // элементы, в которые пишем текст
+  var buttons = [];
+  var labels = [];
 
   var LABELS = {
     install:    '<span>📲</span><span>Скачать приложение</span>',
@@ -232,11 +289,12 @@
     buttons.forEach(function (b) { b.setAttribute('data-state', next); b.classList.add('is-visible'); });
   }
 
-  function markInstalled() {
+  function markInstalled(reportSource) {
     if (installingTimer) { clearTimeout(installingTimer); installingTimer = null; }
     lsSet(LS_INSTALLED, '1');
     deferredPrompt = null;
     setState('installed');
+    if (reportSource) reportInstall(reportSource);
   }
 
   function onClick() {
@@ -254,9 +312,9 @@
         if (ok) {
           track('pwa_install_accepted');
           // Ждём appinstalled; если браузер его не пришлёт — через 6 с считаем установленным.
-          installingTimer = setTimeout(markInstalled, 6000);
+          installingTimer = setTimeout(function () { markInstalled('timer'); }, 6000);
         } else {
-          setState('install');            // отказался — вернём кнопку; событие Chrome пришлёт заново после перезагрузки
+          setState('install');
           deferredPrompt = null;
         }
       }).catch(function () { setState('install'); });
@@ -270,6 +328,7 @@
     e.preventDefault();
     deferredPrompt = e;
     lsSet(LS_INSTALLED, '0');           // раз событие пришло — приложения точно нет
+    lsSet(LS_REPORTED, '0');            // новая установка — новая запись в статистике
     if (state !== 'installing') setState('install');
     console.log('[PWA] beforeinstallprompt captured');
   });
@@ -277,24 +336,23 @@
   window.addEventListener('appinstalled', function () {
     console.log('[PWA] app installed');
     track('pwa_installed');
-    markInstalled();
+    markInstalled('appinstalled');
   });
 
   function detectInstalled() {
     if (lsGet(LS_INSTALLED) === '1') setState('installed');
     if (navigator.getInstalledRelatedApps) {
       navigator.getInstalledRelatedApps().then(function (apps) {
-        if (apps && apps.length && state !== 'installing') markInstalled();
+        if (apps && apps.length && state !== 'installing') markInstalled(null);
       }).catch(function () {});
     }
   }
 
   function init() {
     injectCSS();
-    mountButtons();                 // кнопки создаются скрытыми
-    detectInstalled();              // уже стоит? → «Открыть приложение»
+    mountButtons();
+    detectInstalled();
     if (isIOS() && state === 'hidden') setState('install');
-    // На Android/десктопе «Скачать» появится после beforeinstallprompt.
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
