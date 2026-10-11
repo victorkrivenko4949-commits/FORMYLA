@@ -124,3 +124,7 @@ window.ftFbSubmit = function (ev) {
   setInterval(check, 60000);
 })();
 </script>
+
+{# SITE_NOTICE_V1: одноразовые уведомления сайта (показываются каждому 1 раз).
+   Подключены здесь, потому что этот partial уже включён в base.html для всех пользователей. #}
+{% include 'partials/olympiad_notice_modal.html' %}

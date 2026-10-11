@@ -1,22 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-routes/__init__.py — ADMIN_BASE_V1 (06.10.2026) + PWA_INSTALL_V1 (11.10.2026).
+routes/__init__.py — ADMIN_BASE_V1 (06.10.2026) + PWA_INSTALL_V1 (11.10.2026)
++ SITE_NOTICE_V1 (11.10.2026).
 
-Автоматическая регистрация blueprint «База» (routes/admin_base.py) и
-blueprint PWA (routes/pwa.py) без правки app.py. Файл превращает `routes/`
+Автоматическая регистрация blueprint «База» (routes/admin_base.py),
+blueprint PWA (routes/pwa.py) и blueprint одноразовых уведомлений
+(routes/site_notices.py) без правки app.py. Файл превращает `routes/`
 в обычный пакет (раньше был namespace package); все существующие импорты
 `from routes.xxx import ...` работают как прежде.
 
 Как это работает: при первом `app.register_blueprint(...)` любого другого
-blueprint мы один раз дорегистрируем `admin_base_bp` и `pwa_bp` в это же
-приложение и вешаем after_request-хуки.
+blueprint мы один раз дорегистрируем `admin_base_bp`, `pwa_bp` и `site_notices_bp`
+в это же приложение и вешаем after_request-хуки.
 
-Отключить: ADMIN_BASE_AUTOREG=0 и/или PWA_AUTOREG=0.
+Отключить: ADMIN_BASE_AUTOREG=0, PWA_AUTOREG=0 и/или SITE_NOTICES_AUTOREG=0.
 Ручная регистрация (эквивалент):
     from routes.admin_base import admin_base_bp
     app.register_blueprint(admin_base_bp)
     from routes.pwa import install_pwa
     install_pwa(app)
+    from routes.site_notices import site_notices_bp
+    app.register_blueprint(site_notices_bp)
 """
 from __future__ import annotations
 
@@ -47,8 +51,26 @@ def _install_pwa(app) -> None:
         logger.exception("[pwa] auto-register failed: %r", e)
 
 
+def _install_site_notices(app) -> None:
+    """SITE_NOTICE_V1: одноразовые уведомления (/api/site-notice/*)."""
+    if os.environ.get("SITE_NOTICES_AUTOREG", "1") == "0":
+        return
+    if getattr(app, "_site_notices_installed", False):
+        return
+    app._site_notices_installed = True
+    try:
+        from routes.site_notices import site_notices_bp
+        if "site_notices" not in app.blueprints:
+            _ORIG_REGISTER(app, site_notices_bp)
+        logger.info("[BP] site_notices_bp registered (/api/site-notice/pending, /api/site-notice/seen)")
+        print("[BP] site_notices_bp registered (/api/site-notice/pending, /api/site-notice/seen)")
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[site_notices] auto-register failed: %r", e)
+
+
 def _install(app) -> None:
     _install_pwa(app)
+    _install_site_notices(app)
 
     if getattr(app, "_admin_base_installed", False):
         return
@@ -94,7 +116,7 @@ try:
 
         def _patched_register_blueprint(self, blueprint, **options):
             result = _ORIG_REGISTER(self, blueprint, **options)
-            if getattr(blueprint, "name", "") not in ("admin_base", "pwa"):
+            if getattr(blueprint, "name", "") not in ("admin_base", "pwa", "site_notices"):
                 _install(self)
             return result
 
