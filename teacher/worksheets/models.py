@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Модели конструктора листка.
 
-Таблицы: worksheets, worksheet_tasks, worksheet_assignments.
+Таблицы: worksheets, worksheet_tasks, worksheet_assignments, worksheet_daily_items.
 task_id — идентификатор записи FORMYLA_BANK.jsonl (поле ``position``,
 как в services/daily_task_rotation.py: ``'task_id': t.get('position', i)``).
 Банк задач не изменяется и не копируется в БД.
@@ -95,3 +95,23 @@ class WorksheetAssignment(db.Model):
 
     def __repr__(self):
         return f"<WorksheetAssignment ws={self.worksheet_id} student={self.student_id} {self.status}>"
+
+
+class WorksheetDailyItem(db.Model):
+    """Связь «задача листка ↔ DailyTaskItem» ученика (этап 6). Решение пишется в DailyTaskItem
+    штатным потоком daily_tasks; здесь — только соответствие для ведомости и статусов."""
+    __tablename__ = "worksheet_daily_items"
+
+    id = db.Column(db.Integer, primary_key=True)
+    assignment_id = db.Column(db.Integer, db.ForeignKey("worksheet_assignments.id", ondelete="CASCADE"),
+                              nullable=False, index=True)
+    worksheet_task_id = db.Column(db.Integer, db.ForeignKey("worksheet_tasks.id", ondelete="CASCADE"), nullable=False)
+    daily_item_id = db.Column(db.Integer, nullable=False, index=True)  # daily_task_items.id (без FK: чужая таблица)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("assignment_id", "worksheet_task_id", name="uq_worksheet_daily_items_assign_task"),
+    )
+
+    def __repr__(self):
+        return f"<WorksheetDailyItem a={self.assignment_id} t={self.worksheet_task_id} item={self.daily_item_id}>"

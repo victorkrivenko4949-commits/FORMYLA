@@ -69,11 +69,11 @@ def _register_teacher_worksheets(app):
         return
     try:
         from models import db
-        from teacher.worksheets.models import Worksheet, WorksheetTask, WorksheetAssignment
+        from teacher.worksheets.models import Worksheet, WorksheetTask, WorksheetAssignment, WorksheetDailyItem
         with app.app_context():
-            for model in (Worksheet, WorksheetTask, WorksheetAssignment):
+            for model in (Worksheet, WorksheetTask, WorksheetAssignment, WorksheetDailyItem):
                 model.__table__.create(bind=db.engine, checkfirst=True)
-        _log.info('WORKSHEETS_V1: tables ensured (worksheets, worksheet_tasks, worksheet_assignments)')
+        _log.info('WORKSHEETS_V1: tables ensured (worksheets, worksheet_tasks, worksheet_assignments, worksheet_daily_items)')
     except Exception as e:
         _log.warning('WORKSHEETS_V1: ensure tables failed: %r', e)
 
