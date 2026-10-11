@@ -23,6 +23,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from daily_tasks.pipeline.deepseek_client import DeepSeekClient as OpenRouterClient, TokenUsage, make_token_usage
 
+from daily_tasks.math_normalize import normalize_task_item
+
 from .validators import (
     OpusGenerationValidation,
     extract_json_safe,
@@ -256,6 +258,13 @@ async def _generate_one_spec(
 
     # Prinuditelno fiksiruem position na tu, chto v speke.
     task["position"] = pos
+
+    # Normalizaciya formul: golye \\frac/\\sqrt oborachivaem v $...$, vnutri
+    # formul a/b -> \\frac{a}{b}, √(...) -> \\sqrt{...} (sm. daily_tasks/math_normalize.py).
+    try:
+        normalize_task_item(task)
+    except Exception as _norm_exc:  # pragma: no cover - ne ronyaem generaciyu
+        logger.warning("Step 2 GENERATE - pos=%s - math normalize failed: %s", pos, _norm_exc)
 
     text_preview = (task.get("task_text") or "")[:120].replace("\n", " ")
     answer_preview = str(task.get("correct_answer") or "")[:60]
