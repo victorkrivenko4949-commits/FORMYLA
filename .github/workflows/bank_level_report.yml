@@ -1,0 +1,28 @@
+name: bank-level-report
+
+on:
+  push:
+    branches: [fix/daily-bank-level-priority]
+    paths-ignore: ['reports/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build report
+        run: python scripts/bank_level_report.py --min 5 --out reports/bank_level_report.md
+      - name: Commit report
+        run: |
+          git config user.name 'formyla-bot'
+          git config user.email 'bot@formyla.net'
+          git add reports/bank_level_report.md
+          git diff --cached --quiet || git commit -m 'chore(bank): bank_level_report.md [skip ci]'
+          git push
