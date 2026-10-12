@@ -26,6 +26,48 @@
 </div>
 {% endif %}
 {# ════════════════════════════════════════════════════════════════════════
+   FORMYLA MEET — быстрое подключение с главной (cookie fm_meet, пишется на /meet)
+   ════════════════════════════════════════════════════════════════════════ #}
+<div id="fmMeetHome" style="margin:16px auto 22px; max-width:980px; background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.25); border-radius:16px; padding:14px 18px; box-shadow:0 4px 20px rgba(59,130,246,0.08);">
+  <div style="display:flex; flex-wrap:wrap; align-items:center; gap:14px;">
+    <span style="font-size:30px; line-height:1;" aria-hidden="true">📹</span>
+    <div style="flex:1 1 240px; min-width:200px; text-align:left;">
+      <div style="font-weight:800; font-size:17px; background:linear-gradient(135deg, var(--accent-2), var(--accent-1)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">FORMYLA Meet — видеовстречи</div>
+      <div id="fmMeetHomeSub" style="font-size:13px; color:var(--text-secondary,#6b7280); margin-top:2px;">Онлайн-занятия с доской и чатом. Одна кнопка — и вы в комнате.</div>
+    </div>
+    <a id="fmMeetHomeBtn" href="/meet" style="display:inline-flex; align-items:center; gap:8px; padding:11px 20px; border-radius:12px; font-weight:800; font-size:15px; color:#fff; text-decoration:none; background:linear-gradient(135deg, var(--accent-2), var(--accent-1)); box-shadow:0 6px 18px rgba(59,130,246,0.25); white-space:nowrap;">▶ Открыть встречи</a>
+  </div>
+  <div id="fmMeetHomeRecent" style="display:none; flex-wrap:wrap; gap:8px; margin-top:12px; padding-top:12px; border-top:1px dashed rgba(59,130,246,0.25);"></div>
+</div>
+<script>
+(function () {
+  var KEY = 'fm_meet', d = null;
+  try {
+    var m = document.cookie.match(/(?:^|; )fm_meet=([^;]*)/);
+    if (m) d = JSON.parse(decodeURIComponent(m[1]));
+    if (!d) d = JSON.parse(localStorage.getItem(KEY) || 'null');
+  } catch (e) { d = null; }
+  var rooms = (d && Array.isArray(d.rooms)) ? d.rooms : [];
+  if (!rooms.length) return;
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var link = function (id) { return '/meet#/rejoin/' + encodeURIComponent(id); };
+  var last = rooms[0];
+  var btn = document.getElementById('fmMeetHomeBtn'), sub = document.getElementById('fmMeetHomeSub'), rec = document.getElementById('fmMeetHomeRecent');
+  btn.href = link(last.id);
+  btn.textContent = '▶ Подключиться: ' + String(last.topic || 'Встреча').slice(0, 32);
+  var when = last.date ? new Date(last.date).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+  sub.textContent = 'Последнее подключение: ' + (last.topic || 'Встреча') + ' · ID ' + last.id + (when ? ' · ' + when : '') + (d.name ? ' · как ' + d.name : '');
+  var html = '<span style="font-size:12px; color:var(--text-secondary,#6b7280); align-self:center;">История подключений:</span>';
+  rooms.slice(0, 6).forEach(function (r) {
+    html += '<a href="' + link(r.id) + '" title="ID ' + esc(r.id) + '" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; font-size:13px; font-weight:600; text-decoration:none; color:var(--accent-1); background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3);">🎥 ' + esc(String(r.topic || 'Встреча').slice(0, 28)) + (r.n > 1 ? ' <small style="opacity:.7">×' + r.n + '</small>' : '') + '</a>';
+  });
+  html += '<a href="/meet" style="align-self:center; font-size:12px; color:var(--text-secondary,#6b7280); text-decoration:underline;">все встречи</a>';
+  rec.innerHTML = html;
+  rec.style.display = 'flex';
+})();
+</script>
+
+{# ════════════════════════════════════════════════════════════════════════
    DESKTOP / TABLET (>768px) — старая верстка без изменений.
    Скрывается на мобильных через .m-hide -> display:none в mobile.css.
    ════════════════════════════════════════════════════════════════════════ #}
