@@ -6,6 +6,7 @@
  * 2. Миграция данных из localStorage в БД
  * 3. Управление никнеймом
  * 4. Загрузка профиля
+ * 5. Кнопка «Пройти анкету заново» в профиле (/profile)
  */
 
 (function() {
@@ -309,6 +310,93 @@
     }
 
     // ============================================================
+    // Кнопка «Пройти анкету заново» в профиле
+    // ============================================================
+
+    /**
+     * Сбросить анкету (POST /intake/restart) и перейти на /intake/.
+     * Аккаунт, решённые задачи и рейтинг не трогаются — сбрасываются
+     * только ответы анкеты; уровень и задачи дня пересчитаются по новым.
+     */
+    async function retakeIntake() {
+        var ok = window.confirm(
+            'Пройти анкету заново?\n\n' +
+            'Текущие ответы анкеты будут сброшены, уровень и задачи дня ' +
+            'пересчитаются по новым ответам. Решённые задачи и рейтинг сохранятся.'
+        );
+        if (!ok) return;
+
+        var btn = document.getElementById('intakeRetakeBtn');
+        var status = document.getElementById('intakeRetakeStatus');
+        if (btn) { btn.disabled = true; btn.style.opacity = '0.7'; }
+        if (status) { status.textContent = 'Сбрасываю анкету…'; }
+
+        try {
+            var response = await fetch('/intake/restart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: '{}'
+            });
+            var data = {};
+            try { data = await response.json(); } catch (e) { /* non-JSON */ }
+            if (response.ok && data.done) {
+                window.location.href = data.redirect_url || '/intake/';
+                return;
+            }
+            if (status) {
+                status.textContent = data.error || 'Не удалось сбросить анкету. Попробуйте ещё раз.';
+                status.style.color = '#f87171';
+            }
+        } catch (e) {
+            if (status) {
+                status.textContent = 'Ошибка сети. Попробуйте ещё раз.';
+                status.style.color = '#f87171';
+            }
+        }
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+    }
+
+    /**
+     * На странице /profile добавляет карточку «Анкета» с кнопкой
+     * «Пройти анкету заново» сразу после карточки «Информация об аккаунте».
+     */
+    function injectRetakeIntakeCard() {
+        if (!/^\/profile\/?$/.test(window.location.pathname)) return;
+        if (document.getElementById('intakeRetakeCard')) return;
+
+        var anchor = document.getElementById('nickname-display');
+        var card = anchor ? anchor.closest('div[style*="--bg-card"]') : null;
+        if (!card || !card.parentNode) return;
+
+        var wrap = document.createElement('div');
+        wrap.innerHTML =
+            '<div id="intakeRetakeCard" style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(56,189,248,0.3); box-shadow: 0 8px 32px rgba(0,0,0,0.3); margin-bottom: 30px;">' +
+                '<h2 style="color: var(--accent-2); margin-bottom: 8px; font-size: 1.5em;">📝 Анкета</h2>' +
+                '<p style="color: var(--text-muted); margin-bottom: 16px; font-size: 14px; line-height: 1.5;">' +
+                    'От анкеты зависит всё: уровень, задачи дня и советы ИИ-куратора. ' +
+                    'Если ИИ пишет, что анкета не заполнена, или вы хотите обновить класс и цели — пройдите её заново.' +
+                '</p>' +
+                '<div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">' +
+                    '<button type="button" id="intakeRetakeBtn" style="padding: 12px 24px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 15px; transition: transform 0.2s;" ' +
+                        'onmouseover="this.style.transform=\'scale(1.04)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
+                        '🔄 Пройти анкету заново' +
+                    '</button>' +
+                    '<a href="/intake/" style="padding: 12px 20px; background: rgba(56,189,248,0.1); color: #38bdf8; border: 1px solid rgba(56,189,248,0.35); border-radius: 10px; font-weight: 600; font-size: 14px; text-decoration: none; display: inline-block;">' +
+                        'Открыть анкету' +
+                    '</a>' +
+                    '<span id="intakeRetakeStatus" style="color: var(--text-muted); font-size: 14px;"></span>' +
+                '</div>' +
+            '</div>';
+
+        var node = wrap.firstElementChild;
+        card.parentNode.insertBefore(node, card.nextSibling);
+
+        var btn = document.getElementById('intakeRetakeBtn');
+        if (btn) btn.addEventListener('click', retakeIntake);
+    }
+
+    // ============================================================
     // Инициализация
     // ============================================================
 
@@ -323,6 +411,9 @@
 
         // Запускаем периодическую синхронизацию
         startPeriodicSync();
+
+        // Кнопка «Пройти анкету заново» в профиле
+        try { injectRetakeIntakeCard(); } catch (e) { console.warn('[ProfileSync] intake card:', e); }
 
         console.log('[ProfileSync] Готов. Device ID:', getDeviceId());
     }
@@ -343,6 +434,7 @@
         loadProfile: loadProfile,
         setNickname: setNickname,
         flushQueue: flushSyncQueue,
+        retakeIntake: retakeIntake,
         getDeviceId: getDeviceId,
         getQueueSize: function() { return getSyncQueue().length; }
     };

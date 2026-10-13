@@ -8,6 +8,8 @@ Endpoints:
   POST /intake/answer    — записать ответ (JSON)
   POST /intake/anchor    — проверить якорь (JSON)
   POST /intake/back      — вернуться на шаг назад (JSON)
+  POST /intake/restart   — сбросить анкету и пройти заново (JSON)
+  GET  /intake/restart   — то же, но редиректом на /intake/ (для ссылок)
 """
 
 from __future__ import annotations
@@ -15,7 +17,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict
 
-from flask import Blueprint, jsonify, render_template, request, session
+from flask import Blueprint, jsonify, redirect, render_template, request, session
 from flask_login import current_user, login_required
 
 logger = logging.getLogger(__name__)
@@ -93,6 +95,37 @@ def skip_intake():
     from services.intake_service import _mark_intake_skipped
     _mark_intake_skipped(current_user.id)
     return jsonify({'done': True, 'redirect_url': '/olympiad-start'})
+
+
+# ══════════════════════════════════════════════════════════════════════
+# POST|GET /intake/restart — сбросить анкету и пройти заново
+# ══════════════════════════════════════════════════════════════════════
+
+@intake_bp.route('/restart', methods=['GET', 'POST'])
+@login_required
+def restart_intake():
+    """Сбросить пройденную анкету и начать её заново (без удаления аккаунта).
+
+    Используется кнопкой «Пройти анкету заново» в профиле. Старые ответы
+    уходят в prep_state.intake_history, intake.completed сбрасывается —
+    всё, что зависит от анкеты (гейт, задачи дня, ИИ-куратор), начинает
+    опираться на новое прохождение.
+
+    POST → JSON {done: true, redirect_url: '/intake/'}
+    GET  → redirect на /intake/
+    """
+    from services.intake_service import restart
+    try:
+        restart(current_user.id)
+    except Exception as e:
+        logger.exception('intake: restart failed for user=%s', current_user.id)
+        if request.method == 'GET':
+            return redirect('/intake/')
+        return jsonify({'done': False, 'error': f'Не удалось сбросить анкету: {e}'}), 500
+
+    if request.method == 'GET':
+        return redirect('/intake/')
+    return jsonify({'done': True, 'redirect_url': '/intake/'}), 200
 
 
 # ══════════════════════════════════════════════════════════════════════

@@ -7,8 +7,9 @@ API:
   answer(user_id, qid, key) -> dict   # записать ответ, вернуть следующий шаг
   submit_anchor(user_id, task_id, user_answer) -> dict  # проверка якоря
   finish(user_id) -> dict             # финализация: compute_prior, сохранение в БД
+  restart(user_id) -> dict            # сброс пройденной анкеты (пройти заново)
 
-Состояние: Flask session['intake'].
+Состояние: CuratorState.prep_state['_intake_session'] (БД).
 
 Q1 теперь содержит опции teacher/parent наряду с классами 5-11.
 Выбор teacher/parent → сразу завершает анкету, проставляет user.role
@@ -134,6 +135,64 @@ def _mark_intake_skipped(user_id: int) -> None:
     cs.prep_state = ps
     db.session.commit()
     logger.info(f"intake: user={user_id} skipped questionnaire")
+
+
+def restart(user_id: int) -> Dict[str, Any]:
+    """Сбросить пройденную анкету, чтобы пользователь прошёл её заново.
+
+    Кнопка «Пройти анкету заново» в профиле (без удаления аккаунта —
+    в отличие от старого /account/reintake).
+
+    Что делаем:
+      - старый prep_state['intake'] складываем в prep_state['intake_history']
+        (чтобы ничего не терять и видеть, что было до перепрохождения);
+      - удаляем prep_state['intake'] и незавершённую сессию '_intake_session';
+      - считаем prep_state['intake_retakes'] (нужно, чтобы не начислять
+        +20 XP повторно);
+      - CuratorState.onboarding_done = False.
+
+    После этого ВСЁ, что читает intake.completed (гейт app.before_request,
+    задачи дня, ИИ-куратор, next_action), снова считает анкету не пройденной
+    и ведёт пользователя на /intake — пока он не завершит её заново.
+    Решённые задачи, рейтинг и прогресс по темам не трогаем.
+    """
+    from models_curator import CuratorState
+    from models import db
+
+    cs = CuratorState.query.filter_by(user_id=user_id).first()
+    if not cs:
+        cs = CuratorState(user_id=user_id, prep_state={})
+        db.session.add(cs)
+    ps = _prep_state_dict(cs)
+
+    old_intake = ps.get('intake')
+    if isinstance(old_intake, dict) and old_intake:
+        history = ps.get('intake_history')
+        if not isinstance(history, list):
+            history = []
+        archived = dict(old_intake)
+        archived['archived_at'] = datetime.utcnow().isoformat()
+        history.append(archived)
+        # Храним не больше 10 прошлых анкет, чтобы prep_state не раздувался
+        ps['intake_history'] = history[-10:]
+
+    ps.pop('intake', None)
+    ps.pop('_intake_session', None)
+    ps['intake_retakes'] = int(ps.get('intake_retakes') or 0) + 1
+    ps['intake_restarted_at'] = datetime.utcnow().isoformat()
+
+    cs.prep_state = ps
+    try:
+        cs.onboarding_done = False
+    except Exception:
+        pass
+    db.session.commit()
+
+    logger.info(
+        f"intake: user={user_id} restarted questionnaire "
+        f"(retake #{ps['intake_retakes']}, had_previous={bool(old_intake)})"
+    )
+    return {'done': True, 'redirect_url': '/intake/', 'retakes': ps['intake_retakes']}
 
 
 def _call_set_prior(user_id: int, mu: float, sigma: float) -> None:
@@ -584,10 +643,15 @@ def _save_intake_to_db(user_id: int, result: IntakeResult, state: Dict, anchor_s
 
     prep_state = _prep_state_dict(cs)
 
+    # Перепрохождение (после restart()): XP не начисляем повторно,
+    # класс из анкеты перезаписывает профильный.
+    is_retake = int(prep_state.get('intake_retakes') or 0) > 0
+
     prep_state['intake'] = {
         'completed': True,
         'completed_at': datetime.utcnow().isoformat(),
         'skip_probe': True,  # 2026-09-15: срез временно отключён
+        'retake': is_retake,
         'class_level': result.class_level,
         'goal': result.goal,
         'goal_auto': result.goal_auto,
@@ -605,12 +669,14 @@ def _save_intake_to_db(user_id: int, result: IntakeResult, state: Dict, anchor_s
     cs.prep_state = prep_state
     cs.onboarding_done = True
 
-    # Также сохраняем grade и daily_tasks в User и CuratorState
+    # Также сохраняем grade и daily_tasks в User и CuratorState.
+    # Класс, подтверждённый в анкете (Q1), — источник истины: при
+    # перепрохождении он перезаписывает старое значение в профиле.
     if result.class_level:
         try:
             from models import User
             user = db.session.get(User, user_id)
-            if user and not user.preferred_grade:
+            if user and (is_retake or not user.preferred_grade):
                 user.preferred_grade = int(result.class_level)
         except Exception:
             pass
@@ -623,19 +689,21 @@ def _save_intake_to_db(user_id: int, result: IntakeResult, state: Dict, anchor_s
     # этот уровень — основа подбора задач дня.
     _call_set_prior(user_id, result.prior_mu, result.prior_sigma)
 
-    # +20 рейтинга за пройденную анкету (один раз — анкета завершается лишь раз)
-    try:
-        from models import User as _User
-        _u = db.session.get(_User, user_id)
-        if _u is not None:
-            _u.experience_points = (_u.experience_points or 0) + 20
-    except Exception as _xp_err:
-        logger.warning(f"intake: +XP за анкету не начислен user={user_id}: {_xp_err}")
+    # +20 рейтинга за пройденную анкету (один раз — при перепрохождении
+    # через «Пройти анкету заново» повторно не начисляем)
+    if not is_retake:
+        try:
+            from models import User as _User
+            _u = db.session.get(_User, user_id)
+            if _u is not None:
+                _u.experience_points = (_u.experience_points or 0) + 20
+        except Exception as _xp_err:
+            logger.warning(f"intake: +XP за анкету не начислен user={user_id}: {_xp_err}")
 
     db.session.commit()
     logger.info(
         f"intake saved: user={user_id} class={result.class_level} "
         f"goal={result.goal} auto={result.goal_auto} "
         f"daily={result.daily_tasks} weak={result.weak_sections} "
-        f"mu={result.prior_mu} sigma={result.prior_sigma}"
+        f"mu={result.prior_mu} sigma={result.prior_sigma} retake={is_retake}"
     )
