@@ -2,10 +2,12 @@
 """Bank of daily tasks from FORMYLA_BANK.jsonl, indexed by grade, topic and level.
 
 Подбор: get_tasks(grade, topic, level) берёт задачи ТОЛЬКО запрошенного уровня,
-пока их хватает. Соседние уровни (level-1, level+1, level-2, level+2) идут
-исключительно как добор при нехватке и всегда после задач точного уровня.
-Перемешка md5(user_id:day_seed:level:position) действует только ВНУТРИ уровня,
-поэтому не может поднять задачу уровня 1 выше задачи уровня 3.
+пока их хватает. Если задач точного уровня не хватает (дырка в банке), добор идёт
+смесью соседних уровней: LOWER_SHARE (70%) из level-1 и остальное (30%) из level+1.
+Если одного из соседних уровней нет (level=1 или 4) или в нём тоже нехватка —
+недостающее берётся из другого соседа, затем из level±2, и только потом —
+уже выданные задачи (wrap-around). Перемешка md5(user_id:day_seed:level:position)
+действует только ВНУТРИ уровня.
 """
 
 from __future__ import annotations
@@ -20,6 +22,9 @@ logger = logging.getLogger(__name__)
 _BANK_PATH: Path = Path(__file__).resolve().parents[1] / "FORMYLA_BANK.jsonl"
 _index: Dict[Tuple[int, str, int], List[Dict[str, Any]]] = {}
 _loaded = False
+
+# Доля добора из уровня ниже при нехватке точного уровня (остальное — из уровня выше).
+LOWER_SHARE = 0.7
 
 
 def load() -> None:
@@ -92,6 +97,47 @@ def _task_text(task: Dict[str, Any]) -> str:
     return (task.get("task_text") or task.get("statement") or "").strip()
 
 
+def _collect(grade: int, topic: str, levels: List[int],
+             exclude_positions: Optional[Set[int]]) -> Dict[int, List[Dict[str, Any]]]:
+    """Уникальные (по тексту и (уровень, position)) задачи по уровням."""
+    seen_positions: Set[Tuple[int, int]] = set()
+    seen_texts: Set[str] = set()
+    out: Dict[int, List[Dict[str, Any]]] = {lv: [] for lv in levels}
+    for lv in levels:
+        for task in _index.get((grade, topic, lv), ()):
+            text = _task_text(task)
+            if not text or text in seen_texts:
+                continue
+            try:
+                position = int(task.get("position"))
+            except (ValueError, TypeError):
+                position = None
+            if exclude_positions and position in exclude_positions:
+                continue
+            key = (lv, position) if position is not None else None
+            if key is not None and key in seen_positions:
+                continue
+            if key is not None:
+                seen_positions.add(key)
+            seen_texts.add(text)
+            out[lv].append(task)
+    return out
+
+
+def _shuffle(tasks: List[Dict[str, Any]], lv: int, user_id: Optional[int], day_part: int) -> List[Dict[str, Any]]:
+    if user_id is None:
+        return sorted(tasks, key=lambda t: int(t.get("position") or 0))
+    return sorted(tasks, key=lambda t: hashlib.md5(
+        f"{user_id}:{day_part}:{lv}:{t.get('position')}".encode("utf-8")).hexdigest())
+
+
+def _take(pool: Dict[int, List[Dict[str, Any]]], lv: int, n: int) -> List[Dict[str, Any]]:
+    if n <= 0 or lv not in pool:
+        return []
+    picked, pool[lv] = pool[lv][:n], pool[lv][n:]
+    return picked
+
+
 def get_tasks(grade: int, topic: str, level: int,
               count: int = 5, user_id: Optional[int] = None,
               exclude_positions: Optional[Set[int]] = None,
@@ -99,13 +145,12 @@ def get_tasks(grade: int, topic: str, level: int,
               day_seed: Optional[int] = None) -> List[Dict[str, Any]]:
     """Pick same-grade, same-topic tasks of the requested level.
 
-    Порядок приоритета (строгий, не ломается перемешкой):
-      1. свежие задачи точного уровня;
-      2. свежие задачи соседних уровней (level-1, level+1, level-2, level+2) —
-         только как добор, если п.1 дал меньше ``count``;
-      3. уже выданные ранее (exclude_texts) — wrap-around, в том же порядке
-         уровней.
-    Внутри одного уровня — детерминированная перемешка по ученику и дню.
+    Порядок:
+      1. свежие задачи точного уровня — сколько есть;
+      2. если не хватает: добор смесью LOWER_SHARE из level-1 и остатка из level+1
+         (свежие); недобор одной стороны компенсируется другой;
+      3. свежие из level-2 / level+2;
+      4. уже выданные (exclude_texts) — в том же порядке уровней.
     """
     load()
     if count <= 0:
@@ -121,61 +166,74 @@ def get_tasks(grade: int, topic: str, level: int,
         except ImportError:
             pass
 
-    # Порядок уровней = приоритет добора. rank 0 — точный уровень.
     levels = [level] + [lv for lv in (level - 1, level + 1, level - 2, level + 2)
                         if 1 <= lv <= 4 and lv != level]
-    level_rank = {lv: i for i, lv in enumerate(levels)}
-
-    seen_positions: Set[Tuple[int, int]] = set()
-    seen_texts: Set[str] = set()
-    unique: List[Tuple[int, Dict[str, Any]]] = []   # (actual_level, task)
-    for lv in levels:
-        for task in _index.get((grade, topic, lv), ()):
-            text = _task_text(task)
-            if not text or text in seen_texts:
-                continue
-            try:
-                position = int(task.get("position"))
-            except (ValueError, TypeError):
-                position = None
-            if exclude_positions and position in exclude_positions:
-                continue
-            position_key = (lv, position) if position is not None else None
-            if position_key is not None and position_key in seen_positions:
-                continue
-            if position_key is not None:
-                seen_positions.add(position_key)
-            seen_texts.add(text)
-            unique.append((lv, task))
-
-    excluded = exclude_texts or set()
-    fresh = [(lv, t) for lv, t in unique if _task_text(t) not in excluded]
-    repeats = [(lv, t) for lv, t in unique if _task_text(t) in excluded]
-
     day_part = int(day_seed) if day_seed else 0
+    excluded = exclude_texts or set()
 
-    def sort_key(item: Tuple[int, Dict[str, Any]]) -> Tuple[int, str]:
-        lv, t = item
-        if user_id is None:
-            # без ученика — стабильный порядок по position
-            return (level_rank[lv], f"{int(t.get('position') or 0):08d}")
-        value = f"{user_id}:{day_part}:{lv}:{t.get('position')}"
-        return (level_rank[lv], hashlib.md5(value.encode("utf-8")).hexdigest())
+    by_level = _collect(grade, topic, levels, exclude_positions)
+    fresh: Dict[int, List[Dict[str, Any]]] = {}
+    repeats: Dict[int, List[Dict[str, Any]]] = {}
+    for lv in levels:
+        f = [t for t in by_level[lv] if _task_text(t) not in excluded]
+        r = [t for t in by_level[lv] if _task_text(t) in excluded]
+        fresh[lv] = _shuffle(f, lv, user_id, day_part)
+        repeats[lv] = _shuffle(r, lv, user_id, day_part)
 
-    fresh.sort(key=sort_key)
-    repeats.sort(key=sort_key)
-    picked = (fresh + repeats)[:count]
+    picked: List[Tuple[int, Dict[str, Any]]] = []
+
+    def add(lv: int, items: List[Dict[str, Any]]) -> None:
+        picked.extend((lv, t) for t in items)
+
+    # 1. точный уровень
+    add(level, _take(fresh, level, count))
+
+    # 2. смесь соседей 70/30
+    need = count - len(picked)
+    if need > 0:
+        lower, upper = level - 1, level + 1
+        # округление чередуется по дням, чтобы в среднем держать LOWER_SHARE (3.5 -> 4/3/4/3)
+        rnd = 0.5 if day_part % 2 == 0 else 0.0
+        want_lower = int(need * LOWER_SHARE + rnd) if upper in fresh else need
+        want_upper = need - want_lower if upper in fresh else 0
+        if lower not in fresh:
+            want_lower, want_upper = 0, need
+        got_lower = _take(fresh, lower, want_lower)
+        got_upper = _take(fresh, upper, want_upper)
+        # компенсация недобора одной стороны другой
+        short = need - len(got_lower) - len(got_upper)
+        if short > 0:
+            got_lower += _take(fresh, lower, short)
+            short = need - len(got_lower) - len(got_upper)
+        if short > 0:
+            got_upper += _take(fresh, upper, short)
+        add(lower, got_lower)
+        add(upper, got_upper)
+
+    # 3. level±2 свежие
+    for lv in (level - 2, level + 2):
+        need = count - len(picked)
+        if need <= 0:
+            break
+        add(lv, _take(fresh, lv, need))
+
+    # 4. повторы в порядке уровней
+    for lv in levels:
+        need = count - len(picked)
+        if need <= 0:
+            break
+        add(lv, _take(repeats, lv, need))
+
     result = [t for _, t in picked]
-
     if not result:
         logger.warning("formyla_bank: no tasks for grade=%s topic=%r level=%s", grade, topic, level)
     else:
-        off_level = [lv for lv, _ in picked if lv != level]
-        if off_level:
+        off = [lv for lv, _ in picked if lv != level]
+        if off:
             logger.warning(
-                "formyla_bank: level shortage grade=%s topic=%r level=%s: "
-                "exact=%d, filled from levels %s",
-                grade, topic, level, len(picked) - len(off_level), sorted(set(off_level)),
+                "formyla_bank: level shortage grade=%s topic=%r level=%s: exact=%d, mix=%s",
+                grade, topic, level, len(picked) - len(off),
+                {lv: off.count(lv) for lv in sorted(set(off))},
             )
     return result
 
