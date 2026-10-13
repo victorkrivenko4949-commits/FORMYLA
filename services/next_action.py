@@ -40,6 +40,46 @@ def _get_cs(user_id: int) -> Optional[CuratorState]:
     return CuratorState.query.filter_by(user_id=user_id).first()
 
 
+def _plural(n: int, one: str, few: str, many: str) -> str:
+    """Русское склонение: 1 задача, 2 задачи, 5 задач."""
+    n = abs(int(n))
+    if n % 10 == 1 and n % 100 != 11:
+        return one
+    if 2 <= n % 10 <= 4 and not 12 <= n % 100 <= 14:
+        return few
+    return many
+
+
+def _tasks_word(n: int) -> str:
+    return _plural(n, "задача", "задачи", "задач")
+
+
+def _daily_not_created() -> Dict[str, Any]:
+    """Набор задач дня ещё не сформирован (квеста нет или он пустой)."""
+    return {
+        "kind": "daily",
+        "title": "Задачи дня",
+        "cta_label": "Перейти к задачам дня",
+        "url": "/daily_tasks",
+        "reason": "Набор задач дня ещё не создан. "
+                   "Перейди — система подберёт задачи под твой уровень.",
+        "meta": {"remaining": 0, "total": 0, "completed": 0},
+    }
+
+
+def _idle() -> Dict[str, Any]:
+    """Всё на сегодня сделано."""
+    return {
+        "kind": "idle",
+        "title": "На сегодня всё",
+        "cta_label": "Повторить теорию",
+        "url": "/prep/coach",
+        "reason": "Ты завершил все задачи дня. Отдохни или повтори теорию — "
+                   "завтра будет новый набор!",
+        "meta": {},
+    }
+
+
 def get_next_action(user_id: int) -> Dict[str, Any]:
     """Определить единственное следующее действие для ученика.
 
@@ -154,39 +194,52 @@ def get_next_action(user_id: int) -> Dict[str, Any]:
 
     if dq is None:
         # Квест на сегодня ещё не создан
-        return {
-            "kind": "daily",
-            "title": "Задачи дня",
-            "cta_label": "Перейти к задачам дня",
-            "url": "/daily_tasks",
-            "reason": "Набор задач дня ещё не создан. "
-                       "Перейди — система подберёт задачи под твой уровень.",
-            "meta": {"remaining": 0, "total": 0},
-        }
+        return _daily_not_created()
 
-    if dq.completed_at is None:
-        remaining = dq.total_count - dq.completed_count
+    # Нормализуем счётчики: None/отрицательные/completed > total
+    # раньше давали «осталось 0 из 0» или отрицательные числа.
+    try:
+        total = int(dq.total_count or 0)
+    except (TypeError, ValueError):
+        total = 0
+    try:
+        completed = int(dq.completed_count or 0)
+    except (TypeError, ValueError):
+        completed = 0
+    total = max(0, total)
+    completed = min(max(0, completed), total)
+    remaining = total - completed
+
+    if total == 0:
+        # Квест есть, но задачи в него ещё не положены — для ученика это
+        # то же самое, что «набор не создан».
+        return _daily_not_created()
+
+    if dq.completed_at is None and remaining > 0:
+        if completed == 0:
+            title = f"Задачи дня: {total} {_tasks_word(total)}"
+            reason = (f"Сегодня тебя ждут {total} {_tasks_word(total)}. "
+                      f"Начни сейчас — набор обновится завтра.")
+            cta = "Начать задачи дня"
+        else:
+            title = f"Задачи дня: осталось {remaining} из {total}"
+            reason = (f"Ты решил {completed} из {total} {_tasks_word(total)}. "
+                      f"Осталось {remaining} — добей до конца!")
+            cta = "Продолжить задачи дня"
         return {
             "kind": "daily",
-            "title": f"Задачи дня: осталось {remaining} из {dq.total_count}",
-            "cta_label": "Продолжить задачи дня",
+            "title": title,
+            "cta_label": cta,
             "url": "/daily_tasks",
-            "reason": f"Ты решил {dq.completed_count} из {dq.total_count} задач. "
-                       f"Осталось {remaining} — добей до конца!",
+            "reason": reason,
             "meta": {
                 "remaining": remaining,
-                "total": dq.total_count,
-                "completed": dq.completed_count,
+                "total": total,
+                "completed": completed,
             },
         }
 
     # ── 4. Всё сделано — idle ──────────────────────────────────────────
-    return {
-        "kind": "idle",
-        "title": "На сегодня всё",
-        "cta_label": "Повторить теорию",
-        "url": "/prep/coach",
-        "reason": "Ты завершил все задачи дня. Отдохни или повтори теорию — "
-                   "завтра будет новый набор!",
-        "meta": {},
-    }
+    # Сюда попадаем и когда completed_at проставлен, и когда все задачи
+    # решены, но флаг завершения ещё не записан (remaining == 0).
+    return _idle()
