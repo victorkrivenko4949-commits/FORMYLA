@@ -19,10 +19,16 @@ jobs:
           python-version: '3.11'
       - name: Build report
         run: python scripts/bank_level_report.py --min 5 --out reports/bank_level_report.md
+      - name: Dump samples
+        run: >
+          python scripts/bank_samples.py --grade 9 --n 5
+          --topic "Отрезки, отношения и площади"
+          --topic "Алгебраические уравнения и системы"
+          --out reports/bank_samples.md
       - name: Commit report
         run: |
           git config user.name 'formyla-bot'
           git config user.email 'bot@formyla.net'
-          git add reports/bank_level_report.md
-          git diff --cached --quiet || git commit -m 'chore(bank): bank_level_report.md [skip ci]'
+          git add reports/
+          git diff --cached --quiet || git commit -m 'chore(bank): reports [skip ci]'
           git push
