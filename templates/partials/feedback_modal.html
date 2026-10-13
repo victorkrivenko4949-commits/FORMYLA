@@ -128,3 +128,8 @@ window.ftFbSubmit = function (ev) {
 {# SITE_NOTICE_V1: одноразовые уведомления сайта (показываются каждому 1 раз).
    Подключены здесь, потому что этот partial уже включён в base.html для всех пользователей. #}
 {% include 'partials/olympiad_notice_modal.html' %}
+
+{# RETAKE_INTAKE_NOTICE: адресное уведомление «Пройди анкету заново» — только для
+   пользователей из RETAKE_INTAKE_TARGETS (routes/site_notices.py). Остальным сервер
+   отвечает pending=false, и модалка не появляется. #}
+{% include 'partials/retake_intake_notice_modal.html' %}
