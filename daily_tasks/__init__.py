@@ -17,3 +17,14 @@ daily_tasks_bp = Blueprint(
 )
 
 from . import routes  # noqa: E402, F401
+
+# «Метод недели» + план куратора + paywall (ноябрь 2026). Подключается в момент
+# регистрации daily_tasks_bp в app.py — без правки app.py. Любая ошибка здесь
+# не ломает задачи дня. Тестовый период: видно только lavrik и victor
+# (METHOD_WEEK_ALLOWED_USERS), paywall выключен (PAYWALL_ENABLED=0).
+try:  # pragma: no cover
+    from method_week import attach as _method_week_attach
+    _method_week_attach(daily_tasks_bp)
+except Exception as _mw_exc:  # noqa: F841
+    import logging as _logging
+    _logging.getLogger(__name__).error("method_week attach failed: %s", _mw_exc)
