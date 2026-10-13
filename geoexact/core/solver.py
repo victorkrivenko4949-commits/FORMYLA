@@ -7,10 +7,18 @@ solve(plan, n_seeds, seed) -> list[Solution] — все различные ре�
 длины делятся на характерный масштаб фигуры, углы берутся в радианах,
 коллинеарность/параллельность/перпендикулярность — через нормированные
 векторные/скалярные произведения (синус/косинус угла), а не сырые определители.
+
+Поиск решения (см. solve): старты разбросаны по масштабам вокруг ожидаемого
+габарита фигуры, каждый старт проходит два этапа — «невязки + мягкие штрафы
+общего положения», затем точная полировка только по невязкам. Так
+недоопределённая задача (свободный параметр, не влияющий на ответ) получает
+читаемый чертёж, а не вырожденный, и быстрее: ранний останов после
+достаточного числа различных верных решений.
 """
 from __future__ import annotations
 
 import math
+import os
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -19,7 +27,8 @@ from scipy.optimize import least_squares
 from .constructions import count_free_points, execute
 from .schema import CONSTRAINTS, Constraint, FigurePlan, PlanError, validate_plan
 
-__all__ = ["Solution", "residuals", "residual_norm", "plan_scale", "normalize_coords", "solve"]
+__all__ = ["Solution", "residuals", "residual_norm", "plan_scale", "plan_extent",
+           "normalize_coords", "solve"]
 
 TOL = 1e-7           # порог допустимости невязки (относительно габарита фигуры)
 _EPS = 1e-12
@@ -291,19 +300,109 @@ def _free_from_vars(x: np.ndarray, n_free: int) -> np.ndarray:
     return fv
 
 
+# ------------------------------------------------------------------ масштаб габарита
+def plan_extent(plan: FigurePlan) -> float:
+    """Ожидаемый ГАБАРИТ фигуры (а не характерная длина): максимум заданных длин.
+
+    plan_scale берёт медиану и служит для нормировки невязок. Для стартов
+    решателя медиана опасна: при данных AB = 6 и AK = 2 медиана равна 4, а
+    фигура обязана быть крупнее 18 — все старты лежали далеко от решений, и
+    least_squares уходил по свободному параметру в вырожденные конфигурации
+    (слипшиеся точки или «игла»). Габарит — не меньше самой длинной данной.
+    """
+    vals: list[float] = []
+    for c in plan.constraints:
+        c = c if isinstance(c, Constraint) else Constraint(**c)
+        if c.value is None:
+            continue
+        if c.type == "dist":
+            vals.append(abs(float(c.value)))
+        elif c.type == "area":
+            vals.append(math.sqrt(abs(float(c.value))))
+    for c in plan.constructions:
+        if c.op == "perp_point" and c.value is not None:
+            vals.append(abs(float(c.value)))
+    from .gates import numeric_mark_value
+    for mark in plan.draw.length_marks:
+        value = numeric_mark_value(mark.get("text", ""), angle=False)
+        if value is not None and value > 0:
+            vals.append(value)
+    vals = [v for v in vals if v > _EPS]
+    return float(max(vals)) if vals else plan_scale(plan)
+
+
+# ------------------------------------------------------------------ мягкое общее положение
+# Этап 1 решателя минимизирует невязки ОГРАНИЧЕНИЙ плюс слабые штрафы за
+# «некрасивую» фигуру: слипшиеся точки, габарит много больше данных длин,
+# вытянутость. Это не меняет условие — на этапе 2 та же точка дотягивается
+# до точного решения уже без штрафов. Штрафы лишь выбирают, в какую сторону
+# уходить по свободному параметру недоопределённой задачи.
+SOFT_WEIGHT = float(os.environ.get("GEOEXACT_SOFT_POSITION_WEIGHT", "0.05") or "0.05")
+SOFT_MIN_FRAC = 0.08       # ближе этой доли габарита точки считаются «слипшимися»
+SOFT_MAX_RATIO = 4.0       # габарит больше 4 × максимальной данной длины — штраф
+SOFT_MAX_ASPECT = 3.0      # соотношение сторон габарита больше 3 — штраф
+# Ранний останов: после EARLY_MIN_STARTS стартов и EARLY_FOUND различных
+# верных решений дальнейшие старты не нужны (экономия ~2× времени).
+EARLY_FOUND = int(os.environ.get("GEOEXACT_SOLVER_EARLY_FOUND", "8") or "8")
+EARLY_MIN_STARTS = int(os.environ.get("GEOEXACT_SOLVER_EARLY_MIN_STARTS", "16") or "16")
+# Допуски оптимизатора: 1e-15 заставлял least_squares «вылизывать» каждую
+# точку до машинного нуля. Невязка проверяется отдельно (TOL), поэтому
+# оптимизатору достаточно сойтись заметно ниже TOL.
+OPT_TOL_SOFT = 1e-9
+OPT_TOL_POLISH = 1e-12
+
+
+def _soft_position_terms(plan: FigurePlan, coords: dict[str, np.ndarray],
+                         extent: float, n_terms: int) -> np.ndarray:
+    """Вектор мягких штрафов фиксированной длины n_terms (для least_squares)."""
+    out = np.zeros(n_terms, dtype=float)
+    if SOFT_WEIGHT <= 0.0:
+        return out
+    names = [n for n in (plan.points or []) if n in coords] or sorted(coords)
+    P = np.array([coords[n] for n in names], dtype=float)
+    if len(P) < 2 or not np.isfinite(P).all():
+        return out
+    lo, hi = P.min(axis=0), P.max(axis=0)
+    w, h = hi - lo
+    span = float(max(w, h)) + _EPS
+    k = 0
+    for i in range(len(P)):
+        for j in range(i + 1, len(P)):
+            if k >= n_terms - 2:
+                break
+            d = float(math.hypot(*(P[i] - P[j]))) / span
+            out[k] = SOFT_WEIGHT * max(0.0, SOFT_MIN_FRAC - d) / SOFT_MIN_FRAC
+            k += 1
+    out[n_terms - 2] = SOFT_WEIGHT * max(0.0, span / extent - SOFT_MAX_RATIO)
+    aspect = span / max(float(min(w, h)), _EPS)
+    out[n_terms - 1] = SOFT_WEIGHT * max(0.0, aspect - SOFT_MAX_ASPECT)
+    return out
+
+
+def _soft_term_count(plan: FigurePlan) -> int:
+    n = len(plan.points or [])
+    return n * (n - 1) // 2 + 2
+
+
 # ------------------------------------------------------------------ решатель
 def solve(plan: FigurePlan, n_seeds: int = 24, seed: int = 0) -> list[Solution]:
     """Многостартовый least_squares по свободным координатам.
 
+    Два этапа на каждый старт: (1) невязки + мягкие штрафы общего положения,
+    (2) полировка только по невязкам от найденной точки. Старты разбросаны по
+    масштабам 0.5…4 × габарита (plan_extent), а не по одному масштабу.
     Возвращает список различных решений (дедупликация после нормализации,
     порог 1e-6 по максимальному смещению точки), отсортированный по невязке.
-    Детерминирован при фиксированном seed.
+    Детерминирован при фиксированном seed. Останавливается раньше, когда
+    верных различных решений уже достаточно (EARLY_FOUND).
     """
     validate_plan(plan)
     n_free = count_free_points(plan)
     nv = _n_vars(n_free)
     S = plan_scale(plan)
+    E = max(plan_extent(plan), S)
     m = len(plan.constraints)
+    n_soft = _soft_term_count(plan)
 
     def coords_of(x: np.ndarray) -> dict[str, np.ndarray]:
         return execute(plan, None, _free_from_vars(np.asarray(x, dtype=float), n_free))
@@ -313,6 +412,18 @@ def solve(plan: FigurePlan, n_seeds: int = 24, seed: int = 0) -> list[Solution]:
             return residuals(plan, coords_of(x))
         except PlanError:
             return np.full(m, _PENALTY, dtype=float)
+
+    def fun_soft(x: np.ndarray) -> np.ndarray:
+        try:
+            coords = coords_of(x)
+            r = residuals(plan, coords)
+        except PlanError:
+            return np.full(m + n_soft, _PENALTY, dtype=float)
+        try:
+            g = _soft_position_terms(plan, coords, E, n_soft)
+        except Exception:  # noqa: BLE001 — штраф никогда не ломает решатель
+            g = np.zeros(n_soft, dtype=float)
+        return np.concatenate([r, g])
 
     # --- нет свободных переменных: единственная конфигурация
     if nv == 0:
@@ -325,35 +436,45 @@ def solve(plan: FigurePlan, n_seeds: int = 24, seed: int = 0) -> list[Solution]:
     rng = np.random.RandomState(int(seed))
     starts: list[np.ndarray] = []
 
-    # детерминированный «правильный» старт: точки по окружности радиуса S
+    # детерминированный «правильный» старт: точки по окружности радиуса E
     x0 = np.zeros(nv, dtype=float)
-    x0[0] = S
+    x0[0] = E
     for j in range(n_free - 2):
         a = 2.0 * math.pi * (j + 1) / max(1, n_free - 1) + 0.7
-        x0[1 + 2 * j] = S * math.cos(a)
-        x0[2 + 2 * j] = S * math.sin(a)
+        x0[1 + 2 * j] = E * math.cos(a)
+        x0[2 + 2 * j] = E * math.sin(a)
     starts.append(x0)
 
     for _ in range(max(0, int(n_seeds) - 1)):
-        x = rng.uniform(-1.5, 1.5, size=nv) * S
-        x[0] = abs(x[0]) + 0.2 * S       # вторая точка на положительной полуоси
+        # лог-равномерный масштаб старта: фигура может быть и мельче, и крупнее данных
+        sc = E * math.exp(rng.uniform(math.log(0.5), math.log(4.0)))
+        x = rng.uniform(-1.5, 1.5, size=nv) * sc
+        x[0] = abs(x[0]) + 0.2 * sc       # вторая точка на положительной полуоси
         starts.append(x)
 
     found: list[Solution] = []
     norm_cache: list[np.ndarray] = []   # нормализованные координаты для дедупликации
     key_names = sorted(plan.points) if plan.points else None
     best: Solution | None = None
+    max_nfev = 200 * (nv + 1)
+    use_soft = SOFT_WEIGHT > 0.0 and m > 0
 
-    for x_start in starts:
+    for tried, x_start in enumerate(starts, start=1):
         if m == 0:
             # No equations: retain deterministic, well-spread sampled geometry
             # rather than passing an empty residual vector to least_squares.
             x = x_start.copy()
         else:
             try:
-                sol = least_squares(fun, x_start, method="trf",
-                                    xtol=1e-15, ftol=1e-15, gtol=1e-15,
-                                    max_nfev=400 * (nv + 1))
+                x = x_start
+                if use_soft:
+                    s1 = least_squares(fun_soft, x, method="trf",
+                                       xtol=OPT_TOL_SOFT, ftol=OPT_TOL_SOFT, gtol=OPT_TOL_SOFT,
+                                       max_nfev=max_nfev)
+                    x = np.asarray(s1.x, dtype=float)
+                sol = least_squares(fun, x, method="trf",
+                                    xtol=OPT_TOL_POLISH, ftol=OPT_TOL_POLISH, gtol=OPT_TOL_POLISH,
+                                    max_nfev=max_nfev)
             except (ValueError, FloatingPointError, np.linalg.LinAlgError):
                 continue
             x = np.asarray(sol.x, dtype=float)
@@ -388,6 +509,8 @@ def solve(plan: FigurePlan, n_seeds: int = 24, seed: int = 0) -> list[Solution]:
             continue
         norm_cache.append(vec)
         found.append(cand)
+        if EARLY_FOUND > 0 and len(found) >= EARLY_FOUND and tried >= EARLY_MIN_STARTS:
+            break
 
     if not found:
         if best is None:
