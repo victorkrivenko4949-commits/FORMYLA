@@ -1,4 +1,4 @@
-/* method_week.js — блоки «Куратор: план на сегодня» и «Метод недели» на странице задач дня.
+/* method_week.js — блоки «Куратор» и «Метод недели» на странице задач дня.
    Вставляется автоматически (method_week/ui_inject.py) только для тестовых аккаунтов.
    LaTeX рендерится через KaTeX, если на странице есть renderMathInElement. */
 (function () {
@@ -8,20 +8,26 @@
 
   var css = document.createElement('style');
   css.textContent = [
-    '.mw-card{max-width:960px;margin:18px auto;padding:18px 20px;border-radius:14px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06);line-height:1.5}',
-    '.mw-card h3{margin:0 0 10px;font-size:18px}',
-    '.mw-badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;margin-left:8px}',
-    '.mw-muted{color:#6b7280;font-size:14px}',
-    '.mw-lesson{background:#f9fafb;border-radius:10px;padding:12px 14px;margin:10px 0}',
+    '.mw-card{max-width:960px;margin:14px auto;padding:16px 18px;border-radius:14px;background:#1c1d22;color:#e8e8ea;border:1px solid #2e3038;line-height:1.5;font-size:15px}',
+    '.mw-card h3{margin:0 0 8px;font-size:17px;color:#fff}',
+    '.mw-card p{margin:6px 0;color:#e8e8ea}',
+    '.mw-card ol,.mw-card ul{margin:6px 0 6px 20px;padding:0;color:#e8e8ea}',
+    '.mw-card li{margin:3px 0}',
+    '.mw-card a{color:#a5b4fc}',
+    '.mw-badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#312e81;color:#c7d2fe;font-size:12px;margin-left:8px;vertical-align:middle}',
+    '.mw-muted{color:#9ca3af;font-size:13px}',
+    '.mw-lesson{background:#15161a;border-radius:10px;padding:10px 14px;margin:8px 0;border:1px solid #2e3038}',
+    '.mw-lesson summary{cursor:pointer;color:#fff}',
     '.mw-lesson h3{font-size:15px;margin:10px 0 4px}',
-    '.mw-task{border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin:10px 0}',
-    '.mw-task textarea,.mw-task input{width:100%;box-sizing:border-box;margin-top:6px;padding:8px;border:1px solid #d1d5db;border-radius:8px;font:inherit}',
-    '.mw-btn{margin-top:8px;padding:8px 14px;border:0;border-radius:8px;background:#4f46e5;color:#fff;cursor:pointer}',
-    '.mw-btn.sec{background:#e5e7eb;color:#111;margin-left:6px}',
-    '.mw-ok{color:#15803d}.mw-bad{color:#b91c1c}',
-    '.mw-plan li{margin:2px 0}',
-    '.mw-progress{height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin:8px 0}',
-    '.mw-progress>div{height:100%;background:#4f46e5;transition:width .4s}'
+    '.mw-task{border:1px solid #2e3038;border-radius:10px;padding:12px;margin:10px 0;background:#15161a}',
+    '.mw-task textarea,.mw-task input{width:100%;box-sizing:border-box;margin-top:6px;padding:8px;border:1px solid #3f4149;border-radius:8px;font:inherit;background:#0f1013;color:#e8e8ea}',
+    '.mw-btn{margin-top:8px;padding:8px 14px;border:0;border-radius:8px;background:#6366f1;color:#fff;cursor:pointer;font:inherit}',
+    '.mw-btn:disabled{opacity:.6;cursor:default}',
+    '.mw-btn.sec{background:#2e3038;color:#e8e8ea;margin-left:6px}',
+    '.mw-ok{color:#4ade80}.mw-bad{color:#f87171}',
+    '.mw-progress{height:6px;background:#2e3038;border-radius:999px;overflow:hidden;margin:8px 0}',
+    '.mw-progress>div{height:100%;background:#6366f1;transition:width .4s}',
+    '.mw-task details summary{cursor:pointer;color:#a5b4fc}'
   ].join('\n');
   document.head.appendChild(css);
 
@@ -68,11 +74,11 @@
     if (d.__status === 404) { curatorCard.style.display = 'none'; return; }
     if (d.__status === 402) { curatorCard.innerHTML = paywallHtml('Куратор', d); return; }
     var daily = d.daily || {}, month = d.month || {};
-    var html = '<h3>Куратор — ' + esc(daily.date || '') + '</h3>';
+    var html = '<h3>Куратор</h3>';
     html += '<p>' + (daily.status_lines || []).map(esc).join(' ') + '</p>';
     (daily.plan_lines || []).forEach(function (ln, i) { html += '<p>' + (i === 0 ? '<b>' + esc(ln) + '</b>' : esc(ln)) + '</p>'; });
     if ((month.methods || []).length) {
-      html += '<p class="mw-muted">План методов на ' + esc(month.month) + ' (выбран куратором по твоим результатам):</p><ol class="mw-plan">';
+      html += '<p class="mw-muted">Методы на месяц:</p><ol class="mw-plan">';
       month.methods.forEach(function (m, i) {
         var cur = (i === month.current_week);
         html += '<li>' + (cur ? '<b>' : '') + esc(m.code) + ' «' + esc(m.name) + '»' + (cur ? '</b> — эта неделя' : '') +
@@ -92,12 +98,19 @@
     if (d.status === 'generating') {
       methodCard.innerHTML = '<h3>Метод недели: ' + esc(d.method_code) + ' «' + esc(d.method_name) + '»<span class="mw-badge">готовим</span></h3>' +
         '<div class="mw-progress"><div style="width:' + (d.progress_pct || 3) + '%"></div></div>' +
-        '<p class="mw-muted">deepseek-v4-pro (thinking) пишет разбор, составляет 3 задачи и сам решает их для проверки. Обычно 2–6 минут. Шаг: ' + esc(d.current_step || '') + '</p>';
+        '<p class="mw-muted">Готовим разбор и 3 задачи, обычно 2–6 минут. Страница обновится сама.</p>';
       clearTimeout(pollTimer);
       pollTimer = setTimeout(function () { getJSON('/method_week/api/today').then(renderMethod); }, 7000);
       return;
     }
-    if (d.status === 'failed') { methodCard.innerHTML = '<h3>Метод недели</h3><p class="mw-bad">Не удалось подготовить: ' + esc(d.error || '') + '</p>'; return; }
+    if (d.status === 'failed') {
+      methodCard.innerHTML = '<h3>Метод недели: ' + esc(d.method_code || '') + ' «' + esc(d.method_name || '') + '»</h3><p class="mw-bad">Не удалось подготовить задачи.</p><button class="mw-btn mw-retry">Попробовать снова</button>';
+      methodCard.querySelector('.mw-retry').addEventListener('click', function () {
+        methodCard.innerHTML = '<h3>Метод недели</h3><p class="mw-muted">Запускаем…</p>';
+        getJSON('/method_week/api/regenerate', {method: 'POST', body: '{}'}).then(renderMethod);
+      });
+      return;
+    }
     if (d.status !== 'ready') { methodCard.innerHTML = '<h3>Метод недели</h3><p class="mw-muted">' + esc(d.message || 'временно недоступен') + '</p>'; return; }
 
     var html = '<h3>Метод недели: ' + esc(d.method_code) + ' «' + esc(d.method_name) + '»<span class="mw-badge">' + d.progress.completed + '/' + d.progress.total + '</span></h3>';

@@ -6,7 +6,7 @@ GET  /method_week/api/status         — polling генерации
 GET  /method_week/api/<pos>/hint     — подсказка
 POST /method_week/api/<pos>/submit   — ответ на задачу (проверка как в задачах дня)
 GET  /method_week/api/curator_plan   — ежедневный план куратора + план методов на месяц
-POST /method_week/api/regenerate     — перегенерация (только админ)
+POST /method_week/api/regenerate     — перегенерация (тестовая группа)
 """
 from __future__ import annotations
 
@@ -317,9 +317,12 @@ def api_curator_plan():
 @method_week_bp.route('/api/regenerate', methods=['POST'])
 @login_required
 def api_regenerate():
-    if not _is_admin():
-        return jsonify({'error': 'forbidden'}), 403
+    """Перезапуск набора недели. Доступен тестовой группе (before_request уже
+    отсёк всех, кроме METHOD_WEEK_ALLOWED_USERS). Не чаще раза в 2 минуты."""
     s = _current_set(current_user.id)
+    if s and s.status == 'generating' and s.created_at and \
+            (datetime.utcnow() - s.created_at).total_seconds() < 120:
+        return jsonify(_serialize(s, current_user.id))
     if s:
         MethodWeekAnswer.query.filter_by(set_id=s.id).delete()
         db.session.delete(s)
