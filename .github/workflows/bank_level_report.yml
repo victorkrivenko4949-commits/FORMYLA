@@ -17,14 +17,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Cleanup plan (dry run)
+        run: python scripts/bank_cleanup.py
       - name: Build report
         run: python scripts/bank_level_report.py --min 5 --out reports/bank_level_report.md
-      - name: Dump samples
-        run: >
-          python scripts/bank_samples.py --grade 9 --n 5
-          --topic "Отрезки, отношения и площади"
-          --topic "Алгебраические уравнения и системы"
-          --out reports/bank_samples.md
       - name: Audit bank
         run: python scripts/bank_audit.py --out reports/bank_audit.md
       - name: Commit report
