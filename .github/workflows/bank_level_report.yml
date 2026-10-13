@@ -25,6 +25,8 @@ jobs:
           --topic "Отрезки, отношения и площади"
           --topic "Алгебраические уравнения и системы"
           --out reports/bank_samples.md
+      - name: Audit bank
+        run: python scripts/bank_audit.py --out reports/bank_audit.md
       - name: Commit report
         run: |
           git config user.name 'formyla-bot'
