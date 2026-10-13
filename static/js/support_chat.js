@@ -62,9 +62,10 @@
      * @param {Object} opts {text, side, label, photoUrl}
      *   side: 'left' | 'right'
      *   The CSS class scheme is chosen based on which chat container we are in.
+     * @returns {HTMLElement|null} созданный элемент сообщения (для отката optimistic UI)
      */
     function appendBubble(chatEl, opts) {
-        if (!chatEl) return;
+        if (!chatEl) return null;
         var isUserChat = chatEl.classList.contains('user-support-chat');
         var msgClass, bubbleClass, metaClass;
 
@@ -117,6 +118,27 @@
 
         chatEl.appendChild(wrap);
         scrollChatToBottom(chatEl);
+        return wrap;
+    }
+
+    /* ---------------- server-side flash detection ---------------- */
+    /**
+     * Сервер на POST отвечает редиректом на ту же страницу (fetch следует за ним
+     * и возвращает HTML с кодом 200 — даже если сообщение НЕ сохранилось и во
+     * flash лежит ошибка). Разбираем HTML и ищем flash-ошибку, чтобы не показывать
+     * ложное «Сообщение отправлено».
+     */
+    function extractFlashError(html) {
+        if (!html || typeof html !== 'string') return '';
+        try {
+            var doc = new DOMParser().parseFromString(html, 'text/html');
+            var el = doc.querySelector(
+                '.support-toast.error, .flash.error, .flash-error, .alert.error, .alert-error'
+            );
+            return el ? (el.textContent || '').trim() : '';
+        } catch (e) {
+            return '';
+        }
     }
 
     /* ---------------- edit / delete ---------------- */
@@ -259,6 +281,8 @@
             var photoInput = form.querySelector('.support-photo-input');
             var chip = form.querySelector('.support-photo-chip');
             var photoFile = (photoInput && photoInput.files && photoInput.files[0]) || null;
+            // Пустой <input type=file> без выбранного файла тоже считаем «нет фото»
+            if (photoFile && !(photoFile.name || '').trim() && !photoFile.size) photoFile = null;
             var raw = (textarea && textarea.value || '').trim();
             if (!raw && !photoFile) {
                 showToast('Введите текст сообщения или прикрепите фото', 'error');
@@ -279,28 +303,59 @@
             if (photoFile) {
                 try { localPhotoUrl = URL.createObjectURL(photoFile); } catch (e) {}
             }
-            appendBubble(chatEl, { text: raw, side: side, label: label, photoUrl: localPhotoUrl });
+            var optimistic = appendBubble(chatEl, { text: raw, side: side, label: label, photoUrl: localPhotoUrl });
+
+            function rollbackOptimistic() {
+                if (optimistic && optimistic.parentNode) optimistic.parentNode.removeChild(optimistic);
+            }
 
             if (btn) { btn.disabled = true; btn.dataset._oldText = btn.textContent; btn.textContent = 'Отправка…'; }
 
             var fd = new FormData(form);
+            // ВАЖНО (фикс «сообщение пропадает после перезагрузки»):
+            // браузер кладёт в FormData пустой <input type=file name="photo"> даже
+            // если файл не выбран (File с пустым именем). На сервере
+            // request.files.get('photo') возвращал такой «файл», _save_support_photo
+            // отвечал «Пустой файл», и сообщение НЕ записывалось в БД, хотя UI уже
+            // показал пузырь. Убираем поле, если фото реально не прикреплено.
+            if (!photoFile) {
+                try { fd.delete('photo'); } catch (e) {}
+            }
+
             fetch(form.action, {
                 method: 'POST',
                 body: fd,
                 credentials: 'same-origin',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             }).then(function (resp) {
-                // Server still returns redirect to the same page on success;
-                // we treat any 2xx/3xx as success since we already updated UI.
-                if (resp.ok || (resp.status >= 300 && resp.status < 400)) {
+                var httpOk = resp.ok || (resp.status >= 300 && resp.status < 400);
+                if (!httpOk) {
+                    rollbackOptimistic();
+                    showToast('Не удалось отправить (HTTP ' + resp.status + ')', 'error');
+                    return;
+                }
+                // Сервер редиректит на страницу — проверяем, нет ли во flash ошибки
+                // (раньше любой 200 после редиректа считался успехом).
+                return resp.text().then(function (html) {
+                    var flashErr = extractFlashError(html);
+                    if (flashErr) {
+                        rollbackOptimistic();
+                        showToast(flashErr, 'error');
+                        return;
+                    }
                     if (textarea) textarea.value = '';
                     if (photoInput) photoInput.value = '';
                     if (chip) { chip.hidden = true; chip.textContent = ''; }
                     showToast('Сообщение отправлено', 'success');
-                } else {
-                    showToast('Не удалось отправить (HTTP ' + resp.status + ')', 'error');
-                }
+                }, function () {
+                    // Тело не прочиталось — HTTP был успешным, считаем отправленным.
+                    if (textarea) textarea.value = '';
+                    if (photoInput) photoInput.value = '';
+                    if (chip) { chip.hidden = true; chip.textContent = ''; }
+                    showToast('Сообщение отправлено', 'success');
+                });
             }).catch(function () {
+                rollbackOptimistic();
                 showToast('Ошибка сети, попробуйте ещё раз', 'error');
             }).finally(function () {
                 if (btn) {
