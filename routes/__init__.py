@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 routes/__init__.py — ADMIN_BASE_V1 (06.10.2026) + PWA_INSTALL_V1 (11.10.2026)
-+ SITE_NOTICE_V1 (11.10.2026) + OLYMP_CATALOG_V1 (14.10.2026).
++ SITE_NOTICE_V1 (11.10.2026) + OLYMP_CATALOG_V3 (14.10.2026).
 
 Автоматическая регистрация blueprint «База» (routes/admin_base.py),
 blueprint PWA (routes/pwa.py), blueprint одноразовых уведомлений
 (routes/site_notices.py) и blueprint каталога олимпиадных задач
-(routes/olymp_catalog.py, /olympiads) без правки app.py. Файл превращает `routes/`
+(routes/olymp_catalog.py, /olymp-catalog) без правки app.py. Файл превращает `routes/`
 в обычный пакет (раньше был namespace package); все существующие импорты
 `from routes.xxx import ...` работают как прежде.
 
@@ -72,18 +72,14 @@ def _install_site_notices(app) -> None:
 
 
 def _install_olymp_catalog(app) -> None:
-    """OLYMP_CATALOG_V1: закрытый каталог олимпиадных задач (/olympiads)."""
+    """OLYMP_CATALOG_V3: закрытый каталог олимпиадных задач (/olymp-catalog) + пункт меню."""
     if os.environ.get("OLYMP_CATALOG_AUTOREG", "1") == "0":
         return
     if getattr(app, "_olymp_catalog_installed", False):
         return
-    app._olymp_catalog_installed = True
     try:
-        from routes.olymp_catalog import olymp_catalog_bp
-        if "olymp_catalog" not in app.blueprints:
-            _ORIG_REGISTER(app, olymp_catalog_bp)
-        logger.info("[BP] olymp_catalog_bp registered (/olympiads)")
-        print("[BP] olymp_catalog_bp registered (/olympiads)")
+        from routes.olymp_catalog import install_olymp_catalog
+        install_olymp_catalog(app)
     except Exception as e:  # noqa: BLE001
         logger.exception("[olymp_catalog] auto-register failed: %r", e)
 

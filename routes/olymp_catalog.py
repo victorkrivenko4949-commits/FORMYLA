@@ -1,26 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-Blueprint: Каталог олимпиадных задач (olymp_catalog) — OLYMP_CATALOG_V2
+Blueprint: Каталог олимпиадных задач (olymp_catalog) — OLYMP_CATALOG_V3
+
+Отдельный раздел сайта на префиксе /olymp-catalog (не пересекается с разделом
+«Олимпиады» /olympiads/* — пробники, методы, календарь).
 
 Endpoints:
-  GET  /olympiads                              — каталог олимпиад
-  GET  /olympiads/<slug>                       — задачи олимпиады: год → этап → день → класс → №
-  GET  /olympiads/<slug>/<uid>                 — одна задача + ИИ-тьютор
-  GET  /olympiads/<slug>/<uid>/export.<fmt>    — скачать задачу: md | tex | txt | json
-  GET  /olympiads/<slug>/export.<fmt>          — скачать олимпиаду (с фильтрами q/year/grade): md | json
-  GET  /olympiads/figures/<path>               — рисунки (static/olymp_figures/...)
-  POST /olympiads/api/tutor/prepare            — v4-pro заранее разбирает задачу (кэш)
-  POST /olympiads/api/tutor/chat               — диалог с тьютором по задаче
+  GET  /olymp-catalog/                                 — каталог олимпиад
+  GET  /olymp-catalog/<slug>                           — задачи олимпиады: год → этап → день → класс → №
+  GET  /olymp-catalog/<slug>/<uid>                     — одна задача + ИИ-тьютор
+  GET  /olymp-catalog/<slug>/<uid>/export/<fmt>        — скачать задачу: md | tex | txt | json
+  GET  /olymp-catalog/<slug>/export/<fmt>              — скачать олимпиаду (фильтры q/year/grade): md | json
+  GET  /olymp-catalog/figures/<path>                   — рисунки (static/olymp_figures/...)
+  POST /olymp-catalog/api/tutor/prepare                — v4-pro заранее разбирает задачу (кэш)
+  POST /olymp-catalog/api/tutor/chat                   — диалог с тьютором по задаче
 
 Доступ: только авторизованные пользователи из белого списка OLYMP_CATALOG_USERS
-(по умолчанию "lavrik,victor").
+(по умолчанию "lavrik,victor"). Для них же after_request-хук добавляет пункт
+«🗂 Каталог задач олимпиад» в меню «Олимпиады» (десктоп + мобильный drawer)
+без правки base.html (тот же приём, что у кнопки «📦 База»). OLYMP_CATALOG_NAV=0 отключает.
 
 Тьютор: deepseek-v4-pro (OLYMP_TUTOR_MODEL), режим thinking. При открытии задачи
 фронтенд вызывает /prepare: модель получает условие + эталонное решение и жёсткую
 инструкцию «проанализируй, пойми решение, подготовься к вопросам». Конспект
-подготовки кэшируется и подкладывается в system-prompt каждого сообщения чата,
-поэтому на первый вопрос ученика тьютор отвечает уже «готовым». Все ответы
-проходят LaTeX-нормализацию (method_week.latex.normalize_latex + локальный fallback).
+подготовки кэшируется и подкладывается в system-prompt каждого сообщения чата.
+Все ответы проходят LaTeX-нормализацию.
 """
 from __future__ import annotations
 
@@ -44,7 +48,9 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _DATA_DIR = os.path.join(_ROOT, "data", "olymp_catalog")
 _FIG_DIR = os.path.join(_ROOT, "static", "olymp_figures")
 
-olymp_catalog_bp = Blueprint("olymp_catalog", __name__, template_folder="../templates")
+URL_PREFIX = "/olymp-catalog"
+
+olymp_catalog_bp = Blueprint("olymp_catalog", __name__, template_folder="../templates", url_prefix=URL_PREFIX)
 
 _cache: dict = {}
 
@@ -73,15 +79,18 @@ def _user_identities(user) -> set:
 
 
 def is_catalog_user(user) -> bool:
-    if not getattr(user, "is_authenticated", False):
+    try:
+        if not getattr(user, "is_authenticated", False):
+            return False
+        return bool(_user_identities(user) & _allowed_users())
+    except Exception:  # noqa: BLE001
         return False
-    return bool(_user_identities(user) & _allowed_users())
 
 
 def catalog_access_required(f):
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
-        wants_json = request.path.startswith("/olympiads/api/")
+        wants_json = request.path.startswith(URL_PREFIX + "/api/")
         if not current_user.is_authenticated:
             if wants_json:
                 return jsonify(ok=False, error="auth_required"), 401
@@ -408,7 +417,7 @@ def _download(content: str, filename: str, mime: str) -> Response:
 # Страницы
 # ----------------------------------------------------------------------------
 
-@olymp_catalog_bp.route("/olympiads")
+@olymp_catalog_bp.route("/")
 @catalog_access_required
 def index():
     meta = _load("_index") or []
@@ -418,7 +427,7 @@ def index():
                            tutor_model=TUTOR_MODEL)
 
 
-@olymp_catalog_bp.route("/olympiads/<slug>")
+@olymp_catalog_bp.route("/<slug>")
 @catalog_access_required
 def olympiad(slug):
     if not re.fullmatch(r"[a-z0-9\-]+", slug):
@@ -438,7 +447,7 @@ def olympiad(slug):
                            grades=grades, years_all=years_all, labels=STATUS_LABEL)
 
 
-@olymp_catalog_bp.route("/olympiads/<slug>/<uid>")
+@olymp_catalog_bp.route("/<slug>/<uid>")
 @catalog_access_required
 def task(slug, uid):
     t = _find_task(slug, uid)
@@ -454,7 +463,7 @@ def task(slug, uid):
                            prep_ready=bool(prep and time.time() - prep["ts"] < _PREP_TTL))
 
 
-@olymp_catalog_bp.route("/olympiads/<slug>/<uid>/export.<fmt>")
+@olymp_catalog_bp.route("/<slug>/<uid>/export/<fmt>")
 @catalog_access_required
 def export_task(slug, uid, fmt):
     t = _find_task(slug, uid)
@@ -472,7 +481,7 @@ def export_task(slug, uid, fmt):
     abort(404)
 
 
-@olymp_catalog_bp.route("/olympiads/<slug>/export.<fmt>")
+@olymp_catalog_bp.route("/<slug>/export/<fmt>")
 @catalog_access_required
 def export_olympiad(slug, fmt):
     if not re.fullmatch(r"[a-z0-9\-]+", slug):
@@ -506,7 +515,7 @@ def export_olympiad(slug, fmt):
     abort(404)
 
 
-@olymp_catalog_bp.route("/olympiads/figures/<path:subpath>")
+@olymp_catalog_bp.route("/figures/<path:subpath>")
 @catalog_access_required
 def figure(subpath):
     return send_from_directory(_FIG_DIR, subpath)
@@ -515,7 +524,7 @@ def figure(subpath):
 # API тьютора
 # ----------------------------------------------------------------------------
 
-@olymp_catalog_bp.route("/olympiads/api/tutor/prepare", methods=["POST"])
+@olymp_catalog_bp.route("/api/tutor/prepare", methods=["POST"])
 @catalog_access_required
 def api_tutor_prepare():
     data = request.get_json(silent=True) or {}
@@ -531,7 +540,7 @@ def api_tutor_prepare():
                    model=TUTOR_MODEL, usage=res.get("usage"))
 
 
-@olymp_catalog_bp.route("/olympiads/api/tutor/chat", methods=["POST"])
+@olymp_catalog_bp.route("/api/tutor/chat", methods=["POST"])
 @catalog_access_required
 def api_tutor_chat():
     data = request.get_json(silent=True) or {}
@@ -565,6 +574,39 @@ def api_tutor_chat():
     reply = normalize_tutor_latex(text).strip()
     return jsonify(ok=True, reply=reply, model=TUTOR_MODEL, usage=usage)
 
+# ----------------------------------------------------------------------------
+# Пункт меню (инжектор в base.html без правки файла) + регистрация
+# ----------------------------------------------------------------------------
+
+_NAV_DESKTOP_MARK = "Календарь олимпиад</a>"
+_NAV_DESKTOP_LINK = '<a href="%s/" id="olymp-catalog-nav">🗂 Каталог задач олимпиад</a>' % URL_PREFIX
+_NAV_DRAWER_RE = re.compile(r'(<span class="drawer-link-icon">\U0001F3C6</span>\s*Олимпиады\s*</a>)')
+_NAV_DRAWER_LINK = ('<a href="%s/" class="drawer-link"><span class="drawer-link-icon">🗂</span>'
+                    'Каталог задач олимпиад</a>') % URL_PREFIX
+_NAV_BOTTOM_OLD = 'data-path="/olympiads*,/practice*,/olympiad*"'
+_NAV_BOTTOM_NEW = 'data-path="/olympiads*,/practice*,/olympiad*,%s*"' % URL_PREFIX
+
+
+def _inject_nav(resp):
+    """Добавляет ссылку на каталог в меню «Олимпиады» только пользователям из белого списка."""
+    try:
+        if resp.direct_passthrough or resp.status_code != 200:
+            return resp
+        if "text/html" not in (resp.content_type or "").lower():
+            return resp
+        if not is_catalog_user(current_user):
+            return resp
+        body = resp.get_data(as_text=True)
+        if "olymp-catalog-nav" in body or _NAV_DESKTOP_MARK not in body:
+            return resp
+        body = body.replace(_NAV_DESKTOP_MARK, _NAV_DESKTOP_MARK + _NAV_DESKTOP_LINK, 1)
+        body = _NAV_DRAWER_RE.sub(lambda m: m.group(1) + _NAV_DRAWER_LINK, body, count=1)
+        body = body.replace(_NAV_BOTTOM_OLD, _NAV_BOTTOM_NEW, 1)
+        resp.set_data(body)
+    except Exception:  # noqa: BLE001
+        pass
+    return resp
+
 
 def install_olymp_catalog(app) -> None:
     if getattr(app, "_olymp_catalog_installed", False):
@@ -572,5 +614,7 @@ def install_olymp_catalog(app) -> None:
     app._olymp_catalog_installed = True
     if "olymp_catalog" not in app.blueprints:
         app.register_blueprint(olymp_catalog_bp)
-    logger.info("[BP] olymp_catalog_bp registered (/olympiads, tutor=%s)", TUTOR_MODEL)
-    print("[BP] olymp_catalog_bp registered (/olympiads, tutor=%s)" % TUTOR_MODEL)
+    if os.environ.get("OLYMP_CATALOG_NAV", "1") != "0":
+        app.after_request(_inject_nav)
+    logger.info("[BP] olymp_catalog_bp registered (%s, tutor=%s)", URL_PREFIX, TUTOR_MODEL)
+    print("[BP] olymp_catalog_bp registered (%s, tutor=%s)" % (URL_PREFIX, TUTOR_MODEL))
