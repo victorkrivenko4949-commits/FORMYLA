@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""Запасной банк задач дня из FORMYLA_BANK.jsonl — ПО УМОЛЧАНИЮ ОТКЛЮЧЁН.
+"""Банк задач дня из FORMYLA_BANK.jsonl — ВКЛЮЧЁН ПО УМОЛЧАНИЮ.
 
 Основной источник задач дня — таблица daily_task_bank (services/bank_daily.py).
-Этот модуль остаётся только как аварийный fallback и включается переменной
-окружения FORMYLA_JSONL_FALLBACK=1. Без неё has_rows() -> False и
-get_tasks() -> [], поэтому pick_daily_set не выдаёт задачи из jsonl.
+Пока daily_task_bank не заполнен по подтемам плана, задачи дня берутся отсюда
+(pick_daily_set в services/daily_task_rotation.py). Отключается только явно:
+FORMYLA_JSONL_FALLBACK=0 -> has_rows() -> False и get_tasks() -> [].
 
-Логика выборки (когда включён): точный уровень, затем смесь 70/30 из
-соседних уровней, затем level±2, затем повторы.
+Логика выборки: точный уровень, затем смесь 70/30 из соседних уровней,
+затем level±2, затем повторы.
 """
 
 from __future__ import annotations
@@ -25,8 +25,8 @@ _index: Dict[Tuple[int, str, int], List[Dict[str, Any]]] = {}
 _loaded = False
 _disabled_logged = False
 
-# Запасной jsonl-банк включается только явно.
-FALLBACK_ENABLED = os.environ.get("FORMYLA_JSONL_FALLBACK", "0").strip() == "1"
+# jsonl-банк включён по умолчанию; выключается только FORMYLA_JSONL_FALLBACK=0.
+FALLBACK_ENABLED = os.environ.get("FORMYLA_JSONL_FALLBACK", "1").strip() != "0"
 
 # Доля добора из уровня ниже при нехватке точного уровня (остальное — из уровня выше).
 LOWER_SHARE = 0.7
@@ -37,7 +37,7 @@ def _fallback_disabled() -> bool:
     if FALLBACK_ENABLED:
         return False
     if not _disabled_logged:
-        logger.info("formyla_bank: запасной FORMYLA_BANK.jsonl отключён (FORMYLA_JSONL_FALLBACK != 1)")
+        logger.info("formyla_bank: FORMYLA_BANK.jsonl отключён (FORMYLA_JSONL_FALLBACK=0)")
         _disabled_logged = True
     return True
 
@@ -159,7 +159,7 @@ def get_tasks(grade: int, topic: str, level: int,
               exclude_positions: Optional[Set[int]] = None,
               exclude_texts: Optional[Set[str]] = None,
               day_seed: Optional[int] = None) -> List[Dict[str, Any]]:
-    """Pick same-grade, same-topic tasks of the requested level (fallback only)."""
+    """Pick same-grade, same-topic tasks of the requested level."""
     if _fallback_disabled():
         return []
     load()
