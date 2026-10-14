@@ -4,21 +4,42 @@
 {% block extra_css %}{% include "olymp_catalog/_style.html" %}{% endblock %}
 {% block content %}
 <div class="oc-wrap">
-  <div class="oc-back"><a href="{{ url_for('olymp_catalog.index') }}">← Каталог олимпиад</a></div>
+  <div class="oc-crumbs"><a href="{{ url_for('olymp_catalog.index') }}">Олимпиады</a><span class="sep">/</span><span>{{ meta.name if meta else slug }}</span></div>
   <h1>{{ meta.name if meta else slug }}</h1>
-  <div class="oc-sub">Задач: {{ count }}{% if meta %}, с рисунками: {{ meta.with_figs }}{% endif %}</div>
-  <form class="oc-search" method="get"><input type="search" name="q" value="{{ q }}" placeholder="Поиск по условию, решению, ответу"><button type="submit">Найти</button></form>
-  {% if not q %}
+  <div class="oc-sub">Показано задач: <b style="color:#fff">{{ count }}</b> из {{ total }}{% if meta %} · с рисунками: {{ meta.with_figs }}{% endif %} · {{ years_all|length }} лет</div>
+
+  <div class="oc-toolbar" id="oc-filter">
+    <form class="oc-search" method="get">
+      <input type="search" name="q" value="{{ q }}" placeholder="Поиск по условию, решению, ответу…">
+      <select class="oc-select" name="grade"><option value="">Все классы</option>{% for g in grades %}<option value="{{ g }}" {% if g == grade %}selected{% endif %}>{{ g }} класс</option>{% endfor %}</select>
+      <select class="oc-select" name="year"><option value="">Все годы</option>{% for y in years_all %}<option value="{{ y }}" {% if y|string == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select>
+      <button class="oc-btn pri" type="submit">Найти</button>
+      {% if q or grade or year %}<a class="oc-btn" href="{{ url_for('olymp_catalog.olympiad', slug=slug) }}">Сброс</a>{% endif %}
+    </form>
+    <select class="oc-select" id="oc-year-jump"><option value="">Перейти к году…</option>{% for y in years %}{% for s in y.sections %}<option value="{{ s.anchor }}">{{ y.year }} — {{ s.round }}{% if s.day %} — день {{ s.day }}{% endif %}</option>{% endfor %}{% endfor %}</select>
+    <button class="oc-btn" type="button" data-toggle-sol="open">Раскрыть все решения</button>
+    <span class="oc-dd"><a class="oc-btn" href="#" data-dd>⤓ Скачать ▾</a>
+      <div class="oc-dd-menu">
+        <a href="{{ url_for('olymp_catalog.export_olympiad', slug=slug, fmt='md', q=q or None, year=year or None, grade=grade or None) }}">Markdown (.md) — {{ count }} задач<small>с ответами и решениями, текущий фильтр</small></a>
+        <a href="{{ url_for('olymp_catalog.export_olympiad', slug=slug, fmt='md', sol=0, q=q or None, year=year or None, grade=grade or None) }}">Markdown без решений<small>только условия и ответы</small></a>
+        <a href="{{ url_for('olymp_catalog.export_olympiad', slug=slug, fmt='json', q=q or None, year=year or None, grade=grade or None) }}">JSON<small>структурированные данные</small></a>
+      </div></span>
+  </div>
+
+  {% if count == 0 %}
+    <div class="oc-empty">Ничего не найдено. Попробуйте другой запрос или снимите фильтры.</div>
+  {% endif %}
+  {% if not q and not year and not grade %}
   <div class="oc-toc">
-    {% for y in years %}{% for s in y.sections %}<a href="#{{ s.anchor }}">{{ y.year }} — {{ s.round }}{% if s.day %} — День {{ s.day }}{% endif %} <span style="color:#64748b">({{ s.count }})</span></a>{% endfor %}{% endfor %}
+    {% for y in years %}{% for s in y.sections %}<a href="#{{ s.anchor }}"><span style="color:inherit">{{ y.year }} — {{ s.round }}{% if s.day %} — день {{ s.day }}{% endif %}</span><span>{{ s.count }}</span></a>{% endfor %}{% endfor %}
   </div>
   {% endif %}
   {% for y in years %}
-    <div class="oc-year">{{ y.year }} год</div>
+    <div class="oc-year"><span>{{ y.year }} год</span><small>{{ y.count }} задач</small></div>
     {% for s in y.sections %}
-      <div class="oc-sec" id="{{ s.anchor }}">{{ s.round }}{% if s.day %} — День {{ s.day }}{% endif %}</div>
-      {% for grade, tasks in s.grades %}
-        <div class="oc-grade">{{ grade }} класс</div>
+      <div class="oc-sec" id="{{ s.anchor }}">{{ s.round }}{% if s.day %} — День {{ s.day }}{% endif %} <span style="color:#7f8ca3;font-weight:600">· {{ s.count }}</span></div>
+      {% for grade_, tasks in s.grades %}
+        <div class="oc-grade">{{ grade_ }} класс</div>
         {% for t in tasks %}{{ render_task(t, slug, labels) }}{% endfor %}
       {% endfor %}
     {% endfor %}
