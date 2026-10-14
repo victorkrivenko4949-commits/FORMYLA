@@ -5,6 +5,9 @@ services/bank_daily.py — выдача задач дня из предзапо�
 Банк daily_task_bank наполняет человек (132 подтемы x 4 уровня x 35 задач).
 Этот модуль НЕ генерирует задачи и не обращается к внешним моделям: только
 SQLAlchemy-чтение daily_task_bank и запись в bank_issues.
+
+Это ЕДИНСТВЕННЫЙ источник задач дня. Запасной FORMYLA_BANK.jsonl отключён
+(см. daily_tasks/formyla_bank.py, FORMYLA_JSONL_FALLBACK).
 """
 
 from __future__ import annotations
@@ -223,6 +226,20 @@ def build_daily_set(user_id: int, target_date: date) -> Dict[str, Any]:
     bank_empty = not _bank_has_rows()
 
     assignments, status = get_active_subtopics(user_id)
+    if status.get("plan_missing") or not assignments:
+        # Автоактивация: план куратора на месяц задан, но ученику его ещё не
+        # скопировали в user_subtopic_assignments (новый ученик / смена месяца).
+        # Раньше это тихо уводило выдачу в запасной FORMYLA_BANK.jsonl.
+        try:
+            from services.curator_plan_service import activate_month
+            cm = int(status.get("month") or 1)
+            act = activate_month(user_id, cm)
+            if not act.get("plan_missing"):
+                assignments, status = get_active_subtopics(user_id)
+                logger.info("build_daily_set: user=%d month=%d план активирован автоматически (%d подтем)",
+                            user_id, cm, len(assignments))
+        except Exception as _act_err:
+            logger.warning("build_daily_set: автоактивация плана не удалась user=%d: %s", user_id, _act_err)
     if status.get("plan_missing") or not assignments:
         logger.warning("build_daily_set: user=%d date=%s план на месяц не задан",
                        user_id, target_date)

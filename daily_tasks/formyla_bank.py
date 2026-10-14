@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""Bank of daily tasks from FORMYLA_BANK.jsonl, indexed by grade, topic and level.
+"""Запасной банк задач дня из FORMYLA_BANK.jsonl — ПО УМОЛЧАНИЮ ОТКЛЮЧЁН.
 
-Подбор: get_tasks(grade, topic, level) берёт задачи ТОЛЬКО запрошенного уровня,
-пока их хватает. Если задач точного уровня не хватает (дырка в банке), добор идёт
-смесью соседних уровней: LOWER_SHARE (70%) из level-1 и остальное (30%) из level+1.
-Если одного из соседних уровней нет (level=1 или 4) или в нём тоже нехватка —
-недостающее берётся из другого соседа, затем из level±2, и только потом —
-уже выданные задачи (wrap-around). Перемешка md5(user_id:day_seed:level:position)
-действует только ВНУТРИ уровня.
+Основной источник задач дня — таблица daily_task_bank (services/bank_daily.py).
+Этот модуль остаётся только как аварийный fallback и включается переменной
+окружения FORMYLA_JSONL_FALLBACK=1. Без неё has_rows() -> False и
+get_tasks() -> [], поэтому pick_daily_set не выдаёт задачи из jsonl.
+
+Логика выборки (когда включён): точный уровень, затем смесь 70/30 из
+соседних уровней, затем level±2, затем повторы.
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -22,15 +23,29 @@ logger = logging.getLogger(__name__)
 _BANK_PATH: Path = Path(__file__).resolve().parents[1] / "FORMYLA_BANK.jsonl"
 _index: Dict[Tuple[int, str, int], List[Dict[str, Any]]] = {}
 _loaded = False
+_disabled_logged = False
+
+# Запасной jsonl-банк включается только явно.
+FALLBACK_ENABLED = os.environ.get("FORMYLA_JSONL_FALLBACK", "0").strip() == "1"
 
 # Доля добора из уровня ниже при нехватке точного уровня (остальное — из уровня выше).
 LOWER_SHARE = 0.7
 
 
+def _fallback_disabled() -> bool:
+    global _disabled_logged
+    if FALLBACK_ENABLED:
+        return False
+    if not _disabled_logged:
+        logger.info("formyla_bank: запасной FORMYLA_BANK.jsonl отключён (FORMYLA_JSONL_FALLBACK != 1)")
+        _disabled_logged = True
+    return True
+
+
 def load() -> None:
     """Load and index the JSONL bank once per process."""
     global _loaded, _index
-    if _loaded:
+    if _loaded or _fallback_disabled():
         return
     if not _BANK_PATH.exists():
         logger.warning("formyla_bank: %s not found", _BANK_PATH)
@@ -56,6 +71,8 @@ def load() -> None:
 
 
 def has_rows() -> bool:
+    if _fallback_disabled():
+        return False
     load()
     return bool(_index)
 
@@ -99,7 +116,6 @@ def _task_text(task: Dict[str, Any]) -> str:
 
 def _collect(grade: int, topic: str, levels: List[int],
              exclude_positions: Optional[Set[int]]) -> Dict[int, List[Dict[str, Any]]]:
-    """Уникальные (по тексту и (уровень, position)) задачи по уровням."""
     seen_positions: Set[Tuple[int, int]] = set()
     seen_texts: Set[str] = set()
     out: Dict[int, List[Dict[str, Any]]] = {lv: [] for lv in levels}
@@ -143,15 +159,9 @@ def get_tasks(grade: int, topic: str, level: int,
               exclude_positions: Optional[Set[int]] = None,
               exclude_texts: Optional[Set[str]] = None,
               day_seed: Optional[int] = None) -> List[Dict[str, Any]]:
-    """Pick same-grade, same-topic tasks of the requested level.
-
-    Порядок:
-      1. свежие задачи точного уровня — сколько есть;
-      2. если не хватает: добор смесью LOWER_SHARE из level-1 и остатка из level+1
-         (свежие); недобор одной стороны компенсируется другой;
-      3. свежие из level-2 / level+2;
-      4. уже выданные (exclude_texts) — в том же порядке уровней.
-    """
+    """Pick same-grade, same-topic tasks of the requested level (fallback only)."""
+    if _fallback_disabled():
+        return []
     load()
     if count <= 0:
         return []
@@ -185,14 +195,11 @@ def get_tasks(grade: int, topic: str, level: int,
     def add(lv: int, items: List[Dict[str, Any]]) -> None:
         picked.extend((lv, t) for t in items)
 
-    # 1. точный уровень
     add(level, _take(fresh, level, count))
 
-    # 2. смесь соседей 70/30
     need = count - len(picked)
     if need > 0:
         lower, upper = level - 1, level + 1
-        # округление чередуется по дням, чтобы в среднем держать LOWER_SHARE (3.5 -> 4/3/4/3)
         rnd = 0.5 if day_part % 2 == 0 else 0.0
         want_lower = int(need * LOWER_SHARE + rnd) if upper in fresh else need
         want_upper = need - want_lower if upper in fresh else 0
@@ -200,7 +207,6 @@ def get_tasks(grade: int, topic: str, level: int,
             want_lower, want_upper = 0, need
         got_lower = _take(fresh, lower, want_lower)
         got_upper = _take(fresh, upper, want_upper)
-        # компенсация недобора одной стороны другой
         short = need - len(got_lower) - len(got_upper)
         if short > 0:
             got_lower += _take(fresh, lower, short)
@@ -210,14 +216,12 @@ def get_tasks(grade: int, topic: str, level: int,
         add(lower, got_lower)
         add(upper, got_upper)
 
-    # 3. level±2 свежие
     for lv in (level - 2, level + 2):
         need = count - len(picked)
         if need <= 0:
             break
         add(lv, _take(fresh, lv, need))
 
-    # 4. повторы в порядке уровней
     for lv in levels:
         need = count - len(picked)
         if need <= 0:
@@ -239,10 +243,14 @@ def get_tasks(grade: int, topic: str, level: int,
 
 
 def available_topics(grade: int) -> List[str]:
+    if _fallback_disabled():
+        return []
     load()
     return sorted({topic for (g, topic, _), rows in _index.items() if g == grade and rows})
 
 
 def task_count(grade: int, topic: str, level: int) -> int:
+    if _fallback_disabled():
+        return 0
     load()
     return len(_index.get((grade, (topic or "").strip(), level), ()))
