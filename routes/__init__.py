@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 """
 routes/__init__.py — ADMIN_BASE_V1 (06.10.2026) + PWA_INSTALL_V1 (11.10.2026)
-+ SITE_NOTICE_V1 (11.10.2026).
++ SITE_NOTICE_V1 (11.10.2026) + OLYMP_CATALOG_V1 (14.10.2026).
 
 Автоматическая регистрация blueprint «База» (routes/admin_base.py),
-blueprint PWA (routes/pwa.py) и blueprint одноразовых уведомлений
-(routes/site_notices.py) без правки app.py. Файл превращает `routes/`
+blueprint PWA (routes/pwa.py), blueprint одноразовых уведомлений
+(routes/site_notices.py) и blueprint каталога олимпиадных задач
+(routes/olymp_catalog.py, /olympiads) без правки app.py. Файл превращает `routes/`
 в обычный пакет (раньше был namespace package); все существующие импорты
 `from routes.xxx import ...` работают как прежде.
 
 Как это работает: при первом `app.register_blueprint(...)` любого другого
-blueprint мы один раз дорегистрируем `admin_base_bp`, `pwa_bp` и `site_notices_bp`
-в это же приложение и вешаем after_request-хуки.
+blueprint мы один раз дорегистрируем `admin_base_bp`, `pwa_bp`, `site_notices_bp`
+и `olymp_catalog_bp` в это же приложение и вешаем after_request-хуки.
 
-Отключить: ADMIN_BASE_AUTOREG=0, PWA_AUTOREG=0 и/или SITE_NOTICES_AUTOREG=0.
+Отключить: ADMIN_BASE_AUTOREG=0, PWA_AUTOREG=0, SITE_NOTICES_AUTOREG=0 и/или OLYMP_CATALOG_AUTOREG=0.
 Ручная регистрация (эквивалент):
     from routes.admin_base import admin_base_bp
     app.register_blueprint(admin_base_bp)
@@ -21,6 +22,8 @@ blueprint мы один раз дорегистрируем `admin_base_bp`, `pw
     install_pwa(app)
     from routes.site_notices import site_notices_bp
     app.register_blueprint(site_notices_bp)
+    from routes.olymp_catalog import install_olymp_catalog
+    install_olymp_catalog(app)
 """
 from __future__ import annotations
 
@@ -68,9 +71,27 @@ def _install_site_notices(app) -> None:
         logger.exception("[site_notices] auto-register failed: %r", e)
 
 
+def _install_olymp_catalog(app) -> None:
+    """OLYMP_CATALOG_V1: закрытый каталог олимпиадных задач (/olympiads)."""
+    if os.environ.get("OLYMP_CATALOG_AUTOREG", "1") == "0":
+        return
+    if getattr(app, "_olymp_catalog_installed", False):
+        return
+    app._olymp_catalog_installed = True
+    try:
+        from routes.olymp_catalog import olymp_catalog_bp
+        if "olymp_catalog" not in app.blueprints:
+            _ORIG_REGISTER(app, olymp_catalog_bp)
+        logger.info("[BP] olymp_catalog_bp registered (/olympiads)")
+        print("[BP] olymp_catalog_bp registered (/olympiads)")
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[olymp_catalog] auto-register failed: %r", e)
+
+
 def _install(app) -> None:
     _install_pwa(app)
     _install_site_notices(app)
+    _install_olymp_catalog(app)
 
     if getattr(app, "_admin_base_installed", False):
         return
@@ -116,7 +137,7 @@ try:
 
         def _patched_register_blueprint(self, blueprint, **options):
             result = _ORIG_REGISTER(self, blueprint, **options)
-            if getattr(blueprint, "name", "") not in ("admin_base", "pwa", "site_notices"):
+            if getattr(blueprint, "name", "") not in ("admin_base", "pwa", "site_notices", "olymp_catalog"):
                 _install(self)
             return result
 
