@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% from "olymp_catalog/_task.html" import render_task %}
+{% block title %}{{ t.olymp }} {{ t.year }} — задача {{ t.num }} ({{ t.grade }} кл.) | FORMYLA.net{% endblock %}
+{% block extra_css %}{% include "olymp_catalog/_style.html" %}{% endblock %}
+{% block content %}
+<div class="oc-wrap">
+  <div class="oc-back"><a href="{{ url_for('olymp_catalog.olympiad', slug=slug) }}">← {{ t.olymp }}</a></div>
+  <h1>{{ t.olymp }}, {{ t.year }}</h1>
+  <div class="oc-sub">{{ t.round }}{% if t.day %} — День {{ t.day }}{% endif %} — {{ t.grade }} класс — задача {{ t.num }}</div>
+  {{ render_task(t, slug, labels, link=False) }}
+</div>
+{% endblock %}

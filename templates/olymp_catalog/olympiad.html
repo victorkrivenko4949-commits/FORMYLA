@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "olymp_catalog/_task.html" import render_task %}
+{% block title %}{{ meta.name if meta else slug }} — задачи | FORMYLA.net{% endblock %}
+{% block extra_css %}{% include "olymp_catalog/_style.html" %}{% endblock %}
+{% block content %}
+<div class="oc-wrap">
+  <div class="oc-back"><a href="{{ url_for('olymp_catalog.index') }}">← Каталог олимпиад</a></div>
+  <h1>{{ meta.name if meta else slug }}</h1>
+  <div class="oc-sub">Задач: {{ count }}{% if meta %}, с рисунками: {{ meta.with_figs }}{% endif %}</div>
+  <form class="oc-search" method="get"><input type="search" name="q" value="{{ q }}" placeholder="Поиск по условию, решению, ответу"><button type="submit">Найти</button></form>
+  {% if not q %}
+  <div class="oc-toc">
+    {% for y in years %}{% for s in y.sections %}<a href="#{{ s.anchor }}">{{ y.year }} — {{ s.round }}{% if s.day %} — День {{ s.day }}{% endif %} <span style="color:#64748b">({{ s.count }})</span></a>{% endfor %}{% endfor %}
+  </div>
+  {% endif %}
+  {% for y in years %}
+    <div class="oc-year">{{ y.year }} год</div>
+    {% for s in y.sections %}
+      <div class="oc-sec" id="{{ s.anchor }}">{{ s.round }}{% if s.day %} — День {{ s.day }}{% endif %}</div>
+      {% for grade, tasks in s.grades %}
+        <div class="oc-grade">{{ grade }} класс</div>
+        {% for t in tasks %}{{ render_task(t, slug, labels) }}{% endfor %}
+      {% endfor %}
+    {% endfor %}
+  {% endfor %}
+</div>
+{% endblock %}

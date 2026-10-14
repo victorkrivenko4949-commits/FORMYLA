@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style><rect width="620" height="620" fill="#070C18"/>
+<polygon points="462.6,92.1 169.2,117.7 259.1,560.0" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<circle cx="295.7" cy="212.2" r="105.2" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="462.6" y1="92.1" x2="157.4" y2="60.0" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="194.3" y1="1176.6" x2="360.5" y2="-404.4" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="295.7" y1="212.2" x2="192.6" y2="233.2" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="295.7" y1="212.2" x2="392.1" y2="254.2" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<polyline points="322.9,77.4 321.6,90.3 308.6,89.0" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<line x1="385.7" y1="90.0" x2="386.9" y2="78.1" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="233.1" y1="74.0" x2="234.3" y2="62.1" stroke="#4C7DFF" stroke-width="2"/>
+<circle cx="462.6" cy="92.1" r="3.4" fill="#E6EBF7"/>
+<text x="479.9" y="88.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="169.2" cy="117.7" r="3.4" fill="#E6EBF7"/>
+<text x="151.8" y="113.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="259.1" cy="560.0" r="3.4" fill="#E6EBF7"/>
+<text x="259.1" y="586.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="295.7" cy="212.2" r="3.4" fill="#E6EBF7"/>
+<text x="305.7" y="200.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">I</text>
+<circle cx="310.0" cy="76.0" r="3.4" fill="#E6EBF7"/>
+<text x="310.0" y="62.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">F</text>
+<circle cx="157.4" cy="60.0" r="3.4" fill="#E6EBF7"/>
+<text x="143.3" y="51.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="192.6" cy="233.2" r="3.4" fill="#E6EBF7"/>
+<text x="173.3" y="244.4" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">N</text>
+<circle cx="392.1" cy="254.2" r="3.4" fill="#E6EBF7"/>
+<text x="409.4" y="270.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">M</text>
+</svg>

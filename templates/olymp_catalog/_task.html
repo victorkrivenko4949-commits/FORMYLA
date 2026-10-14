@@ -1,0 +1,18 @@
+{% macro render_task(t, slug, labels, link=True) %}
+<div class="oc-task" id="{{ t.uid[:12] }}">
+  <div class="hdr">
+    {% if link %}<a href="{{ url_for('olymp_catalog.task', slug=slug, uid=t.uid[:12]) }}" style="color:#fff;text-decoration:none">Задача {{ t.num }} — {{ t.grade }} класс</a>{% else %}Задача {{ t.num }} — {{ t.grade }} класс{% endif %}
+    <span class="oc-badge">{{ labels.get(t.status, t.status) }}</span>
+    {% if t.day %}<span class="oc-badge">День {{ t.day }}</span>{% endif %}
+  </div>
+  <span class="oc-lbl">Условие</span>
+  <div class="oc-text">{{ t.text }}</div>
+  {% for f in t.fig_statement %}<img class="oc-fig" src="{{ url_for('olymp_catalog.figure', subpath=f) }}" alt="рисунок к условию">{% endfor %}
+  {% if t.answer %}<div class="oc-ans"><b>Ответ:</b> {{ t.answer }}</div>{% endif %}
+  <details class="oc-sol-wrap" {% if not link %}open{% endif %}><summary>Решение</summary>
+    <div class="oc-sol">{{ t.solution }}</div>
+    {% for f in t.fig_solution %}<img class="oc-fig" src="{{ url_for('olymp_catalog.figure', subpath=f) }}" alt="рисунок к решению">{% endfor %}
+  </details>
+  {% if t.source %}<div class="oc-src">Источник: {{ t.source }}</div>{% endif %}
+</div>
+{% endmacro %}
