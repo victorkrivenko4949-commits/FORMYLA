@@ -78,10 +78,16 @@
       "Измерено на чертеже: " + Number(value).toLocaleString("ru-RU", {maximumSignificantDigits: 8}) +
       ". Это не доказанный ответ.";
     el("warnings").replaceChildren();
-    // Technical codes (APPROXIMATE:, SKETCH:, ...) are for logs; users see text.
-    const warnings = (data.warnings || [])
-      .filter(w => !/^(SKETCH|SIMPLIFIED):/.test(String(w)))
-      .map(w => String(w).replace(/^[A-Z_]+:\s*/, ""));
+    // Технические коды (SKETCH:, INTERNAL:, INVALID_CONDITION:, TIME_LIMIT:, …) раньше
+    // прятались — пользователь видел эскиз без объяснения, а причину можно было
+    // узнать только из JSON /jobs/<id>. Теперь текст показывается, а код — в скобках.
+    const warnings = (data.warnings || []).map(w => {
+      const m = String(w).match(/^([A-Z_]+):\s*([\s\S]*)$/);
+      return m ? m[2] + " [" + m[1] + "]" : String(w);
+    });
+    if (["sketch", "approximate", "simplified"].includes(data.verification) && data.stage)
+      warnings.push("Этап конвейера: " + data.stage + (data.reason ? ", код " + data.reason : "")
+        + (data.detail ? " — " + data.detail : ""));
     const notice = {
       approximate: "Чертёж построен, но автоматическая проверка подтвердила не всё условие. Сверьте его с текстом задачи.",
       simplified: "Чертёж построен по упрощённой схеме: часть условий могла быть не учтена.",
