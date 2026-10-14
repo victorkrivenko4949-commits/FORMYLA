@@ -34,6 +34,24 @@ mutex = Table(
     Column("revision", Integer, nullable=False),
 )
 
+# ── Тайминги живучести очереди ──────────────────────────────────────────────
+# Воркер-процесс живёт не дольше WORKER_TIMEOUT_SEC (subprocess.run), а его
+# собственный будильник — GEOEXACT_TIME_LIMIT + 25 (см. worker.py). Задание,
+# которое числится running дольше RUNNING_STALE_SEC, точно никем не выполняется:
+# либо процесс сервера перезапустился (деплой, рестарт Render), либо воркер
+# убит. Раньше порог был 400 с — пользователь смотрел на «Строим и проверяем
+# чертёж…» почти 7 минут после деплоя.
+WORKER_TIMEOUT_SEC = 215
+RUNNING_STALE_SEC = float(os.environ.get("GEOEXACT_RUNNING_STALE_SEC", "0") or 0) or (WORKER_TIMEOUT_SEC + 30)
+QUEUED_STALE_SEC = float(os.environ.get("GEOEXACT_QUEUED_STALE_SEC", "0") or 0) or 1800.0
+# Осиротевшее задание (сервер перезапустился во время генерации) один раз
+# возвращается в очередь, а не падает с INTERRUPTED: пользователь ничего не
+# нажимал, чертёж он не получил, повтор — одна оплата вместо нуля результатов.
+# Второй подряд обрыв уже честно завершается ошибкой (нет бесконечных повторов
+# платного API). GEOEXACT_ORPHAN_REQUEUE=0 возвращает прежнее поведение.
+ORPHAN_REQUEUE = (os.environ.get("GEOEXACT_ORPHAN_REQUEUE") or "1").strip().lower() not in ("0", "no", "off")
+_REQUEUED_MARK = json.dumps({"requeued": 1})
+
 
 class QueueFull(Exception):
     pass
@@ -44,7 +62,16 @@ def make_engine(url):
         url = "postgresql+psycopg://" + url[len("postgres://"):]
     elif url.startswith("postgresql://"):
         url = "postgresql+psycopg://" + url[len("postgresql://"):]
-    return create_engine(url, pool_pre_ping=True)
+    kwargs = {"pool_pre_ping": True}
+    if url.startswith("postgresql"):
+        # Все приёмы и захваты идут через строковую блокировку geoexact_mutex_v1.
+        # Без lock_timeout зависшее соединение убитого процесса держало бы строку,
+        # и поток очереди вис бы на UPDATE навсегда — «бесконечная генерация» у всех.
+        # С таймаутом ожидание падает исключением, _loop повторяет через 3 с.
+        kwargs["connect_args"] = {
+            "options": "-c lock_timeout=5000 -c statement_timeout=60000",
+        }
+    return create_engine(url, **kwargs)
 
 
 def init_db(engine):
@@ -129,6 +156,25 @@ def failure(code, message):
     return {"ok": False, "reason": code, "detail": message}
 
 
+_INTERRUPTED = failure(
+    "INTERRUPTED",
+    "Генерация прервана или истекло время ожидания. "
+    "Автоматического платного повторения не было.")
+_INTERRUPTED_TWICE = failure(
+    "INTERRUPTED",
+    "Сервер перезапускался во время генерации дважды подряд; задание уже "
+    "повторялось автоматически один раз. Запустите построение ещё раз.")
+
+
+def _was_requeued(payload) -> bool:
+    if not payload:
+        return False
+    try:
+        return bool(json.loads(payload).get("requeued"))
+    except (ValueError, AttributeError):
+        return False
+
+
 # Результаты, которые не стоит показывать, если есть проверенный чертёж той же
 # задачи: эскиз по ключевым словам и сбои без чертежа вовсе.
 _WEAK_VERIFICATION = ("sketch",)
@@ -158,6 +204,7 @@ class Queue:
         self.runner = runner or run_generation
         self._thread = None
         self._start_lock = threading.Lock()
+        self._recovered = False
 
     def submit(self, owner, problem, with_aux, history=None):
         jid = self._admit(owner)
@@ -211,6 +258,10 @@ class Queue:
                 jobs.c.id == jid, jobs.c.owner == owner)).first()
         if not row:
             return None
+        if row.status in ("queued", "running"):
+            # payload у незавершённого задания — служебная пометка (requeued),
+            # клиенту она не нужна.
+            return {"status": row.status, "result": None}
         return {"status": row.status,
                 "result": json.loads(row.payload) if row.payload else None}
 
@@ -277,19 +328,50 @@ class Queue:
                               f"новый запуск не удался — {why}."] + list(earlier.get("warnings") or [])
         return reused
 
+    # ── Осиротевшие и просроченные задания ─────────────────────────────────────
+    def _expire(self, c, where):
+        """Задания по условию where: один раз вернуть в очередь, иначе — INTERRUPTED.
+
+        Вызывается внутри транзакции под _lock. Возвращает (requeued, failed).
+        """
+        rows = c.execute(select(jobs.c.id, jobs.c.payload, jobs.c.problem)
+                         .where(where)).all()
+        requeued = failed = 0
+        for jid, payload, problem in rows:
+            if ORPHAN_REQUEUE and problem and not _was_requeued(payload):
+                c.execute(update(jobs).where(jobs.c.id == jid).values(
+                    status="queued", started=None, payload=_REQUEUED_MARK))
+                requeued += 1
+            else:
+                verdict = _INTERRUPTED_TWICE if _was_requeued(payload) else _INTERRUPTED
+                c.execute(update(jobs).where(jobs.c.id == jid).values(
+                    status="failed", payload=json.dumps(verdict, ensure_ascii=False),
+                    problem=""))
+                failed += 1
+        return requeued, failed
+
+    def recover_orphans(self):
+        """После старта процесса: всё, что числится running, никем не выполняется.
+
+        Исполнитель один на сервис (см. ensure_started), а старт нового процесса
+        означает, что прежний умер вместе со своим подпроцессом-воркером. Ждать
+        RUNNING_STALE_SEC незачем — задание сразу возвращается в очередь (один
+        раз) или завершается INTERRUPTED.
+        """
+        with self.engine.begin() as c:
+            _lock(c)
+            return self._expire(c, jobs.c.status == "running")
+
     def claim(self):
         now = time.time()
         with self.engine.begin() as c:
             _lock(c)
-            # Interrupted work is failed, NEVER automatically re-sent to a paid API.
-            expired = failure("INTERRUPTED",
-                "Генерация прервана или истекло время ожидания. "
-                "Автоматического платного повторения не было.")
-            c.execute(update(jobs).where(
-                ((jobs.c.status == "running") & (jobs.c.started < now - 400)) |
-                ((jobs.c.status == "queued") & (jobs.c.created < now - 1800))
-            ).values(status="failed", payload=json.dumps(expired, ensure_ascii=False),
-                     problem=""))
+            # Interrupted work: one automatic retry for an orphaned job, then a
+            # verdict. Never an endless loop against a paid API.
+            self._expire(c, (
+                ((jobs.c.status == "running") & (jobs.c.started < now - RUNNING_STALE_SEC)) |
+                ((jobs.c.status == "queued") & (jobs.c.created < now - QUEUED_STALE_SEC))
+            ))
             c.execute(delete(jobs).where(
                 jobs.c.created < now - 7 * 86400,
                 jobs.c.status.in_(["done", "failed"])))
@@ -343,12 +425,19 @@ class Queue:
 
     def _loop(self):
         import logging
+        log = logging.getLogger(__name__)
         while True:
             try:
+                if not self._recovered:
+                    requeued, failed = self.recover_orphans()
+                    self._recovered = True
+                    if requeued or failed:
+                        log.warning("GeoExact queue: orphaned jobs after restart — "
+                                    "requeued=%d, failed=%d", requeued, failed)
                 worked = self.run_once()
             except Exception:
                 # Never log task text, API responses or connection URLs.
-                logging.getLogger(__name__).error("GeoExact queue unavailable")
+                log.error("GeoExact queue unavailable")
                 worked = False
             time.sleep(.2 if worked else 3)
 
@@ -397,7 +486,7 @@ def run_generation(problem, with_aux):
         process = subprocess.run(
             [sys.executable, "-m", "geoexact.worker"],
             input=json.dumps({"problem": problem, "with_aux": with_aux, "history": history}),
-            text=True, capture_output=True, timeout=215, env=env,
+            text=True, capture_output=True, timeout=WORKER_TIMEOUT_SEC, env=env,
         )
     except subprocess.TimeoutExpired:
         return _sketch_payload(problem, with_aux) or failure("TIMEOUT",
