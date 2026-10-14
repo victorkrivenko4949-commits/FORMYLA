@@ -1,18 +1,40 @@
+{% macro status_class(st) -%}
+{%- if st in ('official_found','official','official_variant') %}ok{% elif st in ('AI_verified','gemini_solved') %}ai{% elif st in ('AI_generated','AI_generated_with_hints','figure_only') %}warn{% elif st in ('unresolved','broken_text') %}bad{% endif -%}
+{%- endmacro %}
 {% macro render_task(t, slug, labels, link=True) %}
-<div class="oc-task" id="{{ t.uid[:12] }}">
+{% set short = t.uid[:12] %}
+{% set task_url = url_for('olymp_catalog.task', slug=slug, uid=short) %}
+<div class="oc-task" id="{{ short }}" data-grade="{{ t.grade }}" data-year="{{ t.year }}">
   <div class="hdr">
-    {% if link %}<a href="{{ url_for('olymp_catalog.task', slug=slug, uid=t.uid[:12]) }}" style="color:#fff;text-decoration:none">Задача {{ t.num }} — {{ t.grade }} класс</a>{% else %}Задача {{ t.num }} — {{ t.grade }} класс{% endif %}
-    <span class="oc-badge">{{ labels.get(t.status, t.status) }}</span>
+    {% if link %}<a href="{{ task_url }}">Задача {{ t.num }} — {{ t.grade }} класс</a>{% else %}Задача {{ t.num }} — {{ t.grade }} класс{% endif %}
+    <span class="oc-badge {{ status_class(t.status) }}">{{ labels.get(t.status, t.status) }}</span>
     {% if t.day %}<span class="oc-badge">День {{ t.day }}</span>{% endif %}
+    {% if t.fig_statement or t.fig_solution %}<span class="oc-badge" title="есть рисунок">▣ рисунок</span>{% endif %}
+    <span class="sp"></span>
+    {% if link %}<a class="oc-btn vio sm" href="{{ task_url }}#tutor" title="Открыть задачу с ИИ-тьютором">✦ Тьютор</a>{% endif %}
   </div>
   <span class="oc-lbl">Условие</span>
   <div class="oc-text">{{ t.text }}</div>
-  {% for f in t.fig_statement %}<img class="oc-fig" src="{{ url_for('olymp_catalog.figure', subpath=f) }}" alt="рисунок к условию">{% endfor %}
+  {% for f in t.fig_statement %}<img class="oc-fig" src="{{ url_for('olymp_catalog.figure', subpath=f) }}" alt="рисунок к условию" loading="lazy">{% endfor %}
   {% if t.answer %}<div class="oc-ans"><b>Ответ:</b> {{ t.answer }}</div>{% endif %}
   <details class="oc-sol-wrap" {% if not link %}open{% endif %}><summary>Решение</summary>
-    <div class="oc-sol">{{ t.solution }}</div>
-    {% for f in t.fig_solution %}<img class="oc-fig" src="{{ url_for('olymp_catalog.figure', subpath=f) }}" alt="рисунок к решению">{% endfor %}
+    <div class="oc-sol">{{ t.solution if t.solution else '— решение отсутствует —' }}</div>
+    {% for f in t.fig_solution %}<img class="oc-fig" src="{{ url_for('olymp_catalog.figure', subpath=f) }}" alt="рисунок к решению" loading="lazy">{% endfor %}
   </details>
   {% if t.source %}<div class="oc-src">Источник: {{ t.source }}</div>{% endif %}
+  <div class="oc-actions">
+    <button class="oc-btn sm" data-copy="statement" type="button" title="Скопировать условие">⧉ Условие</button>
+    <button class="oc-btn sm" data-copy="task" data-with-sol type="button" title="Скопировать условие, ответ и решение">⧉ Всё</button>
+    <button class="oc-btn sm" data-copy="link" data-href="{{ request.host_url.rstrip('/') }}{{ task_url }}" type="button">🔗 Ссылка</button>
+    <span class="oc-dd"><a class="oc-btn sm" href="#" data-dd>⤓ Скачать ▾</a>
+      <div class="oc-dd-menu">
+        <a href="{{ url_for('olymp_catalog.export_task', slug=slug, uid=short, fmt='md') }}">Markdown (.md)<small>условие, ответ, решение, формулы в $…$</small></a>
+        <a href="{{ url_for('olymp_catalog.export_task', slug=slug, uid=short, fmt='md', sol=0) }}">Markdown без решения<small>для раздачи ученикам</small></a>
+        <a href="{{ url_for('olymp_catalog.export_task', slug=slug, uid=short, fmt='tex') }}">LaTeX (.tex)<small>готовый документ article</small></a>
+        <a href="{{ url_for('olymp_catalog.export_task', slug=slug, uid=short, fmt='txt') }}">Текст (.txt)</a>
+        <a href="{{ url_for('olymp_catalog.export_task', slug=slug, uid=short, fmt='json') }}">JSON</a>
+      </div></span>
+    {% if not link %}<button class="oc-btn sm" type="button" onclick="window.print()">🖨 Печать / PDF</button>{% endif %}
+  </div>
 </div>
 {% endmacro %}

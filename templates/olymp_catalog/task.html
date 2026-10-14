@@ -4,9 +4,44 @@
 {% block extra_css %}{% include "olymp_catalog/_style.html" %}{% endblock %}
 {% block content %}
 <div class="oc-wrap">
-  <div class="oc-back"><a href="{{ url_for('olymp_catalog.olympiad', slug=slug) }}">← {{ t.olymp }}</a></div>
+  <div class="oc-crumbs"><a href="{{ url_for('olymp_catalog.index') }}">Олимпиады</a><span class="sep">/</span><a href="{{ url_for('olymp_catalog.olympiad', slug=slug) }}">{{ t.olymp }}</a><span class="sep">/</span><a href="{{ url_for('olymp_catalog.olympiad', slug=slug, year=t.year) }}">{{ t.year }}</a><span class="sep">/</span><span>{{ t.grade }} класс · задача {{ t.num }}</span></div>
   <h1>{{ t.olymp }}, {{ t.year }}</h1>
   <div class="oc-sub">{{ t.round }}{% if t.day %} — День {{ t.day }}{% endif %} — {{ t.grade }} класс — задача {{ t.num }}</div>
-  {{ render_task(t, slug, labels, link=False) }}
+
+  <div class="oc-layout">
+    <div>
+      {{ render_task(t, slug, labels, link=False) }}
+      <div class="oc-nav">
+        {% if prev_t %}<a href="{{ url_for('olymp_catalog.task', slug=slug, uid=prev_t.uid[:12]) }}"><small>← предыдущая</small>{{ prev_t.year }} · {{ prev_t.round }}{% if prev_t.day %} д.{{ prev_t.day }}{% endif %} · {{ prev_t.grade }} кл. · №{{ prev_t.num }}</a>{% else %}<span></span>{% endif %}
+        {% if next_t %}<a class="next" href="{{ url_for('olymp_catalog.task', slug=slug, uid=next_t.uid[:12]) }}"><small>следующая →</small>{{ next_t.year }} · {{ next_t.round }}{% if next_t.day %} д.{{ next_t.day }}{% endif %} · {{ next_t.grade }} кл. · №{{ next_t.num }}</a>{% endif %}
+      </div>
+    </div>
+
+    <aside class="oc-tutor" id="oc-tutor" data-slug="{{ slug }}" data-uid="{{ t.uid }}" data-model="{{ tutor_model }}">
+      <div class="oc-tutor-hd">
+        <div class="av">✦</div>
+        <div class="ttl">ИИ-тьютор<small>{{ tutor_model }} · thinking · LaTeX</small></div>
+        <span class="sp"></span>
+        <span class="oc-status prep" id="oc-status"><i></i>{% if prep_ready %}Загрузка…{% else %}Изучает задачу…{% endif %}</span>
+      </div>
+      <details class="oc-brief" id="oc-brief" style="display:none"><summary>Конспект подготовки тьютора (что он уже разобрал)</summary><div class="bd" id="oc-brief-body"></div></details>
+      <div class="oc-msgs" id="oc-msgs"></div>
+      <div class="oc-quick">
+        <button class="oc-chip" type="button" data-quick="Дай лёгкую подсказку, с чего начать, не раскрывая решение.">Подсказка</button>
+        <button class="oc-chip" type="button" data-quick="В чём ключевая идея этой задачи?">Ключевая идея</button>
+        <button class="oc-chip" type="button" data-quick="Разбери решение по шагам и объясни, почему каждый шаг верен.">Разбор по шагам</button>
+        <button class="oc-chip" type="button" data-quick="Где в этой задаче чаще всего ошибаются и почему?">Типичные ошибки</button>
+        <button class="oc-chip" type="button" data-quick="Проверь эталонное решение: всё ли в нём строго? Есть ли пробелы?">Проверь эталон</button>
+        <button class="oc-chip" type="button" data-quick="Придумай похожую задачу чуть проще для тренировки и дай к ней ответ.">Похожая задача</button>
+      </div>
+      <div class="oc-compose">
+        <textarea id="oc-input" rows="1" placeholder="Спросите тьютора… (Enter — отправить, Shift+Enter — перенос)"></textarea>
+        <button class="oc-send" id="oc-send" type="button" title="Отправить">➤</button>
+      </div>
+      <div class="oc-hint">
+        <a href="javascript:void(0)" id="oc-clear" style="color:inherit">Очистить диалог</a> · <a href="javascript:void(0)" id="oc-copychat" style="color:inherit">Скопировать диалог</a> · <a href="javascript:void(0)" id="oc-reprep" style="color:inherit">Переразобрать задачу</a>
+      </div>
+    </aside>
+  </div>
 </div>
 {% endblock %}

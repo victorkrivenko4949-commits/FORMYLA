@@ -3,13 +3,24 @@
 {% block extra_css %}{% include "olymp_catalog/_style.html" %}{% endblock %}
 {% block content %}
 <div class="oc-wrap">
-  <h1>Каталог олимпиадных задач</h1>
-  <div class="oc-sub">Всего задач: <b>{{ total }}</b>, с рисунками: <b>{{ with_figs }}</b>. Структура: олимпиада → год → этап → день → класс → номер.</div>
-  <table class="oc-table">
-    <tr><th>Олимпиада</th><th>Задач</th><th>С рисунками</th><th>Годы</th></tr>
+  <div class="oc-hero">
+    <h1>Олимпиады</h1>
+    <p>Закрытый каталог задач с официальными ответами и решениями. У каждой задачи — ИИ-тьютор на <b>{{ tutor_model }}</b>, который заранее разбирает решение и отвечает на вопросы с формулами в LaTeX.</p>
+    <div class="oc-stats">
+      <div class="oc-stat"><b>{{ meta|length }}</b><span>олимпиад</span></div>
+      <div class="oc-stat"><b>{{ total }}</b><span>задач</span></div>
+      <div class="oc-stat"><b>{{ with_figs }}</b><span>с рисунками</span></div>
+      <div class="oc-stat"><b>.md .tex .json</b><span>экспорт</span></div>
+    </div>
+  </div>
+  <div class="oc-cards">
     {% for m in meta %}
-    <tr><td><a href="{{ url_for('olymp_catalog.olympiad', slug=m.slug) }}">{{ m.name }}</a></td><td>{{ m.count }}</td><td>{{ m.with_figs }}</td><td>{{ m.years[0] }}–{{ m.years[1] }}</td></tr>
+    <a class="oc-card" href="{{ url_for('olymp_catalog.olympiad', slug=m.slug) }}">
+      <div class="nm">{{ m.name }}</div><div class="arr">→</div>
+      <div class="meta"><span><b>{{ m.count }}</b> задач</span><span><b>{{ m.with_figs }}</b> с рис.</span><span>{{ m.years[0] }}–{{ m.years[1] }}</span></div>
+      <div class="bar"><i style="width:{{ (100 * m.count / total)|round(1) if total else 0 }}%"></i></div>
+    </a>
     {% endfor %}
-  </table>
+  </div>
 </div>
 {% endblock %}
