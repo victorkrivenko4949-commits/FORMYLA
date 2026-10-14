@@ -13,12 +13,13 @@ solve(plan, n_seeds, seed) -> list[Solution] — все различные ре�
 общего положения», затем точная полировка только по невязкам. Так
 недоопределённая задача (свободный параметр, не влияющий на ответ) получает
 читаемый чертёж, а не вырожденный, и быстрее: ранний останов после
-достаточного числа различных верных решений.
+достаточного числа различных верных решений и общий лимит времени на поиск.
 """
 from __future__ import annotations
 
 import math
 import os
+import time
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -345,6 +346,15 @@ SOFT_MAX_ASPECT = 3.0      # соотношение сторон габарит�
 # верных решений дальнейшие старты не нужны (экономия ~2× времени).
 EARLY_FOUND = int(os.environ.get("GEOEXACT_SOLVER_EARLY_FOUND", "8") or "8")
 EARLY_MIN_STARTS = int(os.environ.get("GEOEXACT_SOLVER_EARLY_MIN_STARTS", "16") or "16")
+# Общий лимит времени на один вызов solve (секунды). Конвейер живёт 170 с на
+# всё — классификацию, формализацию, до 3 кругов решения с обратной связью
+# модели, гейты и рендер. Без лимита неудачный план (решений нет вовсе) гонял
+# все 48 стартов × 2 этапа и съедал время, которого потом не хватало на
+# повторную формализацию — пользователь получал эскиз по ключевым словам.
+# Когда что-то уже найдено, поиск прекращается после TIME_BUDGET; если не
+# найдено ничего — после 2 × TIME_BUDGET (лучшее приближение всё равно
+# возвращается). 0 — без лимита.
+TIME_BUDGET = float(os.environ.get("GEOEXACT_SOLVER_TIME_BUDGET", "20") or "20")
 # Допуски оптимизатора: 1e-15 заставлял least_squares «вылизывать» каждую
 # точку до машинного нуля. Невязка проверяется отдельно (TOL), поэтому
 # оптимизатору достаточно сойтись заметно ниже TOL.
@@ -394,7 +404,8 @@ def solve(plan: FigurePlan, n_seeds: int = 24, seed: int = 0) -> list[Solution]:
     Возвращает список различных решений (дедупликация после нормализации,
     порог 1e-6 по максимальному смещению точки), отсортированный по невязке.
     Детерминирован при фиксированном seed. Останавливается раньше, когда
-    верных различных решений уже достаточно (EARLY_FOUND).
+    верных различных решений уже достаточно (EARLY_FOUND) или вышло время
+    (TIME_BUDGET).
     """
     validate_plan(plan)
     n_free = count_free_points(plan)
@@ -458,8 +469,13 @@ def solve(plan: FigurePlan, n_seeds: int = 24, seed: int = 0) -> list[Solution]:
     best: Solution | None = None
     max_nfev = 200 * (nv + 1)
     use_soft = SOFT_WEIGHT > 0.0 and m > 0
+    t0 = time.monotonic()
 
     for tried, x_start in enumerate(starts, start=1):
+        if TIME_BUDGET > 0 and tried > 1:
+            elapsed = time.monotonic() - t0
+            if (found and elapsed > TIME_BUDGET) or elapsed > 2.0 * TIME_BUDGET:
+                break
         if m == 0:
             # No equations: retain deterministic, well-spread sampled geometry
             # rather than passing an empty residual vector to least_squares.
