@@ -1,4 +1,4 @@
-/* OLYMP_CATALOG_V2 — общий JS раздела /olympiads: фильтры, копирование, лайтбокс, ИИ-тьютор */
+/* OLYMP_CATALOG_V3 — общий JS раздела /olymp-catalog: фильтры, копирование, лайтбокс, ИИ-тьютор */
 (function () {
   'use strict';
   const $ = (s, r) => (r || document).querySelector(s);
@@ -85,6 +85,7 @@
   const tutor = $('#oc-tutor');
   if (!tutor) return;
   const slug = tutor.dataset.slug, uid = tutor.dataset.uid, model = tutor.dataset.model || 'deepseek-v4-pro';
+  const apiBase = (tutor.dataset.apiBase || '/olymp-catalog').replace(/\/+$/, '');
   const KEY = 'oc_chat_' + uid.slice(0, 12);
   const msgs = $('#oc-msgs'), ta = $('#oc-input'), send = $('#oc-send'), status = $('#oc-status'), briefWrap = $('#oc-brief'), briefBody = $('#oc-brief-body');
   let history = [];
@@ -107,7 +108,7 @@
   else addMsg('sys', 'Тьютор получает условие и эталонное решение задачи и готовится к вашим вопросам…');
 
   async function api(path, body) {
-    const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), credentials: 'same-origin' });
+    const r = await fetch(apiBase + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), credentials: 'same-origin' });
     let data = null; try { data = await r.json(); } catch (e) {}
     if (!r.ok || !data || !data.ok) { const err = new Error((data && (data.detail || data.error)) || ('HTTP ' + r.status)); err.code = data && data.error; throw err; }
     return data;
@@ -118,7 +119,7 @@
     send.disabled = true;
     const t0 = Date.now();
     try {
-      const d = await api('/olympiads/api/tutor/prepare', { slug, uid, force: !!force });
+      const d = await api('/api/tutor/prepare', { slug, uid, force: !!force });
       ready = true;
       const secs = d.cached ? 'из кэша' : ((Date.now() - t0) / 1000).toFixed(0) + ' с';
       setStatus('ready', 'Готов · ' + model + ' · ' + secs);
@@ -140,7 +141,7 @@
     addMsg('u', text); history.push({ role: 'user', content: text }); save();
     const typing = addTyping();
     try {
-      const d = await api('/olympiads/api/tutor/chat', { slug, uid, messages: history.slice(-24) });
+      const d = await api('/api/tutor/chat', { slug, uid, messages: history.slice(-24) });
       typing.remove();
       addMsg('a', d.reply); history.push({ role: 'assistant', content: d.reply }); save();
       if (!ready) { ready = true; setStatus('ready', 'Готов · ' + model); }
