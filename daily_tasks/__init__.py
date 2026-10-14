@@ -28,3 +28,12 @@ try:  # pragma: no cover
 except Exception as _mw_exc:  # noqa: F841
     import logging as _logging
     _logging.getLogger(__name__).error("method_week attach failed: %s", _mw_exc)
+
+# Админ-API «задачи дня ученика» (find_user + user/<id>). Как и method_week,
+# вешается на daily_tasks_bp без правки app.py; ошибка не ломает задачи дня.
+try:  # pragma: no cover
+    from .admin_api import attach as _admin_api_attach
+    _admin_api_attach(daily_tasks_bp)
+except Exception as _aa_exc:  # noqa: F841
+    import logging as _logging
+    _logging.getLogger(__name__).error("daily_tasks admin_api attach failed: %s", _aa_exc)
