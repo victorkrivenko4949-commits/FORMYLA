@@ -179,6 +179,35 @@ def _was_requeued(payload) -> bool:
 # задачи: эскиз по ключевым словам и сбои без чертежа вовсе.
 _WEAK_VERIFICATION = ("sketch",)
 _REPLACEABLE_FAILURES = ("TIMEOUT", "WORKER_ERROR", "PIPELINE_CRASH", "INTERRUPTED")
+# Какой сохранённый чертёж можно ПОДСТАВИТЬ вместо неудачного нового запуска.
+# Раньше годился любой done-результат, кроме эскиза, — в том числе «проверенный»
+# отрезок вместо треугольника (задача 9.6: SLIVER, BAD_ASPECT, «A лежит на BC»,
+# измерено 24.5 вместо 15.5). Когда новый код начал отвергать вырождение, очередь
+# подставляла именно его — пользователь 21 час видел ту же линию. Теперь годится
+# только чистый результат: точная проверка, без предупреждений о вырождении,
+# построенный не раньше REUSE_NOT_BEFORE (деплой защиты от вырождения; env
+# GEOEXACT_REUSE_NOT_BEFORE переопределяет; 0 — без отсечки по времени).
+_REUSE_BAD_CODES = ("SLIVER", "BAD_ASPECT", "UNDECLARED_INCIDENCE", "DEGENERATE",
+                    "APPROXIMATE", "SIMPLIFIED", "SKETCH", "INTERNAL", "INVALID_CONDITION")
+_NOT_REUSABLE_VERIFICATION = ("sketch", "approximate", "simplified")
+_REUSE_DEFAULT_NOT_BEFORE = 1792078800.0      # 2026-10-15 15:40 UTC
+_env_nb = (os.environ.get("GEOEXACT_REUSE_NOT_BEFORE") or "").strip()
+REUSE_NOT_BEFORE = float(_env_nb) if _env_nb else _REUSE_DEFAULT_NOT_BEFORE
+
+
+def _reusable(data, created) -> bool:
+    """Сохранённый результат достаточно надёжен, чтобы показать его вместо нового."""
+    if created < REUSE_NOT_BEFORE:
+        return False
+    if not isinstance(data, dict) or not data.get("ok") or data.get("kind") == "solution":
+        return False
+    if data.get("verification") in _NOT_REUSABLE_VERIFICATION or data.get("reused_from"):
+        return False
+    for w in data.get("warnings") or []:
+        code = str(w).split(":", 1)[0].strip()
+        if code in _REUSE_BAD_CODES:
+            return False
+    return bool(data.get("svg"))
 
 
 def _same_problem(a, b) -> bool:
@@ -281,7 +310,8 @@ class Queue:
 
         Используется, когда новый запуск дал только эскиз или упал: показать
         проверенный результат недельной давности честнее, чем эскиз без углов и
-        длин. Возвращает (payload, created) или None.
+        длин. Но только если он действительно чистый (см. _reusable).
+        Возвращает (payload, created) или None.
         """
         with self.engine.connect() as c:
             rows = c.execute(select(jobs.c.payload, jobs.c.created).where(
@@ -294,11 +324,9 @@ class Queue:
                 data = json.loads(payload) if payload else None
             except ValueError:
                 continue
-            if not isinstance(data, dict) or not data.get("ok") or data.get("kind") == "solution":
+            if not _reusable(data, created):
                 continue
-            if data.get("verification") in _WEAK_VERIFICATION or data.get("reused_from"):
-                continue
-            if _same_problem(data.get("problem_text"), problem) and data.get("svg"):
+            if _same_problem(data.get("problem_text"), problem):
                 return data, created
         return None
 
