@@ -37,3 +37,12 @@ try:  # pragma: no cover
 except Exception as _aa_exc:  # noqa: F841
     import logging as _logging
     _logging.getLogger(__name__).error("daily_tasks admin_api attach failed: %s", _aa_exc)
+
+# Диагностический бейдж для админа (шаг 9): источник / уровень / тема на /daily_tasks/
+# и GET /daily_tasks/admin/api/diag. Read-only; ошибка не ломает задачи дня.
+try:  # pragma: no cover
+    from .admin_diag import attach as _admin_diag_attach
+    _admin_diag_attach(daily_tasks_bp)
+except Exception as _ad_exc:  # noqa: F841
+    import logging as _logging
+    _logging.getLogger(__name__).error("daily_tasks admin_diag attach failed: %s", _ad_exc)
