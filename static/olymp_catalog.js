@@ -1,4 +1,4 @@
-/* OLYMP_CATALOG_V3 — общий JS раздела /olymp-catalog: фильтры, копирование, лайтбокс, ИИ-тьютор */
+/* OLYMP_CATALOG_V3.1 — общий JS раздела /olymp-catalog: фильтры, копирование, лайтбокс, ИИ-тьютор */
 (function () {
   'use strict';
   const $ = (s, r) => (r || document).querySelector(s);
@@ -26,7 +26,7 @@
     let text = '';
     if (sel === 'task' && card) {
       const t = $('.oc-text', card), a = $('.oc-ans', card), s = $('.oc-sol', card);
-      text = (t ? t.textContent.trim() : '') + (a ? '\n\n' + a.textContent.trim() : '') + (s && b.hasAttribute('data-with-sol') ? '\n\nРешение. ' + s.textContent.trim() : '');
+      text = (t ? t.textContent.trim() : '') + (a ? '\n\nОтвет. ' + a.textContent.trim() : '') + (s && b.hasAttribute('data-with-sol') ? '\n\nРешение. ' + s.textContent.trim() : '');
     } else if (sel === 'link') { text = b.getAttribute('data-href') || location.href; }
     else if (sel === 'statement' && card) { const t = $('.oc-text', card); text = t ? t.textContent.trim() : ''; }
     copyText(text);
@@ -55,8 +55,8 @@
     if (sel) sel.addEventListener('change', () => { const el = document.getElementById(sel.value); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); sel.value = ''; });
     $$('[data-toggle-sol]').forEach(b => b.addEventListener('click', (e) => {
       e.preventDefault(); const open = b.getAttribute('data-toggle-sol') === 'open';
-      $$('details.oc-sol-wrap').forEach(d => d.open = open);
-      b.setAttribute('data-toggle-sol', open ? 'close' : 'open'); b.textContent = open ? 'Скрыть все решения' : 'Раскрыть все решения';
+      $$('details.oc-sol-wrap, details.oc-ans-wrap').forEach(d => d.open = open);
+      b.setAttribute('data-toggle-sol', open ? 'close' : 'open'); b.textContent = open ? 'Скрыть всё' : 'Раскрыть все ответы и решения';
     }));
   }
 
