@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Blueprint: Каталог олимпиадных задач (olymp_catalog) — OLYMP_CATALOG_V3.1
+Blueprint: Каталог олимпиадных задач (olymp_catalog) — OLYMP_CATALOG_V3.3
 
 Отдельный раздел сайта на префиксе /olymp-catalog (не пересекается с разделом
 «Олимпиады» /olympiads/* — пробники, методы, календарь).
@@ -12,6 +12,7 @@ Endpoints:
   GET  /olymp-catalog/<slug>/<uid>/export/<fmt>        — скачать задачу: md | tex | txt | json
   GET  /olymp-catalog/<slug>/export/<fmt>              — скачать олимпиаду (фильтры q/year/grade): md | json
   GET  /olymp-catalog/figures/<path>                   — рисунки (static/olymp_figures/...)
+  GET  /olymp-catalog/qa                               — отчёт чистки данных (JSON)
   POST /olymp-catalog/api/tutor/prepare                — v4-pro заранее разбирает задачу (кэш)
   POST /olymp-catalog/api/tutor/chat                   — диалог с тьютором по задаче
 
@@ -22,6 +23,17 @@ Endpoints:
 
 Скрытые олимпиады: OLYMP_CATALOG_HIDE (через запятую, по умолчанию "other" —
 «Без указания олимпиады»). Не показываются в каталоге и отдают 404.
+
+V3.3 — чистка данных при загрузке JSON (_clean_task), без правки самих файлов:
+  * LaTeX: \\( \\) → $ $, \\[ \\] → $$ $$, убраны обёртки \\begin{task}/\\begin{solution},
+    \\textbf{Ответ:} → «Ответ:», битые глифы PDF (￿ ⇡ ↵ ⌧) → нормальные символы;
+  * решение, в которое при распознавании PDF попали СЛЕДУЮЩИЕ задачи варианта
+    («© МФТИ», «Ответы и решения», «\n2.\nа)» …), обрезается на первом таком маркере;
+  * если в условии оказалось «Решение.»/«Ответ:», хвост переносится в solution/answer;
+  * повтор условия в начале решения (блок \\begin{task}…\\end{task} у Gemini) удаляется;
+  * рисунки: в fig_statement/fig_solution остаются только реально существующие файлы,
+    отсутствующие считаются в fig_missing (бейдж в карточке).
+  OLYMP_CATALOG_CLEAN=0 отключает чистку. Отчёт — /olymp-catalog/qa.
 
 Тьютор: deepseek-v4-pro (OLYMP_TUTOR_MODEL), режим thinking. При открытии задачи
 фронтенд вызывает /prepare: модель получает условие + эталонное решение и жёсткую
@@ -56,8 +68,10 @@ URL_PREFIX = "/olymp-catalog"
 olymp_catalog_bp = Blueprint("olymp_catalog", __name__, template_folder="../templates", url_prefix=URL_PREFIX)
 
 _cache: dict = {}
+_QA: dict = {}   # slug -> статистика чистки
 
 _HIDDEN_SLUGS = {x.strip() for x in os.environ.get("OLYMP_CATALOG_HIDE", "other").split(",") if x.strip()}
+_CLEAN = os.environ.get("OLYMP_CATALOG_CLEAN", "1").strip() not in ("0", "false", "no")
 
 # ----------------------------------------------------------------------------
 # Доступ
@@ -112,6 +126,145 @@ def catalog_access_required(f):
     return wrapped
 
 # ----------------------------------------------------------------------------
+# Чистка данных (V3.3)
+# ----------------------------------------------------------------------------
+
+_ENV_BLOCK_TASK = re.compile(r"\\begin\{task\*?\}.*?\\end\{task\*?\}", re.S)
+_ENV_TAGS = re.compile(r"\\(?:begin|end)\{(?:task|solution|problem|proof|answer)\*?\}")
+_ANS_TEXTBF = re.compile(r"\\textbf\{\s*Ответ\s*:?\s*\}\s*:?")
+_GLYPHS = {
+    "\ufffd": "—", "\uffff": "—", "￿": "—",      # потерянное тире из PDF
+    "⇡": "π", "↵": "α", "⌧": "τ", "⇧": "П",       # битые греческие из шрифта PDF
+    "\u00ad": "", "\u200b": "",
+}
+# маркеры, после которых в «решении» начинается СЛЕДУЮЩАЯ задача варианта (мусор из PDF)
+_CUT_MARKERS = [
+    re.compile(r"©\s*МФТИ"),
+    re.compile(r"Олимпиада\s+[“\"«]?Физтех"),
+    re.compile(r"Ответы и решения\s"),
+    re.compile(r"\n\s*\d{1,2}\.\s*\n\s*[а-г]\)\s"),        # «\n2.\nа) …»
+    re.compile(r"\n\s*[б-г]\)\s[А-ЯЁ]"),                  # варианты б) в) г) той же задачи
+    re.compile(r"\n\s*(?:Задача|ЗАДАЧА)\s+\d{1,2}[.:]"),
+]
+_SPLIT_IN_TEXT = re.compile(r"(?:^|\n)\s*(Решение[.:]\s*|Ответ[.:]\s*)", re.M)
+
+
+def _norm_tex(s):
+    """Приводим разметку к виду, который понимает KaTeX: $…$ / $$…$$, без окружений."""
+    if not s or not isinstance(s, str):
+        return s or ""
+    t = s
+    for k, v in _GLYPHS.items():
+        if k in t:
+            t = t.replace(k, v)
+    t = re.sub(r"(?<!\\)\\\(", "$", t)
+    t = re.sub(r"(?<!\\)\\\)", "$", t)
+    t = re.sub(r"(?<!\\)\\\[", "$$", t)
+    t = re.sub(r"(?<!\\)\\\]", "$$", t)
+    t = _ANS_TEXTBF.sub("Ответ: ", t)
+    t = re.sub(r"\n{3,}", "\n\n", t)
+    return t.strip()
+
+
+def _cut_tail(sol: str, min_keep: int = 120):
+    """Обрезаем решение на первом маркере «началась следующая задача». Возвращает (текст, обрезано?)."""
+    if not sol:
+        return sol, False
+    best = None
+    for rx in _CUT_MARKERS:
+        m = rx.search(sol)
+        if m and m.start() >= min_keep and (best is None or m.start() < best):
+            best = m.start()
+    if best is None:
+        return sol, False
+    return sol[:best].rstrip(" \n\t.,;:—-"), True
+
+
+def _clean_task(t: dict, qa: dict) -> dict:
+    text = _norm_tex(t.get("text"))
+    sol = _norm_tex(t.get("solution"))
+    ans = _norm_tex(t.get("answer"))
+
+    # 1) блок \begin{task}…\end{task} внутри решения — это повтор условия, убираем целиком
+    if "\\begin{task" in sol:
+        sol = _ENV_BLOCK_TASK.sub("", sol).strip()
+        qa["task_block_removed"] += 1
+    text = _ENV_TAGS.sub("", text).strip()
+    sol = _ENV_TAGS.sub("", sol).strip()
+    ans = _ENV_TAGS.sub("", ans).strip()
+
+    # 2) решение/ответ, попавшие в условие
+    m = _SPLIT_IN_TEXT.search(text)
+    if m and m.start() >= 40:
+        tail = text[m.start():].strip()
+        text = text[:m.start()].rstrip()
+        qa["solution_in_text"] += 1
+        if tail.startswith("Ответ"):
+            body = re.sub(r"^Ответ[.:]\s*", "", tail)
+            if not ans and len(body) <= 200 and "Решение" not in body:
+                ans = body
+            elif "Решение" in body:
+                a_part, s_part = body.split("Решение", 1)
+                if not ans and a_part.strip():
+                    ans = a_part.strip()
+                if not sol:
+                    sol = re.sub(r"^[.:]\s*", "", s_part).strip()
+        else:
+            body = re.sub(r"^Решение[.:]\s*", "", tail)
+            ma = re.search(r"(?:^|\n)\s*Ответ[.:]\s*(.+?)\s*$", body, re.S)
+            if ma and not ans and len(ma.group(1)) <= 200:
+                ans = ma.group(1).strip()
+                body = body[:ma.start()].rstrip()
+            if not sol or len(sol) < 40:
+                sol = body
+
+    # 3) повтор условия в начале решения
+    if text and sol:
+        head = re.sub(r"\s+", " ", text)[:80]
+        if head and re.sub(r"\s+", " ", sol).startswith(head):
+            idx = len(text)
+            sol2 = sol[idx:].lstrip(" \n.:—-") if sol.startswith(text) else None
+            if sol2 is not None:
+                sol = sol2
+                qa["text_dup_in_solution"] += 1
+
+    # 4) мусор следующих задач из PDF в решении
+    sol, cut = _cut_tail(sol)
+    if cut:
+        qa["solution_truncated"] += 1
+    # то же для условия (встречается у found-задач с распознанным PDF)
+    text2, cut2 = _cut_tail(text, min_keep=60)
+    if cut2 and len(text2) >= 60:
+        text = text2
+        qa["text_truncated"] += 1
+
+    # 5) рисунки: оставляем только существующие файлы
+    missing = 0
+    for key in ("fig_statement", "fig_solution"):
+        lst = t.get(key) or []
+        keep = []
+        for f in lst:
+            p = os.path.join(_FIG_DIR, *str(f).replace("\\", "/").split("/"))
+            if os.path.exists(p):
+                keep.append(f)
+            else:
+                missing += 1
+        t[key] = keep
+    if missing:
+        qa["fig_missing"] += missing
+    t["fig_missing"] = missing
+
+    t["text"], t["solution"], t["answer"] = text, sol, ans
+    if not sol:
+        qa["no_solution"] += 1
+    return t
+
+
+def _new_qa() -> dict:
+    return {k: 0 for k in ("tasks", "task_block_removed", "solution_in_text", "text_dup_in_solution",
+                           "solution_truncated", "text_truncated", "fig_missing", "no_solution")}
+
+# ----------------------------------------------------------------------------
 # Данные
 # ----------------------------------------------------------------------------
 
@@ -123,6 +276,16 @@ def _load(name: str):
         return None
     with open(path, "r", encoding="utf-8") as fh:
         data = json.load(fh)
+    if _CLEAN and name != "_index" and isinstance(data, list):
+        qa = _new_qa()
+        qa["tasks"] = len(data)
+        for t in data:
+            try:
+                _clean_task(t, qa)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("[olymp_catalog] clean failed uid=%s: %s", str(t.get("uid", ""))[:12], exc)
+        _QA[name] = qa
+        logger.info("[olymp_catalog] cleaned %s: %s", name, qa)
     _cache[name] = data
     return data
 
@@ -187,7 +350,7 @@ STATUS_LABEL = {
 }
 
 # ----------------------------------------------------------------------------
-# LaTeX-нормализация
+# LaTeX-нормализация (ответы тьютора)
 # ----------------------------------------------------------------------------
 
 _UNICODE_MATH = {
@@ -476,6 +639,19 @@ def task(slug, uid):
                            prep_ready=bool(prep and time.time() - prep["ts"] < _PREP_TTL))
 
 
+@olymp_catalog_bp.route("/qa")
+@catalog_access_required
+def qa_report():
+    """Отчёт чистки: сколько задач поправлено по каждому типу (загружает все файлы)."""
+    for m in _load("_index") or []:
+        _load(m.get("slug", ""))
+    total = _new_qa()
+    for st in _QA.values():
+        for k, v in st.items():
+            total[k] += v
+    return jsonify(ok=True, clean_enabled=_CLEAN, total=total, by_olympiad=_QA)
+
+
 @olymp_catalog_bp.route("/<slug>/<uid>/export/<fmt>")
 @catalog_access_required
 def export_task(slug, uid, fmt):
@@ -616,8 +792,8 @@ def _inject_nav(resp):
         body = _NAV_DRAWER_RE.sub(lambda m: m.group(1) + _NAV_DRAWER_LINK, body, count=1)
         body = body.replace(_NAV_BOTTOM_OLD, _NAV_BOTTOM_NEW, 1)
         resp.set_data(body)
-    except Exception:  # noqa: BLE001
-        pass
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("[olymp_catalog] nav inject skipped: %s", exc)
     return resp
 
 
@@ -629,5 +805,4 @@ def install_olymp_catalog(app) -> None:
         app.register_blueprint(olymp_catalog_bp)
     if os.environ.get("OLYMP_CATALOG_NAV", "1") != "0":
         app.after_request(_inject_nav)
-    logger.info("[BP] olymp_catalog_bp registered (%s, tutor=%s)", URL_PREFIX, TUTOR_MODEL)
-    print("[BP] olymp_catalog_bp registered (%s, tutor=%s)" % (URL_PREFIX, TUTOR_MODEL))
+    logger.info("[olymp_catalog] installed at %s (clean=%s)", URL_PREFIX, _CLEAN)

@@ -10,6 +10,7 @@
     <span class="oc-badge {{ status_class(t.status) }}">{{ labels.get(t.status, t.status) }}</span>
     {% if t.day %}<span class="oc-badge">День {{ t.day }}</span>{% endif %}
     {% if t.fig_statement or t.fig_solution %}<span class="oc-badge" title="есть рисунок">▣ рисунок</span>{% endif %}
+    {% if t.fig_missing %}<span class="oc-badge warn" title="файл рисунка отсутствует в static/olymp_figures">▣ рисунок не найден ({{ t.fig_missing }})</span>{% endif %}
     <span class="sp"></span>
     {% if link %}<a class="oc-btn vio sm" href="{{ task_url }}#tutor" title="Открыть задачу с ИИ-тьютором">✦ Тьютор</a>{% endif %}
   </div>
