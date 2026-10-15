@@ -14,9 +14,12 @@ solve(plan, n_seeds, seed) -> list[Solution] — все различные ре�
 недоопределённая задача (свободный параметр, не влияющий на ответ) получает
 читаемый чертёж, а не вырожденный, и быстрее: ранний останов после
 достаточного числа различных верных решений и общий лимит времени на поиск.
+Вырожденная фигура (схлопнутый нарисованный треугольник, совпавшие точки) верным
+решением не считается даже при нулевой невязке (см. degenerate_figure).
 """
 from __future__ import annotations
 
+import itertools
 import math
 import os
 import time
@@ -29,7 +32,7 @@ from .constructions import count_free_points, execute
 from .schema import CONSTRAINTS, Constraint, FigurePlan, PlanError, validate_plan
 
 __all__ = ["Solution", "residuals", "residual_norm", "plan_scale", "plan_extent",
-           "normalize_coords", "solve"]
+           "normalize_coords", "degenerate_figure", "solve"]
 
 TOL = 1e-7           # порог допустимости невязки (относительно габарита фигуры)
 _EPS = 1e-12
@@ -332,6 +335,60 @@ def plan_extent(plan: FigurePlan) -> float:
     return float(max(vals)) if vals else plan_scale(plan)
 
 
+# ------------------------------------------------------------------ вырождение
+# Невязка ограничений может быть нулевой и у схлопнутой фигуры: треугольник ABC,
+# лёгший на прямую, формально удовлетворяет «AB = 23, AC = 8, M — середина BC,
+# MK ∥ ℓ». Раньше такое решение считалось верным и уходило на рендер (видно
+# как пять точек на одной прямой). Теперь любая тройка точек, попарно соединённая
+# отрезками основного слоя (т.е. нарисованный треугольник), обязана иметь
+# ненулевую площадь, а видимые точки — не совпадать. Иначе решение помечается
+# DEGENERATE_FIGURE: решатель ищет дальше, а если ничего другого нет, конвейер
+# получает отказ и перезапрашивает план у модели.
+DEGEN_AREA_FRAC = float(os.environ.get("GEOEXACT_DEGEN_AREA_FRAC", "2e-4") or "2e-4")
+DEGEN_POINT_FRAC = float(os.environ.get("GEOEXACT_DEGEN_POINT_FRAC", "0.004") or "0.004")
+
+
+def _drawn_triangles(plan: FigurePlan) -> list[tuple[str, str, str]]:
+    """Тройки точек, попарно соединённые отрезками основного слоя."""
+    try:
+        segs = [tuple(s) for s in (plan.draw.segments or []) if isinstance(s, (list, tuple)) and len(s) == 2]
+    except Exception:  # noqa: BLE001
+        return []
+    edges = {frozenset(map(str, s)) for s in segs if len(set(s)) == 2}
+    names = sorted({str(p) for e in edges for p in e})
+    out = []
+    for a, b, c in itertools.combinations(names, 3):
+        if {frozenset((a, b)), frozenset((b, c)), frozenset((a, c))} <= edges:
+            out.append((a, b, c))
+    return out
+
+
+def degenerate_figure(plan: FigurePlan, coords: dict[str, np.ndarray]) -> str:
+    """'' если фигура в порядке, иначе краткая причина вырождения."""
+    try:
+        visible = [n for n in (plan.points or []) if n in coords
+                   and n not in set(getattr(plan.draw, "hide_labels", []) or [])]
+        if len(visible) < 2:
+            return ""
+        P = {n: np.asarray(coords[n], dtype=float) for n in visible}
+        arr = np.array(list(P.values()))
+        span = float(np.max(arr.max(axis=0) - arr.min(axis=0)))
+        if span <= _EPS:
+            return "все точки совпали"
+        for a, b in itertools.combinations(visible, 2):
+            if float(np.hypot(*(P[a] - P[b]))) < DEGEN_POINT_FRAC * span:
+                return f"точки {a} и {b} совпали"
+        for a, b, c in _drawn_triangles(plan):
+            if not (a in P and b in P and c in P):
+                continue
+            area = 0.5 * abs(_cross(P[b] - P[a], P[c] - P[a]))
+            if area < DEGEN_AREA_FRAC * span * span:
+                return f"треугольник {a}{b}{c} схлопнулся в отрезок"
+    except Exception:  # noqa: BLE001 — проверка никогда не ломает решатель
+        return ""
+    return ""
+
+
 # ------------------------------------------------------------------ мягкое общее положение
 # Этап 1 решателя минимизирует невязки ОГРАНИЧЕНИЙ плюс слабые штрафы за
 # «некрасивую» фигуру: слипшиеся точки, габарит много больше данных длин,
@@ -405,7 +462,7 @@ def solve(plan: FigurePlan, n_seeds: int = 24, seed: int = 0) -> list[Solution]:
     порог 1e-6 по максимальному смещению точки), отсортированный по невязке.
     Детерминирован при фиксированном seed. Останавливается раньше, когда
     верных различных решений уже достаточно (EARLY_FOUND) или вышло время
-    (TIME_BUDGET).
+    (TIME_BUDGET). Вырожденные фигуры (degenerate_figure) верными не считаются.
     """
     validate_plan(plan)
     n_free = count_free_points(plan)
@@ -540,14 +597,21 @@ def solve(plan: FigurePlan, n_seeds: int = 24, seed: int = 0) -> list[Solution]:
 
 
 def _finish(plan: FigurePlan, coords: dict[str, np.ndarray]) -> Solution:
-    """Считает невязку на решённых координатах и нормализует фигуру."""
+    """Считает невязку на решённых координатах и нормализует фигуру.
+
+    Решение верно, если невязка ≤ TOL И фигура не вырождена (см. degenerate_figure).
+    """
     try:
         coords = normalize_coords(plan, coords)
         r = residual_norm(plan, coords)
     except PlanError as e:
         return Solution({}, float("inf"), False, e.code)
-    ok = r <= TOL
-    return Solution(coords=coords,
-                    residual=float(r),
-                    ok=bool(ok),
-                    reason="" if ok else "RESIDUAL_TOO_HIGH")
+    if r > TOL:
+        return Solution(coords=coords, residual=float(r), ok=False, reason="RESIDUAL_TOO_HIGH")
+    why = degenerate_figure(plan, coords)
+    if why:
+        # Невязка нулевая, но рисовать нечего: помечаем, чтобы solve() искал дальше,
+        # а конвейер при отсутствии альтернатив получил понятный код отказа.
+        return Solution(coords=coords, residual=float(r) + 10.0 * TOL, ok=False,
+                        reason="DEGENERATE_FIGURE: " + why)
+    return Solution(coords=coords, residual=float(r), ok=True, reason="")
