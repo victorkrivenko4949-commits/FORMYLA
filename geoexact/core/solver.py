@@ -392,16 +392,26 @@ def degenerate_figure(plan: FigurePlan, coords: dict[str, np.ndarray]) -> str:
 # ------------------------------------------------------------------ мягкое общее положение
 # Этап 1 решателя минимизирует невязки ОГРАНИЧЕНИЙ плюс слабые штрафы за
 # «некрасивую» фигуру: слипшиеся точки, габарит много больше данных длин,
-# вытянутость. Это не меняет условие — на этапе 2 та же точка дотягивается
-# до точного решения уже без штрафов. Штрафы лишь выбирают, в какую сторону
-# уходить по свободному параметру недоопределённой задачи.
+# вытянутость, случайные особые углы. Это не меняет условие — на этапе 2 та же
+# точка дотягивается до точного решения уже без штрафов. Штрафы лишь выбирают,
+# в какую сторону уходить по свободному параметру недоопределённой задачи.
 SOFT_WEIGHT = float(os.environ.get("GEOEXACT_SOFT_POSITION_WEIGHT", "0.05") or "0.05")
 SOFT_MIN_FRAC = 0.08       # ближе этой доли габарита точки считаются «слипшимися»
 SOFT_MAX_RATIO = 4.0       # габарит больше 4 × максимальной данной длины — штраф
 SOFT_MAX_ASPECT = 3.0      # соотношение сторон габарита больше 3 — штраф
+# Случайные «особые» углы. Если форма фигуры свободна (угол A в задаче 9.6 не
+# задан), решатель охотно сходится к 90° или 60° — а читатель видит прямой угол,
+# которого в условии нет. На этапе мягкого поиска углы нарисованных
+# треугольников, попавшие в SOFT_ANGLE_TOL градусов от 30/45/60/90/120/135/150,
+# штрафуются: свободный параметр уводится от особых значений ДО точной
+# полировки. Углы, зафиксированные ограничениями (angle, perpendicular),
+# полировка всё равно вернёт на место — штраф не меняет условие.
+SOFT_SPECIAL_ANGLES = (30.0, 45.0, 60.0, 90.0, 120.0, 135.0, 150.0)
+SOFT_ANGLE_TOL = float(os.environ.get("GEOEXACT_SOFT_ANGLE_TOL", "8") or "8")
 # Ранний останов: после EARLY_MIN_STARTS стартов и EARLY_FOUND различных
-# верных решений дальнейшие старты не нужны (экономия ~2× времени).
-EARLY_FOUND = int(os.environ.get("GEOEXACT_SOLVER_EARLY_FOUND", "8") or "8")
+# верных решений дальнейшие старты не нужны (экономия времени). 12, а не 8:
+# ранжированию по общему положению нужно из чего выбирать разносторонний вариант.
+EARLY_FOUND = int(os.environ.get("GEOEXACT_SOLVER_EARLY_FOUND", "12") or "12")
 EARLY_MIN_STARTS = int(os.environ.get("GEOEXACT_SOLVER_EARLY_MIN_STARTS", "16") or "16")
 # Общий лимит времени на один вызов solve (секунды). Конвейер живёт 170 с на
 # всё — классификацию, формализацию, до 3 кругов решения с обратной связью
@@ -432,23 +442,42 @@ def _soft_position_terms(plan: FigurePlan, coords: dict[str, np.ndarray],
     lo, hi = P.min(axis=0), P.max(axis=0)
     w, h = hi - lo
     span = float(max(w, h)) + _EPS
+    n_pairs = len(plan.points or []) * (len(plan.points or []) - 1) // 2
     k = 0
     for i in range(len(P)):
         for j in range(i + 1, len(P)):
-            if k >= n_terms - 2:
+            if k >= n_pairs:
                 break
             d = float(math.hypot(*(P[i] - P[j]))) / span
             out[k] = SOFT_WEIGHT * max(0.0, SOFT_MIN_FRAC - d) / SOFT_MIN_FRAC
             k += 1
-    out[n_terms - 2] = SOFT_WEIGHT * max(0.0, span / extent - SOFT_MAX_RATIO)
+    out[n_pairs] = SOFT_WEIGHT * max(0.0, span / extent - SOFT_MAX_RATIO)
     aspect = span / max(float(min(w, h)), _EPS)
-    out[n_terms - 1] = SOFT_WEIGHT * max(0.0, aspect - SOFT_MAX_ASPECT)
+    out[n_pairs + 1] = SOFT_WEIGHT * max(0.0, aspect - SOFT_MAX_ASPECT)
+    # особые углы нарисованных треугольников
+    k = n_pairs + 2
+    if SOFT_ANGLE_TOL > 0:
+        for a, b, c in _drawn_triangles(plan):
+            if not (a in coords and b in coords and c in coords):
+                k += 3
+                continue
+            A, B, C = (np.asarray(coords[v], dtype=float) for v in (a, b, c))
+            for X, Y, Z in ((A, B, C), (B, C, A), (C, A, B)):
+                if k >= n_terms:
+                    break
+                try:
+                    deg = math.degrees(_angle(X, Y, Z))
+                    gap = min(abs(deg - s) for s in SOFT_SPECIAL_ANGLES)
+                    out[k] = SOFT_WEIGHT * max(0.0, 1.0 - gap / SOFT_ANGLE_TOL)
+                except PlanError:
+                    pass
+                k += 1
     return out
 
 
 def _soft_term_count(plan: FigurePlan) -> int:
     n = len(plan.points or [])
-    return n * (n - 1) // 2 + 2
+    return n * (n - 1) // 2 + 2 + 3 * len(_drawn_triangles(plan))
 
 
 # ------------------------------------------------------------------ решатель
