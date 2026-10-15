@@ -17,7 +17,12 @@
      углов около 30/45/60/90/120°, почти равных сторон, точек ближе
      GP_MIN_DIST габарита друг к другу и точек почти на чужой прямой;
   3) в gates.rank_solutions смешивает прежний балл наглядности с баллом общего
-     положения, чтобы «красивый, но равносторонний» не выигрывал у разностороннего.
+     положения, чтобы «красивый, но равносторонний» не выигрывал у разностороннего;
+  4) схлопнутый нарисованный треугольник (три вершины, попарно соединённые
+     отрезками, на одной прямой) штрафуется как самое тяжёлое нарушение —
+     раньше точное попадание точки на чужую прямую считалось «инцидентностью из
+     условия» и не штрафовалось вовсе, поэтому фигура-отрезок получала балл ~0.8
+     и выигрывала у нормальных треугольников.
 
 Особенности, которых требует условие (прямой угол, равные стороны), присутствуют
 во ВСЕХ кандидатах одинаково и на порядок не влияют — штрафуются только
@@ -35,6 +40,7 @@ ENABLED = (os.environ.get("GEOEXACT_GENERAL_POSITION") or "1").strip().lower() n
 GP_SEEDS = int(os.environ.get("GEOEXACT_GP_SEEDS", "48"))      # минимум стартов решателя
 GP_MIN_DIST = 0.04          # доля габарита: ближе — точки «слиплись»
 GP_LINE_DIST = 0.03         # доля габарита: ближе — точка «почти на прямой»
+GP_FLAT_AREA = 0.02         # доля габарита²: нарисованный треугольник площадью меньше — «плоский»
 SPECIAL_ANGLES = (30.0, 45.0, 60.0, 90.0, 120.0, 135.0, 150.0)
 ANGLE_TOL = 3.0             # градусов до особого угла, чтобы считать совпадением
 RATIO_TOL = 0.03            # относительная разница длин, чтобы считать стороны равными
@@ -60,13 +66,44 @@ def _angle_deg(a, b, c) -> float | None:
     return math.degrees(math.atan2(abs(u[0] * v[1] - u[1] * v[0]), float(u @ v)))
 
 
+def _drawn_triangles(plan) -> list[tuple[str, str, str]]:
+    """Тройки точек, попарно соединённые отрезками основного слоя."""
+    try:
+        segs = [tuple(s) for s in (plan.draw.segments or [])
+                if isinstance(s, (list, tuple)) and len(s) == 2]
+    except Exception:  # noqa: BLE001
+        return []
+    edges = {frozenset(map(str, s)) for s in segs if len(set(s)) == 2}
+    names = sorted({str(p) for e in edges for p in e})
+    return [(a, b, c) for a, b, c in itertools.combinations(names, 3)
+            if {frozenset((a, b)), frozenset((b, c)), frozenset((a, c))} <= edges]
+
+
+def _flatness(plan, coords, span: float) -> float:
+    """0 — все нарисованные треугольники нормальные; 1 — какой-то схлопнулся в отрезок."""
+    worst = 0.0
+    try:
+        for a, b, c in _drawn_triangles(plan):
+            if not (a in coords and b in coords and c in coords):
+                continue
+            A, B, C = (np.asarray(coords[k], dtype=float) for k in (a, b, c))
+            area = 0.5 * abs((B - A)[0] * (C - A)[1] - (B - A)[1] * (C - A)[0])
+            frac = area / (span * span)
+            if frac < GP_FLAT_AREA:
+                worst = max(worst, 1.0 - frac / GP_FLAT_AREA)
+    except Exception:  # noqa: BLE001
+        return worst
+    return worst
+
+
 def score(plan, coords) -> float:
     """Балл общего положения 0..1: 1 — никаких случайных совпадений и слипаний.
 
-    Слагаемые: слипание точек (самое тяжёлое, до 0.6), точка почти на чужой
-    прямой (до 0.3), доля троек с особыми углами или почти равными сторонами
-    (до 0.4), вытянутость габарита (до 0.2). Особенности, которых требует
-    условие, есть у всех кандидатов одинаково и на порядок не влияют.
+    Слагаемые: слипание точек (до 0.6), схлопнутый нарисованный треугольник
+    (до 0.8), точка почти на чужой прямой (до 0.3), доля троек с особыми
+    углами или почти равными сторонами (до 0.4), вытянутость габарита (до 0.2).
+    Особенности, которых требует условие, есть у всех кандидатов одинаково и
+    на порядок не влияют.
     """
     P = _pts(plan, coords)
     if len(P) < 3:
@@ -118,7 +155,10 @@ def score(plan, coords) -> float:
     w, h = arr.max(axis=0) - arr.min(axis=0)
     aspect = max(w, h) / max(min(w, h), 1e-12)
     sliver = min(1.0, (aspect - 3.0) / 3.0) if aspect > 3.0 else 0.0
-    penalty = 0.6 * closeness + 0.3 * near_line + 0.4 * special + 0.2 * sliver
+    # 5) схлопнутый нарисованный треугольник: точная коллинеарность вершин
+    #    многоугольника — это НЕ инцидентность из условия, а вырождение
+    flat = _flatness(plan, coords, span)
+    penalty = 0.6 * closeness + 0.8 * flat + 0.3 * near_line + 0.4 * special + 0.2 * sliver
     return float(max(0.0, 1.0 - penalty))
 
 
