@@ -80,6 +80,57 @@ def _idle() -> Dict[str, Any]:
     }
 
 
+def _live_daily_progress(user_id: int) -> Optional[tuple]:
+    """(total, completed) по реальным задачам дня со страницы /daily_tasks.
+
+    2026-10-15 (lavrik #18): ответы на /daily_tasks сохраняются в BankIssue
+    (банк) или DailyTaskItem (запасной контур), а не в DailyQuest, поэтому
+    DailyQuest.completed_count оставался 0 и куратор показывал
+    «Задачи дня: 5 задач» даже после решённых задач.
+
+    Возвращает None, если на сегодня в этих источниках задач нет
+    (тогда вызывающий код падает обратно на DailyQuest).
+    """
+    try:
+        from daily_tasks.services import today_in_user_tz
+        today = today_in_user_tz()
+    except Exception:
+        today = date.today()
+
+    total = 0
+    completed = 0
+
+    try:
+        from models import BankIssue
+        issues = BankIssue.query.filter_by(
+            user_id=user_id, issued_date=today,
+        ).all()
+        total += len(issues)
+        completed += sum(1 for i in issues if i.user_answer is not None)
+    except Exception as e:
+        logger.warning("next_action: bank_issues progress failed: %s", e)
+
+    try:
+        from daily_tasks.models import DailyTaskSet, DailyTaskItem
+        ds = DailyTaskSet.query.filter_by(
+            user_id=user_id, target_date=today,
+        ).first()
+        if ds is not None:
+            items = DailyTaskItem.query.filter_by(daily_set_id=ds.id).all()
+            total += len(items)
+            completed += sum(
+                1 for i in items
+                if i.is_correct is not None
+                or getattr(i, "user_answer", None) is not None
+            )
+    except Exception as e:
+        logger.warning("next_action: daily_set progress failed: %s", e)
+
+    if total == 0:
+        return None
+    return total, min(completed, total)
+
+
 def get_next_action(user_id: int) -> Dict[str, Any]:
     """Определить единственное следующее действие для ученика.
 
@@ -186,28 +237,38 @@ def get_next_action(user_id: int) -> Dict[str, Any]:
             }
 
     # ── 3. Задачи дня на сегодня не выданы или не завершены ────────────
-    today = date.today()
-    from models import DailyQuest
-    dq = DailyQuest.query.filter_by(
-        user_id=user_id, date=today
-    ).first()
+    # lavrik #18: сначала смотрим реальные задачи дня со страницы
+    # /daily_tasks (BankIssue / DailyTaskItem) — именно туда пишутся
+    # ответы. DailyQuest остаётся запасным источником.
+    live = _live_daily_progress(user_id)
+    if live is not None:
+        total, completed = live
+        completed_at = None
+    else:
+        today = date.today()
+        from models import DailyQuest
+        dq = DailyQuest.query.filter_by(
+            user_id=user_id, date=today
+        ).first()
 
-    if dq is None:
-        # Квест на сегодня ещё не создан
-        return _daily_not_created()
+        if dq is None:
+            # Квест на сегодня ещё не создан
+            return _daily_not_created()
 
-    # Нормализуем счётчики: None/отрицательные/completed > total
-    # раньше давали «осталось 0 из 0» или отрицательные числа.
-    try:
-        total = int(dq.total_count or 0)
-    except (TypeError, ValueError):
-        total = 0
-    try:
-        completed = int(dq.completed_count or 0)
-    except (TypeError, ValueError):
-        completed = 0
-    total = max(0, total)
-    completed = min(max(0, completed), total)
+        # Нормализуем счётчики: None/отрицательные/completed > total
+        # раньше давали «осталось 0 из 0» или отрицательные числа.
+        try:
+            total = int(dq.total_count or 0)
+        except (TypeError, ValueError):
+            total = 0
+        try:
+            completed = int(dq.completed_count or 0)
+        except (TypeError, ValueError):
+            completed = 0
+        total = max(0, total)
+        completed = min(max(0, completed), total)
+        completed_at = dq.completed_at
+
     remaining = total - completed
 
     if total == 0:
@@ -215,7 +276,7 @@ def get_next_action(user_id: int) -> Dict[str, Any]:
         # то же самое, что «набор не создан».
         return _daily_not_created()
 
-    if dq.completed_at is None and remaining > 0:
+    if completed_at is None and remaining > 0:
         if completed == 0:
             title = f"Задачи дня: {total} {_tasks_word(total)}"
             reason = (f"Сегодня тебя ждут {total} {_tasks_word(total)}. "
