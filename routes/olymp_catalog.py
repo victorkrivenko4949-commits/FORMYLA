@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Blueprint: Каталог олимпиадных задач (olymp_catalog) — OLYMP_CATALOG_V3
+Blueprint: Каталог олимпиадных задач (olymp_catalog) — OLYMP_CATALOG_V3.1
 
 Отдельный раздел сайта на префиксе /olymp-catalog (не пересекается с разделом
 «Олимпиады» /olympiads/* — пробники, методы, календарь).
@@ -18,7 +18,10 @@ Endpoints:
 Доступ: только авторизованные пользователи из белого списка OLYMP_CATALOG_USERS
 (по умолчанию "lavrik,victor"). Для них же after_request-хук добавляет пункт
 «🗂 Каталог задач олимпиад» в меню «Олимпиады» (десктоп + мобильный drawer)
-без правки base.html (тот же приём, что у кнопки «📦 База»). OLYMP_CATALOG_NAV=0 отключает.
+без правки base.html. OLYMP_CATALOG_NAV=0 отключает.
+
+Скрытые олимпиады: OLYMP_CATALOG_HIDE (через запятую, по умолчанию "other" —
+«Без указания олимпиады»). Не показываются в каталоге и отдают 404.
 
 Тьютор: deepseek-v4-pro (OLYMP_TUTOR_MODEL), режим thinking. При открытии задачи
 фронтенд вызывает /prepare: модель получает условие + эталонное решение и жёсткую
@@ -53,6 +56,8 @@ URL_PREFIX = "/olymp-catalog"
 olymp_catalog_bp = Blueprint("olymp_catalog", __name__, template_folder="../templates", url_prefix=URL_PREFIX)
 
 _cache: dict = {}
+
+_HIDDEN_SLUGS = {x.strip() for x in os.environ.get("OLYMP_CATALOG_HIDE", "other").split(",") if x.strip()}
 
 # ----------------------------------------------------------------------------
 # Доступ
@@ -122,6 +127,14 @@ def _load(name: str):
     return data
 
 
+def _visible_index():
+    return [m for m in (_load("_index") or []) if m.get("slug") not in _HIDDEN_SLUGS]
+
+
+def _slug_ok(slug: str) -> bool:
+    return bool(re.fullmatch(r"[a-z0-9\-]+", slug or "")) and slug not in _HIDDEN_SLUGS
+
+
 def _grade_key(g):
     try:
         return int(g)
@@ -149,7 +162,7 @@ def _group(tasks):
 
 
 def _find_task(slug: str, uid: str):
-    if not re.fullmatch(r"[a-z0-9\-]+", slug or ""):
+    if not _slug_ok(slug):
         return None
     tasks = _load(slug) or []
     return next((x for x in tasks if x["uid"] == uid or x["uid"].startswith(uid)), None)
@@ -420,7 +433,7 @@ def _download(content: str, filename: str, mime: str) -> Response:
 @olymp_catalog_bp.route("/")
 @catalog_access_required
 def index():
-    meta = _load("_index") or []
+    meta = _visible_index()
     total = sum(m["count"] for m in meta)
     with_figs = sum(m["with_figs"] for m in meta)
     return render_template("olymp_catalog/index.html", meta=meta, total=total, with_figs=with_figs,
@@ -430,12 +443,12 @@ def index():
 @olymp_catalog_bp.route("/<slug>")
 @catalog_access_required
 def olympiad(slug):
-    if not re.fullmatch(r"[a-z0-9\-]+", slug):
+    if not _slug_ok(slug):
         abort(404)
     all_tasks = _load(slug)
     if all_tasks is None:
         abort(404)
-    meta = next((m for m in (_load("_index") or []) if m["slug"] == slug), None)
+    meta = next((m for m in _visible_index() if m["slug"] == slug), None)
     q = (request.args.get("q") or "").strip()
     year = (request.args.get("year") or "").strip()
     grade = (request.args.get("grade") or "").strip()
@@ -484,12 +497,12 @@ def export_task(slug, uid, fmt):
 @olymp_catalog_bp.route("/<slug>/export/<fmt>")
 @catalog_access_required
 def export_olympiad(slug, fmt):
-    if not re.fullmatch(r"[a-z0-9\-]+", slug):
+    if not _slug_ok(slug):
         abort(404)
     all_tasks = _load(slug)
     if all_tasks is None:
         abort(404)
-    meta = next((m for m in (_load("_index") or []) if m["slug"] == slug), None)
+    meta = next((m for m in _visible_index() if m["slug"] == slug), None)
     q = (request.args.get("q") or "").strip().lower()
     year = (request.args.get("year") or "").strip()
     grade = (request.args.get("grade") or "").strip()
