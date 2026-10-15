@@ -1,4 +1,4 @@
-/* OLYMP_CATALOG_V3.1 — общий JS раздела /olymp-catalog: фильтры, копирование, лайтбокс, ИИ-тьютор */
+/* OLYMP_CATALOG_V3.2 — общий JS раздела /olymp-catalog: фильтры, копирование, лайтбокс, ИИ-тьютор */
 (function () {
   'use strict';
   const $ = (s, r) => (r || document).querySelector(s);
@@ -79,7 +79,15 @@
     if (window.DOMPurify) html = DOMPurify.sanitize(html, { ADD_ATTR: ['target'] });
     return html;
   }
-  function typeset(el) { if (window.MathJax && MathJax.typesetPromise) return MathJax.typesetPromise([el]).catch(() => {}); return Promise.resolve(); }
+  /* V3.2: формулы рендерит KaTeX (общий для сайта). ocRenderMath (из _style.html) сначала нормализует \( \) -> $ $,
+     потом вызывает renderMathInElement; если его нет — пробуем глобальный reRenderMath из base.html. */
+  function typeset(el) {
+    try {
+      if (window.ocRenderMath && window.ocRenderMath(el)) return Promise.resolve();
+      if (typeof window.reRenderMath === 'function') window.reRenderMath(el);
+    } catch (e) { console.warn('[oc] typeset error', e); }
+    return Promise.resolve();
+  }
 
   /* ---------- ИИ-тьютор ---------- */
   const tutor = $('#oc-tutor');

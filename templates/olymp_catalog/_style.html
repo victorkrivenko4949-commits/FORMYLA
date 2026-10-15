@@ -133,7 +133,8 @@ img.oc-fig:hover{transform:scale(1.02)}
 .oc-msg.a p{margin:6px 0}.oc-msg.a ul,.oc-msg.a ol{margin:6px 0 6px 20px;padding:0}
 .oc-msg.a code{background:rgba(255,255,255,.07);padding:1px 5px;border-radius:5px;font-size:.88em}
 .oc-msg.a pre{background:var(--oc-bg);border:1px solid var(--oc-line);border-radius:10px;padding:10px;overflow:auto}
-.oc-msg.a mjx-container[display="true"]{margin:8px 0;overflow-x:auto;overflow-y:hidden}
+.oc-msg.a .katex-display{margin:8px 0;overflow-x:auto;overflow-y:hidden}
+.oc-text .katex-display,.oc-sol .katex-display{overflow-x:auto;overflow-y:hidden}
 .oc-msg.sys{align-self:center;background:transparent;color:var(--oc-mute);font-size:.8rem;text-align:center;padding:4px 10px}
 .oc-msg.err{align-self:center;background:rgba(251,113,133,.12);color:var(--oc-rose);font-size:.85rem}
 .oc-typing{display:inline-flex;gap:4px;align-items:center;height:18px}
@@ -159,8 +160,49 @@ img.oc-fig:hover{transform:scale(1.02)}
  .oc-wrap{color:#000;max-width:100%}.oc-task,.oc-sol{background:#fff!important;border-color:#bbb!important;color:#000!important}.oc-task .hdr,.oc-wrap h1{color:#000!important}
  .oc-layout{display:block}}
 </style>
-<script>window.MathJax={tex:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"],["\\[","\\]"]],processEscapes:true},options:{skipHtmlTags:["script","noscript","style","textarea","pre","code"]}};</script>
-<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js" defer></script>
-<script src="{{ url_for('static', filename='olymp_catalog.js') }}?v=4" defer></script>
+<script>
+/* OLYMP_CATALOG_V3.2 — формулы.
+   1) MathJax убран: сайт глобально рендерит формулы KaTeX (base.html), два рендерера конфликтовали.
+   2) До рендера нормализуем тексты задач: \( \) -> $ $, \[ \] -> $$ $$, убираем обёртки
+      \begin{task}/\begin{solution} из файлов Gemini, которых KaTeX не знает.
+   3) Если KaTeX с cdn.jsdelivr.net не загрузился (CDN недоступен) — подгружаем с резервного CDN. */
+(function(){
+  var DELIMS=[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}];
+  var IGN=['script','noscript','style','textarea','pre','code'];
+  var ENV=/\\(?:begin|end)\{(?:task|solution|problem|proof|answer)\*?\}/g;
+  function normText(s){
+    return s.replace(ENV,'')
+      .replace(/(^|[^\\])\\\(/g,'$1$').replace(/(^|[^\\])\\\)/g,'$1$')
+      .replace(/(^|[^\\])\\\[/g,'$1$$$$').replace(/(^|[^\\])\\\]/g,'$1$$$$')
+      .replace(/\\textbf\{\s*Ответ\s*:?\s*\}\s*:?/g,'Ответ:')
+      .replace(/\n{3,}/g,'\n\n');
+  }
+  function normalize(root){
+    var nodes=(root||document).querySelectorAll('.oc-text,.oc-ans,.oc-sol,.oc-brief .bd');
+    for(var i=0;i<nodes.length;i++){
+      var el=nodes[i]; if(el.getAttribute('data-oc-norm')) continue;
+      var w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,null), t;
+      while((t=w.nextNode())){ var v=t.nodeValue; if(v && v.indexOf('\\')>=0){ var nv=normText(v); if(nv!==v) t.nodeValue=nv; } }
+      el.setAttribute('data-oc-norm','1');
+    }
+  }
+  function run(el){ try{ renderMathInElement(el||document.body,{delimiters:DELIMS,throwOnError:false,strict:false,ignoredTags:IGN,ignoredClasses:['katex']}); }catch(e){ console.warn('[oc] KaTeX render error',e); } }
+  window.ocNormalizeMath=normalize;
+  window.ocRenderMath=function(el){ normalize(el); if(typeof renderMathInElement==='function'){ run(el); return true; } return false; };
+  function addCss(h){ var l=document.createElement('link'); l.rel='stylesheet'; l.href=h; document.head.appendChild(l); }
+  function addJs(h,cb){ var s=document.createElement('script'); s.src=h; s.onload=cb; s.onerror=function(){ console.warn('[oc] не загрузился',h); document.documentElement.classList.add('katex-ready'); }; document.head.appendChild(s); }
+  var FB='https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/';
+  function fallback(){
+    if(typeof renderMathInElement==='function') return; /* base.html уже отрендерил */
+    console.warn('[oc] KaTeX с jsdelivr не загрузился — беру резервный CDN');
+    addCss(FB+'katex.min.css');
+    addJs(FB+'katex.min.js',function(){ addJs(FB+'contrib/auto-render.min.js',function(){ run(); document.documentElement.classList.add('katex-ready'); }); });
+  }
+  /* Этот блок стоит в <head> раньше KaTeX-скриптов base.html, поэтому наш обработчик DOMContentLoaded
+     сработает первым — нормализация успевает до рендера. Проверка CDN — отложенно. */
+  function onReady(){ normalize(); setTimeout(fallback,0); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',onReady); else onReady();
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js" defer onerror="(function(s){s.onerror=null;s.src='https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js';})(this)"></script>
+<script src="{{ url_for('static', filename='olymp_catalog.js') }}?v=5" defer></script>
