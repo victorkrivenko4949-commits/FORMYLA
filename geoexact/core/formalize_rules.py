@@ -1,0 +1,76 @@
+"""Дополнительные правила формализатора, подключаемые без правки llm.py.
+
+Почему отдельным модулем. Промпты SYS_FORMALIZE / SYS_AUX лежат в llm.py; этот
+файл большой и правится редко, а правила к нему нужно добавлять по мере
+появления типовых ошибок модели. install(llm) дописывает правила в конец
+обоих промптов при импорте пакета (см. geoexact/core/__init__.py). Функция
+llm.formalize берёт SYS_FORMALIZE / SYS_AUX из глобалей модуля в момент
+вызова, поэтому подмена атрибутов модуля действует на все запросы.
+
+Повод (задача 9.6): «Дан треугольник ABC, M — середина BC, ℓ — биссектриса
+внешнего угла A, прямая через M ∥ ℓ пересекает AB в K; AB = 23, AC = 8». Модель
+при temperature=0 раз за разом строила план, в котором вершины треугольника
+получались друг из друга конструкциями, и единственное решение плана — все
+точки на одной прямой (K, C, A, M, B). Решатель теперь отвергает такую фигуру
+(DEGENERATE_FIGURE), но без подсказки модель повторяет тот же план и время
+уходит в эскиз. Правила ниже дают ей точный рецепт для внешней биссектрисы и
+параллели через точку и запрещают получать вершины треугольника конструкциями.
+
+GEOEXACT_FORMALIZE_RULES=0 выключает дополнение.
+"""
+from __future__ import annotations
+
+import os
+
+ENABLED = (os.environ.get("GEOEXACT_FORMALIZE_RULES") or "1").strip().lower() not in ("0", "no", "off")
+
+MARK = "DEGENERATE_FIGURE"     # признак того, что правила уже дописаны
+
+EXTRA_RULES = """
+24. Треугольник, названный в условии («треугольник ABC», «△ABC»), задаётся ТРЕМЯ
+    free_point. Его вершины НЕЛЬЗЯ получать конструкциями друг из друга
+    (divide_segment, translate, line_intersect, reflect_point, angle_ray и т.п.):
+    иначе фигура схлопывается в отрезок, движок отвергает план с кодом
+    DEGENERATE_FIGURE, и чертежа не будет. Форму треугольника задают только
+    данные условия (длины, углы); всё остальное — произвольно.
+25. Внешний угол и внешняя биссектриса. Внешняя биссектриса угла A треугольника
+    ABC — это биссектриса угла DAC, где D лежит на продолжении BA за точку A:
+    {"op":"divide_segment","out":"D","args":["B","A"],"value":1.5},
+    {"op":"bisector_point","out":"L","args":["A","D","C"]}  (L лежит на DC),
+    прямая AL — внешняя биссектриса ℓ. D и L — служебные точки: перечисли их в
+    points и в draw.hide_labels; саму ℓ, если она упомянута, покажи как
+    aux_lines [["A","L"]] (или lines, если ℓ — часть условия).
+    НЕ задавай внешнюю биссектрису через angle с числовым углом и не строй её
+    как биссектрису внутреннего угла BAC.
+26. «Прямая, проходящая через M параллельно ℓ (прямой AL), пересекает сторону XY
+    в точке K»: {"op":"translate","out":"R","args":["M","A","L"]} даёт MR ∥ AL,
+    затем {"op":"line_intersect","out":"K","args":["X","Y","M","R"]} и проверка
+    {"type":"on_segment","args":["K","X","Y"]}. R — служебная (points +
+    hide_labels). НЕ задавай K свободной точкой с parallel + on_segment: это
+    плохо обусловленная система, решение уходит в вырождение.
+27. Середина, основание перпендикуляра, пересечение прямых, точка на продолжении —
+    всегда конструкции (midpoint, foot, line_intersect, divide_segment), а не
+    free_point с ограничениями. Свободных точек в плане должно быть ровно
+    столько, сколько независимых вершин у исходной фигуры.
+"""
+
+
+def install(llm_module) -> bool:
+    """Дописать EXTRA_RULES в SYS_FORMALIZE и SYS_AUX. Повторный вызов — no-op."""
+    if not ENABLED:
+        return False
+    base = getattr(llm_module, "SYS_FORMALIZE", None)
+    aux = getattr(llm_module, "SYS_AUX", None)
+    if not isinstance(base, str) or MARK in base:
+        return False
+    new_base = base.rstrip() + "\n" + EXTRA_RULES.rstrip() + "\n"
+    llm_module.SYS_FORMALIZE = new_base
+    if isinstance(aux, str):
+        # SYS_AUX = SYS_FORMALIZE + «РЕЖИМ ДОПОЛНИТЕЛЬНЫХ ПОСТРОЕНИЙ…»: правила должны
+        # стоять до режимного блока, чтобы статическая часть промпта совпадала
+        # с SYS_FORMALIZE (кэш промпта у провайдера).
+        if aux.startswith(base):
+            llm_module.SYS_AUX = new_base + aux[len(base):]
+        elif MARK not in aux:
+            llm_module.SYS_AUX = aux.rstrip() + "\n" + EXTRA_RULES.rstrip() + "\n"
+    return True
