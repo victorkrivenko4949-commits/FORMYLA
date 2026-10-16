@@ -102,11 +102,25 @@ def _install_chat_attachments(app) -> None:
         logger.exception("[chat_attachments] auto-register failed: %r", e)
 
 
+def _install_atlas_text_fixes(app) -> None:
+    """ATLAS_TEXT_FIXES_V1: текстовые правки атласа методов на лету (lavrik-bugs)."""
+    if os.environ.get("ATLAS_TEXT_FIXES", "1") == "0":
+        return
+    if getattr(app, "_atlas_text_fixes_installed", False):
+        return
+    try:
+        from routes.atlas_text_fixes import install_atlas_text_fixes
+        install_atlas_text_fixes(app)
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[atlas_text_fixes] auto-register failed: %r", e)
+
+
 def _install(app) -> None:
     _install_pwa(app)
     _install_site_notices(app)
     _install_olymp_catalog(app)
     _install_chat_attachments(app)
+    _install_atlas_text_fixes(app)
 
     if getattr(app, "_admin_base_installed", False):
         return
