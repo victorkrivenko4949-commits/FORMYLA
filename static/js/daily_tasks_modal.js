@@ -7,6 +7,7 @@
 window.DT_PHOTO_BUFFER = window.DT_PHOTO_BUFFER || [];
 var DT_MAX_PHOTOS = 8;
 var _dtKbActiveField = null;
+var _dtFocusBound = false;
 
 function _esc(s){
   if(s===null||s===undefined) return '';
@@ -112,7 +113,10 @@ function _buildRegular(){
   out += '<div class="dt-kb-row">';
   out += '<button type="button" class="dt-kb-key action wide" onclick="dtKbBackspace()">⌫</button>';
   out += '<button type="button" class="dt-kb-key space" onclick="dtKbInsert(\' \')">Пробел</button>';
-  out += '<button type="button" class="dt-kb-key enter" onclick="dtSubmitCurrent()">Готово [OK]</button>';
+  // FIX bug#23: «Готово» раньше отправляло форму целиком (dtSubmitCurrent) —
+  // ученик дописывал решение, нажимал «Готово» и получал отправку/сброс.
+  // Теперь «Готово» просто закрывает экранную клавиатуру.
+  out += '<button type="button" class="dt-kb-key enter" onclick="dtToggleKeyboard()">Готово [OK]</button>';
   out += '</div>';
   return out;
 }
@@ -342,6 +346,16 @@ function _renderKatexSafe(el){
   }
 }
 
+function _dtRenderFeedbackHtml(el, text){
+  // Markdown-жирный + autoMathify + KaTeX; \n -> <br> только ПОСЛЕ KaTeX,
+  // чтобы не ломать LaTeX-окружения.
+  var s = dtAutoMathify(text || '');
+  s = s.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
+  el.innerHTML = s;
+  _renderKatexSafe(el);
+  el.innerHTML = el.innerHTML.replace(/\n/g, '<br>');
+}
+
 // ── openTaskModal — рендер карточки задачи ─────────────────────────
 function openTaskModal(item, index){
   var overlay = document.getElementById('dt-modal-overlay');
@@ -369,6 +383,7 @@ function openTaskModal(item, index){
   overlay.classList.remove('dt-hidden');
   window.DT_PHOTO_BUFFER = [];
   window.dtCurrentDifficulty = (typeof item.difficulty === 'number' ? item.difficulty : (parseInt(item.difficulty, 10) || 0));
+  window.dtCurrentIndex = index;
   _dtKbActiveField = null;
 
   var done = (item.user_answer !== null && item.user_answer !== undefined);
@@ -388,6 +403,10 @@ function openTaskModal(item, index){
     var vt = item.is_correct ? 'Верно!' : 'Неверно';
     h += '<div class="dt-result-block show">';
     h += '<div class="dt-verdict '+vc+'">'+vi+' '+vt+'</div>';
+    if(item.ai_feedback){
+      h += '<div class="dt-feedback-block"><div class="dt-feedback-title"> Разбор от AI-тьютора:</div>';
+      h += '<div class="dt-feedback-text" id="dt-saved-feedback"></div></div>';
+    }
     if(item.correct_answer){
       h += '<div class="dt-feedback-block"><div class="dt-feedback-title"> Правильный ответ:</div>';
       h += '<div class="dt-feedback-text"><code>'+escapeHtmlPreserveLatex(item.correct_answer)+'</code></div></div>';
@@ -403,6 +422,8 @@ function openTaskModal(item, index){
     h += '</div>';
     h += '</div>';
     body.innerHTML = h;
+    var savedFb = document.getElementById('dt-saved-feedback');
+    if(savedFb) _dtRenderFeedbackHtml(savedFb, item.ai_feedback);
     if(typeof renderMath === 'function') renderMath(body);
     window.dtCurrentItemId = item.id;
     overlay.classList.add('dt-open');
@@ -412,7 +433,7 @@ function openTaskModal(item, index){
   // ── AI-решение (превью) — показываем сразу при открытии ──
   h += '<div id="dt-ai-loader" class="dt-ai-loader">';
   h += '<div class="dt-ai-spinner"></div>';
-  h += '<div class="dt-ai-text-main"> AI решает задачу...</div>';
+  h += '<div class="dt-ai-text-main" id="dt-ai-text-main"> AI решает задачу...</div>';
   h += '<div class="dt-ai-text-sub">Это может занять 5–10 секунд</div>';
   h += '</div>';
 
@@ -425,10 +446,14 @@ function openTaskModal(item, index){
   h += '</div>';
   h += '</div>';
 
-  // ── Форма для ответа ученика (скрыта, пока AI не решит) ──
-  h += '<form id="dt-answer-form" style="display:none" enctype="multipart/form-data" autocomplete="off">';
+  // ── Форма для ответа ученика ──
+  // FIX bug#23: раньше форма была display:none, пока не ответит /solve
+  // (5–10 с, а при ошибке AI — дольше). Ученику казалось, что поле
+  // решения «то нажимается, то нет». Теперь поля доступны сразу,
+  // прячем только подсказку «AI решил задачу…» до прихода разбора.
+  h += '<form id="dt-answer-form" enctype="multipart/form-data" autocomplete="off">';
   h += _buildAnswerFormatHint(item.correct_answer);
-  h += '<div class="dt-solve-prompt"> AI решил задачу. <strong>Теперь давай финальное идельное решение</strong></div>';
+  h += '<div class="dt-solve-prompt" id="dt-solve-prompt" style="display:none"> AI решил задачу. <strong>Теперь давай финальное идеальное решение</strong></div>';
   h += '<label class="dt-field-label">️ Ваш ответ <span class="dt-field-label-extra">(можно писать доказательство!)</span></label>';
   h += '<math-field id="dt-user-answer" class="dt-math-field" virtual-keyboard-mode="manual" virtual-keyboard-theme="material"></math-field>';
   h += '<p class="dt-field-hint"> Нажмите «» справа внизу поля для матклавиатуры (√, дроби, степени). Если задача — доказать утверждение, пишите доказательство прямо здесь или в поле ниже.</p>';
@@ -459,6 +484,7 @@ function openTaskModal(item, index){
   h += '<div id="dt-photo-preview-list" class="dt-photo-preview-list"></div>';
   h += '<p class="dt-field-hint"> Нажимайте кнопку повторно, чтобы <strong>добавить</strong> ещё фото. Каждое распознаётся отдельно и подмешивается в решение для AI-тьютора.</p>';
   h += '</div>';
+  h += '<div id="dt-submit-error" class="dt-field-hint" style="display:none;color:#fca5a5;text-align:center;margin-top:12px;"></div>';
   h += '<div class="dt-actions">';
   h += '<button type="submit" id="dt-submit-btn" class="dt-btn dt-btn-primary"> Отправить ответ</button>';
   h += '</div>';
@@ -484,10 +510,10 @@ function _dtSolveOnOpen(item){
   var rb = document.getElementById('dt-result-block');
   var verdict = document.getElementById('dt-verdict');
   var fb = document.getElementById('dt-feedback-text');
-  var form = document.getElementById('dt-answer-form');
-  if(!loader || !rb || !form) return;
+  var prompt = document.getElementById('dt-solve-prompt');
+  if(!loader || !rb) return;
 
-  // Показываем loader
+  var itemId = item.id;
   loader.classList.add('show');
 
   fetch('/daily_tasks/'+item.id+'/solve', {
@@ -500,39 +526,24 @@ function _dtSolveOnOpen(item){
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
+    // Модалку могли закрыть/переоткрыть на другой задаче — не трогаем DOM.
+    if(String(window.dtCurrentItemId) !== String(itemId)) return;
     loader.classList.remove('show');
 
-    if(data.status === 'success' && data.solution){
-      var sol = data.solution;
-      // Показываем решение в блоке результата
-      if(verdict){
-        verdict.innerHTML = '<div class="dt-verdict info"> AI-разбор:</div>';
-      }
-      if(fb){
-        sol = dtAutoMathify(sol);
-        sol = sol.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
-        fb.innerHTML = sol;
-        _renderKatexSafe(fb);
-        // Заменяем \n на <br> ПОСЛЕ KaTeX, чтобы не сломать LaTeX-окружения
-        fb.innerHTML = fb.innerHTML.replace(/\n/g, '<br>');
-      }
+    if(data && data.status === 'success' && data.solution){
+      if(verdict) verdict.innerHTML = '<div class="dt-verdict info"> AI-разбор:</div>';
+      if(fb) _dtRenderFeedbackHtml(fb, data.solution);
       rb.style.display = '';
       rb.classList.add('show');
-    } else {
-      // Решения нет — просто скрываем loader, показываем форму
-      if(verdict){
-        verdict.innerHTML = '';
-      }
+      if(prompt) prompt.style.display = '';
+    } else if(verdict){
+      verdict.innerHTML = '';
     }
-
-    // Показываем форму для ответа ученика
-    form.style.display = '';
   })
   .catch(function(err){
     console.error('_dtSolveOnOpen error:', err);
+    if(String(window.dtCurrentItemId) !== String(itemId)) return;
     loader.classList.remove('show');
-    // Всё равно показываем форму
-    form.style.display = '';
   });
 }
 
@@ -583,7 +594,10 @@ function _bindForm(item){
       dtRenderPhotoBuffer();
     });
   }
-  document.addEventListener('focusin', _focusHandler, false);
+  if(!_dtFocusBound){
+    document.addEventListener('focusin', _focusHandler, false);
+    _dtFocusBound = true;
+  }
   var form = document.getElementById('dt-answer-form');
   if(form){
     form.addEventListener('submit', function(e){
@@ -607,8 +621,20 @@ function _focusHandler(e){
   }
 }
 
+function _dtShowSubmitError(msg){
+  var el = document.getElementById('dt-submit-error');
+  if(el){
+    el.textContent = msg || 'Ошибка проверки';
+    el.style.display = 'block';
+  } else {
+    alert(msg || 'Ошибка проверки');
+  }
+}
+
 // ── submitAnswer ───────────────────────────────────────────────────
+var _dtSubmitting = false;
 function submitAnswer(itemId, KA, KS){
+  if(_dtSubmitting) return;
   var mf = document.getElementById('dt-user-answer');
   var ta = document.getElementById('dt-solution-text');
   var userAnswer = '';
@@ -620,7 +646,8 @@ function submitAnswer(itemId, KA, KS){
   userAnswer = (userAnswer || '').trim();
   var userSolution = (ta ? (ta.value || '') : '').trim();
   if(!userAnswer){
-    alert('Пожалуйста, введите ответ!');
+    _dtShowSubmitError('Пожалуйста, введите ответ!');
+    if(mf && mf.focus){ try{ mf.focus(); }catch(_){} }
     return;
   }
 
@@ -643,11 +670,14 @@ function submitAnswer(itemId, KA, KS){
       ? 'Опиши решение подробнее (минимум 30 символов) или прикрепи фото.'
       : 'Опиши решение или прикрепи фото';
     hintEl.style.display = 'block';
+    if(ta && ta.focus){ try{ ta.focus(); }catch(_){} }
     return;
   } else {
     var hintEl2 = document.getElementById('dt-solution-hint');
     if(hintEl2) hintEl2.style.display = 'none';
   }
+  var errEl = document.getElementById('dt-submit-error');
+  if(errEl) errEl.style.display = 'none';
 
   var encodePhotos = Promise.resolve([]);
   if(window.DT_PHOTO_BUFFER && window.DT_PHOTO_BUFFER.length){
@@ -663,6 +693,7 @@ function submitAnswer(itemId, KA, KS){
     })();
   }
 
+  _dtSubmitting = true;
   _dtShowLoader();
   encodePhotos.then(function(images){
     var payload = {
@@ -681,52 +712,46 @@ function submitAnswer(itemId, KA, KS){
       body: JSON.stringify(payload)
     });
   }).then(function(r){
-    return r.json().then(function(j){ return { ok:r.ok, body:j }; });
+    return r.json().then(function(j){ return { ok:r.ok, status:r.status, body:j || {} }; })
+      .catch(function(){ return { ok:false, status:r.status, body:{} }; });
   }).then(function(res){
+    _dtSubmitting = false;
     _dtHideLoader();
-    if(!res.ok || res.body.status === 'error'){
-      var msg = (res.body && res.body.message) || 'Ошибка проверки';
-      alert(msg);
+    var b = res.body || {};
+
+    // 409: на задачу уже отвечено — показываем сохранённый результат,
+    // а не пустую форму.
+    if(res.status === 409 || b.already_answered){
+      _dtShowResult({
+        is_correct: b.is_correct,
+        feedback: b.message || 'На эту задачу уже отвечено.',
+        correct_answer: b.correct_answer,
+        solution: b.solution,
+        user_answer: b.user_answer
+      }, itemId);
+      try{ if(KA) localStorage.removeItem(KA); if(KS) localStorage.removeItem(KS); }catch(_){}
       return;
     }
-    _dtShowResult(res.body);
-    // Обновляем данные задачи в dt-init-data, чтобы при переключении
-    // между карточками (без перезагрузки) задача отображалась как решённая
-    // с полным решением, а не «только условие».
-    try {
-      var initEl = document.getElementById('dt-init-data');
-      if (initEl) {
-        var d = JSON.parse(initEl.textContent || '{}');
-        if (d.items) {
-          for (var i = 0; i < d.items.length; i++) {
-            if (String(d.items[i].id) === String(itemId)) {
-              d.items[i].user_answer = res.body.user_answer || '';
-              d.items[i].is_correct = !!res.body.is_correct;
-              if (res.body.solution) d.items[i].solution = res.body.solution;
-              break;
-            }
-          }
-          initEl.textContent = JSON.stringify(d);
-        }
-      }
-      // Обновляем карточку на сетке.
-      var cards = document.querySelectorAll('.dt-card');
-      for (var c2 = 0; c2 < cards.length; c2++) {
-        var card = cards[c2];
-        if (String(card.getAttribute('data-item-id')) === String(itemId)) {
-          var sr = card.querySelector('.dt-card-status');
-          if (sr) {
-            sr.textContent = res.body.is_correct ? '\u2713 Решено верно' : '\u2717 Неверно';
-            sr.className = 'dt-card-status ' + (res.body.is_correct ? 'dt-correct' : 'dt-incorrect');
-          }
-          break;
-        }
-      }
-    } catch (_upd) { /* ignore */ }
+
+    if(!res.ok || b.status === 'error'){
+      // FIX bug#23: раньше при ошибке форма оставалась display:none —
+      // поле решения «исчезало» вместе с набранным текстом. Теперь
+      // возвращаем форму (текст сохранён) и показываем причину.
+      // Сервер отдаёт текст ошибки в поле error (400) или message (422/404).
+      var msg = b.error || b.message || ('Ошибка проверки (код '+res.status+'). Попробуйте ещё раз.');
+      _dtRestoreForm();
+      _dtShowSubmitError(msg);
+      return;
+    }
+    _dtShowResult(b, itemId);
+    // Clear localStorage drafts on success
+    try{ if(KA) localStorage.removeItem(KA); if(KS) localStorage.removeItem(KS); }catch(_){}
   }).catch(function(err){
     console.error('submit error:', err);
+    _dtSubmitting = false;
     _dtHideLoader();
-    alert('Ошибка соединения с сервером. Попробуйте ещё раз.');
+    _dtRestoreForm();
+    _dtShowSubmitError('Ошибка соединения с сервером. Попробуйте ещё раз — ваш текст сохранён.');
   });
 }
 window.submitAnswer = submitAnswer;
@@ -734,8 +759,10 @@ window.submitAnswer = submitAnswer;
 function _dtShowLoader(){
   var form = document.getElementById('dt-answer-form');
   var loader = document.getElementById('dt-ai-loader');
+  var mainT = document.getElementById('dt-ai-text-main');
   var btn = document.getElementById('dt-submit-btn');
   if(form) form.style.display = 'none';
+  if(mainT) mainT.textContent = ' AI проверяет ваше решение...';
   if(loader) loader.classList.add('show');
   if(btn) btn.disabled = true;
 }
@@ -743,67 +770,105 @@ function _dtHideLoader(){
   var loader = document.getElementById('dt-ai-loader');
   if(loader) loader.classList.remove('show');
 }
+// Возвращает форму на место после неудачной отправки (значения полей не теряются).
+function _dtRestoreForm(){
+  var form = document.getElementById('dt-answer-form');
+  var btn = document.getElementById('dt-submit-btn');
+  if(form) form.style.display = '';
+  if(btn) btn.disabled = false;
+}
 
-function _dtShowResult(result){
+// Обновляем карточку в сетке и dt-init-data, чтобы повторное открытие
+// задачи показывало результат, а не пустую форму.
+function _dtSyncItemState(itemId, result){
+  try{
+    var initEl = document.getElementById('dt-init-data');
+    if(initEl){
+      var d = JSON.parse(initEl.textContent || '{}');
+      if(d && d.items){
+        for(var i=0;i<d.items.length;i++){
+          if(String(d.items[i].id) === String(itemId)){
+            var it = d.items[i];
+            it.user_answer = (result.user_answer !== undefined && result.user_answer !== null) ? result.user_answer : (it.user_answer || '');
+            it.is_correct = !!result.is_correct;
+            it.is_answered = true;
+            if(result.feedback) it.ai_feedback = result.feedback;
+            if(result.correct_answer) it.correct_answer = result.correct_answer;
+            if(result.solution) it.solution = result.solution;
+            break;
+          }
+        }
+        if(d.progress && typeof d.progress.completed === 'number'){
+          var done = 0;
+          for(var j=0;j<d.items.length;j++){
+            if(d.items[j].user_answer !== null && d.items[j].user_answer !== undefined) done++;
+          }
+          d.progress.completed = done;
+          var pb = document.getElementById('dt-progress-summary');
+          if(pb) pb.textContent = done + '/' + (d.progress.total || d.items.length);
+        }
+        initEl.textContent = JSON.stringify(d);
+      }
+    }
+  }catch(_){}
+  try{
+    var card = document.querySelector('.dt-card[data-item-id="'+itemId+'"]');
+    if(card){
+      card.classList.add('dt-done');
+      var st = card.querySelector('.dt-card-status');
+      if(st){
+        st.classList.remove('dt-pending','dt-correct','dt-incorrect');
+        st.classList.add(result.is_correct ? 'dt-correct' : 'dt-incorrect');
+        var extras = st.querySelectorAll('span');
+        st.textContent = result.is_correct ? '[OK] Верно' : '[ERROR] Неверно';
+        for(var k=0;k<extras.length;k++) st.appendChild(extras[k]);
+      }
+    }
+  }catch(_){}
+}
+
+function _dtShowResult(result, itemId){
   var rb = document.getElementById('dt-result-block');
   var verdict = document.getElementById('dt-verdict');
   var fb = document.getElementById('dt-feedback-text');
   if(!rb || !verdict || !fb) return;
+  result = result || {};
 
-  var score = (typeof result.score === 'number') ? result.score : 0;
+  var isCorrect = (typeof result.is_correct === 'boolean')
+    ? result.is_correct
+    : (typeof result.score === 'number' ? result.score >= 2 : false);
+  var score = (typeof result.score === 'number') ? result.score : null;
   var html = '';
-  var isWrong = false;
-  if(score === 2){
+  if(isCorrect){
     html = '<div class="dt-verdict success">[OK] Верно! Отличная работа</div>';
   } else if(score === 1){
-    html = '<div class="dt-verdict partial">[!]️ Частично верно</div>';
-  } else if(score === 0){
-    html = '<div class="dt-verdict partial">ℹ️ Ответ принят</div>';
+    html = '<div class="dt-verdict partial">[!] Частично верно</div>';
   } else {
     html = '<div class="dt-verdict error">[ERROR] Неверно</div>';
-    isWrong = true;
-  }
-
-  // Если ответ неверный — дополнительно показываем правильный ответ
-  // и требования к формату записи, чтобы ученик мог сравнить.
-  var correct = (result && result.correct_answer) || window.dtCurrentCorrectAnswer || '';
-  if(isWrong && correct){
-    html += '<div class="dt-feedback-block"><div class="dt-feedback-title"> Правильный ответ:</div>';
-    html += '<div class="dt-feedback-text"><code>' + escapeHtmlPreserveLatex(correct) + '</code></div></div>';
-    html += _buildAnswerFormatHint(correct);
   }
   verdict.innerHTML = html;
 
-  var feedback = result.feedback || '';
-  feedback = dtAutoMathify(feedback);
-  feedback = feedback.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
-  fb.innerHTML = feedback;
-  _renderKatexSafe(fb);
-  // Заменяем \n на <br> ПОСЛЕ KaTeX, чтобы не сломать LaTeX-окружения
-  fb.innerHTML = fb.innerHTML.replace(/\n/g, '<br>');
+  _dtRenderFeedbackHtml(fb, result.feedback || '');
 
-  // ── Эталонное решение из банка (раньше возвращалось с бэкенда, но не
-  //    показывалось после отправки). Показываем отдельным ярким блоком,
-  //    чтобы ученик видел полный разбор, а не только отзыв ИИ. ──
-  if (result.solution) {
-    var solBlock = document.getElementById('dt-reference-solution');
-    if (!solBlock) {
-      solBlock = document.createElement('div');
-      solBlock.id = 'dt-reference-solution';
-      solBlock.className = 'dt-feedback-block';
-      solBlock.style.marginTop = '18px';
-      solBlock.innerHTML = '<div class="dt-feedback-title"> Эталонное решение:</div><div class="dt-feedback-text" id="dt-reference-solution-text"></div>';
-      rb.appendChild(solBlock);
-    }
-    var solText = dtAutoMathify(String(result.solution));
-    solText = solText.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
-    var solTextEl = document.getElementById('dt-reference-solution-text');
-    if (solTextEl) {
-      solTextEl.innerHTML = solText;
-      _renderKatexSafe(solTextEl);
-      solTextEl.innerHTML = solTextEl.innerHTML.replace(/\n/g, '<br>');
-    }
+  // Правильный ответ + эталонное решение (если сервер их вернул)
+  var extra = document.getElementById('dt-result-extra');
+  if(!extra){
+    extra = document.createElement('div');
+    extra.id = 'dt-result-extra';
+    rb.appendChild(extra);
   }
+  var eh = '';
+  if(result.correct_answer){
+    eh += '<div class="dt-feedback-block"><div class="dt-feedback-title"> Правильный ответ:</div>';
+    eh += '<div class="dt-feedback-text"><code>'+(typeof escapeHtmlPreserveLatex === 'function' ? escapeHtmlPreserveLatex(result.correct_answer) : _esc(result.correct_answer))+'</code></div></div>';
+    if(!isCorrect) eh += _buildAnswerFormatHint(result.correct_answer);
+  }
+  if(result.solution){
+    eh += '<div class="dt-feedback-block"><div class="dt-feedback-title"> Эталонное решение:</div>';
+    eh += '<div class="dt-feedback-text">'+result.solution+'</div></div>';
+  }
+  extra.innerHTML = eh;
+  if(eh && typeof renderMath === 'function') renderMath(extra);
 
   // CH8/X8: show aux figure if available after answer
   if (result.has_aux && result.aux_svg_path) {
@@ -822,7 +887,18 @@ function _dtShowResult(result){
     }
   }
 
+  var prompt = document.getElementById('dt-solve-prompt');
+  if(prompt) prompt.style.display = 'none';
+  rb.style.display = '';
   rb.classList.add('show');
+
+  _dtSyncItemState(itemId !== undefined ? itemId : window.dtCurrentItemId, {
+    is_correct: isCorrect,
+    feedback: result.feedback,
+    correct_answer: result.correct_answer,
+    solution: result.solution,
+    user_answer: result.user_answer
+  });
 }
 
 // ── getHint ────────────────────────────────────────────────────────
@@ -837,11 +913,11 @@ function getHint(itemId){
     })
     .then(function(d){
       var t = d.hint || d.text || 'Подсказка недоступна';
-      container.innerHTML = '<div class="dt-hint-box"><strong> Подсказка:</strong><br>'+t+'</div>';
+      container.innerHTML = '<div class="dt-hint-box"><strong>Подсказка:</strong><br>'+t+'</div>';
       if(typeof renderMath === 'function') renderMath(container);
     })
     .catch(function(err){
-      container.innerHTML = '<div class="dt-hint-box">[!]️ '+_esc(err.message)+'</div>';
+      container.innerHTML = '<div class="dt-hint-box">[!] '+_esc(err.message)+'</div>';
     });
 }
 window.getHint = getHint;
