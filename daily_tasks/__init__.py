@@ -18,6 +18,9 @@ daily_tasks_bp = Blueprint(
 
 from . import routes  # noqa: E402, F401
 
+from .intake_probe import attach as _intake_probe_attach
+_intake_probe_attach(daily_tasks_bp)
+
 # «Метод недели» + план куратора + paywall (ноябрь 2026). Подключается в момент
 # регистрации daily_tasks_bp в app.py — без правки app.py. Любая ошибка здесь
 # не ломает задачи дня. Тестовый период: видно только lavrik и victor
