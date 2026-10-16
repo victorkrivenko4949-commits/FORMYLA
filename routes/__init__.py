@@ -107,6 +107,9 @@ def _install(app) -> None:
     _install_site_notices(app)
     _install_olymp_catalog(app)
     _install_chat_attachments(app)
+    if os.environ.get("SURVEYS_AUTOREG", "1") != "0":
+        from routes.surveys import install_surveys
+        install_surveys(app, register=_ORIG_REGISTER)
 
     if getattr(app, "_admin_base_installed", False):
         return
@@ -152,7 +155,7 @@ try:
 
         def _patched_register_blueprint(self, blueprint, **options):
             result = _ORIG_REGISTER(self, blueprint, **options)
-            if getattr(blueprint, "name", "") not in ("admin_base", "pwa", "site_notices", "olymp_catalog", "chat_attachments"):
+            if getattr(blueprint, "name", "") not in ("admin_base", "pwa", "site_notices", "olymp_catalog", "chat_attachments", "surveys"):
                 _install(self)
             return result
 
