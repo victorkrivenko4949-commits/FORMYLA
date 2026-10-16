@@ -10,6 +10,8 @@
     <span class="oc-badge {{ status_class(t.status) }}">{{ labels.get(t.status, t.status) }}</span>
     {% if t.day %}<span class="oc-badge">День {{ t.day }}</span>{% endif %}
     {% if t.fig_statement or t.fig_solution %}<span class="oc-badge" title="есть рисунок">▣ рисунок</span>{% endif %}
+    {% if t.fig_missing %}<span class="oc-badge warn" title="файл рисунка отсутствует в static/olymp_figures">▣ рисунок не найден ({{ t.fig_missing }})</span>{% endif %}
+    {% if t.garbled %}<span class="oc-badge warn" title="формулы в тексте разрушены при распознавании PDF; тьютор восстановит решение">⚠ формулы повреждены</span>{% endif %}
     <span class="sp"></span>
     {% if link %}<a class="oc-btn vio sm" href="{{ task_url }}#tutor" title="Открыть задачу с ИИ-тьютором">✦ Тьютор</a>{% endif %}
   </div>
@@ -19,6 +21,7 @@
   <div class="oc-toggles">
     {% if t.answer %}<details class="oc-ans-wrap"><summary>🎯 Ответ</summary><div class="oc-ans">{{ t.answer }}</div></details>{% endif %}
     <details class="oc-sol-wrap"><summary>📖 Решение</summary>
+      {% if t.garbled %}<div class="oc-src" style="margin:8px 0 0">Текст распознан из PDF с потерей дробей, корней и индексов. Корректную версию готовит ИИ-тьютор — см. «Конспект подготовки» на странице задачи.</div>{% endif %}
       <div class="oc-sol">{{ t.solution if t.solution else '— решение отсутствует —' }}</div>
       {% for f in t.fig_solution %}<img class="oc-fig" src="{{ url_for('olymp_catalog.figure', subpath=f) }}" alt="рисунок к решению" loading="lazy">{% endfor %}
     </details>

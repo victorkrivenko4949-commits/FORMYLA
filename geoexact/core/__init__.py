@@ -15,7 +15,10 @@ from . import solver as _solver
 from . import gates as _gates
 from . import general_position as _general_position
 from . import formalize_rules as _formalize_rules
+from . import render as _render
+from . import bisector_marks as _bisector_marks
 
 _difficulty.install(_llm)
 _general_position.install(_solver, _gates)
 _formalize_rules.install(_llm)
+_bisector_marks.install(_render)

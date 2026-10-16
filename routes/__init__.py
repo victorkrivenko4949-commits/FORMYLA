@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
 """
 routes/__init__.py — ADMIN_BASE_V1 (06.10.2026) + PWA_INSTALL_V1 (11.10.2026)
-+ SITE_NOTICE_V1 (11.10.2026) + OLYMP_CATALOG_V3 (14.10.2026).
++ SITE_NOTICE_V1 (11.10.2026) + OLYMP_CATALOG_V3 (14.10.2026) + CHAT_DOCS_V1 (15.10.2026).
 
 Автоматическая регистрация blueprint «База» (routes/admin_base.py),
 blueprint PWA (routes/pwa.py), blueprint одноразовых уведомлений
-(routes/site_notices.py) и blueprint каталога олимпиадных задач
-(routes/olymp_catalog.py, /olymp-catalog) без правки app.py. Файл превращает `routes/`
+(routes/site_notices.py), blueprint каталога олимпиадных задач
+(routes/olymp_catalog.py, /olymp-catalog) и blueprint вложений чата
+(routes/chat_attachments.py — документы в чате, фикс фото, компактное меню)
+без правки app.py. Файл превращает `routes/`
 в обычный пакет (раньше был namespace package); все существующие импорты
 `from routes.xxx import ...` работают как прежде.
 
 Как это работает: при первом `app.register_blueprint(...)` любого другого
-blueprint мы один раз дорегистрируем `admin_base_bp`, `pwa_bp`, `site_notices_bp`
-и `olymp_catalog_bp` в это же приложение и вешаем after_request-хуки.
+blueprint мы один раз дорегистрируем `admin_base_bp`, `pwa_bp`, `site_notices_bp`,
+`olymp_catalog_bp` и `chat_attachments_bp` в это же приложение и вешаем after_request-хуки.
 
-Отключить: ADMIN_BASE_AUTOREG=0, PWA_AUTOREG=0, SITE_NOTICES_AUTOREG=0 и/или OLYMP_CATALOG_AUTOREG=0.
+Отключить: ADMIN_BASE_AUTOREG=0, PWA_AUTOREG=0, SITE_NOTICES_AUTOREG=0,
+OLYMP_CATALOG_AUTOREG=0 и/или CHAT_ATTACHMENTS_AUTOREG=0.
 Ручная регистрация (эквивалент):
     from routes.admin_base import admin_base_bp
     app.register_blueprint(admin_base_bp)
@@ -24,6 +27,8 @@ blueprint мы один раз дорегистрируем `admin_base_bp`, `pw
     app.register_blueprint(site_notices_bp)
     from routes.olymp_catalog import install_olymp_catalog
     install_olymp_catalog(app)
+    from routes.chat_attachments import install_chat_attachments
+    install_chat_attachments(app)
 """
 from __future__ import annotations
 
@@ -84,10 +89,24 @@ def _install_olymp_catalog(app) -> None:
         logger.exception("[olymp_catalog] auto-register failed: %r", e)
 
 
+def _install_chat_attachments(app) -> None:
+    """CHAT_DOCS_V1: документы в чате, фикс отправки фото, компактное меню сообщения."""
+    if os.environ.get("CHAT_ATTACHMENTS_AUTOREG", "1") == "0":
+        return
+    if getattr(app, "_chat_attachments_installed", False):
+        return
+    try:
+        from routes.chat_attachments import install_chat_attachments
+        install_chat_attachments(app)
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[chat_attachments] auto-register failed: %r", e)
+
+
 def _install(app) -> None:
     _install_pwa(app)
     _install_site_notices(app)
     _install_olymp_catalog(app)
+    _install_chat_attachments(app)
 
     if getattr(app, "_admin_base_installed", False):
         return
@@ -133,7 +152,7 @@ try:
 
         def _patched_register_blueprint(self, blueprint, **options):
             result = _ORIG_REGISTER(self, blueprint, **options)
-            if getattr(blueprint, "name", "") not in ("admin_base", "pwa", "site_notices", "olymp_catalog"):
+            if getattr(blueprint, "name", "") not in ("admin_base", "pwa", "site_notices", "olymp_catalog", "chat_attachments"):
                 _install(self)
             return result
 

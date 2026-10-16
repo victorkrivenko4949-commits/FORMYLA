@@ -6,8 +6,15 @@
 (pick_daily_set в services/daily_task_rotation.py). Отключается только явно:
 FORMYLA_JSONL_FALLBACK=0 -> has_rows() -> False и get_tasks() -> [].
 
-Логика выборки: точный уровень, затем смесь 70/30 из соседних уровней,
+Логика выборки: точный уровень, затем смесь из соседних уровней,
 затем level±2, затем повторы.
+
+Доля соседей при нехватке точного уровня:
+  * ячейка точного уровня есть, но задач не хватает -> LOWER_SHARE (70% снизу);
+  * ячейка точного уровня ПУСТАЯ (дырка в банке, например геометрия L3 после
+    чисток #36/#116) -> HOLE_LOWER_SHARE (по умолчанию 40% снизу, 60% сверху),
+    чтобы ученик уровня 3 не получал подборку почти целиком из уровня 2.
+    Переопределяется переменной окружения FORMYLA_BANK_HOLE_LOWER_SHARE (0..1).
 """
 
 from __future__ import annotations
@@ -30,6 +37,19 @@ FALLBACK_ENABLED = os.environ.get("FORMYLA_JSONL_FALLBACK", "1").strip() != "0"
 
 # Доля добора из уровня ниже при нехватке точного уровня (остальное — из уровня выше).
 LOWER_SHARE = 0.7
+
+
+def _hole_lower_share() -> float:
+    """Доля добора снизу, когда ячейка точного уровня пуста целиком."""
+    raw = (os.environ.get("FORMYLA_BANK_HOLE_LOWER_SHARE") or "").strip()
+    try:
+        val = float(raw) if raw else 0.4
+    except ValueError:
+        val = 0.4
+    return max(0.0, min(1.0, val))
+
+
+HOLE_LOWER_SHARE = _hole_lower_share()
 
 
 def _fallback_disabled() -> bool:
@@ -201,7 +221,11 @@ def get_tasks(grade: int, topic: str, level: int,
     if need > 0:
         lower, upper = level - 1, level + 1
         rnd = 0.5 if day_part % 2 == 0 else 0.0
-        want_lower = int(need * LOWER_SHARE + rnd) if upper in fresh else need
+        # Пустая ячейка точного уровня (ни свежих, ни повторов) — дырка в банке:
+        # добираем преимущественно сверху, а не снизу.
+        exact_cell_empty = not by_level.get(level)
+        share = HOLE_LOWER_SHARE if exact_cell_empty else LOWER_SHARE
+        want_lower = int(need * share + rnd) if upper in fresh else need
         want_upper = need - want_lower if upper in fresh else 0
         if lower not in fresh:
             want_lower, want_upper = 0, need
@@ -235,9 +259,10 @@ def get_tasks(grade: int, topic: str, level: int,
         off = [lv for lv, _ in picked if lv != level]
         if off:
             logger.warning(
-                "formyla_bank: level shortage grade=%s topic=%r level=%s: exact=%d, mix=%s",
+                "formyla_bank: level shortage grade=%s topic=%r level=%s: exact=%d, mix=%s, hole=%s",
                 grade, topic, level, len(picked) - len(off),
                 {lv: off.count(lv) for lv in sorted(set(off))},
+                not by_level.get(level),
             )
     return result
 

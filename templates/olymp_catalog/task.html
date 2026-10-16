@@ -17,14 +17,14 @@
       </div>
     </div>
 
-    <aside class="oc-tutor" id="oc-tutor" data-slug="{{ slug }}" data-uid="{{ t.uid }}" data-model="{{ tutor_model }}" data-api-base="{{ url_for('olymp_catalog.index').rstrip('/') }}">
+    <aside class="oc-tutor" id="oc-tutor" data-slug="{{ slug }}" data-uid="{{ t.uid }}" data-model="{{ tutor_model }}" data-api-base="{{ url_for('olymp_catalog.index').rstrip('/') }}" data-garbled="{{ 1 if t.garbled else 0 }}">
       <div class="oc-tutor-hd">
         <div class="av">✦</div>
         <div class="ttl">ИИ-тьютор<small>{{ tutor_model }} · thinking · LaTeX</small></div>
         <span class="sp"></span>
         <span class="oc-status prep" id="oc-status"><i></i>{% if prep_ready %}Загрузка…{% else %}Изучает задачу…{% endif %}</span>
       </div>
-      <details class="oc-brief" id="oc-brief" style="display:none"><summary>Конспект подготовки тьютора (что он уже разобрал)</summary><div class="bd" id="oc-brief-body"></div></details>
+      <details class="oc-brief" id="oc-brief" style="display:none"{% if t.garbled %} open{% endif %}><summary>Конспект подготовки тьютора (что он уже разобрал)</summary><div class="bd" id="oc-brief-body"></div></details>
       <div class="oc-msgs" id="oc-msgs"></div>
       <div class="oc-quick">
         <button class="oc-chip" type="button" data-quick="Дай лёгкую подсказку, с чего начать, не раскрывая решение.">Подсказка</button>
