@@ -278,10 +278,10 @@ def resolve_gemini_model() -> tuple[str | None, bool]:
         log.warning("OdiRouter: не удалось получить /models (%s). "
                     "Проверьте ODIROUTER_BASE_URL и ключ.", str(e)[:200])
         return None, False
-    gemini_flash = [c for c in candidates if "gemini-3.6-flash" in c.lower()]
+    gemini_flash = [c for c in candidates if "gemini-3.8-flash" in c.lower()]
     if not gemini_flash:
         all_gemini = [c for c in candidates if "gemini" in c.lower()]
-        log.error("Модель с подстрокой 'gemini-3.6-flash' не найдена на OdiRouter.")
+        log.error("Модель с подстрокой 'gemini-3.8-flash' не найдена на OdiRouter.")
         if all_gemini:
             log.error("Доступные gemini-модели:\n  %s", "\n  ".join(all_gemini))
         else:
