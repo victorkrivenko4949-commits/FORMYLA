@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Blueprint: Каталог олимпиадных задач (olymp_catalog) — OLYMP_CATALOG_V3.4
+Blueprint: Каталог олимпиадных задач (olymp_catalog) — OLYMP_CATALOG_V3.5
 
 Отдельный раздел сайта на префиксе /olymp-catalog (не пересекается с разделом
 «Олимпиады» /olympiads/* — пробники, методы, календарь).
@@ -13,6 +13,7 @@ Endpoints:
   GET  /olymp-catalog/<slug>/export/<fmt>              — скачать олимпиаду (фильтры q/year/grade/round): md | json
   GET  /olymp-catalog/figures/<path>                   — рисунки (static/olymp_figures/...)
   GET  /olymp-catalog/qa                               — отчёт чистки данных (JSON)
+  GET  /olymp-catalog/gaps                             — дыры в нумерации задач (JSON; ?fmt=md — текст; ?slug=phystech)
   POST /olymp-catalog/api/tutor/prepare                — v4-pro заранее разбирает задачу (кэш)
   POST /olymp-catalog/api/tutor/chat                   — диалог с тьютором по задаче
 
@@ -21,8 +22,11 @@ Endpoints:
 «🗂 Каталог задач олимпиад» в меню «Олимпиады» без правки base.html. OLYMP_CATALOG_NAV=0 отключает.
 Скрытые олимпиады: OLYMP_CATALOG_HIDE (по умолчанию "other"). Чистка данных: OLYMP_CATALOG_CLEAN=0 отключает.
 
+V3.5: «День N» показываем только там, где внутри одного (год, этап) реально больше одного дня
+(у Физтеха и др. в данных day=0/1 вперемешку при отсутствии дней — раньше рисовалось «День 1»).
+
 Модули: olymp_catalog_clean (чистка JSON при загрузке), olymp_catalog_tutor (deepseek-v4-pro),
-olymp_catalog_export (md/tex/txt/json).
+olymp_catalog_export (md/tex/txt/json), olymp_catalog_gaps (дыры в нумерации, день).
 """
 from __future__ import annotations
 
@@ -34,12 +38,13 @@ import re
 import time
 from collections import OrderedDict
 
-from flask import (Blueprint, abort, jsonify, redirect, render_template, request,
+from flask import (Blueprint, Response, abort, jsonify, redirect, render_template, request,
                    send_from_directory, url_for)
 from flask_login import current_user
 
 from routes.olymp_catalog_clean import STATUS_LABEL, clean_task, new_qa
 from routes.olymp_catalog_export import download, public_task, task_md, task_tex, task_txt
+from routes.olymp_catalog_gaps import multi_day_keys, norm_day, report_md, summarize
 from routes.olymp_catalog_tutor import (PREP_CACHE, PREP_TTL, SYSTEM_PROMPT, TUTOR_HISTORY, TUTOR_MODEL,
                                         TUTOR_THINKING, call_model, get_or_prepare, normalize_tutor_latex,
                                         task_context)
@@ -153,12 +158,18 @@ def _grade_key(g):
         return 99
 
 
-def _group(tasks):
-    """year -> sections(round, day) -> grades -> tasks, порядок как в файле."""
+def _group(tasks, all_tasks=None):
+    """year -> sections(round, day) -> grades -> tasks, порядок как в файле.
+
+    День подписываем только для (год, этап), где в полном наборе задач олимпиады реально
+    больше одного дня; иначе day="" и секции с day=0/1 склеиваются в одну.
+    """
+    multi = multi_day_keys(all_tasks if all_tasks is not None else tasks)
     years: "OrderedDict[int, OrderedDict]" = OrderedDict()
     for t in tasks:
         y = years.setdefault(t["year"], OrderedDict())
-        sec = y.setdefault((t["round"], t["day"]), OrderedDict())
+        day = norm_day(t.get("day")) if (t["year"], str(t["round"])) in multi else ""
+        sec = y.setdefault((t["round"], day), OrderedDict())
         sec.setdefault(t["grade"], []).append(t)
     result = []
     for y, secs in years.items():
@@ -230,7 +241,7 @@ def olympiad(slug):
     tasks = _filter_tasks(all_tasks, q.lower(), year, grade, rnd) if picked else []
     grades = sorted({str(t["grade"]) for t in all_tasks}, key=_grade_key)
     years_all = sorted({t["year"] for t in all_tasks}, reverse=True)
-    return render_template("olymp_catalog/olympiad.html", slug=slug, meta=meta, years=_group(tasks),
+    return render_template("olymp_catalog/olympiad.html", slug=slug, meta=meta, years=_group(tasks, all_tasks),
                            count=len(tasks), total=len(all_tasks), q=q, year=year, grade=grade,
                            round=rnd, rounds=_rounds(all_tasks), picked=picked,
                            grades=grades, years_all=years_all, labels=STATUS_LABEL)
@@ -263,6 +274,23 @@ def qa_report():
         for k, v in st.items():
             total[k] += v
     return jsonify(ok=True, clean_enabled=_CLEAN, total=total, by_olympiad=_QA)
+
+
+@olymp_catalog_bp.route("/gaps")
+@catalog_access_required
+def gaps_report():
+    """Дыры в нумерации задач по вариантам (год → этап → день → класс).
+
+    /olymp-catalog/gaps            — JSON по всем видимым олимпиадам
+    /olymp-catalog/gaps?fmt=md     — читаемый markdown-отчёт (text/plain)
+    /olymp-catalog/gaps?slug=phystech — только одна олимпиада
+    """
+    only = (request.args.get("slug") or "").strip()
+    summaries = [summarize(m["slug"], m["name"], _load(m["slug"]) or [])
+                 for m in _visible_index() if not only or m["slug"] == only]
+    if request.args.get("fmt") == "md":
+        return Response(report_md(summaries), mimetype="text/plain; charset=utf-8")
+    return jsonify(ok=True, olympiads=summaries)
 
 
 @olymp_catalog_bp.route("/<slug>/<uid>/export/<fmt>")
@@ -306,7 +334,7 @@ def export_olympiad(slug, fmt):
         name = meta["name"] if meta else slug
         out = ["# %s" % name, "", "Задач: %d. Экспорт из FORMYLA.net · %s" % (len(tasks), time.strftime("%Y-%m-%d")), ""]
         with_sol = request.args.get("sol", "1") != "0"
-        for y in _group(tasks):
+        for y in _group(tasks, all_tasks):
             out += ["", "# %s год" % y["year"], ""]
             for s in y["sections"]:
                 out += ["", "## %s%s" % (s["round"], (" — день %s" % s["day"]) if s["day"] else ""), ""]
