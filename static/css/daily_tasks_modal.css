@@ -575,3 +575,179 @@
 .page-daily-tasks textarea {
   resize: none !important;
 }
+
+/* ── Баг Лаврика #6: «дизайн плохой в задачах дня» ────────────────── */
+/* Запрос: «сделать более кликабельнее и понятнее — на твой выбор».
+ * Только CSS, разметка и JS /daily_tasks не тронуты: карточки задач
+ * выглядят как кнопки (акцентная полоса, крупный номер, подъём на hover),
+ * статус — цветные чипы, в подвале явный призыв «Открыть задачу →»,
+ * над сеткой подсказка что делать, кнопки не меньше 44px под палец.
+ * Откат — удалить этот блок. */
+
+/* Подсказка над сеткой карточек */
+#dt-task-grid:not(:empty)::before {
+  content: "👆 Нажми на карточку — откроется задача с полем для ответа и решения";
+  grid-column: 1 / -1;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--accent-dim);
+  border: 1px dashed rgba(76,125,255,0.35);
+}
+
+/* Карточка = кнопка */
+.page-daily-tasks .dt-card {
+  padding: 20px 20px 18px 22px;
+  border: 1.5px solid rgba(76,125,255,0.28);
+  background: linear-gradient(180deg, rgba(76,125,255,0.08), var(--surface));
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.page-daily-tasks .dt-card::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--accent);
+  opacity: .9;
+}
+.page-daily-tasks .dt-card.dt-done::before { background: var(--ok); }
+.page-daily-tasks .dt-card.dt-flagged::before,
+.page-daily-tasks .dt-card.dt-calibration::before { background: var(--warn); }
+.page-daily-tasks .dt-card:hover,
+.page-daily-tasks .dt-card:focus-visible {
+  transform: translateY(-3px);
+  border-color: var(--accent-hi);
+  box-shadow: 0 12px 30px rgba(76,125,255,0.22);
+  outline: none;
+}
+.page-daily-tasks .dt-card:active { transform: translateY(-1px) scale(.995); }
+
+/* Номер задачи — крупный и заметный */
+.page-daily-tasks .dt-card-number {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  border-color: transparent;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(76,125,255,0.35);
+}
+.page-daily-tasks .dt-card.dt-done .dt-card-number {
+  background: var(--ok);
+  box-shadow: none;
+}
+.page-daily-tasks .dt-topic-badge { font-size: 11.5px; padding: 3px 9px; border-radius: 6px; }
+.page-daily-tasks .dt-difficulty { font-size: 13px; }
+
+/* Условие — читабельнее */
+.page-daily-tasks .dt-card-preview {
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-line-clamp: 4;
+}
+
+/* Статус — цветные чипы вместо мелкого текста */
+.page-daily-tasks .dt-card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.page-daily-tasks .dt-card-status.dt-pending {
+  color: var(--muted);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+.page-daily-tasks .dt-card-status.dt-correct {
+  color: var(--ok);
+  background: rgba(62,207,142,0.14);
+  border: 1px solid rgba(62,207,142,0.35);
+}
+.page-daily-tasks .dt-card-status.dt-incorrect {
+  color: var(--bad);
+  background: rgba(239,68,68,0.14);
+  border: 1px solid rgba(239,68,68,0.35);
+}
+
+/* Явный призыв к действию в подвале карточки */
+.page-daily-tasks .dt-card-footer { padding-top: 14px; flex-wrap: wrap; }
+.page-daily-tasks .dt-card:not(.dt-done) .dt-card-footer::after {
+  content: "Открыть задачу →";
+  margin-left: auto;
+  padding: 8px 14px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(76,125,255,0.3);
+  transition: background .15s ease, transform .15s ease;
+}
+.page-daily-tasks .dt-card:not(.dt-done):hover .dt-card-footer::after {
+  background: var(--accent-hi);
+  transform: translateX(2px);
+}
+.page-daily-tasks .dt-card.dt-done .dt-card-footer::after {
+  content: "Посмотреть ✓";
+  margin-left: auto;
+  padding: 7px 12px;
+  border-radius: 9px;
+  background: rgba(62,207,142,0.12);
+  color: var(--ok);
+  border: 1px solid rgba(62,207,142,0.3);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Кнопки страницы — не меньше 44px под палец, видимый фокус */
+.page-daily-tasks .dt-btn-primary:not(.dt-btn),
+.page-daily-tasks .dt-btn-secondary:not(.dt-btn),
+.page-daily-tasks .dt-cal-banner-btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.page-daily-tasks .dt-btn-primary:not(.dt-btn) {
+  font-size: 16px;
+  padding: 12px 28px;
+  box-shadow: 0 4px 14px rgba(76,125,255,0.28);
+}
+.page-daily-tasks .dt-debt-item-open { min-height: 36px; padding: 6px 14px; font-size: 13px; }
+.page-daily-tasks .dt-btn-primary:focus-visible,
+.page-daily-tasks .dt-btn-secondary:focus-visible,
+.page-daily-tasks .dt-debt-item-open:focus-visible,
+.page-daily-tasks .dt-card:focus-visible {
+  outline: 3px solid rgba(76,125,255,0.5);
+  outline-offset: 2px;
+}
+
+/* Чекбокс-обещание — видно, что он кликабельный */
+.page-daily-tasks .dt-pledge:hover {
+  border-color: var(--accent) !important;
+  background: var(--accent-dim) !important;
+  color: var(--text) !important;
+}
+
+/* Мобильные: призыв на всю ширину карточки */
+@media (max-width: 640px) {
+  .page-daily-tasks .dt-card { padding: 16px 16px 14px 18px; }
+  .page-daily-tasks .dt-card:not(.dt-done) .dt-card-footer::after {
+    flex: 1 0 100%;
+    margin-left: 0;
+    margin-top: 10px;
+    text-align: center;
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  .page-daily-tasks .dt-card:not(.dt-done):hover .dt-card-footer::after { transform: none; }
+}
