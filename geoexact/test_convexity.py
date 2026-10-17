@@ -7,8 +7,10 @@ from geoexact.core.schema import Constraint, FigurePlan
 
 TEXT = ("Дан выпуклый четырёхугольник ABCD, в котором ∠DAB = 90°. Пусть M — середина "
         "стороны BC. Оказалось, что ∠ADC = ∠BAM. Докажите, что ∠ADB = ∠CAM.")
-# Чертёж, который движок выдал до исправления: C выше AB, D ниже — угол при B > 180°.
+# Два чертежа, которые движок выдал до исправления (y вниз, как в SVG):
+# BAD  — угол при B > 180°;  BAD2 — CD пересекает AB (самопересечение).
 BAD = {"A": (100., 490.), "B": (350., 490.), "C": (645., 80.), "D": (100., 1125.), "M": (497.5, 285.)}
+BAD2 = {"A": (100., 655.), "B": (1160., 655.), "C": (447., 93.), "D": (100., 962.), "M": (803.5, 374.)}
 GOOD = {"A": (0., 0.), "B": (2., 0.), "C": (1., 3.), "D": (0., 4.), "M": (1.5, 1.5)}
 
 
@@ -39,10 +41,20 @@ def test_text_recognizes_convex_polygons():
     assert convexity.convex_polygons("четырёхугольник CDEF — параллелограмм") == []
 
 
-def test_nonconvex_drawing_is_rejected_with_vertex():
-    fails = convexity.convexity_failures(TEXT, quad_plan(), _np(BAD))
+def test_latex_and_postfix_wordings_are_recognized():
+    assert convexity.convex_polygons("Дан выпуклый четырёхугольник $ABCD$, в котором") == [("A", "B", "C", "D")]
+    assert convexity.convex_polygons(r"В выпуклом четырёхугольнике \(ABCD\) точка M") == [("A", "B", "C", "D")]
+    assert convexity.convex_polygons(r"выпуклый четырехугольник \mathrm{ABCD}") == [("A", "B", "C", "D")]
+    assert convexity.convex_polygons("Четырёхугольник ABCD выпуклый, а M — середина BC.") == [("A", "B", "C", "D")]
+    # граница предложения: «докажите, что он выпуклый» — не данность
+    assert convexity.convex_polygons("Дан четырёхугольник ABCD. Докажите, что он выпуклый.") == []
+
+
+@pytest.mark.parametrize("coords,vertex", [(BAD, "B"), (BAD2, "B, C")])
+def test_nonconvex_drawing_is_rejected_with_vertex(coords, vertex):
+    fails = convexity.convexity_failures(TEXT, quad_plan(), _np(coords))
     assert len(fails) == 1 and fails[0].startswith(convexity.PREFIX)
-    assert "при B" in fails[0]
+    assert f"при {vertex}" in fails[0]
 
 
 def test_convex_drawing_passes():
@@ -88,10 +100,36 @@ def test_injected_constraints_separate_good_from_bad():
     from geoexact.core.gates import constraint_residual
     plan = quad_plan()
     plan.constraints.extend(Constraint(**c) for c in convexity.convexity_constraints(TEXT, plan))
-    for coords, ok in ((_np(GOOD), True), (_np(BAD), False)):
+    for coords, ok in ((_np(GOOD), True), (_np(BAD), False), (_np(BAD2), False)):
         res = [constraint_residual(c.type, [coords[a] for a in c.args], c.value, 1.0)
                for c in plan.constraints if c.type == "opposite_side"]
         assert (max(res) == 0.0) is ok
+
+
+def test_soft_penalty_is_zero_on_convex_and_positive_on_crossed():
+    from geoexact.core import solver
+    plan = quad_plan()
+    plan.constraints.extend(Constraint(**c) for c in convexity.convexity_constraints(TEXT, plan))
+    assert getattr(solver._soft_position_terms, "_convexity", False)
+    n = solver._soft_term_count(plan)
+    assert n == solver._soft_term_count._original(plan) + 2
+    good = solver._soft_position_terms(plan, _np(GOOD), 1.0, n)
+    bad = solver._soft_position_terms(plan, _np(BAD2), 1.0, n)
+    assert good.shape == bad.shape == (n,)
+    assert good[-2:].max() == 0.0 and bad[-2:].min() > 0.0
+    # план без side-ограничений: обёртка прозрачна
+    plain = quad_plan()
+    assert solver._soft_term_count(plain) == solver._soft_term_count._original(plain)
+
+
+def test_solver_only_returns_convex_solutions_with_injected_constraints():
+    from geoexact.core.solver import solve
+    plan = quad_plan()
+    plan.constraints.extend(Constraint(**c) for c in convexity.convexity_constraints(TEXT, plan))
+    sols = [s for s in solve(plan, n_seeds=16) if s.ok]
+    assert sols, "решатель не нашёл ни одной выпуклой конфигурации"
+    for s in sols:
+        assert convexity.convexity_failures(TEXT, plan, s.coords) == []
 
 
 def test_pipeline_never_reports_nonconvex_as_verified(monkeypatch):
@@ -102,7 +140,7 @@ def test_pipeline_never_reports_nonconvex_as_verified(monkeypatch):
     monkeypatch.setattr(llm, "formalize", lambda *_, **__: (quad_plan(), []))
     r = generate(TEXT, sess=object(), use_cache=False, max_retries=0)
     assert r.ok
-    flagged = any(w.startswith(convexity.PREFIX) or convexity.PREFIX in w for w in r.warnings)
+    flagged = any(convexity.PREFIX in w for w in r.warnings)
     if flagged:
         assert r.verification == "approximate"
     else:
@@ -111,4 +149,4 @@ def test_pipeline_never_reports_nonconvex_as_verified(monkeypatch):
 
 def test_cache_key_changes_with_engine_suffix():
     from geoexact.core import pipeline
-    assert convexity.CACHE_SUFFIX in pipeline.ENGINE_VERSION
+    assert "+cvx" in pipeline.ENGINE_VERSION

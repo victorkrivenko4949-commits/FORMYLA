@@ -7,7 +7,8 @@ solver.py и gates.py:
     биссектриса, параллель через точку, запрет получать вершины треугольника
     конструкциями друг из друга);
   * convexity.install — выпуклость названных многоугольников: семантическая
-    проверка контура и opposite_side для выпуклого четырёхугольника.
+    проверка контура, opposite_side для выпуклого четырёхугольника и гладкий
+    штраф решателя для same_side/opposite_side.
 Выключатели: GEOEXACT_DIFFICULTY_ROUTER=0, GEOEXACT_FIRST_TOKEN_LIMIT=0,
 GEOEXACT_GENERAL_POSITION=0, GEOEXACT_FORMALIZE_RULES=0, GEOEXACT_CONVEXITY=0.
 """
@@ -26,4 +27,4 @@ _difficulty.install(_llm)
 _general_position.install(_solver, _gates)
 _formalize_rules.install(_llm)
 _bisector_marks.install(_render)
-_convexity.install(_semantics, _llm)
+_convexity.install(_semantics, _llm, solver_module=_solver)
