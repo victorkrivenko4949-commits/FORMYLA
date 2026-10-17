@@ -8,7 +8,7 @@ e-mail из PAYWALL_WHITELIST. Переменные окружения:
 
   PAYWALL_ENABLED=1|0            (по умолчанию 0 — ВЫКЛЮЧЕН; включить вручную к ноябрю)
   PAYWALL_START_DATE=2026-11-01  (до этой даты всё бесплатно даже при ENABLED=1)
-  PAYWALL_PREFIXES=/daily_tasks,/method_week,/geometry/draw,/figures/generate,/api/tutor,/prep
+  PAYWALL_PREFIXES=/method_week,/geometry/draw,/figures/generate  (задачи дня/тьютор — мягкие лимиты)
   PAYWALL_WHITELIST=a@b.ru,c@d.ru
   PAYWALL_UPGRADE_URL=/subscribe
 """
@@ -23,7 +23,9 @@ from flask import jsonify, redirect, request
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_PREFIXES = '/daily_tasks,/method_week,/geometry/draw,/figures/generate,/api/tutor,/prep'
+# SOFT_LIMITS_V1 (18.10.2026): /daily_tasks, /api/tutor и /prep больше НЕ за жёстким paywall —
+# там мягкие лимиты (services/soft_limits.py). Жёсткий paywall только на новых функциях.
+DEFAULT_PREFIXES = '/method_week,/geometry/draw,/figures/generate'
 # служебные пути внутри платных разделов, которые нужны фронту для показа paywall
 ALWAYS_OPEN_SUFFIXES = ('/job_status',)
 
@@ -81,6 +83,20 @@ def user_has_paid_access(user) -> bool:
     return False
 
 
+
+def _upgrade_price_label(user=None) -> str:
+    """Цена для сообщения paywall — из каталога тарифов, не хардкод."""
+    try:
+        from services.billing_plans import is_founder, price_for
+        return f"{price_for('student_month', is_founder(user))} руб/мес"
+    except Exception:
+        try:
+            from services.subscription import PLAN_LIMITS
+            return f"{PLAN_LIMITS['premium_monthly']['price_rub']} руб/мес"
+        except Exception:
+            return '390 руб/мес'
+
+
 def _is_paid_path(path: str) -> bool:
     if path.endswith(ALWAYS_OPEN_SUFFIXES):
         return False
@@ -117,7 +133,7 @@ def install_paywall(app) -> None:
                     'error': 'payment_required',
                     'message': 'Этот раздел доступен по подписке Premium.',
                     'upgrade_url': upgrade,
-                    'upgrade_price': '390 руб/мес',
+                    'upgrade_price': _upgrade_price_label(current_user),
                 }), 402
             return redirect("%s?from=%s" % (upgrade, path))
         except Exception as exc:  # pragma: no cover — paywall никогда не роняет сайт
