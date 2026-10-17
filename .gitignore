@@ -94,3 +94,11 @@ Thumbs.db
 
 # Already tracked archive files remain tracked automatically.
 # Do not exempt archive/**: secrets and generated files must stay ignored there.
+
+work/
+backup/
+data/olymp_catalog_fixed/
+
+work/
+backup/
+data/olymp_catalog_fixed/
