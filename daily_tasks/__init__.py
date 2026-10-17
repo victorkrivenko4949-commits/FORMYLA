@@ -40,3 +40,13 @@ try:  # pragma: no cover
 except Exception as _aa_exc:  # noqa: F841
     import logging as _logging
     _logging.getLogger(__name__).error("daily_tasks admin_api attach failed: %s", _aa_exc)
+
+# Баг Лаврика #23: текст решения/ответа в модалке задач дня не теряется при
+# перерисовке, поле надёжно фокусируется. Скрипт вставляется after_request-хуком
+# без правки шаблона. Отключить: DT_SOLUTION_GUARD_DISABLED=1.
+try:  # pragma: no cover
+    from .solution_guard import attach as _solution_guard_attach
+    _solution_guard_attach(daily_tasks_bp)
+except Exception as _sg_exc:  # noqa: F841
+    import logging as _logging
+    _logging.getLogger(__name__).error("daily_tasks solution_guard attach failed: %s", _sg_exc)
