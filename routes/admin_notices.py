@@ -2,15 +2,19 @@
 """
 routes/admin_notices.py — ADMIN_NOTICES_V1 (18.10.2026).
 
-Раздел «🔔 Уведомления» для админа: написать сообщение, которое каждый
-пользователь увидит на сайте ОДИН раз (как «Вы уже решили, какие олимпиады
+Раздел «🔔 Уведомления» для админа: написать сообщение, которое пользователь
+увидит на сайте ОДИН раз (как «Вы уже решили, какие олимпиады
 писать?»). Отметка «показано» хранится в уже существующей таблице
 site_notice_seen с ключом 'admin:<id>' (routes/site_notices.py).
 
 Кнопка «🔔 Уведомления» добавляется в шапку рядом с «💬 Поддержка» для
-админа через after_request-инжектор (base.html не правим). Всем
-авторизованным пользователям подключается static/js/admin_notices.js,
-который показывает непрочитанное уведомление модалкой.
+админа через after_request-инжектор (base.html не правим).
+
+Кому показывается модалка с уведомлением:
+  ADMIN_NOTICES_ADMIN_ONLY=1 (по умолчанию) — ТОЛЬКО админам
+    (скрипт admin_notices.js подключается только админу, а
+    /api/admin-notices/pending для не-админов всегда отдаёт pending=False);
+  ADMIN_NOTICES_ADMIN_ONLY=0 — всем авторизованным не-гостям.
 
 Endpoints:
   GET  /admin/notices                      — страница: форма + список
@@ -25,6 +29,7 @@ Endpoints:
 from __future__ import annotations
 
 import logging
+import os
 import secrets
 from datetime import datetime
 
@@ -99,6 +104,20 @@ def _is_admin() -> bool:
 
 def _is_real_user() -> bool:
     return bool(current_user.is_authenticated and not getattr(current_user, 'is_guest', False))
+
+
+def _admin_only() -> bool:
+    """True — уведомления (модалка) видят только админы. ADMIN_NOTICES_ADMIN_ONLY=0 — все."""
+    return (os.environ.get('ADMIN_NOTICES_ADMIN_ONLY', '1') or '1').strip().lower() not in ('0', 'false', 'no', 'off')
+
+
+def _can_receive() -> bool:
+    """Может ли текущий пользователь получать уведомления (модалку)."""
+    if not _is_real_user():
+        return False
+    if _admin_only() and not _is_admin():
+        return False
+    return True
 
 
 def _csrf_token() -> str:
@@ -252,8 +271,10 @@ def admin_delete(nid: int):
 
 @admin_notices_bp.route('/api/admin-notices/pending')
 def api_pending():
-    if not _is_real_user():
-        return jsonify({'pending': False})
+    if not _can_receive():
+        resp = jsonify({'pending': False})
+        resp.headers['Cache-Control'] = 'no-store'
+        return resp
     _ensure_table()
     try:
         rows = db.session.execute(text(
@@ -304,7 +325,7 @@ def api_seen():
     return jsonify({'ok': True})
 
 
-# ── Инжектор: кнопка в шапке (админ) + скрипт модалки (все пользователи) ──────
+# ── Инжектор: кнопка в шапке (админ) + скрипт модалки (только админ по умолчанию) ──
 
 _NAV_SCRIPT = (
     '<script id="ft-admin-notices-nav">(function(){'
@@ -357,7 +378,8 @@ def install_admin_notices(app, register=None) -> None:
             extra = ''
             if _is_admin() and 'id="ft-admin-notices-nav"' not in body:
                 extra += _NAV_SCRIPT
-            if not path.startswith('/admin/notices') and 'id="ft-admin-notices-script"' not in body:
+            if (_can_receive() and not path.startswith('/admin/notices')
+                    and 'id="ft-admin-notices-script"' not in body):
                 extra += _USER_SCRIPT
             if extra:
                 response.set_data(body.replace('</body>', extra + '</body>', 1))
