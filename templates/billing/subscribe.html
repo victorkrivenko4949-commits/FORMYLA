@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Подписка — FORMYLA.net{% endblock %}
+{% block extra_css %}
+<style>
+  .bl-wrap{max-width:1040px;margin:0 auto;padding:36px 18px 80px;color:#e2e8f0;}
+  .bl-head h1{font-size:26px;margin:0 0 8px;}
+  .bl-head p{color:#94a3b8;margin:0 0 22px;font-size:15px;line-height:1.6;}
+  .bl-founder{background:linear-gradient(135deg,rgba(56,189,248,.12),rgba(139,92,246,.12));border:1px solid rgba(139,92,246,.35);border-radius:12px;padding:14px 16px;margin-bottom:22px;font-size:14px;line-height:1.6;}
+  .bl-current{background:#111827;border:1px solid rgba(62,207,142,.35);border-radius:12px;padding:14px 16px;margin-bottom:22px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;}
+  .bl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+  .bl-card{background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:8px;}
+  .bl-card.hl{border-color:rgba(76,125,255,.6);box-shadow:0 0 0 1px rgba(76,125,255,.25) inset;}
+  .bl-card .t{font-size:17px;font-weight:700;}
+  .bl-card .p{font-size:26px;font-weight:800;}
+  .bl-card .p small{font-size:13px;color:#94a3b8;font-weight:500;}
+  .bl-card .old{color:#64748b;text-decoration:line-through;font-size:14px;margin-left:6px;}
+  .bl-card .d{color:#94a3b8;font-size:13px;line-height:1.5;flex:1;}
+  .bl-btn{display:block;text-align:center;padding:11px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:14px;background:#4c7dff;color:#fff;text-decoration:none;}
+  .bl-btn:hover{background:#6b9aff;}
+  .bl-btn[disabled]{opacity:.45;cursor:not-allowed;}
+  .bl-btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.14);color:#cbd5e1;}
+  .bl-sub{font-size:12px;color:#64748b;}
+  h3.bl-sec{margin:28px 0 10px;font-size:15px;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;}
+  .bl-faq{margin-top:28px;color:#94a3b8;font-size:14px;line-height:1.7;}
+</style>
+{% endblock %}
+{% block content %}
+<div class="bl-wrap">
+  <div class="bl-head">
+    <h1>{{ heading }}</h1>
+    <p>Бесплатно остаётся: 3 задачи дня, каталог олимпиад, теория 102 методов, серии, лидерборд, чат.
+       Premium добавляет остальные задачи дня, ИИ-разборы, метод недели, чертежи и куратора с планом на месяц.</p>
+  </div>
+
+  {% if founder %}
+  <div class="bl-founder">
+    <b>Вы — Основатель.</b> Premium бесплатно до {{ founder_until }}, а цена ниже закрепляется за вами навсегда.
+    Годовой доступ по 2 790 ₽ начинает действовать с 1 февраля 2027.
+  </div>
+  {% endif %}
+
+  {% if plan.is_premium %}
+  <div class="bl-current">
+    <div><b>Сейчас: {{ plan.display_name }}</b>
+      {% if plan.expires_at %}<span class="bl-sub"> · до {{ plan.expires_at|string|truncate(10, True, '') }}</span>{% endif %}
+      {% if plan.is_beta_access %}<span class="bl-sub"> · бета-доступ</span>{% endif %}
+    </div>
+    <form method="post" action="/billing/cancel" onsubmit="return confirm('Отменить подписку? Доступ сохранится до конца оплаченного срока.')">
+      <button class="bl-btn ghost" type="submit">Отменить подписку</button>
+    </form>
+  </div>
+  {% endif %}
+
+  {% if not payments_ready %}
+  <div class="bl-current" style="border-color:rgba(229,172,58,.4);">
+    <div>Приём оплаты подключается — кнопки заработают после настройки ЮKassa. Пока можно написать нам в поддержку.</div>
+  </div>
+  {% endif %}
+
+  <h3 class="bl-sec">Подписки</h3>
+  <div class="bl-grid">
+    {% for it in items if it.kind == 'subscription' %}
+    <div class="bl-card {% if it.code == 'student_year' %}hl{% endif %}">
+      <div class="t">{{ it.title }}</div>
+      <div class="p">{{ '{:,}'.format(it.price).replace(',', ' ') }} ₽ <small>{{ it.period }}</small>
+        {% if it.is_discount %}<span class="old">{{ '{:,}'.format(it.regular_price).replace(',', ' ') }} ₽</span>{% endif %}</div>
+      {% if it.is_discount %}<div class="bl-sub">цена Основателя</div>{% endif %}
+      <div class="d">{{ it.desc }}</div>
+      <form method="post" action="/billing/create" data-plan="{{ it.code }}" class="bl-form">
+        <input type="hidden" name="plan" value="{{ it.code }}">
+        <button class="bl-btn" type="submit" {% if not payments_ready %}disabled{% endif %}>
+          {% if plan.is_premium %}Продлить{% else %}Оформить{% endif %}</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h3 class="bl-sec">Разовые покупки — без подписки</h3>
+  <div class="bl-grid">
+    {% for it in items if it.kind == 'one_time' %}
+    <div class="bl-card">
+      <div class="t">{{ it.title }}</div>
+      <div class="p">{{ it.price }} ₽ <small>{{ it.period }}</small></div>
+      <div class="d">{{ it.desc }}</div>
+      <form method="post" action="/billing/create" data-plan="{{ it.code }}" class="bl-form">
+        <input type="hidden" name="plan" value="{{ it.code }}">
+        <button class="bl-btn ghost" type="submit" {% if not payments_ready %}disabled{% endif %}>Купить</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="bl-faq">
+    Оплата через ЮKassa (карта, СБП). Чек приходит на e-mail. Подписку можно отменить в любой момент — доступ останется до конца оплаченного периода.
+    Серии, XP, друзья и лидерборд не зависят от подписки.
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.bl-form').forEach(function (f) {
+    f.addEventListener('submit', function () {
+      try { if (window.track) window.track('payment_click', {plan: f.dataset.plan, from: {{ frm|tojson }}}); } catch (e) {}
+    });
+  });
+</script>
+{% endblock %}

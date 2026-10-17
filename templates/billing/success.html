@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Оплата — FORMYLA.net{% endblock %}
+{% block content %}
+<div style="max-width:640px;margin:0 auto;padding:48px 18px 80px;color:#e2e8f0;text-align:center;">
+  {% if last and last[3] == 'succeeded' %}
+    <div style="font-size:48px;">✅</div>
+    <h1 style="font-size:24px;margin:10px 0;">Оплата прошла</h1>
+    <p style="color:#94a3b8;">Тариф: <b style="color:#e2e8f0;">{{ last[1] }}</b> · {{ last[2] }} ₽.
+      {% if plan.is_premium %}Сейчас у вас {{ plan.display_name }}{% if plan.expires_at %} до {{ plan.expires_at|string|truncate(10, True, '') }}{% endif %}.{% endif %}</p>
+  {% elif last and last[3] in ('pending', 'processing', 'waiting_for_capture') %}
+    <div style="font-size:48px;">⏳</div>
+    <h1 style="font-size:24px;margin:10px 0;">Подтверждаем оплату</h1>
+    <p style="color:#94a3b8;">Обычно это занимает несколько секунд. Обновите страницу через минуту — доступ включится автоматически.</p>
+  {% elif last and last[3] == 'canceled' %}
+    <div style="font-size:48px;">↩️</div>
+    <h1 style="font-size:24px;margin:10px 0;">Платёж отменён</h1>
+    <p style="color:#94a3b8;">Деньги не списаны. Можно попробовать ещё раз.</p>
+  {% else %}
+    <div style="font-size:48px;">🧾</div>
+    <h1 style="font-size:24px;margin:10px 0;">Платежей пока нет</h1>
+  {% endif %}
+  <p style="margin-top:22px;"><a href="/daily_tasks" style="color:#9ec1ff;">К задачам дня →</a> &nbsp;·&nbsp; <a href="/subscribe?from=profile" style="color:#9ec1ff;">Подписка</a></p>
+</div>
+{% endblock %}

@@ -2,26 +2,26 @@
 """
 routes/__init__.py — ADMIN_BASE_V1 (06.10.2026) + PWA_INSTALL_V1 (11.10.2026)
 + SITE_NOTICE_V1 (11.10.2026) + OLYMP_CATALOG_V3 (14.10.2026) + CHAT_DOCS_V1 (15.10.2026)
-+ FUNNEL_V1 / ADMIN_STATS_V1 (18.10.2026).
++ FUNNEL_V1 / ADMIN_STATS_V1 / BILLING_V1 (18.10.2026).
 
 Автоматическая регистрация blueprint «База» (routes/admin_base.py),
 blueprint PWA (routes/pwa.py), blueprint одноразовых уведомлений
 (routes/site_notices.py), blueprint каталога олимпиадных задач
 (routes/olymp_catalog.py, /olymp-catalog), blueprint вложений чата
 (routes/chat_attachments.py), слоя событий воронки (services/funnel.py,
-/api/ev) и панели статистики (routes/admin_stats.py, /admin/stats)
-без правки app.py. Файл превращает `routes/`
-в обычный пакет (раньше был namespace package); все существующие импорты
-`from routes.xxx import ...` работают как прежде.
+/api/ev), панели статистики (routes/admin_stats.py, /admin/stats) и
+биллинга (routes/billing.py, /subscribe, /billing/*) без правки app.py.
+Файл превращает `routes/` в обычный пакет (раньше был namespace package);
+все существующие импорты `from routes.xxx import ...` работают как прежде.
 
 Как это работает: при первом `app.register_blueprint(...)` любого другого
 blueprint мы один раз дорегистрируем `admin_base_bp`, `pwa_bp`, `site_notices_bp`,
-`olymp_catalog_bp`, `chat_attachments_bp`, `funnel`, `admin_stats` в это же
-приложение и вешаем after_request-хуки.
+`olymp_catalog_bp`, `chat_attachments_bp`, `funnel`, `admin_stats`, `billing`
+в это же приложение и вешаем after_request-хуки.
 
 Отключить: ADMIN_BASE_AUTOREG=0, PWA_AUTOREG=0, SITE_NOTICES_AUTOREG=0,
 OLYMP_CATALOG_AUTOREG=0, CHAT_ATTACHMENTS_AUTOREG=0, FUNNEL_ENABLED=0,
-ADMIN_STATS_ENABLED=0.
+ADMIN_STATS_ENABLED=0, BILLING_ENABLED=0.
 Ручная регистрация (эквивалент):
     from routes.admin_base import admin_base_bp
     app.register_blueprint(admin_base_bp)
@@ -37,6 +37,8 @@ ADMIN_STATS_ENABLED=0.
     install_funnel(app)
     from routes.admin_stats import install as install_admin_stats
     install_admin_stats(app)
+    from routes.billing import install as install_billing
+    install_billing(app)
 """
 from __future__ import annotations
 
@@ -55,7 +57,7 @@ _NAV_PATHS = ("/admin/users", "/admin/stats", "/admin/daily", "/admin/sections",
 
 # blueprint'ы, регистрация которых не должна повторно запускать _install()
 _SELF_BLUEPRINTS = ("admin_base", "pwa", "site_notices", "olymp_catalog", "chat_attachments",
-                    "surveys", "funnel", "admin_stats")
+                    "surveys", "funnel", "admin_stats", "billing")
 
 
 def _install_pwa(app) -> None:
@@ -140,6 +142,19 @@ def _install_admin_stats(app) -> None:
         logger.exception("[admin_stats] auto-register failed: %r", e)
 
 
+def _install_billing(app) -> None:
+    """BILLING_V1: витрина /subscribe, платежи ЮKassa, webhook."""
+    if os.environ.get("BILLING_ENABLED", "1") == "0":
+        return
+    if app.extensions.get("billing_installed"):
+        return
+    try:
+        from routes.billing import install as install_billing
+        install_billing(app)
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[billing] auto-register failed: %r", e)
+
+
 def _install(app) -> None:
     _install_pwa(app)
     _install_site_notices(app)
@@ -150,6 +165,7 @@ def _install(app) -> None:
         install_surveys(app, register=_ORIG_REGISTER)
     _install_funnel(app)
     _install_admin_stats(app)
+    _install_billing(app)
 
     if getattr(app, "_admin_base_installed", False):
         return

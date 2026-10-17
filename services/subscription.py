@@ -48,6 +48,32 @@ PLAN_LIMITS = {
         'duration_days': 365,
         'display_name': 'Premium (год)',
     },
+    # BILLING_V1 (18.10.2026): семейный и учительский планы. Код тарифа → план:
+    # family_month → family_monthly, teacher_month → teacher_monthly (services/billing_plans.py)
+    'family_monthly': {
+        'tasks_per_day': None,
+        'tasks_per_day_soft': 500,
+        'ai_explanations_per_day': None,
+        'ai_explanations_per_month': 400,
+        'ai_max_tokens': 8000,
+        'history_days': None,
+        'price_rub': 890,
+        'duration_days': 30,
+        'display_name': 'Семья',
+        'children': 2,
+    },
+    'teacher_monthly': {
+        'tasks_per_day': None,
+        'tasks_per_day_soft': 1000,
+        'ai_explanations_per_day': None,
+        'ai_explanations_per_month': 600,
+        'ai_max_tokens': 8000,
+        'history_days': None,
+        'price_rub': 1990,
+        'duration_days': 30,
+        'display_name': 'Учитель',
+        'group_size': 30,
+    },
 }
 
 _ABUSE_LOG_PATH = os.path.join(
@@ -132,7 +158,7 @@ class SubscriptionService:
         except (KeyError, IndexError):
             return default
 
-    # ── Get user plan ─────────────────────────────────────────────────────────
+    # ── Get user plan ───────────────────────────────────────────────────────────
 
     def get_user_plan(self, user_id: int) -> dict:
         now_iso = datetime.utcnow().isoformat()
@@ -143,7 +169,7 @@ class SubscriptionService:
               AND status = 'active'
               AND (expires_at IS NULL OR expires_at > ?)
             ORDER BY
-                CASE WHEN plan LIKE 'premium%' THEN 0 ELSE 1 END,
+                CASE WHEN plan <> 'free' THEN 0 ELSE 1 END,
                 id DESC
             LIMIT 1
         """, (user_id, now_iso))
@@ -154,7 +180,8 @@ class SubscriptionService:
 
         if row:
             plan_val = self._row_get(row, 'plan', 'free')
-            if plan_val in ('premium_monthly', 'premium_yearly'):
+            # BILLING_V1: любой платный план из PLAN_LIMITS (premium_*, family_monthly, teacher_monthly)
+            if plan_val in PLAN_LIMITS and plan_val != 'free':
                 plan_key = plan_val
                 expires_at = self._row_get(row, 'expires_at')
                 is_beta = bool(self._row_get(row, 'is_beta_access', 0))
@@ -170,7 +197,7 @@ class SubscriptionService:
             'limits': limits,
         }
 
-    # ── Check feature limits ──────────────────────────────────────────────────
+    # ── Check feature limits ──────────────────────────────────────────────────────
 
     def can_use_feature(self, user_id: int, feature: str) -> tuple:
         plan_info = self.get_user_plan(user_id)
@@ -228,7 +255,7 @@ class SubscriptionService:
         logger.warning(f'[SUBSCRIPTION] Unknown feature: {feature}')
         return True, ''
 
-    # ── Activate premium ──────────────────────────────────────────────────────
+    # ── Activate premium ──────────────────────────────────────────────────────────
 
     def activate_premium(self, user_id: int, plan: str = 'premium_monthly',
                          payment_id: Optional[str] = None, is_beta: bool = True,
@@ -282,7 +309,7 @@ class SubscriptionService:
             'is_beta': is_beta,
         }
 
-    # ── Cancel subscription ───────────────────────────────────────────────────
+    # ── Cancel subscription ───────────────────────────────────────────────────────
 
     def cancel_subscription(self, user_id: int) -> bool:
         row = self._fetchone("""
@@ -305,7 +332,7 @@ class SubscriptionService:
         logger.info(f'[SUBSCRIPTION] User {user_id} cancelled (access until {expires})')
         return True
 
-    # ── Usage tracking ────────────────────────────────────────────────────────
+    # ── Usage tracking ────────────────────────────────────────────────────────────
 
     def get_today_usage(self, user_id: int) -> dict:
         today = datetime.utcnow().date().isoformat()
@@ -381,7 +408,7 @@ class SubscriptionService:
         except Exception as e:
             logger.warning(f'[SUBSCRIPTION] increment_usage commit failed: {e}')
 
-    # ── Display helpers ───────────────────────────────────────────────────────
+    # ── Display helpers ───────────────────────────────────────────────────────────
 
     def get_usage_for_display(self, user_id: int) -> dict:
         plan_info = self.get_user_plan(user_id)
@@ -446,7 +473,7 @@ class SubscriptionService:
         return result
 
 
-# ── Global singleton (lazy init for production) ───────────────────────────────
+# ── Global singleton (lazy init for production) ─────────────────────────────────────────────
 
 _service_instance: Optional[SubscriptionService] = None
 
