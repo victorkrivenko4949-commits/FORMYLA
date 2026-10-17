@@ -249,7 +249,7 @@ class OdiRouterClient(LLMClient):
 
     def chat_with_search(self, system: str, user: str) -> dict | None:
         """Поиск: с web-search параметром, если доступен, иначе без него."""
-        extra = {"web_search_options": {"search_context_size": "medium"}} if self.web_search else None
+        extra = None  # grounding отключён: запросы с web_search_options не укладываются в 60 с (504 от nginx OdiRouter)
         return self.chat_json(system, user, extra_body=extra)
 
 
