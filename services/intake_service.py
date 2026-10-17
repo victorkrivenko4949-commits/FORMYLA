@@ -436,12 +436,12 @@ def answer(user_id: int, qid: str, key: str) -> Dict[str, Any]:
             'anchor': None,
         }
 
-    # ── q6 -> финал. Срез (5 якорных задач) временно отключён —
-    #    пока работаем без него: приор и сложность задач задают ответы анкеты,
-    #    номинальный срез скоро вернём в шлифованном виде (тогда state['step']='anchors').
+    # ── q6 -> срез из 5 якорных задач (шаги 7–11), затем финал.
+    #    2026-10-18: тест уровня снова внутри анкеты. Его проходят только
+    #    новые пользователи — те, кто уже на сайте, анкету заново не проходят,
+    #    а гейт на /daily_tasks убран (daily_tasks/intake_probe.py).
     if current_step == 'q6' and qid == 'commitment':
         grade = int(state['answers'].get('class', 9))
-        _ = grade
 
         from services.intake_questions import EXPERIENCE_PRIOR
         exp_key = state['answers'].get('experience', 'none')
@@ -451,20 +451,20 @@ def answer(user_id: int, qid: str, key: str) -> Dict[str, Any]:
 
         _call_set_prior(user_id, mu, sigma)
 
-        # Временно (2026-09-15): срез отключён — сразу финализируем анкету.
-        state['step'] = 'done'
-        _save_session_state(state)
-        return finish(user_id, state)
-
-        # TODO(restore_probe): вернуть подбор новых якорей (5 срезовых задач).
         state['step'] = 'anchors'
         state['q_index'] = 7  # "шаг 7 из 11"
         state['total_questions'] = 11  # 6 вопросов + 5 якорей
-        anchor_tasks, anchor_meta = pick_anchors(grade)
+        try:
+            anchor_tasks, anchor_meta = pick_anchors(grade)
+        except Exception as _anchor_err:
+            logger.warning(f"intake: pick_anchors failed for grade={grade}: {_anchor_err}")
+            anchor_tasks = []
 
         if not anchor_tasks:
+            # Нет задач — не блокируем регистрацию, завершаем без среза.
             logger.warning(f"intake: no anchors for grade={grade}")
             state['anchors_unavailable'] = True
+            state['step'] = 'done'
             _save_session_state(state)
             return finish(user_id, state)
 
@@ -650,7 +650,7 @@ def _save_intake_to_db(user_id: int, result: IntakeResult, state: Dict, anchor_s
     prep_state['intake'] = {
         'completed': True,
         'completed_at': datetime.utcnow().isoformat(),
-        'skip_probe': True,  # 2026-09-15: срез временно отключён
+        'skip_probe': bool(state.get('anchors_unavailable')),  # срез пройден в анкете
         'retake': is_retake,
         'class_level': result.class_level,
         'goal': result.goal,

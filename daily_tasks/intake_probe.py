@@ -1,4 +1,11 @@
-"""Entry diagnostic on the daily-tasks page; answers stay in the database."""
+"""Entry diagnostic on the daily-tasks page; answers stay in the database.
+
+2026-10-18: the gate on /daily_tasks is removed. Users who already finished the
+questionnaire are never asked to take the 5-task test here. New users take the
+same 5 tasks inside the questionnaire itself (services/intake_service.py,
+step «anchors»). The /entry-probe/* endpoints stay only for backwards
+compatibility with cached pages.
+"""
 from copy import deepcopy
 from datetime import datetime
 from uuid import uuid4
@@ -18,8 +25,12 @@ def probe_complete(intake):
 
 
 def needs_probe(intake):
-    return bool(intake.get('completed') and not intake.get('skipped')
-                and not probe_complete(intake))
+    """Existing users are never sent to the daily-tasks test anymore.
+
+    The level test lives in the questionnaire now; everyone who already has
+    intake.completed keeps working with the level they have.
+    """
+    return False
 
 
 def _load(user_id, lock=False):
@@ -109,7 +120,7 @@ def _advance(cs, intake, data):
 def attach(bp):
     @bp.after_app_request
     def redirect_completed_intake(response):
-        if request.endpoint in ('intake.start_intake', 'intake.answer_intake') and response.is_json:
+        if request.endpoint in ('intake.start_intake', 'intake.answer_intake', 'intake.submit_intake_anchor') and response.is_json:
             data = response.get_json(silent=True)
             if response.status_code == 200 and isinstance(data, dict) and data.get('done') and data.get('result') and not data.get('error'):
                 data['redirect_url'] = '/daily_tasks/'
@@ -117,16 +128,9 @@ def attach(bp):
                 response.headers['Cache-Control'] = 'no-store'
         return response
 
-    @bp.before_app_request
-    def show_entry_probe():
-        if request.method != 'GET' or request.path.rstrip('/') != '/daily_tasks':
-            return None
-        if not current_user.is_authenticated or not current_user.has_access():
-            return None
-        _, _, intake = _load(current_user.id)
-        if needs_probe(intake):
-            return render_template('daily_tasks/intake_probe.html'), 200, {'Cache-Control': 'no-store'}
-        return None
+    # The before_app_request gate that rendered daily_tasks/intake_probe.html
+    # on /daily_tasks is intentionally gone: nobody who is already on the site
+    # should see the test. New users get it inside the questionnaire.
 
     def run_probe(submit=False):
         from models import db
@@ -142,22 +146,12 @@ def attach(bp):
                 data = request.get_json(silent=True)
                 if not isinstance(data, dict):
                     raise ValueError('Некорректный ответ.')
+                if not intake.get('daily_probe'):
+                    return jsonify(done=True, redirect_url='/daily_tasks/')
                 _advance(cs, intake, data)
             elif not intake.get('daily_probe'):
-                grade = int(intake.get('class_level') or 0)
-                if grade not in range(5, 12):
-                    raise ValueError('Подтверди класс во вступительной анкете.')
-                # pick_anchors may lazily seed the database and commit.
-                db.session.rollback()
-                from services.anchors import pick_anchors
-                tasks, _ = pick_anchors(grade)
-                if not _valid_tasks(tasks):
-                    return jsonify(error='Не удалось загрузить все 5 задач. Попробуй позже. Результаты не потеряны.'), 503
-                cs, ps, intake = _load(current_user.id, lock=True)
-                if not needs_probe(intake) or int(intake.get('class_level') or 0) != grade:
-                    return jsonify(error='Анкета обновилась. Обнови страницу.'), 409
-                if not intake.get('daily_probe'):
-                    intake['daily_probe'] = {'id': uuid4().hex, 'tasks': tasks, 'results': []}
+                # Test on /daily_tasks is retired: just send the user to the tasks.
+                return jsonify(done=True, redirect_url='/daily_tasks/')
             payload = _public(intake)
             _save(cs, ps, intake)
             return jsonify(payload)
