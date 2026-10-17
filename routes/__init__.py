@@ -2,7 +2,7 @@
 """
 routes/__init__.py — ADMIN_BASE_V1 (06.10.2026) + PWA_INSTALL_V1 (11.10.2026)
 + SITE_NOTICE_V1 (11.10.2026) + OLYMP_CATALOG_V3 (14.10.2026) + CHAT_DOCS_V1 (15.10.2026)
-+ ADMIN_NOTICES_V1 (18.10.2026).
++ ADMIN_NOTICES_V1 (18.10.2026) + LAVRIK_SUPPORT_REDIRECT_V1 (18.10.2026).
 
 Автоматическая регистрация blueprint «База» (routes/admin_base.py),
 blueprint PWA (routes/pwa.py), blueprint одноразовых уведомлений
@@ -19,8 +19,14 @@ blueprint мы один раз дорегистрируем `admin_base_bp`, `pw
 `olymp_catalog_bp`, `chat_attachments_bp` и `admin_notices_bp` в это же приложение
 и вешаем after_request-хуки.
 
+LAVRIK_SUPPORT_REDIRECT_V1 (lavrik-bugs #21): кнопка «💬 Поддержка» в шапке
+у Лаврика ведёт на /my/support; Лаврик попросил, чтобы она вела в «💬 Чат
+поддержки» из профиля (/admin/support). Вешаем before_request: для
+пользователя с nickname 'lavrik' запрос /my/support редиректится на /admin/support.
+
 Отключить: ADMIN_BASE_AUTOREG=0, PWA_AUTOREG=0, SITE_NOTICES_AUTOREG=0,
-OLYMP_CATALOG_AUTOREG=0, CHAT_ATTACHMENTS_AUTOREG=0 и/или ADMIN_NOTICES_AUTOREG=0.
+OLYMP_CATALOG_AUTOREG=0, CHAT_ATTACHMENTS_AUTOREG=0, ADMIN_NOTICES_AUTOREG=0
+и/или LAVRIK_SUPPORT_REDIRECT=0.
 Ручная регистрация (эквивалент):
     from routes.admin_base import admin_base_bp
     app.register_blueprint(admin_base_bp)
@@ -120,12 +126,46 @@ def _install_admin_notices(app) -> None:
         logger.exception("[admin_notices] auto-register failed: %r", e)
 
 
+def _install_lavrik_support_redirect(app) -> None:
+    """LAVRIK_SUPPORT_REDIRECT_V1 (lavrik-bugs #21).
+
+    Кнопка «💬 Поддержка» в шапке (templates/base.html) у Лаврика ведёт на
+    /my/support. Лаврик попросил, чтобы она вела в «💬 Чат поддержки», который
+    находится в профиле (/admin/support). Для пользователя с nickname 'lavrik'
+    редиректим /my/support -> /admin/support. Остальных пользователей не трогаем.
+    """
+    if os.environ.get("LAVRIK_SUPPORT_REDIRECT", "1") == "0":
+        return
+    if getattr(app, "_lavrik_support_redirect_installed", False):
+        return
+    app._lavrik_support_redirect_installed = True
+
+    @app.before_request
+    def _lavrik_support_redirect():
+        try:
+            from flask import request, redirect
+            from flask_login import current_user
+            p = (request.path or "").rstrip("/")
+            if p != "/my/support":
+                return None
+            if not getattr(current_user, "is_authenticated", False):
+                return None
+            if (getattr(current_user, "nickname", "") or "").lower() != "lavrik":
+                return None
+            return redirect("/admin/support", code=302)
+        except Exception:  # noqa: BLE001
+            return None
+
+    logger.info("[lavrik_support_redirect] /my/support -> /admin/support for nickname 'lavrik'")
+
+
 def _install(app) -> None:
     _install_pwa(app)
     _install_site_notices(app)
     _install_olymp_catalog(app)
     _install_chat_attachments(app)
     _install_admin_notices(app)
+    _install_lavrik_support_redirect(app)
     if os.environ.get("SURVEYS_AUTOREG", "1") != "0":
         from routes.surveys import install_surveys
         install_surveys(app, register=_ORIG_REGISTER)
