@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """Дыры в нумерации задач каталога олимпиад + нормализация поля day.
 
-Вариант = (год, этап, день, класс). Внутри варианта смотрим, какие номера от 1 до
+Вариант = (год, этап, класс). Дни объединяются: у ВсОШ нумерация сквозная
+(день 1 — №1–4, день 2 — №5–8), поэтому считать день отдельным вариантом нельзя —
+получаются ложные «нет №1–4». Внутри варианта смотрим, какие номера от 1 до
 максимального присутствующего отсутствуют.
 
 Важно: максимальный номер в файле — лишь нижняя оценка длины варианта. Если в файле
@@ -9,7 +11,7 @@
 
 День: у ряда олимпиад (Физтех и др.) в данных вперемешку day=0 и day=1, хотя дней
 у олимпиады нет. День считаем настоящим только если внутри одного (год, этап)
-встречается больше одного непустого значения day.
+встречается больше одного непустого значения day (этим пользуется отображение каталога).
 """
 from __future__ import annotations
 
@@ -45,20 +47,30 @@ def _grade_key(g):
 
 
 def variant_gaps(tasks):
-    """Все варианты олимпиады: [{year, round, day, grade, have, missing, count, max}]."""
+    """Все варианты олимпиады: [{year, round, grade, days, have, missing, count, max}].
+
+    days — список дней, в которых встречаются задачи варианта (пустой, если дней нет);
+    нумерация считается по объединению дней.
+    """
     multi = multi_day_keys(tasks)
-    groups: "OrderedDict[tuple, set]" = OrderedDict()
+    groups: "OrderedDict[tuple, dict]" = OrderedDict()
     for t in tasks:
         n = task_num(t)
         if n is None:
             continue
         year, rnd = t.get("year"), str(t.get("round", ""))
-        day = norm_day(t.get("day")) if (year, rnd) in multi else ""
-        groups.setdefault((year, rnd, day, str(t.get("grade", ""))), set()).add(n)
+        g = groups.setdefault((year, rnd, str(t.get("grade", ""))), {"nums": set(), "days": set()})
+        g["nums"].add(n)
+        if (year, rnd) in multi:
+            d = norm_day(t.get("day"))
+            if d:
+                g["days"].add(d)
     out = []
-    for (year, rnd, day, grade), nums in groups.items():
+    for (year, rnd, grade), g in groups.items():
+        nums = g["nums"]
         mx = max(nums)
-        out.append({"year": year, "round": rnd, "day": day, "grade": grade,
+        out.append({"year": year, "round": rnd, "grade": grade,
+                    "days": sorted(g["days"], key=lambda x: (len(x), x)),
                     "have": sorted(nums), "missing": sorted(set(range(1, mx + 1)) - nums),
                     "count": len(nums), "max": mx})
     return out
@@ -67,7 +79,7 @@ def variant_gaps(tasks):
 def summarize(slug, name, tasks):
     variants = variant_gaps(tasks)
     gaps = [v for v in variants if v["missing"]]
-    gaps.sort(key=lambda v: (-int(v["year"] or 0), v["round"], v["day"], _grade_key(v["grade"])))
+    gaps.sort(key=lambda v: (-int(v["year"] or 0), v["round"], _grade_key(v["grade"])))
     return {"slug": slug, "name": name, "tasks": len(tasks), "variants": len(variants),
             "variants_with_gaps": len(gaps),
             "missing_total": sum(len(v["missing"]) for v in gaps), "gaps": gaps}
@@ -75,6 +87,7 @@ def summarize(slug, name, tasks):
 
 def report_md(summaries) -> str:
     lines = ["# Дыры в нумерации задач каталога", "",
+             "Вариант = год + этап + класс (дни объединены: у ВсОШ нумерация сквозная по дням). "
              "Пропуск = номер меньше максимального в варианте, которого нет в файле. "
              "Номера больше максимального не учитываются (данных о длине варианта нет).", "",
              "| Олимпиада | Задач | Вариантов | С пропусками | Пропущено номеров |",
@@ -87,8 +100,8 @@ def report_md(summaries) -> str:
             continue
         lines += ["", "## %s (%s)" % (s["name"], s["slug"]), ""]
         for v in s["gaps"]:
-            day = (" — день %s" % v["day"]) if v["day"] else ""
-            lines.append("- %s, %s%s, %s класс: есть №%s; нет №%s" % (
-                v["year"], v["round"], day, v["grade"],
+            days = (" (дни: %s)" % ", ".join(v["days"])) if v["days"] else ""
+            lines.append("- %s, %s, %s класс%s: есть №%s; нет №%s" % (
+                v["year"], v["round"], v["grade"], days,
                 ", ".join(map(str, v["have"])), ", ".join(map(str, v["missing"]))))
     return "\n".join(lines) + "\n"
