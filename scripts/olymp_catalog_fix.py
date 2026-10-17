@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Пайплайн чистки базы олимпиадных задач FORMYLA (22 этапа).
@@ -240,7 +240,7 @@ class OdiRouterClient(LLMClient):
     """OdiRouter (OpenAI-совместимый). Gemini 3.6 Flash — поиск и grounding."""
 
     def __init__(self, model: str, web_search: bool = False):
-        base_url = os.environ.get("ODIROUTER_BASE_URL", "https://odirouter.ai/api/v1").rstrip("/")
+        base_url = os.environ.get("ODIROUTER_BASE_URL", "https://api.odirouter.ai/v1").rstrip("/")
         api_key = os.environ.get("ODIROUTER_API_KEY")
         if not api_key:
             raise LLMError("Не задан ODIROUTER_API_KEY. Выполните: export ODIROUTER_API_KEY=...")
@@ -261,7 +261,7 @@ def resolve_gemini_model() -> tuple[str | None, bool]:
     if not os.environ.get("ODIROUTER_API_KEY"):
         log.warning("ODIROUTER_API_KEY не задан — поиск (этапы 18-21) будет недоступен.")
         return None, False
-    base_url = os.environ.get("ODIROUTER_BASE_URL", "https://odirouter.ai/api/v1").rstrip("/")
+    base_url = os.environ.get("ODIROUTER_BASE_URL", "https://api.odirouter.ai/v1").rstrip("/")
     headers = {"Authorization": f"Bearer {os.environ['ODIROUTER_API_KEY']}"}
     candidates = []
     try:
@@ -269,7 +269,7 @@ def resolve_gemini_model() -> tuple[str | None, bool]:
         if resp.status_code != 200:
             log.warning("OdiRouter: GET %s/models вернул %d. "
                         "Проверьте ODIROUTER_BASE_URL (по умолчанию %s).",
-                        base_url, resp.status_code, "https://odirouter.ai/api/v1")
+                        base_url, resp.status_code, "https://api.odirouter.ai/v1")
         else:
             data = resp.json()
             models = data.get("data", data if isinstance(data, list) else [])
