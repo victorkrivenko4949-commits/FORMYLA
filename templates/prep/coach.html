@@ -1,328 +1,157 @@
 {% extends "base.html" %}
-{% block title %}Куратор подготовки — FORMYLA.net{% endblock %}
+{% block title %}Статистика — FORMYLA.net{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/prep.css') }}?v={{ asset_version }}">
 <style>
+/* STATS_PAGE_V1 (18.10.2026): бывший «Куратор подготовки» → «Статистика».
+   Оставлены только радары, количество решённых задач и календарь решений
+   (перенесён из «Задач дня»). Чат с куратором, сводка и цикл убраны. */
 .main { max-width: none !important; padding: 0 !important; }
-.coach-wrap { width: 100%; max-width: none; margin: 0; padding: 20px 28px 56px; box-sizing: border-box; }
-.coach-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 24px; align-items: start; }
-.coach-grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
-.coach-section-radars { margin-top: 28px; }
-@media (max-width: 960px) {
-  .coach-layout { grid-template-columns: 1fr; gap: 16px; }
-  .coach-wrap { padding: 14px 12px 56px; }
-  .coach-card { padding: 14px; }
-  .chat-box { height: 420px; }
-  .section-radars-grid { grid-template-columns: 1fr; }
-  .section-radar-card .radar-chart canvas { max-width: 100%; }
-}
+.coach-wrap { width: 100%; max-width: 1280px; margin: 0 auto; padding: 20px 28px 56px; box-sizing: border-box; }
 .coach-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; padding: 18px; }
-
-/* ── Section radars grid ── */
-.section-radars-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
-}
-.section-radar-card {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 14px;
-  padding: 14px;
-}
-.section-radar-card h3 {
-  margin: 0 0 4px;
-  font-size: 14px;
-  color: #E6EBF7;
-  font-weight: 600;
-}
-.section-radar-card .radar-subtitle {
-  font-size: 11px;
-  color: rgba(255,255,255,0.45);
-  margin-bottom: 8px;
-}
-.section-radar-card .radar-chart {
-  display: flex;
-  justify-content: center;
-}
-.section-radar-card .radar-chart canvas {
-  width: 100%;
-  max-width: 240px;
-  height: auto;
-}
-.section-radar-card .radar-legend {
-  margin-top: 8px;
-  font-size: 10px;
-  color: rgba(255,255,255,0.4);
-  max-height: 120px;
-  overflow-y: auto;
-}
-.section-radar-card .radar-legend-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 2px 4px;
-}
-.section-radar-card .radar-legend-item .legend-name {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.section-radar-card .radar-legend-item .legend-pct {
-  min-width: 36px;
-  text-align: right;
-  font-weight: 600;
-}
-.section-radar-card .radar-legend-item.no-data .legend-pct {
-  color: rgba(255,255,255,0.25);
-}
-
 .coach-card h2 { margin: 0 0 14px; font-size: 16px; color: #E6EBF7; }
-.chat-box { display: flex; flex-direction: column; height: 780px; }
-.chat-log { flex: 1; overflow-y: auto; border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
-.chat-msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; }
-.chat-msg.user { background: #4C7DFF; color: #fff; margin-left: auto; }
-.chat-msg.bot { background: rgba(255,255,255,0.08); color: #E6EBF7; }
-.chat-msg .katex { white-space: nowrap; overflow-x: auto; max-width: 100%; display: inline-block; vertical-align: middle; }
-.chat-input-row { display: flex; gap: 8px; }
-.chat-input-row input { flex: 1; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; font-size: 14px; background: rgba(0,0,0,0.25); color: #fff; }
-.chat-input-row button { padding: 10px 18px; border: 0; border-radius: 10px; background: #4C7DFF; color: #fff; font-weight: 600; cursor: pointer; }
 
-/* FAQ quick buttons */
-.faq-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-.faq-btn {
-  padding: 6px 12px;
-  border: 1px solid rgba(139,92,246,0.3);
-  border-radius: 8px;
-  background: rgba(139,92,246,0.08);
-  color: #6B95FF;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-  white-space: nowrap;
-}
-.faq-btn:hover {
-  background: rgba(139,92,246,0.18);
-  border-color: rgba(139,92,246,0.5);
-}
-.faq-btn-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.stats-top { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 24px; align-items: start; margin-bottom: 24px; }
+@media (max-width: 1080px) { .stats-top { grid-template-columns: 1fr; } }
 
+.stats-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stats-kpi { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 16px; }
+.stats-kpi-label { font-size: 11px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: .6px; }
+.stats-kpi-value { font-size: 30px; font-weight: 800; color: #E6EBF7; line-height: 1.15; margin-top: 4px; }
+.stats-kpi-value.accent { color: #38ef7d; }
+.stats-kpi-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+/* ── Calendar (перенесён из задач дня) ── */
+.st-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 10px; }
+.st-cal-title { font-size: 17px; font-weight: 700; color: #E6EBF7; text-align: center; flex: 1; }
+.st-cal-nav-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-size: 18px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 36px; transition: all .15s; }
+.st-cal-nav-btn:hover { background: rgba(76,125,255,0.15); border-color: #4C7DFF; color: #fff; }
+.st-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; min-height: 240px; }
+.st-cal-dow { font-size: 11px; color: rgba(255,255,255,0.35); text-align: center; padding: 4px 0 6px; text-transform: uppercase; letter-spacing: .6px; font-weight: 600; }
+.st-cal-day { aspect-ratio: 1 / 1; min-height: 44px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 14px; font-weight: 600; position: relative; border: 1px solid transparent; color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.03); user-select: none; }
+.st-cal-daynum { font-size: 11px; line-height: 1; opacity: .6; }
+.st-cal-solved { font-size: 13px; line-height: 1; font-weight: 800; padding: 2px 5px; border-radius: 6px; background: rgba(0,0,0,0.32); color: inherit; }
+.st-cal-day.st-cal-empty { background: transparent; border: none; }
+.st-cal-day.st-cal-future { opacity: .3; }
+.st-cal-day.st-tier-gray  { background: rgba(76,125,255,0.05); color: rgba(255,255,255,0.6); }
+.st-cal-day.st-tier-pale  { background: rgba(76,125,255,0.08); color: rgba(255,255,255,0.6); }
+.st-cal-day.st-tier-green { background: rgba(76,125,255,0.14); color: #E6EBF7; }
+.st-cal-day.st-tier-bright{ background: rgba(76,125,255,0.25); color: #E6EBF7; }
+.st-cal-day.st-tier-gold  { background: #4C7DFF; color: #E6EBF7; box-shadow: 0 0 14px rgba(76,125,255,0.45); }
+.st-cal-day.st-cal-today  { background: #4C7DFF; color: #E6EBF7; border-color: #6B95FF; }
+.st-cal-day.st-cal-today .st-cal-daynum { opacity: 1; }
+.st-cal-crown { position: absolute; top: -8px; right: -2px; font-size: 12px; line-height: 1; pointer-events: none; }
+.st-cal-legend { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 11.5px; color: rgba(255,255,255,0.4); line-height: 1.5; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+.st-cal-legend-row { display: flex; align-items: center; gap: 8px; }
+.st-cal-legend-sw { display: inline-block; width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+.st-cal-month-total { text-align: center; font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 10px; }
+.st-cal-month-total b { color: #38ef7d; }
+
+/* ── Radars ── */
+.section-radars-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.section-radar-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; padding: 14px; }
+.section-radar-card h3 { margin: 0 0 4px; font-size: 14px; color: #E6EBF7; font-weight: 600; }
+.section-radar-card .radar-subtitle { font-size: 11px; color: rgba(255,255,255,0.45); margin-bottom: 8px; }
+.section-radar-card .radar-chart { display: flex; justify-content: center; }
+.section-radar-card .radar-chart canvas { width: 100%; max-width: 240px; height: auto; }
+.section-radar-card .radar-legend { margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.4); max-height: 120px; overflow-y: auto; }
+.section-radar-card .radar-legend-item { display: flex; justify-content: space-between; padding: 2px 4px; }
+.section-radar-card .radar-legend-item .legend-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.section-radar-card .radar-legend-item .legend-pct { min-width: 36px; text-align: right; font-weight: 600; }
+.section-radar-card .radar-legend-item.no-data .legend-pct { color: rgba(255,255,255,0.25); }
+@media (max-width: 960px) {
+  .coach-wrap { padding: 14px 12px 56px; }
+  .section-radars-grid { grid-template-columns: 1fr; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="coach-wrap">
-<h1> Куратор подготовки</h1>
+<h1>📊 Статистика</h1>
 <p style="color:rgba(255,255,255,0.6);">
-  Радар твоих сильных и слабых подтем + персональный ИИ-куратор, который подскажет, что подтянуть.
+  Сколько задач решено, календарь твоих занятий и радары сильных и слабых тем.
   {% if user and user.preferred_grade %}
-  <br><span style="color:#3ECF8E;"> Класс: {{ user.preferred_grade }}</span>
-  {% if level_label %}
-  &nbsp;&nbsp;<span style="color:#E5AC3A;">⭐ {{ level_label }}</span>
-  {% endif %}
+  <br><span style="color:#3ECF8E;">Класс: {{ user.preferred_grade }}</span>
+  {% if level_label %}&nbsp;&nbsp;<span style="color:#E5AC3A;">⭐ {{ level_label }}</span>{% endif %}
   {% endif %}
 </p>
 
-<div class="coach-layout">
-<div class="coach-left">
-
-<!-- ═══ MAIN ACTION BLOCK ═══ -->
-<div id="mainActionBlock" style="display:none; background: linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.20)); border: 1px solid rgba(139,92,246,0.5); border-radius: 16px; padding: 20px 24px; margin-bottom: 20px; text-align: center;">
-  <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;"> Куратор говорит</div>
-  <div id="mainActionTitle" style="font-size:20px; font-weight:700; color:#fff; margin-bottom:10px;"></div>
-  <div id="mainActionReason" style="font-size:14px; color:rgba(255,255,255,0.7); margin-bottom:16px; line-height:1.5;"></div>
-  <a id="mainActionCta" href="#" class="quick-action-btn" style="display:inline-block; padding:12px 28px; font-size:15px; text-decoration:none;">Действие</a>
-</div>
-
-<!-- ═══ CYCLE BLOCK ═══ -->
-{% if cycle_info and cycle_info.active and onboarding_done %}
-<div id="cycleBlock" class="coach-card" style="margin-bottom:20px;">
-  <h2> Цикл месяца</h2>
-  <div style="margin-bottom:12px; font-size:14px; color:rgba(255,255,255,0.65);">
-    Замерено {{ cycle_measured_count }} из {{ cycle_total }}
-    <span style="margin-left:12px; color:#3ECF8E;">▰</span>
-    <span style="color:rgba(255,255,255,0.2);">▱</span>
-  </div>
-  <div style="display:flex; flex-direction:column; gap:6px;">
-    {% for t in cycle_themes %}
-    <div style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
-      <span style="font-size:11px; font-weight:700; color:rgba(255,255,255,0.3); min-width:20px;">{{ loop.index }}.</span>
-      <span style="flex:1; font-size:14px; color:rgba(255,255,255,0.85);">{{ t.name }}</span>
-      <span style="font-size:11px; color:rgba(255,255,255,0.35); text-transform:uppercase;">{{ t.section }}</span>
-      <span style="font-size:12px; {% if t.state.startswith('замерена') %}color:#3ECF8E;{% elif t.state == 'сегодняшняя' %}color:#4C7DFF;{% else %}color:rgba(255,255,255,0.35);{% endif %}">
-        {{ t.state }}
-      </span>
-    </div>
-    {% endfor %}
-  </div>
-</div>
-{% endif %}
-
-<!-- ═══ ONBOARDING GATE ═══ -->
-{% if not onboarding_done %}
-<div style="text-align:center; margin: 40px 0;">
-  <p style="color:rgba(255,255,255,0.7); font-size:16px; margin-bottom:20px;">
-     Чтобы начать подготовку, заполни анкету — она займёт 2 минуты.
-  </p>
-  <a href="/prep/onboarding" class="quick-action-btn" style="display:inline-block; padding:14px 36px; font-size:16px; text-decoration:none; background:linear-gradient(135deg,#4C7DFF,#6B95FF);">
-    Пройти анкету
-  </a>
-</div>
-{% endif %}
-
-<!-- ═══ CURATOR FACTS CARD ═══ -->
-{% if curator_card and onboarding_done %}
-<div class="coach-card" id="curatorFactsCard" style="margin-bottom:20px; border-color: rgba(99,102,241,0.4);">
-  <h2 style="color:#6B95FF;"> Сводка куратора</h2>
-  {% set f = curator_card.facts %}
-  {% if curator_card.message %}
-  <div style="background:rgba(99,102,241,0.12); border-left:3px solid #4C7DFF; border-radius:0 8px 8px 0; padding:10px 14px; margin-bottom:14px; font-size:15px; line-height:1.5; color:rgba(255,255,255,0.9);">
-    {{ curator_card.message }}
-  </div>
-  {% endif %}
-  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); gap:10px;">
-    {% if f.cycle_day is not none and f.slice_total %}
-    <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
-      <div style="font-size:11px; color:rgba(255,255,255,0.45);"> День цикла</div>
-      <div style="font-size:18px; font-weight:700; color:#E6EBF7;">{{ f.cycle_day }} / {{ f.slice_total }}</div>
-    </div>
-    {% endif %}
-    {% if f.today_total %}
-    <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
-      <div style="font-size:11px; color:rgba(255,255,255,0.45);"> Сегодня</div>
-      <div style="font-size:18px; font-weight:700; color:#E6EBF7;">{{ f.today_solved }} / {{ f.today_total }}</div>
-      {% if f.today_solved == 0 %}<div style="font-size:11px; color:#E5AC3A;">ещё не решал</div>{% endif %}
-    </div>
-    {% endif %}
-    {% if f.debt_size and f.debt_size > 0 %}
-    <div style="background:rgba(239,68,68,0.06); border-radius:8px; padding:10px;">
-      <div style="font-size:11px; color:rgba(255,255,255,0.45);">[!]️ Долг</div>
-      <div style="font-size:18px; font-weight:700; color:#E86A62;">{{ f.debt_size }} задач</div>
-      {% if f.debt_burns_tomorrow %}<div style="font-size:11px; color:#E86A62;">{{ f.debt_burns_tomorrow }} сгорят завтра</div>{% endif %}
-    </div>
-    {% endif %}
-    {% if f.level_now is not none %}
-    <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
-      <div style="font-size:11px; color:rgba(255,255,255,0.45);">⭐ Уровень</div>
-      <div style="font-size:18px; font-weight:700; color:#E6EBF7;">{{ f.level_now }}/4</div>
-      {% if f.level_delta is not none and f.level_delta > 0 %}
-      <div style="font-size:11px; color:#3ECF8E;">+{{ f.level_delta }} за неделю</div>
-      {% elif f.level_delta is not none and f.level_delta < 0 %}
-      <div style="font-size:11px; color:#E86A62;">{{ f.level_delta }} за неделю</div>
-      {% endif %}
-    </div>
-    {% endif %}
-    {% if f.streak_days is not none and f.streak_days > 0 %}
-    <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
-      <div style="font-size:11px; color:rgba(255,255,255,0.45);"> Серия</div>
-      <div style="font-size:18px; font-weight:700; color:#3ECF8E;">{{ f.streak_days }} дн.</div>
-      <div style="font-size:10px; color:rgba(255,255,255,0.35); margin-top:2px;" title="Дней подряд, когда решено верно больше 80% задач дня">дней подряд с 80%+ верных</div>
-    </div>
-    {% endif %}
-    {% if f.method_code %}
-    <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
-      <div style="font-size:11px; color:rgba(255,255,255,0.45);"> Метод</div>
-      <div style="font-size:14px; font-weight:600; color:#6B95FF;">{{ f.method_code }} «{{ f.method_name }}»</div>
-    </div>
-    {% endif %}
-    {% if f.weakest_sections %}
-    <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
-      <div style="font-size:11px; color:rgba(255,255,255,0.45);"> Слабый раздел</div>
-      <div style="font-size:14px; font-weight:600; color:#E5AC3A;">
-        {% set ws = f.weakest_sections[0] %}
-        {% set snames = {"algebra":"Алгебра","geometry":"Геометрия","combinatorics":"Комбинаторика","logic":"Логика","number_theory":"Теория чисел"} %}
-        {{ snames.get(ws.section, ws.section) }} — {{ ("%.0f"|format(ws.accuracy_pct)) if ws.accuracy_pct == ws.accuracy_pct|int else ws.accuracy_pct|string }}%
+<div class="stats-top">
+  <div>
+    <div class="stats-kpis">
+      <div class="stats-kpi">
+        <div class="stats-kpi-label">Решено задач</div>
+        <div class="stats-kpi-value accent" id="statTotalSolved">{{ current_user.total_problems_solved or 0 }}</div>
+        <div class="stats-kpi-sub">всего, верных ответов</div>
+      </div>
+      <div class="stats-kpi">
+        <div class="stats-kpi-label">За этот месяц</div>
+        <div class="stats-kpi-value" id="statMonthSolved">—</div>
+        <div class="stats-kpi-sub" id="statMonthSub">из задач дня</div>
+      </div>
+      <div class="stats-kpi">
+        <div class="stats-kpi-label">Дней с решениями</div>
+        <div class="stats-kpi-value" id="statMonthDays">—</div>
+        <div class="stats-kpi-sub">в выбранном месяце</div>
       </div>
     </div>
-    {% endif %}
-  </div>
-</div>
-{% endif %}
 
-</div><!-- /coach-left -->
-<div class="coach-right">
-
-<div class="coach-grid">
-<div class="coach-card">
-<h2> Чат с ИИ-куратором</h2>
-<!-- ═══ FAQ QUICK BUTTONS (TASK 2 V4) ═══ -->
-<div class="faq-buttons" id="faqButtons">
-  <button class="faq-btn" onclick="askFaq('Как начать?')">Как начать?</button>
-  <button class="faq-btn" onclick="askFaq('Как работает адаптивный тест?')">Адаптивный тест</button>
-  <button class="faq-btn" onclick="askFaq('Где найти задачи?')">Где задачи?</button>
-  <button class="faq-btn" onclick="askFaq('Что такое методы?')">Что такое методы?</button>
-  <button class="faq-btn" onclick="askFaq('Как работают пробники?')">Пробники</button>
-  <button class="faq-btn" onclick="askFaq('Как следить за прогрессом?')">Прогресс</button>
-</div>
-<div class="chat-box">
-<div class="chat-log" id="chatLog"><div class="chat-msg bot" id="greetingMsg">⏳ Загружаю приветствие…</div></div>
-<form class="chat-input-row" id="chatForm"><input type="text" id="chatInput" placeholder="Спроси куратора…" autocomplete="off"><button type="submit">Отправить</button></form>
-
-<div class="cta-row" id="ctaRow" style="display:none; margin-top:10px;"></div>
-<div id="quick-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
-<div style="margin-top:8px; text-align:right;">
-  <button class="cta-btn secondary" id="deleteHistoryBtn" style="font-size:12px; padding:4px 10px;">️ Очистить историю</button>
-</div>
-
-<!-- ═══ OTHER 6 ENTRY POINTS ═══ -->
-<details id="otherTestsDetails" style="margin-top:14px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 16px;">
-  <summary style="cursor:pointer; color:rgba(255,255,255,0.55); font-size:13px; font-weight:600; user-select:none; list-style:none;">
-    </summary>
-  <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
-    <a href="/profile" class="cta-btn secondary" style="text-align:left;">️ Профиль и класс</a>
-    <a href="/daily-set" class="cta-btn secondary" style="text-align:left;"> Задачи дня</a>
-    <a href="/prep/onboarding" class="cta-btn secondary" style="text-align:left;"> Анкета онбординга</a>
-  </div>
-</details>
-
-</div>
-</div>
-</div><!-- /coach-grid -->
-</div><!-- /coach-right -->
-</div><!-- /coach-layout -->
-
-<div class="coach-section-radars">
-<!-- ═══ GENERAL RADAR (перемещён вниз) ═══ -->
-<div class="coach-card" id="generalRadarCard" style="margin-bottom:20px;">
-<h2> Радар по разделам (общий)</h2>
-<div class="radar-chart" style="max-width:680px; margin:0 auto;">
-<canvas id="masteryRadar"
-        data-mastery='{{ mastery_list_json | safe }}'
-        width="400" height="400"></canvas>
-</div>
-<!-- ═══ Screen 4: Measured subtopics ═══ -->
-{% if measured_subtopics_list %}
-<div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
-  <h2 style="font-size:14px; margin-bottom:10px; color: rgba(255,255,255,0.65);"> Замеренные подтемы</h2>
-  <div style="display:flex; flex-direction:column; gap:4px; max-height:260px; overflow-y:auto;">
-    {% for st in measured_subtopics_list %}
-    <div style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,0.02); border-radius:6px; border:1px solid rgba(255,255,255,0.04);">
-      <span style="font-size:12px; color:rgba(255,255,255,0.5); min-width:18px;">{{ loop.index }}.</span>
-      <span style="flex:1; font-size:13px; color:rgba(255,255,255,0.8);">{{ st.name }}</span>
-      <span style="font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase;">{{ st.section }}</span>
-      <span style="font-size:13px; font-weight:700; {% if st.mu <= 2.0 %}color:#E86A62;{% elif st.mu <= 3.0 %}color:#E5AC3A;{% elif st.mu <= 4.0 %}color:#4C7DFF;{% else %}color:#3ECF8E;{% endif %}">
-        {{ "%.1f"|format(st.mu) }}
-      </span>
+    <!-- ═══ GENERAL RADAR ═══ -->
+    <div class="coach-card" id="generalRadarCard">
+      <h2>Радар по разделам (общий)</h2>
+      <div class="radar-chart" style="max-width:560px; margin:0 auto;">
+        <canvas id="masteryRadar" data-mastery='{{ mastery_list_json | safe }}' width="400" height="400"></canvas>
+      </div>
+      {% if measured_subtopics_list %}
+      <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
+        <h2 style="font-size:14px; margin-bottom:10px; color: rgba(255,255,255,0.65);">Замеренные подтемы</h2>
+        <div style="display:flex; flex-direction:column; gap:4px; max-height:260px; overflow-y:auto;">
+          {% for st in measured_subtopics_list %}
+          <div style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,0.02); border-radius:6px; border:1px solid rgba(255,255,255,0.04);">
+            <span style="font-size:12px; color:rgba(255,255,255,0.5); min-width:18px;">{{ loop.index }}.</span>
+            <span style="flex:1; font-size:13px; color:rgba(255,255,255,0.8);">{{ st.name }}</span>
+            <span style="font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase;">{{ st.section }}</span>
+            <span style="font-size:13px; font-weight:700; {% if st.mu <= 2.0 %}color:#E86A62;{% elif st.mu <= 3.0 %}color:#E5AC3A;{% elif st.mu <= 4.0 %}color:#4C7DFF;{% else %}color:#3ECF8E;{% endif %}">{{ "%.1f"|format(st.mu) }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
     </div>
-    {% endfor %}
+  </div>
+
+  <!-- ═══ CALENDAR (из задач дня) ═══ -->
+  <div class="coach-card" id="statsCalendar">
+    <div class="st-cal-header">
+      <button type="button" class="st-cal-nav-btn" id="stCalPrev" aria-label="Предыдущий месяц">‹</button>
+      <div class="st-cal-title" id="stCalTitle">…</div>
+      <button type="button" class="st-cal-nav-btn" id="stCalNext" aria-label="Следующий месяц">›</button>
+    </div>
+    <div class="st-cal-grid" id="stCalGrid"></div>
+    <div class="st-cal-month-total" id="stCalMonthTotal"></div>
+    <div class="st-cal-legend">
+      <div class="st-cal-legend-row"><span class="st-cal-legend-sw" style="background:rgba(76,125,255,0.05);"></span>0 решено</div>
+      <div class="st-cal-legend-row"><span class="st-cal-legend-sw" style="background:rgba(76,125,255,0.08);"></span>1–3</div>
+      <div class="st-cal-legend-row"><span class="st-cal-legend-sw" style="background:rgba(76,125,255,0.14);"></span>4–6</div>
+      <div class="st-cal-legend-row"><span class="st-cal-legend-sw" style="background:rgba(76,125,255,0.25);"></span>7–9</div>
+      <div class="st-cal-legend-row"><span class="st-cal-legend-sw" style="background:#4C7DFF;"></span>10+ 👑</div>
+      <div class="st-cal-legend-row"><span class="st-cal-legend-sw" style="background:#4C7DFF;border:1px solid #6B95FF;"></span>сегодня</div>
+    </div>
   </div>
 </div>
-{% endif %}
-</div>
 
-<!-- ═══ SECTION RADARS GRID (TASK 1 V4) ═══ -->
-{% if section_radars and onboarding_done %}
+<!-- ═══ SECTION RADARS ═══ -->
+{% if section_radars %}
+<h2 style="font-size:16px; color:#E6EBF7; margin:0 0 12px;">Радары по разделам</h2>
 <div class="section-radars-grid" id="sectionRadarsGrid">
   {% for sr in section_radars %}
   <div class="section-radar-card" id="radarCard{{ loop.index }}">
     <h3>{{ sr.section_name }}</h3>
     <div class="radar-subtitle">данные по {{ sr.data_count }} из {{ sr.total_count }} подтем</div>
     <div class="radar-chart">
-      <canvas id="sectionRadar{{ loop.index }}"
-              data-section='{{ sr | tojson }}'
-              width="240" height="240"></canvas>
+      <canvas id="sectionRadar{{ loop.index }}" data-section='{{ sr | tojson }}' width="240" height="240"></canvas>
     </div>
     <div class="radar-legend">
       {% for st in sr.subtopics %}
@@ -335,476 +164,163 @@
   </div>
   {% endfor %}
 </div>
-{% elif onboarding_done %}
-<div class="coach-card" style="text-align:center; margin-bottom:20px;">
-  <p style="color:rgba(255,255,255,0.4);">Нет данных для радаров по разделам. Пройдите диагностику или тест по темам.</p>
+{% else %}
+<div class="coach-card" style="text-align:center;">
+  <p style="color:rgba(255,255,255,0.4); margin:0;">Нет данных для радаров по разделам — порешай задачи дня, и они появятся.</p>
 </div>
 {% endif %}
-</div>
 
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<style>
-.cta-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.cta-btn { display: inline-block; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; color: #fff; background: #4C7DFF; transition: background 0.2s; }
-.cta-btn:hover { background: #4C7DFF; }
-.cta-btn.secondary { background: rgba(255,255,255,0.08); color: #E6EBF7; }
-.cta-btn.secondary:hover { background: rgba(255,255,255,0.15); }
-.quick-action-btn { display: inline-flex; padding: 10px 18px; background: linear-gradient(135deg,#4C7DFF,#6B95FF); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; transition: opacity 0.2s; }
-.quick-action-btn:hover { opacity: 0.9; }
-</style>
+<script src="{{ url_for('static', filename='js/mastery_radar.js') }}?v={{ asset_version }}"></script>
 <script>
-
-// ─── Current grade from server ─────────────────────────────────────────
-var currentGrade = '{{ user_grade }}';
-
-// ─── Dynamic greeting via API ──────────────────────────────────────────
-var greetingEl = document.getElementById('greetingMsg');
-var ctaRow = document.getElementById('ctaRow');
-
-function addCtaButton(text, href, cls) {
-  if (!text || !href) return;
-  var a = document.createElement('a');
-  a.className = 'cta-btn' + (cls ? ' ' + cls : '');
-  a.href = href;
-  a.textContent = text;
-  ctaRow.appendChild(a);
-}
-
-function addCtaAction(text, actionFn, cls) {
-  if (!text) return;
-  var btn = document.createElement('button');
-  btn.className = 'cta-btn' + (cls ? ' ' + cls : '');
-  btn.textContent = text;
-  btn.addEventListener('click', actionFn);
-  ctaRow.appendChild(btn);
-}
-
-var greetingController = new AbortController();
-var greetingTimeout = setTimeout(function () { greetingController.abort(); }, 10000);
-fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signal })
-  .then(function (r) { clearTimeout(greetingTimeout); return r.json(); })
-  .then(function (data) {
-    greetingEl.innerHTML = data.greeting || '{% if user_name %}Привет, {{ user_name }}!{% else %}Привет!{% endif %} Я твой ИИ-куратор FORMYLA.net.';
-    ctaRow.innerHTML = '';
-    if (data.scenario === 'next_action') {
-      var na = data.next_action || {};
-      var mainBlock = document.getElementById('mainActionBlock');
-      var titleEl = document.getElementById('mainActionTitle');
-      var reasonEl = document.getElementById('mainActionReason');
-      var ctaEl = document.getElementById('mainActionCta');
-      if (mainBlock) mainBlock.style.display = 'block';
-      if (titleEl) titleEl.textContent = na.title || '';
-      if (reasonEl) reasonEl.textContent = na.reason || '';
-      if (ctaEl) {
-        ctaEl.textContent = na.cta_label || 'Перейти';
-        ctaEl.href = na.url || '#';
-      }
-      greetingEl.style.display = 'none';
-      ctaRow.style.display = 'none';
-    } else if (data.scenario === 'start_questionnaire') {
-    window.location.href = '/prep/onboarding';
-} else if (data.scenario === 'need_grade') {
-      greetingEl.innerHTML = '{% if user_name %}Привет, {{ user_name }}!{% else %}Привет!{% endif %} Я твой ИИ-куратор FORMYLA.net.<br><br>Для начала выбери свой класс, чтобы я мог построить радар твоих подтем.';
-      var grades = [5, 6, 7, 8, 9, 10, 11];
-      var html = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">';
-      grades.forEach(function(g) {
-        html += '<button class="cta-btn grade-btn" data-grade="' + g + '" style="min-width:48px;text-align:center;">' + g + ' класс</button>';
-      });
-      html += '</div>';
-      greetingEl.innerHTML += html;
-      ctaRow.style.display = 'none';
-      greetingEl.addEventListener('click', function(e) {
-        var btn = e.target.closest('.grade-btn');
-        if (!btn) return;
-        var grade = btn.getAttribute('data-grade');
-        btn.textContent = '⏳…';
-        btn.disabled = true;
-        fetch('{{ url_for("prep.coach_set_grade") }}', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ grade: grade })
-        })
-        .then(function(r){ return r.json(); })
-        .then(function(res){
-          if (res.status === 'ok') {
-            greetingEl.innerHTML = '[OK] Класс ' + grade + ' выбран! <br><br>Перенаправляю на анкету…';
-            ctaRow.innerHTML = '';
-            setTimeout(function() { window.location.href = '/prep/onboarding'; }, 800);
-          } else {
-            btn.textContent = '[ERROR] Ошибка';
-            btn.disabled = false;
-          }
-        })
-        .catch(function(){
-          btn.textContent = '[ERROR] Сеть';
-          btn.disabled = false;
-        });
-      });
-    } else if (data.scenario === 'test_in_progress') {
-      greetingEl.style.display = 'none';
-      ctaRow.style.display = 'none';
-      var input = document.getElementById('chatInput');
-      if (input) input.focus();
-    } else if (data.scenario === 'onboarding_test') {
-      window.location.href = '/prep/onboarding';
-    } else if (data.scenario === 'daily_test') {
-      addCtaAction(' Пройти тест по теме', function () {
-        var subtopicKey = data.priority_subtopic ? data.priority_subtopic.key : '';
-        var subtopicName = data.priority_subtopic ? data.priority_subtopic.name : 'математике';
-        greetingEl.innerHTML = '⏳ Загружаю тест по теме <strong>' + subtopicName + '</strong>…';
-        ctaRow.innerHTML = '';
-        fetch('{{ url_for("prep.coach_greeting") }}?action=subtopic_test&subtopic_key=' + subtopicKey)
-          .then(function (r) { return r.json(); })
-          .then(function (taskData) {
-            if (taskData.tasks && taskData.tasks.length) {
-              var html = '<div style="max-height:350px;overflow-y:auto;">';
-              html += '<p><strong>Тест по теме «' + subtopicName + '»:</strong></p>';
-              taskData.tasks.forEach(function (t, i) {
-                html += '<div style="margin:8px 0;padding:8px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">';
-                html += '<p><strong>Задача ' + (i+1) + ':</strong> ' + t.task_text + '</p>';
-                html += '<div><button class="cta-btn" data-task="' + t.id + '" data-score="1">[OK] Правильно</button> ';
-                html += '<button class="cta-btn secondary" data-task="' + t.id + '" data-score="0">[ERROR] Неверно</button></div>';
-                html += '</div>';
-              });
-              html += '<div style="margin-top:12px;"><button class="cta-btn" id="finishDailyTest"> Завершить тест</button></div>';
-              html += '</div>';
-              greetingEl.innerHTML = html;
-              document.getElementById('finishDailyTest').addEventListener('click', function () {
-                var results = {};
-                document.querySelectorAll('[data-task]').forEach(function (btn) {
-                  var taskId = btn.getAttribute('data-task');
-                  if (btn.classList.contains('cta-btn') && !btn.classList.contains('secondary')) {
-                    results[taskId] = 1;
-                  } else if (btn.classList.contains('secondary')) {
-                    if (!results[taskId]) results[taskId] = 0;
-                  }
-                });
-                fetch('{{ url_for("prep.coach_daily_submit") }}', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ subtopic_key: subtopicKey, results: results })
-                })
-                .then(function (r) { return r.json(); })
-                .then(function (res) {
-                  if (res.status === 'ok') {
-                    var msg = ' Уровень: ' + res.level + ' (окно ' + res.min_level + '–' + res.max_level + '). Всего ' + res.total_count + ' задач на сегодня.';
-                    greetingEl.innerHTML = msg;
-                    ctaRow.innerHTML = '';
-                    addCtaAction(' Начать задачи дня', function () {
-                      window.location.reload();
-                    }, '');
-                  } else {
-                    greetingEl.innerHTML = '[ERROR] Ошибка: ' + (res.error || 'попробуй ещё раз');
-                  }
-                });
-              });
-            } else {
-              greetingEl.innerHTML = ' Нет задач по этой теме. Попробуй другую.';
-            }
-          });
-      }, '');
-    } else if (data.scenario === 'daily_tasks_ready') {
-      addCtaAction(' Продолжить задачи дня', function () {
-        window.location.href = '/daily-tasks';
-      }, '');
-    } else if (data.scenario === 'day_summary') {
-      if (data.cta_url && data.cta_text) {
-        addCtaButton(data.cta_text, data.cta_url, '');
-      }
-      addCtaButton(' Профиль', '/profile', 'secondary');
-    } else if (data.scenario === 'recommend_olympiad' || data.scenario === 'need_test') {
-      if (data.recommended_olympiad) {
-        addCtaButton(' Создать план подготовки', '/prep/new?olympiad=' + data.recommended_olympiad.slug, '');
-        addCtaButton(' Другие олимпиады', '/prep/new', 'secondary');
-      } else if (data.cta_url) {
-        addCtaButton(data.cta_text || 'Далее', data.cta_url, '');
-      } else {
-        addCtaButton(' Создать план подготовки', '/prep/new', '');
-      }
-    } else if (data.scenario === 'prep_morning_test' || data.scenario === 'prep_test_taken') {
-      // 2026-09-15: срез временно отключён — эти сценарии бэкенд не присылает.
-      if (data.cta_url && data.cta_text) {
-        addCtaButton(data.cta_text, data.cta_url, '');
-      }
-    } else if (data.scenario === 'prep_tasks_ready') {
-      if (data.cta_url && data.cta_text) {
-        addCtaButton(data.cta_text, data.cta_url, '');
-      }
-    } else if (data.scenario === 'prep_task_day') {
-      if (data.cta_url && data.cta_text) {
-        addCtaButton(data.cta_text, data.cta_url, '');
-      }
-    } else if (data.scenario === 'prep_month_complete') {
-      if (data.cta_url && data.cta_text) {
-        addCtaButton(data.cta_text, data.cta_url, '');
-      }
+(function () {
+  // ─── Section radars: один на раздел, лучи = подтемы (0..100%) ───
+  function wrapLabel(label, maxLen) {
+    var s = String(label || '');
+    if (s.indexOf(' ') < 0) {
+      var out = [];
+      for (var i = 0; i < s.length; i += maxLen) out.push(s.slice(i, i + maxLen));
+      return out;
     }
-    if (ctaRow.children.length) {
-      ctaRow.style.display = 'flex';
-    } else {
-      ctaRow.style.display = 'none';
-    }
-  })
-  .catch(function () {
-    greetingEl.textContent = '{% if user_name %}Привет, {{ user_name }}!{% else %}Привет!{% endif %} Я твой ИИ-куратор FORMYLA.net. Задай мне вопрос!';
-  });
-
-// ─── Load chat history ─────────────────────────────────────────────────────
-fetch('{{ url_for("prep.coach_history") }}')
-  .then(function (r) { return r.json(); })
-  .then(function (data) {
-    if (data.messages && data.messages.length) {
-      var greetingEl = document.getElementById('greetingMsg');
-      if (greetingEl) greetingEl.style.display = 'none';
-      data.messages.forEach(function (msg) {
-        var who = msg.role === 'user' ? 'user' : 'bot';
-        addMsg(msg.content, who);
-      });
-    }
-  })
-  .catch(function () {
-    /* history unavailable — keep greeting */
-  });
-
-// ─── Chat ──────────────────────────────────────────────────────────────
-var form = document.getElementById('chatForm');
-var input = document.getElementById('chatInput');
-var log = document.getElementById('chatLog');
-function addMsg(text, who) {
-var div = document.createElement('div');
-div.className = 'chat-msg ' + who;
-div.innerHTML = text;
-log.appendChild(div);
-log.scrollTop = log.scrollHeight;
-if (typeof reRenderMath === 'function') {
-  reRenderMath(div);
-}
-return div;
-}
-form.addEventListener('submit', function (e) {
-e.preventDefault();
-var text = input.value.trim();
-if (!text) return;
-addMsg(text, 'user');
-input.value = '';
-var pending = addMsg(' Думаю…', 'bot');
-fetch('{{ url_for("prep.coach_chat") }}', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ message: text })
-})
-.then(function (r) { return r.json(); })
-      .then(function (data) {
-          pending.innerHTML = data.reply || 'Не удалось получить ответ.';
-          if (typeof reRenderMath === 'function') {
-            reRenderMath(pending);
-          }
-          if (data.questionnaire_done) {
-            setTimeout(function () {
-              window.location.reload();
-            }, 1500);
-            return;
-          }
-        })
-.catch(function () { pending.innerHTML = '[ERROR] Ошибка соединения. Попробуй ещё раз.'; });
-});
-
-// ─── FAQ handler (TASK 2 V4): uses local FAQ data ───
-function askFaq(question) {
-  addMsg(question, 'user');
-  var pending = addMsg(' Ищу ответ…', 'bot');
-  fetch('{{ url_for("prep.coach_faq") }}', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question: question })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    pending.innerHTML = data.answer || 'Ответ не найден. Попробуйте другой вопрос.';
-    if (typeof reRenderMath === 'function') {
-      reRenderMath(pending);
-    }
-  })
-  .catch(function() { pending.innerHTML = '[ERROR] Ошибка соединения.'; });
-}
-
-// ─── Delete history button ──────────────────────────────────────────────
-var delBtn = document.getElementById('deleteHistoryBtn');
-if (delBtn) {
-  delBtn.addEventListener('click', function () {
-    if (!confirm('️ Удалить всю историю диалога с куратором? Это действие нельзя отменить.')) return;
-    delBtn.disabled = true;
-    delBtn.textContent = '⏳ Удаляю…';
-    fetch('{{ url_for("prep.coach_history_delete") }}', { method: 'POST' })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (data.status === 'ok') {
-          window.location.reload();
-        } else {
-          alert('[ERROR] Ошибка: ' + (data.error || 'не удалось удалить историю'));
-          delBtn.disabled = false;
-          delBtn.textContent = '️ Очистить историю';
-        }
-      })
-      .catch(function () {
-        alert('[ERROR] Ошибка соединения. Попробуй ещё раз.');
-        delBtn.disabled = false;
-        delBtn.textContent = '️ Очистить историю';
-      });
-  });
-}
-
-// ─── Questionnaires functions ──────────────────────────────────────────
-function startQuestionnaire() {
-    window.location.href = '/prep/onboarding';
-}
-
-function showBotMessage(text) {
-    addMsg(text, 'bot');
-}
-
-</script>
-
-<!-- Chart.js for Radar Chart -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
-// ─── Overall radar chart (legacy, 5 sections) ───
-document.addEventListener('DOMContentLoaded', function() {
-    var canvas = document.getElementById('masteryRadar');
-    if (canvas) {
-        try {
-            var raw = canvas.getAttribute('data-mastery');
-            if (raw) {
-                var mastery = JSON.parse(raw);
-                var labels = mastery.map(function(m) { return m.label || m.name || m.key || '?'; });
-                var scores = mastery.map(function(m) { return m.score || m.value || m.level || 0; });
-                var ctx = canvas.getContext('2d');
-                new Chart(ctx, {
-                    type: 'radar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Уровень владения',
-                            data: scores,
-                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 2,
-                            pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                            pointBorderColor: '#fff',
-                            pointHoverRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        scales: {
-                            r: {
-                                beginAtZero: true,
-                                max: 4,
-                                ticks: { stepSize: 1, font: { size: 10 } },
-                                grid: { color: 'rgba(0,0,0,0.1)' }
-                            }
-                        },
-                        plugins: {
-                            legend: { display: false }
-                        }
-                    }
-                });
-            }
-        } catch(e) {
-            console.error('Radar chart init error:', e);
-        }
-    }
-
-    // ─── Section radars (TASK 1 V4): one per section, rays = subtopics ───
-    var sectionCanvases = document.querySelectorAll('[id^="sectionRadar"]');
-    sectionCanvases.forEach(function(cvs) {
-        try {
-            var raw = cvs.getAttribute('data-section');
-            if (!raw) return;
-            var data = JSON.parse(raw);
-            var subtopics = data.subtopics || [];
-            var labels = subtopics.map(function(s) { return s.name || s.id || '?'; });
-            var scores = subtopics.map(function(s) { return s.has_data ? s.pct : 0; });
-
-            // Collect "no data" indices for special rendering
-            var noDataIndices = [];
-            subtopics.forEach(function(s, i) { if (!s.has_data) noDataIndices.push(i); });
-
-            var ctx = cvs.getContext('2d');
-            new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: '% верных ответов',
-                        data: scores,
-                        backgroundColor: 'rgba(99, 102, 241, 0.15)',
-                        borderColor: 'rgba(99, 102, 241, 0.8)',
-                        borderWidth: 2,
-                        pointBackgroundColor: subtopics.map(function(s) {
-                            return s.has_data ? 'rgba(99, 102, 241, 1)' : 'rgba(255,255,255,0.2)';
-                        }),
-                        pointBorderColor: '#0E1830',
-                        pointRadius: subtopics.map(function(s) { return s.has_data ? 3 : 2; }),
-                        pointHoverRadius: 5,
-                        spanGaps: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: {
-                                stepSize: 25,
-                                font: { size: 9 },
-                                color: 'rgba(255,255,255,0.3)',
-                                backdropColor: 'transparent'
-                            },
-                            grid: { color: 'rgba(255,255,255,0.08)' },
-                            pointLabels: {
-                                font: { size: 9 },
-                                color: 'rgba(255,255,255,0.6)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(ctx) {
-                                    var idx = ctx.dataIndex;
-                                    var st = subtopics[idx];
-                                    if (st && st.has_data) {
-                                        return st.name + ': ' + st.pct + '% верных';
-                                    }
-                                    return (st ? st.name : '') + ': нет данных';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        } catch(e) {
-            console.error('Section radar init error:', e);
-        }
+    var words = s.split(' '), lines = [], cur = '';
+    words.forEach(function (w) {
+      if ((cur + ' ' + w).trim().length > maxLen && cur) { lines.push(cur.trim()); cur = w; }
+      else { cur = (cur + ' ' + w).trim(); }
     });
-});
+    if (cur) lines.push(cur.trim());
+    return lines;
+  }
+  function colorFor(pct, hasData) {
+    if (!hasData) return 'rgba(255,255,255,0.25)';
+    if (pct >= 75) return '#38ef7d';
+    if (pct >= 40) return '#fbbf24';
+    return '#f87171';
+  }
+  function drawSection(cvs) {
+    var sr;
+    try { sr = JSON.parse(cvs.getAttribute('data-section') || '{}'); } catch (e) { return; }
+    var subs = sr.subtopics || [];
+    if (!subs.length || typeof Chart === 'undefined') return;
+    var vals = subs.map(function (s) { return s.has_data ? Math.max(0, Math.min(100, Number(s.pct) || 0)) : 0; });
+    var cols = subs.map(function (s) { return colorFor(Number(s.pct) || 0, !!s.has_data); });
+    new Chart(cvs, {
+      type: 'radar',
+      data: {
+        labels: subs.map(function (s) { return wrapLabel(s.name, 12); }),
+        datasets: [{
+          data: vals,
+          backgroundColor: 'rgba(76,125,255,0.14)',
+          borderColor: '#6B95FF',
+          borderWidth: 2,
+          pointBackgroundColor: cols,
+          pointBorderColor: cols,
+          pointRadius: subs.map(function (s) { return s.has_data ? 4 : 3; }),
+          pointStyle: subs.map(function (s) { return s.has_data ? 'circle' : 'crossRot'; })
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        layout: { padding: 10 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: function (items) { var l = items[0] && items[0].label; return Array.isArray(l) ? l.join(' ') : (l || ''); },
+              label: function (ctx) { var s = subs[ctx.dataIndex]; return s && s.has_data ? (ctx.parsed.r + '%') : 'нет данных'; }
+            }
+          }
+        },
+        scales: { r: {
+          min: 0, max: 100,
+          ticks: { stepSize: 25, display: false },
+          grid: { color: 'rgba(107,149,255,0.15)' },
+          angleLines: { color: 'rgba(107,149,255,0.2)' },
+          pointLabels: { color: function (ctx) { return cols[ctx.index] || 'rgba(255,255,255,0.5)'; }, font: { size: 9, weight: '600' } }
+        } }
+      }
+    });
+  }
+  document.querySelectorAll('canvas[id^="sectionRadar"]').forEach(drawSection);
 
-function addQuickAction(text, url) {
-    const container = document.getElementById('quick-actions');
-    if (!container) return;
-    const btn = document.createElement('a');
-    btn.href = url;
-    btn.className = 'quick-action-btn';
-    btn.textContent = text;
-    container.appendChild(btn);
-}
+  // ─── Календарь решений (перенесён из «Задач дня», тот же API) ───
+  var MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  var DOW = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  var grid = document.getElementById('stCalGrid');
+  var titleEl = document.getElementById('stCalTitle');
+  var totalEl = document.getElementById('stCalMonthTotal');
+  var kMonth = document.getElementById('statMonthSolved');
+  var kDays = document.getElementById('statMonthDays');
+  var kSub = document.getElementById('statMonthSub');
+  if (!grid) return;
+  var now = new Date();
+  var year = now.getFullYear(), month = now.getMonth() + 1;
+  var cache = {};
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+  function tierOf(d) {
+    if (d.tier) return d.tier;
+    var s = Number(d.solved) || 0, t = Number(d.total) || 0;
+    if (!t && !s) return 'empty';
+    if (s === 0) return 'gray';
+    if (s <= 3) return 'pale';
+    if (s <= 6) return 'green';
+    if (s <= 9) return 'bright';
+    return 'gold';
+  }
+  function render(payload) {
+    var days = (payload && payload.days) || [];
+    var byDay = {};
+    days.forEach(function (d) {
+      var n = d.day || (d.date ? parseInt(String(d.date).slice(8, 10), 10) : null);
+      if (n) byDay[n] = d;
+    });
+    var todayIso = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
+    var last = new Date(year, month, 0).getDate();
+    var firstDow = (new Date(year, month - 1, 1).getDay() + 6) % 7;
+    var html = DOW.map(function (d) { return '<div class="st-cal-dow">' + d + '</div>'; }).join('');
+    for (var i = 0; i < firstDow; i++) html += '<div class="st-cal-day st-cal-empty"></div>';
+    var monthSolved = 0, daysWith = 0;
+    for (var d = 1; d <= last; d++) {
+      var iso = year + '-' + pad2(month) + '-' + pad2(d);
+      var info = byDay[d] || {};
+      var solved = Number(info.solved != null ? info.solved : (info.correct || 0)) || 0;
+      var isToday = iso === todayIso;
+      var isFuture = new Date(year, month - 1, d) > now && !isToday;
+      var tier = isFuture ? 'empty' : tierOf(info);
+      monthSolved += solved;
+      if (solved > 0) daysWith++;
+      var cls = 'st-cal-day st-tier-' + tier + (isToday ? ' st-cal-today' : '') + (isFuture ? ' st-cal-future' : '');
+      html += '<div class="' + cls + '" title="' + iso + (solved ? ': решено ' + solved : '') + '">' +
+        (tier === 'gold' ? '<span class="st-cal-crown">👑</span>' : '') +
+        '<span class="st-cal-daynum">' + d + '</span>' +
+        (solved > 0 ? '<span class="st-cal-solved">' + solved + '</span>' : '') +
+        '</div>';
+    }
+    grid.innerHTML = html;
+    if (titleEl) titleEl.textContent = MONTHS[month - 1] + ' ' + year;
+    if (totalEl) totalEl.innerHTML = 'Решено за месяц: <b>' + monthSolved + '</b>';
+    if (kMonth) kMonth.textContent = String(monthSolved);
+    if (kDays) kDays.textContent = String(daysWith);
+    if (kSub) kSub.textContent = MONTHS[month - 1].toLowerCase() + ' ' + year;
+  }
+  function load() {
+    var key = year + '-' + month;
+    render(cache[key] || null);
+    if (cache[key]) return;
+    fetch('/daily_tasks/calendar?year=' + year + '&month=' + month, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (data) { cache[key] = data; if (key === year + '-' + month) render(data); })
+      .catch(function () {});
+  }
+  document.getElementById('stCalPrev').addEventListener('click', function () {
+    month--; if (month < 1) { month = 12; year--; } load();
+  });
+  document.getElementById('stCalNext').addEventListener('click', function () {
+    month++; if (month > 12) { month = 1; year++; } load();
+  });
+  load();
+})();
 </script>
 {% endblock %}
