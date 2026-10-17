@@ -10,7 +10,7 @@ Endpoints:
   GET  /olymp-catalog/<slug>                           — задачи олимпиады: год → этап → день → класс → №
   GET  /olymp-catalog/<slug>/<uid>                     — одна задача + ИИ-тьютор
   GET  /olymp-catalog/<slug>/<uid>/export/<fmt>        — скачать задачу: md | tex | txt | json
-  GET  /olymp-catalog/<slug>/export/<fmt>              — скачать олимпиаду (фильтры q/year/grade): md | json
+  GET  /olymp-catalog/<slug>/export/<fmt>              — скачать олимпиаду (фильтры q/year/grade/round): md | json
   GET  /olymp-catalog/figures/<path>                   — рисунки (static/olymp_figures/...)
   GET  /olymp-catalog/qa                               — отчёт чистки данных (JSON)
   POST /olymp-catalog/api/tutor/prepare                — v4-pro заранее разбирает задачу (кэш)
@@ -179,7 +179,7 @@ def _find_task(slug: str, uid: str):
     return next((x for x in tasks if x["uid"] == uid or x["uid"].startswith(uid)), None)
 
 
-def _filter_tasks(tasks, q: str = "", year: str = "", grade: str = ""):
+def _filter_tasks(tasks, q: str = "", year: str = "", grade: str = "", rnd: str = ""):
     if q:
         q = q.lower()
         tasks = [t for t in tasks if q in (t["text"] + " " + t["solution"] + " " + t["answer"]).lower()]
@@ -187,7 +187,15 @@ def _filter_tasks(tasks, q: str = "", year: str = "", grade: str = ""):
         tasks = [t for t in tasks if str(t["year"]) == str(year)]
     if grade:
         tasks = [t for t in tasks if str(t["grade"]) == str(grade)]
+    if rnd:
+        # Баг Лаврика #27: фильтр по этапу (round)
+        tasks = [t for t in tasks if str(t.get("round", "")) == str(rnd)]
     return tasks
+
+
+def _rounds(tasks):
+    """Список этапов олимпиады в порядке появления в файле (без дублей)."""
+    return list(OrderedDict.fromkeys(str(t.get("round", "")) for t in tasks if t.get("round")))
 
 # ----------------------------------------------------------------------------
 # Страницы
@@ -215,11 +223,16 @@ def olympiad(slug):
     q = (request.args.get("q") or "").strip()
     year = (request.args.get("year") or "").strip()
     grade = (request.args.get("grade") or "").strip()
-    tasks = _filter_tasks(all_tasks, q.lower(), year, grade)
+    rnd = (request.args.get("round") or "").strip()
+    # Баг Лаврика #27: пока ничего не выбрано — показываем только выбор класса и этапа,
+    # список задач появляется после выбора (picked).
+    picked = bool(q or year or grade or rnd)
+    tasks = _filter_tasks(all_tasks, q.lower(), year, grade, rnd) if picked else []
     grades = sorted({str(t["grade"]) for t in all_tasks}, key=_grade_key)
     years_all = sorted({t["year"] for t in all_tasks}, reverse=True)
     return render_template("olymp_catalog/olympiad.html", slug=slug, meta=meta, years=_group(tasks),
                            count=len(tasks), total=len(all_tasks), q=q, year=year, grade=grade,
+                           round=rnd, rounds=_rounds(all_tasks), picked=picked,
                            grades=grades, years_all=years_all, labels=STATUS_LABEL)
 
 
@@ -282,8 +295,10 @@ def export_olympiad(slug, fmt):
     q = (request.args.get("q") or "").strip().lower()
     year = (request.args.get("year") or "").strip()
     grade = (request.args.get("grade") or "").strip()
-    tasks = _filter_tasks(all_tasks, q, year, grade)
-    suffix = "".join(["_%s" % year if year else "", "_g%s" % grade if grade else ""])
+    rnd = (request.args.get("round") or "").strip()
+    tasks = _filter_tasks(all_tasks, q, year, grade, rnd)
+    suffix = "".join(["_%s" % year if year else "", "_g%s" % grade if grade else "",
+                      "_%s" % re.sub(r"\W", "", rnd)[:12] if rnd else ""])
     if fmt == "json":
         return download(json.dumps([public_task(t) for t in tasks], ensure_ascii=False, indent=2),
                         "%s%s.json" % (slug, suffix), "application/json")
