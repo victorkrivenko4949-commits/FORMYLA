@@ -3,22 +3,24 @@
 routes/__init__.py — ADMIN_BASE_V1 (06.10.2026) + PWA_INSTALL_V1 (11.10.2026)
 + SITE_NOTICE_V1 (11.10.2026) + OLYMP_CATALOG_V3 (14.10.2026) + CHAT_DOCS_V1 (15.10.2026)
 + ADMIN_NOTICES_V1 (18.10.2026) + LAVRIK_SUPPORT_REDIRECT_V1 (18.10.2026)
-+ STATS_PAGE_V1 (18.10.2026, routes/stats_nav.py — пункт меню «Куратор подготовки» → «📊 Статистика»).
++ STATS_PAGE_V1 / THEME_EVAL_V1 (18.10.2026, routes/stats_nav.py — пункт меню
+  «Куратор подготовки» → «📊 Статистика» + итог по теме после 10 задач, /api/stats/theme-eval).
 
 Автоматическая регистрация blueprint «База» (routes/admin_base.py),
 blueprint PWA (routes/pwa.py), blueprint одноразовых уведомлений
 (routes/site_notices.py), blueprint каталога олимпиадных задач
 (routes/olymp_catalog.py, /olymp-catalog), blueprint вложений чата
-(routes/chat_attachments.py — документы в чате, фикс фото, компактное меню)
-и blueprint админ-уведомлений (routes/admin_notices.py — кнопка «🔔 Уведомления»
-в шапке у админа + модалка для пользователей) без правки app.py. Файл превращает `routes/`
+(routes/chat_attachments.py — документы в чате, фикс фото, компактное меню),
+blueprint админ-уведомлений (routes/admin_notices.py — кнопка «🔔 Уведомления»
+в шапке у админа + карточка для пользователей) и blueprint статистики (routes/stats_nav.py)
+без правки app.py. Файл превращает `routes/`
 в обычный пакет (раньше был namespace package); все существующие импорты
 `from routes.xxx import ...` работают как прежде.
 
 Как это работает: при первом `app.register_blueprint(...)` любого другого
 blueprint мы один раз дорегистрируем `admin_base_bp`, `pwa_bp`, `site_notices_bp`,
-`olymp_catalog_bp`, `chat_attachments_bp` и `admin_notices_bp` в это же приложение
-и вешаем after_request-хуки.
+`olymp_catalog_bp`, `chat_attachments_bp`, `admin_notices_bp` и `stats_page_bp` в это же
+приложение и вешаем after_request-хуки.
 
 LAVRIK_SUPPORT_REDIRECT_V1 (lavrik-bugs #21): кнопка «💬 Поддержка» в шапке
 у Лаврика ведёт на /my/support; Лаврик попросил, чтобы она вела в «💬 Чат
@@ -117,7 +119,7 @@ def _install_chat_attachments(app) -> None:
 
 
 def _install_admin_notices(app) -> None:
-    """ADMIN_NOTICES_V1: раздел «🔔 Уведомления» (/admin/notices) + модалка у пользователей."""
+    """ADMIN_NOTICES_V1: раздел «🔔 Уведомления» (/admin/notices) + карточка у пользователей."""
     if os.environ.get("ADMIN_NOTICES_AUTOREG", "1") == "0":
         return
     if app.extensions.get("admin_notices_installed"):
@@ -163,15 +165,15 @@ def _install_lavrik_support_redirect(app) -> None:
 
 
 def _install_stats_nav(app) -> None:
-    """STATS_PAGE_V1: пункт меню «🎓 Куратор подготовки» → «📊 Статистика» (шапка, drawer, нижняя панель)."""
+    """STATS_PAGE_V1 / THEME_EVAL_V1: меню «Куратор подготовки» → «📊 Статистика» + итоги по темам (/api/stats/theme-eval)."""
     if os.environ.get("STATS_NAV_AUTOREG", "1") == "0":
         return
     if app.extensions.get("stats_nav_installed"):
         return
     try:
         from routes.stats_nav import install_stats_nav
-        install_stats_nav(app)
-        logger.info("[stats_nav] «Куратор подготовки» -> «Статистика» в навигации")
+        install_stats_nav(app, register=_ORIG_REGISTER)
+        logger.info("[stats_nav] «Куратор подготовки» -> «Статистика» + /api/stats/theme-eval")
     except Exception as e:  # noqa: BLE001
         logger.exception("[stats_nav] auto-register failed: %r", e)
 
@@ -232,7 +234,7 @@ try:
 
         def _patched_register_blueprint(self, blueprint, **options):
             result = _ORIG_REGISTER(self, blueprint, **options)
-            if getattr(blueprint, "name", "") not in ("admin_base", "pwa", "site_notices", "olymp_catalog", "chat_attachments", "surveys", "admin_notices"):
+            if getattr(blueprint, "name", "") not in ("admin_base", "pwa", "site_notices", "olymp_catalog", "chat_attachments", "surveys", "admin_notices", "stats_page"):
                 _install(self)
             return result
 
