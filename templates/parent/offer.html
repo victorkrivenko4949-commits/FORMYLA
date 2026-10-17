@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}FORMYLA — предложение для родителя{% endblock %}
+{% block content %}
+<div style="max-width:720px;margin:0 auto;padding:40px 18px 80px;color:#e2e8f0;">
+  <h1 style="font-size:26px;margin:0 0 10px;">{{ (child.name if child and child.name else 'Ваш ребёнок') }} занимается олимпиадной математикой</h1>
+  <p style="color:#94a3b8;line-height:1.6;">FORMYLA — ежедневные задачи под уровень ученика, ИИ-разборы и подготовка к ВсОШ, Ломоносову, Эйлеру.
+    Сегодня бесплатные задачи решены — ссылку вам отправил сам ученик.</p>
+  {% if stats %}
+  <div style="display:flex;gap:14px;flex-wrap:wrap;margin:18px 0;">
+    {% if stats.answered is defined %}<div style="background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 18px;min-width:140px;"><div style="font-size:26px;font-weight:800;">{{ stats.correct }}/{{ stats.answered }}</div><div style="color:#94a3b8;font-size:13px;">верных задач всего</div></div>{% endif %}
+    {% if stats.streak is defined %}<div style="background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 18px;min-width:140px;"><div style="font-size:26px;font-weight:800;color:#38ef7d;">{{ stats.streak }}</div><div style="color:#94a3b8;font-size:13px;">дней серии (макс. {{ stats.max_streak }})</div></div>{% endif %}
+  </div>
+  {% endif %}
+  <h3 style="font-size:16px;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;margin:22px 0 10px;">Что даёт Premium</h3>
+  <ul style="color:#cbd5e1;line-height:1.8;padding-left:18px;">
+    <li>Все задачи дня, а не только 3 бесплатные</li>
+    <li>Подробные ИИ-разборы ошибок и куратор с планом на месяц</li>
+    <li>Метод недели и генератор чертежей</li>
+  </ul>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:18px 0;">
+    {% for p in plans %}
+    <div style="background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;">
+      <div style="font-weight:700;">{{ p.title }}</div>
+      <div style="font-size:24px;font-weight:800;">{{ '{:,}'.format(p.price).replace(',', ' ') }} ₽ <small style="font-size:12px;color:#94a3b8;">{{ p.period }}</small></div>
+      <div style="color:#94a3b8;font-size:13px;margin-top:6px;">{{ p.desc }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  <a href="/subscribe?from=parent_offer&child={{ child_id }}" style="display:block;text-align:center;padding:14px;border-radius:12px;background:linear-gradient(135deg,#4c7dff,#7c5cff);color:#fff;font-weight:700;text-decoration:none;">Оформить для ребёнка</a>
+  <p style="color:#64748b;font-size:13px;margin-top:14px;line-height:1.6;">Оплата через ЮKassa, чек на e-mail. Для оформления нужно войти или зарегистрироваться как родитель — так подписка привяжется к аккаунту ребёнка.
+    Серии, друзья и лидерборд остаются бесплатными в любом случае.</p>
+</div>
+{% endblock %}

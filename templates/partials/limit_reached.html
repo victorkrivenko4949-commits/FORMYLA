@@ -1,0 +1,55 @@
+{# SOFT_LIMITS_V1 — экран лимита (partial). Контекст: state{limit,used,left,streak_required}, kind ('task'|'ai'), upgrade_url #}
+<div class="lim-card" id="limit-reached" data-kind="{{ kind }}">
+  <style>
+    .lim-card{background:#111827;border:1px solid rgba(62,207,142,.35);border-radius:16px;padding:22px 20px;color:#e2e8f0;max-width:520px;margin:0 auto;font-family:Inter,system-ui,sans-serif;}
+    .lim-card h2{font-size:20px;margin:0 0 8px;}
+    .lim-card p{color:#94a3b8;font-size:14px;line-height:1.6;margin:0 0 14px;}
+    .lim-card .ok{color:#3ecf8e;}
+    .lim-btns{display:flex;flex-direction:column;gap:10px;margin-top:6px;}
+    .lim-btn{display:block;text-align:center;padding:12px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:15px;text-decoration:none;}
+    .lim-btn.p{background:linear-gradient(135deg,#4c7dff,#7c5cff);color:#fff;}
+    .lim-btn.g{background:transparent;border:1px solid rgba(255,255,255,.14);color:#cbd5e1;}
+    .lim-link{display:block;text-align:center;margin-top:12px;color:#9ec1ff;font-size:14px;}
+    .lim-share{display:none;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap;}
+    .lim-share a,.lim-share button{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:transparent;color:#cbd5e1;font-size:13px;cursor:pointer;text-decoration:none;}
+    @media (max-width:480px){.lim-card{padding:18px 14px;border-radius:12px;}}
+  </style>
+  {% if kind == 'ai' %}
+    <h2>ИИ-разбор на сегодня использован <span class="ok">✅</span></h2>
+    <p>Бесплатно — {{ state.limit }} разбор в день. Решение задачи можно посмотреть и так, а подробные разборы куратора — в Premium.</p>
+  {% else %}
+    <h2>{{ state.used }} из {{ state.limit }} решено — серия сохранена <span class="ok">✅</span></h2>
+    <p>Сегодняшняя норма выполнена: день засчитан при {{ state.streak_required }} верных из {{ state.limit }}.
+       Ещё 2 задачи и разбор куратора — в Premium.</p>
+  {% endif %}
+  <div class="lim-btns">
+    <button class="lim-btn p" type="button" id="lim-parent-btn">Отправить родителю</button>
+    <div class="lim-share" id="lim-share">
+      <a id="lim-share-tg" href="#" target="_blank" rel="noopener">Telegram</a>
+      <a id="lim-share-wa" href="#" target="_blank" rel="noopener">WhatsApp</a>
+      <button type="button" id="lim-share-copy">Скопировать ссылку</button>
+    </div>
+    <a class="lim-btn g" href="/teacher/join" id="lim-teacher-btn">Попросить учителя</a>
+  </div>
+  <a class="lim-link" href="{{ upgrade_url }}">Подробнее о Premium →</a>
+</div>
+<script>
+(function(){
+  var btn=document.getElementById('lim-parent-btn'); if(!btn) return;
+  try{ if(window.track) window.track('limit_shown',{kind:{{ kind|tojson }}}); }catch(e){}
+  btn.addEventListener('click',function(){
+    fetch('/parent/offer-link',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({from:'limit'})}).then(function(r){return r.json();}).then(function(d){
+      if(!d.ok) return;
+      var box=document.getElementById('lim-share'); box.style.display='flex';
+      document.getElementById('lim-share-tg').href=d.tg; document.getElementById('lim-share-wa').href=d.wa;
+      document.getElementById('lim-share-copy').onclick=function(){
+        try{ navigator.clipboard.writeText(d.url); this.textContent='Скопировано ✓'; }catch(e){ prompt('Ссылка', d.url); }
+        try{ if(window.track) window.track('parent_link_shared',{via:'copy'}); }catch(e){}
+      };
+      ['tg','wa'].forEach(function(k){ document.getElementById('lim-share-'+k).addEventListener('click',function(){
+        try{ if(window.track) window.track('parent_link_shared',{via:k}); }catch(e){} }); });
+    }).catch(function(){});
+  });
+})();
+</script>

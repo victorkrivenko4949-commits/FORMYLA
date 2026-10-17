@@ -2,43 +2,26 @@
 """
 routes/__init__.py — ADMIN_BASE_V1 (06.10.2026) + PWA_INSTALL_V1 (11.10.2026)
 + SITE_NOTICE_V1 (11.10.2026) + OLYMP_CATALOG_V3 (14.10.2026) + CHAT_DOCS_V1 (15.10.2026)
-+ FUNNEL_V1 / ADMIN_STATS_V1 / BILLING_V1 (18.10.2026).
++ FUNNEL_V1 / ADMIN_STATS_V1 / BILLING_V1 / TRIAL_V1 / SOFT_LIMITS_V1 / PARENT_OFFER_V1 (18.10.2026).
 
 Автоматическая регистрация blueprint «База» (routes/admin_base.py),
 blueprint PWA (routes/pwa.py), blueprint одноразовых уведомлений
 (routes/site_notices.py), blueprint каталога олимпиадных задач
 (routes/olymp_catalog.py, /olymp-catalog), blueprint вложений чата
 (routes/chat_attachments.py), слоя событий воронки (services/funnel.py,
-/api/ev), панели статистики (routes/admin_stats.py, /admin/stats) и
-биллинга (routes/billing.py, /subscribe, /billing/*) без правки app.py.
-Файл превращает `routes/` в обычный пакет (раньше был namespace package);
+/api/ev), панели статистики (routes/admin_stats.py, /admin/stats),
+биллинга (routes/billing.py, /subscribe, /billing/*), триала (services/trial.py),
+мягких лимитов (services/soft_limits.py) и ссылки родителю (routes/parent_offer.py)
+без правки app.py. Файл превращает `routes/` в обычный пакет;
 все существующие импорты `from routes.xxx import ...` работают как прежде.
 
 Как это работает: при первом `app.register_blueprint(...)` любого другого
-blueprint мы один раз дорегистрируем `admin_base_bp`, `pwa_bp`, `site_notices_bp`,
-`olymp_catalog_bp`, `chat_attachments_bp`, `funnel`, `admin_stats`, `billing`
+blueprint мы один раз дорегистрируем служебные blueprint'ы и сервисы
 в это же приложение и вешаем after_request-хуки.
 
 Отключить: ADMIN_BASE_AUTOREG=0, PWA_AUTOREG=0, SITE_NOTICES_AUTOREG=0,
 OLYMP_CATALOG_AUTOREG=0, CHAT_ATTACHMENTS_AUTOREG=0, FUNNEL_ENABLED=0,
-ADMIN_STATS_ENABLED=0, BILLING_ENABLED=0.
-Ручная регистрация (эквивалент):
-    from routes.admin_base import admin_base_bp
-    app.register_blueprint(admin_base_bp)
-    from routes.pwa import install_pwa
-    install_pwa(app)
-    from routes.site_notices import site_notices_bp
-    app.register_blueprint(site_notices_bp)
-    from routes.olymp_catalog import install_olymp_catalog
-    install_olymp_catalog(app)
-    from routes.chat_attachments import install_chat_attachments
-    install_chat_attachments(app)
-    from services.funnel import install as install_funnel
-    install_funnel(app)
-    from routes.admin_stats import install as install_admin_stats
-    install_admin_stats(app)
-    from routes.billing import install as install_billing
-    install_billing(app)
+ADMIN_STATS_ENABLED=0, BILLING_ENABLED=0, TRIAL_ENABLED=0, SOFT_LIMITS_ENABLED=0, PARENT_OFFER_ENABLED=0.
 """
 from __future__ import annotations
 
@@ -57,7 +40,7 @@ _NAV_PATHS = ("/admin/users", "/admin/stats", "/admin/daily", "/admin/sections",
 
 # blueprint'ы, регистрация которых не должна повторно запускать _install()
 _SELF_BLUEPRINTS = ("admin_base", "pwa", "site_notices", "olymp_catalog", "chat_attachments",
-                    "surveys", "funnel", "admin_stats", "billing")
+                    "surveys", "funnel", "admin_stats", "billing", "parent_offer")
 
 
 def _install_pwa(app) -> None:
@@ -155,6 +138,45 @@ def _install_billing(app) -> None:
         logger.exception("[billing] auto-register failed: %r", e)
 
 
+def _install_trial(app) -> None:
+    """TRIAL_V1: триал 14 дней при регистрации, Основатели до 31.01.2027, метка в шапке."""
+    if os.environ.get("TRIAL_ENABLED", "1") == "0":
+        return
+    if app.extensions.get("trial_installed"):
+        return
+    try:
+        from services.trial import install as install_trial
+        install_trial(app)
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[trial] auto-register failed: %r", e)
+
+
+def _install_soft_limits(app) -> None:
+    """SOFT_LIMITS_V1: мягкие лимиты Free (3 задачи, 1 ИИ-разбор), A/B-когорта, экран лимита."""
+    if os.environ.get("SOFT_LIMITS_ENABLED", "1") == "0":
+        return
+    if app.extensions.get("soft_limits_installed"):
+        return
+    try:
+        from services.soft_limits import install as install_soft_limits
+        install_soft_limits(app)
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[soft_limits] auto-register failed: %r", e)
+
+
+def _install_parent_offer(app) -> None:
+    """PARENT_OFFER_V1: ссылка «Отправить родителю» с экрана лимита."""
+    if os.environ.get("PARENT_OFFER_ENABLED", "1") == "0":
+        return
+    if app.extensions.get("parent_offer_installed"):
+        return
+    try:
+        from routes.parent_offer import install as install_parent_offer
+        install_parent_offer(app)
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[parent_offer] auto-register failed: %r", e)
+
+
 def _install(app) -> None:
     _install_pwa(app)
     _install_site_notices(app)
@@ -166,6 +188,9 @@ def _install(app) -> None:
     _install_funnel(app)
     _install_admin_stats(app)
     _install_billing(app)
+    _install_trial(app)
+    _install_soft_limits(app)
+    _install_parent_offer(app)
 
     if getattr(app, "_admin_base_installed", False):
         return
