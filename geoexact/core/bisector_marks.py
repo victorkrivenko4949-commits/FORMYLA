@@ -76,7 +76,9 @@ def install(renderer):
         return False
     @functools.wraps(original)
     def render_svg(plan, sol, *args, **kwargs):
-        return original(decorate(plan, sol), sol, *args, **kwargs)
+        from .svg_presentation import finish_svg
+        decorated = decorate(plan, sol)
+        return finish_svg(original(decorated, sol, *args, **kwargs), decorated, sol)
     render_svg._external_bisector_marks = True
     renderer.render_svg = render_svg
     return True
