@@ -81,5 +81,54 @@
     passHashToIframe();
     window.addEventListener('hashchange', passHashToIframe);
 })();
+
+// Баг Лаврика #7: «Удали светлую тему полностью и плашку с переключением режима,
+// оставив только тёмную». Атлас (static/methods/atlas.html, ~5,5 МБ) живёт в
+// same-origin iframe и переключает data-theme на <html>. Из обёртки:
+//  1) при загрузке iframe и далее по MutationObserver держим data-theme="dark";
+//  2) чистим сохранённый выбор темы в localStorage атласа (ключи с "theme");
+//  3) вставляем в документ атласа <style>, прячущий переключатель темы
+//     (элементы с id/class/aria-label/title, содержащими theme/«тем»).
+// Сам atlas.html не трогаем. Откат — удалить этот блок.
+(function () {
+    var iframe = document.querySelector('.atlas-shell iframe');
+    if (!iframe) return;
+    function forceDark() {
+        var win, doc;
+        try {
+            win = iframe.contentWindow;
+            doc = iframe.contentDocument || (win && win.document);
+        } catch (e) { return; }
+        if (!doc || !doc.documentElement) return;
+        var root = doc.documentElement;
+        try {
+            var ls = win.localStorage;
+            for (var i = ls.length - 1; i >= 0; i--) {
+                var k = ls.key(i);
+                if (k && /theme/i.test(k)) ls.removeItem(k);
+            }
+        } catch (e) {}
+        if (root.getAttribute('data-theme') !== 'dark') root.setAttribute('data-theme', 'dark');
+        if (doc.body) doc.body.classList.remove('light', 'light-theme', 'theme-light');
+        if (!doc.getElementById('lavrik7-dark-only')) {
+            var st = doc.createElement('style');
+            st.id = 'lavrik7-dark-only';
+            st.textContent = '[id*="theme" i],[class*="theme-toggle" i],[class*="theme-switch" i],[class*="themeToggle"],[class*="themeSwitch"],[data-action*="theme" i],button[aria-label*="theme" i],button[title*="theme" i],button[aria-label*="тем" i],button[title*="тем" i]{display:none!important}';
+            (doc.head || root).appendChild(st);
+        }
+        if (!root.__lavrik7Observed && win.MutationObserver) {
+            root.__lavrik7Observed = true;
+            new win.MutationObserver(function () {
+                if (root.getAttribute('data-theme') !== 'dark') root.setAttribute('data-theme', 'dark');
+            }).observe(root, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+        }
+    }
+    iframe.addEventListener('load', forceDark);
+    var tries = 0;
+    var timer = setInterval(function () {
+        forceDark();
+        if (++tries > 40) clearInterval(timer);
+    }, 250);
+})();
 </script>
 {% endblock %}
