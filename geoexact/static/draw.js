@@ -103,8 +103,13 @@
   }
   async function jsonResponse(response) {
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.error || (response.status === 401
-      ? "Войдите в аккаунт и обновите страницу." : "Ошибка сервера. Попробуйте позже."));
+    if (!response.ok) {
+      const msg = data.error || (response.status === 401
+        ? "Войдите в аккаунт и обновите страницу." : "Ошибка сервера. Попробуйте позже.");
+      // Сервер может прислать detail с причиной (например, отказ vision-модели
+      // при распознавании фото) — показываем её, чтобы не ходить в логи.
+      throw new Error(data.detail ? msg + " Причина: " + data.detail : msg);
+    }
     return data;
   }
   let lastJob = null;
