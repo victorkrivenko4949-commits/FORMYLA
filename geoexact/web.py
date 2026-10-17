@@ -25,7 +25,8 @@ _VISION_PROMPT = (
     "Это фотография геометрической задачи. Верни полный текст условия "
     "задачи так, как он написан, на языке оригинала. Формулы переведи "
     "в LaTeX (например \\frac{3}{4}, \\angle ABC, 90^\\circ). "
-    "Без пояснений и без markdown — только текст условия."
+    "Без пояснений и без markdown — только текст условия. Если на фото "
+    "нет текста задачи или он нечитаем — ответь одним словом: UNREADABLE."
 )
 
 
@@ -186,19 +187,75 @@ def active():
     return jsonify(job_id=row.id if row else None)
 
 
+def _vision_request(url, key, model, mime, img_b64, *, thinking_off=False,
+                    max_tokens=2048, timeout=(15, 60)):
+    """Один OpenAI-совместимый vision-запрос с _VISION_PROMPT.
+
+    Возвращает (text, None) при успехе или (None, причина) при отказе —
+    причина уходит в лог, чтобы «Не удалось распознать фото» больше не
+    было немым (раньше все исключения глушились except: pass).
+    """
+    import requests as _rq
+    payload = {"model": model, "max_tokens": max_tokens, "temperature": 0.1,
+               "messages": [
+                   {"role": "user", "content": [
+                       {"type": "text", "text": _VISION_PROMPT},
+                       {"type": "image_url",
+                        "image_url": {"url": f"data:{mime};base64,{img_b64}"}},
+                   ]},
+               ]}
+    headers = {"Authorization": "Bearer " + key, "Content-Type": "application/json"}
+    if "openrouter.ai" in url:
+        headers["HTTP-Referer"] = os.environ.get("DOMAIN_URL", "https://formyla.net")
+        headers["X-Title"] = "FORMYLA.net GeoExact OCR"
+    # GEOEXACT_THINKING_FIX (см. geoexact/core/llm.py): без отключения
+    # «думания» vision-модель DeepSeek рассуждает десятки секунд и упирается
+    # в таймаут. При HTTP 400 с упоминанием thinking — повтор без параметра.
+    if thinking_off and model not in _VISION_THINKING_UNSUPPORTED:
+        payload["thinking"] = {"type": "disabled"}
+    try:
+        r = _rq.post(url, headers=headers, json=payload, timeout=timeout)
+        if r.status_code == 400 and "thinking" in payload \
+                and "thinking" in (r.text or "").lower():
+            _VISION_THINKING_UNSUPPORTED.add(model)
+            payload.pop("thinking", None)
+            r = _rq.post(url, headers=headers, json=payload, timeout=timeout)
+        if r.status_code != 200:
+            return None, f"HTTP {r.status_code}: {(r.text or '')[:200]}"
+        body = r.json()
+        if not body.get("choices"):
+            return None, "empty choices"
+        text = ((body["choices"][0].get("message", {}) or {}).get("content") or "").strip()
+        if not text:
+            return None, "empty content"
+        if text.upper().startswith("UNREADABLE"):
+            return None, "UNREADABLE"
+        return text, None
+    except Exception as e:
+        return None, f"{type(e).__name__}: {str(e)[:200]}"
+
+
 @bp.post("/recognize-photo")
 @login_required
 def recognize_photo():
     """Распознать текст условия с фото.
 
-    Основной распознаватель — DeepSeek vision (DEEPSEEK_VISION_MODEL),
-    резерв — локальный Tesseract OCR. Тот же пайплайн, что и у проверки
-    фото-решений. Формулы возвращаются в LaTeX: конвейер получает полную
-    версию, клиент показывает пользователю её же без LaTeX.
+    Цепочка движков — как в services/solution_ocr.py (фото-решения):
+    DeepSeek vision (DEEPSEEK_VISION_MODEL) → Gemini через OpenRouter
+    (OCR_OPENROUTER_MODEL) → Gemini через OdiRouter (GEMINI_VISION_MODEL)
+    → локальный Tesseract OCR. Каждый отказ пишется в лог с причиной.
+    Формулы возвращаются в LaTeX: конвейер получает полную версию,
+    клиент показывает пользователю её же без LaTeX.
     """
     from services.security import validate_csrf
     if not validate_csrf(request.headers.get("X-CSRF-Token", "")):
         return jsonify(error="Обновите страницу и повторите запрос."), 403
+
+    ds_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+    or_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    gm_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not (ds_key or or_key or gm_key):
+        return jsonify(error="Распознавание ещё не настроено."), 503
 
     # Rate-limit: ≤ 20 фото/час на пользователя (in-memory).
     rl_key = f"gx-photo:{current_user.get_id()}"
@@ -209,71 +266,86 @@ def recognize_photo():
         return jsonify(error="Слишком много фото за час, попробуйте позже."), 429
     bucket.append(now)
 
-    if not os.environ.get("DEEPSEEK_API_KEY"):
-        return jsonify(error="Распознавание ещё не настроено."), 503
+    def _fail(status, msg, **extra):
+        # Неудачная попытка не списывается из лимита.
+        try:
+            bucket.remove(now)
+        except ValueError:
+            pass
+        return jsonify(error=msg, **extra), status
+
     if request.content_length is not None and request.content_length > 12 * 1024 * 1024:
-        return jsonify(error="Фото слишком большое."), 413
+        return _fail(413, "Фото слишком большое.")
     data = request.get_json(silent=True) or {}
     img_b64 = (data.get("image") or "").strip()
+    if img_b64.startswith("data:"):
+        img_b64 = img_b64.split(",", 1)[-1]
     mime = data.get("mime") or "image/jpeg"
     if not img_b64:
-        return jsonify(error="Нет фото."), 400
+        return _fail(400, "Нет фото.")
     import base64
     try:
         raw_bytes = base64.b64decode(img_b64)
     except Exception:
-        return jsonify(error="Некорректное фото."), 400
+        return _fail(400, "Некорректное фото.")
     if len(raw_bytes) > 10 * 1024 * 1024:
-        return jsonify(error="Фото слишком большое."), 413
+        return _fail(413, "Фото слишком большое.")
+
+    log = current_app.logger
+    errors = []
 
     # ── Шаг 1: DeepSeek vision (основной распознаватель) ────────────────
-    try:
-        import requests as _rq
+    if ds_key:
         model = os.getenv("DEEPSEEK_VISION_MODEL",
-                           "deepseek-v4-flash-vision-exp").strip()
-        # GEOEXACT_THINKING_FIX (см. geoexact/core/llm.py): без отключения
-        # «думания» vision-модель рассуждает перед ответом десятки секунд,
-        # а при исчерпании 60-секундного таймаута запрос молча уходит в
-        # резервный Tesseract — отсюда «Распознаём фото…» на минуты.
-        # Отключаем тем же параметром, что уже работает в проде
-        # (services/llm_router.py); max_tokens 2048: текст условия короткий,
-        # а большой лимит лишь даёт разгон «размышлениям».
-        payload = {"model": model, "max_tokens": 2048, "messages": [
-            {"role": "user", "content": [
-                {"type": "text", "text": _VISION_PROMPT},
-                {"type": "image_url",
-                 "image_url": {"url": f"data:{mime};base64,{img_b64}"}},
-            ]},
-        ]}
-        headers = {"Authorization": "Bearer " + os.environ["DEEPSEEK_API_KEY"],
-                    "Content-Type": "application/json"}
-        if model not in _VISION_THINKING_UNSUPPORTED:
-            payload["thinking"] = {"type": "disabled"}
-        r = _rq.post("https://api.deepseek.com/v1/chat/completions",
-                     headers=headers, json=payload, timeout=(15, 60))
-        if r.status_code == 400 and model not in _VISION_THINKING_UNSUPPORTED \
-                and "thinking" in (r.text or "").lower():
-            # Провайдер не знает параметр thinking — повторяем без него.
-            _VISION_THINKING_UNSUPPORTED.add(model)
-            payload.pop("thinking", None)
-            r = _rq.post("https://api.deepseek.com/v1/chat/completions",
-                         headers=headers, json=payload, timeout=(15, 60))
-        if r.status_code == 200:
-            body = r.json()
-            if body.get("choices"):
-                text = (body["choices"][0].get("message", {}) or {}).get("content") or ""
-                if text.strip():
-                    return jsonify(text=text.strip(), engine="deepseek_vision")
-    except Exception:
-        pass
+                          "deepseek-v4-flash-vision-exp").strip()
+        text, err = _vision_request("https://api.deepseek.com/v1/chat/completions",
+                                    ds_key, model, mime, img_b64, thinking_off=True)
+        if text:
+            return jsonify(text=text, engine="deepseek_vision")
+        errors.append(f"deepseek {model}: {err}")
+        log.warning("[geoexact photo] deepseek vision %s failed: %s", model, err)
 
-    # ── Шаг 2: локальный Tesseract OCR (резерв) ────────────────────
+    # ── Шаг 2: Gemini flash через OpenRouter (резерв) ───────────────────
+    if or_key:
+        env_models = [m.strip() for m in
+                      (os.environ.get("OCR_OPENROUTER_MODEL", "") or "").split(",") if m.strip()]
+        for model in env_models or ["google/gemini-3-flash-preview",
+                                    "google/gemini-3.7-flash",
+                                    "google/gemini-2.5-flash"]:
+            text, err = _vision_request("https://openrouter.ai/api/v1/chat/completions",
+                                        or_key, model, mime, img_b64, timeout=(15, 50))
+            if text:
+                return jsonify(text=text, engine="openrouter_gemini")
+            errors.append(f"openrouter {model}: {err}")
+            log.warning("[geoexact photo] openrouter %s failed: %s", model, err)
+            if err == "UNREADABLE":
+                break
+
+    # ── Шаг 3: Gemini через OdiRouter (резерв) ──────────────────────────
+    if gm_key:
+        base = (os.environ.get("GEMINI_API_BASE") or "https://api.odirouter.ai/v1").strip().rstrip("/")
+        env_model = (os.environ.get("GEMINI_VISION_MODEL") or "").strip()
+        for model in ([env_model] if env_model else ["gemini-3.8-flash", "gemini-3.7-flash"]):
+            text, err = _vision_request(f"{base}/chat/completions",
+                                        gm_key, model, mime, img_b64)
+            if text:
+                return jsonify(text=text, engine="gemini_vision")
+            errors.append(f"odirouter {model}: {err}")
+            log.warning("[geoexact photo] odirouter %s failed: %s", model, err)
+            if err == "UNREADABLE":
+                break
+
+    # ── Шаг 4: локальный Tesseract OCR (резерв) ─────────────────────────
     try:
         from services.tesseract_ocr import recognize_bytes as _tesseract_ocr
         text, _err = _tesseract_ocr(raw_bytes, mime)
         if text and text.strip():
             return jsonify(text=text.strip(), engine="tesseract")
-    except Exception:
-        pass
+        errors.append(f"tesseract: {_err}")
+    except Exception as e:
+        errors.append(f"tesseract: {type(e).__name__}: {str(e)[:200]}")
 
-    return jsonify(error="Не удалось распознать фото."), 422
+    log.error("[geoexact photo] all engines failed for user %s: %s",
+              current_user.get_id(), " | ".join(errors))
+    return _fail(422, "Не удалось распознать фото.",
+                 detail=(errors[-1][:200] if errors else None))
