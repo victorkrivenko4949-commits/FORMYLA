@@ -161,7 +161,7 @@
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 15px;
   line-height: 1.65;
-  resize: vertical;
+  resize: none;
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
   white-space: pre-wrap;
@@ -566,4 +566,12 @@
   .dt-modal-body .dt-kb-key.math-command { font-size: 11px; min-width: 40px; }
   .dt-modal-body .dt-kb-key.space { min-width: 90px; }
   .dt-modal-body .dt-btn { padding: 11px 18px; font-size: 13px; }
+}
+
+/* ── Баг Лаврика #17: поле решения нельзя растягивать ─────────────── */
+/* Перебивает inline-стиль resize:vertical у #dt-solution-input. */
+#dt-solution-input,
+.dt-modal-body textarea,
+.page-daily-tasks textarea {
+  resize: none !important;
 }
