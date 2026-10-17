@@ -2,14 +2,14 @@
 {% block title %}Уведомления — FORMYLA{% endblock %}
 {% block content %}
 <style>
-.ntc-wrap{max-width:1100px;margin:24px auto;padding:0 16px 90px}
+.ntc-wrap{max-width:900px;margin:24px auto;padding:0 16px 90px}
 .ntc-panel{margin:24px 0;padding:20px;background:var(--card,#141a2e);border:1px solid var(--border,#334155);border-radius:16px}
-.ntc-form label{display:block;font-weight:600;margin:14px 0 6px}
-.ntc-form input,.ntc-form textarea{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid var(--border,#334155);background:rgba(255,255,255,.04);color:inherit;font:inherit}
-.ntc-form textarea{min-height:120px;resize:vertical}
-.ntc-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media (max-width:640px){.ntc-row{grid-template-columns:1fr}}
-.ntc-btn{display:inline-block;margin-top:16px;padding:11px 20px;border:0;border-radius:10px;font:inherit;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#F4B942,#e09a1f);color:#1a1205}
+.ntc-senders{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
+.ntc-sender{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--border,#334155);background:rgba(255,255,255,.03);cursor:pointer;font-weight:600}
+.ntc-sender input{accent-color:#f4b942}
+.ntc-sender:has(input:checked){border-color:#f4b942;background:rgba(244,185,66,.12)}
+.ntc-form textarea{width:100%;box-sizing:border-box;min-height:110px;resize:vertical;padding:12px 14px;border-radius:12px;border:1px solid var(--border,#334155);background:rgba(255,255,255,.04);color:inherit;font:inherit;font-size:15px}
+.ntc-btn{display:inline-block;margin-top:14px;padding:11px 22px;border:0;border-radius:10px;font:inherit;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#F4B942,#e09a1f);color:#1a1205}
 .ntc-mini{padding:6px 10px;border-radius:8px;border:1px solid var(--border,#334155);background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer}
 .ntc-mini.danger{color:#fca5a5;border-color:rgba(248,113,113,.4)}
 .ntc-scroll{overflow-x:auto}.ntc-table{width:100%;border-collapse:collapse;margin:12px 0}
@@ -23,29 +23,18 @@
 <main class="ntc-wrap">
   <h1>🔔 Уведомления</h1>
   <p><a href="/admin/users">← Статистика пользователей</a> · <a href="/admin/users/surveys">Опросы</a> · <a href="/admin/base">База</a></p>
-  {% if created %}<div class="ntc-ok">Уведомление создано. Пользователи увидят его при следующем заходе на сайт — один раз.</div>{% endif %}
+  {% if created %}<div class="ntc-ok">Отправлено. Каждый пользователь увидит уведомление один раз при следующем заходе.</div>{% endif %}
 
   <section class="ntc-panel">
     <h2>Новое уведомление</h2>
-    <p class="ntc-muted">Показывается каждому авторизованному пользователю один раз (модальное окно, как «Вы уже решили, какие олимпиады писать?»). Зарегистрированных пользователей сейчас: <strong>{{ total_users }}</strong>.</p>
+    <p class="ntc-muted">Пользователей: <strong>{{ total_users }}</strong>. Показывается каждому один раз — карточкой в углу экрана.</p>
     <form class="ntc-form" method="post" action="/admin/notices">
       <input type="hidden" name="csrf" value="{{ csrf }}">
-      <label for="ntc-title">Заголовок</label>
-      <input id="ntc-title" name="title" maxlength="120" required placeholder="Например: Новый каталог олимпиадных задач">
-      <label for="ntc-body">Текст</label>
-      <textarea id="ntc-body" name="body" maxlength="2000" required placeholder="Что хочешь сообщить пользователям. Переносы строк сохраняются."></textarea>
-      <div class="ntc-row">
-        <div>
-          <label for="ntc-link">Ссылка (необязательно)</label>
-          <input id="ntc-link" name="link_url" maxlength="500" placeholder="/olymp-catalog или https://…">
-        </div>
-        <div>
-          <label for="ntc-link-text">Текст кнопки</label>
-          <input id="ntc-link-text" name="link_text" maxlength="120" placeholder="Открыть">
-        </div>
+      <div class="ntc-senders">
+        <label class="ntc-sender"><input type="radio" name="sender" value="support" checked> 💬 Поддержка</label>
+        <label class="ntc-sender"><input type="radio" name="sender" value="curator"> 🎓 Куратор</label>
       </div>
-      <label for="ntc-targets">Кому (необязательно)</label>
-      <input id="ntc-targets" name="targets" placeholder="Пусто — всем. Или ники / e-mail / #id через запятую: lavrik, sasha, #9310">
+      <textarea name="body" maxlength="1000" required placeholder="Текст уведомления…"></textarea>
       <button type="submit" class="ntc-btn">Отправить</button>
     </form>
   </section>
@@ -53,14 +42,13 @@
   <section class="ntc-panel">
     <h2>Отправленные</h2>
     <div class="ntc-scroll"><table class="ntc-table">
-      <thead><tr><th>#</th><th>Заголовок / текст</th><th>Кому</th><th>Увидели</th><th>Статус</th><th>Создано (UTC)</th><th></th></tr></thead>
+      <thead><tr><th>#</th><th>От кого</th><th>Текст</th><th>Увидели</th><th>Статус</th><th>Создано (UTC)</th><th></th></tr></thead>
       <tbody>
       {% for n in notices %}
       <tr>
         <td>{{ n.id }}</td>
-        <td><strong>{{ n.title }}</strong><div class="ntc-body ntc-muted">{{ n.body }}</div>
-          {% if n.link_url %}<div class="ntc-muted">🔗 <a href="{{ n.link_url }}">{{ n.link_text or n.link_url }}</a></div>{% endif %}</td>
-        <td>{{ n.targets or 'всем' }}</td>
+        <td>{{ '🎓' if n.sender == 'curator' else '💬' }} {{ n.title }}</td>
+        <td><div class="ntc-body">{{ n.body }}</div></td>
         <td>{{ n.seen }}</td>
         <td>{% if n.active %}<span class="ntc-badge on">активно</span>{% else %}<span class="ntc-badge off">выключено</span>{% endif %}</td>
         <td>{{ n.created_at }}</td>
@@ -74,7 +62,6 @@
       {% endfor %}
       </tbody>
     </table></div>
-    <p class="ntc-muted">«Увидели» — сколько пользователей закрыли уведомление. Выключенное уведомление больше никому не показывается; при повторном включении его увидят только те, кто ещё не видел.</p>
   </section>
 </main>
 {% endblock %}

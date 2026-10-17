@@ -1,27 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-routes/admin_notices.py — ADMIN_NOTICES_V1 (18.10.2026).
+routes/admin_notices.py — ADMIN_NOTICES_V2 (18.10.2026).
 
-Раздел «🔔 Уведомления» для админа: написать сообщение, которое пользователь
-увидит на сайте ОДИН раз (как «Вы уже решили, какие олимпиады
-писать?»). Отметка «показано» хранится в уже существующей таблице
-site_notice_seen с ключом 'admin:<id>' (routes/site_notices.py).
+Раздел «🔔 Уведомления» для админа: простое сообщение пользователям —
+от кого (Поддержка / Куратор) + текст. Каждый пользователь видит его один раз
+как обычную карточку-уведомление в углу (static/js/admin_notices.js).
+Отметка «показано» — в site_notice_seen с ключом 'admin:<id>'.
 
-Кнопка «🔔 Уведомления» добавляется в шапку рядом с «💬 Поддержка» для
-админа через after_request-инжектор (base.html не правим).
-
-Кому показывается модалка с уведомлением:
-  ADMIN_NOTICES_ADMIN_ONLY=1 (по умолчанию) — ТОЛЬКО админам
-    (скрипт admin_notices.js подключается только админу, а
-    /api/admin-notices/pending для не-админов всегда отдаёт pending=False);
-  ADMIN_NOTICES_ADMIN_ONLY=0 — всем авторизованным не-гостям.
+В таблице admin_notices: title = «Поддержка» | «Куратор» (от кого), body = текст.
+Колонки link_url/link_text/targets остались от V1 и больше не заполняются.
 
 Endpoints:
   GET  /admin/notices                      — страница: форма + список
-  POST /admin/notices                      — создать уведомление
+  POST /admin/notices                      — создать (sender=support|curator, body)
   POST /admin/notices/<id>/toggle          — включить / выключить
   POST /admin/notices/<id>/delete          — удалить (вместе с отметками)
-  GET  /api/admin-notices/pending          — {pending, notice} для текущего пользователя
+  GET  /api/admin-notices/pending          — {pending, notice:{id, sender, sender_label, body}}
   POST /api/admin-notices/seen {id}        — отметить показанным
 
 Отключить автоподключение: ADMIN_NOTICES_AUTOREG=0.
@@ -29,7 +23,6 @@ Endpoints:
 from __future__ import annotations
 
 import logging
-import os
 import secrets
 from datetime import datetime
 
@@ -45,8 +38,12 @@ logger = logging.getLogger(__name__)
 admin_notices_bp = Blueprint('admin_notices', __name__)
 
 KEY_PREFIX = 'admin:'
-MAX_TITLE = 120
-MAX_BODY = 2000
+MAX_BODY = 1000
+
+SENDERS = {
+    'support': 'Поддержка',
+    'curator': 'Куратор',
+}
 
 _table_ready = False
 
@@ -106,20 +103,6 @@ def _is_real_user() -> bool:
     return bool(current_user.is_authenticated and not getattr(current_user, 'is_guest', False))
 
 
-def _admin_only() -> bool:
-    """True — уведомления (модалка) видят только админы. ADMIN_NOTICES_ADMIN_ONLY=0 — все."""
-    return (os.environ.get('ADMIN_NOTICES_ADMIN_ONLY', '1') or '1').strip().lower() not in ('0', 'false', 'no', 'off')
-
-
-def _can_receive() -> bool:
-    """Может ли текущий пользователь получать уведомления (модалку)."""
-    if not _is_real_user():
-        return False
-    if _admin_only() and not _is_admin():
-        return False
-    return True
-
-
 def _csrf_token() -> str:
     return session.setdefault('admin_notices_csrf', secrets.token_urlsafe(32))
 
@@ -131,31 +114,18 @@ def _check_csrf() -> None:
         abort(403)
 
 
-def _parse_targets(raw: str) -> str | None:
-    parts = [p.strip().lower() for p in (raw or '').replace(';', ',').replace('\n', ',').split(',')]
-    parts = [p for p in parts if p]
-    return ','.join(sorted(set(parts))) or None
-
-
-def _user_matches(user, targets: str | None) -> bool:
-    if not targets:
-        return True
-    wanted = {t for t in targets.split(',') if t}
-    nick = (getattr(user, 'nickname', None) or '').strip().lower()
-    email = (getattr(user, 'email', None) or '').strip().lower()
-    local = email.split('@', 1)[0] if email else ''
-    uid = str(getattr(user, 'id', '') or '')
-    return bool((nick and nick in wanted) or (email and email in wanted)
-                or (local and local in wanted) or (uid and ('#' + uid) in wanted))
+def _sender_key(title: str) -> str:
+    t = (title or '').strip().lower()
+    return 'curator' if t.startswith('куратор') else 'support'
 
 
 def _row_to_notice(row) -> dict:
+    key = _sender_key(row['title'])
     return {
         'id': row['id'],
-        'title': row['title'],
+        'sender': key,
+        'sender_label': SENDERS[key],
         'body': row['body'],
-        'link_url': row['link_url'] or '',
-        'link_text': row['link_text'] or '',
     }
 
 
@@ -168,7 +138,7 @@ def admin_page():
         abort(403)
     _ensure_table()
     rows = db.session.execute(text(
-        'SELECT id, title, body, link_url, link_text, targets, active, created_at '
+        'SELECT id, title, body, active, created_at '
         'FROM admin_notices ORDER BY id DESC LIMIT 200'
     )).mappings().all()
     seen_counts = {}
@@ -182,9 +152,7 @@ def admin_page():
         db.session.rollback()
         logger.warning('[admin_notices] seen counts failed: %r', e)
     try:
-        total_users = db.session.execute(text(
-            'SELECT COUNT(*) FROM users'
-        )).scalar() or 0
+        total_users = db.session.execute(text('SELECT COUNT(*) FROM users')).scalar() or 0
     except Exception:  # noqa: BLE001
         db.session.rollback()
         total_users = 0
@@ -192,10 +160,12 @@ def admin_page():
     for r in rows:
         d = dict(r)
         d['seen'] = seen_counts.get(KEY_PREFIX + str(r['id']), 0)
+        d['sender'] = _sender_key(r['title'])
         notices.append(d)
     resp = current_app.make_response(render_template(
         'admin/notices.html', notices=notices, csrf=_csrf_token(),
         total_users=total_users, created=request.args.get('ok') == '1',
+        senders=SENDERS,
     ))
     resp.headers['Cache-Control'] = 'no-store'
     return resp
@@ -207,22 +177,19 @@ def admin_create():
     if not _is_admin():
         abort(403)
     _check_csrf()
-    title = (request.form.get('title') or '').strip()[:MAX_TITLE]
+    sender = (request.form.get('sender') or 'support').strip()
+    if sender not in SENDERS:
+        sender = 'support'
     body = (request.form.get('body') or '').strip()[:MAX_BODY]
-    link_url = (request.form.get('link_url') or '').strip()[:500]
-    link_text = (request.form.get('link_text') or '').strip()[:120]
-    targets = _parse_targets(request.form.get('targets') or '')
-    if not title or not body:
+    if not body:
         abort(400)
-    if link_url and not (link_url.startswith('/') or link_url.startswith('http://') or link_url.startswith('https://')):
-        link_url = ''
     _ensure_table()
     try:
         db.session.execute(text(
             'INSERT INTO admin_notices (title, body, link_url, link_text, targets, active, created_by, created_at) '
-            'VALUES (:t, :b, :lu, :lt, :tg, :a, :cb, :ca)'
-        ), {'t': title, 'b': body, 'lu': link_url or None, 'lt': link_text or None,
-            'tg': targets, 'a': True, 'cb': current_user.id, 'ca': datetime.utcnow()})
+            'VALUES (:t, :b, NULL, NULL, NULL, :a, :cb, :ca)'
+        ), {'t': SENDERS[sender], 'b': body, 'a': True,
+            'cb': current_user.id, 'ca': datetime.utcnow()})
         db.session.commit()
     except Exception as e:  # noqa: BLE001
         db.session.rollback()
@@ -239,9 +206,7 @@ def admin_toggle(nid: int):
     _check_csrf()
     _ensure_table()
     try:
-        db.session.execute(text(
-            'UPDATE admin_notices SET active = NOT active WHERE id = :id'
-        ), {'id': nid})
+        db.session.execute(text('UPDATE admin_notices SET active = NOT active WHERE id = :id'), {'id': nid})
         db.session.commit()
     except Exception as e:  # noqa: BLE001
         db.session.rollback()
@@ -271,30 +236,22 @@ def admin_delete(nid: int):
 
 @admin_notices_bp.route('/api/admin-notices/pending')
 def api_pending():
-    if not _can_receive():
-        resp = jsonify({'pending': False})
-        resp.headers['Cache-Control'] = 'no-store'
-        return resp
+    if not _is_real_user():
+        return jsonify({'pending': False})
     _ensure_table()
     try:
-        rows = db.session.execute(text(
-            "SELECT n.id, n.title, n.body, n.link_url, n.link_text, n.targets "
-            "FROM admin_notices n "
+        row = db.session.execute(text(
+            "SELECT n.id, n.title, n.body FROM admin_notices n "
             "WHERE n.active = :a AND NOT EXISTS ("
             "  SELECT 1 FROM site_notice_seen s "
             "  WHERE s.user_id = :u AND s.notice_key = 'admin:' || CAST(n.id AS TEXT)) "
-            "ORDER BY n.id ASC LIMIT 20"
-        ), {'u': current_user.id, 'a': True}).mappings().all()
+            "ORDER BY n.id ASC LIMIT 1"
+        ), {'u': current_user.id, 'a': True}).mappings().first()
     except Exception as e:  # noqa: BLE001
         db.session.rollback()
         logger.warning('[admin_notices] pending failed: %r', e)
         return jsonify({'pending': False})
-    for r in rows:
-        if _user_matches(current_user, r['targets']):
-            resp = jsonify({'pending': True, 'notice': _row_to_notice(r)})
-            resp.headers['Cache-Control'] = 'no-store'
-            return resp
-    resp = jsonify({'pending': False})
+    resp = jsonify({'pending': True, 'notice': _row_to_notice(row)} if row else {'pending': False})
     resp.headers['Cache-Control'] = 'no-store'
     return resp
 
@@ -325,7 +282,7 @@ def api_seen():
     return jsonify({'ok': True})
 
 
-# ── Инжектор: кнопка в шапке (админ) + скрипт модалки (только админ по умолчанию) ──
+# ── Инжектор: кнопка в шапке (админ) + скрипт карточки (все пользователи) ─────
 
 _NAV_SCRIPT = (
     '<script id="ft-admin-notices-nav">(function(){'
@@ -346,7 +303,7 @@ _NAV_SCRIPT = (
     '})();</script>'
 )
 
-_USER_SCRIPT = '<script id="ft-admin-notices-script" src="/static/js/admin_notices.js?v=1" defer></script>'
+_USER_SCRIPT = '<script id="ft-admin-notices-script" src="/static/js/admin_notices.js?v=2" defer></script>'
 
 
 def install_admin_notices(app, register=None) -> None:
@@ -378,8 +335,7 @@ def install_admin_notices(app, register=None) -> None:
             extra = ''
             if _is_admin() and 'id="ft-admin-notices-nav"' not in body:
                 extra += _NAV_SCRIPT
-            if (_can_receive() and not path.startswith('/admin/notices')
-                    and 'id="ft-admin-notices-script"' not in body):
+            if not path.startswith('/admin/notices') and 'id="ft-admin-notices-script"' not in body:
                 extra += _USER_SCRIPT
             if extra:
                 response.set_data(body.replace('</body>', extra + '</body>', 1))

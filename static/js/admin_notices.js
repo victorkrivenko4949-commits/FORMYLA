@@ -1,4 +1,4 @@
-/* ADMIN_NOTICES_V1 — показывает уведомление от админа один раз на пользователя.
+/* ADMIN_NOTICES_V2 — простая карточка-уведомление в правом верхнем углу, один раз на пользователя.
    Сервер: GET /api/admin-notices/pending, POST /api/admin-notices/seen {id}. */
 (function () {
   if (window.__ftAdminNoticesInit) return;
@@ -20,45 +20,57 @@
     } catch (e) { return Promise.resolve(); }
   }
 
+  function injectCss() {
+    if (document.getElementById('ft-notice-css')) return;
+    var st = document.createElement('style');
+    st.id = 'ft-notice-css';
+    st.textContent =
+      '#ft-notice{position:fixed;top:84px;right:18px;z-index:30500;width:340px;max-width:calc(100vw - 24px);' +
+      'background:var(--card,#141a2e);color:var(--text,#e2e8f0);border:1px solid rgba(255,255,255,.12);border-radius:14px;' +
+      'box-shadow:0 14px 40px rgba(0,0,0,.45);padding:14px 14px 12px;font-size:14px;line-height:1.45;' +
+      'transform:translateY(-8px);opacity:0;transition:transform .25s ease,opacity .25s ease}' +
+      '#ft-notice.is-in{transform:none;opacity:1}' +
+      '#ft-notice .ft-n-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}' +
+      '#ft-notice .ft-n-ico{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex:none}' +
+      '#ft-notice .ft-n-ico.support{background:rgba(168,85,247,.18)}' +
+      '#ft-notice .ft-n-ico.curator{background:rgba(76,125,255,.18)}' +
+      '#ft-notice .ft-n-from{font-weight:700;font-size:13px}' +
+      '#ft-notice .ft-n-sub{font-size:11px;color:rgba(255,255,255,.45)}' +
+      '#ft-notice .ft-n-x{margin-left:auto;background:none;border:0;color:rgba(255,255,255,.45);font-size:18px;line-height:1;cursor:pointer;padding:2px 4px}' +
+      '#ft-notice .ft-n-body{white-space:pre-wrap;color:var(--text,#e2e8f0);margin:2px 0 10px}' +
+      '#ft-notice .ft-n-ok{display:block;width:100%;padding:9px 0;border:0;border-radius:9px;font-weight:700;cursor:pointer;' +
+      'background:rgba(255,255,255,.08);color:#e2e8f0}' +
+      '#ft-notice .ft-n-ok:hover{background:rgba(255,255,255,.14)}' +
+      '@media (max-width:640px){#ft-notice{top:auto;bottom:76px;left:12px;right:12px;width:auto}}';
+    document.head.appendChild(st);
+  }
+
   function show(n) {
-    if (document.getElementById('ft-admin-notice-overlay')) return;
-    var ov = document.createElement('div');
-    ov.id = 'ft-admin-notice-overlay';
-    ov.setAttribute('role', 'dialog');
-    ov.setAttribute('aria-modal', 'true');
-    ov.style.cssText = 'position:fixed;inset:0;z-index:30500;background:rgba(2,6,23,.72);' +
-      'backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
-    var link = '';
-    if (n.link_url) {
-      link = '<a href="' + esc(n.link_url) + '" id="ft-admin-notice-link" style="display:inline-block;' +
-        'padding:11px 18px;border-radius:10px;font-weight:700;text-decoration:none;' +
-        'background:linear-gradient(135deg,#38bdf8,#818cf8);color:#0b1020;">' +
-        esc(n.link_text || 'Открыть') + '</a>';
-    }
-    ov.innerHTML =
-      '<div style="width:100%;max-width:520px;background:var(--card,#141a2e);border:1px solid rgba(244,185,66,.45);' +
-      'border-radius:18px;padding:22px 22px 18px;box-shadow:0 20px 60px rgba(0,0,0,.5);color:var(--text,#e2e8f0);">' +
-        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
-          '<span style="font-size:22px;">🔔</span>' +
-          '<h3 style="margin:0;font-size:19px;line-height:1.25;">' + esc(n.title) + '</h3>' +
-        '</div>' +
-        '<div style="white-space:pre-wrap;line-height:1.5;font-size:15px;color:var(--text,#e2e8f0);margin:0 0 18px;">' +
-          esc(n.body) + '</div>' +
-        '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">' + link +
-          '<button type="button" id="ft-admin-notice-ok" style="padding:11px 18px;border:1px solid rgba(255,255,255,.14);' +
-          'border-radius:10px;background:rgba(255,255,255,.06);color:#e2e8f0;font-weight:700;cursor:pointer;">Понятно</button>' +
-        '</div>' +
-      '</div>';
-    document.body.appendChild(ov);
+    if (document.getElementById('ft-notice')) return;
+    injectCss();
+    var isCurator = n.sender === 'curator';
+    var box = document.createElement('div');
+    box.id = 'ft-notice';
+    box.setAttribute('role', 'status');
+    box.innerHTML =
+      '<div class="ft-n-head">' +
+        '<div class="ft-n-ico ' + (isCurator ? 'curator' : 'support') + '">' + (isCurator ? '\uD83C\uDF93' : '\uD83D\uDCAC') + '</div>' +
+        '<div><div class="ft-n-from">' + esc(n.sender_label || (isCurator ? 'Куратор' : 'Поддержка')) + '</div>' +
+        '<div class="ft-n-sub">FORMYLA.net</div></div>' +
+        '<button type="button" class="ft-n-x" aria-label="Закрыть">×</button>' +
+      '</div>' +
+      '<div class="ft-n-body">' + esc(n.body) + '</div>' +
+      '<button type="button" class="ft-n-ok">Ок</button>';
+    document.body.appendChild(box);
+    requestAnimationFrame(function () { box.classList.add('is-in'); });
     function close() {
-      markSeen(n.id).catch(function(){}).then(function () {
-        if (ov.parentNode) ov.parentNode.removeChild(ov);
+      box.classList.remove('is-in');
+      markSeen(n.id).catch(function () {}).then(function () {
+        setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 250);
       });
     }
-    var ok = document.getElementById('ft-admin-notice-ok');
-    if (ok) ok.addEventListener('click', close);
-    var lk = document.getElementById('ft-admin-notice-link');
-    if (lk) lk.addEventListener('click', function () { markSeen(n.id); });
+    box.querySelector('.ft-n-ok').addEventListener('click', close);
+    box.querySelector('.ft-n-x').addEventListener('click', close);
   }
 
   function run() {
@@ -69,8 +81,8 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(run, 1200); });
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(run, 1000); });
   } else {
-    setTimeout(run, 1200);
+    setTimeout(run, 1000);
   }
 })();
