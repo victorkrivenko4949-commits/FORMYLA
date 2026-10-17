@@ -153,3 +153,22 @@
 .fa .fa-finale__end{margin:26px 0 0!important;font-family:var(--serif);font-style:italic;font-size:1.4rem;color:var(--amber)!important}
 @media(prefers-reduced-motion:reduce){.fa,.fa *{scroll-behavior:auto!important;transition:none!important}
 }
+
+/* ── Баг Лаврика #15: «Полностью удали Мой трекер, всё остальное не трогай» ────── */
+.fa .fa-tracker{display:none!important}
+
+/* ── Баг Лаврика #16: «не отцентрированы значки + внутри кружочков» ───────────
+   Раньше «+» был текстовым глифом (content:"+"), а у него в шрифте смещённые
+   метрики — визуально сидел выше/правее центра. Теперь плюс рисуется двумя
+   полосками через background-image, центр геометрически точный; поворот на
+   45° при раскрытии (→ крестик) сохранён. */
+.fa .fa-spoiler summary::after,.fa .fa-faq summary::after{
+  content:"";
+  width:28px;height:28px;border-radius:50%;
+  background-color:rgba(244,162,89,.12);
+  background-image:linear-gradient(var(--amber),var(--amber)),linear-gradient(var(--amber),var(--amber));
+  background-size:12px 2px,2px 12px;
+  background-position:center center;
+  background-repeat:no-repeat;
+  border:1px solid rgba(244,162,89,.45);
+}
