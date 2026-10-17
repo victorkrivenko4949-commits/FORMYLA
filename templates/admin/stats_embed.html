@@ -1,0 +1,5 @@
+{% extends "admin/stats_base.html" %}
+{% block stats_content %}
+<div class="st-muted" style="margin-bottom:10px;">Существующая страница без изменений · <a href="{{ target }}" target="_blank" style="color:#9ec1ff;">открыть отдельно</a></div>
+<iframe class="st-iframe" src="{{ target }}{% if '?' in target %}&{% else %}?{% endif %}embed=1" loading="lazy"></iframe>
+{% endblock %}

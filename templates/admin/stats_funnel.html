@@ -1,0 +1,29 @@
+{% extends "admin/stats_base.html" %}
+{% block stats_content %}
+<table class="st">
+  <thead><tr><th>Шаг</th><th>Уникальных</th><th>От предыдущего</th><th>От визитов</th><th style="width:40%"></th></tr></thead>
+  <tbody>
+  {% for st in steps %}
+    <tr>
+      <td>{{ st.title }} <span class="st-muted">({{ st.event }})</span></td>
+      <td><b>{{ st.n }}</b></td>
+      <td>{% if st.cr_prev is not none %}{{ st.cr_prev }}%{% else %}—{% endif %}</td>
+      <td>{% if st.cr_first is not none %}{{ st.cr_first }}%{% else %}—{% endif %}</td>
+      <td style="text-align:left;"><div class="st-bar" style="width:{{ (100 * st.n / max_n)|round|int }}%;"></div></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h3 style="margin:26px 0 10px;color:#e2e8f0;font-size:16px;">По дням (событий)</h3>
+<table class="st">
+  <thead><tr><th>День</th>{% for k in step_keys %}<th>{{ k }}</th>{% endfor %}<th>limit_hit</th></tr></thead>
+  <tbody>
+  {% for day, d in days.items() %}
+    <tr><td>{{ day }}</td>{% for k in step_keys %}<td>{{ d.get(k, 0) }}</td>{% endfor %}<td>{{ d.get('limit_hit', 0) }}</td></tr>
+  {% else %}
+    <tr><td colspan="{{ step_keys|length + 2 }}" class="st-muted">Событий за период пока нет — они начнут появляться после деплоя FUNNEL_V1.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
