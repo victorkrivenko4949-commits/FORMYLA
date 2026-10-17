@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 """ADMIN_STATS_V1 (18.10.2026) — единая панель статистики /admin/stats с левым меню.
 
-Реестр SECTIONS описывает все разделы: готовые (view или embed существующей
-страницы) и запланированные (ready=False → заглушка с датой по плану запуска
-монетизации). Данные — funnel_events (services/funnel.py), site_time_sections
-(services/site_stats.py), users, subscriptions.
+Реестр SECTIONS описывает все разделы. kind:
+  view  — строится здесь (overview/funnel/sources/env_flags) или в
+          routes/admin_stats_sections.py (блоки: карточки/таблицы/заметки);
+  embed — существующая страница встраивается как есть (iframe);
+  stub  — заглушка (на случай, если раздел временно отключён).
+Данные — funnel_events (services/funnel.py), site_time_sections (services/site_stats.py),
+users, subscriptions, usage_daily, streak_records, geo_drawing_history.
 
 Откат: ADMIN_STATS_ENABLED=0. Доступ — только User.is_admin.
 Не правит app.py: подключается через routes/__init__.py.
@@ -43,54 +46,53 @@ SOURCE_TITLES = {
 
 ENV_FLAGS = ('PAYWALL_ENABLED', 'PAYWALL_START_DATE', 'PAYWALL_PREFIXES', 'PAYWALL_AB',
              'METHOD_WEEK_ALLOWED_USERS', 'FREE_TASKS_PER_DAY', 'FREE_AI_PER_DAY', 'TRIAL_DAYS',
-             'FUNNEL_ENABLED', 'ADMIN_STATS_ENABLED', 'YANDEX_METRIKA_ID', 'PLAUSIBLE_DOMAIN',
-             'ADMIN_BASE_AUTOREG', 'PWA_AUTOREG', 'SURVEYS_AUTOREG')
+             'FUNNEL_ENABLED', 'ADMIN_STATS_ENABLED', 'ADMIN_STATS_REDIRECTS', 'YANDEX_METRIKA_ID',
+             'PLAUSIBLE_DOMAIN', 'ADMIN_BASE_AUTOREG', 'PWA_AUTOREG', 'SURVEYS_AUTOREG')
 
-# slug, title, group, kind (view|embed|stub), target (view name | url), ready, since, note
+# slug, title, group, kind (view|embed|stub), target (url для embed), ready, since, note
 SECTIONS = [
     # Сводка
     dict(slug='overview', title='Сводка', group='Сводка', kind='view', ready=True),
     # Привлечение
     dict(slug='funnel', title='Воронка', group='Привлечение', kind='view', ready=True),
     dict(slug='sources', title='Источники', group='Привлечение', kind='view', ready=True),
-    dict(slug='referrals', title='Рефералы', group='Привлечение', kind='stub', ready=False, since='27.10',
-         note='Кто кого привёл (users.invited_by), оплаты приглашённых. Нужны реферальные ссылки ?ref=u_<id>.'),
+    dict(slug='referrals', title='Рефералы', group='Привлечение', kind='view', ready=True,
+         note='Кто кого привёл (users.invited_by), визиты по ?ref=u_<id>, оплаты приглашённых.'),
     # Активность
     dict(slug='users', title='Пользователи', group='Активность', kind='embed', target='/admin/users', ready=True),
     dict(slug='sections', title='Разделы сайта', group='Активность', kind='embed', target='/admin/users/sections', ready=True),
     dict(slug='returns', title='Возвраты', group='Активность', kind='embed', target='/admin/users/returns', ready=True),
     dict(slug='daily_tasks', title='Задачи дня', group='Активность', kind='embed', target='/admin/daily_tasks/dashboard', ready=True),
-    dict(slug='streaks', title='Серии и XP', group='Активность', kind='stub', ready=False, since='21.10',
-         note='Доля учеников с серией ≥ 7, разрывы серий по дням — контроль правила серии для Free с 3 задачами.'),
+    dict(slug='streaks', title='Серии и XP', group='Активность', kind='view', ready=True,
+         note='Распределение серий (streak_records), доля ≥ 7 дней — контроль правила серии для Free с 3 задачами.'),
     # Монетизация
-    dict(slug='limits', title='Лимиты', group='Монетизация', kind='stub', ready=False, since='21.10',
-         note='limit_hit по дням, доля упёршихся среди активных, разрез A/B-когорты 50/50. Экран для решения 11.11.'),
-    dict(slug='paywall', title='Paywall и витрина', group='Монетизация', kind='stub', ready=False, since='21.10',
+    dict(slug='limits', title='Лимиты', group='Монетизация', kind='view', ready=True,
+         note='limit_hit по дням и когортам A/B, доля от DAU. Экран для решения 11.11.'),
+    dict(slug='paywall', title='Paywall и витрина', group='Монетизация', kind='view', ready=True,
          note='paywall_view → subscribe_view → payment_success по точке входа (from=).'),
-    dict(slug='subscriptions', title='Подписки', group='Монетизация', kind='stub', ready=False, since='19.10',
-         note='Активные по тарифам (student_month, student_year, family_month, teacher_month, разовые), MRR, прогноз к 100 тыс. ₽/мес, отмены.'),
-    dict(slug='founders', title='Основатели', group='Монетизация', kind='stub', ready=False, since='20.10',
-         note='users.is_founder, купившие ранний доступ 2 790 ₽, founder_offer_click, срок до 31.01.2027.'),
-    dict(slug='trial', title='Триал', group='Монетизация', kind='stub', ready=False, since='20.10',
-         note='Выдано/активно (users.trial_until), конверсия триал → оплата по дням до истечения (TRIAL_DAYS=14).'),
-    dict(slug='payments', title='Платежи', group='Монетизация', kind='stub', ready=False, since='19.10',
-         note='Лента webhook ЮKassa: успешные, отклонённые, повторные уведомления, возвраты.'),
-    dict(slug='cohorts', title='Когорты', group='Монетизация', kind='stub', ready=False, since='25.10',
-         note='По неделе регистрации: дошли до первой задачи / до оплаты; таблица когорт.'),
+    dict(slug='subscriptions', title='Подписки', group='Монетизация', kind='view', ready=True,
+         note='Активные по тарифам, MRR и прогресс к 100 тыс. ₽/мес, истекающие, отмены.'),
+    dict(slug='founders', title='Основатели', group='Монетизация', kind='view', ready=True,
+         note='users.is_founder (после PR 19.10), клики по офферу, годовые по 2 790 ₽, дни до 31.01.2027.'),
+    dict(slug='trial', title='Триал', group='Монетизация', kind='view', ready=True,
+         note='users.trial_until (после PR 20.10): выдано, активно, истекают, конверсия в оплату.'),
+    dict(slug='payments', title='Платежи', group='Монетизация', kind='view', ready=True,
+         note='payment_success из webhook ЮKassa: суммы по тарифам, последние платежи.'),
+    dict(slug='cohorts', title='Когорты', group='Монетизация', kind='view', ready=True,
+         note='По неделе регистрации: анкета, первая задача, оплата.'),
     # Продукт
-    dict(slug='ai_usage', title='ИИ-разборы и бюджет', group='Продукт', kind='stub', ready=False, since='21.10',
-         note='Использование FREE_AI_PER_DAY, расход на модели (usage_daily, budget.html).'),
-    dict(slug='curator', title='Куратор и план', group='Продукт', kind='stub', ready=False, since='25.10',
-         note='Статусы планов куратора (curator_plan_status.html).'),
-    dict(slug='drawings_method_week', title='Чертежи и метод недели', group='Продукт', kind='stub', ready=False, since='21.10',
-         note='Спрос на paywall-префиксы /geometry/draw и /method_week (geo_drawing_history, paywall_view).'),
+    dict(slug='ai_usage', title='ИИ-разборы и бюджет', group='Продукт', kind='view', ready=True,
+         note='usage_daily: разборы, токены, cost_usd, дни на лимите FREE_AI_PER_DAY, топ пользователей.'),
+    dict(slug='curator', title='Куратор и план', group='Продукт', kind='view', ready=True,
+         note='Состояния куратора и ссылки на существующие страницы статуса плана/бюджета.'),
+    dict(slug='drawings_method_week', title='Чертежи и метод недели', group='Продукт', kind='view', ready=True,
+         note='geo_drawing_history по дням + paywall_view по страницам.'),
     dict(slug='daily_pool', title='Пул задач дня', group='Продукт', kind='embed', target='/admin/daily_pool', ready=True),
     # Люди
     dict(slug='support', title='Поддержка', group='Люди', kind='embed', target='/admin/support', ready=True),
-    dict(slug='surveys', title='Опросы и оценки', group='Люди', kind='stub', ready=False, since='25.10',
-         note='Опросы (routes/surveys.py) + оценки разделов (section_feedback).'),
-    dict(slug='teachers_parents', title='Учителя и родители', group='Люди', kind='stub', ready=False, since='27.10',
-         note='Классы, привязки, активность — под тарифы Семья/Учитель.'),
+    dict(slug='surveys', title='Опросы и оценки', group='Люди', kind='embed', target='/admin/users/surveys', ready=True),
+    dict(slug='teachers_parents', title='Учителя и родители', group='Люди', kind='view', ready=True,
+         note='Роли, визиты по меткам teacher/parent, связки (когда появятся).'),
     # Система
     dict(slug='pwa', title='PWA-установки', group='Система', kind='embed', target='/admin/pwa/stats', ready=True),
     dict(slug='insights', title='Инсайты', group='Система', kind='embed', target='/api/admin/insights/stats', ready=True),
@@ -104,6 +106,7 @@ LEGACY_REDIRECTS = {
     '/admin/users': 'users',
     '/admin/users/sections': 'sections',
     '/admin/users/returns': 'returns',
+    '/admin/users/surveys': 'surveys',
 }
 
 
@@ -300,9 +303,24 @@ def section(slug):
     if s['kind'] == 'stub' or not s.get('ready'):
         return _render(s, 'admin/stats_stub.html')
     fn = globals().get(f'view_{slug}')
-    if fn is None:
+    if fn is not None:
+        return fn(s)
+    # блочные разделы из routes/admin_stats_sections.py
+    try:
+        from routes import admin_stats_sections as sec
+        builder = sec.VIEWS.get(slug)
+    except Exception as e:  # noqa: BLE001
+        logger.warning('admin_stats_sections import failed: %r', e)
+        builder = None
+    if builder is None:
         return _render(s, 'admin/stats_stub.html')
-    return fn(s)
+    d_from, d_to, _ = period_from_request()
+    try:
+        blocks = builder(d_from, d_to)
+    except Exception as e:  # noqa: BLE001
+        logger.exception('admin_stats section %s failed', slug)
+        blocks = [{'type': 'note', 'text': f'Раздел временно недоступен: {e!r}'}]
+    return _render(s, 'admin/stats_blocks.html', blocks=blocks)
 
 
 def view_overview(s):

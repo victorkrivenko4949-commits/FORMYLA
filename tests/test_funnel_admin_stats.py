@@ -217,9 +217,38 @@ def test_admin_stats_access_and_registry(app):
     c2 = app.test_client()
     c2.get(f'/login/{admin}')
     assert c2.get('/admin/stats/').status_code == 302
-    for slug in ('overview', 'funnel', 'sources', 'env_flags', 'limits', 'users'):
-        r = c2.get(f'/admin/stats/{slug}?p=30')
-        assert r.status_code == 200, slug
+    for s in SECTIONS:   # все разделы отдают 200, даже если таблиц ещё нет (fail-open)
+        r = c2.get(f"/admin/stats/{s['slug']}?p=30")
+        assert r.status_code == 200, s['slug']
     r = c2.get('/admin/stats/funnel?p=7&csv=1')
     assert r.status_code == 200 and r.mimetype == 'text/csv'
     assert c2.get('/admin/stats/nope').status_code == 404
+
+
+def test_block_sections_with_data(app):
+    """Платежи/когорты/лимиты считают цифры из funnel_events."""
+    admin = _mk_user(app, admin=True)
+    uid = _mk_user(app)
+    c = app.test_client()
+    c.get(f'/login/{uid}')
+    c.post('/api/ev', json={'event': 'limit_hit', 'props': {'kind': 'task', 'ab': 1}})
+    c.post('/api/ev', json={'event': 'paywall_view', 'props': {'from': 'limit'}})
+    with app.test_request_context('/'):
+        from services.funnel import payment_success
+        assert payment_success(uid, 'student_year', 2790, payment_id='pay-1')
+    from routes import admin_stats_sections as sec
+    from datetime import date
+    today = (datetime.utcnow() + timedelta(hours=3)).date()
+    with app.test_request_context('/admin/stats/payments'):
+        blocks = sec.payments(today - timedelta(days=7), today)
+        cards = [b for b in blocks if b['type'] == 'cards'][0]['items']
+        assert cards[0]['value'] == 1 and cards[1]['value'].replace(' ', '') == '2790'
+        lim = sec.limits(today - timedelta(days=7), today)
+        assert lim[0]['items'][0]['value'] == 1
+        pw = sec.paywall(today - timedelta(days=7), today)
+        assert pw[0]['items'][0]['value'] == 1
+        coh = sec.cohorts(today - timedelta(days=7), today)
+        assert coh[0]['type'] == 'table' and len(coh[0]['rows']) >= 1
+        for name, fn in sec.VIEWS.items():
+            out = fn(today - timedelta(days=7), today)
+            assert isinstance(out, list) and out, name
