@@ -69,6 +69,7 @@
 .fa .fa-fig figcaption{margin-top:10px;font-size:.9375rem;color:var(--muted);line-height:1.5}
 .fa .fa-fig--narrow figcaption{max-width:480px;margin-left:auto;margin-right:auto}
 .fa .fa-fig--pic img{width:100%;max-width:560px;aspect-ratio:1/1;object-fit:cover;border-radius:16px;border:1px solid var(--border-mid);box-shadow:0 16px 40px rgba(0,0,0,.5);background:#070C18}
+.fa .fa-fig--pic figcaption{display:none}
 @media(min-width:900px){.fa .fa-fig--pic{margin-left:-40px}
 }.fa .fa-table-scroll{overflow-x:auto;margin:28px auto;max-width:860px;border:1px solid var(--border-mid);border-radius:16px;background:var(--field)}
 .fa table{border-collapse:collapse;width:100%;min-width:520px;font-size:.9375rem;line-height:1.5}
