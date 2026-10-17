@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Уведомления — FORMYLA{% endblock %}
+{% block content %}
+<style>
+.ntc-wrap{max-width:1100px;margin:24px auto;padding:0 16px 90px}
+.ntc-panel{margin:24px 0;padding:20px;background:var(--card,#141a2e);border:1px solid var(--border,#334155);border-radius:16px}
+.ntc-form label{display:block;font-weight:600;margin:14px 0 6px}
+.ntc-form input,.ntc-form textarea{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid var(--border,#334155);background:rgba(255,255,255,.04);color:inherit;font:inherit}
+.ntc-form textarea{min-height:120px;resize:vertical}
+.ntc-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:640px){.ntc-row{grid-template-columns:1fr}}
+.ntc-btn{display:inline-block;margin-top:16px;padding:11px 20px;border:0;border-radius:10px;font:inherit;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#F4B942,#e09a1f);color:#1a1205}
+.ntc-mini{padding:6px 10px;border-radius:8px;border:1px solid var(--border,#334155);background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer}
+.ntc-mini.danger{color:#fca5a5;border-color:rgba(248,113,113,.4)}
+.ntc-scroll{overflow-x:auto}.ntc-table{width:100%;border-collapse:collapse;margin:12px 0}
+.ntc-table th,.ntc-table td{padding:10px;text-align:left;border-bottom:1px solid var(--border,#334155);vertical-align:top}
+.ntc-table td{overflow-wrap:anywhere}.ntc-muted{color:var(--muted,#94a3b8)}
+.ntc-body{white-space:pre-wrap;max-width:420px}
+.ntc-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700}
+.ntc-badge.on{background:rgba(34,197,94,.15);color:#86efac}.ntc-badge.off{background:rgba(148,163,184,.15);color:#cbd5e1}
+.ntc-ok{padding:10px 14px;border-radius:10px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);color:#bbf7d0;margin:12px 0}
+</style>
+<main class="ntc-wrap">
+  <h1>🔔 Уведомления</h1>
+  <p><a href="/admin/users">← Статистика пользователей</a> · <a href="/admin/users/surveys">Опросы</a> · <a href="/admin/base">База</a></p>
+  {% if created %}<div class="ntc-ok">Уведомление создано. Пользователи увидят его при следующем заходе на сайт — один раз.</div>{% endif %}
+
+  <section class="ntc-panel">
+    <h2>Новое уведомление</h2>
+    <p class="ntc-muted">Показывается каждому авторизованному пользователю один раз (модальное окно, как «Вы уже решили, какие олимпиады писать?»). Зарегистрированных пользователей сейчас: <strong>{{ total_users }}</strong>.</p>
+    <form class="ntc-form" method="post" action="/admin/notices">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label for="ntc-title">Заголовок</label>
+      <input id="ntc-title" name="title" maxlength="120" required placeholder="Например: Новый каталог олимпиадных задач">
+      <label for="ntc-body">Текст</label>
+      <textarea id="ntc-body" name="body" maxlength="2000" required placeholder="Что хочешь сообщить пользователям. Переносы строк сохраняются."></textarea>
+      <div class="ntc-row">
+        <div>
+          <label for="ntc-link">Ссылка (необязательно)</label>
+          <input id="ntc-link" name="link_url" maxlength="500" placeholder="/olymp-catalog или https://…">
+        </div>
+        <div>
+          <label for="ntc-link-text">Текст кнопки</label>
+          <input id="ntc-link-text" name="link_text" maxlength="120" placeholder="Открыть">
+        </div>
+      </div>
+      <label for="ntc-targets">Кому (необязательно)</label>
+      <input id="ntc-targets" name="targets" placeholder="Пусто — всем. Или ники / e-mail / #id через запятую: lavrik, sasha, #9310">
+      <button type="submit" class="ntc-btn">Отправить</button>
+    </form>
+  </section>
+
+  <section class="ntc-panel">
+    <h2>Отправленные</h2>
+    <div class="ntc-scroll"><table class="ntc-table">
+      <thead><tr><th>#</th><th>Заголовок / текст</th><th>Кому</th><th>Увидели</th><th>Статус</th><th>Создано (UTC)</th><th></th></tr></thead>
+      <tbody>
+      {% for n in notices %}
+      <tr>
+        <td>{{ n.id }}</td>
+        <td><strong>{{ n.title }}</strong><div class="ntc-body ntc-muted">{{ n.body }}</div>
+          {% if n.link_url %}<div class="ntc-muted">🔗 <a href="{{ n.link_url }}">{{ n.link_text or n.link_url }}</a></div>{% endif %}</td>
+        <td>{{ n.targets or 'всем' }}</td>
+        <td>{{ n.seen }}</td>
+        <td>{% if n.active %}<span class="ntc-badge on">активно</span>{% else %}<span class="ntc-badge off">выключено</span>{% endif %}</td>
+        <td>{{ n.created_at }}</td>
+        <td style="white-space:nowrap">
+          <form method="post" action="/admin/notices/{{ n.id }}/toggle" style="display:inline"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="ntc-mini" type="submit">{{ 'Выключить' if n.active else 'Включить' }}</button></form>
+          <form method="post" action="/admin/notices/{{ n.id }}/delete" style="display:inline" onsubmit="return confirm('Удалить уведомление #{{ n.id }}?')"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="ntc-mini danger" type="submit">Удалить</button></form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7">Уведомлений пока нет.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    <p class="ntc-muted">«Увидели» — сколько пользователей закрыли уведомление. Выключенное уведомление больше никому не показывается; при повторном включении его увидят только те, кто ещё не видел.</p>
+  </section>
+</main>
+{% endblock %}
