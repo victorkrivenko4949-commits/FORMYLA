@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Статистика — {{ section.title }} · FORMYLA{% endblock %}
+{% block extra_css %}
+<style>
+  .st-wrap{display:flex;gap:0;min-height:calc(100vh - 80px);max-width:1400px;margin:0 auto;}
+  .st-side{width:250px;flex:0 0 250px;background:#0b1120;border-right:1px solid rgba(255,255,255,.08);padding:18px 12px 40px;}
+  .st-side h4{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:#64748b;margin:16px 10px 6px;}
+  .st-side a{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:8px;color:#cbd5e1;text-decoration:none;font-size:14px;}
+  .st-side a:hover{background:rgba(76,125,255,.10);color:#fff;}
+  .st-side a.active{background:rgba(76,125,255,.18);color:#9ec1ff;font-weight:700;}
+  .st-side a.soon{color:#5b6b85;}
+  .st-side a.soon .since{font-size:11px;color:#475569;border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:1px 6px;}
+  .st-main{flex:1;padding:22px 28px 60px;min-width:0;}
+  .st-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .st-head h1{font-size:22px;margin:0;color:#e2e8f0;}
+  .st-period a{display:inline-block;padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.1);color:#cbd5e1;text-decoration:none;font-size:13px;margin-left:6px;}
+  .st-period a.active{background:#4c7dff;border-color:#4c7dff;color:#fff;}
+  .st-period form{display:inline-flex;gap:6px;margin-left:10px;align-items:center;}
+  .st-period input{background:#111827;border:1px solid rgba(255,255,255,.12);color:#e2e8f0;border-radius:6px;padding:4px 6px;font-size:13px;}
+  .st-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;}
+  .st-card{background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;text-decoration:none;color:inherit;display:block;}
+  .st-card .t{font-size:12px;color:#94a3b8;margin-bottom:6px;}
+  .st-card .v{font-size:26px;font-weight:800;color:#e2e8f0;}
+  .st-card .s{font-size:12px;color:#64748b;margin-top:4px;}
+  table.st{width:100%;border-collapse:collapse;font-size:14px;background:#111827;border-radius:12px;overflow:hidden;}
+  table.st th,table.st td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.06);text-align:right;}
+  table.st th:first-child,table.st td:first-child{text-align:left;}
+  table.st th{color:#94a3b8;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px;}
+  .st-bar{height:10px;background:#4c7dff;border-radius:5px;}
+  .st-note{background:rgba(76,125,255,.07);border:1px solid rgba(76,125,255,.22);border-radius:10px;padding:12px 14px;color:#cbd5e1;font-size:14px;line-height:1.6;}
+  .st-muted{color:#64748b;font-size:13px;}
+  .st-iframe{width:100%;height:calc(100vh - 170px);border:1px solid rgba(255,255,255,.08);border-radius:12px;background:#0b1120;}
+  @media (max-width: 900px){.st-wrap{flex-direction:column}.st-side{width:auto;flex:none;border-right:none;border-bottom:1px solid rgba(255,255,255,.08)}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="st-wrap">
+  <aside class="st-side">
+    {% for group, items in nav %}
+      <h4>{{ group }}</h4>
+      {% for s in items %}
+        <a href="/admin/stats/{{ s.slug }}{% if period and period != '7' %}?p={{ period }}{% if period == 'custom' %}&from={{ d_from }}&to={{ d_to }}{% endif %}{% endif %}"
+           class="{% if s.slug == section.slug %}active{% endif %}{% if not s.ready %} soon{% endif %}">
+          <span>{{ s.title }}</span>
+          {% if not s.ready %}<span class="since">с {{ s.since }}</span>{% endif %}
+        </a>
+      {% endfor %}
+    {% endfor %}
+  </aside>
+  <main class="st-main">
+    <div class="st-head">
+      <h1>{{ section.title }}</h1>
+      {% if section.kind == 'view' and section.slug != 'env_flags' %}
+      <div class="st-period">
+        <a href="?p=today" class="{% if period=='today' %}active{% endif %}">Сегодня</a>
+        <a href="?p=7" class="{% if period=='7' %}active{% endif %}">7 дн</a>
+        <a href="?p=30" class="{% if period=='30' %}active{% endif %}">30 дн</a>
+        <form method="get">
+          <input type="hidden" name="p" value="custom">
+          <input type="date" name="from" value="{{ d_from }}">
+          <input type="date" name="to" value="{{ d_to }}">
+          <button type="submit" style="padding:5px 10px;border-radius:6px;border:none;background:#1f2937;color:#e2e8f0;cursor:pointer;">Показать</button>
+        </form>
+        {% if section.slug in ('funnel','sources') %}
+        <a href="?p={{ period }}&from={{ d_from }}&to={{ d_to }}&csv=1" title="Скачать CSV">CSV</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    <div class="st-muted" style="margin:-8px 0 16px;">Период: {{ d_from.strftime('%d.%m.%Y') }} — {{ d_to.strftime('%d.%m.%Y') }} (МСК)</div>
+    {% block stats_content %}{% endblock %}
+  </main>
+</div>
+{% endblock %}

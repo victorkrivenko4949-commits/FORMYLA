@@ -1,0 +1,21 @@
+{% extends "admin/stats_base.html" %}
+{% block stats_content %}
+<div class="st-cards">
+  {% for c in cards %}
+  <a class="st-card" href="{{ c.link }}">
+    <div class="t">{{ c.title }}</div>
+    <div class="v">{{ c.yesterday }}</div>
+    <div class="s">вчера ({{ yesterday.strftime('%d.%m') }}){% if c.period is not none %} · за период: {{ c.period }}{% endif %}</div>
+  </a>
+  {% endfor %}
+  <a class="st-card" href="/admin/stats/payments">
+    <div class="t">Выручка, ₽</div>
+    <div class="v">{{ '%.0f'|format(rev_y) }}</div>
+    <div class="s">вчера · за период: {{ '%.0f'|format(rev_p) }}</div>
+  </a>
+</div>
+<div class="st-note" style="margin-top:18px;">
+  Утренние 15 минут: DAU, регистрации → анкеты → первые задачи → оплаты, лимиты и выручка.
+  Каждая карточка ведёт в свой раздел. Серые пункты меню появятся по датам плана запуска (19.10–27.10).
+</div>
+{% endblock %}
