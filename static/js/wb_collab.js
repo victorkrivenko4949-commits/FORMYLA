@@ -20,6 +20,11 @@
 //      участник стирал/отменял свой последний штрих (0 объектов) — у всех
 //      пропадало всё.  Теперь такой clear удаляет только объекты отправителя;
 //      полная очистка — только по явному нажатию кнопки #wbClear.
+//   4. Ctrl+Z / Ctrl+Y и кнопки «Отменить/Повторить» во время звонка крутили
+//      ОБЩУЮ историю (в неё попадали и чужие штрихи): отмена убирала чужой
+//      объект локально, а следующий свой штрих рассылал его удаление всем.
+//      Теперь в звонке работает своя история: отменяются только свои
+//      действия, и отмена/повтор синхронно уходят участникам как обычная операция.
 (function () {
   "use strict";
 
@@ -121,6 +126,7 @@
     if (!window.WB || typeof window.WB.applyRemoteOp !== "function") return;
     if (!adds.length && !updates.length && !removes.length) return;
     window.WB.applyRemoteOp({ op: "ops", adds: adds, updates: updates, removes: removes, nextId: localNextId() });
+    noteInbound(adds, updates, removes);
   }
 
   // Слить чужой снимок с нашей доской.  dropMissingOfSender=true —
@@ -181,6 +187,7 @@
         } else if (op.op === "clear") {
           if (msg.all) {
             window.WB.applyRemoteOp({ op: "clear", nextId: localNextId() });
+            known = new Map();
           } else {
             var rm = localObjects().filter(function (o) { return isOwnedBy(o.id, cid); }).map(function (o) { return o.id; });
             applyOps([], [], rm);
@@ -198,36 +205,137 @@
     }
   }
 
+  // ── Согласованное состояние и своя история ─────────────────────────────────────
+  // known: id -> JSON объекта в последнем состоянии, которое видят все.
+  // Локальный коммит = diff(known, текущие объекты); его обратная операция
+  // кладётся в undoStack.  Входящие операции обновляют known точечно.
+  var known = new Map();
+  var undoStack = [];
+  var redoStack = [];
+  var MAX_UNDO = 100;
+
+  function resetKnown() {
+    known = new Map();
+    localObjects().forEach(function (o) { known.set(o.id, JSON.stringify(cleanObj(o))); });
+  }
+  function noteInbound(adds, updates, removes) {
+    adds.forEach(function (o) { known.set(o.id, JSON.stringify(o)); });
+    updates.forEach(function (o) { known.set(o.id, JSON.stringify(o)); });
+    removes.forEach(function (id) { known.delete(id); });
+  }
+  function currentMap() {
+    var m = new Map();
+    localObjects().forEach(function (o) { m.set(o.id, cleanObj(o)); });
+    return m;
+  }
+  function diffAgainstKnown(curMap) {
+    var fwd = { adds: [], updates: [], removes: [] };
+    var inv = { adds: [], updates: [], removes: [] };
+    curMap.forEach(function (o, id) {
+      var prev = known.get(id);
+      var js = JSON.stringify(o);
+      if (prev === undefined) { fwd.adds.push(o); inv.removes.push(id); }
+      else if (prev !== js) { fwd.updates.push(o); inv.updates.push(JSON.parse(prev)); }
+    });
+    known.forEach(function (js, id) {
+      if (!curMap.has(id)) { fwd.removes.push(id); inv.adds.push(JSON.parse(js)); }
+    });
+    return { fwd: fwd, inv: inv };
+  }
+  function isEmptyOp(o) { return !o.adds.length && !o.updates.length && !o.removes.length; }
+  function commitKnown(fwd) {
+    fwd.adds.forEach(function (o) { known.set(o.id, JSON.stringify(o)); });
+    fwd.updates.forEach(function (o) { known.set(o.id, JSON.stringify(o)); });
+    fwd.removes.forEach(function (id) { known.delete(id); });
+  }
+  function sendOps(fwd) {
+    publishAll(packet("op", { op: { op: "ops", adds: fwd.adds, updates: fwd.updates, removes: fwd.removes, nextId: localNextId() } }));
+  }
+
   // ── Отправка локальных изменений ───────────────────────────────────
+  // Содержимое op от whiteboard.js не используем: считаем diff сами
+  // относительно known — так в рассылку попадают только реальные
+  // изменения с момента последней синхронизации.
   function localBroadcaster(op) {
     if (!room || !op) return;
     try {
-      if (op.op === "clear") {
-        publishAll(packet("op", { op: { op: "clear", nextId: op.nextId }, all: Date.now() < explicitClearUntil }));
-        return;
+      var curMap = currentMap();
+      var d = diffAgainstKnown(curMap);
+      if (isEmptyOp(d.fwd)) return;
+      var explicitClear = op.op === "clear" && Date.now() < explicitClearUntil;
+      if (explicitClear) {
+        publishAll(packet("op", { op: { op: "clear", nextId: op.nextId }, all: true }));
+      } else {
+        sendOps(d.fwd);
       }
-      if (op.op === "snapshot" && op.state && Array.isArray(op.state.objects)) {
-        publishAll(packet("op", { op: { op: "snapshot", state: { objects: op.state.objects.map(cleanObj), nextId: op.state.nextId } } }));
-        return;
-      }
-      if (op.op === "ops") {
-        publishAll(packet("op", { op: {
-          op: "ops",
-          adds: (op.adds || []).map(cleanObj),
-          updates: (op.updates || []).map(cleanObj),
-          removes: op.removes || [],
-          nextId: op.nextId
-        } }));
-        return;
-      }
-      publishAll(packet("op", { op: op }));
+      commitKnown(d.fwd);
+      undoStack.push(d.inv);
+      if (undoStack.length > MAX_UNDO) undoStack.shift();
+      redoStack = [];
     } catch (e) { warn("broadcast failed:", e); }
   }
 
-  // Явная очистка — только кнопка «Очистить доску».
+  // Обратная операция к `op` относительно текущего состояния.
+  function inverseOf(op, curMap) {
+    var inv = { adds: [], updates: [], removes: [] };
+    op.adds.forEach(function (o) { var c = curMap.get(o.id); if (c) inv.updates.push(c); else inv.removes.push(o.id); });
+    op.updates.forEach(function (o) { var c = curMap.get(o.id); if (c) inv.updates.push(c); else inv.removes.push(o.id); });
+    op.removes.forEach(function (id) { var c = curMap.get(id); if (c) inv.adds.push(c); });
+    return inv;
+  }
+  function applyOwnOp(op) {
+    if (!window.WB || typeof window.WB.applyRemoteOp !== "function") return;
+    window.WB.applyRemoteOp({ op: "ops", adds: op.adds, updates: op.updates, removes: op.removes, nextId: localNextId() });
+    commitKnown(op);
+    sendOps(op);
+  }
+  function doUndo() {
+    var inv = undoStack.pop();
+    if (!inv) return;
+    var redo = inverseOf(inv, currentMap());
+    applyOwnOp(inv);
+    redoStack.push(redo);
+  }
+  function doRedo() {
+    var op = redoStack.pop();
+    if (!op) return;
+    var inv = inverseOf(op, currentMap());
+    applyOwnOp(op);
+    undoStack.push(inv);
+  }
+  function isEditable(el) {
+    if (!el) return false;
+    var tag = (el.tagName || "").toLowerCase();
+    return tag === "input" || tag === "textarea" || tag === "select" || !!el.isContentEditable;
+  }
+
+  // В звонке перехватываем Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z (и в русской раскладке).
+  window.addEventListener("keydown", function (e) {
+    if (!room) return;
+    if (!(e.ctrlKey || e.metaKey)) return;
+    var k = (e.key || "").toLowerCase(), code = e.code || "";
+    var isZ = k === "z" || k === "я" || code === "KeyZ";
+    var isY = k === "y" || k === "н" || code === "KeyY";
+    var isUndo = isZ && !e.shiftKey;
+    var isRedo = isY || (isZ && e.shiftKey);
+    if (!isUndo && !isRedo) return;
+    if (isEditable(document.activeElement)) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (isUndo) doUndo(); else doRedo();
+  }, true);
+
+  // Кнопки «Отменить/Повторить» (в звонке — своя история) и явная «Очистить доску».
   document.addEventListener("click", function (e) {
     var t = e.target;
-    if (t && t.closest && t.closest("#wbClear")) explicitClearUntil = Date.now() + 3000;
+    if (!t || !t.closest) return;
+    if (t.closest("#wbClear")) { explicitClearUntil = Date.now() + 3000; return; }
+    if (!room) return;
+    var b = t.closest("#wbUndo, #wbRedo, #wbUndoMob, #wbRedoMob");
+    if (!b) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (/^wbRedo/.test(b.id)) doRedo(); else doUndo();
   }, true);
 
   // ── «Позвать всех к себе»: чтение/установка вида доски ─────────────
@@ -352,6 +460,8 @@
     prevBroadcast = window.__wbBroadcast || null;
     window.__wbBroadcast = localBroadcaster;
     hookView();
+    resetKnown();
+    if (!detail.rejoin) { undoStack = []; redoStack = []; }
 
     clearTimeout(helloTimer);
     helloTimer = setTimeout(function () {
@@ -384,6 +494,7 @@
   window.WB_COLLAB = {
     attach: attach, detach: detach, summon: summon, goToView: goToView,
     isAttached: function () { return !!room; },
+    undo: doUndo, redo: doRedo,
     clientId: myCid, getView: function () { return lastView; }
   };
 })();
