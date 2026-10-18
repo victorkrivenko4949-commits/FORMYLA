@@ -8,9 +8,14 @@ solver.py и gates.py:
     конструкциями друг из друга);
   * convexity.install — выпуклость названных многоугольников: семантическая
     проверка контура, opposite_side для выпуклого четырёхугольника и гладкий
-    штраф решателя для same_side/opposite_side.
+    штраф решателя для same_side/opposite_side;
+  * incircle_tangents.install — касательные из точек прямой стороны к вписанной
+    окружности: правила формализатора (reflect_line вместо tangent_point), точный
+    план для семьи «биссектрисы угла и смежного → B1, B2 → касательные K1, K2»,
+    причина исходного отказа в предупреждении эскиза (FALLBACK_FROM).
 Выключатели: GEOEXACT_DIFFICULTY_ROUTER=0, GEOEXACT_FIRST_TOKEN_LIMIT=0,
-GEOEXACT_GENERAL_POSITION=0, GEOEXACT_FORMALIZE_RULES=0, GEOEXACT_CONVEXITY=0.
+GEOEXACT_GENERAL_POSITION=0, GEOEXACT_FORMALIZE_RULES=0, GEOEXACT_CONVEXITY=0,
+GEOEXACT_INCIRCLE_TANGENTS=0.
 """
 from . import llm as _llm
 from . import difficulty as _difficulty
@@ -22,9 +27,11 @@ from . import render as _render
 from . import bisector_marks as _bisector_marks
 from . import semantics as _semantics
 from . import convexity as _convexity
+from . import incircle_tangents as _incircle_tangents
 
 _difficulty.install(_llm)
 _general_position.install(_solver, _gates)
 _formalize_rules.install(_llm)
 _bisector_marks.install(_render)
 _convexity.install(_semantics, _llm, solver_module=_solver)
+_incircle_tangents.install(_semantics, _llm)
