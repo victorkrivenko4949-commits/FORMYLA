@@ -17,27 +17,18 @@ ENV variables (Render -> Environment)
 If any of these are missing the blueprint stays registered but every endpoint
 returns 503 with a friendly explanation so the frontend can hide the button.
 
-JWT is generated with the standard library only (no PyJWT dependency).  The
-spec we implement is LiveKit's documented token shape:
+JWT is generated with the standard library only (no PyJWT dependency).
 
-    header  = { "alg": "HS256", "typ": "JWT" }
-    payload = {
-        "iss": <api_key>,
-        "sub": <identity>,
-        "name": <display name>,
-        "nbf": now,
-        "iat": now,
-        "exp": now + 60*60,                  # 1 hour
-        "video": {
-            "room":      <room>,
-            "roomJoin":  True,
-            "canPublish": True,
-            "canSubscribe": True,
-            "canPublishData": True
-        }
-    }
-    sig = HMAC_SHA256( base64url(header) + "." + base64url(payload), secret )
-    token = base64url(header) + "." + base64url(payload) + "." + base64url(sig)
+MEET_STABILITY_V1 (почему раньше «выкидывало»):
+  * токен жил 1 час — после истечения LiveKit не давал переподключиться,
+    и при любом обрыве сети участник вылетал.  Теперь TTL = 8 часов, а
+    клиент при обрыве сам берёт свежий токен (см. static/js/wb_meet.js).
+  * счётчик участников комнаты никогда не «протухал»: закрытая вкладка
+    без /release занимала слот навсегда, и через несколько перезаходов
+    комната отвечала 409 «заполнена».  Теперь слот живёт, пока клиент
+    шлёт /heartbeat (раз в минуту); без heartbeat слот освобождается
+    через SLOT_TTL_SECONDS.  Повторный вход с тем же identity не
+    занимает второй слот.
 """
 
 from __future__ import annotations
@@ -49,6 +40,7 @@ import json
 import logging
 import os
 import re
+import threading
 import time
 import uuid
 
@@ -59,20 +51,21 @@ logger = logging.getLogger(__name__)
 wb_meet_bp = Blueprint("wb_meet", __name__, url_prefix="/api/wb_meet")
 
 # How long each issued token stays valid.  LiveKit lets clients reconnect
-# transparently while the JWT is still good; one hour is plenty for a
-# tutoring session and keeps the blast radius small if a token leaks.
-TOKEN_TTL_SECONDS = 60 * 60
+# transparently only while the JWT is still good, so a long TTL is what
+# keeps a 2-3 hour lesson from being "kicked".  The client also re-requests
+# a token on every reconnect, so a leaked token is still low-risk.
+TOKEN_TTL_SECONDS = 8 * 60 * 60
 
-# Soft cap on participants per room — enforced at token-issue time.  LiveKit
-# itself has no built-in "max participants" config in the free Cloud plan;
-# we just refuse to mint more tokens once the limit is reached.
+# Soft cap on participants per room — enforced at token-issue time.
 MAX_PARTICIPANTS_PER_ROOM = 10
 
-# In-memory bookkeeping: room_id -> set(identities).  Resets on process
-# restart;  that is fine — the real source of truth is the LiveKit server,
-# and we only use this to enforce the 10-person cap on our side.
-_ROOM_COUNTS: dict[str, set[str]] = {}
-import threading
+# A slot is considered abandoned if the browser hasn't pinged /heartbeat
+# (or re-requested a token) for this long.
+SLOT_TTL_SECONDS = 3 * 60
+
+# In-memory bookkeeping: room_id -> { identity: last_seen_ts }.  Resets on
+# process restart; that is fine — the real source of truth is LiveKit.
+_ROOM_COUNTS: dict[str, dict[str, float]] = {}
 _LOCK = threading.RLock()
 
 
@@ -100,11 +93,10 @@ def _make_token(api_key: str, api_secret: str, *,
         "iss": api_key,
         "sub": identity,
         "name": name,
-        "nbf": now,
+        "nbf": now - 10,            # небольшой запас на рассинхрон часов
         "iat": now,
         "exp": now + int(ttl_seconds),
         "jti": uuid.uuid4().hex,
-        # LiveKit-specific "video grant" — what the participant is allowed to do.
         "video": {
             "room":            room,
             "roomJoin":        True,
@@ -117,24 +109,25 @@ def _make_token(api_key: str, api_secret: str, *,
     p_b = _b64url(json.dumps(payload, separators=(",", ":")).encode("utf-8"))
     signing_input = f"{h_b}.{p_b}".encode("ascii")
     sig = hmac.new(api_secret.encode("utf-8"), signing_input, hashlib.sha256).digest()
-    s_b = _b64url(sig)
-    return f"{h_b}.{p_b}.{s_b}"
+    return f"{h_b}.{p_b}.{_b64url(sig)}"
 
 
-# Allow ASCII letters, digits, dash, underscore.  Same rules as the 1-to-1
-# call blueprint so a room code works in both UIs interchangeably.
 _ROOM_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 _NAME_RE = re.compile(r"^[\w\u00A0-\uFFFF .,\-']{1,40}$", re.UNICODE)
+_IDENT_RE = re.compile(r"^[a-f0-9]{12}$")
+
+
+def _prune_locked(room: str) -> dict[str, float]:
+    """Drop abandoned slots for `room`.  Caller must hold _LOCK."""
+    members = _ROOM_COUNTS.setdefault(room, {})
+    cutoff = time.time() - SLOT_TTL_SECONDS
+    for ident in [i for i, ts in members.items() if ts < cutoff]:
+        members.pop(ident, None)
+    return members
 
 
 @wb_meet_bp.route("/config", methods=["GET"])
 def config():
-    """Tiny endpoint the frontend uses to know whether the feature is wired up.
-
-    Never reveals the API secret.  Returns:
-      { enabled: true, url: "wss://...", max: 10 }   if env is set
-      { enabled: false, reason: "..." }              otherwise
-    """
     env = _env()
     if not env:
         return jsonify({
@@ -147,6 +140,7 @@ def config():
         "url": url,
         "max": MAX_PARTICIPANTS_PER_ROOM,
         "token_ttl_seconds": TOKEN_TTL_SECONDS,
+        "heartbeat_seconds": 60,
     })
 
 
@@ -155,15 +149,12 @@ def token():
     """Issue a LiveKit access JWT for joining {room} as {name}.
 
     Request JSON:
-        { "room": "math-42", "name": "Виктор" }
-
-    Response JSON (200):
-        { "token": "<jwt>", "url": "wss://...", "identity": "...", "room": "..." }
+        { "room": "math-42", "name": "Виктор", "identity": "<optional, for rejoin>" }
 
     Errors:
         503  feature not configured on the server
         400  bad / missing arguments
-        409  room is full (>= MAX_PARTICIPANTS_PER_ROOM)
+        409  room is full (>= MAX_PARTICIPANTS_PER_ROOM live slots)
     """
     env = _env()
     if not env:
@@ -173,26 +164,28 @@ def token():
     data = request.get_json(silent=True) or {}
     room = (data.get("room") or "").strip()
     name = (data.get("name") or "").strip() or "Гость"
+    prev_identity = (data.get("identity") or "").strip()
 
     if not _ROOM_RE.match(room):
         return jsonify({"error": "bad_room",
                         "hint": "Use 1-64 chars of A-Z, a-z, 0-9, - or _"}), 400
     if not _NAME_RE.match(name):
-        # Soft-reject so users with weird unicode names still work.
         name = "Гость"
 
-    identity = uuid.uuid4().hex[:12]
+    # Переподключение: тот же identity -> тот же слот, второй не занимаем.
+    if prev_identity and _IDENT_RE.match(prev_identity):
+        identity = prev_identity
+    else:
+        identity = uuid.uuid4().hex[:12]
 
-    # Enforce participant cap on our side (LiveKit free tier doesn't expose
-    # this as a server-side setting).
     with _LOCK:
-        members = _ROOM_COUNTS.setdefault(room, set())
-        if len(members) >= MAX_PARTICIPANTS_PER_ROOM:
+        members = _prune_locked(room)
+        if identity not in members and len(members) >= MAX_PARTICIPANTS_PER_ROOM:
             return jsonify({
                 "error": "room_full",
                 "limit": MAX_PARTICIPANTS_PER_ROOM,
             }), 409
-        members.add(identity)
+        members[identity] = time.time()
 
     try:
         jwt_token = _make_token(
@@ -202,10 +195,11 @@ def token():
     except Exception as exc:
         logger.exception("[wb_meet] token error: %s", exc)
         with _LOCK:
-            _ROOM_COUNTS.get(room, set()).discard(identity)
+            _ROOM_COUNTS.get(room, {}).pop(identity, None)
         return jsonify({"error": "token_error"}), 500
 
-    logger.info("[wb_meet] token issued room=%s identity=%s name=%s", room, identity, name)
+    logger.info("[wb_meet] token issued room=%s identity=%s name=%s rejoin=%s",
+                room, identity, name, bool(prev_identity))
     return jsonify({
         "token": jwt_token,
         "url": url,
@@ -216,13 +210,23 @@ def token():
     })
 
 
+@wb_meet_bp.route("/heartbeat", methods=["POST"])
+def heartbeat():
+    """Browser pings this every ~60 s while in the call to keep its slot."""
+    data = request.get_json(silent=True) or {}
+    room = (data.get("room") or "").strip()
+    identity = (data.get("identity") or "").strip()
+    if not room or not identity:
+        return jsonify({"error": "bad_args"}), 400
+    with _LOCK:
+        members = _prune_locked(room)
+        members[identity] = time.time()
+    return jsonify({"ok": True})
+
+
 @wb_meet_bp.route("/release", methods=["POST"])
 def release():
-    """Frontend calls this when the user leaves the room — frees one slot.
-
-    LiveKit will also drop them from its side, but our local counter needs
-    to be updated explicitly because we don't listen to webhooks here.
-    """
+    """Frontend calls this when the user leaves the room — frees one slot."""
     data = request.get_json(silent=True) or {}
     room = (data.get("room") or "").strip()
     identity = (data.get("identity") or "").strip()
@@ -231,7 +235,7 @@ def release():
     with _LOCK:
         members = _ROOM_COUNTS.get(room)
         if members:
-            members.discard(identity)
+            members.pop(identity, None)
             if not members:
                 _ROOM_COUNTS.pop(room, None)
     return jsonify({"ok": True})
@@ -242,9 +246,11 @@ def status():
     """Lightweight debug endpoint."""
     env = _env()
     with _LOCK:
-        rooms = {r: len(s) for r, s in _ROOM_COUNTS.items()}
+        rooms = {r: len(_prune_locked(r)) for r in list(_ROOM_COUNTS.keys())}
     return jsonify({
         "configured": bool(env),
         "rooms": rooms,
         "limit": MAX_PARTICIPANTS_PER_ROOM,
+        "slot_ttl_seconds": SLOT_TTL_SECONDS,
+        "token_ttl_seconds": TOKEN_TTL_SECONDS,
     })
