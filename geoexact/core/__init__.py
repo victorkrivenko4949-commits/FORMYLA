@@ -12,10 +12,12 @@ solver.py и gates.py:
   * incircle_tangents.install — касательные из точек прямой стороны к вписанной
     окружности: правила формализатора (reflect_line вместо tangent_point), точный
     план для семьи «биссектрисы угла и смежного → B1, B2 → касательные K1, K2»,
-    причина исходного отказа в предупреждении эскиза (FALLBACK_FROM).
+    причина исходного отказа в предупреждении эскиза (FALLBACK_FROM);
+  * label_subscripts.install — подписи точек B_1, K_2, I_A с настоящим нижним
+    индексом вместо буквального «B_1».
 Выключатели: GEOEXACT_DIFFICULTY_ROUTER=0, GEOEXACT_FIRST_TOKEN_LIMIT=0,
 GEOEXACT_GENERAL_POSITION=0, GEOEXACT_FORMALIZE_RULES=0, GEOEXACT_CONVEXITY=0,
-GEOEXACT_INCIRCLE_TANGENTS=0.
+GEOEXACT_INCIRCLE_TANGENTS=0, GEOEXACT_LABEL_SUBSCRIPTS=0.
 """
 from . import llm as _llm
 from . import difficulty as _difficulty
@@ -28,6 +30,7 @@ from . import bisector_marks as _bisector_marks
 from . import semantics as _semantics
 from . import convexity as _convexity
 from . import incircle_tangents as _incircle_tangents
+from . import label_subscripts as _label_subscripts
 
 _difficulty.install(_llm)
 _general_position.install(_solver, _gates)
@@ -35,3 +38,4 @@ _formalize_rules.install(_llm)
 _bisector_marks.install(_render)
 _convexity.install(_semantics, _llm, solver_module=_solver)
 _incircle_tangents.install(_semantics, _llm)
+_label_subscripts.install(_render)   # после bisector_marks: самый внешний слой рендера
