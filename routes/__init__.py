@@ -190,6 +190,19 @@ def _install(app) -> None:
         from routes.surveys import install_surveys
         install_surveys(app, register=_ORIG_REGISTER)
 
+    # Analytics is additive; keep all existing main installers above unchanged.
+    for module_name, flag, installed in (
+        ("services.funnel", "FUNNEL_ENABLED", "funnel_installed"),
+        ("routes.admin_stats", "ADMIN_STATS_ENABLED", "admin_stats_installed"),
+    ):
+        if os.environ.get(flag, "1") == "0" or app.extensions.get(installed):
+            continue
+        try:
+            from importlib import import_module
+            import_module(module_name).install(app)
+        except Exception:
+            logger.exception("Analytics auto-register failed: %s", module_name)
+
     if getattr(app, "_admin_base_installed", False):
         return
     app._admin_base_installed = True
