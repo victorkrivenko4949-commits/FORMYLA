@@ -328,18 +328,152 @@ def inversion_of_line(stage):
     return svg("Инверсия прямой ℓ: окружность-образ проходит через O и H′", parts)
 
 
+# ---------------------------------------------------------------------------
+# Баги Лаврика (lavrik-bugs #9, #10, #12, #13): чертежи, не соответствующие
+# условию. Каждая фигура строится из явных координат, все соотношения
+# (перпендикулярность, равенство, конкурентность) выполняются точно.
+# ---------------------------------------------------------------------------
+
+def unit(a, b):
+    dx, dy = b[0]-a[0], b[1]-a[1]
+    length = hypot(dx, dy)
+    return dx/length, dy/length
+
+
+def right_angle(p, u, v, size=14, color="#bd8241"):
+    """Квадратик прямого угла в вершине p между единичными направлениями u и v."""
+    q1 = (p[0]+u[0]*size, p[1]+u[1]*size)
+    q2 = (p[0]+v[0]*size, p[1]+v[1]*size)
+    q3 = (p[0]+(u[0]+v[0])*size, p[1]+(u[1]+v[1])*size)
+    return line(q1, q3, color, 1.8) + line(q2, q3, color, 1.8)
+
+
+def side_of(p, a, b):
+    return (b[0]-a[0])*(p[1]-a[1]) - (b[1]-a[1])*(p[0]-a[0])
+
+
+def square_outward(a, b, away):
+    """Квадрат на стороне AB, лежащий по другую сторону от точки away.
+
+    Возвращает вершины (a, b, c, d) в порядке обхода: c смежна с b, d — с a.
+    """
+    v = (b[0]-a[0], b[1]-a[1])
+    for sign in (1, -1):
+        w = (-sign*v[1], sign*v[0])
+        c, d = (b[0]+w[0], b[1]+w[1]), (a[0]+w[0], a[1]+w[1])
+        if side_of(d, a, b)*side_of(away, a, b) < 0:
+            return a, b, c, d
+    raise ValueError("degenerate side")
+
+
+def foot(p, a, b):
+    t = ((p[0]-a[0])*(b[0]-a[0]) + (p[1]-a[1])*(b[1]-a[1])) / \
+        ((b[0]-a[0])**2 + (b[1]-a[1])**2)
+    return a[0]+t*(b[0]-a[0]), a[1]+t*(b[1]-a[1])
+
+
+def incircle(a, b, c):
+    la, lb, lc = (hypot(b[0]-c[0], b[1]-c[1]), hypot(a[0]-c[0], a[1]-c[1]),
+                  hypot(a[0]-b[0], a[1]-b[1]))
+    perimeter = la+lb+lc
+    center = ((la*a[0]+lb*b[0]+lc*c[0])/perimeter,
+              (la*a[1]+lb*b[1]+lc*c[1])/perimeter)
+    area = abs((b[0]-a[0])*(c[1]-a[1]) - (c[0]-a[0])*(b[1]-a[1]))/2
+    return center, area/(perimeter/2)
+
+
+def right_triangle_altitude(stage):
+    """lavrik-bugs #9 (F6, задача 1): высота к гипотенузе из вершины прямого угла A."""
+    a, b, c = (150, 370), (150, 120), (480, 370)
+    d = foot(a, b, c)
+    parts = [line(a, b), line(a, c), line(b, c),
+             right_angle(a, unit(a, b), unit(a, c)),
+             dot("A", a, -24, 22), dot("B", b, -24, -6), dot("C", c, 10, 22),
+             f'<text x="{num(a[0]-22)}" y="{num((a[1]+b[1])/2+6)}" font-size="18" fill="#176a73">b</text>',
+             f'<text x="{num((a[0]+c[0])/2-6)}" y="{num(a[1]+26)}" font-size="18" fill="#176a73">a</text>',
+             f'<text x="{num((b[0]+c[0])/2+12)}" y="{num((b[1]+c[1])/2-10)}" font-size="18" fill="#176a73">c</text>']
+    if stage != "condition":
+        parts += [line(a, d, "#176a73", 3, "7 5"),
+                  right_angle(d, unit(d, a), unit(d, b)), dot("D", d, 10, -12),
+                  f'<text x="{num((a[0]+d[0])/2+8)}" y="{num((a[1]+d[1])/2+18)}" font-size="18" fill="#176a73">h</text>']
+    if stage == "result":
+        parts.append(caption("S = ab/2 = c·h/2  ⇒  h = ab / c"))
+    return svg("Прямоугольный треугольник ABC (∠A = 90°), высота AD к гипотенузе BC", parts)
+
+
+def squares_rotation(stage):
+    """lavrik-bugs #12 (F5, задача 2): внешние квадраты на AB и AC, CQ = BS и CQ ⊥ BS."""
+    a, b, c = (300, 330), (210, 420), (430, 420)
+    _, _, x, q = square_outward(a, b, c)   # квадрат ABXQ, Q смежна с A
+    _, _, y, s = square_outward(a, c, b)   # квадрат ACYS, S смежна с A
+    parts = [line(a, b), line(b, c), line(c, a),
+             line(b, x, "#83949d", 2), line(x, q, "#83949d", 2), line(q, a, "#83949d", 2),
+             line(c, y, "#83949d", 2), line(y, s, "#83949d", 2), line(s, a, "#83949d", 2),
+             dot("A", a, -8, -14), dot("B", b, -24, 22), dot("C", c, 10, 22),
+             dot("Q", q, -24, 0), dot("S", s, 10, 0)]
+    if stage != "condition":
+        p = crossing(c, q, b, s)
+        parts += [line(c, q, "#176a73", 3), line(b, s, "#bd8241", 3),
+                  right_angle(p, unit(p, q), unit(p, s))]
+    if stage == "result":
+        parts.append(caption("Поворот на 90° вокруг A: Q→B, C→S  ⇒  CQ = BS, CQ ⊥ BS"))
+    return svg("Внешние квадраты на AB и AC: CQ = BS и CQ ⊥ BS", parts)
+
+
+def median_squares(stage):
+    """lavrik-bugs #10 (F7, задача 3): медиана AM, квадраты ABDE и ACFG; AM ⊥ EG, EG = 2·AM."""
+    a, b, c = (300, 300), (190, 420), (440, 420)
+    m = ((b[0]+c[0])/2, (b[1]+c[1])/2)
+    _, _, d, e = square_outward(a, b, c)   # ABDE, E смежна с A
+    _, _, f, g = square_outward(a, c, b)   # ACFG, G смежна с A
+    parts = [line(a, b), line(b, c), line(c, a),
+             line(b, d, "#83949d", 2), line(d, e, "#83949d", 2), line(e, a, "#83949d", 2),
+             line(c, f, "#83949d", 2), line(f, g, "#83949d", 2), line(g, a, "#83949d", 2),
+             line(a, m, "#176a73", 3),
+             dot("A", a, -6, 26), dot("B", b, -24, 22), dot("C", c, 10, 22), dot("M", m, -6, 24),
+             dot("D", d, -24, 6), dot("E", e, -24, -4), dot("F", f, 10, 6), dot("G", g, 10, -4)]
+    if stage != "condition":
+        p = crossing(a, m, e, g)
+        parts += [line(e, g, "#bd8241", 3), line(a, p, "#176a73", 2.2, "6 5"),
+                  right_angle(p, unit(p, g), unit(p, m))]
+    if stage == "result":
+        parts.append(caption("AM ⊥ EG   ·   EG = 2·AM"))
+    return svg("Медиана AM и внешние квадраты ABDE, ACFG: AM ⊥ EG, EG = 2·AM", parts)
+
+
+def gergonne(stage):
+    """lavrik-bugs #13 (F13, задача 2): точка Жергонна G строго на пересечении AD, BE, CF."""
+    a, b, c = (120, 400), (500, 400), (300, 100)
+    center, radius = incircle(a, b, c)
+    d, e, f = foot(center, b, c), foot(center, c, a), foot(center, a, b)
+    parts = [line(a, b), line(b, c), line(c, a), circle(center, radius, "#83949d", 2),
+             dot("A", a, -24, 20), dot("B", b, 10, 20), dot("C", c, -4, -12),
+             dot("D", d, 10, -8), dot("E", e, -26, -6), dot("F", f, -6, 26)]
+    if stage != "condition":
+        g = crossing(a, d, b, e)
+        parts += [line(a, d, "#176a73", 2.4, "7 5"), line(b, e, "#176a73", 2.4, "7 5"),
+                  line(c, f, "#176a73", 2.4, "7 5"), dot("G", g, 12, -6)]
+    if stage == "result":
+        parts.append(caption("AD, BE, CF пересекаются в одной точке — точке Жергонна G"))
+    return svg("Точки касания вписанной окружности D, E, F; чевианы AD, BE, CF конкурентны", parts)
+
+
 FIXES = {
     "f2-2": tangent,
     "f3-2": chords,
     "f4a-1": reflection,
     "f4b-3": intersecting_circles,
+    "f5-2": squares_rotation,
+    "f6-1": right_triangle_altitude,
     "f6-2": bisector,
     "f7-1": rhombus,
     "f7-2": euler_line,
+    "f7-3": median_squares,
     "f9-3": euler_line,
     "f9a-1": coordinate_circumcircle,
     "f9a-2": apollonius,
     "f9a-3": orthocenter_coordinates,
+    "f13-2": gergonne,
     "f13-3": lambda stage: ceva(stage, nagel=True),
     "f14-1": locus,
     "f15-2": inversion_of_line,

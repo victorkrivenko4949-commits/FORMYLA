@@ -20,6 +20,29 @@ STAGES = ("condition", "construction", "result")
 # F8.1 is a Ramsey graph, not a geometry diagram, despite its section label.
 NON_GEOMETRY_VISUALS = {"f8-1"}
 
+# lavrik-bugs #8 (B2, «Принцип периодичности»): кванторы ∃/∀ школьнику
+# непонятны («значок E, повёрнутый в другую сторону») — пишем словами.
+# Шаблоны намеренно узкие: только эта формула, в Unicode- и LaTeX-записи.
+TEXT_FIXES = (
+    (re.compile(r"∃\s*p\s*>\s*0\s*,\s*T\s*>\s*0\s*:\s*∀\s*k\s*>\s*p"),
+     lambda m: "существуют p > 0 и T > 0 такие, что для всех k > p"),
+    (re.compile(r"\\exists\s*p\s*>\s*0\s*,?\\?[ ,]*T\s*>\s*0\s*:\\?[ ,]*\\forall\s*k\s*>\s*p"),
+     lambda m: r"\text{существуют } p > 0 \text{ и } T > 0 \text{ такие, что для всех } k > p"),
+)
+
+
+def fix_text(value, counter):
+    if isinstance(value, str):
+        for pattern, replacement in TEXT_FIXES:
+            value, n = pattern.subn(replacement, value)
+            counter[0] += n
+        return value
+    if isinstance(value, list):
+        return [fix_text(item, counter) for item in value]
+    if isinstance(value, dict):
+        return {key: fix_text(item, counter) for key, item in value.items()}
+    return value
+
 
 def embedded(html, name):
     pattern = rf'(<script type="application/json" id="{name}">)(.*?)(</script>)'
@@ -37,6 +60,11 @@ def clean(path, check=False):
     stats_match, stats = embedded(html, "build-stats")
     if len(methods) != 102:
         raise ValueError(f"{path}: expected 102 methods, found {len(methods)}")
+
+    text_fixes = [0]
+    methods = fix_text(methods, text_fixes)
+    if text_fixes[0]:
+        print(f"{path.name}: text fixes applied: {text_fixes[0]}")
 
     keep = set()
     example_count = 0
