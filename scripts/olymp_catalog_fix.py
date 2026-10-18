@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Пайплайн чистки базы олимпиадных задач FORMYLA (22 этапа).
@@ -61,6 +61,7 @@ except ImportError:
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import olymp_fix_rules as R
 import olymp_fix_prompts as P
+import olymp_source_index as SI
 
 # =====================================================================
 # Константы путей и настройки
@@ -75,6 +76,8 @@ BACKUP_DIR = BASE_DIR / "backup"
 CHECKPOINT_PATH = WORK_DIR / "checkpoint.json"
 DIFF_PATH = REPORTS_DIR / "olymp_catalog_fix_diff.jsonl"
 REPORT_PATH = REPORTS_DIR / "olymp_catalog_fix.md"
+SEARCH_LOG_PATH = WORK_DIR / "search_log.jsonl"
+SOURCE_INDEX_DIR = WORK_DIR / "source_index"
 
 DEFAULT_WORKERS = 8
 MAX_RETRIES = 5
@@ -132,6 +135,11 @@ def similarity(a: str, b: str) -> float:
 # LLM-клиенты
 # =====================================================================
 
+class RetryableStageError(Exception):
+    """Инфраструктурный сбой этапа (нет ключей/API недоступен) — запись НЕ
+    помечается обработанной в чекпоинте, повторный запуск повторит её."""
+
+
 class LLMError(Exception):
     pass
 
@@ -139,7 +147,8 @@ class LLMError(Exception):
 class LLMClient:
     """Базовый OpenAI-совместимый клиент с ретраями и логом токенов."""
 
-    def __init__(self, name: str, base_url: str, api_key: str, model: str):
+    def __init__(self, name: str, base_url: str, api_key: str, model: str,
+                 timeout: float = None):
         if not HAS_OPENAI:
             raise LLMError("Не установлена библиотека openai")
         self.name = name
@@ -148,7 +157,7 @@ class LLMClient:
         self.usage = {"prompt_tokens": 0, "completion_tokens": 0, "calls": 0, "errors": 0}
         self._json_supported = True
         self._client = OpenAI(base_url=base_url, api_key=api_key,
-                             timeout=TIMEOUT_S, max_retries=0)
+                             timeout=timeout or TIMEOUT_S, max_retries=0)
 
     def _log_usage(self, resp):
         try:
@@ -161,8 +170,13 @@ class LLMClient:
         self.usage["calls"] += 1
 
     def chat(self, system: str, user: str, json_mode: bool = True,
-             temperature: float = 0.0, extra_body: dict = None) -> str | None:
-        """Вызов с ретраями; возвращает текст ответа или None при исчерпании попыток."""
+             temperature: float = 0.0, extra_body: dict = None,
+             stream: bool = False) -> str | None:
+        """Вызов с ретраями; возвращает текст ответа или None при исчерпании попыток.
+
+        stream=True — потоковый режим (обходит 504-таймауты nginx у OdiRouter при
+        включённом web-search: чанки приходят сразу, соединение не простаивает).
+        """
         last_err = None
         for attempt in range(1, MAX_RETRIES + 1):
             try:
@@ -179,6 +193,8 @@ class LLMClient:
                     kwargs["response_format"] = {"type": "json_object"}
                 if extra_body:
                     kwargs["extra_body"] = extra_body
+                if stream:
+                    kwargs["stream"] = True
                 try:
                     resp = self._client.chat.completions.create(**kwargs)
                 except Exception as e:
@@ -187,11 +203,33 @@ class LLMClient:
                         self._json_supported = False
                         continue
                     raise
-                self._log_usage(resp)
-                content = resp.choices[0].message.content
-                if content:
-                    return content
-                last_err = LLMError("пустой ответ")
+                if stream:
+                    content, usage = "", None
+                    for chunk in resp:
+                        try:
+                            if getattr(chunk, "usage", None):
+                                usage = chunk.usage
+                        except Exception:
+                            pass
+                        try:
+                            delta = chunk.choices[0].delta
+                            if delta and delta.content:
+                                content += delta.content
+                        except (IndexError, AttributeError, TypeError):
+                            continue
+                    if content:
+                        if usage is not None:
+                            self._add_usage(usage.prompt_tokens, usage.completion_tokens)
+                        else:
+                            self.usage["calls"] += 1
+                        return content
+                    last_err = LLMError("пустой потоковый ответ")
+                else:
+                    self._log_usage(resp)
+                    content = resp.choices[0].message.content
+                    if content:
+                        return content
+                    last_err = LLMError("пустой ответ")
             except Exception as e:
                 self.usage["errors"] += 1
                 last_err = e
@@ -201,10 +239,17 @@ class LLMClient:
         log.error("%s: все %d попыток исчерпаны (%s)", self.name, MAX_RETRIES, last_err)
         return None
 
+    def _add_usage(self, prompt_tokens, completion_tokens):
+        """Учёт токенов из потокового ответа."""
+        self.usage["prompt_tokens"] += prompt_tokens or 0
+        self.usage["completion_tokens"] += completion_tokens or 0
+        self.usage["calls"] += 1
+
     def chat_json(self, system: str, user: str, temperature: float = 0.0,
-                  extra_body: dict = None) -> dict | None:
+                  extra_body: dict = None, stream: bool = False) -> dict | None:
         """Вызов с JSON-режимом и парсингом ответа; None при неудаче."""
-        content = self.chat(system, user, json_mode=True, temperature=temperature, extra_body=extra_body)
+        content = self.chat(system, user, json_mode=True, temperature=temperature,
+                            extra_body=extra_body, stream=stream)
         if content is None:
             return None
         try:
@@ -237,30 +282,65 @@ class DeepSeekClient(LLMClient):
 
 
 class OdiRouterClient(LLMClient):
-    """OdiRouter (OpenAI-совместимый). Gemini 3.6 Flash — поиск и grounding."""
+    """OdiRouter (OpenAI-совместимый). Gemini 3.6 Flash — поиск и grounding.
 
-    def __init__(self, model: str, web_search: bool = False):
-        base_url = os.environ.get("ODIROUTER_BASE_URL", "https://api.odirouter.ai/v1").rstrip("/")
+    Таймаут клиента 55 с (меньше 60-секундного 504-таймаута nginx OdiRouter).
+    При web-search вызовы идут потоками (stream=True), search_context_size=low,
+    компактный промт (≤ 400 токенов) — чтобы grounding не висел без данных.
+    """
+
+    SEARCH_TIMEOUT_S = 55
+
+    def __init__(self, model: str, web_search: bool = False, timeout: float = None):
+        base_url = os.environ.get("ODIROUTER_BASE_URL",
+                                  "https://api.odirouter.ai/v1").rstrip("/")
         api_key = os.environ.get("ODIROUTER_API_KEY")
         if not api_key:
             raise LLMError("Не задан ODIROUTER_API_KEY. Выполните: export ODIROUTER_API_KEY=...")
-        super().__init__("odirouter", base_url, api_key, model)
+        super().__init__("odirouter", base_url, api_key, model,
+                         timeout=timeout or self.SEARCH_TIMEOUT_S)
         self.web_search = web_search
 
-    def chat_with_search(self, system: str, user: str) -> dict | None:
-        """Поиск: с web-search параметром, если доступен, иначе без него."""
-        extra = None  # grounding отключён: запросы с web_search_options не укладываются в 60 с (504 от nginx OdiRouter)
-        return self.chat_json(system, user, extra_body=extra)
+    def search_candidates(self, user_payload: str) -> dict | None:
+        """Компактный поисковый запрос (≤ 400 токенов) с grounding.
+
+        При web_search: stream=True + search_context_size=low — обходит 504.
+        """
+        extra = {"web_search_options": {"search_context_size": "low"}} if self.web_search else None
+        return self.chat_json(P.SEARCH_CANDIDATES_COMPACT, user_payload,
+                              extra_body=extra, stream=self.web_search)
+
+    def search_variant_pdf(self, user_payload: str) -> dict | None:
+        """Поиск PDF варианта (этап 21): компактный промт, тот же обход таймаута."""
+        extra = {"web_search_options": {"search_context_size": "low"}} if self.web_search else None
+        return self.chat_json(P.SEARCH_VARIANT_PDF_COMPACT, user_payload,
+                              extra_body=extra, stream=self.web_search)
 
 
 def resolve_gemini_model() -> tuple[str | None, bool]:
     """Определяет id модели Gemini 3.6 Flash через GET /models.
 
-    Возвращает (model_id, web_search_supported).
+    Возвращает (model_id, web_search_enabled).
+    ODIROUTER_MODEL — ручное переопределение (принимается как есть, без
+    проверки подстроки; /models не запрашивается).
+    Web-search: по умолчанию ВКЛЮЧЁН без пробы (стрим + low context —
+    меры против 504); ODIROUTER_WEB_SEARCH=0 выключает, =1 то же, что по
+    умолчанию. Ленивая инициализация: вызывается только при этапах 18-21.
     """
     if not os.environ.get("ODIROUTER_API_KEY"):
         log.warning("ODIROUTER_API_KEY не задан — поиск (этапы 18-21) будет недоступен.")
         return None, False
+    # Ручное управление моделью — фильтр по подстроке не применяем
+    manual_model = os.environ.get("ODIROUTER_MODEL", "").strip()
+    web_mode = os.environ.get("ODIROUTER_WEB_SEARCH", "").strip().lower()
+    web_search = web_mode != "0"   # по умолчанию включён (без пробы — лениво)
+    if web_mode == "0":
+        log.info("OdiRouter: web-search отключён (ODIROUTER_WEB_SEARCH=0) — "
+                 "Gemini вернёт URL-кандидатов, скрипт проверит их сам.")
+    if manual_model:
+        log.info("OdiRouter: модель задана вручную через ODIROUTER_MODEL: %s "
+                 "(web_search=%s).", manual_model, web_search)
+        return manual_model, web_search
     base_url = os.environ.get("ODIROUTER_BASE_URL", "https://api.odirouter.ai/v1").rstrip("/")
     headers = {"Authorization": f"Bearer {os.environ['ODIROUTER_API_KEY']}"}
     candidates = []
@@ -268,7 +348,8 @@ def resolve_gemini_model() -> tuple[str | None, bool]:
         resp = requests.get(f"{base_url}/models", headers=headers, timeout=30)
         if resp.status_code != 200:
             log.warning("OdiRouter: GET %s/models вернул %d. "
-                        "Проверьте ODIROUTER_BASE_URL (по умолчанию %s).",
+                        "Проверьте ODIROUTER_BASE_URL (по умолчанию %s). "
+                        "Или задайте модель вручную: export ODIROUTER_MODEL=<id>.",
                         base_url, resp.status_code, "https://api.odirouter.ai/v1")
         else:
             data = resp.json()
@@ -276,7 +357,7 @@ def resolve_gemini_model() -> tuple[str | None, bool]:
             candidates = [m.get("id", "") for m in models]
     except Exception as e:
         log.warning("OdiRouter: не удалось получить /models (%s). "
-                    "Проверьте ODIROUTER_BASE_URL и ключ.", str(e)[:200])
+                    "Задайте модель вручную: export ODIROUTER_MODEL=<id>.", str(e)[:200])
         return None, False
     gemini_flash = [c for c in candidates if "gemini-3.8-flash" in c.lower()]
     if not gemini_flash:
@@ -288,23 +369,9 @@ def resolve_gemini_model() -> tuple[str | None, bool]:
             log.error("Gemini-модели недоступны. Полный список моделей:\n  %s",
                       "\n  ".join(candidates[:50]) or "(пусто)")
         return None, False
-    # Проверка поддержки web-search: пробуем короткий запрос с параметром
-    web_search = False
-    try:
-        probe = OdiRouterClient.__new__(OdiRouterClient)
-        probe.__init__(gemini_flash[0])
-        resp = probe._client.chat.completions.create(
-            model=gemini_flash[0],
-            messages=[{"role": "user", "content": "ping"}],
-            max_tokens=8,
-            temperature=0.0,
-            extra_body={"web_search_options": {"search_context_size": "low"}},
-        )
-        web_search = True
-        log.info("OdiRouter: web-search (grounding) поддерживается и включён.")
-    except Exception:
-        log.info("OdiRouter: web-search через параметр запроса не поддерживается — "
-                 "модель будет возвращать URL-кандидатов, скрипт скачает и проверит их сам.")
+    if web_search:
+        log.info("OdiRouter: web-search (grounding) включён: stream=True + "
+                 "search_context_size=low (меры против 504-таймаута nginx).")
     return gemini_flash[0], web_search
 
 
@@ -400,6 +467,41 @@ class DiffLogger:
         if stage is None:
             return len(self.entries)
         return sum(1 for e in self.entries if e["stage"] == stage)
+
+
+class SearchLogger:
+    """Лог поиска источников: work/search_log.jsonl.
+
+    Для каждого запроса: запрос, источник кандидата (index|gemini|none),
+    URL, статус скачивания, результат проверки — видно, почему отказ.
+    """
+
+    def __init__(self, path: Path, enabled: bool):
+        self.path = path
+        self.enabled = enabled
+        self.entries = []
+
+    def log(self, uid: str, slug: str, stage: int, query: str, origin: str,
+            url: str, status: str, result: str):
+        entry = {"ts": now_iso(), "uid": uid, "slug": slug, "stage": stage,
+                 "query": query, "origin": origin, "url": url,
+                 "status": status, "result": result}
+        self.entries.append(entry)
+        if self.enabled:
+            with _lock:
+                with self.path.open("a", encoding="utf-8") as f:
+                    f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    def summary(self) -> str:
+        """Краткая сводка для отчёта."""
+        total = len(self.entries)
+        if not total:
+            return "поиск не выполнялся"
+        ok = sum(1 for e in self.entries if e.get("result", "").startswith(("найдено", "совп", "официальн")))
+        return (f"{total} запросов: индекс — "
+                f"{sum(1 for e in self.entries if e['origin'] == 'index')}, "
+                f"gemini — {sum(1 for e in self.entries if e['origin'] == 'gemini')}, "
+                f"успешных — {ok}")
 
 
 # =====================================================================
@@ -516,9 +618,14 @@ class Pipeline:
         self.args = args
         self.dry_run = args.dry_run
         self.checkpoint = Checkpoint(args.checkpoint)
-        if args.resume:
+        # Чекпоинт загружаем всегда, если существует: иначе очередь поиска
+        # (search_queue) терялась бы между запусками без --resume.
+        # --resume лишь явно документирует продолжение.
+        if args.checkpoint.exists():
             self.checkpoint.load()
         self.diff = DiffLogger(DIFF_PATH, enabled=not self.dry_run)
+        self.search_log = SearchLogger(SEARCH_LOG_PATH, enabled=not self.dry_run)
+        self._source_index: SI.SourceIndex | None = None
         self.catalog = Catalog()
         self.llm_changes = []          # предложенные, но не применённые (dry-run)
         self.stats = {s: {"processed": 0, "changed": 0, "skipped": 0,
@@ -680,7 +787,15 @@ class Pipeline:
             fp_before = record_fingerprint(rec)
             if not self.dry_run and uid and self.checkpoint.is_done(uid, stage, fp_before):
                 return
-            worker(slug, rec)
+            try:
+                worker(slug, rec)
+            except RetryableStageError as e:
+                # Инфраструктурный сбой: запись НЕ помечаем обработанной —
+                # повторный запуск повторит её (когда появятся ключи/API)
+                stats["skipped"] += 1
+                log.warning("Этап %d: запись %s отложена (%s)",
+                            stage, uid[:8], str(e)[:150])
+                return
             if not self.dry_run and uid:
                 self.checkpoint.record_done(uid, stage, fp_before, record_fingerprint(rec))
 
@@ -704,6 +819,24 @@ class Pipeline:
         if self.args.limit:
             return items[: self.args.limit]
         return items
+
+    def get_source_index(self) -> SI.SourceIndex:
+        """Индекс официальных PDF (кэш work/source_index/<slug>.json).
+
+        Строится лениво при первом обращении этапов 18/20/21.
+        Потокобезопасно: параллельные воркеры этапа 18 не строят индекс дважды.
+        """
+        with _lock:
+            if self._source_index is None:
+                rebuild = getattr(self.args, "rebuild_index", False)
+                self._source_index = SI.SourceIndex(SOURCE_INDEX_DIR, rebuild=rebuild)
+            for slug in self.catalog.slugs():
+                if slug not in self._source_index._cache:
+                    try:
+                        self._source_index.build(slug, self.catalog.data.get(slug, []))
+                    except Exception as e:
+                        log.warning("Индекс для %s не построен: %s", slug, str(e)[:200])
+            return self._source_index
 
     def save_state(self):
         """Сохранить каталог в FIXED_DIR и чекпоинт."""
@@ -780,15 +913,15 @@ def stage_03(p: Pipeline):
         new_ans = R.MD_BOLD_ANSWER.sub(lambda m: m.group(0).replace("*", "").strip(), ans)
         # Ведущие ** в answer
         new_ans = R.LEADING_TRAILING_MD.sub("", new_ans).strip()
-        # Строки «[Официальное решение] Источник: ...»
-        new_sol = R.OFFICIAL_SOLUTION_LINE.sub("", new_sol)
-        # Markdown-ссылки: перенести в source, текст убрать
+        # Markdown-ссылки: сначала вытащить URL (позже строка с ними удаляется)
         urls_found = []
         def link_repl(m):
             label, url = m.group(1), m.group(2)
             urls_found.append(url)
             return label
         new_sol = R.MD_LINK.sub(link_repl, new_sol)
+        # Строки «[Официальное решение] Источник: ...» — удаляются целиком
+        new_sol = R.OFFICIAL_SOLUTION_LINE.sub("", new_sol)
         new_sol = R.MD_HEADER.sub("", new_sol)
         if new_sol != sol:
             p.apply_field(slug, rec, 3, "solution", new_sol)
@@ -1392,32 +1525,18 @@ def _download_and_check(p: Pipeline, rec: dict, url: str) -> tuple[bool, str]:
         if not R.is_official_url(final_url):
             return False, f"редирект на неофициальный домен: {final_url[:80]}"
         content_type = resp.headers.get("Content-Type", "")
-        doc_text = ""
         if "pdf" in content_type or url.lower().endswith(".pdf"):
             if not HAS_PDF:
                 return False, "PDF-библиотеки не установлены"
-            import io
-            try:
-                with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-                    doc_text = "\n".join((page.extract_text() or "") for page in pdf.pages)
-            except Exception:
-                try:
-                    reader = PdfReader(io.BytesIO(resp.content))
-                    doc_text = "\n".join(page.extract_text() or "" for page in reader.pages)
-                except Exception as e:
-                    return False, f"не удалось прочитать PDF: {e}"
-        else:
-            # HTML: вырезаем теги
-            html = resp.text
-            doc_text = re.sub(r"<script[\s\S]*?</script>|<style[\s\S]*?</style>", " ", html)
-            doc_text = re.sub(r"<[^>]+>", " ", doc_text)
-            doc_text = re.sub(r"\s+", " ", doc_text)
+        # Текст документа — постранично (кэш), сверка по ВСЕМУ документу
+        pages = _fetch_doc_pages(url)
+        doc_text = "\n".join(pages)
         # Нечёткое совпадение: первые 200 симв. условия в документе
         our_head = R.norm_for_compare((rec.get("text") or "")[:200])
         if not our_head:
             # Нечему сверять — НЕ принимаем по доверию, откладываем на ручную проверку
             return False, "условие пустое — сверка невозможна"
-        doc_norm = R.norm_for_compare(doc_text[:20000])
+        doc_norm = R.norm_for_compare(doc_text)
         # Ищем вхождения фрагментов условия
         probes = [our_head[i:i+60] for i in range(0, min(len(our_head), 180), 60)]
         hits = sum(1 for pr in probes if pr and pr in doc_norm)
@@ -1432,8 +1551,170 @@ def _download_and_check(p: Pipeline, rec: dict, url: str) -> tuple[bool, str]:
         return False, str(e)[:200]
 
 
+def _collect_pdf_candidates(p: Pipeline, slug: str, rec: dict, stage: int,
+                            kinds=("sol", "ans", "tasks")) -> list[tuple[str, str]]:
+    """Кандидаты (origin, url): СНАЧАЛА индекс официальных PDF, потом Gemini.
+
+    Индекс строит olymp_source_index: существующие source из базы + обход
+    страницы олимпиады на olimpiada.ru. Gemini — только если в индексе пусто.
+    """
+    uid = rec.get("uid", "")
+    query_desc = (f"{rec.get('olymp')} {rec.get('year')} {rec.get('round')} "
+                  f"{rec.get('grade')} кл. №{rec.get('num')}")
+    candidates: list[tuple[str, str]] = []
+    # 1) Индекс официальных PDF
+    try:
+        idx = p.get_source_index()
+        round_key = R.canon_round_key(rec.get("round") or "", slug)
+        found = idx.find(slug, rec.get("year"), round_key, rec.get("grade"),
+                          kinds=kinds)
+        candidates = [("index", r["url"]) for r in found[:8]]
+        p.search_log.log(uid, slug, stage, query_desc, "index", "", "",
+                         f"найдено {len(found)} кандидатов")
+    except Exception as e:
+        log.warning("Этап %d: индекс источников недоступен: %s", stage, str(e)[:150])
+    if candidates:
+        return candidates
+    # 2) Gemini (grounding со stream, компактный промт ≤ 400 токенов).
+    #    В dry-run API не вызывается.
+    if p.gemini is not None and not p.dry_run:
+        payload = {"olymp": rec.get("olymp"), "year": rec.get("year"),
+                   "round": rec.get("round"), "grade": rec.get("grade"),
+                   "num": rec.get("num"),
+                   "text_head": (rec.get("text") or "")[:150]}
+        resp = p.gemini.search_candidates(json.dumps(payload, ensure_ascii=False))
+        if resp and resp.get("ok"):
+            for cand in resp.get("candidates", [])[:5]:
+                url = cand.get("url", "")
+                if R.is_official_url(url):
+                    candidates.append(("gemini", url))
+        p.search_log.log(uid, slug, stage, query_desc, "gemini", "", "",
+                         f"получено {len(candidates)} кандидатов")
+    if not candidates and not p.dry_run:
+        # Ни индекс, ни Gemini не дали кандидатов. Если Gemini недоступен
+        # (нет ключа) — это инфраструктурный сбой: отложим запись на повтор.
+        if p.gemini is None:
+            raise RetryableStageError("поиск недоступен: нет OdiRouter/Gemini")
+    return candidates
+
+
+def _official_search(p: Pipeline, slug: str, rec: dict, stage: int,
+                     want_solution: bool) -> tuple[bool, str]:
+    """Поиск официального PDF: индекс -> Gemini. Скачивание, проверка условия.
+
+    want_solution=True — дополнительно извлечь решение (DeepSeek-chat,
+    постранично из PDF) и сверить совпадение условия/ответа (DeepSeek-reasoner).
+    Возвращает (found, url_или_причина_отказа). Все попытки логируются
+    в work/search_log.jsonl.
+    """
+    uid = rec.get("uid", "")
+    query_desc = (f"{rec.get('olymp')} {rec.get('year')} {rec.get('round')} "
+                  f"{rec.get('grade')} кл. №{rec.get('num')}")
+    candidates = _collect_pdf_candidates(p, slug, rec, stage)
+    if not candidates:
+        p.search_log.log(uid, slug, stage, query_desc, "none", "", "",
+                         "кандидатов нет")
+        return False, "кандидатов нет"
+    for origin, url in candidates:
+        ok, reason = _download_and_check(p, rec, url)
+        p.search_log.log(uid, slug, stage, query_desc, origin, url,
+                         "скачан" if ok else "не скачан", reason)
+        if not ok:
+            continue
+        if not want_solution:
+            # Достаточно проверить, что условие в документе, — пишем source.
+            # Из очереди поиска НЕ убираем: найденный source не решает проблемы
+            # заглушек/обрывов/рисунков — этим займётся этап 20.
+            p.apply_field(slug, rec, stage, "source", url,
+                          model="index" if origin == "index" else "gemini")
+            p.search_log.log(uid, slug, stage, query_desc, origin, url, "скачан",
+                             f"принято (source): {reason}")
+            return True, url
+        # Извлечение задачи из документа: постранично.
+        # Ищем страницу с условием и передаём её с соседними (решение
+        # часто продолжается на следующих страницах), а не весь PDF.
+        pages = _fetch_doc_pages(url)
+        if not pages:
+            p.search_log.log(uid, slug, stage, query_desc, origin, url,
+                             "не скачан", "пустой документ")
+            continue
+        task_pages = _find_task_pages(pages, (rec.get("text") or "")[:200])
+        if task_pages:
+            i = task_pages[0]
+            doc_text = "\n".join(pages[max(0, i - 1): i + 4])
+        else:
+            doc_text = _fetch_doc_text(url)[:30000]
+        payload = {"doc_text": doc_text[:30000], "olymp": rec.get("olymp"),
+                   "year": rec.get("year"), "round": rec.get("round"),
+                   "grade": rec.get("grade"), "num": rec.get("num"),
+                   "text_head": (rec.get("text") or "")[:200]}
+        e_resp = (p.deepseek_chat.chat_json(P.STAGE20_EXTRACT_TASK,
+                                            json.dumps(payload, ensure_ascii=False))
+                  if p.deepseek_chat else None)
+        if not e_resp or not e_resp.get("ok"):
+            p.search_log.log(uid, slug, stage, query_desc, origin, url, "скачан",
+                             "ошибка извлечения задачи из документа")
+            continue
+        # Верификация reasoner-ом: условие совпадает, решение к тому же ответу
+        v_payload = {"our_text": rec.get("text") or "",
+                     "our_answer": rec.get("answer") or "",
+                     "doc_task_text": e_resp.get("text") or "",
+                     "doc_solution": e_resp.get("solution") or "",
+                     "doc_answer": e_resp.get("answer") or ""}
+        v_resp = _reasoner_verify(p, P.STAGE20_VERIFY_MATCH, v_payload)
+        if not v_resp or not v_resp.get("ok"):
+            p.search_log.log(uid, slug, stage, query_desc, origin, url, "скачан",
+                             "нет вердикта reasoner")
+            continue
+        if not v_resp.get("condition_match", False):
+            p.search_log.log(uid, slug, stage, query_desc, origin, url, "скачан",
+                             "условие не совпало (reasoner)")
+            continue
+        our_ans = (rec.get("answer") or "").strip()
+        doc_ans = (e_resp.get("answer") or "").strip()
+        # answer_match=False при непустых ответах — тот же конфликт, не выбираем сами
+        if v_resp.get("answer_conflict", False) or (
+                our_ans and doc_ans and v_resp.get("answer_match") is False):
+            # Конфликт: НИЧЕГО не перезаписываем автоматически,
+            # оба ответа и URL — в qa с пометкой answer_conflict
+            p.add_qa_note(rec, stage, "answer_conflict: найденный документ даёт другой ответ",
+                          model="deepseek-reasoner")
+            p.add_qa_note(rec, stage,
+                          f"answer_conflict: наш: {rec.get('answer')!r}; "
+                          f"из документа: {e_resp.get('answer')!r}; документ: {url}",
+                          model="deepseek-reasoner")
+            p.remove_from_search_queue(uid)
+            return False, url
+        doc_solution = (e_resp.get("solution") or "").strip()
+        doc_answer = (e_resp.get("answer") or "").strip()
+        if doc_solution:
+            p.apply_field(slug, rec, stage, "solution", doc_solution,
+                          model="deepseek-chat+reasoner")
+        if doc_answer:
+            p.apply_field(slug, rec, stage, "answer", doc_answer,
+                          model="deepseek-chat+reasoner")
+        p.apply_field(slug, rec, stage, "source", url,
+                      model="index" if origin == "index" else "gemini+deepseek")
+        # official_found — только когда реально есть решение из официального документа
+        if doc_solution:
+            p.apply_field(slug, rec, stage, "status", "official_found",
+                          model="index" if origin == "index" else "gemini+deepseek")
+        else:
+            p.add_qa_note(rec, stage,
+                          "source найден, но решение в документе отсутствует — "
+                          "статус не менялся", model="deepseek-chat+reasoner")
+        p.add_qa_note(rec, stage, f"официальное решение найдено: {reason}")
+        p.search_log.log(uid, slug, stage, query_desc, origin, url, "скачан",
+                         f"принято: {reason}")
+        p.remove_from_search_queue(uid)
+        return True, url
+    p.search_log.log(uid, slug, stage, query_desc, "all", "",
+                     "исчерпаны кандидаты", "ни один не прошёл проверку")
+    return False, "ни один кандидат не прошёл проверку"
+
+
 def stage_18(p: Pipeline):
-    """Этап 18: заполнение пустого source."""
+    """Этап 18: заполнение пустого source (индекс -> Gemini)."""
     def worker(slug, rec):
         src = (rec.get("source") or "").strip()
         if src:
@@ -1444,35 +1725,11 @@ def stage_18(p: Pipeline):
             if m and R.is_official_url(m.group(0)):
                 p.apply_field(slug, rec, 18, "source", m.group(0))
                 return
-        # 2) Поиск через модели
-        if p.gemini is None or p.deepseek_chat is None or p.dry_run:
-            p.needs_review(rec, 18, "source пуст — поиск недоступен")
-            return
-        payload = {"olymp": rec.get("olymp"), "year": rec.get("year"),
-                   "round": rec.get("round"), "grade": rec.get("grade"),
-                   "num": rec.get("num"),
-                   "text_head": (rec.get("text") or "")[:200]}
-        q_resp = p.deepseek_chat.chat_json(P.STAGE18_SEARCH_QUERY,
-                                           json.dumps(payload, ensure_ascii=False))
-        if not q_resp or not q_resp.get("ok"):
-            p.needs_review(rec, 18, "не удалось сформировать поисковый запрос")
-            return
-        query = q_resp.get("query", "")
-        s_resp = p.gemini.chat_with_search(P.STAGE20_SEARCH_CANDIDATES,
-                                           json.dumps({**payload, "query": query}, ensure_ascii=False))
-        if not s_resp or not s_resp.get("ok"):
-            p.needs_review(rec, 18, "поиск не дал результатов")
-            return
-        for cand in s_resp.get("candidates", [])[:5]:
-            url = cand.get("url", "")
-            if not R.is_official_url(url):
-                continue
-            ok, reason = _download_and_check(p, rec, url)
-            if ok:
-                p.apply_field(slug, rec, 18, "source", url)
-                p.add_qa_note(rec, 18, f"source найден поиском: {reason}")
-                return
-        p.add_qa_note(rec, 18, "source_not_found: официальный источник не найден")
+        # 2) Поиск: индекс официальных PDF, при пустоте — Gemini.
+        #    Модели для индексного пути не нужны (только скачивание и сверка).
+        found, result = _official_search(p, slug, rec, 18, want_solution=False)
+        if not found:
+            p.add_qa_note(rec, 18, f"source_not_found: {result}")
 
     items = [(s, r) for s, r in p.catalog.all_records() if not (r.get("source") or "").strip()]
     p.run_parallel(18, items, worker, "пустой source")
@@ -1505,20 +1762,22 @@ def stage_19(p: Pipeline):
 # =====================================================================
 
 def stage_20(p: Pipeline):
-    """Этап 20: поиск официальных решений для задач из очередей 12-15, 19."""
-    if p.gemini is None or p.deepseek_chat is None or p.deepseek_reasoner is None:
-        log.warning("Этап 20 пропущен: нет доступа к OdiRouter/DeepSeek.")
-        return
+    """Этап 20: поиск официальных решений (индекс -> Gemini + DeepSeek)."""
+    if p.deepseek_chat is None or p.deepseek_reasoner is None:
+        # Это сбой этапа, а не «пропуск»: если пометить завершённым,
+        # --resume больше не вернётся к этим задачам
+        raise LLMError("Этап 20: нет доступа к DeepSeek "
+                       "(извлечение решения и сверка невозможны)")
     queue = list(dict.fromkeys(p.checkpoint.data.get("search_queue", [])))
-    if p.args.limit:
-        queue = queue[: p.args.limit]
-    log.info("Этап 20: очередь поиска — %d задач.", len(queue))
     # Пустой source тоже в очередь
     for slug, rec in p.catalog.all_records():
         if not (rec.get("source") or "").strip():
             uid = rec.get("uid")
             if uid not in queue:
                 queue.append(uid)
+    if p.args.limit:
+        queue = queue[: p.args.limit]
+    log.info("Этап 20: очередь поиска — %d задач.", len(queue))
     processed = 0
     for uid in queue:
         found = p.catalog.find(uid)
@@ -1527,7 +1786,7 @@ def stage_20(p: Pipeline):
         slug, rec = found
         processed += 1
         try:
-            _search_official_solution(p, slug, rec)
+            _official_search(p, slug, rec, 20, want_solution=True)
         except Exception as e:
             log.error("Этап 20: ошибка на %s: %s", uid[:8], str(e)[:200])
         if processed % 50 == 0:
@@ -1535,107 +1794,59 @@ def stage_20(p: Pipeline):
     p.stats[20]["changed"] = p.diff.count(20)
 
 
-def _search_official_solution(p: Pipeline, slug: str, rec: dict):
-    """Поиск, скачивание и верификация официального решения одной задачи."""
-    payload = {"olymp": rec.get("olymp"), "year": rec.get("year"),
-               "round": rec.get("round"), "grade": rec.get("grade"),
-               "num": rec.get("num"),
-               "text_head": (rec.get("text") or "")[:200]}
-    s_resp = p.gemini.chat_with_search(P.STAGE20_SEARCH_CANDIDATES,
-                                       json.dumps(payload, ensure_ascii=False))
-    if not s_resp or not s_resp.get("ok"):
-        p.needs_review(rec, 20, "поиск кандидатов не удался")
-        return
-    for cand in s_resp.get("candidates", [])[:5]:
-        url = cand.get("url", "")
-        if not R.is_official_url(url):
-            continue
-        ok, reason = _download_and_check(p, rec, url)
-        if not ok:
-            continue
-        # Извлечение задачи из документа
-        doc_text = _fetch_doc_text(url)
-        if not doc_text:
-            continue
-        e_payload = {"doc_text": doc_text[:30000], **payload}
-        e_resp = p.deepseek_chat.chat_json(P.STAGE20_EXTRACT_TASK,
-                                           json.dumps(e_payload, ensure_ascii=False))
-        if not e_resp or not e_resp.get("ok"):
-            if e_resp and e_resp.get("reason") == "condition_mismatch":
-                continue
-            continue
-        # Верификация reasoner-ом
-        v_payload = {"our_text": rec.get("text") or "",
-                     "our_answer": rec.get("answer") or "",
-                     "doc_task_text": e_resp.get("text") or "",
-                     "doc_solution": e_resp.get("solution") or "",
-                     "doc_answer": e_resp.get("answer") or ""}
-        v_resp = _reasoner_verify(p, P.STAGE20_VERIFY_MATCH, v_payload)
-        if not v_resp or not v_resp.get("ok"):
-            continue
-        if not v_resp.get("condition_match", False):
-            continue
-        if v_resp.get("answer_conflict", False):
-            # Конфликт: НИЧЕГО не перезаписываем автоматически.
-            # Оба ответа, решение и URL — в qa, пометка answer_conflict.
-            p.add_qa_note(rec, 20, "answer_conflict: найденный документ даёт другой ответ",
-                          model="deepseek-reasoner")
-            p.add_qa_note(rec, 20,
-                          f"answer_conflict: наш: {rec.get('answer')!r}; "
-                          f"из документа: {e_resp.get('answer')!r}; "
-                          f"документ: {url}",
-                          model="deepseek-reasoner")
-            p.remove_from_search_queue(rec.get("uid"))
-            return
-        # Записываем решение из документа
-        if (e_resp.get("solution") or "").strip():
-            p.apply_field(slug, rec, 20, "solution", e_resp["solution"],
-                          model="deepseek-chat+reasoner")
-        if (e_resp.get("answer") or "").strip():
-            p.apply_field(slug, rec, 20, "answer", e_resp["answer"],
-                          model="deepseek-chat+reasoner")
-        p.apply_field(slug, rec, 20, "source", url, model="gemini+deepseek")
-        p.apply_field(slug, rec, 20, "status", "official_found", model="gemini+deepseek")
-        p.add_qa_note(rec, 20, f"официальное решение найдено: {reason}")
-        p.remove_from_search_queue(rec.get("uid"))
-        return
-    p.add_qa_note(rec, 20, "official_not_found: официальный источник не найден")
+_DOC_PAGES_CACHE: dict[str, list[str]] = {}
 
 
-_DOC_CACHE: dict[str, str] = {}
+def _fetch_doc_pages(url: str) -> list[str]:
+    """Скачивает документ и возвращает тексты СТРАНИЦ по отдельности (с кэшем).
 
-
-def _fetch_doc_text(url: str) -> str:
-    """Скачивает документ и возвращает его текст (с кэшем)."""
-    if url in _DOC_CACHE:
-        return _DOC_CACHE[url]
+    Постранично — чтобы искать нужную задачу и передавать модели не весь
+    документ, а страницу задачи с соседними (решение часто на следующих).
+    """
+    if url in _DOC_PAGES_CACHE:
+        return _DOC_PAGES_CACHE[url]
+    pages: list[str] = []
     try:
         resp = requests.get(url, timeout=60, headers={"User-Agent": "Mozilla/5.0"})
         if resp.status_code != 200:
-            return ""
+            return []
         if "pdf" in resp.headers.get("Content-Type", "") or url.lower().endswith(".pdf"):
             import io
             if not HAS_PDF:
-                return ""
+                return []
             try:
                 with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-                    text = "\n".join((page.extract_text() or "") for page in pdf.pages)
+                    pages = [(page.extract_text() or "") for page in pdf.pages]
             except Exception:
                 try:
                     reader = PdfReader(io.BytesIO(resp.content))
-                    text = "\n".join(page.extract_text() or "" for page in reader.pages)
+                    pages = [(p.extract_text() or "") for p in reader.pages]
                 except Exception:
-                    return ""
-            _DOC_CACHE[url] = text
-            return text
-        html = resp.text
-        text = re.sub(r"<script[\s\S]*?</script>|<style[\s\S]*?</style>", " ", html)
-        text = re.sub(r"<[^>]+>", " ", text)
-        text = re.sub(r"\s+", " ", text)
-        _DOC_CACHE[url] = text
-        return text
+                    return []
+        else:
+            html = resp.text
+            text = re.sub(r"<script[\s\S]*?</script>|<style[\s\S]*?</style>", " ", html)
+            text = re.sub(r"<[^>]+>", " ", text)
+            text = re.sub(r"\s+", " ", text)
+            pages = [text]
     except Exception:
-        return ""
+        return []
+    _DOC_PAGES_CACHE[url] = pages
+    return pages
+
+
+def _find_task_pages(pages: list[str], text_head: str) -> list[int]:
+    """Ищет страницы, содержащие начало условия задачи (нормализованное)."""
+    head = R.norm_for_compare(text_head)
+    if not head:
+        return []
+    probe = head[:60]
+    return [i for i, pg in enumerate(pages) if probe in R.norm_for_compare(pg)]
+
+
+def _fetch_doc_text(url: str) -> str:
+    """Весь текст документа (для совместимости; внутри — постраничный кэш)."""
+    return "\n".join(_fetch_doc_pages(url))
 
 
 # =====================================================================
@@ -1650,10 +1861,9 @@ def _make_uid(olymp, year, round_name, grade, num, text) -> str:
 
 
 def stage_21(p: Pipeline):
-    """Этап 21: заполнение пропущенных номеров в вариантах."""
-    if p.gemini is None or p.deepseek_chat is None:
-        log.warning("Этап 21 пропущен: нет доступа к OdiRouter/DeepSeek.")
-        return
+    """Этап 21: заполнение пропущенных номеров в вариантах (индекс -> Gemini)."""
+    if p.deepseek_chat is None:
+        raise LLMError("Этап 21: нет доступа к DeepSeek (извлечение задач)")
     if p.dry_run:
         log.info("Этап 21: dry-run — новые задачи не добавляются.")
         return
@@ -1672,7 +1882,13 @@ def stage_21(p: Pipeline):
         return (round_p, grade_p, -(year or 0))
 
     added = 0
-    for key in sorted(variants, key=priority):
+    ordered_keys = sorted(variants, key=priority)
+    # --limit для этапа 21 — это число ОБРАБАТЫВАЕМЫХ ВАРИАНТОВ
+    if p.args.limit:
+        log.info("Этап 21: --limit %d — обрабатываем первые %d вариантов.",
+                 p.args.limit, min(p.args.limit, len(ordered_keys)))
+        ordered_keys = ordered_keys[: p.args.limit]
+    for key in ordered_keys:
         slug, year, round_name, grade = key
         recs = variants[key]
         # Нумерация сквозная по дням (ВсОШ): объединяем дни
@@ -1692,22 +1908,40 @@ def stage_21(p: Pipeline):
             continue
         log.info("Этап 21: %s %s %s %s класс: пропущены %s (макс %d).",
                  slug, year, round_name, grade, missing, max_num)
-        # Поиск официального PDF варианта
         context = recs[0]
-        payload = {"olymp": context.get("olymp"), "year": year, "round": round_name,
-                   "grade": grade, "missing_nums": [str(n) for n in missing],
-                   "known_nums_text_head": (recs[0].get("text") or "")[:200]}
-        s_resp = p.gemini.chat_with_search(P.STAGE21_FIND_VARIANT_PDF,
-                                           json.dumps(payload, ensure_ascii=False))
-        if not s_resp or not s_resp.get("ok"):
-            continue
-        for cand in s_resp.get("candidates", [])[:5]:
-            url = cand.get("url", "")
-            if not R.is_official_url(url):
+        query_desc = f"{slug} {year} {round_name} {grade} кл."
+        # Кандидаты PDF варианта: СНАЧАЛА индекс, потом Gemini
+        candidates: list[tuple[str, str]] = []
+        try:
+            idx = p.get_source_index()
+            round_key = R.canon_round_key(round_name or "", slug)
+            found = idx.find(slug, year, round_key, grade, kinds=("tasks", "sol"))
+            candidates = [("index", r["url"]) for r in found[:5]]
+            p.search_log.log("", slug, 21, query_desc, "index", "", "",
+                             f"найдено {len(found)} кандидатов")
+        except Exception as e:
+            log.warning("Этап 21: индекс недоступен: %s", str(e)[:150])
+        if not candidates and p.gemini is not None:
+            payload = {"olymp": context.get("olymp"), "year": year, "round": round_name,
+                       "grade": grade, "missing_nums": [str(n) for n in missing]}
+            s_resp = p.gemini.search_variant_pdf(json.dumps(payload, ensure_ascii=False))
+            if s_resp and s_resp.get("ok"):
+                for cand in s_resp.get("candidates", [])[:5]:
+                    url = cand.get("url", "")
+                    if R.is_official_url(url):
+                        candidates.append(("gemini", url))
+            p.search_log.log("", slug, 21, query_desc, "gemini", "", "",
+                             f"получено {len(candidates)} кандидатов")
+        for origin, url in candidates:
+            # Скачиваем документ (постранично) — логируем фактический результат
+            pages = _fetch_doc_pages(url)
+            if not pages:
+                p.search_log.log("", slug, 21, query_desc, origin, url,
+                                 "не скачан", "пустой документ")
                 continue
-            doc_text = _fetch_doc_text(url)
-            if not doc_text:
-                continue
+            doc_text = "\n".join(pages)
+            p.search_log.log("", slug, 21, query_desc, origin, url,
+                             "скачан", f"{len(pages)} страниц")
             e_payload = {"doc_text": doc_text[:30000],
                          "missing_nums": [str(n) for n in missing],
                          "grade": grade,
@@ -1715,6 +1949,8 @@ def stage_21(p: Pipeline):
             e_resp = p.deepseek_chat.chat_json(P.STAGE21_EXTRACT_MISSING,
                                                json.dumps(e_payload, ensure_ascii=False))
             if not e_resp or not e_resp.get("ok"):
+                p.search_log.log("", slug, 21, query_desc, origin, url, "скачан",
+                                 "ошибка извлечения задач из документа")
                 continue
             for task in e_resp.get("tasks", []):
                 num = str(task.get("num", "")).strip()
@@ -1723,12 +1959,26 @@ def stage_21(p: Pipeline):
                 text = (task.get("text") or "").strip()
                 if not text:
                     continue
-                # Проверка: извлечённый текст реально содержится в документе
+                # Проверка 1: извлечённый текст реально содержится в документе
                 head = R.norm_for_compare(text[:120])
                 doc_norm = R.norm_for_compare(doc_text)
                 if head and head[:60] not in doc_norm:
                     log.warning("Этап 21: задача №%s не найдена в документе дословно — пропущена.", num)
+                    p.search_log.log("", slug, 21, query_desc, origin, url, "скачан",
+                                     f"задача №{num}: нет в документе дословно — пропущена")
                     continue
+                # Проверка 2 (reasoner): решение приводит к извлечённому ответу
+                task_sol = (task.get("solution") or "").strip()
+                task_ans = (task.get("answer") or "").strip()
+                if task_sol and task_ans and p.deepseek_reasoner is not None:
+                    chk = p.deepseek_reasoner.chat_json(
+                        P.STAGE11_ANSWER_CHECK,
+                        json.dumps({"text": text, "answer": task_ans,
+                                    "solution": task_sol}, ensure_ascii=False))
+                    if not chk or chk.get("verdict") == "mismatch":
+                        p.search_log.log("", slug, 21, query_desc, origin, url, "скачан",
+                                         f"задача №{num}: ответ не сходится с решением — пропущена")
+                        continue
                 uid = _make_uid(context.get("olymp"), year, round_name, grade, num, text)
                 if p.catalog.find(uid):
                     continue
@@ -1861,6 +2111,8 @@ def _write_report(p: Pipeline, validation_issues: list[str], gaps_result: str):
             lines.append("| (изменений по детекторам не найдено) | | | |")
     # Токены
     lines += ["", "## Использование токенов по провайдерам", ""]
+    lines.append(f"- Поиск источников: {p.search_log.summary()} "
+                 f"(детали: work/search_log.jsonl)")
     usage = p._usage_total()
     for name, u in usage.items():
         lines.append(f"- **{name}**: {u['calls']} вызовов, "
@@ -1974,6 +2226,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Число параллельных потоков")
     parser.add_argument("--resume", action="store_true",
                         help="Продолжить с чекпоинта")
+    parser.add_argument("--rebuild-index", action="store_true",
+                        help="Перестроить индекс официальных PDF (work/source_index)")
     parser.add_argument("--apply", action="store_true",
                         help="Скопировать результат в data/olymp_catalog с бэкапом")
     parser.add_argument("--checkpoint", type=Path, default=CHECKPOINT_PATH,
@@ -2002,11 +2256,20 @@ def main():
         sys.exit(2)
     # Автовыбор источника: fixed если уже есть (продолжение работы)
     if args.source is None:
-        args.source = str(FIXED_DIR) if FIXED_DIR.exists() and not args.apply else str(DATA_DIR)
         if FIXED_DIR.exists() and not args.apply:
-            log.info("Источник: %s (результат предыдущего запуска). "
-                     "Для принудительной чистки оригинала: --source data/olymp_catalog",
-                     args.source)
+            have = {p.stem for p in FIXED_DIR.glob("*.json") if p.stem != "_index"}
+            needed = {args.slug} if args.slug else set()
+            if not needed or needed <= have:
+                args.source = str(FIXED_DIR)
+                log.info("Источник: %s (результат предыдущего запуска). "
+                         "Для принудительной чистки оригинала: --source data/olymp_catalog",
+                         args.source)
+            else:
+                log.warning("В %s нет файла %s.json — источник: data/olymp_catalog.",
+                            FIXED_DIR, args.slug)
+                args.source = str(DATA_DIR)
+        else:
+            args.source = str(DATA_DIR)
     if args.dry_run:
         REPORTS_DIR.mkdir(exist_ok=True)
     else:
