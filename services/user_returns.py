@@ -20,6 +20,11 @@ USER_RETURNS_V1 (2026-10-10): статистика возвращений пол
     atleast[n]  = |{ u : S(u) >= n }|                     — вернулись n-й раз (и более)
     retention_n = atleast[n] / |U|                        — доля вернувшихся n-й раз
 
+USER_LAST_SEEN_V1 (2026-10-18): когда каждый заходил в последний раз.
+    L(u) = max t_i (последнее действие), B(u) = начало последнего визита,
+    dur(u) = L(u) - B(u), D(u) = now - L(u). Подробнее — в блоке ниже.
+    Страницы: /admin/users/last_seen, /admin/users/last_seen.json (gap=60).
+
 Подключение (одна строка, рядом с services.site_stats в gunicorn.conf.py или app.py):
 
     from services.user_returns import register as _register_user_returns; _register_user_returns(app)
@@ -249,7 +254,7 @@ _HTML = """<!doctype html><html lang="ru"><head><meta charset="utf-8">
 <h1>Возвращения пользователей</h1>
 <form method="get">Пауза между действиями, мин: <input name="gap" value="{{ d.gap_min }}">
  За последние дней (0 = всё время): <input name="days" value="{{ d.days }}">
- <button>Пересчитать</button> &nbsp; <a href="/admin/users/returns.json?gap={{ d.gap_min }}&days={{ d.days }}">JSON</a> &nbsp; <a href="/admin/users">← Статистика</a></form>
+ <button>Пересчитать</button> &nbsp; <a href="/admin/users/returns.json?gap={{ d.gap_min }}&days={{ d.days }}">JSON</a> &nbsp; <a href="/admin/users/last_seen?gap={{ d.gap_min }}">Последний заход каждого →</a> &nbsp; <a href="/admin/users">← Статистика</a></form>
 
 <div class="kpi"><small>Пользователей с действиями</small><b>{{ d.users_with_events }}</b></div>
 <div class="kpi"><small>Вернулись хотя бы раз (визитов ≥ 2)</small><b>{{ d.returned_at_least_once }}</b></div>
@@ -309,6 +314,187 @@ def admin_user_returns_json():
         return jsonify(user_returns(int(uid), gap_min=gap))
     days = max(0, int(request.args.get('days', 0) or 0))
     return jsonify(returns_distribution(gap_min=gap, days=days))
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# USER_LAST_SEEN_V1 (2026-10-18): когда каждый пользователь заходил в последний раз.
+#
+# Формулы
+#   L(u)      = max t_i                      — последнее действие пользователя u (UTC)
+#   B(u)      = start(последнего визита)     — начало последнего визита (пауза > GAP => новый)
+#   dur(u)    = L(u) − B(u)                  — длительность последнего визита
+#   D(u)      = now − L(u)                   — давность: сколько прошло с последнего действия
+#   bucket(u) = online  (D ≤ GAP)            — ещё в текущем визите
+#             = today   (D < 24 ч)
+#             = week    (D < 7 дн)
+#             = month   (D < 30 дн)
+#             = old     (D ≥ 30 дн)
+#   Если действий в БД нет, берётся User.last_login (источник 'login').
+# ══════════════════════════════════════════════════════════════════════════
+
+_BUCKETS = (
+    ('online', 'сейчас на сайте', '#34d399'),
+    ('today', 'за последние 24 ч', '#38bdf8'),
+    ('week', '1–7 дней назад', '#a78bfa'),
+    ('month', '7–30 дней назад', '#fbbf24'),
+    ('old', 'больше 30 дней', '#f87171'),
+)
+
+
+def _ago_text(delta: timedelta) -> str:
+    s = int(delta.total_seconds())
+    if s < 0:
+        s = 0
+    if s < 60:
+        return 'только что'
+    m = s // 60
+    if m < 60:
+        return f'{m} мин назад'
+    h = m // 60
+    if h < 24:
+        return f'{h} ч {m % 60} мин назад'
+    d = h // 24
+    if d < 30:
+        return f'{d} дн {h % 24} ч назад'
+    if d < 365:
+        return f'{d // 30} мес {d % 30} дн назад'
+    return f'{d // 365} г {(d % 365) // 30} мес назад'
+
+
+def _bucket_of(delta: timedelta, gap_min: int) -> str:
+    if delta <= timedelta(minutes=gap_min):
+        return 'online'
+    if delta < timedelta(hours=24):
+        return 'today'
+    if delta < timedelta(days=7):
+        return 'week'
+    if delta < timedelta(days=30):
+        return 'month'
+    return 'old'
+
+
+def _all_users():
+    """{id: (display_name, last_login_dt|None, created_at|None)} — все пользователи."""
+    out = {}
+    try:
+        from models import User
+        for u in User.query.all():
+            name = (getattr(u, 'username', None) or getattr(u, 'nickname', None)
+                    or getattr(u, 'name', None) or getattr(u, 'email', None) or str(u.id))
+            out[int(u.id)] = (name, _to_dt(getattr(u, 'last_login', None)),
+                              _to_dt(getattr(u, 'created_at', None)))
+    except Exception:
+        db.session.rollback()
+    return out
+
+
+def last_seen_table(gap_min: int = GAP_MIN_DEFAULT, now: datetime = None) -> dict:
+    """Для каждого пользователя: когда заходил в последний раз, сколько прошло, сколько визитов."""
+    now = now or datetime.utcnow()
+    events, sources = collect_events()
+    users = _all_users()
+    rows = []
+    ids = set(events.keys()) | set(users.keys())
+    for uid in ids:
+        name, last_login, created = users.get(uid, (str(uid), None, None))
+        ts = events.get(uid) or []
+        sess = sessions_of(ts, gap_min) if ts else []
+        if sess:
+            start, end, n_ev = sess[-1]
+            source = 'events'
+        elif last_login is not None:
+            start = end = last_login
+            n_ev = 0
+            source = 'login'
+        else:
+            rows.append({
+                'user_id': uid, 'name': name, 'last_seen': None, 'last_visit_start': None,
+                'last_visit_minutes': None, 'ago': 'ни разу', 'ago_seconds': None,
+                'bucket': 'never', 'visits': 0, 'events_last_visit': 0, 'source': 'none',
+                'registered': created.strftime('%Y-%m-%d') if created else '',
+            })
+            continue
+        delta = now - end
+        rows.append({
+            'user_id': uid,
+            'name': name,
+            'last_seen': end.strftime('%Y-%m-%d %H:%M'),
+            'last_visit_start': start.strftime('%Y-%m-%d %H:%M'),
+            'last_visit_minutes': int((end - start).total_seconds() // 60),
+            'ago': _ago_text(delta),
+            'ago_seconds': int(delta.total_seconds()),
+            'bucket': _bucket_of(delta, gap_min),
+            'visits': len(sess),
+            'events_last_visit': n_ev,
+            'source': source,
+            'registered': created.strftime('%Y-%m-%d') if created else '',
+        })
+    rows.sort(key=lambda r: (r['ago_seconds'] is None, r['ago_seconds'] or 0))
+    counts = defaultdict(int)
+    for r in rows:
+        counts[r['bucket']] += 1
+    total = len(rows)
+    buckets = [{
+        'key': k, 'label': lbl, 'color': col, 'count': counts.get(k, 0),
+        'pct': round(100.0 * counts.get(k, 0) / total, 1) if total else 0.0,
+    } for k, lbl, col in _BUCKETS]
+    seen = [r['ago_seconds'] for r in rows if r['ago_seconds'] is not None]
+    return {
+        'gap_min': gap_min,
+        'now': now.strftime('%Y-%m-%d %H:%M'),
+        'total': total,
+        'never': counts.get('never', 0),
+        'buckets': buckets,
+        'median_days_ago': round(sorted(seen)[len(seen) // 2] / 86400, 1) if seen else None,
+        'rows': rows,
+    }
+
+
+_LAST_SEEN_HTML = """<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<title>Последний заход каждого пользователя</title>
+<style>
+ body{font-family:system-ui,Segoe UI,Arial;margin:24px;color:#222;max-width:1200px}
+ table{border-collapse:collapse;margin:12px 0 24px} th,td{border:1px solid #ccc;padding:6px 10px;text-align:right}
+ th:first-child,td:first-child,td:nth-child(2){text-align:left} th{background:#f3f3f3}
+ .kpi{display:inline-block;background:#f7f7fb;border:1px solid #ddd;border-radius:8px;padding:10px 14px;margin:4px 8px 4px 0}
+ .kpi b{font-size:22px;display:block} code{background:#f3f3f3;padding:1px 4px} small{color:#666}
+</style></head><body>
+<h1>Последний заход каждого пользователя</h1>
+<form method="get">Пауза между действиями, мин: <input name="gap" value="{{ d.gap_min }}" style="width:70px">
+ <button>Пересчитать</button> &nbsp; <a href="/admin/users/last_seen.json?gap={{ d.gap_min }}">JSON</a> &nbsp; <a href="/admin/users">← Статистика</a></form>
+<p><small>Сейчас (UTC): {{ d.now }}. Всего пользователей: {{ d.total }}, ни разу не заходили: {{ d.never }}.</small></p>
+{% for b in d.buckets %}<div class="kpi"><small>{{ b.label }}</small><b style="color:{{ b.color }}">{{ b.count }}</b><small>{{ b.pct }}%</small></div>{% endfor %}
+<table><tr><th>id</th><th>Пользователь</th><th>Последнее действие L(u)</th><th>Давность D(u)</th><th>Начало визита B(u)</th><th>Длит. визита</th><th>Действий</th><th>Визитов S(u)</th><th>Источник</th></tr>
+{% for r in d.rows %}<tr><td>{{ r.user_id }}</td><td>{{ r.name }}</td><td>{{ r.last_seen or '—' }}</td><td>{{ r.ago }}</td><td>{{ r.last_visit_start or '—' }}</td>
+<td>{% if r.last_visit_minutes is not none %}{{ r.last_visit_minutes }} мин{% else %}—{% endif %}</td><td>{{ r.events_last_visit }}</td><td>{{ r.visits }}</td><td>{{ r.source }}</td></tr>{% endfor %}</table>
+<h2>Формулы</h2>
+<ul>
+<li><code>L(u) = max t_i</code> — последнее действие (UTC)</li>
+<li><code>B(u) = start(последнего визита)</code>, визит = серия действий с паузами ≤ {{ d.gap_min }} мин</li>
+<li><code>dur(u) = L(u) − B(u)</code> — длительность последнего визита</li>
+<li><code>D(u) = now − L(u)</code> — сколько прошло с последнего захода</li>
+<li>Группы: online (D ≤ {{ d.gap_min }} мин), today (&lt; 24 ч), week (&lt; 7 дн), month (&lt; 30 дн), old (≥ 30 дн)</li>
+<li>Если действий нет — берётся <code>User.last_login</code> (источник <code>login</code>)</li>
+</ul>
+</body></html>"""
+
+
+@user_returns_bp.route('/admin/users/last_seen')
+@login_required
+def admin_user_last_seen():
+    if not _is_admin():
+        abort(403)
+    gap = max(1, int(request.args.get('gap', GAP_MIN_DEFAULT) or GAP_MIN_DEFAULT))
+    return render_template_string(_LAST_SEEN_HTML, d=last_seen_table(gap_min=gap))
+
+
+@user_returns_bp.route('/admin/users/last_seen.json')
+@login_required
+def admin_user_last_seen_json():
+    if not _is_admin():
+        abort(403)
+    gap = max(1, int(request.args.get('gap', GAP_MIN_DEFAULT) or GAP_MIN_DEFAULT))
+    return jsonify(last_seen_table(gap_min=gap))
 
 
 def register(app):

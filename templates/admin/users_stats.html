@@ -122,6 +122,58 @@
   <div class="us-legend">Формулы: <b>S(u)</b> = 1 + число пауз &gt; {{ ret.gap_min }} мин между действиями; <b>R(u)</b> = S(u) − 1 возвращений; «столько и более» = |{u : S(u) ≥ n}|; % = от {{ ret.users_with_events }} пользователей с действиями. Считаются действия, оставившие след в БД (решения, задачи дня, сообщения, чертежи…).</div>
   {% endif %}
 
+  {# ══ USER_LAST_SEEN_V1 (18.10.2026): когда каждый пользователь заходил в последний раз. ══ #}
+  {# ══ L(u) = последнее действие; B(u) = начало последнего визита; D(u) = now − L(u).     ══ #}
+  {% set ls = user_last_seen_block() if user_last_seen_block is defined else none %}
+  {% if ls %}
+  <div class="us-sec">Последний заход — когда каждый был в последний раз
+    <span style="font-size:12px;font-weight:400;color:var(--muted);">(UTC, сейчас {{ ls.now }}; визит = действия с паузами ≤ {{ ls.gap_min }} мин)</span>
+    <a href="/admin/users/last_seen" style="font-size:12px;font-weight:400;margin-left:8px;">отдельная страница / JSON →</a>
+  </div>
+  <div class="us-summary">
+    {% for b in ls.buckets %}
+    <div class="us-card"><div class="us-card-num" style="color:{{ b.color }}">{{ b.count }}</div><div class="us-card-label">{{ b.label }}</div><div class="us-card-sub">{{ b.pct }}% из {{ ls.total }}</div></div>
+    {% endfor %}
+    <div class="us-card"><div class="us-card-num">{{ ls.never }}</div><div class="us-card-label">ни разу не заходили</div><div class="us-card-sub">нет ни действий, ни last_login</div></div>
+    {% if ls.median_days_ago is not none %}
+    <div class="us-card"><div class="us-card-num">{{ ls.median_days_ago }} дн</div><div class="us-card-label">медиана давности</div><div class="us-card-sub">половина заходила не позже этого</div></div>
+    {% endif %}
+  </div>
+  <div class="us-table-wrap" style="margin-bottom:6px;max-height:520px;overflow-y:auto;">
+    <table class="us-table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Ник</th>
+          <th title="L(u) = max t_i — последнее действие пользователя (UTC)">Последнее действие L(u)</th>
+          <th title="D(u) = now − L(u)">Сколько прошло D(u)</th>
+          <th title="B(u) = начало последнего визита (пауза > {{ ls.gap_min }} мин открывает новый визит)">Начало визита B(u)</th>
+          <th title="dur(u) = L(u) − B(u)">Длит. визита</th>
+          <th title="Событий в последнем визите">Действий</th>
+          <th title="S(u) = 1 + число пауз > {{ ls.gap_min }} мин">Визитов S(u)</th>
+          <th title="events — по действиям в БД; login — только User.last_login (действий не найдено)">Источник</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for r in ls.rows %}
+        {% set bcol = {'online':'#34d399','today':'#38bdf8','week':'#a78bfa','month':'#fbbf24','old':'#f87171','never':'var(--muted)'}[r.bucket] %}
+        <tr>
+          <td>{{ r.user_id }}</td>
+          <td><strong>{% if r.bucket == 'online' %}<span class="us-dot"></span>{% endif %}{{ r.name }}</strong></td>
+          <td style="white-space:nowrap;">{{ r.last_seen or '—' }}</td>
+          <td style="white-space:nowrap;color:{{ bcol }};font-weight:600;">{{ r.ago }}</td>
+          <td style="white-space:nowrap;">{{ r.last_visit_start or '—' }}</td>
+          <td style="text-align:center;">{% if r.last_visit_minutes is not none %}{{ r.last_visit_minutes }} мин{% else %}—{% endif %}</td>
+          <td style="text-align:center;">{{ r.events_last_visit }}</td>
+          <td style="text-align:center;"><strong>{{ r.visits }}</strong></td>
+          <td style="font-size:11px;color:var(--muted);">{{ r.source }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="us-legend">Формулы: <b>L(u)</b> = max tᵢ — последнее действие; <b>B(u)</b> = начало последнего визита (пауза &gt; {{ ls.gap_min }} мин = новый визит); <b>dur(u)</b> = L(u) − B(u); <b>D(u)</b> = now − L(u) — давность. Группы: сейчас на сайте (D ≤ {{ ls.gap_min }} мин), за 24 ч, 1–7 дн, 7–30 дн, &gt; 30 дн. Сортировка — от самых свежих. Если действий в БД нет, берётся User.last_login (источник «login»).</div>
+  {% endif %}
+
   <div class="us-sec">Прямо сейчас</div>
   <div class="us-summary">
     <div class="us-card"><div class="us-card-num online"><span class="us-dot"></span>{{ total.online_now }}</div><div class="us-card-label">онлайн сейчас</div></div>
