@@ -1,21 +1,10 @@
 {% extends "admin/stats_base.html" %}
 {% block stats_content %}
 <div class="st-cards">
-  {% for c in cards %}
-  <a class="st-card" href="{{ c.link }}">
-    <div class="t">{{ c.title }}</div>
-    <div class="v">{{ c.yesterday }}</div>
-    <div class="s">вчера ({{ yesterday.strftime('%d.%m') }}){% if c.period is not none %} · за период: {{ c.period }}{% endif %}</div>
-  </a>
-  {% endfor %}
-  <a class="st-card" href="/admin/stats/payments">
-    <div class="t">Выручка, ₽</div>
-    <div class="v">{{ '%.0f'|format(rev_y) }}</div>
-    <div class="s">вчера · за период: {{ '%.0f'|format(rev_p) }}</div>
-  </a>
+{% for c in cards %}<a class="st-card" href="{{ c.link }}?p={{ period }}&amp;from={{ d_from }}&amp;to={{ d_to }}">
+<div class="t">{% if c.key=='visit' %}Посетители с событием visit{% elif c.key=='payment_success' %}Пользователи с оплатой{% elif c.key=='limit_hit' %}Пользователи с событием лимита{% elif c.key=='dau' %}Активные по трекеру времени{% else %}{{ c.title }}{% endif %}</div>
+<div class="v">{{ c.yesterday }}</div><div class="s">Вчера, {{ yesterday.strftime('%d.%m') }}{% if c.period is not none %} · за период: {{ c.period }}{% endif %}</div></a>{% endfor %}
+<a class="st-card" href="/admin/stats/payments?p={{ period }}&amp;from={{ d_from }}&amp;to={{ d_to }}"><div class="t">Сумма событий оплаты, ₽</div><div class="v">{{ '%.0f'|format(rev_y) }}</div><div class="s">Вчера · за период: {{ '%.0f'|format(rev_p) }}. Не сверено с возвратами.</div></a>
 </div>
-<div class="st-note" style="margin-top:18px;">
-  Утренние 15 минут: DAU, регистрации → анкеты → первые задачи → оплаты, лимиты и выручка.
-  Каждая карточка ведёт в свой раздел. Серые пункты меню появятся по датам плана запуска (19.10–27.10).
-</div>
+<div class="st-note">Сводка основана на собранных событиях и трекере времени. Нулевое значение может означать отсутствие данных, а не отсутствие действий: текущий сервер при ошибке запроса также возвращает пустую выборку. Эти показатели пока нельзя использовать как единственный финансовый отчёт. Разделы будущих функций могут открываться, но оставаться без данных.</div>
 {% endblock %}
