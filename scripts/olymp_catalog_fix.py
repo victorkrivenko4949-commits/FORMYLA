@@ -453,6 +453,8 @@ class DiffLogger:
         self.path = path
         self.enabled = enabled
         self.entries = []
+        if enabled:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def log(self, uid: str, stage: int, field: str, old, new, slug: str = ""):
         entry = {"ts": now_iso(), "uid": uid, "slug": slug, "stage": stage,
@@ -460,6 +462,7 @@ class DiffLogger:
         self.entries.append(entry)
         if self.enabled:
             with _lock:
+                self.path.parent.mkdir(parents=True, exist_ok=True)
                 with self.path.open("a", encoding="utf-8") as f:
                     f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
@@ -480,6 +483,8 @@ class SearchLogger:
         self.path = path
         self.enabled = enabled
         self.entries = []
+        if enabled:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def log(self, uid: str, slug: str, stage: int, query: str, origin: str,
             url: str, status: str, result: str):
@@ -489,6 +494,7 @@ class SearchLogger:
         self.entries.append(entry)
         if self.enabled:
             with _lock:
+                self.path.parent.mkdir(parents=True, exist_ok=True)
                 with self.path.open("a", encoding="utf-8") as f:
                     f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
@@ -626,6 +632,7 @@ class Pipeline:
         self.diff = DiffLogger(DIFF_PATH, enabled=not self.dry_run)
         self.search_log = SearchLogger(SEARCH_LOG_PATH, enabled=not self.dry_run)
         self._source_index: SI.SourceIndex | None = None
+        self.stage21_report: dict[str, dict] = {}   # отчёт этапа 21 по олимпиадам
         self.catalog = Catalog()
         self.llm_changes = []          # предложенные, но не применённые (dry-run)
         self.stats = {s: {"processed": 0, "changed": 0, "skipped": 0,
@@ -1509,46 +1516,172 @@ def stage_17(p: Pipeline):
 # ЭТАП 18: пустой source
 # =====================================================================
 
-def _download_and_check(p: Pipeline, rec: dict, url: str) -> tuple[bool, str]:
+BROWSER_UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                             "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+              "Accept": "text/html,application/xhtml+xml,application/pdf,*/*;q=0.8",
+              "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8"}
+
+
+# =====================================================================
+# ЭТАП 19: пересмотр статусов
+# =====================================================================
+
+# =====================================================================
+# ЭТАП 20: поиск официальных решений
+# =====================================================================
+
+def stage_20(p: Pipeline):
+    """Этап 20: поиск официальных решений (индекс -> Gemini + DeepSeek)."""
+    if p.deepseek_chat is None or p.deepseek_reasoner is None:
+        # Это сбой этапа, а не «пропуск»: если пометить завершённым,
+        # --resume больше не вернётся к этим задачам
+        raise LLMError("Этап 20: нет доступа к DeepSeek "
+                       "(извлечение решения и сверка невозможны)")
+    queue = list(dict.fromkeys(p.checkpoint.data.get("search_queue", [])))
+    # Пустой source тоже в очередь
+    for slug, rec in p.catalog.all_records():
+        if not (rec.get("source") or "").strip():
+            uid = rec.get("uid")
+            if uid not in queue:
+                queue.append(uid)
+    if p.args.limit:
+        queue = queue[: p.args.limit]
+    log.info("Этап 20: очередь поиска — %d задач.", len(queue))
+    processed = 0
+    for uid in queue:
+        found = p.catalog.find(uid)
+        if found is None:
+            continue
+        slug, rec = found
+        processed += 1
+        try:
+            _official_search(p, slug, rec, 20, want_solution=True)
+        except Exception as e:
+            log.error("Этап 20: ошибка на %s: %s", uid[:8], str(e)[:200])
+        if processed % 50 == 0:
+            log.info("Этап 20: %d/%d обработано.", processed, len(queue))
+    p.stats[20]["changed"] = p.diff.count(20)
+
+
+_DOC_PAGES_CACHE: dict[str, list[str]] = {}
+
+
+def _fetch_doc_result(url: str) -> dict:
+    """Скачивает документ и возвращает страницы + диагностику.
+
+    Единая точка скачивания для этапов 18/20/21: браузерный User-Agent,
+    редиректы, PDF и octet-stream. Возвращает
+    {ok, pages, http_code, content_type, final_url, error} — код и тип
+    логируются, чтобы отказы были объяснимы.
+    """
+    res = {"ok": False, "pages": [], "http_code": "", "content_type": "",
+           "final_url": "", "error": ""}
+    try:
+        resp = requests.get(url, timeout=60, headers=BROWSER_UA, allow_redirects=True)
+        res["http_code"] = str(resp.status_code)
+        res["content_type"] = (resp.headers.get("Content-Type", "") or "")
+        res["final_url"] = str(resp.url)
+        # Конечный домен ПОСЛЕ редиректов должен остаться официальным —
+        # проверка в единой точке скачивания (этапы 18/20/21)
+        if res["final_url"] and not R.is_official_url(res["final_url"]):
+            res["error"] = (f"редирект на неофициальный домен: "
+                            f"{res['final_url'][:80]}")
+            return res
+        if resp.status_code != 200:
+            res["error"] = f"HTTP {resp.status_code}"
+            return res
+        ctype = res["content_type"].lower()
+        is_pdf_url = ".pdf" in url.lower().split("?")[0]
+        looks_binary = ("pdf" in ctype or "octet-stream" in ctype
+                        or "binary" in ctype)
+        pages: list[str] = []
+        if "pdf" in ctype or looks_binary or is_pdf_url:
+            if not HAS_PDF:
+                res["error"] = "PDF-библиотеки не установлены"
+                return res
+            pages = _pdf_pages_from_bytes(resp.content)
+            if not pages and not resp.content.lstrip()[:5].startswith(b"%PDF"):
+                # не PDF на самом деле — пробуем как HTML
+                html = resp.text
+                text = re.sub(r"<script[\s\S]*?</script>|<style[\s\S]*?</style>", " ", html)
+                text = re.sub(r"<[^>]+>", " ", text)
+                text = re.sub(r"\s+", " ", text)
+                pages = [text] if text.strip() else []
+        else:
+            html = resp.text
+            text = re.sub(r"<script[\s\S]*?</script>|<style[\s\S]*?</style>", " ", html)
+            text = re.sub(r"<[^>]+>", " ", text)
+            text = re.sub(r"\s+", " ", text)
+            pages = [text] if text.strip() else []
+        res["pages"] = pages
+        res["ok"] = bool(pages)
+        if not pages:
+            res["error"] = "пустой документ"
+    except Exception as e:
+        res["error"] = str(e)[:200]
+    return res
+
+
+def _pdf_pages_from_bytes(content: bytes) -> list[str]:
+    """Тексты страниц PDF (pdfplumber, fallback pypdf)."""
+    import io
+    try:
+        with pdfplumber.open(io.BytesIO(content)) as pdf:
+            return [(page.extract_text() or "") for page in pdf.pages]
+    except Exception:
+        try:
+            reader = PdfReader(io.BytesIO(content))
+            return [(p.extract_text() or "") for p in reader.pages]
+        except Exception:
+            return []
+
+
+def _fetch_doc_pages(url: str) -> list[str]:
+    """Страницы документа (с кэшем) — обёртка над _fetch_doc_result."""
+    if url in _DOC_PAGES_CACHE:
+        return _DOC_PAGES_CACHE[url]
+    res = _fetch_doc_result(url)
+    pages = res["pages"]
+    if res["ok"]:
+        _DOC_PAGES_CACHE[url] = pages
+    return pages
+
+
+def _download_and_check(p: Pipeline, rec: dict, url: str) -> tuple[bool, str, str, str]:
     """Скачивает URL, извлекает текст, проверяет нечёткое совпадение условия.
 
-    Проверяет также конечный домен ПОСЛЕ редиректов: неофициальный редирект
-    отклоняется. Пустое условие — не «доверие URL», а отказ.
+    Возвращает (ok, причина, http_code, content_type) — код и тип пишутся
+    в search_log, чтобы отказы были объяснимы. Единое скачивание через
+    _fetch_doc_result (браузерный UA, редиректы, PDF и octet-stream).
+    Конечный домен ПОСЛЕ редиректов: неофициальный редирект отклоняется.
+    Пустое условие — не «доверие URL», а отказ.
     """
-    try:
-        resp = requests.get(url, timeout=60, headers={"User-Agent": "Mozilla/5.0"},
-                           allow_redirects=True)
-        if resp.status_code != 200:
-            return False, f"HTTP {resp.status_code}"
-        # Конечный URL после редиректов должен остаться официальным
-        final_url = str(resp.url)
-        if not R.is_official_url(final_url):
-            return False, f"редирект на неофициальный домен: {final_url[:80]}"
-        content_type = resp.headers.get("Content-Type", "")
-        if "pdf" in content_type or url.lower().endswith(".pdf"):
-            if not HAS_PDF:
-                return False, "PDF-библиотеки не установлены"
-        # Текст документа — постранично (кэш), сверка по ВСЕМУ документу
-        pages = _fetch_doc_pages(url)
-        doc_text = "\n".join(pages)
-        # Нечёткое совпадение: первые 200 симв. условия в документе
-        our_head = R.norm_for_compare((rec.get("text") or "")[:200])
-        if not our_head:
-            # Нечему сверять — НЕ принимаем по доверию, откладываем на ручную проверку
-            return False, "условие пустое — сверка невозможна"
-        doc_norm = R.norm_for_compare(doc_text)
-        # Ищем вхождения фрагментов условия
-        probes = [our_head[i:i+60] for i in range(0, min(len(our_head), 180), 60)]
-        hits = sum(1 for pr in probes if pr and pr in doc_norm)
-        if probes and hits >= len(probes) * 0.6:
-            return True, f"совпадение {hits}/{len(probes)} фрагментов"
-        if HAS_RAPIDFUZZ:
-            score = fuzz.partial_ratio(our_head, doc_norm) / 100.0
-            if score >= 0.8:
-                return True, f"нечёткое совпадение {score:.2f}"
-        return False, "условие не найдено в документе"
-    except Exception as e:
-        return False, str(e)[:200]
+    res = _fetch_doc_result(url)
+    http_code, content_type = res["http_code"], res["content_type"]
+    if res["final_url"] and not R.is_official_url(res["final_url"]):
+        return (False, f"редирект на неофициальный домен: {res['final_url'][:80]}",
+                http_code, content_type)
+    if not res["ok"]:
+        return False, res["error"] or "пустой документ", http_code, content_type
+    pages = res["pages"]
+    _DOC_PAGES_CACHE[url] = pages   # кэш: этап 20/21 не качает повторно
+    doc_text = "\n".join(pages)
+    # Нечёткое совпадение: первые 200 симв. условия в документе
+    our_head = R.norm_for_compare((rec.get("text") or "")[:200])
+    if not our_head:
+        # Нечему сверять — НЕ принимаем по доверию, откладываем на ручную проверку
+        return False, "условие пустое — сверка невозможна", http_code, content_type
+    doc_norm = R.norm_for_compare(doc_text)
+    # Ищем вхождения фрагментов условия
+    probes = [our_head[i:i+60] for i in range(0, min(len(our_head), 180), 60)]
+    hits = sum(1 for pr in probes if pr and pr in doc_norm)
+    if probes and hits >= len(probes) * 0.6:
+        return True, f"совпадение {hits}/{len(probes)} фрагментов", http_code, content_type
+    if HAS_RAPIDFUZZ:
+        score = fuzz.partial_ratio(our_head, doc_norm) / 100.0
+        if score >= 0.8:
+            return (True, f"нечёткое совпадение {score:.2f}", http_code, content_type)
+    return False, "условие не найдено в документе", http_code, content_type
 
 
 def _collect_pdf_candidates(p: Pipeline, slug: str, rec: dict, stage: int,
@@ -1562,12 +1695,12 @@ def _collect_pdf_candidates(p: Pipeline, slug: str, rec: dict, stage: int,
     query_desc = (f"{rec.get('olymp')} {rec.get('year')} {rec.get('round')} "
                   f"{rec.get('grade')} кл. №{rec.get('num')}")
     candidates: list[tuple[str, str]] = []
-    # 1) Индекс официальных PDF
+    # 1) Индекс официальных PDF (с учётом варианта, если задан)
     try:
         idx = p.get_source_index()
         round_key = R.canon_round_key(rec.get("round") or "", slug)
         found = idx.find(slug, rec.get("year"), round_key, rec.get("grade"),
-                          kinds=kinds)
+                          kinds=kinds, variant=rec.get("variant"))
         candidates = [("index", r["url"]) for r in found[:8]]
         p.search_log.log(uid, slug, stage, query_desc, "index", "", "",
                          f"найдено {len(found)} кандидатов")
@@ -1616,9 +1749,10 @@ def _official_search(p: Pipeline, slug: str, rec: dict, stage: int,
                          "кандидатов нет")
         return False, "кандидатов нет"
     for origin, url in candidates:
-        ok, reason = _download_and_check(p, rec, url)
+        ok, reason, http_code, ctype = _download_and_check(p, rec, url)
         p.search_log.log(uid, slug, stage, query_desc, origin, url,
-                         "скачан" if ok else "не скачан", reason)
+                         "скачан" if ok else "не скачан",
+                         f"{reason} [HTTP {http_code or '—'}; {ctype or '—'}]")
         if not ok:
             continue
         if not want_solution:
@@ -1761,80 +1895,6 @@ def stage_19(p: Pipeline):
 # ЭТАП 20: поиск официальных решений
 # =====================================================================
 
-def stage_20(p: Pipeline):
-    """Этап 20: поиск официальных решений (индекс -> Gemini + DeepSeek)."""
-    if p.deepseek_chat is None or p.deepseek_reasoner is None:
-        # Это сбой этапа, а не «пропуск»: если пометить завершённым,
-        # --resume больше не вернётся к этим задачам
-        raise LLMError("Этап 20: нет доступа к DeepSeek "
-                       "(извлечение решения и сверка невозможны)")
-    queue = list(dict.fromkeys(p.checkpoint.data.get("search_queue", [])))
-    # Пустой source тоже в очередь
-    for slug, rec in p.catalog.all_records():
-        if not (rec.get("source") or "").strip():
-            uid = rec.get("uid")
-            if uid not in queue:
-                queue.append(uid)
-    if p.args.limit:
-        queue = queue[: p.args.limit]
-    log.info("Этап 20: очередь поиска — %d задач.", len(queue))
-    processed = 0
-    for uid in queue:
-        found = p.catalog.find(uid)
-        if found is None:
-            continue
-        slug, rec = found
-        processed += 1
-        try:
-            _official_search(p, slug, rec, 20, want_solution=True)
-        except Exception as e:
-            log.error("Этап 20: ошибка на %s: %s", uid[:8], str(e)[:200])
-        if processed % 50 == 0:
-            log.info("Этап 20: %d/%d обработано.", processed, len(queue))
-    p.stats[20]["changed"] = p.diff.count(20)
-
-
-_DOC_PAGES_CACHE: dict[str, list[str]] = {}
-
-
-def _fetch_doc_pages(url: str) -> list[str]:
-    """Скачивает документ и возвращает тексты СТРАНИЦ по отдельности (с кэшем).
-
-    Постранично — чтобы искать нужную задачу и передавать модели не весь
-    документ, а страницу задачи с соседними (решение часто на следующих).
-    """
-    if url in _DOC_PAGES_CACHE:
-        return _DOC_PAGES_CACHE[url]
-    pages: list[str] = []
-    try:
-        resp = requests.get(url, timeout=60, headers={"User-Agent": "Mozilla/5.0"})
-        if resp.status_code != 200:
-            return []
-        if "pdf" in resp.headers.get("Content-Type", "") or url.lower().endswith(".pdf"):
-            import io
-            if not HAS_PDF:
-                return []
-            try:
-                with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-                    pages = [(page.extract_text() or "") for page in pdf.pages]
-            except Exception:
-                try:
-                    reader = PdfReader(io.BytesIO(resp.content))
-                    pages = [(p.extract_text() or "") for p in reader.pages]
-                except Exception:
-                    return []
-        else:
-            html = resp.text
-            text = re.sub(r"<script[\s\S]*?</script>|<style[\s\S]*?</style>", " ", html)
-            text = re.sub(r"<[^>]+>", " ", text)
-            text = re.sub(r"\s+", " ", text)
-            pages = [text]
-    except Exception:
-        return []
-    _DOC_PAGES_CACHE[url] = pages
-    return pages
-
-
 def _find_task_pages(pages: list[str], text_head: str) -> list[int]:
     """Ищет страницы, содержащие начало условия задачи (нормализованное)."""
     head = R.norm_for_compare(text_head)
@@ -1853,47 +1913,483 @@ def _fetch_doc_text(url: str) -> str:
 # ЭТАП 21: заполнение дыр в нумерации
 # =====================================================================
 
-def _make_uid(olymp, year, round_name, grade, num, text) -> str:
-    """uid = sha256(olymp|year|round|grade|num|normalized text)."""
+def _make_uid(olymp, year, round_name, grade, num, text, variant=None) -> str:
+    """uid = sha256(olymp|year|round|grade|variant|num|normalized text)."""
     normalized = R.norm_for_compare(text)[:500]
-    key = f"{olymp}|{year}|{round_name}|{grade}|{num}|{normalized}"
+    key = f"{olymp}|{year}|{round_name}|{grade}|{variant or ''}|{num}|{normalized}"
     return hashlib.sha256(key.encode("utf-8")).hexdigest()
 
 
+# Заголовок блока в PDF: «Вариант N», «Билет N», «в. N»
+# (строже, чем в индексе: «вариантов 11-01» не распознаётся как вариант 11)
+BLOCK_HEADER_RE = re.compile(
+    r"(?:вариант|билет)\s*№?\s*(\d+)(?![\d\-])|(?:^|[\s(])в\.\s*(\d+)(?![\d\-])",
+    re.I)
+BLOCK_GRADE_RE = re.compile(r"(\d{1,2})\s*класс", re.I)
+BLOCK_DAY_RE = re.compile(r"день[^\d]{0,5}(\d+)", re.I)
+
+
+def _parse_block_header(page: str) -> dict:
+    """Заголовок блока на странице PDF: вариант/класс/день."""
+    hdr = {"variant": None, "grade": None, "day": None}
+    m = BLOCK_HEADER_RE.search(page)
+    if m:
+        v = m.group(1) or m.group(2)
+        hdr["variant"] = str(int(v))
+    g = BLOCK_GRADE_RE.search(page)
+    if g:
+        try:
+            hdr["grade"] = str(int(g.group(1)))
+        except ValueError:
+            pass
+    d = BLOCK_DAY_RE.search(page)
+    if d:
+        try:
+            hdr["day"] = int(d.group(1))
+        except ValueError:
+            pass
+    return hdr
+
+
+def _page_headers(page: str):
+    """Все заголовки блоков НА СТРАНИЦЕ с позициями (одна страница может
+    начинаться серединой блока и содержать несколько заголовков).
+
+    Метаданные (вариант/класс/день) привязаны к СВОЕЙ строке заголовка —
+    соседний заголовок не может перезаписать класс варианта.
+    """
+    out = []
+    # позиции начал строк — границы заголовков
+    line_starts = [m.start() for m in re.finditer(r"(?m)^", page)]
+    for m in BLOCK_HEADER_RE.finditer(page):
+        v = m.group(1) or m.group(2)
+        # строка, в которой найден заголовок варианта
+        ls = max([s for s in line_starts if s <= m.start()] or [0])
+        le = next((s for s in line_starts if s > m.start()), len(page))
+        line = page[ls:le]
+        h = {"pos": ls, "variant": str(int(v)), "grade": None, "day": None}
+        gm = BLOCK_GRADE_RE.search(line)
+        if gm:
+            try:
+                h["grade"] = str(int(gm.group(1)))
+            except ValueError:
+                pass
+        dm = BLOCK_DAY_RE.search(line)
+        if dm:
+            try:
+                h["day"] = int(dm.group(1))
+            except ValueError:
+                pass
+        out.append(h)
+    # класс без варианта — самостоятельный заголовок (своей строкой)
+    for m in BLOCK_GRADE_RE.finditer(page):
+        try:
+            g = str(int(m.group(1)))
+        except ValueError:
+            continue
+        ls = max([s for s in line_starts if s <= m.start()] or [0])
+        # класс уже учтён в заголовке варианта этой строки?
+        if any(h["pos"] == ls and h["grade"] for h in out):
+            continue
+        if any(h["pos"] == ls for h in out):
+            for h in out:
+                if h["pos"] == ls and not h["grade"]:
+                    h["grade"] = g
+            continue
+        out.append({"pos": ls, "variant": None, "grade": g, "day": None})
+    return sorted(out, key=lambda h: h["pos"])
+
+
+def _find_blocks(pages: list[str]) -> list[dict]:
+    """Блоки документа: диапазоны страниц между заголовками.
+
+    Заголовок — «Вариант N»/«Билет N» или «N класс»; на одной странице
+    может быть НЕСКОЛЬКО заголовков — страница режется по позициям.
+    Возвращает [{start, end, variant, grade, day, text}], end — исключительно.
+    """
+    # (page_idx, pos_in_page, header) для всех заголовков
+    marks = []
+    for i, pg in enumerate(pages):
+        for h in _page_headers(pg):
+            marks.append((i, h["pos"], h))
+    if not marks:
+        return []
+    # «11 класс» на строку выше «Вариант 1» — не отдельный блок:
+    # класс-заголовок ПЕРЕДАЁТСЯ следующему заголовку варианта
+    drop = set()
+    for i, m in enumerate(marks):
+        if m[2]["variant"] is None and m[2]["grade"] is not None \
+           and i + 1 < len(marks):
+            n = marks[i + 1]
+            if n[0] == m[0] and n[2]["variant"] is not None \
+               and 0 <= n[1] - m[1] < 150:
+                if not n[2].get("grade"):
+                    n[2]["grade"] = m[2]["grade"]
+                drop.add(i)
+    marks = [m for i, m in enumerate(marks) if i not in drop]
+    blocks = []
+    cur_grade = None   # класс наследуется до следующего явного изменения
+    for k, (pi, pos, h) in enumerate(marks):
+        if h["grade"]:
+            cur_grade = h["grade"]
+        elif cur_grade:
+            h = dict(h, grade=cur_grade)   # вариант без класса — наследует
+        if k + 1 < len(marks):
+            np, npos = marks[k + 1][0], marks[k + 1][1]
+            if np == pi:
+                text = pages[pi][pos:npos]
+                end = np + 1
+            else:
+                text = pages[pi][pos:] + "\n" + "\n".join(pages[pi + 1:np])
+                if npos:
+                    text += "\n" + pages[np][:npos]
+                    end = np + 1
+                else:
+                    end = np
+        else:
+            text = pages[pi][pos:] + "\n" + "\n".join(pages[pi + 1:])
+            end = len(pages)
+        blocks.append({"start": pi, "end": end, "variant": h["variant"],
+                       "grade": h["grade"], "day": h["day"], "text": text})
+    return blocks
+
+
+def _select_blocks(blocks: list[dict], grade, variant) -> list[dict]:
+    """Блоки, соответствующие классу И варианту (None — не задан).
+
+    Страница блока ДРУГОГО варианта не подходит, даже если на ней
+    упомянут нужный класс.
+    """
+    def norm(v):
+        try:
+            return str(int(v)) if v not in (None, "") else ""
+        except (ValueError, TypeError):
+            return str(v or "")
+
+    grade_str, var_str = norm(grade), norm(variant)
+    sel = []
+    for b in blocks:
+        if var_str:
+            if b["variant"] != var_str:
+                continue          # чужой вариант
+            if grade_str and b["grade"] and b["grade"] != grade_str:
+                continue
+        elif grade_str:
+            # группа БЕЗ варианта: берём блоки ЛЮБОГО варианта этого класса —
+            # вариант извлечённой задаче даст заголовок блока (block_var);
+            # атрибуция существующих записей — только после сверки и гейта
+            if b["grade"] and b["grade"] != grade_str:
+                continue
+        sel.append(b)
+    return sel
+
+
+def _grade_ok(block: dict, cmeta: dict | None, grade) -> bool:
+    """Класс подтверждён заголовком блока ИЛИ метаданными кандидата.
+
+    Неподтверждённый класс не импортируется под классом запроса —
+    иначе воспроизводится исходная проблема неверной атрибуции.
+    """
+    if grade in (None, ""):
+        return True
+    bg = block.get("grade")
+    if bg is not None:
+        # явный класс блока — приоритетен; противоречие не перекрывается
+        # метаданными индекса
+        return str(bg) == str(grade)
+    # класс блока неизвестен — индекс может подтвердить
+    cgrades = (cmeta or {}).get("grades")
+    if cgrades:
+        try:
+            if int(grade) in {int(g) for g in cgrades if str(g).lstrip("-").isdigit()}:
+                return True
+        except (ValueError, TypeError):
+            pass
+    return False
+
+
+def _block_task_nums(block_text: str) -> set[int]:
+    """Номера задач, упомянутые в блоке: «12.», «3)» и «Задача 5» в
+    начале строк (живые PDF используют оба формата)."""
+    nums = set()
+    for m in re.finditer(r"(?m)^\s*(\d{1,2})[\.\)]", block_text):
+        nums.add(int(m.group(1)))
+    for m in re.finditer(r"(?m)^\s*Задача\s+(\d{1,2})\b", block_text, re.I):
+        nums.add(int(m.group(1)))
+    return nums
+
+
+def _year_ok(cmeta: dict | None, pages: list[str], year) -> bool:
+    """Год кандидата подтверждён: документом ИЛИ метаданными индекса.
+
+    Порядок силы:
+    1. ЯВНАЯ датировка документа (строки «Заключительный этап 2024 года»,
+       «Олимпиада 2025») — сильнейший сигнал: противоречие = отказ,
+       даже если индекс «знает» год. Числа внутри условий задач
+       датировкой НЕ считаются.
+    2. Сезон «2024/25» («24/25», «2024-2025») — подтверждение года финала.
+    3. Метаданные индекса (год == год группы) — подтверждение архивом.
+    4. Молчание документа и неизвестный год индекса — НЕ подтверждение.
+    """
+    if year in (None, ""):
+        return True
+    y = int(year)
+    doc_text = "\n".join(pages)
+    # 1. Явная датировка в заголовочных строках. Заголовок: короткая строка,
+    # год в первых 60 символах (числа внутри условий задач не считаются).
+    # Сезон «2024/25» нормализуется к году ФИНАЛА (2025).
+    dated = set()
+    for line in doc_text.splitlines()[:80]:
+        stripped = line.strip()
+        if len(stripped) > 150:
+            continue   # длинная строка — похоже на условие задачи
+        # строка условия задачи («Задача 1.», «12.», «3)») — не заголовок:
+        # числа внутри условий годом проведения не считаются
+        if re.match(r"(?:Задача|Задание|Решение|Ответ)\b|\d{1,2}\s*[\.\)]",
+                    stripped, re.I):
+            continue
+        if not re.search(r"этап|олимпиад|тур|сезон|год|класс", stripped, re.I):
+            continue
+        m = re.search(r"(19|20)\d{2}", stripped[:60])
+        if not m:
+            continue
+        # сезонная форма в начале строки -> год финала
+        sm = re.match(r"\s*(?:[А-Яа-яЁё\s]*?)?(19|20)(\d{2})\s*[-/]\s*(\d{2,4})",
+                      stripped)
+        if sm:
+            y1 = int(sm.group(1) + sm.group(2))
+            y2s = sm.group(3)
+            y2 = int(y2s) if len(y2s) == 4 else 2000 + int(y2s)
+            if y2 == y1 + 1:
+                dated.add(y2)
+                continue
+        dated.add(int(m.group(0)))
+    if dated:
+        if y in dated:
+            return True
+        # в датированных строках только другие годы — противоречие
+        if not dated & {y}:
+            return False
+    # 2. Сезон подтверждает только ДАТИРОВКА заголовков (выше) или
+    # метаданные архива — НЕ произвольное «24/25» в тексте (дробь
+    # в условии задачи годом не считается)
+    # 3. Метаданные индекса
+    if cmeta and cmeta.get("year") is not None:
+        return int(cmeta["year"]) == int(year)
+    # 4. Не подтверждено
+    return False
+
+
+def _year_confirmed(doc_text: str, year) -> bool:
+    """Год подтверждён документом: искомой год (или сезон «YYYY/YY») в тексте.
+
+    Если документ вообще не упоминает четырёхзначные годы — подтвердить
+    нельзя, но и противоречия нет (True). Явное упоминание ДРУГИХ годов
+    без искомого — противоречие (False).
+    """
+    if year in (None, ""):
+        return True
+    years = {int(m.group(0)) for m in re.finditer(r"(19|20)\d{2}", doc_text)}
+    if not years:
+        return True
+    y = int(year)
+    season_tail = f"{(y - 1) % 100:02d}/{y % 100:02d}"   # «24/25»
+    if y in years:
+        return True
+    if season_tail in doc_text or f"{y - 1}/{y}" in doc_text:
+        return True
+    return False
+
+
+def _text_similarity(a: str, b: str) -> float:
+    """Схожесть двух текстов (0..1) по нормализованным строкам."""
+    if not a or not b:
+        return 0.0
+    na, nb = R.norm_for_compare(a), R.norm_for_compare(b)
+    if not na or not nb:
+        return 0.0
+    if HAS_RAPIDFUZZ:
+        return fuzz.ratio(na, nb) / 100.0
+    # Fallback по общим словам
+    wa, wb = set(na.split()), set(nb.split())
+    return len(wa & wb) / max(len(wa | wb), 1)
+
+
+def _raw_similarity(a: str, b: str) -> float:
+    """Схожесть БЕЗ удаления математической структуры.
+
+    Для подтверждения атрибуции: склеиваем только пробелы/переносы,
+    LaTeX-структура (скобки, backslash) и знаки сохраняются —
+    \frac{1}{23} и \frac{12}{3} НЕ считаются одинаковыми.
+    """
+    if not a or not b:
+        return 0.0
+    na = re.sub(r"\s+", " ", a.strip())
+    nb = re.sub(r"\s+", " ", b.strip())
+    if HAS_RAPIDFUZZ:
+        return fuzz.ratio(na, nb) / 100.0
+    import difflib
+    return difflib.SequenceMatcher(None, na, nb).ratio()
+
+
+def _answer_norm_strict(ans: str) -> str:
+    """Нормализация ответа с СОХРАНЕНИЕМ математической структуры.
+
+    Удаляются только пробелы и регистр; Unicode-минус (−), дефисы
+    унифицируются в «-». Скобки LaTeX и все знаки сохраняются:
+    «1» и «−1» — разные ответы; \frac{1}{23} ≠ \frac{12}{3}.
+    Различие трактуется как конфликт (безопасная сторона), а не равенство.
+    """
+    # регистр СОХРАНЯЕТСЯ: \Gamma и \gamma, \Delta и \delta — разные
+    # символы; различие трактуется как конфликт (безопасная сторона)
+    t = (ans or "").strip()
+    t = t.replace("\u2212", "-").replace("\u2013", "-").replace("\u2014", "-")
+    t = re.sub(r"[\s\u00a0]+", "", t)
+    return t
+
+
+def _text_contained(short: str, long: str) -> float:
+    """Вложенность короткого текста в длинный (0..1) — для атрибуции
+    задачи к блоку PDF: текст задачи содержится в многостраничном блоке."""
+    if not short or not long:
+        return 0.0
+    na, nb = R.norm_for_compare(short), R.norm_for_compare(long)
+    if not na or not nb:
+        return 0.0
+    if HAS_RAPIDFUZZ:
+        return fuzz.partial_ratio(na, nb) / 100.0
+    return 1.0 if na in nb else 0.0
+
+
 def stage_21(p: Pipeline):
-    """Этап 21: заполнение пропущенных номеров в вариантах (индекс -> Gemini)."""
-    if p.deepseek_chat is None:
-        raise LLMError("Этап 21: нет доступа к DeepSeek (извлечение задач)")
+    """Этап 21: заполнение пропущенных номеров в вариантах (индекс -> Gemini).
+
+    Порядок работы:
+    1. Атрибуция: записям без `variant` вариант проставляется по вложенности
+       текста в блок PDF (схожесть ≥ 0.9; класс блока должен совпадать).
+       Неоднозначное совпадение (несколько разных блоков) — needs_review.
+    2. Дыры считаются по (year, round, grade, variant) ПОСЛЕ атрибуции.
+    3. Вариант импортируется целиком: все задачи блока с условием, ответом,
+       решением, баллами (в qa.notes). У каждой задачи сохраняется источник
+       (URL PDF, откуда извлечено поле). Решение обязано пройти сверку
+       deepseek-reasoner с извлечённым ИЛИ существующим ответом (явный
+       вердикт match); без ответа для сверки — needs_review, решение
+       не перезаписывается. Конфликт ответов — needs_review.
+    4. Дубль по тексту (схожесть ≥ 0.9, задачи ТОЙ ЖЕ олимпиады того же
+       года/класса) не добавляется, а обогащает существующую запись:
+       variant, source, официальное решение (при gemini_solved/AI_* ->
+       official_found, только после сверки).
+    5. --limit — число обрабатываемых вариантов (и групп атрибуции);
+       необработанный остаток показывается в отчёте и сохраняется в
+       чекпоинте (stage21_tried) — при повторном запуске нерешённые
+       группы не занимают лимит повторно.
+    6. Отчёт по каждой олимпиаде: PDF (уникальные URL), импортировано
+       вариантов (полностью/частично), задач добавлено, обогащено
+       (уникальные записи), дублей пропущено, остаток дыр с причинами —
+       пересчитывается по итоговому каталогу.
+    """
     if p.dry_run:
         log.info("Этап 21: dry-run — новые задачи не добавляются.")
         return
-    # Группировка по вариантам
-    variants: dict[tuple, list[dict]] = {}
-    for slug in p.catalog.slugs():
-        for rec in p.catalog.data[slug]:
-            key = (slug, rec.get("year"), rec.get("round"), str(rec.get("grade")))
-            variants.setdefault(key, []).append(rec)
-    # Приоритет: заключительные 9-11 классов последних лет
-    def priority(key):
-        slug, year, round_name, grade = key
-        rk = R.canon_round_key(round_name or "", slug)
-        round_p = {"final": 0, "qual": 1, "regional": 2}.get(rk, 3)
-        grade_p = {"9": 0, "10": 0, "11": 0}.get(grade, 1)
-        return (round_p, grade_p, -(year or 0))
+    if p.deepseek_chat is None or p.deepseek_reasoner is None:
+        raise LLMError("Этап 21: нет доступа к DeepSeek (извлечение и сверка задач)")
 
-    added = 0
-    ordered_keys = sorted(variants, key=priority)
-    # --limit для этапа 21 — это число ОБРАБАТЫВАЕМЫХ ВАРИАНТОВ
-    if p.args.limit:
-        log.info("Этап 21: --limit %d — обрабатываем первые %d вариантов.",
-                 p.args.limit, min(p.args.limit, len(ordered_keys)))
-        ordered_keys = ordered_keys[: p.args.limit]
-    for key in ordered_keys:
-        slug, year, round_name, grade = key
-        recs = variants[key]
-        # Нумерация сквозная по дням (ВсОШ): объединяем дни
-        nums = set()
-        max_num = 0
+    report = p.stage21_report
+
+    def _st(slug: str) -> dict:
+        st = report.get(slug)
+        if st is None:
+            st = report[slug] = {"pdfs": 0, "variants": 0, "variants_partial": 0,
+                                 "needs_review": 0,
+                                 "tasks_added": 0, "enriched": 0, "dup_skipped": 0,
+                                 "gaps": [], "unprocessed": 0}
+        # служебные множества для честных счётчиков
+        st.setdefault("_pdf_urls", set())
+        st.setdefault("_enriched_uids", set())
+        return st
+
+    for slug in p.catalog.slugs():
+        _st(slug)
+
+    # Бюджеты --limit: импорт — число вариантов (по ТЗ), атрибуция —
+    # своя квота (группы с уже проставленным вариантом пропускаются
+    # мгновенно, повторные прогоны дёшевы)
+    import_budget = p.args.limit if p.args.limit else None
+    attr_budget = p.args.limit if p.args.limit else None
+    # Попытки прошлых запусков: сохраняем номер прогона для каждой группы.
+    # Сортировка — по номеру прогона (давности попытки): между запусками
+    # группы чередуются, ни одна не «голодает» при --limit 1.
+    tried = p.checkpoint.data.setdefault("stage21_tried", {})  # key -> run №
+    run_no = p.checkpoint.data.get("stage21_runs", 0) + 1
+    p.checkpoint.data["stage21_runs"] = run_no
+
+    def _mark_tried(key):
+        k = json.dumps(list(key), ensure_ascii=False)
+        tried[k] = run_no
+
+    def _tried_run(key):
+        return tried.get(json.dumps(list(key), ensure_ascii=False), 0)
+
+    def _group_variants() -> dict[tuple, list[dict]]:
+        variants: dict[tuple, list[dict]] = {}
+        for slug in p.catalog.slugs():
+            for rec in p.catalog.data[slug]:
+                key = (slug, rec.get("year"), rec.get("round"), str(rec.get("grade")),
+                       str(rec.get("variant") or "").strip() or None)
+                variants.setdefault(key, []).append(rec)
+        return variants
+
+    def _candidates_for(slug, year, round_name, grade, variant, missing, context):
+        """Кандидаты PDF: СНАЧАЛА индекс, потом Gemini.
+
+        Возвращает (origin, url, meta): meta — метаданные индекса (год/
+        класс/этап), чтобы атрибуция года подтверждалась архивом, а не
+        молчанием документа.
+        """
+        candidates: list[tuple[str, str, dict]] = []
+        query_desc = f"{slug} {year} {round_name} {grade} кл." \
+                     + (f" вар. {variant}" if variant else "")
+        try:
+            idx = p.get_source_index()
+            round_key = R.canon_round_key(round_name or "", slug)
+            found = idx.find(slug, year, round_key, grade,
+                             kinds=("tasks", "sol"), variant=variant)
+            candidates = [("index", r["url"], dict(r)) for r in found[:5]]
+            p.search_log.log("", slug, 21, query_desc, "index", "", "",
+                             f"найдено {len(found)} кандидатов")
+        except Exception as e:
+            log.warning("Этап 21: индекс недоступен: %s", str(e)[:150])
+        if not candidates and p.gemini is not None:
+            payload = {"olymp": context.get("olymp"), "year": year,
+                       "round": round_name, "grade": grade, "variant": variant,
+                       "missing_nums": [str(n) for n in missing]}
+            s_resp = p.gemini.search_variant_pdf(json.dumps(payload, ensure_ascii=False))
+            if s_resp and s_resp.get("ok"):
+                for cand in s_resp.get("candidates", [])[:5]:
+                    url = cand.get("url", "")
+                    if R.is_official_url(url):
+                        candidates.append(("gemini", url, {}))
+            p.search_log.log("", slug, 21, query_desc, "gemini", "", "",
+                             f"получено {len(candidates)} кандидатов")
+        return candidates
+
+    def _verify_solution(text: str, solution: str, answer: str):
+        """Сверка reasoner: решение приводит к ответу. Явный вердикт match.
+
+        Возвращает (ok, reason). Неопределённость = отказ.
+        """
+        chk = p.deepseek_reasoner.chat_json(
+            P.STAGE11_ANSWER_CHECK,
+            json.dumps({"text": text, "answer": answer,
+                        "solution": solution}, ensure_ascii=False))
+        if not chk:
+            return False, "reasoner не ответил"
+        if chk.get("verdict") != "match":
+            return False, f"вердикт {chk.get('verdict')}"
+        return True, "match"
+
+    def _missing_nums(recs: list[dict]):
+        nums, max_num = set(), 0
         for r in recs:
             try:
                 n = int(str(r.get("num", "0")).strip() or 0)
@@ -1901,116 +2397,979 @@ def stage_21(p: Pipeline):
                 continue
             nums.add(n)
             max_num = max(max_num, n)
-        if max_num == 0:
+        missing = [n for n in range(1, max_num + 1) if n not in nums] if max_num else []
+        return nums, max_num, missing
+
+    def _confirm_attribution(slug: str, r: dict, prop: dict, query_desc: str,
+                             extract_cache: dict):
+        """Подтверждение предложения атрибуции перед применением variant.
+
+        Предложение (нечёткое совпадение текста с блоком PDF) — НЕ атрибуция:
+        нормализация «склеивает» разные дроби (\frac{1}{23} и \frac{12}{3})
+        и теряет Unicode-минус. Подтверждение: извлекаем полное условие
+        соответствующей задачи блока, сверяем эквивалентность гейтом
+        reasoner (_math_gate) и ответы (структурно, знаки сохраняются).
+        Без подтверждения — только needs_review, поля записи не меняются.
+        Извлечение блока кэшируется (один блок — один вызов deepseek-chat).
+        """
+        nonlocal attributed
+        rec_text = (r.get("text") or "").strip()
+        if not rec_text:
+            return
+        st = _st(slug)
+        for (var, day), (block_text, url) in prop.items():
+            ckey = (url, var, day)
+            if ckey not in extract_cache:
+                tasks: list[dict] = []
+                try:
+                    resp = p.deepseek_chat.chat_json(
+                        P.STAGE21_EXTRACT_VARIANT_BLOCK,
+                        json.dumps({"doc_text": block_text}, ensure_ascii=False))
+                    tasks = (resp or {}).get("tasks") or []
+                except Exception as e:
+                    log.warning("Этап 21 (атрибуция): извлечение блока не удалось: %s",
+                                str(e)[:150])
+                extract_cache[ckey] = tasks
+            tasks = extract_cache[ckey]
+            # лучший кандидат — по схожести БЕЗ удаления математики
+            best, best_sim = None, 0.0
+            for t in tasks:
+                sim = _raw_similarity(rec_text, (t.get("text") or ""))
+                if sim > best_sim:
+                    best, best_sim = t, sim
+            # порог финальной атрибуции — 0.9 (требование: существующим задачам
+            # вариант ставится только по совпадению текста ≥ 0.9; 0.6 — лишь
+            # нижняя граница для поиска кандидата, атрибуцию не даёт)
+            if best is None or best_sim < 0.9:
+                p.needs_review(r, 21,
+                               "условие не найдено среди задач блока PDF — "
+                               "вариант не проставлен")
+                st["needs_review"] += 1
+                return
+            # конфликт ответов — структурное сравнение, знаки сохраняются
+            t_ans = (best.get("answer") or "").strip()
+            r_ans = (r.get("answer") or "").strip()
+            if t_ans and r_ans and \
+                    _answer_norm_strict(t_ans) != _answer_norm_strict(r_ans):
+                p.needs_review(r, 21,
+                               f"конфликт ответов: в PDF «{t_ans[:60]}», "
+                               f"в базе «{r_ans[:60]}» — вариант не проставлен")
+                st["needs_review"] += 1
+                return
+            # гейт эквивалентности условий (reasoner); идентичный текст
+            # эквивалентен без вызова
+            best_text = (best.get("text") or "").strip()
+            if rec_text != best_text and \
+                    not _math_gate(p, rec_text, best_text, r, 21):
+                st["needs_review"] += 1
+                return   # needs_review уже проставлен гейтом
+            if p.apply_field(slug, r, 21, "variant", var, model="index"):
+                attributed += 1
+                st["_enriched_uids"].add(r.get("uid"))
+            if day and not r.get("day"):
+                p.apply_field(slug, r, 21, "day", day, model="index")
+            p.add_qa_note(r, 21,
+                          f"вариант {var} подтверждён по блоку PDF ({url})",
+                          model="index")
+            return (var, block_text)
+
+    # =================================================================
+    # ФАЗА А: атрибуция — проставить variant записям без него
+    # =================================================================
+    variants = _group_variants()
+    attributed = 0
+    # группы с ХВОСТОМ официального блока за пределами каталога
+    # (найден и подтверждён блок с номерами, которых нет в каталоге) —
+    # фаза Б обязана обработать их даже без внутренних пропусков;
+    # key -> множество (вариант, номер) хвостовых задач
+    tail_pending: dict = {}
+
+    def _jkey(k) -> str:
+        return json.dumps(list(k), ensure_ascii=False)
+    varless_keys = [k for k in variants if k[4] is None]
+    for key in varless_keys:
+        if attr_budget is not None and attr_budget <= 0:
+            for k2 in varless_keys[varless_keys.index(key):]:
+                slug2 = k2[0]
+                _st(slug2)["unprocessed"] += 1
+                _st(slug2)["gaps"].append({
+                    "year": k2[1], "round": k2[2], "grade": k2[3],
+                    "variant": None,
+                    "reason": "атрибуция не выполнена: --limit"})
+            break
+        slug, year, round_name, grade, _ = key
+        recs = [r for r in variants[key] if not (r.get("variant") or "").strip()]
+        if not recs:
             continue
-        missing = [n for n in range(1, max_num + 1) if n not in nums]
-        if not missing:
+        st = _st(slug)
+        log.info("Этап 21 (атрибуция): %s %s %s %s класс: %d записей без варианта.",
+                 slug, year, round_name, grade, len(recs))
+        query_desc = f"{slug} {year} {round_name} {grade} кл. (атрибуция)"
+        candidates = _candidates_for(slug, year, round_name, grade, None, [], recs[0])
+        if not candidates:
             continue
-        log.info("Этап 21: %s %s %s %s класс: пропущены %s (макс %d).",
-                 slug, year, round_name, grade, missing, max_num)
-        context = recs[0]
-        query_desc = f"{slug} {year} {round_name} {grade} кл."
-        # Кандидаты PDF варианта: СНАЧАЛА индекс, потом Gemini
-        candidates: list[tuple[str, str]] = []
-        try:
-            idx = p.get_source_index()
-            round_key = R.canon_round_key(round_name or "", slug)
-            found = idx.find(slug, year, round_key, grade, kinds=("tasks", "sol"))
-            candidates = [("index", r["url"]) for r in found[:5]]
-            p.search_log.log("", slug, 21, query_desc, "index", "", "",
-                             f"найдено {len(found)} кандидатов")
-        except Exception as e:
-            log.warning("Этап 21: индекс недоступен: %s", str(e)[:150])
-        if not candidates and p.gemini is not None:
-            payload = {"olymp": context.get("olymp"), "year": year, "round": round_name,
-                       "grade": grade, "missing_nums": [str(n) for n in missing]}
-            s_resp = p.gemini.search_variant_pdf(json.dumps(payload, ensure_ascii=False))
-            if s_resp and s_resp.get("ok"):
-                for cand in s_resp.get("candidates", [])[:5]:
-                    url = cand.get("url", "")
-                    if R.is_official_url(url):
-                        candidates.append(("gemini", url))
-            p.search_log.log("", slug, 21, query_desc, "gemini", "", "",
-                             f"получено {len(candidates)} кандидатов")
-        for origin, url in candidates:
-            # Скачиваем документ (постранично) — логируем фактический результат
-            pages = _fetch_doc_pages(url)
-            if not pages:
+        processed_any = False
+        # Совпадения собираем ПО ВСЕМ кандидатам: совпадение одного и того же
+        # текста с разными вариантами в разных документах = неоднозначность
+        # uid -> {(variant, day): (текст блока, url)} — предложения
+        rec_matches: dict[str, dict] = {}
+        for origin, url, cmeta in candidates:
+            res = _fetch_doc_result(url)
+            # Год подтверждается метаданными индекса ИЛИ документом;
+            # молчание документа при неизвестном годе индекса = нет
+            # подтверждения — атрибуцию не подставляем
+            if res["ok"] and not _year_ok(cmeta, res["pages"], year):
                 p.search_log.log("", slug, 21, query_desc, origin, url,
-                                 "не скачан", "пустой документ")
+                                 "не скачан", "год не подтверждён (индекс/документ)")
                 continue
-            doc_text = "\n".join(pages)
             p.search_log.log("", slug, 21, query_desc, origin, url,
-                             "скачан", f"{len(pages)} страниц")
-            e_payload = {"doc_text": doc_text[:30000],
-                         "missing_nums": [str(n) for n in missing],
-                         "grade": grade,
-                         "context_task": (recs[0].get("text") or "")[:300]}
-            e_resp = p.deepseek_chat.chat_json(P.STAGE21_EXTRACT_MISSING,
-                                               json.dumps(e_payload, ensure_ascii=False))
-            if not e_resp or not e_resp.get("ok"):
-                p.search_log.log("", slug, 21, query_desc, origin, url, "скачан",
-                                 "ошибка извлечения задач из документа")
+                             "скачан" if res["ok"] else "не скачан",
+                             f"{res['error']} [HTTP {res['http_code'] or '—'}; "
+                             f"{res['content_type'] or '—'}]")
+            if not res["ok"]:
                 continue
-            for task in e_resp.get("tasks", []):
-                num = str(task.get("num", "")).strip()
-                if not num or int(num) not in missing:
+            processed_any = True
+            st["_pdf_urls"].add(url)
+            _DOC_PAGES_CACHE[url] = res["pages"]
+            all_blocks = _find_blocks(res["pages"])
+            for b in all_blocks:
+                if not b["variant"]:
                     continue
-                text = (task.get("text") or "").strip()
-                if not text:
-                    continue
-                # Проверка 1: извлечённый текст реально содержится в документе
-                head = R.norm_for_compare(text[:120])
-                doc_norm = R.norm_for_compare(doc_text)
-                if head and head[:60] not in doc_norm:
-                    log.warning("Этап 21: задача №%s не найдена в документе дословно — пропущена.", num)
-                    p.search_log.log("", slug, 21, query_desc, origin, url, "скачан",
-                                     f"задача №{num}: нет в документе дословно — пропущена")
-                    continue
-                # Проверка 2 (reasoner): решение приводит к извлечённому ответу
-                task_sol = (task.get("solution") or "").strip()
-                task_ans = (task.get("answer") or "").strip()
-                if task_sol and task_ans and p.deepseek_reasoner is not None:
-                    chk = p.deepseek_reasoner.chat_json(
-                        P.STAGE11_ANSWER_CHECK,
-                        json.dumps({"text": text, "answer": task_ans,
-                                    "solution": task_sol}, ensure_ascii=False))
-                    if not chk or chk.get("verdict") == "mismatch":
-                        p.search_log.log("", slug, 21, query_desc, origin, url, "скачан",
-                                         f"задача №{num}: ответ не сходится с решением — пропущена")
+                if not _grade_ok(b, cmeta, grade):
+                    continue   # класс не подтверждён — не атрибутируем
+                for r in recs:
+                    # ПОЛНЫЙ текст записи (не первые 300 символов) — различия
+                    # в хвосте условия тоже должны учитываться
+                    rt = (r.get("text") or "").strip()
+                    if not rt:
                         continue
-                uid = _make_uid(context.get("olymp"), year, round_name, grade, num, text)
-                if p.catalog.find(uid):
+                    # совпадение — ПРЕДЛОЖЕНИЕ атрибуции, а не атрибуция:
+                    # подтверждение (извлечение + гейт reasoner) — в
+                    # _confirm_attribution / фазе Б
+                    if _text_contained(rt, b["text"]) >= 0.9:
+                        rec_matches.setdefault(r.get("uid"), {})[
+                            (b["variant"], b.get("day"))] = (b["text"], url)
+        # Назначение: ПРЕДЛОЖЕНИЯ, а не атрибуция. Нечёткое совпадение
+        # текста — только кандидат: нормализация «склеивает» разные дроби и
+        # теряет Unicode-минус. Применение variant — после подтверждения
+        # (извлечение задачи блока + гейт reasoner).
+        proposals: dict[str, dict] = {}
+        for r in recs:
+            if (r.get("variant") or "").strip():
+                continue
+            uid = r.get("uid")
+            matches = rec_matches.get(uid) or {}
+            variants_found = {v for v, _d in matches}
+            if len(variants_found) == 1:
+                proposals[uid] = dict(matches)
+            elif len(variants_found) > 1:
+                # неоднозначно — не угадываем
+                p.needs_review(r, 21,
+                               f"задача совпала с блоками вариантов "
+                               f"{sorted(variants_found)} — вариант не проставлен")
+                st["needs_review"] += 1
+        # Подтверждение предложений — ВСЕГДА (и для групп без дыр: фаза Б
+        # для них не запустится, атрибуция была бы потеряна): извлечение
+        # задачи блока + гейт reasoner. Кэш извлечения — на группу.
+        extract_cache: dict = {}
+        for uid, prop in proposals.items():
+            r = next((x for x in recs if x.get("uid") == uid), None)
+            if r is None:
+                continue
+            confirmed = _confirm_attribution(slug, r, prop, query_desc,
+                                             extract_cache)
+            if not confirmed:
+                continue
+            var, block_text = confirmed
+            # ХВОСТ официального блока за пределами каталога: найденный и
+            # подтверждённый блок обрабатывается ЦЕЛИКОМ (импорт варианта
+            # целиком), даже если внутренних пропусков в каталоге нет —
+            # группа (…, вариант) отправляется в фазу Б
+            bnums = _block_task_nums(block_text)
+            cat_nums = set()
+            for r2 in variants[key]:
+                try:
+                    cat_nums.add(int(str(r2.get("num", "0")).strip() or 0))
+                except ValueError:
+                    pass
+            extra = bnums - cat_nums
+            if extra:
+                key_t = (slug, year, round_name, grade, str(var))
+                tail_pending.setdefault(key_t, set()).update(
+                    (str(var), n) for n in extra)
+        if processed_any:
+            attr_budget = attr_budget - 1 if attr_budget is not None else None
+
+    # =================================================================
+    # ФАЗА Б: дыры по (year, round, grade, variant) и импорт варианта
+    # =================================================================
+    def priority(key):
+        slug, year, round_name, grade, variant = key
+        rk = R.canon_round_key(round_name or "", slug)
+        round_p = {"final": 0, "qual": 1, "regional": 2}.get(rk, 3)
+        grade_p = {"9": 0, "10": 0, "11": 0}.get(grade, 1)
+        # давно пробовавшиеся группы — в конец, но чередуются (ротация)
+        tried_p = _tried_run(key)
+        return (1 if tried_p else 0, tried_p, round_p, grade_p, -(year or 0))
+
+    variants = _group_variants()   # ПЕРЕГРУППИРОВКА после атрибуции
+    # Незакрытые хвосты прошлых запусков — в checkpoint: очередь
+    # продолжается между запусками независимо от variant и внутренних
+    # пропусков (иначе отклонённая задача хвоста недоступна для повтора).
+    # Ключ pending — ВАРИАНТ (slug, year, round, grade, variant), а не группа:
+    # после атрибуции безвариантная группа расформировывается, а хвост
+    # конкретного варианта обязан выжить
+    pending_cp = p.checkpoint.data.setdefault("stage21_pending", {})
+    pending_virtual = set()
+    for jk in list(pending_cp):
+        try:
+            k = tuple(json.loads(jk))
+        except Exception:
+            continue
+        if len(k) == 5 and k not in variants:
+            pending_virtual.add(k)   # вариант без записей в каталоге
+    # группы к обработке: внутренние пропуски, хвост этого запуска ИЛИ
+    # незакрытый хвост из checkpoint (включая виртуальные группы)
+    def _orig_of(recs: list[dict]) -> list[dict]:
+        # записи каталога, НЕ импортированные этапом 21: только они задают
+        # базовые диапазонные ожидания (импорт определяет нумерацию блока PDF)
+        return [r for r in recs
+                if not (r.get("qa") or {}).get("stage21", {}).get("imported")]
+
+    def _base_missing(key, recs: list[dict]) -> list[int]:
+        """Базовый остаток группы: диапазонные ожидания ИСХОДНЫХ записей
+        минус номера всех принятых записей той же области. Импортированная
+        №2 не создаёт ожиданий, но и ЗАКРЫВАЕТ дыру №2. Область покрытия
+        совпадает с финальным расчётом: вариантная группа — записи того же
+        варианта, безвариантная — все записи года/класса/этапа."""
+        miss = _missing_nums(_orig_of(recs))[2]
+        if not miss:
+            return []
+        slug, year, round_name, grade, variant = key
+        covered = set()
+        for r2 in p.catalog.data.get(slug, []):
+            if r2.get("year") != year \
+               or (r2.get("round") or "") != (round_name or "") \
+               or str(r2.get("grade")) != str(grade):
+                continue
+            if variant and str(r2.get("variant") or "") != str(variant):
+                continue
+            try:
+                n2 = int(str(r2.get("num", "0")).strip() or 0)
+            except ValueError:
+                continue
+            if n2:
+                covered.add(n2)
+        return [n for n in miss if n not in covered]
+
+    gap_keys = [k for k in list(variants) + list(pending_virtual)
+               if (k in variants and _base_missing(k, variants[k]))
+               or k in tail_pending or _jkey(k) in pending_cp]
+    ordered_keys = sorted(gap_keys, key=priority)
+    unprocessed = 0
+    if import_budget is not None:
+        # отбрасываем обработанные в рамках бюджета
+        remaining = []
+        for key in ordered_keys:
+            if import_budget > 0:
+                remaining.append(key)
+                import_budget -= 1
+            else:
+                unprocessed += 1
+        ordered_keys = remaining
+        if unprocessed:
+            log.info("Этап 21: --limit: не обработано %d вариантов с дырами "
+                     "(нерешённые ранее идут в конце).", unprocessed)
+
+    added = 0
+    processed_keys = set()
+    for key in ordered_keys:
+        slug, year, round_name, grade, variant = key
+        processed_keys.add(key)
+        # Хвост этой группы (обнаружен в фазе А) — в checkpoint ДО обработки:
+        # даже если кандидатов/извлечённых задач не будет, очередь сохранится
+        if key in tail_pending:
+            jk0 = _jkey(key)
+            prev0 = {tuple(pr) for pr in pending_cp.get(jk0, [])}
+            pending_cp[jk0] = [list(pr)
+                               for pr in sorted(prev0 | tail_pending[key])]
+        recs = variants.get(key) or []
+        nums, max_num, _ = _missing_nums(recs)
+        # дыры: ожидания исходных записей МИНУС закрытые (в т.ч. импортом)
+        missing = _base_missing(key, recs)
+        st = _st(slug)
+        var_desc = f" вар. {variant}" if variant else ""
+        log.info("Этап 21: %s %s %s %s класс%s: пропущены %s (макс %d).",
+                 slug, year, round_name, grade, var_desc, missing, max_num)
+        _mark_tried(key)   # при следующем запуске эта группа не займёт лимит
+        if recs:
+            context = recs[0]
+        else:
+            # виртуальная группа (хвост варианта без записей в каталоге)
+            ctx_rec = next(iter(p.catalog.data.get(slug) or []), None)
+            context = {"olymp": (ctx_rec or {}).get("olymp") or slug,
+                       "day": 0}
+        budget_charged_vars = set()
+        query_desc = f"{slug} {year} {round_name} {grade} кл.{var_desc}"
+        candidates = _candidates_for(slug, year, round_name, grade, variant,
+                                     missing, context)
+        if not candidates:
+            st["gaps"].append({"year": year, "round": round_name, "grade": grade,
+                               "variant": variant,
+                               "reason": "нет PDF (кандидатов нет)"})
+            continue
+        # Собираем задачи блока ПО ВСЕМ кандидатам: условия могут быть в одном
+        # PDF, решения — в другом (sol). У каждой задачи — источник (URL).
+        # Ключ — (вариант блока, номер): задачи разных вариантов с одним
+        # номером — РАЗНЫЕ задачи, они не должны сталкиваться.
+        collected: dict[tuple, dict] = {}   # (block_var, num) -> {**task, _url}
+        attempt_reasons: list[str] = []
+        # учёт ПО ВАРИАНТАМ БЛОКОВ (номера разных вариантов не смешиваются)
+        rejected: dict[tuple, str] = {}   # (вариант блока, num) -> причина
+        # вариант блока -> номера задач, упомянутые в блоках
+        block_nums_seen: dict[str, set[int]] = {}
+        for origin, url, cmeta in candidates:
+            res = _fetch_doc_result(url)
+            # Год подтверждается метаданными индекса ИЛИ документом
+            if res["ok"] and not _year_ok(cmeta, res["pages"], year):
+                attempt_reasons.append(f"год не подтверждён: {url[:60]}")
+                p.search_log.log("", slug, 21, query_desc, origin, url,
+                                 "не скачан", "год не подтверждён (индекс/документ)")
+                continue
+            p.search_log.log("", slug, 21, query_desc, origin, url,
+                             "скачан" if res["ok"] else "не скачан",
+                             f"{res['error']} [HTTP {res['http_code'] or '—'}; "
+                             f"{res['content_type'] or '—'}]")
+            if not res["ok"]:
+                attempt_reasons.append(f"не скачан ({res['error']}): {url[:60]}")
+                continue
+            st["_pdf_urls"].add(url)
+            _DOC_PAGES_CACHE[url] = res["pages"]
+            doc_text = "\n".join(res["pages"])
+            doc_norm = R.norm_for_compare(doc_text)
+            all_blocks = _find_blocks(res["pages"])
+            blocks = _select_blocks(all_blocks, grade, variant)
+            if all_blocks and not blocks:
+                # в документе есть блоки, но нужного класса/варианта НЕТ —
+                # не подсовываем модели весь документ
+                attempt_reasons.append(
+                    f"класс/вариант не найдены в документе: {url[:60]}")
+                continue
+            # Класс и вариант подтверждаются НЕЗАВИСИМО (не elif):
+            # подтверждённый вариант не подтверждает класс и наоборот
+            if blocks and grade not in (None, ""):
+                confirmed = [b for b in blocks if _grade_ok(b, cmeta, grade)]
+                if not confirmed:
+                    attempt_reasons.append(
+                        f"класс не подтверждён (заголовок/индекс): {url[:60]}")
                     continue
-                new_rec = {
-                    "uid": uid,
-                    "olymp": context.get("olymp"),
-                    "year": year,
-                    "round": round_name,
-                    "day": context.get("day", 0),
-                    "grade": grade,
-                    "num": num,
-                    "status": "official_found",
-                    "answer": task.get("answer") or "",
-                    "source": url,
-                    "text": text,
-                    "solution": task.get("solution") or "",
-                    # day/geo — по аналогии с соседями; fig_* НЕ копируем
-                    # (файлы рисунков соседа относятся к другой задаче)
-                    "geo": any(r.get("geo") for r in recs),
-                    "fig_statement": [],
-                    "fig_solution": [],
-                    "qa": {"stage21": {"stage": 21, "model": "gemini+deepseek",
-                                       "changes": {}, "notes": [f"добавлена задача №{num} из {url}"]}},
-                }
-                p.catalog.data[slug].append(new_rec)
-                p.checkpoint.data["added"].append(uid)
-                p.diff.log(uid, 21, "__record__", "missing", f"добавлена задача №{num}", slug)
-                added += 1
-            break  # Нашли рабочий источник — дальше не ищем
+                blocks = confirmed
+            if not blocks and not all_blocks and variant:
+                # беззаголовочный документ + запрошенный ВАРИАНТ:
+                # вариант подтверждается заголовком (нет) или индексом
+                cv = str((cmeta or {}).get("variant") or "").strip()
+                if cv != str(variant):
+                    attempt_reasons.append(
+                        f"вариант не подтверждён (нет заголовков, индекс молчит): "
+                        f"{url[:60]}")
+                    continue
+            if not blocks and not all_blocks and grade not in (None, ""):
+                # беззаголовочный документ: класс подтверждает только индекс
+                cgrades = (cmeta or {}).get("grades")
+                ok_g = False
+                if cgrades:
+                    try:
+                        ok_g = int(grade) in {
+                            int(g) for g in cgrades
+                            if str(g).lstrip("-").isdigit()}
+                    except (ValueError, TypeError):
+                        pass
+                if not ok_g:
+                    attempt_reasons.append(
+                        f"класс не подтверждён (нет заголовков, индекс молчит): "
+                        f"{url[:60]}")
+                    continue
+            # тексты для модели: блок целиком, длинный — кусками по 30к с
+            # перекрытием 2к (задачу не режем посередине без запаса)
+            def _chunks(t: str, size: int = 30000, overlap: int = 2000):
+                if len(t) <= size:
+                    return [t]
+                out, i = [], 0
+                while i < len(t):
+                    out.append(t[i:i + size])
+                    i += size - overlap
+                return out
+
+            # Бюджет --limit — число ВАРИАНТОВ (по ТЗ), а не групп:
+            # каждый новый вариант внутри безвариантной группы расходует
+            # отдельную единицу; исчерпанные — в очередь (pending)
+            if import_budget is not None and blocks:
+                kept_blocks, deferred_blocks = [], []
+                for b in blocks:
+                    bv = str(b.get("variant") or "")
+                    if bv in budget_charged_vars:
+                        kept_blocks.append(b)
+                    elif not budget_charged_vars:
+                        budget_charged_vars.add(bv)   # первый — оплачен группой
+                        kept_blocks.append(b)
+                    elif import_budget > 0:
+                        import_budget -= 1
+                        budget_charged_vars.add(bv)
+                        kept_blocks.append(b)
+                    else:
+                        deferred_blocks.append(b)
+                for b in deferred_blocks:
+                    bv = str(b.get("variant") or "")
+                    jk_d = _jkey((slug, year, round_name, grade, bv))
+                    prev_d = {tuple(pr) for pr in pending_cp.get(jk_d, [])}
+                    dnums = _block_task_nums(b["text"])
+                    pending_cp[jk_d] = [list(pr) for pr in
+                                       sorted(prev_d | {(bv, n) for n in dnums})]
+                    st["unprocessed"] += 1
+                    for n_d in sorted(dnums):
+                        st["gaps"].append({
+                            "year": year, "round": round_name, "grade": grade,
+                            "variant": bv or None, "num": n_d,
+                            "reason": "не обработано: --limit (вариант)"})
+                blocks = kept_blocks
+            if blocks:
+                # (кусок текста, вариант блока) — вариант блока становится
+                # вариантом извлечённых задач (для групп без варианта)
+                block_texts = []
+                for b in blocks:
+                    for chunk in _chunks(b["text"]):
+                        block_texts.append((chunk, b.get("variant")))
+                    bv = str(b.get("variant") or "")
+                    block_nums_seen.setdefault(bv, set()).update(
+                        _block_task_nums(b["text"]))
+            else:
+                block_texts = [(c, variant) for c in _chunks(doc_text)]
+                block_nums_seen.setdefault(str(variant or ""), set()).update(
+                    _block_task_nums(doc_text))
+            for block_text, block_var in block_texts:
+                e_payload = {"doc_text": block_text,
+                             "grade": grade, "variant": block_var or variant,
+                             "missing_nums": [str(n) for n in missing],
+                             "known_text_head": ((recs[0].get("text") or "")
+                                                  if recs else "")[:300]}
+                try:
+                    e_resp = p.deepseek_chat.chat_json(
+                        P.STAGE21_EXTRACT_VARIANT_BLOCK,
+                        json.dumps(e_payload, ensure_ascii=False))
+                except Exception as e:
+                    log.warning("Этап 21: извлечение не удалось: %s", str(e)[:150])
+                    continue
+                if not e_resp or not e_resp.get("ok"):
+                    attempt_reasons.append(
+                        f"вариант не найден в документе: {url[:60]}")
+                    continue
+                for task in e_resp.get("tasks", []):
+                    num = str(task.get("num", "")).strip()
+                    text = (task.get("text") or "").strip()
+                    task_sol = (task.get("solution") or "").strip()
+                    if not num or (not text and not task_sol):
+                        continue
+                    # Проверка 1: извлечённый текст реально содержится
+                    # в ИСХОДНОМ документе (борьба с галлюцинациями).
+                    # Для решений БЕЗ условия (sol-PDF) проверки условия нет —
+                    # решение присоединится по номеру блока.
+                    if text:
+                        head = R.norm_for_compare(text[:120])
+                        if head and head[:60] not in doc_norm:
+                            log.warning("Этап 21: задача №%s не найдена в документе "
+                                        "дословно — пропущена.", num)
+                            continue
+                    # Объединяем с уже собранными по (вариант, номер);
+                    # условие должно совпасть — иначе это другая задача
+                    prev = collected.get((block_var, num))
+                    if prev:
+                        if text and (prev.get("text") or "").strip() \
+                           and _text_similarity(prev.get("text") or "", text) < 0.9:
+                            log.warning("Этап 21: задача №%s в разных PDF с разными "
+                                        "условиями — пропущена.", num)
+                            continue
+                        if text and not (prev.get("text") or "").strip():
+                            prev["text"] = text   # условие из tasks-PDF
+                            prev["_url"] = url
+                        for fld in ("answer", "solution", "points"):
+                            if not (prev.get(fld) or "").strip() \
+                               and (task.get(fld) or "").strip():
+                                prev[fld] = task.get(fld)
+                                prev["_url_" + fld] = url
+                    else:
+                        t = dict(task)
+                        # происхождение КАЖДОГО непустого поля — сразу
+                        t["_url"] = url
+                        for fld in ("answer", "solution", "points"):
+                            if (t.get(fld) or "").strip():
+                                t["_url_" + fld] = url
+                        collected[(block_var, num)] = t
+        if not collected:
+            reason = (attempt_reasons[-1] if attempt_reasons
+                      else "ни один кандидат не дал блок варианта")
+            st["gaps"].append({"year": year, "round": round_name, "grade": grade,
+                               "variant": variant, "reason": reason[:200]})
+            continue
+        # Существующие задачи ТОЙ ЖЕ олимпиады того же года/класса — для дублей
+        same_grade = [r for r in p.catalog.data[slug]
+                      if r.get("year") == year and str(r.get("grade")) == grade]
+        local_uids = {r.get("uid") for r in p.catalog.data[slug]}
+        accepted_by_var: dict[str, set] = {}   # вариант блока -> принятые №
+
+        def _gap_exists(n, gap_variant):
+            # уникальность по ПОЛНОМУ ключу (year, round, grade, variant, num):
+            # остатки разных вариантов/лет не подавляют друг друга
+            return any(g.get("num") == n and g.get("year") == year
+                       and (g.get("round") or "") == (round_name or "")
+                       and str(g.get("grade")) == str(grade)
+                       and (g.get("variant") or None) == (gap_variant or None)
+                       for g in st["gaps"])
+
+        def _num_in_collected(n):
+            return any(k[1] == str(n) for k in collected)
+
+        # Неоднозначность: один и тот же номер с ПОХОЖИМ условием встречен в
+        # НЕСКОЛЬКИХ вариантах — атрибуция неоднозначна (needs_review,
+        # вариант не проставляем). Определяется ДО обработки, поэтому не
+        # зависит от порядка блоков.
+        entries_by_num: dict[str, list] = {}
+        for (bvar, num), task in collected.items():
+            entries_by_num.setdefault(num, []).append((bvar, task))
+        # Неоднозначность привязана к КОНКРЕТНЫМ записям (вариант + номер +
+        # похожий текст): иная задача того же номера из другого варианта
+        # не «заражается» неоднозначностью
+        ambiguous_keys: set = set()
+        for num, entries in entries_by_num.items():
+            for i in range(len(entries)):
+                for j in range(i + 1, len(entries)):
+                    v1, t1 = entries[i]
+                    v2, t2 = entries[j]
+                    if str(v1 or "") != str(v2 or "") and _text_similarity(
+                            (t1.get("text") or ""), (t2.get("text") or "")) >= 0.9:
+                        ambiguous_keys.add((str(v1 or ""), num))
+                        ambiguous_keys.add((str(v2 or ""), num))
+        new_recs_group: list[dict] = []   # новые записи этой группы (для остатка)
+        for (bvar, num), task in sorted(
+                collected.items(),
+                key=lambda kv: (int(kv[0][1]) if kv[0][1].isdigit() else 0,
+                                str(kv[0][0] or ""))):
+            text = (task.get("text") or "").strip()
+            task_ans = (task.get("answer") or "").strip()
+            task_sol = (task.get("solution") or "").strip()
+            task_url = task.get("_url") or task.get("_url_solution") or ""
+            if not text:
+                # Решение без условия (sol-PDF): присоединяем по номеру к
+                # существующей записи этой группы, решение хранит свой URL
+                target = next((r for r in recs
+                               if str(r.get("num", "")).strip() == num), None)
+                if target is None:
+                    p.search_log.log("", slug, 21, query_desc, "index",
+                                     task_url, "скачан",
+                                     f"решение №{num} без условия: нет записи "
+                                     f"с таким номером — пропущено")
+                    continue
+                if task_sol and target.get("answer"):
+                    ok_v, reason_v = _verify_solution(
+                        target.get("text") or "", task_sol, target["answer"])
+                    if ok_v:
+                        t_status = (target.get("status") or "")
+                        if t_status == "gemini_solved" or t_status.startswith("AI_"):
+                            sol_url = task.get("_url_solution") or task_url
+                            p.apply_field(slug, target, 21, "solution", task_sol,
+                                          model="deepseek-chat+reasoner")
+                            p.apply_field(slug, target, 21, "status", "official_found",
+                                          model="deepseek-chat+reasoner")
+                            p.add_qa_note(target, 21,
+                                          f"официальное решение подтянуто из {sol_url}",
+                                          model="deepseek-chat+reasoner")
+                            st["_enriched_uids"].add(target.get("uid"))
+                    else:
+                        p.needs_review(target, 21,
+                                      f"решение №{num} не сверено ({reason_v})")
+                continue
+            # Дубль по тексту (схожесть ≥ 0.9) с задачами этой олимпиады?
+            dup = None
+            for ex in same_grade:
+                if _text_similarity(ex.get("text") or "", text) >= 0.9:
+                    dup = ex
+                    break
+            # Эквивалентность условия дубля и извлечённого (гейт reasoner):
+            # отрицательный вердикт = математически ДРУГАЯ задача — никакой
+            # атрибуции (variant/source) и пометки «принято», только needs_review
+            dup_equivalent = True
+            if dup is not None and (dup.get("text") or "").strip() != text:
+                dup_equivalent = _math_gate(p, (dup.get("text") or "").strip(),
+                                             text, dup, 21)
+            if dup is not None and not dup_equivalent:
+                p.search_log.log("", slug, 21, query_desc, "reasoner", "",
+                                 "скачан",
+                                 f"задача №{num}: условие не эквивалентно "
+                                 f"существующему дублю — обогащение запрещено")
+                continue
+            # Ответ для сверки: извлечённый, иначе — существующий у дубля
+            check_ans = task_ans or ((dup.get("answer") or "").strip() if dup else "")
+            # Проверка 2 (reasoner): решение приводит к ответу — НУЖЕН явный
+            # вердикт match. Решение без ответа для сверки — needs_review,
+            # ничего не перезаписываем.
+            verified = False
+            if task_sol:
+                if not check_ans:
+                    if dup is not None:
+                        p.needs_review(dup, 21,
+                                       "решение найдено, но ответ для сверки "
+                                       "отсутствует — решение не записано")
+                    rejected[(str(bvar or ""), num)] = ("нет ответа для сверки решения "
+                                          "(needs_review)")
+                    continue
+                ok_v, reason_v = _verify_solution(text, task_sol, check_ans)
+                if not ok_v:
+                    rejected[(str(bvar or ""), num)] = f"решение не сверено reasoner ({reason_v})"
+                    if dup is not None:
+                        p.needs_review(dup, 21,
+                                       f"решение не сверено ({reason_v}) — "
+                                       f"существующие данные не изменены")
+                    p.search_log.log("", slug, 21, query_desc, "reasoner", "",
+                                     "скачан",
+                                     f"задача №{num}: {reason_v} — пропущена")
+                    continue
+                # конфликт ответов: у дубля другой ответ — не перезаписываем
+                if dup is not None and task_ans and (dup.get("answer") or "").strip() \
+                   and _answer_norm_strict(task_ans) != _answer_norm_strict(dup.get("answer")):
+                    p.needs_review(dup, 21,
+                                   f"конфликт ответов: в PDF «{task_ans[:60]}», "
+                                   f"в базе «{(dup.get('answer') or '')[:60]}»")
+                    rejected[(str(bvar or ""), num)] = "конфликт ответов с существующей записью"
+                    continue
+                verified = True
+            # Вариант задачи: приоритет у ПОДТВЕРЖДЁННОГО заголовка блока.
+            # Ответ модели (поле variant) не может перекрыть заголовок;
+            # противоречие — только отметка, не атрибуция
+            tv_model = str(task.get("variant") or "").strip()
+            bvar_str = str(bvar or "").strip()
+            variant_model_conflict = bool(bvar_str and tv_model
+                                          and tv_model != bvar_str)
+            task_variant = bvar_str or tv_model or (variant or "")
+            # Задача встретилась в НЕСКОЛЬКИХ вариантах — атрибуция
+            # неоднозначна: вариант не проставляем, только needs_review
+            variant_ambiguous = (str(bvar or ""), num) in ambiguous_keys
+            if variant_ambiguous:
+                task_variant = ""
+            if dup is not None:
+                # Дубль: НЕ добавляем, обогащаем существующую запись
+                st["dup_skipped"] += 1
+                changed = False
+                if variant_model_conflict:
+                    p.add_qa_note(
+                        dup, 21,
+                        f"поле variant модели («{tv_model}») противоречит "
+                        f"заголовку блока («{bvar_str}») — проигнорировано")
+                if variant_ambiguous and not (dup.get("variant") or "").strip():
+                    # только варианты, УЧАСТВУЮЩИЕ в неоднозначной паре
+                    amb_vars = sorted({str(v or "") for v, _t
+                                       in entries_by_num.get(num, [])
+                                       if (str(v or ""), num) in ambiguous_keys})
+                    p.needs_review(dup, 21,
+                                   f"задача №{num} встречена в вариантах "
+                                   f"{amb_vars} — вариант не "
+                                   f"проставлен (неоднозначно)")
+                    # дыра в КАЖДОМ из неоднозначных вариантов: задача без
+                    # подтверждённого варианта не закрывает конкретный вариант
+                    for bv_amb in amb_vars:
+                        if _gap_exists(int(num) if num.isdigit() else num,
+                                       bv_amb or None):
+                            continue
+                        st["gaps"].append({
+                            "year": year, "round": round_name, "grade": grade,
+                            "variant": bv_amb or None,
+                            "num": int(num) if num.isdigit() else num,
+                            "reason": "задача в нескольких вариантах "
+                                      "(неоднозначно)"})
+                if task_variant and not (dup.get("variant") or "").strip():
+                    changed |= p.apply_field(slug, dup, 21, "variant", task_variant,
+                                             model="deepseek-chat")
+                    # вариант подтверждён извлечённой задачей (после сверки
+                    # и гейта)
+                    attributed += 1
+                if not (dup.get("source") or "").strip() and task_url:
+                    changed |= p.apply_field(slug, dup, 21, "source", task_url,
+                                              model="deepseek-chat")
+                # Официальное решение для AI-статусов — только после сверки
+                # И эквивалентности условия (гейт _math_gate выше)
+                dup_status = (dup.get("status") or "")
+                if task_sol and verified and dup_equivalent and (
+                        dup_status == "gemini_solved"
+                        or dup_status.startswith("AI_")):
+                    sol_url = task.get("_url_solution") or task_url
+                    changed |= p.apply_field(slug, dup, 21, "solution", task_sol,
+                                             model="deepseek-chat+reasoner")
+                    if task_ans:   # пустым ответом не перезаписываем
+                        changed |= p.apply_field(slug, dup, 21, "answer", task_ans,
+                                                  model="deepseek-chat+reasoner")
+                    changed |= p.apply_field(slug, dup, 21, "status", "official_found",
+                                              model="deepseek-chat+reasoner")
+                    p.add_qa_note(dup, 21,
+                                  f"официальное решение подтянуто из {sol_url}",
+                                  model="deepseek-chat+reasoner")
+                    if sol_url != task_url:
+                        p.add_qa_note(dup, 21,
+                                      f"условие — из {task_url}, решение — из {sol_url}")
+                if task.get("points"):
+                    p.add_qa_note(dup, 21, f"points: {task['points']}")
+                if changed:
+                    st["_enriched_uids"].add(dup.get("uid"))
+                p.search_log.log("", slug, 21, query_desc, "index", task_url,
+                                 "скачан",
+                                 f"задача №{num}: дубль — обогащена существующая")
+                if not variant_ambiguous:
+                    # неоднозначная задача не закрывает конкретный вариант
+                    accepted_by_var.setdefault(str(bvar or ""), set()).add(
+                        int(num) if num.isdigit() else num)
+                continue
+            # Новая задача
+            amb_note = ""
+            if variant_ambiguous:
+                # только варианты, УЧАСТВУЮЩИЕ в неоднозначной паре
+                amb_vars = sorted({str(v or "") for v, _t
+                                   in entries_by_num.get(num, [])
+                                   if (str(v or ""), num) in ambiguous_keys})
+                amb_note = (f"needs_review: новая задача №{num} встречена в "
+                            f"вариантах {amb_vars} — импорт с неопределённым "
+                            f"вариантом")
+                # дыра в КАЖДОМ из неоднозначных вариантов (без записи в
+                # accepted_by_var — вариант не подтверждён)
+                for bv_amb in amb_vars:
+                    if _gap_exists(int(num) if num.isdigit() else num,
+                                   bv_amb or None):
+                        continue
+                    st["gaps"].append({
+                        "year": year, "round": round_name, "grade": grade,
+                        "variant": bv_amb or None,
+                        "num": int(num) if num.isdigit() else num,
+                        "reason": "задача в нескольких вариантах "
+                                  "(неоднозначно)"})
+            uid = _make_uid(context.get("olymp"), year, round_name, grade,
+                            num, text, variant=task_variant)
+            if uid in local_uids:
+                continue   # уже добавили в этом прогоне
+            new_rec = {
+                "uid": uid,
+                "olymp": context.get("olymp"),
+                "year": year,
+                "round": round_name,
+                "day": context.get("day", 0),
+                "grade": grade,
+                "num": num,
+                # official_found — только с проверенным решением;
+                # без решения — unresolved (условие из официального источника)
+                "status": "official_found" if (task_sol and verified) else "unresolved",
+                "answer": task_ans,
+                "source": task_url,
+                "text": text,
+                "solution": task_sol if verified else "",
+                # day/geo — по аналогии с соседями; fig_* НЕ копируем
+                # (файлы рисунков соседа относятся к другой задаче)
+                "geo": any(r.get("geo") for r in recs),
+                "fig_statement": [],
+                "fig_solution": [],
+                "variant": task_variant,
+            }
+            qa_notes = [f"добавлена задача №{num} из {task_url}"]
+            if variant_model_conflict:
+                qa_notes.append(
+                    f"поле variant модели («{tv_model}») противоречит "
+                    f"заголовку блока («{bvar_str}») — проигнорировано")
+            if task.get("points"):
+                qa_notes.append(f"points: {task['points']}")
+            if not task_sol:
+                qa_notes.append("в источнике только условие: решение не найдено "
+                                "(статус unresolved)")
+            if task_sol and verified and task.get("_url_solution") \
+               and task["_url_solution"] != task_url:
+                qa_notes.append(f"условие — из {task_url}, "
+                                f"решение — из {task['_url_solution']}")
+            if task_sol and not verified:
+                # не должно случаться (см. выше), но на всякий случай
+                qa_notes.append("решение не записано: не сверено")
+                new_rec["solution"] = ""
+            if amb_note:
+                qa_notes.append(amb_note)
+            new_rec["qa"] = {"stage21": {"stage": 21,
+                                         "model": "index+deepseek",
+                                         "imported": True,
+                                         "changes": {}, "notes": qa_notes}}
+            p.catalog.data[slug].append(new_rec)
+            p.checkpoint.data["added"].append(uid)
+            p.diff.log(uid, 21, "__record__", "missing",
+                       f"добавлена задача №{num}", slug)
+            same_grade.append(new_rec)     # защита от повтора в этом ответе
+            local_uids.add(uid)
+            new_recs_group.append(new_rec)   # для расчёта остатка группы
+            added += 1
+            st["tasks_added"] += 1
+            if not variant_ambiguous:
+                # неоднозначная задача не закрывает конкретный вариант
+                accepted_by_var.setdefault(str(bvar or ""), set()).add(
+                    int(num) if num.isdigit() else num)
+
+        # Остаток дыр: исходная группа + новые записи. Записи, получившие
+        # вариант при обработке (дубль), остаются в расчёте — их номер
+        # не «теряется»; новые записи любого варианта закрывают дыру номера.
+        # Диапазонные дыры считаются только по записям каталога:
+        # импортированные этапом 21 задачи определяют нумерацию блока PDF,
+        # и выводить из них «пропущенные номера» — фантомные дыры.
+        orig_recs = _orig_of(recs)
+        final_recs = list(recs) + new_recs_group
+        if orig_recs:
+            # базовые диапазонные ожидания — из записей каталога:
+            # импорт №4 не должен сам создавать ожидание №2-3
+            _, _, still_missing = _missing_nums(orig_recs)
+        else:
+            # виртуальная группа (хвост варианта без записей в каталоге) или
+            # группа из одних импортированных записей: понятие диапазона
+            # не применимо
+            still_missing = []
+        # Остаток — ПО ВАРИАНТАМ БЛОКОВ (смешивание скрывало реальные дыры:
+        # принятая №2 варианта 2 не закрывает отклонённую №2 варианта 1).
+        # Покрытие варианта = номера итоговых записей ЭТОГО варианта
+        # (включая записи, получившие вариант при обработке) + принятые
+        # из этого варианта задачи.
+        covered_by_var: dict[str, set[int]] = {}
+        for r in final_recs:
+            rv = str((r.get("variant") or "").strip() or "")
+            try:
+                rn = int(str(r.get("num", "0")).strip() or 0)
+            except ValueError:
+                continue
+            if rn:
+                covered_by_var.setdefault(rv, set()).add(rn)
+        for bv, nums in accepted_by_var.items():
+            covered_by_var.setdefault(bv, set()).update(nums)
+        # "" (блоки без заголовка варианта) — ДОПУСТИМЫЙ ключ: вариант по ТЗ
+        # необязателен, хвост безвариантного блока не должен теряться
+        block_vars_list = sorted(block_nums_seen)
+        # Сохранённые незакрытые пары прошлых запусков — в ожидаемом
+        # остатке до ПОДТВЕРЖДЁННОГО закрытия: отсутствие номера в новом
+        # кандидате не доказывает закрытие дыры
+        def _pending_nums(bv):
+            prs = pending_cp.get(
+                _jkey((slug, year, round_name, grade, bv)), [])
+            return {n for _bv, n in (tuple(pr) for pr in prs)}
+
+        # ЕДИНЫЙ остаток варианта — и для счётчика полноты, и для отчёта
+        # (нельзя записать дыру и назвать вариант полностью закрытым)
+        def _variant_remaining(bv):
+            base = set(block_nums_seen.get(bv, set()))
+            if bv == str(variant or ""):
+                # дыры диапазона группы относятся только к её варианту
+                base |= set(still_missing)
+            base |= _pending_nums(bv)
+            return base - covered_by_var.get(bv, set())
+
+        # счётчики полных/частичных вариантов — ПО КАЖДОМУ варианту отдельно
+        for bv in block_vars_list:
+            if not accepted_by_var.get(bv):
+                continue
+            rem_v = _variant_remaining(bv)
+            rej_v = any(k[0] == bv for k in rejected)
+            if rem_v or rej_v:
+                st["variants_partial"] += 1
+            else:
+                st["variants"] += 1        # вариант закрыт полностью
+
+        # остаток по каждому варианту блока (тот же расчёт, что у счётчика)
+        for bv in block_vars_list:
+            remaining_v = _variant_remaining(bv)
+            for n in sorted(remaining_v):
+                if _gap_exists(n, bv):
+                    continue
+                # НЕ затираем переменную цикла групп (key) — свой ключ
+                rej_key = (bv, str(n))
+                if rej_key in rejected:
+                    reason = rejected[rej_key]
+                elif n in _pending_nums(bv) and n not in block_nums_seen.get(bv, set()):
+                    reason = ("задача из очереди повтора не найдена в новом "
+                              "кандидате — закрытие не подтверждено")
+                elif n in still_missing:
+                    reason = (f"задача №{n} не найдена в документе"
+                              if _num_in_collected(n)
+                              else (attempt_reasons[-1] if attempt_reasons
+                                    else "вариант не найден в документе"))
+                else:
+                    reason = "задача упомянута в блоке, но не извлечена"
+                st["gaps"].append({"year": year, "round": round_name,
+                                   "grade": grade, "variant": bv, "num": n,
+                                   "reason": reason[:200]})
+        # группа БЕЗ варианта: дыры диапазона, не закрытые НИ ОДНИМ
+        # вариантом (безвариантная запись не доказывает наличие задачи
+        # в конкретном варианте)
+        if not variant:
+            # запись, получившая вариант при атрибуции, покидает группу —
+            # её номер всё равно закрывает дыру диапазона
+            covered_any = set()
+            for r2 in p.catalog.data.get(slug, []):
+                if r2.get("year") != year \
+                   or (r2.get("round") or "") != (round_name or "") \
+                   or str(r2.get("grade")) != str(grade):
+                    continue
+                try:
+                    n2 = int(str(r2.get("num", "0")).strip() or 0)
+                except ValueError:
+                    continue
+                if n2:
+                    covered_any.add(n2)
+            for nums in covered_by_var.values():
+                covered_any |= nums
+            for n in sorted(set(still_missing) - covered_any):
+                if _gap_exists(n, None):
+                    continue
+                reason = (f"задача №{n} не найдена в документе"
+                          if _num_in_collected(n)
+                          else (attempt_reasons[-1] if attempt_reasons
+                                else "вариант не найден в документе"))
+                st["gaps"].append({"year": year, "round": round_name,
+                                   "grade": grade, "variant": None, "num": n,
+                                   "reason": reason[:200]})
+
+        # Незакрытый хвост — в checkpoint ПО ВАРИАНТАМ (ключ — вариант:
+        # после атрибуции безвариантная группа расформировывается, а хвост
+        # конкретного варианта обязан выжить для повтора)
+        for bv in block_vars_list:
+            rem_bv = sorted(_variant_remaining(bv))
+            jk_bv = _jkey((slug, year, round_name, grade, bv))
+            if rem_bv:
+                pending_cp[jk_bv] = [[bv, n] for n in rem_bv]
+            else:
+                pending_cp.pop(jk_bv, None)
+
+    # Необработанные в этом запуске хвосты (--limit) — сохраняем в
+    # checkpoint: очередь продолжится в следующем запуске
+    for key_t, pairs in tail_pending.items():
+        if key_t in processed_keys:
+            continue
+        jk = _jkey(key_t)
+        prev = {tuple(pr) for pr in pending_cp.get(jk, [])}
+        pending_cp[jk] = [list(pr) for pr in sorted(prev | pairs)]
+
+    # Дыры, оставшиеся ПОСЛЕ импорта (для отчёта)
     p.catalog._rebuild_index_map()
+    # необработанные из-за --limit группы
+    if unprocessed:
+        for key in sorted(gap_keys, key=priority):
+            if key not in ordered_keys:
+                slug, year, round_name, grade, variant = key
+                st = _st(slug)
+                st["unprocessed"] += 1
+                st["gaps"].append({
+                    "year": year, "round": round_name, "grade": grade,
+                    "variant": variant,
+                    "reason": "не обработано: --limit"})
+    # счётчики из служебных множеств
+    for slug, st in report.items():
+        st["pdfs"] = len(st.pop("_pdf_urls", set()) or set())
+        st["enriched"] = len(st.pop("_enriched_uids", set()) or set())
     p.stats[21]["changed"] = added
-    log.info("Этап 21: добавлено %d задач.", added)
+    log.info("Этап 21: атрибутировано вариантов: %d, добавлено задач: %d "
+             "(отчёт по олимпиадам — в отчёте).", attributed, added)
 
 
 # =====================================================================
@@ -2085,6 +3444,50 @@ def _write_report(p: Pipeline, validation_issues: list[str], gaps_result: str):
         lines += [f"- ПРОБЛЕМА: {i}" for i in validation_issues[:20]]
     else:
         lines.append("- JSON валиден, uid уникальны.")
+    # Отчёт этапа 21: по каждой олимпиаде
+    if p.stage21_report:
+        lines += ["", "## Этап 21: заполнение дыр в нумерации", "",
+                  "| Олимпиада | PDF | Вариантов: полностью | Вариантов: частично | "
+                  "Задач добавлено | Обогащено существующих | Дублей пропущено | "
+                  "Не обработано (--limit) | Осталось дыр |",
+                  "|---|---|---|---|---|---|---|---|---|"]
+        for slug, st in sorted(p.stage21_report.items()):
+            lines.append(f"| {slug} | {st.get('pdfs', 0)} | {st.get('variants', 0)} | "
+                         f"{st.get('variants_partial', 0)} | "
+                         f"{st.get('tasks_added', 0)} | {st.get('enriched', 0)} | "
+                         f"{st.get('dup_skipped', 0)} | {st.get('unprocessed', 0)} | "
+                         f"{len(st.get('gaps', []))} |")
+        lines += ["", "### Остаток дыр (этап 21)", ""]
+        shown = 0
+        for slug, st in sorted(p.stage21_report.items()):
+            for g in st.get("gaps", [])[:100]:
+                num_part = f" №{g['num']}" if g.get("num") else ""
+                lines.append(f"- `{slug}` {g.get('year')}/{g.get('round')}/"
+                             f"{g.get('grade')} кл."
+                             f"{(' вар. ' + str(g.get('variant'))) if g.get('variant') else ''}"
+                             f"{num_part}: "
+                             f"{g.get('reason', '')[:120]}")
+                shown += 1
+            if shown > 150:
+                lines.append("- ... (сокращено)")
+                break
+        if shown == 0:
+            nr_total = sum(st.get("needs_review", 0)
+                           for st in p.stage21_report.values())
+            unp_total = sum(st.get("unprocessed", 0)
+                            for st in p.stage21_report.values())
+            if nr_total or unp_total:
+                lines.append(
+                    f"- Зарегистрированных дыр нет, но полнота НЕ подтверждена: "
+                    f"неподтверждённых атрибуций (needs_review) — {nr_total}, "
+                    f"необработанных групп (--limit) — {unp_total}.")
+            else:
+                # записи, для которых не нашлось предложения атрибуции,
+                # молча остаются без варианта — «все дыры закрыты» без
+                # независимой проверки покрытия заявлять нельзя
+                lines.append("- Зарегистрированных дыр нет; полное закрытие "
+                             "подтверждайте независимой сверкой с официальными "
+                             "PDF (валидация JSON/UID полноту не доказывает).")
     # Дыры
     if gaps_result:
         lines += ["", "## Отчёт о дырах (olymp_catalog_gaps.py)", "",
@@ -2245,6 +3648,10 @@ STAGE_FUNCS = {1: stage_01, 2: stage_02, 3: stage_03, 4: stage_04, 5: stage_05,
 
 
 def main():
+    # Каталоги для артефактов (work/, reports/) — создаём заранее,
+    # чтобы логи/чекпоинт не падали на свежем окружении
+    WORK_DIR.mkdir(parents=True, exist_ok=True)
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     parser = build_parser()
     args = parser.parse_args()
     if args.stages is None:

@@ -459,6 +459,8 @@ OFFICIAL_DOMAINS = {
     "olymp.mipt.ru", "tasks.olimpiada.ru", "rsr-olymp.ru", "olympiads.mccme.ru",
     "turgor.ru", "vos.olimpiada.ru", "olymp.msu.ru", "olymp.hse.ru",
     "kurchatov-olymp.ru", "formulo.org", "matol.ru", "mathus.ru",
+    # родные сайты из индекса источников (этапы 18-21)
+    "mmo.mccme.ru", "olimpiada.spbu.ru", "pvg.mk.ru", "olimpiada.ru",
 }
 
 
