@@ -1182,11 +1182,15 @@ def admin_users_stats():
     # рейтингу. Счётчик тоже синхронизируется при старте приложения
     # (SOLVED_RECONCILE в app.py), здесь же — живой пересчёт для страницы.
     try:
-        from services.solved_stats import solved_counts_by_user, task_counts_by_user
+        from services.solved_stats import (
+            solved_counts_by_user, task_counts_by_user, msk_day_start_utc,
+        )
         solved_map = solved_counts_by_user()
         checked_map = task_counts_by_user(checked=True)
-        solved_today_map = task_counts_by_user(since=now.replace(
-            hour=0, minute=0, second=0, microsecond=0))
+        # Граница «сегодня» — московская полночь (как задачи дня и календарь):
+        # полночь UTC отстаёт на 3 часа, и решения после 00:00 МСК
+        # засчитывались во «вчера». Окно «7 дней» оставляем скользящим (168 ч).
+        solved_today_map = task_counts_by_user(since=msk_day_start_utc(now))
         solved_week_map = task_counts_by_user(since=now - timedelta(days=7))
     except Exception as _sm_err:
         current_app.logger.exception('admin_users_stats: task recount failed: %r',

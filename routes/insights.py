@@ -123,10 +123,22 @@ def api_practice_answer(insight_id: int, task_id: int):
     correct = compare_math_answers(user_answer, task.answer or "")
 
     was_correct = bool(task.is_correct)
+    # Строки, испорченные старым обработчиком: is_correct стирался повторным
+    # неверным ответом, но факт первого решения (solved_at) сохранён — он и
+    # есть признак «когда-то решено». Без этого повторный верный ответ мог
+    # начислить +5 XP и +1 в счётчик второй раз за уже решённую задачу.
+    was_solved = was_correct or task.solved_at is not None
 
     task.user_answer = user_answer
-    task.is_correct = bool(correct)
-    if correct and task.solved_at is None:
+    # Повторный неверный ответ НЕ стирает старое решение (тот же принцип, что в
+    # /api/check_answer для обычных задач: «неверный повтор не стирает старое
+    # решение»). Раньше is_correct перезаписывался, и уже решённая задача
+    # исчезала из счётчиков «решено сегодня / за всё время» в статистике
+    # (а счётчик и XP у пользователя оставались — числа расходились).
+    task.is_correct = was_solved or bool(correct)
+    # solved_at хранит время ПЕРВОГО верного ответа: повторная верная отправка
+    # не переносит старое решение в сегодняшний счётчик и не меняет дату.
+    if correct and not was_solved and task.solved_at is None:
         task.solved_at = datetime.utcnow()
 
     # Обновить прогресс неточности.
@@ -142,7 +154,7 @@ def api_practice_answer(insight_id: int, task_id: int):
     # +5 XP за каждую верно решённую задачу на отработку (один раз
     # на задачу), +15 XP бонусом, когда неточность закрыта полностью.
     xp_gained = 0
-    if correct and not was_correct:
+    if correct and not was_solved:
         from models import User as _User
         _u = db.session.get(_User, current_user.id)
         if _u is not None:

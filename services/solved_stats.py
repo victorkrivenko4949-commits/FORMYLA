@@ -24,8 +24,29 @@ services/solved_stats.py — единый источник правды «ско
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
+
+
+# Сайт считает «сегодня» по московскому дню: задачи дня генерируются и
+# «закрываются» в 00:00 МСК (см. daily_tasks.services.today_in_user_tz /
+# DAILY_TASKS_TZ). Хранимые таймстемпы — UTC, поэтому граница текущего
+# московского дня в UTC — это (МСК-полночь минус 3 часа).
+MSK_UTC_OFFSET = timedelta(hours=3)
+
+
+def msk_day_start_utc(now: datetime | None = None) -> datetime:
+    """UTC-таймстемп полуночи текущего московского дня.
+
+    Раньше «решено сегодня» в админ-статистике считалось от полночи UTC:
+    окно отставало от московского дня на 3 часа — задачи, решённые после
+    00:00 МСК (21:00–24:00 UTC), попадали во «вчера».
+    """
+    now = now or datetime.utcnow()
+    return (now + MSK_UTC_OFFSET).replace(
+        hour=0, minute=0, second=0, microsecond=0,
+    ) - MSK_UTC_OFFSET
 
 
 def task_counts_by_user(*, checked: bool = False, since=None) -> dict:
@@ -65,8 +86,14 @@ def task_counts_by_user(*, checked: bool = False, since=None) -> dict:
 
     practice = (db.session.query(Insight.user_id, func.count(InsightPracticeTask.id))
                 .join(InsightPracticeTask, InsightPracticeTask.insight_id == Insight.id)
-                .filter(InsightPracticeTask.is_correct.isnot(None) if checked
-                        else InsightPracticeTask.is_correct.is_(True)))
+                # Отработка неточностей: «решено» — постоянный факт. У строк,
+                # испорченных старым обработчиком (повторный неверный ответ
+                # стирал is_correct), признак решения — сохранённый solved_at.
+                .filter(
+                    (InsightPracticeTask.is_correct.isnot(None)
+                     | InsightPracticeTask.solved_at.isnot(None)) if checked
+                    else (InsightPracticeTask.is_correct.is_(True)
+                          | InsightPracticeTask.solved_at.isnot(None))))
     if since is not None:
         # Incorrect practice answers do not store a checking timestamp.
         # Never substitute task creation time for the checking time.
@@ -164,7 +191,10 @@ def solved_counts_by_user() -> dict:
         from sqlalchemy import func
         rows = (db.session.query(Insight.user_id, func.count(InsightPracticeTask.id))
                 .join(InsightPracticeTask, InsightPracticeTask.insight_id == Insight.id)
-                .filter(InsightPracticeTask.is_correct.is_(True))
+                # См. task_counts_by_user: решённой считается и строка,
+                # у которой is_correct стёрт, но сохранён факт решения solved_at.
+                .filter(InsightPracticeTask.is_correct.is_(True)
+                         | InsightPracticeTask.solved_at.isnot(None))
                 .group_by(Insight.user_id)
                 .all())
         _add(rows)
