@@ -75,3 +75,28 @@ def test_pipeline_draws_without_llm(aux, monkeypatch):
     assert r.verification == "constraints_only"
     assert r.usage == []
     assert all(n in r.svg for n in ("B_1", "B_2", "K_1", "K_2"))
+
+
+PDF_TEXT = ("В неравнобедренном треугольнике ABC провели биссектрисы угла ABC и угла, "
+            "смежного с ним. Они пересекли прямую AC в точках B₁ и B₂ соответственно. "
+            "Из точек B₁ и B₂ провели касательные к окружности, вписанной в треугольник ABC, "
+            "отличные от прямой AC. Они касаются этой окружности в точках K₁ и K₂ "
+            "соответственно. Докажите, что точки B, K₁ и K₂ лежат на одной прямой.")
+
+
+def test_pdf_wording_is_recognized():
+    """Оригинал задачи 15.3.4: другой порядок слов, два предложения, B₁ юникодом."""
+    assert it.recognize(PDF_TEXT) == {"A": "A", "C": "C", "B": "B", "B1": "B_1",
+                                      "B2": "B_2", "K1": "K_1", "K2": "K_2"}
+    assert it._plain("K₁ и K₂") == "K_1 и K_2"
+
+
+@pytest.mark.parametrize("aux", [False, True])
+def test_pipeline_draws_pdf_wording_without_llm(aux, monkeypatch):
+    from geoexact.core.pipeline import generate
+    monkeypatch.setattr(llm, "classify", lambda *_: pytest.fail("точный план не должен звать модель"))
+    monkeypatch.setattr(llm, "formalize", lambda *_, **__: pytest.fail("точный план не должен звать модель"))
+    r = generate(PDF_TEXT, with_aux=aux, sess=object(), use_cache=False)
+    assert r.ok, (r.stage, r.reason, r.detail)
+    assert r.verification == "constraints_only"
+    assert r.usage == []

@@ -63,7 +63,11 @@ _NAMED_QUAD = re.compile(
 
 
 def _plain(text: str) -> str:
-    """LaTeX/OCR-обёртки имён точек: $ABCD$, \\(ABCD\\), \\mathrm{ABCD} -> ABCD."""
+    """LaTeX/OCR-обёртки имён точек: $ABCD$, \\(ABCD\\), \\mathrm{ABCD} -> ABCD.
+
+    Юникод-подстрочные индексы (B₁ из PDF) приводятся к B_1 — формат, на
+    который рассчитаны все _NAME-регексы текстовых проверок.
+    """
     text = text or ""
     try:
         from .semantics import _math_text
@@ -73,7 +77,8 @@ def _plain(text: str) -> str:
     text = re.sub(r"\\(?:mathrm|text|operatorname|mathit)\s*\{([^{}]*)\}", r"\1", text)
     for a in (r"\(", r"\)", "$", "{", "}"):
         text = text.replace(a, " " if a in ("$",) else "")
-    return text
+    _sub = str.maketrans("₀₁₂₃₄₅₆₇₈₉", "0123456789")
+    return re.sub(r"[₀-₉]+", lambda m: "_" + m.group(0).translate(_sub), text)
 
 
 def convex_polygons(text: str) -> list[tuple[str, ...]]:

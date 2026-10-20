@@ -49,11 +49,24 @@ EXTRA_RULES = """
 """
 
 _NAME = r"[A-Z](?:_?\d{1,2})?"
-_FAMILY = re.compile(
-    rf"биссектрис\w*\s+угла\s+([A-Z])([A-Z])([A-Z])\s+и\s+смежн\w*\s+с\s+ним\s+угла\s+"
-    rf"пересека\w*\s+прям\w*\s+([A-Z])([A-Z])\s+в\s+точках\s+({_NAME})\s+и\s+({_NAME})", re.I)
-_TANGENTS = re.compile(r"касательн\w*\s+к\s+вписанн\w*\s+окружност\w*", re.I)
-_TOUCH = re.compile(rf"каса\w*\s+(?:её|ее)?\s*в\s+точках\s+({_NAME})\s+и\s+({_NAME})", re.I)
+# Формулировки источника различаются порядком слов и разбивкой на предложения:
+#   «биссектрисы угла ABC и смежного с ним угла пересекают прямую AC в точках B_1 и B_2»
+#   «провели биссектрисы угла ABC и угла, смежного с ним. Они пересекли прямую AC
+#    в точках B₁ и B₂» (PDF-оригинал, ВсОШ 15.3.4). Поэтому условие разбирается двумя
+# независимыми фразами: биссектрисы (внутри одного предложения) и пересечение с
+# прямой (может быть следующим предложением).
+_BISECTORS = re.compile(
+    rf"биссектрис\w*[^.!?]{{0,60}}?угла\s+([A-Z])([A-Z])([A-Z])(?![A-Za-z0-9_])"
+    rf"[^.!?]{{0,60}}?смежн\w*", re.I)
+_INTERSECT = re.compile(
+    rf"пересек\w*[^.!?]{{0,40}}?прям\w*\s+([A-Z])([A-Z])(?![A-Za-z0-9_])"
+    rf"[^.!?]{{0,80}}?точках?\s+({_NAME})\s+и\s+({_NAME})", re.I)
+# «касательные к вписанной окружности» и «касательные к окружности, вписанной в треугольник»
+_TANGENTS = re.compile(
+    r"касательн\w*[^.!?]{0,50}?вписанн\w*[^.!?]{0,70}?окружност\w*"
+    r"|касательн\w*[^.!?]{0,50}?окружност\w*[^.!?]{0,70}?вписанн\w*", re.I)
+# «касающиеся её в точках K_1 и K_2», «касаются этой окружности в точках K₁ и K₂»
+_TOUCH = re.compile(rf"каса\w*[^.!?]{{0,60}}?\bв\s+точках?\s+({_NAME})\s+и\s+({_NAME})", re.I)
 _SCALENE = re.compile(r"неравнобедренн|разносторонн", re.I)
 
 
@@ -68,16 +81,17 @@ def _plain(text: str) -> str:
 def recognize(text: str) -> dict | None:
     """Имена точек семьи «биссектрисы угла B и смежного → B1,B2 на AC; касательные → K1,K2»."""
     t = _plain(text)
-    m = _FAMILY.search(t)
-    if not m or not _TANGENTS.search(t):
+    m1, m2 = _BISECTORS.search(t), _INTERSECT.search(t)
+    if not m1 or not m2 or not _TANGENTS.search(t):
         return None
-    x, b, z, p, q = (m[i].upper() for i in range(1, 6))
+    x, b, z = (m1[i].upper() for i in range(1, 4))
+    p, q = m2[1].upper(), m2[2].upper()
     if b in (x, z) or {x, z} != {p, q}:
         return None
     touch = _TOUCH.search(t)
     if not touch:
         return None
-    b1, b2 = m[6].upper(), m[7].upper()
+    b1, b2 = m2[3].upper(), m2[4].upper()
     k1, k2 = touch[1].upper(), touch[2].upper()
     names = [p, q, b, b1, b2, k1, k2]
     if len(set(names)) != len(names) or "I" in names or "K" in names:
