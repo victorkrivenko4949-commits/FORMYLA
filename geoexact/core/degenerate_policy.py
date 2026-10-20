@@ -63,12 +63,13 @@ import re
 import numpy as np
 
 ENABLED = (os.environ.get("GEOEXACT_DEGENERATE_POLICY") or "1").strip().lower() not in ("0", "no", "off")
-CACHE_SUFFIX = "+dgp1"
+CACHE_SUFFIX = "+dgp2"
 _EPS = 1e-12
 # точное совпадение построенных точек — факт геометрии, а не дефект
 # (гейт: CONSTRUCTED_COINCIDENCE / совпадение с скрытым псевдонимом)
 EXACT_COINCIDE = 1e-9
 PREFIX = "NAMED_FIGURE: "
+PPREFIX = "PARALLELOGRAM: "
 
 TRI_NAME = re.compile(r"(?:[Тт]реугольник\w*|△)\s*([A-Z]{3})\b")
 _QUAD_NAME = re.compile(r"(?:четыр[её]хугольник\w*|четырехугольник\w*)\s*([A-Z]{4})\b")
@@ -163,6 +164,94 @@ def cevian_failures(text: str, plan, coords: dict) -> list[str]:
     return list(dict.fromkeys(fails))
 
 
+# «BB₁CC₁ — параллелограмм», «ABCD — параллелограмм», «в параллелограмме
+# BB₁CC₁»: semantics видит только «четырёхугольник XXXX — параллелограмм»
+# и «параллелограмм XXXX» с четырьмя ОДИНОЧНЫМИ буквами ([A-Z]{4}). Форму
+# без слова «четырёхугольник» и индексные имена (B₁) он не замечает — неверный
+# чертёж с такой формулировкой проходил как «проверено».
+_NAME = r"[A-Z](?:_\d+)?"
+_QUAD_GROUP = r"(?P<quad>" + _NAME * 4 + ")"
+PARALLELOGRAM_CLAIM = re.compile(
+    r"(?<![A-Za-zА-Яа-яЁё_])(?:(?P<pre>(?i:четыр[её]хугольник\w*))\s+)?" + _QUAD_GROUP
+    + r"(?![A-Za-zА-Яа-яЁё_])\s*(?:[-—–:]\s*|(?:(?i:это|и|является)\s+))?"
+    + r"(?P<word>параллелограмм\w*)"
+    r"|(?P<word2>(?i:параллелограмм\w*))\s+(?:(?i:это)\s+)?"
+    + _QUAD_GROUP.replace("(?P<quad>", "(?P<quad2>")
+    + r"(?![A-Za-zА-Яа-яЁё_0-9])")
+
+# формулировки, которые проверяет semantics (дубли не нужны)
+_SEMANTICS_PARA = re.compile(
+    r"\b(?:четырёхугольник|четырехугольник)\s+([A-Z]{4})\s*"
+    r"(?:[-—–:]?\s*)?параллелограмм\b"
+    r"|\bпараллелограмм\s+([A-Z]{4})\b", re.I)
+
+
+def parallelogram_names(text: str) -> list[tuple[str, ...]]:
+    """Пары-четвёрки имён из фраз «BB₁CC₁ — параллелограмм» и родственных.
+
+    Дубли семантики пропускаются: если все четыре имени — одиночные буквы
+    и формулировка совпадает с одной из двух, покрытых semantics
+    («четырёхугольник XXXX — параллелограмм», «параллелограмм XXXX»),
+    проверку делает semantics, а не этот модуль.
+    """
+    plain = _plain(text)
+    covered = {m[1] or m[2] for m in _SEMANTICS_PARA.finditer(plain)}
+    out: list[tuple[str, ...]] = []
+    for m in PARALLELOGRAM_CLAIM.finditer(plain):
+        quad = m["quad"] or m["quad2"] or ""
+        names = tuple(re.findall(r"[A-Z](?:_\d+)?", quad))
+        if len(names) != 4 or len(set(names)) != 4:
+            continue
+        if all(len(n) == 1 for n in names) and "".join(names) in covered:
+            continue          # эту формулировку проверяет semantics
+        out.append(names)
+    return list(dict.fromkeys(out))
+
+
+def parallelogram_failures(text: str, plan, coords: dict) -> list[str]:
+    """Названный параллелограмм обязан им быть и быть показанным всеми сторонами.
+
+    Зеркало semantics-проверки для формулировок с индексными именами и без
+    слова «четырёхугольник»: те же допуски, тот же критерий (вершины в
+    порядке обхода, стороны попарно параллельны и равны, невырожденность).
+    Отсутствие вершин — забота statement-проверок, здесь пропускается.
+    """
+    fails: list[str] = []
+    try:
+        segments = {frozenset(s) for s in (plan.draw.segments or [])}
+    except Exception:  # noqa: BLE001
+        segments = set()
+    for names in parallelogram_names(text):
+        if not all(n in coords for n in names):
+            continue
+        try:
+            V = [np.asarray(coords[n], dtype=float) for n in names]
+            if any(v.shape != (2,) or not np.isfinite(v).all() for v in V):
+                continue
+            edges = [V[(i + 1) % 4] - V[i] for i in range(4)]
+            scale = max(*(float(np.linalg.norm(e)) for e in edges), 1e-9)
+            turns = [float(np.linalg.det(np.array([edges[i], edges[(i + 1) % 4]])))
+                     for i in range(4)]
+            cross = lambda u, v: abs(float(np.linalg.det(np.array([u, v]))))  # noqa: E731
+            label = "".join(names)
+            if (min(float(np.linalg.norm(e)) for e in edges) < 1e-5 * scale
+                    or not (all(t > 1e-5 * scale * scale for t in turns)
+                            or all(t < -1e-5 * scale * scale for t in turns))
+                    or cross(edges[0], edges[2]) > 1e-5 * scale * scale
+                    or cross(edges[1], edges[3]) > 1e-5 * scale * scale
+                    or float(np.linalg.norm(edges[0] + edges[2])) > 1e-4 * scale):
+                fails.append(f"{PPREFIX}{label} не является невырожденным "
+                             "параллелограммом — проверь порядок вершин в имени "
+                             "и построение точек")
+            sides = {frozenset((names[i], names[(i + 1) % 4])) for i in range(4)}
+            if not sides <= segments:
+                fails.append(f"{PPREFIX}не все стороны параллелограмма {label} "
+                             "показаны — добавь их в draw.segments")
+        except Exception:  # noqa: BLE001 — проверка не должна ломать гейт
+            continue
+    return list(dict.fromkeys(fails))
+
+
 def named_figure_failures(text: str, plan, coords: dict) -> list[str]:
     """«Треугольник ABC» на чертеже обязан иметь ненулевую площадь.
 
@@ -196,6 +285,7 @@ def named_figure_failures(text: str, plan, coords: dict) -> list[str]:
         except Exception:  # noqa: BLE001 — проверка не должна ломать гейт
             continue
     fails += cevian_failures(text, plan, coords)
+    fails += parallelogram_failures(text, plan, coords)
     return fails
 
 

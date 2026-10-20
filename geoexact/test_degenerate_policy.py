@@ -242,3 +242,83 @@ def test_pipeline_trisector_without_model():
     assert result.ok, (result.reason, result.detail)
     assert result.verification == "constraints_only"
     assert result.warnings == []
+
+
+# ---------------------------------------------------------------- параллелограмм
+
+_PARA_TEXT = ("В остроугольном треугольнике ABC с ∠BAC = 60° проведена биссектриса AD. "
+              "Докажите, что BB₁CC₁ — параллелограмм.")
+_PARA_SIDES = [["B", "B_1"], ["B_1", "C"], ["C", "C_1"], ["C_1", "B"]]
+
+
+def _para_plan(segments=None, points=("A", "B", "B_1", "C", "C_1")):
+    return FigurePlan.from_dict({
+        "points": list(points),
+        "constructions": [{"op": "free_point", "out": n} for n in points],
+        "constraints": [],
+        "draw": {"segments": list(_PARA_SIDES if segments is None else segments)},
+        "target": {"kind": "none", "args": []}, "scale_free": True})
+
+
+def _para_coords(parallel=True):
+    # порядок обхода B -> B_1 -> C -> C_1: B_1-B = C-C_1, C_1-B = C-B_1
+    return {"A": np.array([0.0, 0.0]), "B": np.array([4.0, 0.0]),
+            "B_1": np.array([2.0, 1.0]),
+            "C": np.array([0.0, 3.0]) if parallel else np.array([0.5, 2.5]),
+            "C_1": (np.array([2.0, 2.0]) if parallel else np.array([2.0, 2.2]))}
+
+
+def test_parallelogram_claim_with_subscripts_passes_on_correct_figure():
+    assert named_figure_failures(_PARA_TEXT, _para_plan(), _para_coords()) == []
+
+
+def test_parallelogram_claim_with_subscripts_catches_wrong_figure():
+    fails = named_figure_failures(_PARA_TEXT, _para_plan(), _para_coords(parallel=False))
+    assert any("не является невырожденным параллелограммом" in f for f in fails)
+
+
+def test_parallelogram_claim_requires_all_sides_drawn():
+    plan = _para_plan(segments=[["B", "B_1"], ["B_1", "C"]])
+    fails = named_figure_failures(_PARA_TEXT, plan, _para_coords())
+    assert any("не все стороны параллелограмма" in f for f in fails)
+
+
+def test_parallelogram_claim_ascii_and_unicode_subscripts():
+    from geoexact.core.degenerate_policy import parallelogram_names
+    assert parallelogram_names(_PARA_TEXT) == [("B", "B_1", "C", "C_1")]
+    ascii_text = _PARA_TEXT.replace("BB₁CC₁", "BB_1CC_1")
+    assert parallelogram_names(ascii_text) == [("B", "B_1", "C", "C_1")]
+
+
+def test_parallelogram_claim_without_word_quadrilateral():
+    """«ABCD — параллелограмм» без слова «четырёхугольник» — semantics не видит."""
+    text = "Докажите, что ABCD — параллелограмм."
+    points = ("A", "B", "C", "D")
+    plan = FigurePlan.from_dict({
+        "points": list(points),
+        "constructions": [{"op": "free_point", "out": n} for n in points],
+        "constraints": [],
+        "draw": {"segments": [["A", "B"], ["B", "C"], ["C", "D"], ["D", "A"]]},
+        "target": {"kind": "none", "args": []}, "scale_free": True})
+    ok = {"A": np.array([0.0, 0.0]), "B": np.array([4.0, 0.0]),
+          "C": np.array([5.0, 2.0]), "D": np.array([1.0, 2.0])}
+    bad = dict(ok, C=np.array([5.5, 1.0]))
+    assert named_figure_failures(text, plan, ok) == []
+    assert any("параллелограммом" in f for f in named_figure_failures(text, plan, bad))
+
+
+def test_parallelogram_semantics_forms_not_duplicated():
+    """Формулировки, которые проверяет semantics, обёртка не дублирует."""
+    from geoexact.core.degenerate_policy import parallelogram_names
+    assert parallelogram_names("Четырёхугольник ABCD — параллелограмм.") == []
+    assert parallelogram_names("Параллелограмм ABCD.") == []
+    # косвенные падежи и «является» semantics не покрывает — проверяет обёртка
+    assert parallelogram_names("Стороны параллелограмма ABCD равны.") == [("A", "B", "C", "D")]
+    assert parallelogram_names("Четырёхугольник ABCD является параллелограммом.") \
+        == [("A", "B", "C", "D")]
+
+
+def test_parallelogram_claim_end_to_end():
+    """Через semantic_failures: неверный параллелограмм — жёсткая ошибка."""
+    fails = semantics.semantic_failures(_PARA_TEXT, _para_plan(), _para_coords(parallel=False))
+    assert any("PARALLELOGRAM" in f for f in fails)
