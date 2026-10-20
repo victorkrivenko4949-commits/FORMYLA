@@ -173,8 +173,8 @@ _NAME = r"[A-Z](?:_\d+)?"
 _QUAD_GROUP = r"(?P<quad>" + _NAME * 4 + ")"
 PARALLELOGRAM_CLAIM = re.compile(
     r"(?<![A-Za-zА-Яа-яЁё_])(?:(?P<pre>(?i:четыр[её]хугольник\w*))\s+)?" + _QUAD_GROUP
-    + r"(?![A-Za-zА-Яа-яЁё_])\s*(?:[-—–:]\s*|(?:(?i:это|и|является)\s+))?"
-    + r"(?P<word>параллелограмм\w*)"
+    + r"(?![A-Za-zА-Яа-яЁё_])\s*(?:[-—–:]\s*)?(?:(?i:это|и|является)\s+)?"
+    + r"(?P<word>(?i:параллелограмм\w*))"
     r"|(?P<word2>(?i:параллелограмм\w*))\s+(?:(?i:это)\s+)?"
     + _QUAD_GROUP.replace("(?P<quad>", "(?P<quad2>")
     + r"(?![A-Za-zА-Яа-яЁё_0-9])")
@@ -200,7 +200,7 @@ def parallelogram_names(text: str) -> list[tuple[str, ...]]:
     for m in PARALLELOGRAM_CLAIM.finditer(plain):
         quad = m["quad"] or m["quad2"] or ""
         names = tuple(re.findall(r"[A-Z](?:_\d+)?", quad))
-        if len(names) != 4 or len(set(names)) != 4:
+        if len(names) != 4:
             continue
         if all(len(n) == 1 for n in names) and "".join(names) in covered:
             continue          # эту формулировку проверяет semantics
@@ -211,10 +211,9 @@ def parallelogram_names(text: str) -> list[tuple[str, ...]]:
 def parallelogram_failures(text: str, plan, coords: dict) -> list[str]:
     """Названный параллелограмм обязан им быть и быть показанным всеми сторонами.
 
-    Зеркало semantics-проверки для формулировок с индексными именами и без
-    слова «четырёхугольник»: те же допуски, тот же критерий (вершины в
-    порядке обхода, стороны попарно параллельны и равны, невырожденность).
-    Отсутствие вершин — забота statement-проверок, здесь пропускается.
+    Отсутствие вершин — не повод молчать (как в semantics-проверке):
+    названный в тексте параллелограмм без вершины на чертеже — жёсткая
+    ошибка, конвейер переспросит модель.
     """
     fails: list[str] = []
     try:
@@ -222,7 +221,11 @@ def parallelogram_failures(text: str, plan, coords: dict) -> list[str]:
     except Exception:  # noqa: BLE001
         segments = set()
     for names in parallelogram_names(text):
-        if not all(n in coords for n in names):
+        label = "".join(names)
+        missing = [n for n in names if n not in coords]
+        if missing or len(set(names)) != 4:
+            fails.append(f"{PPREFIX}отсутствуют вершины параллелограмма {label}: "
+                         f"{', '.join(missing)}")
             continue
         try:
             V = [np.asarray(coords[n], dtype=float) for n in names]

@@ -322,3 +322,32 @@ def test_parallelogram_claim_end_to_end():
     """Через semantic_failures: неверный параллелограмм — жёсткая ошибка."""
     fails = semantics.semantic_failures(_PARA_TEXT, _para_plan(), _para_coords(parallel=False))
     assert any("PARALLELOGRAM" in f for f in fails)
+
+
+def test_parallelogram_claim_dash_eto_form():
+    """«BB₁CC₁ — это параллелограмм»: тире и связка — независимые части."""
+    from geoexact.core.degenerate_policy import parallelogram_names
+    assert parallelogram_names("Докажите, что BB₁CC₁ — это параллелограмм.") \
+        == [("B", "B_1", "C", "C_1")]
+    assert parallelogram_names("BB₁CC₁ является параллелограммом.") \
+        == [("B", "B_1", "C", "C_1")]
+
+
+def test_parallelogram_claim_missing_vertex_is_hard_failure():
+    coords = dict(_para_coords())
+    del coords["C_1"]
+    fails = named_figure_failures(_PARA_TEXT, _para_plan(), coords)
+    assert any("отсутствуют вершины параллелограмма" in f and "C_1" in f
+               for f in fails)
+
+
+def test_parallelogram_claim_end_to_end_status(monkeypatch):
+    """Неверный параллелограмм — статус не «проверено», причина PARALLELOGRAM."""
+    monkeypatch.setattr(llm, "classify", lambda *_: {"ok": True, "class": "M", "space": "plane"})
+    monkeypatch.setattr(llm, "formalize", lambda *_, **__: (_para_plan(), []))
+    # свободные точки: решатель размещает их как угодно, параллелограммом
+    # они не станут — проверка обязана понизить статус
+    result = pipeline.generate(_PARA_TEXT, sess=object(), use_cache=False, max_retries=1)
+    assert result.ok
+    assert result.verification != "constraints_only"
+    assert any("PARALLELOGRAM" in w for w in result.warnings)
