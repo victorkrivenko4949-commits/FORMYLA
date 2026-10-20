@@ -163,17 +163,15 @@ def parse_filename_meta(name: str) -> dict:
     """
     meta = {"year": None, "grades": None, "round_key": None, "kind": None,
             "variant": None, "day": None}
-    m = YEAR_RE.search(name)
-    if m:
-        meta["year"] = int(m.group(0))
-    else:
-        # Сезон «24-25» -> год ФИНАЛА (2025), как принято в базе.
-        # Защита от ложных срабатываний: только последовательные годы (24-25, 23-24).
-        m = SEASON_RE.search(name)
-        if m and int(m.group(2)) == int(m.group(1)) + 1:
-            y = 2000 + int(m.group(2))
-            if 2000 <= y <= 2100:
-                meta["year"] = y
+    m = SEASON_RE.search(name)
+    if m and int(m.group(2)) == int(m.group(1)) + 1:
+        y = 2000 + int(m.group(2))
+        if 2000 <= y <= 2100:
+            meta["year"] = y
+    if meta["year"] is None:
+        m = YEAR_RE.search(name)
+        if m:
+            meta["year"] = int(m.group(0))
     grades = set()
     for pat in GRADE_PATTERNS:
         for m in pat.finditer(name):
@@ -205,6 +203,21 @@ def parse_filename_meta(name: str) -> dict:
         if day:
             meta["day"] = int(day)
     return meta
+
+
+
+def season_year_from_url(url: str):
+    """Год финала из сезона в имени файла URL («...-24-25.pdf» -> 2025) или None."""
+    try:
+        name = unquote((url or "").split("?")[0].split("/")[-1])
+    except Exception:
+        return None
+    m = SEASON_RE.search(name)
+    if m and int(m.group(2)) == int(m.group(1)) + 1:
+        y = 2000 + int(m.group(2))
+        if 2000 <= y <= 2100:
+            return y
+    return None
 
 
 def is_junk_pdf(url: str, text: str = "") -> bool:
@@ -470,7 +483,11 @@ def _parse_tasks_page(url: str, html: str, pdfs: dict):
         if not is_allowed_host(absu):
             continue
         name = unquote(absu.split("?")[0].split("/")[-1])
-        meta = parse_filename_meta(name + " " + text)
+        meta = parse_filename_meta(name)
+        tmeta = parse_filename_meta(text)
+        for _k, _v in tmeta.items():
+            if meta.get(_k) in (None, [], "") and _v:
+                meta[_k] = _v
         # Дополняем из контекста страницы
         if meta.get("year") is None and page_year:
             meta["year"] = page_year

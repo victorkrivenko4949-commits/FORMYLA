@@ -560,8 +560,13 @@ class Catalog:
     def slugs(self) -> list[str]:
         return list(self.data.keys())
 
+    only_uids = None   # если задано — all_records() отдаёт только эти uid (повторная чистка импорта)
+
     def all_records(self) -> list[tuple[str, dict]]:
-        return [(slug, rec) for slug in self.data for rec in self.data[slug]]
+        recs = [(slug, rec) for slug in self.data for rec in self.data[slug]]
+        if self.only_uids:
+            recs = [(s, r) for s, r in recs if r.get("uid") in self.only_uids]
+        return recs
 
     def find(self, uid: str) -> tuple[str, dict] | None:
         return self._by_uid.get(uid)
@@ -1198,7 +1203,6 @@ def stage_09(p: Pipeline):
         text_norm = R.norm_for_compare(text)
         if not text_norm:
             return
-        # Карта: позиция в нормализованной строке -> позиция в исходной sol.
         norm_chars, idx_map = [], []
         for pos, ch in enumerate(sol):
             n = R.norm_for_compare(ch)
@@ -1749,6 +1753,10 @@ def _official_search(p: Pipeline, slug: str, rec: dict, stage: int,
                          "кандидатов нет")
         return False, "кандидатов нет"
     for origin, url in candidates:
+        if not _extract_allowed(url):
+            p.search_log.log(uid, slug, stage, query_desc, origin, url, "пропущен",
+                             "домен только для подтверждения источника (mathus.ru)")
+            continue
         ok, reason, http_code, ctype = _download_and_check(p, rec, url)
         p.search_log.log(uid, slug, stage, query_desc, origin, url,
                          "скачан" if ok else "не скачан",
@@ -2119,6 +2127,37 @@ def _block_task_nums(block_text: str) -> set[int]:
     return nums
 
 
+
+def _cyr_only(s: str) -> str:
+    """Только кириллические буквы в нижнем регистре — сверка «текст есть в документе»
+    независимо от разметки формул (LaTeX в извлечении vs Unicode в PDF)."""
+    return re.sub(r"[^а-яё]", "", (s or "").lower())
+
+
+def _text_in_doc(text: str, doc_norm: str, doc_cyr: str) -> bool:
+    """Извлечённое условие действительно содержится в документе."""
+    cyr = _cyr_only(text)
+    if len(cyr) >= 15:
+        probe = cyr[:40]
+        if probe in doc_cyr:
+            return True
+        if len(cyr) >= 60 and cyr[20:60] in doc_cyr:
+            return True
+        return False
+    head = R.norm_for_compare(text[:120])
+    return (not head) or (head[:60] in doc_norm)
+
+
+CONFIRM_ONLY_HOSTS = ("mathus.ru",)
+
+
+def _extract_allowed(url: str) -> bool:
+    """С этих доменов решения/ответы НЕ извлекаем (текст PDF даёт зеркальные цифры:
+    91<->19, 0295<->5920); они годятся только как подтверждение источника."""
+    u = (url or "").lower()
+    return not any(h in u for h in CONFIRM_ONLY_HOSTS)
+
+
 def _year_ok(cmeta: dict | None, pages: list[str], year) -> bool:
     """Год кандидата подтверждён: документом ИЛИ метаданными индекса.
 
@@ -2134,12 +2173,20 @@ def _year_ok(cmeta: dict | None, pages: list[str], year) -> bool:
     if year in (None, ""):
         return True
     y = int(year)
+    try:
+        from olymp_source_index import season_year_from_url as _syu
+    except Exception:
+        _syu = None
+    if _syu and cmeta and cmeta.get("url"):
+        sy = _syu(cmeta["url"])
+        if sy is not None:
+            return sy == y
     doc_text = "\n".join(pages)
     # 1. Явная датировка в заголовочных строках. Заголовок: короткая строка,
     # год в первых 60 символах (числа внутри условий задач не считаются).
     # Сезон «2024/25» нормализуется к году ФИНАЛА (2025).
     dated = set()
-    for line in doc_text.splitlines()[:80]:
+    for line in doc_text.splitlines()[:200]:
         stripped = line.strip()
         if len(stripped) > 150:
             continue   # длинная строка — похоже на условие задачи
@@ -2148,7 +2195,7 @@ def _year_ok(cmeta: dict | None, pages: list[str], year) -> bool:
         if re.match(r"(?:Задача|Задание|Решение|Ответ)\b|\d{1,2}\s*[\.\)]",
                     stripped, re.I):
             continue
-        if not re.search(r"этап|олимпиад|тур|сезон|год|класс", stripped, re.I):
+        if not re.search(r"этап|олимпиад|тур|сезон|год|класс|©|\(c\)|copyright|мфти", stripped, re.I):
             continue
         m = re.search(r"(19|20)\d{2}", stripped[:60])
         if not m:
@@ -2514,6 +2561,8 @@ def stage_21(p: Pipeline):
         # uid -> {(variant, day): (текст блока, url)} — предложения
         rec_matches: dict[str, dict] = {}
         for origin, url, cmeta in candidates:
+            if not _extract_allowed(url):
+                continue
             res = _fetch_doc_result(url)
             # Год подтверждается метаданными индекса ИЛИ документом;
             # молчание документа при неизвестном годе индекса = нет
@@ -2729,6 +2778,8 @@ def stage_21(p: Pipeline):
         # вариант блока -> номера задач, упомянутые в блоках
         block_nums_seen: dict[str, set[int]] = {}
         for origin, url, cmeta in candidates:
+            if not _extract_allowed(url):
+                continue
             res = _fetch_doc_result(url)
             # Год подтверждается метаданными индекса ИЛИ документом
             if res["ok"] and not _year_ok(cmeta, res["pages"], year):
@@ -2747,6 +2798,7 @@ def stage_21(p: Pipeline):
             _DOC_PAGES_CACHE[url] = res["pages"]
             doc_text = "\n".join(res["pages"])
             doc_norm = R.norm_for_compare(doc_text)
+            doc_cyr = _cyr_only(doc_text)
             all_blocks = _find_blocks(res["pages"])
             blocks = _select_blocks(all_blocks, grade, variant)
             if all_blocks and not blocks:
@@ -2873,12 +2925,10 @@ def stage_21(p: Pipeline):
                     # в ИСХОДНОМ документе (борьба с галлюцинациями).
                     # Для решений БЕЗ условия (sol-PDF) проверки условия нет —
                     # решение присоединится по номеру блока.
-                    if text:
-                        head = R.norm_for_compare(text[:120])
-                        if head and head[:60] not in doc_norm:
-                            log.warning("Этап 21: задача №%s не найдена в документе "
-                                        "дословно — пропущена.", num)
-                            continue
+                    if text and not _text_in_doc(text, doc_norm, doc_cyr):
+                        log.warning("Этап 21: задача №%s не найдена в документе "
+                                    "дословно — пропущена.", num)
+                        continue
                     # Объединяем с уже собранными по (вариант, номер);
                     # условие должно совпасть — иначе это другая задача
                     prev = collected.get((block_var, num))
@@ -2904,6 +2954,55 @@ def stage_21(p: Pipeline):
                             if (t.get(fld) or "").strip():
                                 t["_url_" + fld] = url
                         collected[(block_var, num)] = t
+            # Повтор: номера, упомянутые в блоке, но не извлечённые за один вызов —
+            # точечный запрос «вырежи задачи №…» по тому же блоку (до 2 попыток).
+            try:
+                for block_text, block_var in block_texts:
+                    bv_key = str(block_var or "")
+                    seen_nums = block_nums_seen.get(bv_key, set())
+                    got_nums = {int(k[1]) for k in collected if k[0] == block_var and str(k[1]).isdigit()}
+                    miss_nums = sorted(n for n in seen_nums if n not in got_nums)
+                    if not miss_nums or not p.deepseek_chat:
+                        continue
+                    ctx_task = next((t.get("text") for k, t in collected.items()
+                                     if k[0] == block_var and (t.get("text") or "").strip()), "")
+                    for attempt in range(2):
+                        r_payload = {"doc_text": block_text, "grade": grade,
+                                     "missing_nums": [str(n) for n in miss_nums],
+                                     "context_task": (ctx_task or "")[:300]}
+                        try:
+                            r_resp = p.deepseek_chat.chat_json(
+                                P.STAGE21_EXTRACT_MISSING, json.dumps(r_payload, ensure_ascii=False))
+                        except Exception as e:  # noqa: BLE001
+                            log.warning("Этап 21: повторное извлечение не удалось: %s", str(e)[:150])
+                            break
+                        added_now = 0
+                        for task in (r_resp or {}).get("tasks", []) or []:
+                            num = str(task.get("num", "")).strip()
+                            text = (task.get("text") or "").strip()
+                            if not num or not text or not num.isdigit() or int(num) not in miss_nums:
+                                continue
+                            if not _text_in_doc(text, doc_norm, doc_cyr):
+                                continue
+                            if (block_var, num) in collected:
+                                continue
+                            t = dict(task)
+                            t["_url"] = url
+                            for fld in ("answer", "solution", "points"):
+                                if (t.get(fld) or "").strip():
+                                    t["_url_" + fld] = url
+                            collected[(block_var, num)] = t
+                            added_now += 1
+                        if added_now:
+                            p.search_log.log("", slug, 21, query_desc, "index", url, "скачан",
+                                             f"повторное извлечение: +{added_now} задач "
+                                             f"(вариант {bv_key or '-'})")
+                        got_nums = {int(k[1]) for k in collected if k[0] == block_var and str(k[1]).isdigit()}
+                        miss_nums = sorted(n for n in seen_nums if n not in got_nums)
+                        if not miss_nums:
+                            break
+            except Exception as e:  # noqa: BLE001
+                log.warning("Этап 21: повтор извлечения пропущен: %s", str(e)[:150])
         if not collected:
             reason = (attempt_reasons[-1] if attempt_reasons
                       else "ни один кандидат не дал блок варианта")
@@ -3376,6 +3475,45 @@ def stage_21(p: Pipeline):
 # ЭТАП 22: финальная валидация и отчёт
 # =====================================================================
 
+
+def stage_21b(p: Pipeline):
+    """Этап 21b: повторная чистка задач, добавленных этапом 21 (этапы 1–7, 10, 11),
+    и запуск поиска решений (этап 20) для импортированных записей без решения."""
+    added = [u for u in (p.checkpoint.data.get("added") or []) if u]
+    if not added:
+        log.info("Этап 21b: новых задач нет — пропуск.")
+        return
+    uids = set(added)
+    present = {r.get("uid") for _s, r in p.catalog.all_records()}
+    uids &= present
+    if not uids:
+        log.info("Этап 21b: добавленные задачи не найдены в каталоге — пропуск.")
+        return
+    log.info("Этап 21b: чистка %d импортированных задач (этапы 1-7, 10, 11).", len(uids))
+    p.catalog.only_uids = uids
+    try:
+        for st_num in (1, 2, 3, 4, 5, 6, 7, 10, 11):
+            try:
+                STAGE_FUNCS[st_num](p)
+            except Exception as e:  # noqa: BLE001
+                log.warning("Этап 21b: этап %d на импорте завершился ошибкой: %s", st_num, str(e)[:150])
+        # импортированные без решения -> очередь поиска, затем этап 20
+        queued = 0
+        for _s, r in p.catalog.all_records():
+            if r.get("uid") in uids and not (r.get("solution") or "").strip():
+                p.add_to_search_queue(r.get("uid"))
+                queued += 1
+        if queued:
+            log.info("Этап 21b: %d импортированных задач без решения -> этап 20.", queued)
+            try:
+                STAGE_FUNCS[20](p)
+            except Exception as e:  # noqa: BLE001
+                log.warning("Этап 21b: этап 20 для импорта завершился ошибкой: %s", str(e)[:150])
+    finally:
+        p.catalog.only_uids = None
+    p.save_state()
+
+
 def stage_22(p: Pipeline):
     """Этап 22: валидация, пересчёт _index.json, отчёт."""
     issues = []
@@ -3697,6 +3835,13 @@ def main():
         log.info("ЭТАП %d: %s", stage_num, func.__doc__.splitlines()[0] if func.__doc__ else "")
         try:
             func(p)
+            if stage_num == 21 and not p.dry_run:
+                log.info("=" * 60)
+                log.info("ЭТАП 21b: чистка импортированных задач и поиск решений для них.")
+                try:
+                    stage_21b(p)
+                except Exception as e:  # noqa: BLE001
+                    log.warning("Этап 21b завершился ошибкой: %s", str(e)[:200])
             if stage_num == 22:
                 stage_ran_22 = True
         except Exception as e:

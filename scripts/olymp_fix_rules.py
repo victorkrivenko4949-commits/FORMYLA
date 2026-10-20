@@ -132,8 +132,6 @@ PDF_GARBAGE_PATTERNS = [
      "заголовок «Решения задач»"),
     (re.compile(r"^\s*(?:Задачи|ЗАДАЧИ)\s+для\s+\d+\s+класса\s*$", re.M),
      "заголовок «Задачи для N класса»"),
-    # Одинокое число удаляем только на краю поля (первая/последняя строка):
-    # внутри текста это может быть ответ или промежуточное значение.
     (re.compile(r"\A\s*[-–—‒]?\s*\d{1,2}\s*[-–—‒]?\s*\n|\n\s*[-–—‒]?\s*\d{1,2}\s*[-–—‒]?\s*\Z"),
      "одинокий номер страницы"),
     (re.compile(r"^\s*(?:Страница|стр\.)\s*\d+\s*(?:из\s*\d+)?\s*$", re.M),
@@ -151,7 +149,6 @@ def remove_repeated_lines(text: str, min_count: int = 3, min_len: int = 8) -> tu
     counts: dict[str, int] = {}
 
     def _is_candidate(key: str) -> bool:
-        # Колонтитул — короткая строка без математики и без конца предложения.
         if len(key) < min_len or len(key) > 80:
             return False
         if "\\" in key or "$" in key or "=" in key:
