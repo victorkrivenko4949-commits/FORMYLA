@@ -18,9 +18,16 @@ solver.py и gates.py:
     формализатора (радиус через circumcenter/incenter + dist_eq);
   * label_subscripts.install — подписи точек B_1, K_2, I_A с настоящим нижним
     индексом вместо буквального «B_1».
+  * degenerate_policy.install — вырожденность с учётом семантики плана:
+    совпадение построенных точек и коллинеарные «треугольники», объявленные
+    конструкциями/ограничениями (D на продолжении CA, высота CH≡M при
+    M=midpoint), больше не бракуют верный чертёж; отказ остаётся для
+    совпадения двух свободных точек и необъявленного схлопнувшегося
+    треугольника.
 Выключатели: GEOEXACT_DIFFICULTY_ROUTER=0, GEOEXACT_FIRST_TOKEN_LIMIT=0,
 GEOEXACT_GENERAL_POSITION=0, GEOEXACT_FORMALIZE_RULES=0, GEOEXACT_CONVEXITY=0,
-GEOEXACT_INCIRCLE_TANGENTS=0, GEOEXACT_RADIUS_CLAIMS=0, GEOEXACT_LABEL_SUBSCRIPTS=0.
+GEOEXACT_INCIRCLE_TANGENTS=0, GEOEXACT_RADIUS_CLAIMS=0, GEOEXACT_LABEL_SUBSCRIPTS=0,
+GEOEXACT_DEGENERATE_POLICY=0.
 """
 from . import llm as _llm
 from . import difficulty as _difficulty
@@ -34,6 +41,7 @@ from . import semantics as _semantics
 from . import convexity as _convexity
 from . import incircle_tangents as _incircle_tangents
 from . import radius_claims as _radius_claims
+from . import degenerate_policy as _degenerate_policy
 from . import label_subscripts as _label_subscripts
 
 _difficulty.install(_llm)
@@ -41,6 +49,7 @@ _general_position.install(_solver, _gates)
 _formalize_rules.install(_llm)
 _bisector_marks.install(_render)
 _convexity.install(_semantics, _llm, solver_module=_solver)
+_degenerate_policy.install(_solver, _semantics)   # после convexity: свой суффикс версии
 _incircle_tangents.install(_semantics, _llm)
 _radius_claims.install(_semantics, _llm)
 _label_subscripts.install(_render)   # после bisector_marks: самый внешний слой рендера

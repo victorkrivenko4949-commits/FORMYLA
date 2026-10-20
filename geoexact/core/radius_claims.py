@@ -26,6 +26,7 @@ GEOEXACT_RADIUS_CLAIMS=0 выключает всё.
 """
 from __future__ import annotations
 
+import functools
 import math
 import os
 import re
@@ -191,10 +192,11 @@ def _wrap_semantic_failures(orig):
         except Exception:  # noqa: BLE001
             extra = []
         return list(fails) + extra if extra else fails
+    # functools.wraps копирует __dict__ внутренней обёртки: маркеры других
+    # модулей (_convexity, …) не теряются на внешнем слое цепочки.
+    functools.wraps(orig)(semantic_failures)
     semantic_failures._radius_claims = True
     semantic_failures._original = orig
-    semantic_failures.__doc__ = getattr(orig, "__doc__", None)
-    semantic_failures.__name__ = "semantic_failures"
     return semantic_failures
 
 

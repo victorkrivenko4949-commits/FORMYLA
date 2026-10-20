@@ -34,6 +34,7 @@ GEOEXACT_CONVEXITY_SOFT=0 — мягкий штраф.
 """
 from __future__ import annotations
 
+import functools
 import os
 import re
 
@@ -238,10 +239,9 @@ def _wrap_formalize(orig):
         except Exception:  # noqa: BLE001 — инъекция вспомогательная
             return res
         return res
+    functools.wraps(orig)(formalize)
     formalize._convexity = True
     formalize._original = orig
-    formalize.__doc__ = getattr(orig, "__doc__", None)
-    formalize.__name__ = "formalize"
     return formalize
 
 
@@ -253,10 +253,11 @@ def _wrap_semantic_failures(orig):
         except Exception:  # noqa: BLE001
             extra = []
         return list(fails) + extra if extra else fails
+    # functools.wraps копирует __dict__ внутренней обёртки: маркеры других
+    # модулей (_radius_claims, …) не теряются на внешнем слое цепочки.
+    functools.wraps(orig)(semantic_failures)
     semantic_failures._convexity = True
     semantic_failures._original = orig
-    semantic_failures.__doc__ = getattr(orig, "__doc__", None)
-    semantic_failures.__name__ = "semantic_failures"
     return semantic_failures
 
 

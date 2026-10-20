@@ -27,6 +27,7 @@ GEOEXACT_INCIRCLE_TANGENTS=0 выключает всё.
 """
 from __future__ import annotations
 
+import functools
 import os
 import re
 
@@ -132,10 +133,11 @@ def _wrap_theorem_plan(orig):
             return incircle_tangents_plan(text, with_aux)
         except Exception:  # noqa: BLE001 — точный план вспомогательный
             return None
+    # functools.wraps копирует __dict__ внутренней обёртки: маркеры других
+    # модулей не теряются на внешнем слое цепочки.
+    functools.wraps(orig)(theorem_plan)
     theorem_plan._incircle_tangents = True
     theorem_plan._original = orig
-    theorem_plan.__doc__ = getattr(orig, "__doc__", None)
-    theorem_plan.__name__ = "theorem_plan"
     return theorem_plan
 
 
@@ -151,10 +153,9 @@ def _wrap_sketch(orig):
         except Exception:  # noqa: BLE001
             pass
         return res
+    functools.wraps(orig)(_sketch_result)
     _sketch_result._incircle_tangents = True
     _sketch_result._original = orig
-    _sketch_result.__doc__ = getattr(orig, "__doc__", None)
-    _sketch_result.__name__ = "_sketch_result"
     return _sketch_result
 
 

@@ -32,5 +32,5 @@ def test_length_label_moves_away_from_midpoint_dot():
     marks = _positions(svg, "mark")
     dots = {n: (float(x), float(y)) for n, x, y in
             re.findall(r'<circle class="pt" data-point="([A-Z])"[^>]*cx="([^"]+)" cy="([^"]+)"', svg)}
-    assert math.dist(marks["12"], dots["M"]) > 60      # раньше ≈ 14 px: читалось как «M = 12»
+    assert math.dist(marks["BC = 12"], dots["M"]) > 60   # раньше ≈ 14 px: читалось как «M = 12»
     assert math.dist(marks["6"], dots["M"]) > 25 and math.dist(marks["6"], dots["A"]) > 25
