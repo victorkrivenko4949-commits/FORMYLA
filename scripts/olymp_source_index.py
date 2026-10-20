@@ -45,7 +45,20 @@ UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.3
 DEFAULT_TTL_HOURS = 168  # неделя
 
 # Известные id олимпиад на olimpiada.ru (остальные определяются по source в базе)
-KNOWN_ACTIVITY_IDS = {"phystech": "395", "kurchatov": "389"}
+KNOWN_ACTIVITY_IDS = {
+    "vsosh": "72",
+    "mmo": "1",
+    "kurchatov": "389",
+    "turgor": "5",
+    "lomonosov": "348",
+    "formula-unity": "223",
+    "pvg": "115",
+    "euler": "29",
+    "vysshaya-proba": "149",
+    "matprazdnik": "7",
+    "spbgu": "443",
+    "phystech": "395",
+}
 
 # Извлечение id олимпиады из существующих source
 SOURCE_ID_PATTERNS = [
@@ -92,6 +105,9 @@ YEAR_RE = re.compile(r"(19|20)\d{2}")
 # (отборочный сезона 23-24 лежит в базе под 2024).
 # Валидируем: второй год = первый + 1 (иначе «11-01» ложно распознаётся как сезон)
 SEASON_RE = re.compile(r"(?:^|[-_])(\d{2})-(\d{2})(?=\.|$|[-_])")
+SEASON_4_RE = re.compile(r"(20[012]\d)\s*[-_/–—]\s*(20[012]\d)")
+SEASON_4_2_RE = re.compile(r"(20[012]\d)\s*[-_–—]\s*([012]\d)(?!\d)")
+SEASON_2_1_RE = re.compile(r"(?:^|[-_])([12]\d)-(\d)(?=\.|$|[-_])")
 GRADE_PATTERNS = [
     re.compile(r"(\d{1,2})\s*[–—‒\-_]\s*(\d{1,2})\s*klass", re.I),
     re.compile(r"(\d{1,2})[\s_\-]*klass", re.I),
@@ -163,11 +179,9 @@ def parse_filename_meta(name: str) -> dict:
     """
     meta = {"year": None, "grades": None, "round_key": None, "kind": None,
             "variant": None, "day": None}
-    m = SEASON_RE.search(name)
-    if m and int(m.group(2)) == int(m.group(1)) + 1:
-        y = 2000 + int(m.group(2))
-        if 2000 <= y <= 2100:
-            meta["year"] = y
+    sy = season_year_from_url(name)
+    if sy is not None:
+        meta["year"] = sy
     if meta["year"] is None:
         m = YEAR_RE.search(name)
         if m:
@@ -208,15 +222,53 @@ def parse_filename_meta(name: str) -> dict:
 
 def season_year_from_url(url: str):
     """Год финала из сезона в имени файла URL («...-24-25.pdf» -> 2025) или None."""
+    if not url:
+        return None
     try:
-        name = unquote((url or "").split("?")[0].split("/")[-1])
+        decoded = unquote((url or "").split("?")[0])
+        name = decoded.split("/")[-1]
     except Exception:
         return None
-    m = SEASON_RE.search(name)
-    if m and int(m.group(2)) == int(m.group(1)) + 1:
-        y = 2000 + int(m.group(2))
-        if 2000 <= y <= 2100:
-            return y
+    for m in SEASON_4_RE.finditer(decoded):
+        y1, y2 = int(m.group(1)), int(m.group(2))
+        if y2 == y1 + 1 and 2000 <= y2 <= 2100:
+            return y2
+    for m in SEASON_4_2_RE.finditer(name):
+        y1, b = int(m.group(1)), int(m.group(2))
+        if b == (y1 % 100) + 1 and 2000 <= 2000 + b <= 2100:
+            return 2000 + b
+    for m in SEASON_RE.finditer(name):
+        a, b = int(m.group(1)), int(m.group(2))
+        # Исключаем «10-11» (классы 10–11, а не сезон 2010–2011)
+        if a == 10 and b == 11:
+            continue
+        if b == a + 1 and 11 <= a <= 29:
+            return 2000 + b
+    for m in SEASON_2_1_RE.finditer(name):
+        a, b = int(m.group(1)), int(m.group(2))
+        if 11 <= a <= 29 and b == (a + 1) % 10 and f"20{a}" in decoded:
+            return 2000 + a + 1
+    return None
+
+
+def year_from_url(url: str) -> int | None:
+    """Год олимпиады из URL: сначала сезон (год финала), иначе одиночный 20xx."""
+    if not url:
+        return None
+    sy = season_year_from_url(url)
+    if sy is not None:
+        return sy
+    try:
+        decoded = unquote((url or "").split("?")[0])
+        name = decoded.split("/")[-1]
+    except Exception:
+        name = url
+    name_years = [int(m.group(0)) for m in re.finditer(r"(?<!\d)(?:199\d|20[012]\d)(?!\d)", name)]
+    if len(set(name_years)) == 1:
+        return name_years[0]
+    all_years = [int(m.group(0)) for m in re.finditer(r"(?<!\d)(?:199\d|20[012]\d)(?!\d)", decoded)]
+    if len(set(all_years)) == 1:
+        return all_years[0]
     return None
 
 
@@ -237,22 +289,28 @@ def catalog_index_records(slug: str, records: list) -> tuple[list, str | None]:
     (год/класс/этап/вариант надёжнее), недостающее — из имени файла.
     """
     out_by_url: dict[str, dict] = {}
-    activity_id = None
+    known_aid = KNOWN_ACTIVITY_IDS.get(slug)
+    activity_id = known_aid
     for rec in records:
         src = (rec.get("source") or "").strip()
         if not src:
             continue
-        # id олимпиады из любого source (не только PDF)
-        if activity_id is None:
-            for pat in SOURCE_ID_PATTERNS:
-                m = pat.search(src)
-                if m:
-                    activity_id = m.group(1)
-                    break
-            if activity_id is None:
-                m = ACTIVITY_URL_RE.search(src)
-                if m:
-                    activity_id = m.group(1)
+        # Проверяем id олимпиады в URL olimpiada.ru / rsr-olymp.ru
+        src_aid = None
+        for pat in SOURCE_ID_PATTERNS:
+            m = pat.search(src)
+            if m:
+                src_aid = m.group(1)
+                break
+        if src_aid is None:
+            m = ACTIVITY_URL_RE.search(src)
+            if m:
+                src_aid = m.group(1)
+        if activity_id is None and src_aid is not None:
+            activity_id = src_aid
+        # Если у олимпиады известен свой activity_id, не тащим чужие PDF (напр. 74 физика в vsosh)
+        if known_aid and src_aid and src_aid != known_aid:
+            continue
         clean = src.split("?")[0]
         if not clean.lower().endswith(".pdf"):
             continue

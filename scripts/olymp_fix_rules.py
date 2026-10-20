@@ -43,10 +43,13 @@ def _build_math_letter_map() -> dict:
             continue
         try:
             mapping[ch] = str(unicodedata.digit(ch))
+            continue
         except (ValueError, TypeError):
-            # Символы операций/скобок из этого диапазона оставляем как есть:
-            # их семантика не теряется при замене букв выше.
             pass
+        # Греческие математические символы (𝛼, 𝛽, 𝛾, 𝛿, 𝜀, 𝜋, 𝜑, 𝜙 и др.) в U+1D400–U+1D7FF
+        decomposed = unicodedata.normalize("NFKC", ch)
+        if decomposed and decomposed != ch and all(ord(c) < 0x1D400 for c in decomposed):
+            mapping[ch] = decomposed
     return mapping
 
 
@@ -70,6 +73,29 @@ LIGATURE_MAP = {
     "ﬁ": "fi", "ﬂ": "fl", "ﬀ": "ff", "ﬃ": "ffi", "ﬄ": "ffl", "ﬅ": "st", "ﬆ": "st",
 }
 
+# PUA-символы шрифтов Windows Symbol (\uF020..\uF0FF), встречающиеся в PDF
+# (formula-unity, mmo, pvg, vsosh). Переводятся в Юникод ДО удаления прочих PUA.
+PUA_SYMBOL_MAP = {
+    "\uf020": " ", "\uf022": "∀", "\uf024": "∃", "\uf027": "∋", "\uf02a": "*",
+    "\uf02b": "+", "\uf02d": "-", "\uf03d": "=", "\uf03c": "<", "\uf03e": ">",
+    "\uf040": "≅", "\uf044": "△", "\uf056": "V", "\uf057": "Ω", "\uf05e": "⊥",
+    "\uf061": "α", "\uf062": "β", "\uf063": "χ", "\uf064": "δ", "\uf065": "ε",
+    "\uf066": "φ", "\uf067": "γ", "\uf068": "η", "\uf069": "ι", "\uf06a": "φ",
+    "\uf06b": "κ", "\uf06c": "λ", "\uf06d": "μ", "\uf06e": "ν", "\uf06f": "°",
+    "\uf070": "π", "\uf071": "θ", "\uf072": "ρ", "\uf073": "σ", "\uf074": "τ",
+    "\uf075": "υ", "\uf077": "ω", "\uf078": "ξ", "\uf079": "ψ", "\uf07a": "ζ",
+    "\uf07e": "∼", "\uf0a2": "′", "\uf0a3": "≤", "\uf0a5": "∞", "\uf0ab": "↔",
+    "\uf0ac": "←", "\uf0ad": "↑", "\uf0ae": "→", "\uf0af": "↓", "\uf0b0": "°",
+    "\uf0b1": "±", "\uf0b2": "″", "\uf0b3": "≥", "\uf0b4": "×", "\uf0b5": "∝",
+    "\uf0b7": "⋅", "\uf0b8": "÷", "\uf0b9": "≠", "\uf0ba": "≡", "\uf0bb": "≈",
+    "\uf0bc": "…", "\uf0be": "—", "\uf0c4": "⊗", "\uf0c5": "⊕", "\uf0c6": "∅",
+    "\uf0c7": "∩", "\uf0c8": "∪", "\uf0c9": "⊃", "\uf0ca": "⊇", "\uf0cb": "⊄",
+    "\uf0cc": "⊂", "\uf0cd": "⊆", "\uf0ce": "∈", "\uf0cf": "∉", "\uf0d0": "∠",
+    "\uf0d5": "∏", "\uf0d6": "√", "\uf0d7": "⋅", "\uf0d8": "¬", "\uf0d9": "∧",
+    "\uf0da": "∨", "\uf0db": "⇔", "\uf0dc": "⇐", "\uf0de": "⇒", "\uf0e5": "∑",
+    "\uf0f2": "∫", "\uffff": "— ",
+}
+
 # Приватные/непечатные символы — удалить
 PRIVATE_USE_RE = re.compile("[\uE000-\uF8FF\uFFFD\uFFFF\uFEFF]")
 CONTROL_RE = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
@@ -88,9 +114,17 @@ def normalize_unicode_math(text: str) -> str:
     """Этап 1: нормализация символов без изменения математики."""
     if not text:
         return text
+    # T2A-артефакты PDF: ¼ внутри русских слов → ё, ¾...¿ и \x11...\x11 → «...», \x16 → —, \x15 → –
+    text = re.sub(r"(?<=[а-яА-ЯёЁ])¼", "ё", text)
+    text = re.sub(r"¾([^¿\n]{1,120})¿", r"«\1»", text)
+    text = re.sub(r"\x11([^\x11\n]{1,120})\x11", r"«\1»", text)
+    text = re.sub(r"\x16", "—", text)
+    text = re.sub(r"(?<=\s)\x15(?=\s)", "–", text)
     out = []
     for ch in text:
-        if ch in MATH_LETTER_MAP:
+        if ch in PUA_SYMBOL_MAP:
+            out.append(PUA_SYMBOL_MAP[ch])
+        elif ch in MATH_LETTER_MAP:
             out.append(MATH_LETTER_MAP[ch])
         elif ch in SUPERSCRIPT_MAP:
             out.append("^{" + SUPERSCRIPT_MAP[ch] + "}")
@@ -138,6 +172,8 @@ PDF_GARBAGE_PATTERNS = [
      "колонтитул «Страница N»"),
     (re.compile(r"^\s*\d+\s*\|\s*[^\n]*Олимпиада[^\n]*$", re.M),
      "колонтитул с номером страницы и названием олимпиады"),
+    (re.compile(r"\s*\[\s*(?:до\s+)?\d+\s*балл(?:а|ов|б\.?)?\s*\]\s*$"),
+     "разбалловка [N баллов] в конце"),
 ]
 
 
@@ -188,6 +224,8 @@ MD_HEADER = re.compile(r"^#{1,6}\s*", re.M)
 
 DOLLAR_BLOCK_RE = re.compile(r"(?<!\\)\$\$(.+?)(?<!\\)\$\$", re.S)
 DOLLAR_INLINE_RE = re.compile(r"(?<!\\)\$([^$\n]+?)(?<!\\)\$", re.S)
+DOLLAR_MULTILINE_RE = re.compile(r"(?<!\\)\$(?!\$)((?:[^$\n]|\n(?!\n)){1,300}?)(?<!\\)\$(?!\$)")
+TAG_DOLLAR_RE = re.compile(r"\\tag\{\$([^$]+)\$\}")
 LPAREN_RE = re.compile(r"\\\(")
 RPAREN_RE = re.compile(r"\\\)")
 LBRACKET_RE = re.compile(r"\\\]")
@@ -216,10 +254,12 @@ def convert_dollar_delims(text: str) -> str:
     out = []
     for protected, seg in split_math_segments(text):
         if protected:
-            out.append(seg)
+            out.append(TAG_DOLLAR_RE.sub(r"\\tag{\1}", seg))
             continue
         seg = DOLLAR_BLOCK_RE.sub(lambda m: "\\[" + m.group(1).strip() + "\\]", seg)
         seg = DOLLAR_INLINE_RE.sub(lambda m: "\\(" + m.group(1).strip() + "\\)", seg)
+        if "$" in seg:
+            seg = DOLLAR_MULTILINE_RE.sub(lambda m: "\\(" + m.group(1).strip() + "\\)", seg)
         out.append(seg)
     return "".join(out)
 
@@ -245,13 +285,13 @@ def delimiters_balanced(text: str) -> tuple[bool, str]:
 # =====================================================================
 
 BROKEN_FORMULA_HINTS = [
-    re.compile(r"\\\)\s*[+=]\s*\\\("),                    # \(a\) + \(b\)
-    re.compile(r"\\\)\s*\d+\s*\\\("),                     # \(x\) 24 \(y\)
-    re.compile(r"\b[a-z]{1,2}\s+\\\([a-z\^]"),             # co \(s^...
-    re.compile(r"\\\)\s*[a-z]\s+\\\("),                    # \(x\) f \(y\)
-    re.compile(r"\d\s+\\?\(?\w+\^?\d*\)?\s*\\?\(?\w"),     # 2 x^2+1 без разметки
-    re.compile(r"\\\)\s*\+\s*\d"),                        # \(x^2\)+1
-    re.compile(r"\b\w{1,2}\s+\\\("),                       # разорванное слово
+    re.compile(r"\\\)\s*[+=]\s*\\\("),                                      # \(a\) + \(b\)
+    re.compile(r"\\\)\s*\d+\s*\\\("),                                       # \(x\) 24 \(y\)
+    re.compile(r"(?<![а-яА-ЯёЁa-zA-Z])[a-z]{1,3}\s+\\\([a-z\^]"),           # co \(s^..., si \(n...
+    re.compile(r"\\\)\s*[a-z]\s+\\\("),                                     # \(x\) f \(y\)
+    re.compile(r"\d\s+\\?\(?[a-zA-Z]+\^\d+\)?\s*[+\-=]\s*\\?\(?[a-zA-Z0-9]"),  # 2 x^2+1 без разметки
+    re.compile(r"\\\)\s*\+\s*\d"),                                          # \(x^2\)+1
+    re.compile(r"\\\([^)]{1,80}\\\)[a-zA-Z]|[a-zA-Z]\\\([^)]{1,80}\\\)"),   # латиница вплотную к \(...\)
 ]
 
 
@@ -268,13 +308,18 @@ GREEK_KEEP = set("αβγδεζηθικλμνξπρστυφχψω")
 # =====================================================================
 
 RE_SOLUTION_MARK = re.compile(
-    r"(?:^|\n)\s*\**(?:Решение|РЕШЕНИЕ|Решение задачи)\**\s*[.:]?\s*", re.I
+    r"(?:^|\n|[.?!)]\s+)\s*\**(?:Решени[ея]|РЕШЕНИЕ|Решение\s+задачи|Доказательств[оа]|"
+    r"Разбор|Комментари[ий]|Схема\s+решения)\**\s*[.:]\s*",
+    re.I,
 )
 RE_ANSWER_MARK = re.compile(
-    r"(?:^|\n)\s*\**(?:Ответ|ОТВЕТ)\**\s*[:.]?\s*", re.I
+    r"(?:^|\n|[.?!)]\s+)\s*\**(?:Ответы?|ОТВЕТ|Правильный\s+ответ)\**\s*[:.]\s*",
+    re.I,
 )
 RE_CRITERIA_LINE = re.compile(
-    r"(?:^|\n)[^\n]*(?:\d+\s*балл|штраф\w*|критери\w+|оценивание|засчитыва\w+)[^\n]*", re.I
+    r"(?:(?:^|\n|[.?!]\s+)\s*\**(?:Критерии(?:\s+оценивания)?|Схема\s+оценивания|"
+    r"Разбалловка)\**\s*[.:][^\n]*|\[\s*(?:до\s+)?\d+\s*балл(?:а|ов)?\s*\])",
+    re.I,
 )
 
 
@@ -293,11 +338,24 @@ def norm_for_compare(text: str) -> str:
 def norm_for_dedupe(text: str) -> str:
     """Нормализация для точной дедупликации: СОХРАНЯЕТ математические операторы,
     чтобы «x+1» и «x-1» не склеились. Сравнение — по полному тексту."""
-    t = text.lower()
-    t = re.sub(r"\\[()\[\]]", " ", t)
+    t = normalize_unicode_math(text or "").lower()
+    t = re.sub(r"\\[()\[\]]|\$\$?", " ", t)
+    t = re.sub(r"\[\s*(?:до\s+)?\d+\s*балл(?:а|ов|б\.?)?\s*\]", " ", t)
+    # Склейка PDF-переносов внутри русских слов («соче- тание» -> «сочетание»)
+    # и удаление текстовых тире с пробелами между русскими словами
+    t = re.sub(r"(?<=[а-яё])-\s+(?=[а-яё])", "", t)
+    t = re.sub(r"(?<=[а-яё])\s+-\s+(?=[а-яё])", " ", t)
+    t = (t.replace(r"\times", "*").replace("×", "*")
+          .replace(r"\cdot", "*").replace("⋅", "*")
+          .replace(r"\le", "<=").replace(r"\leq", "<=").replace("≤", "<=")
+          .replace(r"\ge", ">=").replace(r"\geq", ">=").replace("≥", ">=")
+          .replace(r"\ne", "!=").replace(r"\neq", "!=").replace("≠", "!="))
+    # Текстовую пунктуацию сразу после кириллических букв убираем,
+    # десятичные точки/запятые и математические знаки полностью сохраняем
+    t = re.sub(r"(?<=[а-яё])[.,:;!?]+", " ", t)
     t = re.sub(r"[\s\u00a0]+", "", t)
     # Оставляем буквы, цифры и математические знаки
-    t = re.sub(r"[^0-9a-zа-яё+\-*/=<>^_().,:%|√∑∫]", "", t)
+    t = re.sub(r"[^0-9a-zа-яё+\-*/=<>^_().,:%|√∑∫!]", "", t)
     return t
 
 
@@ -418,8 +476,9 @@ ROUND_KEYWORD_MAP = [
 
 # Подсказки по URL
 URL_ROUND_HINTS = [
-    (re.compile(r"final|zakl|закл|финал", re.I), "final"),
-    (re.compile(r"otbor|qualif|region|регион|отбор", re.I), "qual"),
+    (re.compile(r"final|zakl|2tur|tur2|2[\-_]?stage|stage[\-_]?2|ochn|закл|финал|очн|2[\-_]?тур|второй", re.I), "final"),
+    (re.compile(r"region|регион|reg[\-_]", re.I), "regional"),
+    (re.compile(r"otbor|qualif|zaoch|1tur|tur1|1[\-_]?stage|stage[\-_]?1|отбор|заочн|1[\-_]?тур|первый", re.I), "qual"),
 ]
 
 
@@ -453,11 +512,15 @@ def url_round_key(url: str) -> str | None:
 # =====================================================================
 
 OFFICIAL_DOMAINS = {
-    "olymp.mipt.ru", "tasks.olimpiada.ru", "rsr-olymp.ru", "olympiads.mccme.ru",
-    "turgor.ru", "vos.olimpiada.ru", "olymp.msu.ru", "olymp.hse.ru",
-    "kurchatov-olymp.ru", "formulo.org", "matol.ru", "mathus.ru",
-    # родные сайты из индекса источников (этапы 18-21)
-    "mmo.mccme.ru", "olimpiada.spbu.ru", "pvg.mk.ru", "olimpiada.ru",
+    "olymp.mipt.ru", "phystech.mipt.ru", "olymp-online.mipt.ru", "mipt.ru", "abitu.net",
+    "tasks.olimpiada.ru", "rsr-olymp.ru", "olympiads.mccme.ru", "mccme.ru", "problems.ru",
+    "turgor.ru", "vos.olimpiada.ru", "siriusolymp.ru", "всош.цпм.рф",
+    "xn--b1a5a9a.xn--p1ag3a.xn--p1ai", "mosolymp.ru", "math.mosolymp.ru",
+    "olymp.msu.ru", "msu.ru", "olymp.hse.ru", "hse.ru",
+    "kurchatov-olymp.ru", "olimpiadakurchatov.ru", "old.olimpiadakurchatov.ru",
+    "formulo.org", "matol.ru", "euler.mccme.ru", "euler.ru", "matol.kz",
+    "mmo.mccme.ru", "matprazdnik.mccme.ru", "olimpiada.spbu.ru", "olympiada.spbu.ru",
+    "spbu.ru", "pvg.mk.ru", "olimpiada.ru", "mathus.ru",
 }
 
 

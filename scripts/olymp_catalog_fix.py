@@ -18,6 +18,7 @@
 
 import argparse
 import copy
+import difflib
 import hashlib
 import json
 import logging
@@ -82,10 +83,27 @@ SOURCE_INDEX_DIR = WORK_DIR / "source_index"
 DEFAULT_WORKERS = 8
 MAX_RETRIES = 5
 TIMEOUT_S = 120
-MAX_TOKENS = 4096
+MAX_TOKENS = 8192
+PDF_BLOCK_CHUNK_SIZE = 12000
+PDF_BLOCK_CHUNK_OVERLAP = 1500
 FINGERPRINT_FIELDS = ["olymp", "year", "round", "grade", "num", "status",
                       "answer", "source", "text", "solution",
                       "geo", "fig_statement", "fig_solution"]
+
+OLYMP_NAMES: dict[str, str] = {
+    "vsosh": "ВсОШ по математике",
+    "mmo": "Московская математическая олимпиада",
+    "kurchatov": "Олимпиада «Курчатов»",
+    "turgor": "Турнир городов",
+    "lomonosov": "Олимпиада «Ломоносов»",
+    "formula-unity": "Олимпиада «Формула Единства» / «Третье тысячелетие»",
+    "pvg": "Покори Воробьёвы горы!",
+    "euler": "Математическая олимпиада им. Леонарда Эйлера",
+    "vysshaya-proba": "Олимпиада «Высшая проба»",
+    "matprazdnik": "Математический праздник",
+    "spbgu": "Олимпиада школьников СПбГУ",
+    "phystech": "Олимпиада «Физтех»",
+}
 
 STAGES_COUNT = 22
 
@@ -124,11 +142,59 @@ def similarity(a: str, b: str) -> float:
         return 0.0
     if HAS_RAPIDFUZZ:
         return fuzz.ratio(a, b) / 100.0
-    # Простейший fallback (по общим словам)
-    wa, wb = set(a.lower().split()), set(b.lower().split())
-    if not wa or not wb:
-        return 0.0
-    return len(wa & wb) / max(len(wa | wb), 1)
+    return difflib.SequenceMatcher(None, a.lower(), b.lower()).ratio()
+
+
+def _salvage_truncated_tasks_json(raw: str) -> dict | None:
+    """Спасает закрытые объекты задач {...} из обрезанного JSON-ответа с массивом "tasks".
+
+    Когда выход модели обрезается по MAX_TOKENS посередине следующей задачи,
+    все полностью закрытые задачи до обрыва сохраняются, а оставшиеся номера
+    добираются повторным точечным запросом STAGE21_EXTRACT_MISSING.
+    """
+    if not raw:
+        return None
+    m = re.search(r'"tasks"\s*:\s*\[', raw)
+    if not m:
+        return None
+    tasks: list[dict] = []
+    in_str = False
+    escape = False
+    depth = 0
+    obj_start = None
+    for idx in range(m.end(), len(raw)):
+        ch = raw[idx]
+        if in_str:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                in_str = False
+            continue
+        if ch == '"':
+            in_str = True
+        elif ch == "{":
+            if depth == 0:
+                obj_start = idx
+            depth += 1
+        elif ch == "}":
+            if depth > 0:
+                depth -= 1
+                if depth == 0 and obj_start is not None:
+                    frag = raw[obj_start: idx + 1]
+                    obj_start = None
+                    try:
+                        obj = json.loads(frag)
+                        if isinstance(obj, dict) and ("num" in obj or "text" in obj or "solution" in obj):
+                            tasks.append(obj)
+                    except json.JSONDecodeError:
+                        pass
+        elif ch == "]" and depth == 0:
+            break
+    if tasks:
+        return {"ok": True, "tasks": tasks, "_salvaged": True}
+    return None
 
 
 # =====================================================================
@@ -262,6 +328,11 @@ class LLMClient:
                     return json.loads(m.group(0))
                 except json.JSONDecodeError:
                     pass
+            salvaged = _salvage_truncated_tasks_json(content)
+            if salvaged is not None:
+                log.info("%s: спасено %d закрытых задач из обрезанного JSON-ответа",
+                         self.name, len(salvaged.get("tasks", [])))
+                return salvaged
             log.warning("%s: не удалось разобрать JSON-ответ", self.name)
             return None
 
@@ -589,33 +660,68 @@ class Catalog:
         for slug, records in self.data.items():
             (out_dir / f"{slug}.json").write_text(
                 json.dumps(records, ensure_ascii=False, indent=1), encoding="utf-8")
-        # _index.json: обновляем только загруженные slug;
-        # записи остальных олимпиад (если --slug/--limit) сохраняем как есть,
-        # чтобы индекс не «терял» нетронутые файлы.
-        old_files = {}
-        if isinstance(self.index, dict) and isinstance(self.index.get("files"), dict):
-            old_files = self.index["files"]
-        files_idx = {}
-        years_all = set()
-        with_figs = 0
+        # _index.json: формат массива [{"slug", "name", "count", "with_figs", "years": [min, max]}],
+        # совместимый с routes/olymp_catalog.py и scripts/olymp_catalog_gaps.py.
+        # Записи нетронутых олимпиад (при --slug) сохраняем из существующего _index.json.
+        existing_entries: dict[str, dict] = {}
+        order_slugs: list[str] = []
+
+        def _ingest_index(raw):
+            if isinstance(raw, list):
+                for item in raw:
+                    if isinstance(item, dict) and item.get("slug"):
+                        s = item["slug"]
+                        existing_entries[s] = dict(item)
+                        if s not in order_slugs:
+                            order_slugs.append(s)
+            elif isinstance(raw, dict) and isinstance(raw.get("files"), dict):
+                for s, item in raw["files"].items():
+                    if isinstance(item, dict):
+                        yrs = item.get("years") or []
+                        yr_range = [min(yrs), max(yrs)] if yrs else []
+                        existing_entries[s] = {
+                            "slug": s,
+                            "name": item.get("name") or OLYMP_NAMES.get(s, s),
+                            "count": item.get("count", 0),
+                            "with_figs": item.get("with_figs", 0),
+                            "years": yr_range,
+                        }
+                        if s not in order_slugs:
+                            order_slugs.append(s)
+
+        for cand_idx in (DATA_DIR / "_index.json", out_dir / "_index.json"):
+            if cand_idx.exists():
+                try:
+                    _ingest_index(json.loads(cand_idx.read_text(encoding="utf-8")))
+                except Exception:
+                    pass
+        _ingest_index(self.index)
+
         for slug, records in self.data.items():
-            years = sorted({r.get("year") for r in records if r.get("year")})
+            years = sorted({int(r["year"]) for r in records
+                            if r.get("year") is not None and str(r.get("year")).isdigit()})
+            yr_range = [years[0], years[-1]] if years else []
             figs = sum(1 for r in records if (r.get("fig_statement") or r.get("fig_solution")))
-            with_figs += figs
-            files_idx[slug] = {"count": len(records), "with_figs": figs, "years": years}
-            years_all.update(years)
-        for s, entry in old_files.items():
-            if s not in files_idx:
-                files_idx[s] = entry
-        idx = {"updated": now_iso(),
-               "total": sum((e.get("count", 0) for e in files_idx.values())),
-               "files": files_idx}
-        idx["years"] = sorted(years_all)
-        idx["with_figs_total"] = with_figs
+            prev = existing_entries.get(slug) or {}
+            name = (prev.get("name")
+                    or (records[0].get("olympiad") if records and records[0].get("olympiad") else None)
+                    or OLYMP_NAMES.get(slug, slug))
+            existing_entries[slug] = {
+                "slug": slug,
+                "name": name,
+                "count": len(records),
+                "with_figs": figs,
+                "years": yr_range,
+            }
+            if slug not in order_slugs:
+                order_slugs.append(slug)
+
+        idx_list = [existing_entries[s] for s in order_slugs if s in existing_entries]
+        total_tasks = sum(e.get("count", 0) for e in idx_list)
         (out_dir / "_index.json").write_text(
-            json.dumps(idx, ensure_ascii=False, indent=1), encoding="utf-8")
+            json.dumps(idx_list, ensure_ascii=False, indent=2), encoding="utf-8")
         log.info("Каталог сохранён в %s (%d файлов, %d задач).",
-                 out_dir, len(files_idx), idx["total"])
+                 out_dir, len(idx_list), total_tasks)
 
 
 # =====================================================================
@@ -923,8 +1029,12 @@ def stage_03(p: Pipeline):
         # **Решение.** -> Решение.
         new_sol = R.MD_BOLD_SOLUTION.sub(lambda m: m.group(0).replace("*", "").strip(), sol)
         new_ans = R.MD_BOLD_ANSWER.sub(lambda m: m.group(0).replace("*", "").strip(), ans)
-        # Ведущие ** в answer
+        # Ведущие и парные ** / ~~ в answer и solution
         new_ans = R.LEADING_TRAILING_MD.sub("", new_ans).strip()
+        new_ans = re.sub(r"\*\*([^\n*]+?)\*\*", r"\1", new_ans)
+        new_ans = new_ans.replace("**", "").strip()
+        new_sol = re.sub(r"\*\*([^\n*]+?)\*\*", r"\1", new_sol)
+        new_sol = re.sub(r"~~([^\n~]+?)~~", r"\1", new_sol)
         # Markdown-ссылки: сначала вытащить URL (позже строка с ними удаляется)
         urls_found = []
         def link_repl(m):
@@ -1009,7 +1119,7 @@ def _math_gate(p: Pipeline, old: str, new: str, rec: dict, stage: int) -> bool:
     Правка принимается только при положительном вердикте.
     None / ok=false / equivalent!=true / ошибка -> отклонение + needs_review.
     """
-    if old == new:
+    if old == new or (old and new and old.strip() == new.strip()):
         return True
     if p.deepseek_reasoner is None or p.dry_run:
         p.needs_review(rec, stage, "правка отклонена: reasoner недоступен")
@@ -1080,15 +1190,13 @@ def stage_06(p: Pipeline):
             return
         new_text = resp.get("text") or text
         new_sol = resp.get("solution") or sol
-        # Сверка reasoner-ом: та же математика (явный вердикт)
-        if not _math_gate(p, text, new_text, rec, 6):
-            return
-        if not _math_gate(p, sol, new_sol, rec, 6):
-            return
-        if new_text != text:
-            p.apply_field(slug, rec, 6, "text", new_text, model="deepseek-chat")
-        if new_sol != sol:
-            p.apply_field(slug, rec, 6, "solution", new_sol, model="deepseek-chat")
+        # Сверка reasoner-ом независимо для каждого изменённого непустого поля
+        if text and new_text != text:
+            if _math_gate(p, text, new_text, rec, 6):
+                p.apply_field(slug, rec, 6, "text", new_text, model="deepseek-chat")
+        if sol and new_sol != sol:
+            if _math_gate(p, sol, new_sol, rec, 6):
+                p.apply_field(slug, rec, 6, "solution", new_sol, model="deepseek-chat")
 
     items = [(s, r) for s, r in p.catalog.all_records()
              if any(rx.search(r.get("text") or "") or rx.search(r.get("solution") or "")
@@ -1120,19 +1228,19 @@ def stage_07(p: Pipeline):
             return
         new_text = resp.get("text") or text
         new_sol = resp.get("solution") or sol
-        # Явный вердикт эквивалентности для обоих полей
-        if not _math_gate(p, text, new_text, rec, 7):
-            return
-        if not _math_gate(p, sol, new_sol, rec, 7):
-            return
-        if new_text != text:
-            p.apply_field(slug, rec, 7, "text", new_text, model="deepseek-chat")
-        if new_sol != sol:
-            p.apply_field(slug, rec, 7, "solution", new_sol, model="deepseek-chat")
+        # Явный вердикт эквивалентности независимо для каждого изменённого поля
+        if text and new_text != text:
+            if _math_gate(p, text, new_text, rec, 7):
+                p.apply_field(slug, rec, 7, "text", new_text, model="deepseek-chat")
+        if sol and new_sol != sol:
+            if _math_gate(p, sol, new_sol, rec, 7):
+                p.apply_field(slug, rec, 7, "solution", new_sol, model="deepseek-chat")
 
     items = [(s, r) for s, r in p.catalog.all_records()
-             if (R.RAW_MATH_SYMBOLS_RE.search(r.get("text") or "")
-                 and "\\(" not in (r.get("text") or "")[:200])]
+             if ((R.RAW_MATH_SYMBOLS_RE.search(r.get("text") or "")
+                  and "\\(" not in (r.get("text") or "")[:200])
+                 or (R.RAW_MATH_SYMBOLS_RE.search(r.get("solution") or "")
+                     and "\\(" not in (r.get("solution") or "")[:200]))]
     p.run_parallel(7, items, worker, "сырые формулы -> LaTeX")
     p.stats[7]["changed"] = p.diff.count(7)
 
@@ -1164,12 +1272,19 @@ def stage_08(p: Pipeline):
         sol_part = (resp.get("solution_part") or "").strip()
         ans_part = (resp.get("answer_part") or "").strip()
         criteria = resp.get("criteria") or []
-        # Гейт: разделение не должно менять математику
-        if new_text and new_text != text and not _math_gate(p, text, new_text, rec, 8):
-            return
-        if sol_part and sol_part != sol and not _math_gate(p, text[: len(sol_part) * 2], sol_part, rec, 8):
-            # sol_part вырезан из text — сверяем с исходным текстом
-            return
+        # Гейт: разделение не должно менять математику (дословный префикс/подстрока
+        # исходного поля не требует отдельного вызова reasoner; иначе сверяем
+        # соответствующий префикс или реконструкцию «условие + решение + ответ»).
+        if new_text and new_text != text:
+            if new_text not in text:
+                head_orig = text[: max(len(new_text) + 40, len(new_text))]
+                if not _math_gate(p, head_orig, new_text, rec, 8):
+                    return
+        if sol_part and sol_part != sol:
+            if sol_part not in text:
+                reconstructed = "\n".join(x for x in (new_text or text, sol_part, ans_part) if x)
+                if not _math_gate(p, text, reconstructed, rec, 8):
+                    return
         if new_text and new_text != text:
             p.apply_field(slug, rec, 8, "text", new_text, model="deepseek-chat")
         # Решение переносим, если там пусто или новое лучше
@@ -1432,10 +1547,13 @@ def stage_16(p: Pipeline):
         for key, idxs in groups.items():
             if len(idxs) < 2:
                 continue
-            # Сортируем по качеству, оставляем лучшего
+            # Сортируем по качеству, оставляем лучшего и обогащаем недостающими полями
             idxs_sorted = sorted(idxs, key=lambda i: R.record_quality(records[i]), reverse=True)
             best = idxs_sorted[0]
             for i in idxs_sorted[1:]:
+                for fld in ("source", "solution", "answer", "variant", "fig_statement", "fig_solution"):
+                    if not (records[best].get(fld) or "") and (records[i].get(fld) or ""):
+                        p.apply_field(slug, records[best], 16, fld, records[i][fld])
                 to_remove.append(i)
                 p.diff.log(records[i].get("uid", ""), 16, "__record__", "duplicate",
                            f"удалён, дубликат {records[best].get('uid')}", slug)
@@ -1484,26 +1602,27 @@ def stage_17(p: Pipeline):
                 p.apply_field(slug, rec, 17, "round", canon_name)
                 p.add_qa_note(rec, 17, f"round исправлен по source: {url_key}")
 
-    # 3) Слияние дублей между этапами (после унификации — те же ключи)
+    # 3) Слияние дублей между этапами (в том числе тех, у которых шаги 1–2
+    #    уже привели round к одному каноническому названию)
     total_merged = 0
     for slug in p.catalog.slugs():
         records = p.catalog.data[slug]
         groups: dict[tuple, list[int]] = {}
         for i, rec in enumerate(records):
             key = (rec.get("year"), str(rec.get("grade")), str(rec.get("num")),
+                   str(rec.get("variant") or "").strip(),
                    R.norm_for_dedupe(rec.get("text") or ""))
             groups.setdefault(key, []).append(i)
         to_remove = []
         for key, idxs in groups.items():
             if len(idxs) < 2:
                 continue
-            # Разные round после унификации -> сливаем
-            rounds = {p.catalog.data[slug][i].get("round") for i in idxs}
-            if len(rounds) < 2:
-                continue
             idxs_sorted = sorted(idxs, key=lambda i: R.record_quality(records[i]), reverse=True)
             best = idxs_sorted[0]
             for i in idxs_sorted[1:]:
+                for fld in ("source", "solution", "answer", "variant", "fig_statement", "fig_solution"):
+                    if not (records[best].get(fld) or "") and (records[i].get(fld) or ""):
+                        p.apply_field(slug, records[best], 17, fld, records[i][fld])
                 to_remove.append(i)
                 p.diff.log(records[i].get("uid", ""), 17, "__record__", "cross-round duplicate",
                            f"слит с {records[best].get('uid')}", slug)
@@ -1511,6 +1630,30 @@ def stage_17(p: Pipeline):
         if to_remove:
             p.catalog.data[slug] = [r for i, r in enumerate(records) if i not in set(to_remove)]
             total_merged += len(to_remove)
+        # Дополнительный проход внутри (year, round, grade) после унификации round
+        records = p.catalog.data[slug]
+        same_round_groups: dict[tuple, list[int]] = {}
+        for i, rec in enumerate(records):
+            r_key = (rec.get("year"), rec.get("round"), str(rec.get("grade")),
+                     R.norm_for_dedupe(rec.get("text") or ""))
+            same_round_groups.setdefault(r_key, []).append(i)
+        to_remove_2 = []
+        for r_key, idxs in same_round_groups.items():
+            if len(idxs) < 2:
+                continue
+            idxs_sorted = sorted(idxs, key=lambda i: R.record_quality(records[i]), reverse=True)
+            best = idxs_sorted[0]
+            for i in idxs_sorted[1:]:
+                for fld in ("source", "solution", "answer", "variant", "fig_statement", "fig_solution"):
+                    if not (records[best].get(fld) or "") and (records[i].get(fld) or ""):
+                        p.apply_field(slug, records[best], 17, fld, records[i][fld])
+                to_remove_2.append(i)
+                p.diff.log(records[i].get("uid", ""), 17, "__record__", "same-round duplicate after round unification",
+                           f"слит с {records[best].get('uid')}", slug)
+                p.checkpoint.data["removed"].append(records[i].get("uid"))
+        if to_remove_2:
+            p.catalog.data[slug] = [r for i, r in enumerate(records) if i not in set(to_remove_2)]
+            total_merged += len(to_remove_2)
     p.catalog._rebuild_index_map()
     p.stats[17]["changed"] = p.diff.count(17)
     log.info("Этап 17: слито %d дублей между этапами.", total_merged)
@@ -1676,15 +1819,17 @@ def _download_and_check(p: Pipeline, rec: dict, url: str) -> tuple[bool, str, st
         # Нечему сверять — НЕ принимаем по доверию, откладываем на ручную проверку
         return False, "условие пустое — сверка невозможна", http_code, content_type
     doc_norm = R.norm_for_compare(doc_text)
+    doc_cyr = _cyr_only(doc_text)
+    if _text_in_doc(rec.get("text") or "", doc_norm, doc_cyr):
+        return True, "совпадение по кириллице (_text_in_doc)", http_code, content_type
     # Ищем вхождения фрагментов условия
     probes = [our_head[i:i+60] for i in range(0, min(len(our_head), 180), 60)]
     hits = sum(1 for pr in probes if pr and pr in doc_norm)
     if probes and hits >= len(probes) * 0.6:
         return True, f"совпадение {hits}/{len(probes)} фрагментов", http_code, content_type
-    if HAS_RAPIDFUZZ:
-        score = fuzz.partial_ratio(our_head, doc_norm) / 100.0
-        if score >= 0.8:
-            return (True, f"нечёткое совпадение {score:.2f}", http_code, content_type)
+    score = _text_contained((rec.get("text") or "")[:200], doc_text)
+    if score >= 0.8:
+        return (True, f"нечёткое совпадение {score:.2f}", http_code, content_type)
     return False, "условие не найдено в документе", http_code, content_type
 
 
@@ -1752,8 +1897,9 @@ def _official_search(p: Pipeline, slug: str, rec: dict, stage: int,
         p.search_log.log(uid, slug, stage, query_desc, "none", "", "",
                          "кандидатов нет")
         return False, "кандидатов нет"
+    source_only_url = None
     for origin, url in candidates:
-        if not _extract_allowed(url):
+        if want_solution and not _extract_allowed(url):
             p.search_log.log(uid, slug, stage, query_desc, origin, url, "пропущен",
                              "домен только для подтверждения источника (mathus.ru)")
             continue
@@ -1785,8 +1931,8 @@ def _official_search(p: Pipeline, slug: str, rec: dict, stage: int,
             i = task_pages[0]
             doc_text = "\n".join(pages[max(0, i - 1): i + 4])
         else:
-            doc_text = _fetch_doc_text(url)[:30000]
-        payload = {"doc_text": doc_text[:30000], "olymp": rec.get("olymp"),
+            doc_text = _fetch_doc_text(url)[:PDF_BLOCK_CHUNK_SIZE]
+        payload = {"doc_text": doc_text[:PDF_BLOCK_CHUNK_SIZE], "olymp": rec.get("olymp"),
                    "year": rec.get("year"), "round": rec.get("round"),
                    "grade": rec.get("grade"), "num": rec.get("num"),
                    "text_head": (rec.get("text") or "")[:200]}
@@ -1829,27 +1975,39 @@ def _official_search(p: Pipeline, slug: str, rec: dict, stage: int,
             return False, url
         doc_solution = (e_resp.get("solution") or "").strip()
         doc_answer = (e_resp.get("answer") or "").strip()
-        if doc_solution:
-            p.apply_field(slug, rec, stage, "solution", doc_solution,
-                          model="deepseek-chat+reasoner")
+        if not doc_solution:
+            # Документ содержит только условие (или ответ без решения):
+            # фиксируем source/answer, если были пустыми, и ПРОДОЛЖАЕМ искать
+            # решение в следующих кандидатах PDF!
+            if not (rec.get("source") or "").strip():
+                p.apply_field(slug, rec, stage, "source", url,
+                              model="index" if origin == "index" else "gemini+deepseek")
+            if doc_answer and not (rec.get("answer") or "").strip():
+                p.apply_field(slug, rec, stage, "answer", doc_answer,
+                              model="deepseek-chat+reasoner")
+            source_only_url = source_only_url or url
+            p.search_log.log(uid, slug, stage, query_desc, origin, url, "скачан",
+                             "условие подтверждено, но решения в этом PDF нет — проверяем следующие кандидаты")
+            continue
+        p.apply_field(slug, rec, stage, "solution", doc_solution,
+                      model="deepseek-chat+reasoner")
         if doc_answer:
             p.apply_field(slug, rec, stage, "answer", doc_answer,
                           model="deepseek-chat+reasoner")
         p.apply_field(slug, rec, stage, "source", url,
                       model="index" if origin == "index" else "gemini+deepseek")
-        # official_found — только когда реально есть решение из официального документа
-        if doc_solution:
-            p.apply_field(slug, rec, stage, "status", "official_found",
-                          model="index" if origin == "index" else "gemini+deepseek")
-        else:
-            p.add_qa_note(rec, stage,
-                          "source найден, но решение в документе отсутствует — "
-                          "статус не менялся", model="deepseek-chat+reasoner")
+        p.apply_field(slug, rec, stage, "status", "official_found",
+                      model="index" if origin == "index" else "gemini+deepseek")
         p.add_qa_note(rec, stage, f"официальное решение найдено: {reason}")
         p.search_log.log(uid, slug, stage, query_desc, origin, url, "скачан",
                          f"принято: {reason}")
         p.remove_from_search_queue(uid)
         return True, url
+    if source_only_url:
+        p.add_qa_note(rec, stage,
+                      "source найден, но решение в документе отсутствует — "
+                      "статус не менялся", model="deepseek-chat+reasoner")
+        return True, source_only_url
     p.search_log.log(uid, slug, stage, query_desc, "all", "",
                      "исчерпаны кандидаты", "ни один не прошёл проверку")
     return False, "ни один кандидат не прошёл проверку"
@@ -1904,12 +2062,18 @@ def stage_19(p: Pipeline):
 # =====================================================================
 
 def _find_task_pages(pages: list[str], text_head: str) -> list[int]:
-    """Ищет страницы, содержащие начало условия задачи (нормализованное)."""
+    """Ищет страницы, содержащие начало условия задачи (нормализованное или по кириллице)."""
     head = R.norm_for_compare(text_head)
-    if not head:
+    cyr = _cyr_only(text_head)
+    if not head and not cyr:
         return []
-    probe = head[:60]
-    return [i for i, pg in enumerate(pages) if probe in R.norm_for_compare(pg)]
+    probe = head[:60] if head else ""
+    cyr_probe = cyr[:40] if len(cyr) >= 15 else ""
+    out = []
+    for i, pg in enumerate(pages):
+        if (probe and probe in R.norm_for_compare(pg)) or (cyr_probe and cyr_probe in _cyr_only(pg)):
+            out.append(i)
+    return out
 
 
 def _fetch_doc_text(url: str) -> str:
@@ -2257,9 +2421,7 @@ def _text_similarity(a: str, b: str) -> float:
         return 0.0
     if HAS_RAPIDFUZZ:
         return fuzz.ratio(na, nb) / 100.0
-    # Fallback по общим словам
-    wa, wb = set(na.split()), set(nb.split())
-    return len(wa & wb) / max(len(wa | wb), 1)
+    return difflib.SequenceMatcher(None, na, nb).ratio()
 
 
 def _raw_similarity(a: str, b: str) -> float:
@@ -2305,7 +2467,11 @@ def _text_contained(short: str, long: str) -> float:
         return 0.0
     if HAS_RAPIDFUZZ:
         return fuzz.partial_ratio(na, nb) / 100.0
-    return 1.0 if na in nb else 0.0
+    if na in nb:
+        return 1.0
+    sm = difflib.SequenceMatcher(None, na, nb)
+    matched = sum(bl.size for bl in sm.get_matching_blocks())
+    return matched / len(na)
 
 
 def stage_21(p: Pipeline):
@@ -2469,10 +2635,20 @@ def stage_21(p: Pipeline):
             if ckey not in extract_cache:
                 tasks: list[dict] = []
                 try:
-                    resp = p.deepseek_chat.chat_json(
-                        P.STAGE21_EXTRACT_VARIANT_BLOCK,
-                        json.dumps({"doc_text": block_text}, ensure_ascii=False))
-                    tasks = (resp or {}).get("tasks") or []
+                    # Длинные блоки режем по PDF_BLOCK_CHUNK_SIZE (12 000 симв.) с перекрытием,
+                    # чтобы ответ не обрезался на MAX_TOKENS
+                    if len(block_text) <= PDF_BLOCK_CHUNK_SIZE:
+                        b_chunks = [block_text]
+                    else:
+                        b_chunks, ci = [], 0
+                        while ci < len(block_text):
+                            b_chunks.append(block_text[ci: ci + PDF_BLOCK_CHUNK_SIZE])
+                            ci += PDF_BLOCK_CHUNK_SIZE - PDF_BLOCK_CHUNK_OVERLAP
+                    for b_chunk in b_chunks:
+                        resp = p.deepseek_chat.chat_json(
+                            P.STAGE21_EXTRACT_VARIANT_BLOCK,
+                            json.dumps({"doc_text": b_chunk}, ensure_ascii=False))
+                        tasks.extend((resp or {}).get("tasks") or [])
                 except Exception as e:
                     log.warning("Этап 21 (атрибуция): извлечение блока не удалось: %s",
                                 str(e)[:150])
@@ -2841,9 +3017,9 @@ def stage_21(p: Pipeline):
                         f"класс не подтверждён (нет заголовков, индекс молчит): "
                         f"{url[:60]}")
                     continue
-            # тексты для модели: блок целиком, длинный — кусками по 30к с
-            # перекрытием 2к (задачу не режем посередине без запаса)
-            def _chunks(t: str, size: int = 30000, overlap: int = 2000):
+            # тексты для модели: блок целиком, длинный — кусками по 12к с
+            # перекрытием 1.5к (задачу не режем посередине без запаса, не превышаем MAX_TOKENS)
+            def _chunks(t: str, size: int = PDF_BLOCK_CHUNK_SIZE, overlap: int = PDF_BLOCK_CHUNK_OVERLAP):
                 if len(t) <= size:
                     return [t]
                 out, i = [], 0
@@ -3100,6 +3276,8 @@ def stage_21(p: Pipeline):
                 dup_equivalent = _math_gate(p, (dup.get("text") or "").strip(),
                                              text, dup, 21)
             if dup is not None and not dup_equivalent:
+                if num.isdigit() and int(num) not in nums:
+                    rejected[(str(bvar or ""), num)] = "условие не эквивалентно существующей записи (reasoner)"
                 p.search_log.log("", slug, 21, query_desc, "reasoner", "",
                                  "скачан",
                                  f"задача №{num}: условие не эквивалентно "
@@ -3538,15 +3716,24 @@ def stage_22(p: Pipeline):
         p.catalog.save(FIXED_DIR)
     # 4) Запуск отчёта о дырах
     gaps_result = ""
-    gaps_script = BASE_DIR / "scripts" / "olymp_catalog_gaps.py"
-    if gaps_script.exists() and not p.dry_run:
-        try:
-            res = subprocess.run(
-                [sys.executable, str(gaps_script)],
-                capture_output=True, text=True, timeout=600)
-            gaps_result = (res.stdout or "") + (res.stderr or "")
-        except Exception as e:
-            gaps_result = f"не удалось запустить: {e}"
+    try:
+        sys.path.insert(0, str(BASE_DIR))
+        from routes.olymp_catalog_gaps import summarize as _gaps_summarize, report_md as _gaps_report_md
+        summaries = []
+        for slug, recs in p.catalog.data.items():
+            name = (recs[0].get("olympiad") if recs and recs[0].get("olympiad") else None) or OLYMP_NAMES.get(slug, slug)
+            summaries.append(_gaps_summarize(slug, name, recs))
+        gaps_result = _gaps_report_md(summaries)
+    except Exception:
+        gaps_script = BASE_DIR / "scripts" / "olymp_catalog_gaps.py"
+        if gaps_script.exists() and not p.dry_run:
+            try:
+                res = subprocess.run(
+                    [sys.executable, str(gaps_script)],
+                    capture_output=True, text=True, timeout=600)
+                gaps_result = (res.stdout or "") + (res.stderr or "")
+            except Exception as e:
+                gaps_result = f"не удалось запустить: {e}"
     # 5) Отчёт
     _write_report(p, issues, gaps_result)
 

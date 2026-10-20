@@ -7,15 +7,11 @@
 годом финала (2025). Без --apply только отчёт; с --apply файл перезаписывается
 (бэкап рядом: <файл>.bak), старое значение пишется в qa.year_fix.
 """
-import json, re, sys, shutil, collections
+import json, os, re, sys, shutil, collections
 from urllib.parse import unquote
-SEASON_RE = re.compile(r"(?:^|[-_])(\d{2})-(\d{2})(?=\.|$|[-_])")
-def season_year(url):
-    name = unquote((url or "").split("?")[0].split("/")[-1])
-    m = SEASON_RE.search(name)
-    if m and int(m.group(2)) == int(m.group(1)) + 1:
-        return 2000 + int(m.group(2))
-    return None
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from olymp_source_index import season_year_from_url as season_year
 def main(argv):
     if not argv:
         print(__doc__); return 2

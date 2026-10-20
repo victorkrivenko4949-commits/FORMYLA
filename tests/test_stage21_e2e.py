@@ -2180,3 +2180,64 @@ assert pF2.stage21_report["phystech"]["gaps"] == [], \
     f"импортированная №2 должна закрывать дыру: {pF2.stage21_report['phystech']['gaps']}"
 assert not pF2.checkpoint.data.get("stage21_pending")
 print("ИМПОРТ ЗАКРЫВАЕТ ДЫРУ OK")
+shutil.rmtree(TMP19, ignore_errors=True)
+shutil.rmtree(TMP20, ignore_errors=True)
+
+# =====================================================================
+# Часть 16: улучшения v3.3 (MAX_TOKENS=8192, блок 12000, спасение JSON,
+#           PUA/T2A, _index.json массив, 10-11 не сезон, 12 олимпиад)
+# =====================================================================
+assert FIX.MAX_TOKENS == 8192, FIX.MAX_TOKENS
+assert FIX.PDF_BLOCK_CHUNK_SIZE == 12000, FIX.PDF_BLOCK_CHUNK_SIZE
+
+# 16.1 Спасение закрытых задач из обрезанного JSON-ответа
+trunc_raw = (
+    '{"ok": true, "tasks": ['
+    '{"num": "1", "text": "Задача 1 про числа.", "answer": "5", "solution": "Решение 1."}, '
+    '{"num": "2", "text": "Задача 2 про скобки {a+b}.", "answer": "6", "solution": "Решение 2."}, '
+    '{"num": "3", "text": "Незакрытая задача 3 про граф'
+)
+salv = FIX._salvage_truncated_tasks_json(trunc_raw)
+assert salv is not None and salv.get("ok") is True, salv
+assert len(salv["tasks"]) == 2 and [t["num"] for t in salv["tasks"]] == ["1", "2"], salv
+print("СПАСЕНИЕ ОБРЕЗАННОГО JSON OK")
+
+# 16.2 Нормализация PUA Symbol + T2A-артефактов PDF
+norm_pua = FIX.R.normalize_unicode_math("В \uf044ABC \uf0d0A = 90\uf0b0, x \uf0b3 2 \uf0d7 3, привед¼н пример ¾Ломоносов¿, (¼)^n.")
+assert "△ABC" in norm_pua and "∠A = 90°" in norm_pua and "x ≥ 2 ⋅ 3" in norm_pua, norm_pua
+assert "приведён" in norm_pua and "«Ломоносов»" in norm_pua and "(¼)^n" in norm_pua, norm_pua
+print("PUA SYMBOL И T2A PDF OK")
+
+# 16.3 BROKEN_FORMULA_HINTS не срабатывает на русские предлоги перед \(...\)
+assert not any(rx.search(r"Точка лежит в \(ABC\) и на \(Ox\), в 2 раза больше.") for rx in FIX.R.BROKEN_FORMULA_HINTS)
+assert any(rx.search(r"Вычислите co \(s^2 x\) + \(a\) + \(b\).") for rx in FIX.R.BROKEN_FORMULA_HINTS)
+print("ЭВРИСТИКА ПОРЕЗАННЫХ ФОРМУЛ БЕЗ ЛОЖНЫХ СРАБАТЫВАНИЙ OK")
+
+# 16.4 Сезон в URL: «10-11» (классы) НЕ считается сезоном 2010–2011
+from olymp_source_index import season_year_from_url, year_from_url, KNOWN_ACTIVITY_IDS, catalog_index_records
+assert season_year_from_url("https://olymp.hse.ru/mirror/pubs/share/Math-10-11-2023.pdf") is None
+assert year_from_url("https://olymp.hse.ru/mirror/pubs/share/Math-10-11-2023.pdf") == 2023
+assert season_year_from_url("https://olymp.msu.ru/2023-2024/tasks.pdf") == 2024
+assert season_year_from_url("https://olymp.mipt.ru/math_2019-20.pdf") == 2020
+assert season_year_from_url("https://tasks.olimpiada.ru/upload/files/tasks/72/2018/sol-math-11-reg-18-9.pdf") == 2019
+assert len(KNOWN_ACTIVITY_IDS) == 12 and KNOWN_ACTIVITY_IDS["vsosh"] == "72" and KNOWN_ACTIVITY_IDS["lomonosov"] == "348"
+# Чужой activity_id (74 — физика ВсОШ) отфильтровывается из vsosh
+cat_r, aid_v = catalog_index_records("vsosh", [
+    {"source": "https://tasks.olimpiada.ru/upload/files/tasks/74/2021/phys.pdf", "year": 2021, "grade": 11, "round": "Заключительный этап"},
+    {"source": "https://tasks.olimpiada.ru/upload/files/tasks/72/2021/math.pdf", "year": 2021, "grade": 11, "round": "Заключительный этап"},
+])
+assert aid_v == "72" and len(cat_r) == 1 and "tasks/72/" in cat_r[0]["url"], (aid_v, cat_r)
+print("СЕЗОН 10-11 И ACTIVITY_ID 12 ОЛИМПИАД OK")
+
+# 16.5 Формат _index.json в Catalog.save — список словарей [{"slug", "name", "count", "with_figs", "years"}]
+TMP21 = Path(tempfile.mkdtemp())
+cat_test = FIX.Catalog()
+cat_test.data["phystech"] = [{**mk("u1", 1, "Задача 1"), "year": 2023}, {**mk("u2", 2, "Задача 2"), "year": 2025}]
+cat_test.save(TMP21)
+idx_saved = json.loads((TMP21 / "_index.json").read_text(encoding="utf-8"))
+assert isinstance(idx_saved, list), type(idx_saved)
+ph_idx = next(x for x in idx_saved if x.get("slug") == "phystech")
+assert ph_idx["count"] == 2 and ph_idx["years"] == [2023, 2025] and "Физтех" in ph_idx["name"], ph_idx
+shutil.rmtree(TMP21, ignore_errors=True)
+print("ФОРМАТ _INDEX.JSON OK")
+
