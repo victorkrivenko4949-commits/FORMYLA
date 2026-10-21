@@ -13506,13 +13506,11 @@ def submit_support():
 _REVIEW_RATE_LIMIT = {}
 
 # REVIEW_BAN_V1 (2026-10-21): пользователи, которым victor запретил писать
-# отзывы о сайте. Проверка идёт по user_id (авторизованный) и по email
-# из формы. Формат: {user_id: {'email': ..., 'notice': ...}}
+# отзывы о сайте. Проверка идёт ТОЛЬКО по user_id авторизованного аккаунта —
+# email из формы не удостоверяет личность, поэтому не используется.
+# Формат: {user_id: 'текст уведомления'}
 _REVIEW_BANS = {
-    7835: {
-        'email': 'ayudzyuba@yandex.ru',
-        'notice': 'victor запретил дзубе писать отзывы',
-    },
+    7835: 'victor запретил дзубе писать отзывы',
 }
 
 
@@ -13541,22 +13539,14 @@ def submit_feedback():
         if email and '@' not in email:
             return jsonify({'error': 'некорректный email'}), 400
 
-        # REVIEW_BAN_V1: если этот пользователь в бане — не принимаем отзыв,
-        # а показываем уведомление от владельца.
+        # REVIEW_BAN_V1: если авторизованный аккаунт в бане — не принимаем
+        # отзыв, а показываем уведомление от владельца.
         _ban_user_id = current_user.id if current_user.is_authenticated else None
         if _ban_user_id and int(_ban_user_id) in _REVIEW_BANS:
             return jsonify({
                 'ok': False,
-                'error': _REVIEW_BANS[int(_ban_user_id)]['notice'],
+                'error': _REVIEW_BANS[int(_ban_user_id)],
             }), 403
-        if email:
-            _ban_email = email.strip().lower()
-            for _b in _REVIEW_BANS.values():
-                if _b['email'].lower() == _ban_email:
-                    return jsonify({
-                        'ok': False,
-                        'error': _b['notice'],
-                    }), 403
 
         message_text = (data.get('message') or '').strip()
         if not (5 <= len(message_text) <= 4000):
