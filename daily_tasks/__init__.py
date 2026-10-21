@@ -50,3 +50,15 @@ try:  # pragma: no cover
 except Exception as _sg_exc:  # noqa: F841
     import logging as _logging
     _logging.getLogger(__name__).error("daily_tasks solution_guard attach failed: %s", _sg_exc)
+
+# Минимум 15 символов текстового решения для задач уровня 2+ (2, 3, 4), если нет
+# фото. Серверная проверка (before_request на /submit и /submit_ai) + клиентский
+# скрипт static/js/dt_solution_minlen.js (вставляется after_request-хуком).
+# Отключить: DT_SOLUTION_MINLEN_DISABLED=1. Порог: DT_SOLUTION_MIN_LEN (15),
+# уровень: DT_SOLUTION_MIN_LEVEL (2).
+try:  # pragma: no cover
+    from .solution_minlen import attach as _solution_minlen_attach
+    _solution_minlen_attach(daily_tasks_bp)
+except Exception as _sm_exc:  # noqa: F841
+    import logging as _logging
+    _logging.getLogger(__name__).error("daily_tasks solution_minlen attach failed: %s", _sm_exc)
