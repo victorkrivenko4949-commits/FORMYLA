@@ -9,7 +9,13 @@
 """
 
 from datetime import datetime
+
+from sqlalchemy import event
+from sqlalchemy.orm import validates
+from sqlalchemy.orm.attributes import set_committed_value
+
 from models import db
+from daily_tasks.math_normalize import normalize_hints_json, normalize_math_full
 
 
 class DailyTaskSet(db.Model):
@@ -146,6 +152,34 @@ class DailyTaskItem(db.Model):
             f'<DailyTaskItem #{self.id} set={self.daily_set_id} '
             f'pos={self.position} status={self.status!r}>'
         )
+
+    # ── Нормализация формул (2026-10-11) ────────────────────────────
+    # Голые \frac/\sqrt вне $...$ оборачиваем, а внутри формул чиним
+    # дробь-через-слеш и √(...) без черты. См. daily_tasks/math_normalize.py.
+    # validates — при записи (новые задачи), load-event ниже — при чтении
+    # (старые строки и задачи из FORMYLA_BANK.jsonl) без пометки dirty.
+    @validates('task_text', 'solution', 'reason')
+    def _validate_math_text(self, key, value):
+        return normalize_math_full(value) if isinstance(value, str) else value
+
+    @validates('hints')
+    def _validate_hints(self, key, value):
+        return normalize_hints_json(value) if isinstance(value, str) else value
+
+
+@event.listens_for(DailyTaskItem, 'load')
+def _daily_item_normalize_on_load(target, context):
+    for attr in ('task_text', 'solution', 'reason'):
+        val = getattr(target, attr, None)
+        if isinstance(val, str):
+            fixed = normalize_math_full(val)
+            if fixed != val:
+                set_committed_value(target, attr, fixed)
+    hints = getattr(target, 'hints', None)
+    if isinstance(hints, str):
+        fixed_hints = normalize_hints_json(hints)
+        if fixed_hints != hints:
+            set_committed_value(target, 'hints', fixed_hints)
 
 
 class DailyGenerationJob(db.Model):
