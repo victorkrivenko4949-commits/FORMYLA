@@ -1528,6 +1528,22 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] site_reviews Warning: {e}")
 
+# REVIEW_MODERATION_V1 (2026-10-21): удаление отзыва id=5 (user_id=7835,
+# ayudzyuba) с страницы /about по решению владельца (victor).
+# Одноразовый блок: выполняется при каждом старте, но удаляет только
+# конкретную запись (id=5), поэтому повторный запуск ничего не меняет.
+try:
+    with app.app_context():
+        from sqlalchemy import text as _text_rmod
+        db.session.execute(_text_rmod(
+            "DELETE FROM site_reviews WHERE id = 5 AND user_id = 7835"
+        ))
+        db.session.commit()
+        print("[REVIEW-MODERATION] [OK] Removed site_review id=5 (ayudzyuba)")
+except Exception as e:
+    db.session.rollback()
+    print(f"[REVIEW-MODERATION] Warning: {e}")
+
 # AUTO-MIGRATION: Add solved_indices column to daily_quests
 # Used to track per-task completion (so a solved task can't be re-attempted).
 try:
@@ -13489,6 +13505,16 @@ def submit_support():
 # In-memory rate-limit для /api/feedback: один user/IP ≤ 3 отзыва за час.
 _REVIEW_RATE_LIMIT = {}
 
+# REVIEW_BAN_V1 (2026-10-21): пользователи, которым victor запретил писать
+# отзывы о сайте. Проверка идёт по user_id (авторизованный) и по email
+# из формы. Формат: {user_id: {'email': ..., 'notice': ...}}
+_REVIEW_BANS = {
+    7835: {
+        'email': 'ayudzyuba@yandex.ru',
+        'notice': 'victor запретил дзубе писать отзывы',
+    },
+}
+
 
 @app.route('/api/feedback', methods=['POST'])
 def submit_feedback():
@@ -13514,6 +13540,23 @@ def submit_feedback():
         email = (data.get('email') or '').strip() or None
         if email and '@' not in email:
             return jsonify({'error': 'некорректный email'}), 400
+
+        # REVIEW_BAN_V1: если этот пользователь в бане — не принимаем отзыв,
+        # а показываем уведомление от владельца.
+        _ban_user_id = current_user.id if current_user.is_authenticated else None
+        if _ban_user_id and int(_ban_user_id) in _REVIEW_BANS:
+            return jsonify({
+                'ok': False,
+                'error': _REVIEW_BANS[int(_ban_user_id)]['notice'],
+            }), 403
+        if email:
+            _ban_email = email.strip().lower()
+            for _b in _REVIEW_BANS.values():
+                if _b['email'].lower() == _ban_email:
+                    return jsonify({
+                        'ok': False,
+                        'error': _b['notice'],
+                    }), 403
 
         message_text = (data.get('message') or '').strip()
         if not (5 <= len(message_text) <= 4000):
