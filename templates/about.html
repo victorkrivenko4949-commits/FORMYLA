@@ -1,300 +1,444 @@
 {% extends "base.html" %}
 {% block title %}О проекте FORMYLA.net{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v={{ asset_version }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* ── Onboarding banner ── */
-  .onboarding-banner {
-    background: linear-gradient(135deg, rgba(56, 239, 125, 0.18), rgba(17, 153, 142, 0.18));
-    border: 1px solid rgba(56, 239, 125, 0.45);
-    border-radius: 14px;
-    padding: 18px 22px;
-    margin-bottom: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-    color: #e2e8f0;
-    font-size: 15px;
-    line-height: 1.55;
-  }
-  .onboarding-banner .btn-secondary {
-    background: linear-gradient(135deg, #38ef7d, #11998e);
-    color: #fff;
-    text-decoration: none;
-    padding: 10px 18px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 14px;
-    white-space: nowrap;
-    transition: transform 0.15s ease;
-  }
-  .onboarding-banner .btn-secondary:hover { transform: translateY(-2px); }
+/* ─────────────────────────  TOKENS  ───────────────────────── */
+.about2{
+  --bg:#0a0f1e;
+  --bg-raise:#0d1426;
+  --bg-deep:#070b16;
+  --ink:#eaf0fa;
+  --muted:#9aa6bb;
+  --faint:#5d6a84;
+  --gold:#8fe3ff;
+  --violet:#a78bfa;
+  --sky:#8ccbff;
+  --hair:rgba(234,240,250,.12);
+  --hair-strong:rgba(234,240,250,.22);
+  --font-display:'STIX Two Text',Georgia,serif;
+  --font-body:'Golos Text','Segoe UI',sans-serif;
+  --font-mono:'JetBrains Mono','Courier New',monospace;
+  --text-xs:clamp(.75rem, .7rem + .25vw, .875rem);
+  --text-sm:clamp(.875rem, .8rem + .35vw, 1rem);
+  --text-base:clamp(1rem, .95rem + .25vw, 1.125rem);
+  --text-lg:clamp(1.125rem, 1rem + .75vw, 1.5rem);
+  --text-xl:clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+  --text-2xl:clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+  --text-3xl:clamp(2.5rem, 1rem + 4vw, 5rem);
+  --s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.25rem;--s6:1.5rem;
+  --s8:2rem;--s10:2.5rem;--s12:3rem;--s16:4rem;--s20:5rem;--s24:6rem;
+  --content:1140px;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+.about2 *,.about2 *::before,.about2 *::after{box-sizing:border-box;margin:0;padding:0}
+.about2{
+  line-height:1.6;font-family:var(--font-body);
+  font-size:var(--text-base);color:var(--ink);
+  background-image:
+    radial-gradient(ellipse 80% 34% at 50% -4%,rgba(140,203,255,.07),transparent 62%),
+    repeating-linear-gradient(0deg,transparent 0 31px,rgba(255,255,255,.018) 31px 32px),
+    repeating-linear-gradient(90deg,transparent 0 31px,rgba(255,255,255,.018) 31px 32px);
+}
+.about2 img,.about2 svg{display:block;max-width:100%}
+.about2 a{color:inherit}
+.about2 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+::selection{background:rgba(56,189,248,.28)}
+.about2 :focus-visible{outline:2px solid var(--sky);outline-offset:3px}
 
-  /* ── Hero CTA buttons ── */
-  .hero-cta-row {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 24px;
-  }
-  .hero-cta {
-    padding: 12px 22px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 15px;
-    text-decoration: none;
-    transition: transform 0.15s ease;
-  }
-  .hero-cta-primary {
-    background: linear-gradient(135deg, #38ef7d, #11998e);
-    color: #0f172a;
-  }
-  .hero-cta-secondary {
-    background: rgba(255,255,255,0.06);
-    color: #e2e8f0;
-    border: 1px solid rgba(255,255,255,0.1);
-  }
-  .hero-cta:hover { transform: translateY(-2px); }
-  .hero-cta-block { margin-top: 26px; }
-  .hero-cta-note {
-    margin-top: 12px;
-    font-size: 13px;
-    color: #fbbf24;
-    font-weight: 600;
-  }
-  .hero-description {
-    color: #cbd5e1;
-    font-size: 1rem;
-    line-height: 1.65;
-    max-width: 720px;
-    margin: 18px auto 0;
-  }
 
-  /* ── Плашка «почему FORMYLA.net» в хиро ── */
-  .hero-proof {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 22px;
-    max-width: 820px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .hero-proof-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(56, 239, 125, 0.08);
-    border: 1px solid rgba(56, 239, 125, 0.25);
-    border-radius: 999px;
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #e2e8f0;
-  }
-  .hero-proof-item .hp-icon { font-size: 16px; }
+/* ─────────────────────────  HERO  ───────────────────────── */
+.hero{position:relative;overflow:hidden}
+.hero__in{
+  max-width:var(--content);margin:0 auto;
+  padding:clamp(var(--s16),9vw,var(--s24)) var(--s6) clamp(var(--s12),7vw,var(--s20));
+  display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);
+  gap:clamp(var(--s8),5vw,var(--s16));align-items:center;
+}
+.hero__eyebrow{
+  font-family:var(--font-mono);font-size:var(--text-xs);
+  letter-spacing:.22em;text-transform:uppercase;color:var(--gold);
+  display:flex;align-items:center;gap:var(--s3);
+}
+.hero__eyebrow::before{content:"";width:2.2em;height:1px;background:var(--gold);opacity:.6}
+.hero__title{
+  font-family:var(--font-display);font-weight:600;
+  font-size:clamp(3rem, 1rem + 7vw, 6.5rem);
+  line-height:1.02;letter-spacing:-.015em;margin:var(--s5) 0 var(--s4);
+}
+.hero__title .tld{color:var(--gold);font-weight:400;font-style:italic}
+.hero__subtitle{
+  font-family:var(--font-display);font-style:italic;
+  font-size:var(--text-lg);color:var(--ink);margin-bottom:var(--s5);
+}
+.hero__desc{color:var(--muted);max-width:56ch}
+.hero__proof{
+  margin-top:var(--s8);border-top:1px solid var(--hair);
+  padding-top:var(--s5);display:flex;flex-wrap:wrap;gap:var(--s2) 0;
+}
+.hero__proof li{
+  list-style:none;
+  font-size:var(--text-sm);color:var(--muted);
+}
+.hero__proof li::before{
+  content:"—";color:var(--gold);margin-right:.55em;
+}
+.hero__proof b{color:var(--ink);font-weight:600}
+.hero__cta-row{margin-top:var(--s8);display:flex;align-items:center;gap:var(--s5);flex-wrap:wrap}
+.a2btn{
+  display:inline-block;text-decoration:none;font-weight:600;font-size:var(--text-sm);
+  padding:.9em 1.9em;border-radius:4px;transition:transform .18s var(--ease),box-shadow .18s var(--ease),background .18s var(--ease);
+}
+.a2btn--primary{background:linear-gradient(135deg,#38bdf8,#6366f1);color:#fff}
+.a2btn--primary:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(99,102,241,.45)}
+.a2btn--ghost{border:1px solid var(--hair-strong);color:var(--muted)}
+.a2btn--ghost:hover{border-color:var(--gold);color:var(--gold)}
+.hero__cta-note{font-size:var(--text-xs);color:var(--muted);max-width:34ch}
 
-  /* ── Final CTA section ── */
-  .final-cta {
-    text-align: center;
-    padding: 32px 20px;
-    background: linear-gradient(135deg, rgba(56, 239, 125, 0.08), rgba(124, 58, 237, 0.08));
-    border: 1px solid rgba(56, 239, 125, 0.2);
-    border-radius: 16px;
-  }
-  .final-cta h2 { margin-bottom: 10px; }
-  .final-cta p { color: #cbd5e1; margin-bottom: 22px; }
-  .final-cta-row {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .final-cta-row .login-link {
-    color: #94a3b8;
-    text-decoration: none;
-    font-size: 14px;
-  }
-  .final-cta-row .login-link a {
-    color: #38ef7d;
-    text-decoration: none;
-    font-weight: 600;
-  }
+/* geometric construction */
+.hero__figure{position:relative}
+.hero__figure svg{width:100%;height:auto;filter:drop-shadow(0 0 14px rgba(56,189,248,.22))}
+.draw{stroke-dasharray:1200;stroke-dashoffset:1200;animation:draw 2.6s var(--ease) forwards}
+.draw.d1{animation-delay:.3s}.draw.d2{animation-delay:.9s}.draw.d3{animation-delay:1.5s}
+@keyframes draw{to{stroke-dashoffset:0}}
+.fig-label{font-family:var(--font-mono);font-size:13px;fill:var(--muted)}
+.fig-label--gold{fill:var(--gold)}
+.hero__symbols span{
+  position:absolute;font-family:var(--font-display);font-style:italic;
+  color:var(--ink);opacity:.07;user-select:none;pointer-events:none;
+}
+@media (max-width:900px){
+  .hero__in{grid-template-columns:1fr}
+  .hero__figure{max-width:420px;margin:0 auto}
+}
 
-  /* ── Founder credits ── */
-  .founder-contacts {
-    color: #94a3b8;
-    font-size: 14px;
-    margin-top: 8px;
-  }
+/* ─────────────────────────  SECTIONS  ───────────────────────── */
+.section{
+  max-width:var(--content);margin:0 auto;
+  padding:clamp(var(--s12),7vw,var(--s20)) var(--s6);
+}
+.section__head{display:flex;align-items:baseline;gap:var(--s5);margin-bottom:var(--s10)}
+.section__no{
+  font-family:var(--font-mono);font-size:var(--text-xs);
+  color:var(--gold);letter-spacing:.18em;white-space:nowrap;
+}
+.section__title{
+  font-family:var(--font-display);font-weight:600;
+  font-size:var(--text-xl);line-height:1.15;letter-spacing:-.01em;
+}
+.rule{border:none;border-top:1px solid var(--hair)}
 
-  /* ── Mobile notice banner ── */
-  .mobile-notice {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(245, 158, 11, 0.08));
-    border: 1px solid rgba(251, 191, 36, 0.3);
-    border-radius: 12px;
-    padding: 12px 18px;
-    margin-bottom: 24px;
-    color: #fbbf24;
-    font-size: 14px;
-    line-height: 1.5;
-  }
-  .mobile-notice .mn-icon { font-size: 20px; flex-shrink: 0; }
-  .mobile-notice .mn-text strong { color: #fcd34d; }
-  @media (min-width: 1024px) { .mobile-notice { display: none; } }
+/* ── timeline: как это работает ── */
+.steps{display:grid;gap:0}
+.step{
+  display:grid;grid-template-columns:110px 1fr;gap:var(--s8);
+  padding:var(--s8) 0;border-top:1px solid var(--hair);
+}
+.step:last-child{border-bottom:1px solid var(--hair)}
+.step__num{
+  font-family:var(--font-display);font-style:italic;font-weight:400;
+  font-size:var(--text-2xl);color:var(--gold);line-height:1;
+}
+.step__num small{display:block;font-family:var(--font-mono);font-style:normal;font-size:var(--text-xs);color:var(--faint);letter-spacing:.18em;margin-top:var(--s3)}
+.step h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:600;margin-bottom:var(--s3)}
+.step p{color:var(--muted);max-width:62ch}
+.step p strong{color:var(--ink);font-weight:600}
+@media (max-width:640px){.step{grid-template-columns:1fr;gap:var(--s4)}}
 
-  /* ── Concept cards (анкета, якорные, задачи дня) ── */
-  .concept-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 18px;
-    margin-top: 20px;
-  }
-  @media (min-width: 768px) {
-    .concept-grid { grid-template-columns: repeat(3, 1fr); }
-  }
-  .concept-card {
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
-    background: linear-gradient(180deg, rgba(56, 189, 248, 0.05), rgba(15, 23, 42, 0.55));
-    border: 1px solid rgba(56, 189, 248, 0.15);
-    border-radius: 16px;
-    padding: 20px;
-    transition: border-color 0.15s ease;
-  }
-  .concept-card:hover { border-color: rgba(56, 189, 248, 0.35); }
-  .concept-icon {
-    flex-shrink: 0;
-    width: 48px; height: 48px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(139, 92, 246, 0.2));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
-  }
-  .concept-body h3 {
-    color: #f1f5f9;
-    font-size: 1.05em;
-    margin: 0 0 6px;
-  }
-  .concept-body p {
-    color: #94a3b8;
-    font-size: 0.93em;
-    line-height: 1.55;
-    margin: 0;
-  }
+/* ── rulebook: уровень / серия / долг / куратор ── */
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--hair)}
+.rule-entry{padding:var(--s8);border-bottom:1px solid var(--hair)}
+.rule-entry:nth-child(odd){border-right:1px solid var(--hair)}
+.rule-entry:nth-last-child(-n+2){border-bottom:none}
+.rule-entry__term{
+  display:flex;align-items:baseline;justify-content:space-between;gap:var(--s4);
+  margin-bottom:var(--s4);
+}
+.rule-entry__term h3{
+  font-family:var(--font-display);font-size:var(--text-lg);font-weight:600;
+}
+.rule-entry__term .sym{font-family:var(--font-display);font-style:italic;font-size:1.4em;color:var(--gold)}
+.rule-entry p{color:var(--muted);font-size:var(--text-sm)}
+.rule-entry p strong{color:var(--ink)}
+.ledger{margin-top:var(--s5);border-top:1px solid var(--hair);font-family:var(--font-mono)}
+.ledger div{
+  display:flex;justify-content:space-between;gap:var(--s4);
+  padding:var(--s2) 0;border-bottom:1px solid var(--hair);
+  font-size:var(--text-xs);color:var(--muted);
+}
+.ledger b{color:var(--gold);font-weight:500;white-space:nowrap}
+@media (max-width:820px){
+  .rules{grid-template-columns:1fr}
+  .rule-entry:nth-child(odd){border-right:none}
+  .rule-entry:nth-last-child(-n+2){border-bottom:1px solid var(--hair)}
+  .rule-entry:last-child{border-bottom:none}
+}
 
-  /* ── Concept highlight (уровень, серия, долг, куратор) ── */
-  .concept-highlight {
-    display: flex;
-    gap: 18px;
-    align-items: flex-start;
-    background: linear-gradient(180deg, rgba(56, 189, 248, 0.06), rgba(15, 23, 42, 0.5));
-    border: 1px solid rgba(56, 189, 248, 0.18);
-    border-radius: 18px;
-    padding: 22px;
-    margin-top: 16px;
-  }
-  .concept-highlight-badge {
-    flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    min-width: 80px; height: 36px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, #38bdf8, #6366f1);
-    color: #fff;
-    font-weight: 700;
-    font-size: 14px;
-    padding: 0 16px;
-  }
-  .concept-highlight-body {
-    flex: 1;
-  }
-  .concept-highlight-body p {
-    color: #cbd5e1;
-    font-size: 0.95em;
-    line-height: 1.6;
-    margin: 0;
-  }
+/* ── index: что есть на сайте ── */
+.toc__row{
+  display:grid;grid-template-columns:2.6em 1fr;gap:var(--s2) var(--s4);align-items:baseline;
+  padding:var(--s5) 0;border-bottom:1px solid var(--hair);text-decoration:none;
+  transition:padding-left .25s var(--ease);
+}
+.toc__row:hover{padding-left:var(--s4)}
+.toc__num{
+  font-family:var(--font-mono);font-size:var(--text-xs);color:var(--gold);
+}
+.toc__head{display:flex;align-items:baseline;gap:var(--s4);min-width:0}
+.toc__head h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:500}
+.toc__row:hover h3{color:var(--gold)}
+.toc__row p{grid-column:2;color:var(--muted);font-size:var(--text-sm);max-width:60ch}
+.toc__leader{
+  flex:1;border-bottom:1px dotted var(--hair-strong);
+  transform:translateY(-.35em);min-width:2rem;
+}
+@media (max-width:720px){
+  .toc__leader{display:none}
+}
 
-  /* ── Subjects grid (разделы) ── */
-  .subjects-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-top: 18px;
-  }
-  @media (max-width: 480px) {
-    .subjects-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  .subject-tile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 20px 12px;
-    background: linear-gradient(180deg, rgba(56, 189, 248, 0.05), rgba(15, 23, 42, 0.5));
-    border: 1px solid rgba(56, 189, 248, 0.15);
-    border-radius: 14px;
-    transition: border-color 0.15s ease;
-  }
-  .subject-tile:hover { border-color: rgba(56, 189, 248, 0.35); }
-  .subject-icon {
-    font-size: 28px;
-    font-weight: 700;
-    color: #e2e8f0;
-  }
-  .subject-name {
-    color: #94a3b8;
-    font-size: 14px;
-    font-weight: 500;
-  }
-  .subjects-note {
-    color: #64748b;
-    font-size: 0.9em;
-    line-height: 1.55;
-    text-align: center;
-    margin-top: 16px;
-  }
+/* ── pull-quote: ИИ-наставник ── */
+.pull{
+  max-width:880px;margin:0 auto;text-align:center;
+  padding:clamp(var(--s12),7vw,var(--s20)) var(--s6);
+}
+.pull__mark{
+  font-family:var(--font-display);font-size:5rem;line-height:0;color:var(--gold);
+  display:block;margin-bottom:var(--s8);
+}
+.pull h2{
+  font-family:var(--font-display);font-weight:500;font-style:italic;
+  font-size:var(--text-xl);margin-bottom:var(--s6);text-wrap:balance;
+}
+.pull p{color:var(--muted);font-size:var(--text-lg);line-height:1.7;max-width:60ch;margin:0 auto}
+.pull p strong{color:var(--ink)}
 
-  /* ── Stats grid ── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-top: 18px;
-  }
-  @media (max-width: 600px) {
-    .stats-grid { grid-template-columns: 1fr; }
-  }
-  .stat-card {
-    text-align: center;
-    padding: 20px 14px;
-    background: linear-gradient(180deg, rgba(56, 189, 248, 0.05), rgba(15, 23, 42, 0.55));
-    border: 1px solid rgba(56, 189, 248, 0.15);
-    border-radius: 14px;
-  }
-  .stat-num {
-    font-size: 2em;
-    font-weight: 800;
-    background: linear-gradient(135deg, #38bdf8, #8b5cf6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .stat-label {
-    color: #94a3b8;
-    font-size: 0.9em;
-    margin-top: 4px;
-    line-height: 1.45;
-  }
+/* ── stats: реальные олимпиады ── */
+.stats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);
+}
+.stat{padding:var(--s10) var(--s6);text-align:center;position:relative}
+.stat + .stat::before{
+  content:"";position:absolute;left:0;top:var(--s8);bottom:var(--s8);
+  width:1px;background:var(--hair);
+}
+.stat__num{
+  font-family:var(--font-display);font-weight:600;
+  font-size:clamp(3rem, 1rem + 6vw, 5.5rem);line-height:1;letter-spacing:-.02em;
+  background:linear-gradient(120deg,#8fe3ff 0%,#38bdf8 45%,#a78bfa 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+.stat__num sup{background:none;-webkit-text-fill-color:var(--violet);color:var(--violet);font-size:.55em}
+.stat__label{margin-top:var(--s4);color:#b6c2d4;font-size:var(--text-sm);max-width:26ch;margin-left:auto;margin-right:auto}
+@media (max-width:720px){
+  .stats{grid-template-columns:1fr}
+  .stat + .stat::before{left:var(--s6);right:var(--s6);top:0;bottom:auto;width:auto;height:1px}
+}
+
+/* ── фото-полоса → холодная градиентная сцена ── */
+.band{
+  position:relative;min-height:72vh;display:flex;align-items:flex-end;overflow:hidden;
+  background:
+    radial-gradient(60% 130% at 12% 105%,rgba(56,189,248,.30),transparent 62%),
+    radial-gradient(55% 110% at 88% 10%,rgba(139,92,246,.32),transparent 60%),
+    radial-gradient(45% 90% at 55% 95%,rgba(45,212,191,.18),transparent 65%),
+    linear-gradient(155deg,#081026 0%,#0d1a40 48%,#1b1550 100%);
+}
+.band::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(10,15,30,.20) 0%,rgba(10,15,30,.45) 55%,var(--bg) 100%);
+}
+.band__deco{position:absolute;inset:0;overflow:hidden}
+.bd{position:absolute;border-radius:50%;filter:blur(70px)}
+.bd1{width:420px;height:420px;left:-80px;top:10%;background:rgba(56,189,248,.26)}
+.bd2{width:380px;height:380px;right:-60px;top:-10%;background:rgba(139,92,246,.30)}
+.bd3{width:300px;height:300px;left:55%;bottom:-20%;background:rgba(45,212,191,.16)}
+.bs{
+  position:absolute;font-family:var(--font-display);font-style:italic;
+  color:#fff;opacity:.10;user-select:none;pointer-events:none;font-size:2.2rem;
+}
+.band__ring{
+  position:absolute;border:1px solid rgba(255,255,255,.10);border-radius:50%;
+}
+.band__ring--1{width:520px;height:520px;right:-140px;bottom:-180px}
+.band__ring--2{width:340px;height:340px;right:-40px;bottom:-120px;border-color:rgba(143,227,255,.18)}
+.band__in{
+  position:relative;z-index:1;max-width:var(--content);margin:0 auto;width:100%;
+  padding:var(--s24) var(--s6) var(--s16);
+}
+.band__eyebrow{
+  font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:.22em;
+  text-transform:uppercase;color:var(--gold);margin-bottom:var(--s4);
+}
+.band h2{
+  font-family:var(--font-display);font-weight:600;font-size:var(--text-2xl);
+  line-height:1.08;letter-spacing:-.015em;max-width:14ch;color:#fff;
+  text-shadow:0 2px 30px rgba(56,189,248,.35);
+}
+@media (max-width:900px){.band{min-height:60vh}}
+
+/* ── отличия: нумерованный список ── */
+.traits{columns:2;column-gap:clamp(var(--s8),5vw,var(--s16))}
+.trait{
+  break-inside:avoid;display:grid;grid-template-columns:2.6em 1fr;gap:var(--s4);
+  padding:var(--s6) 0;border-bottom:1px solid var(--hair);
+}
+.trait__n{
+  font-family:var(--font-display);font-style:italic;font-size:var(--text-lg);
+  color:var(--gold);
+}
+.trait h3{font-family:var(--font-display);font-size:var(--text-base);font-weight:600;margin-bottom:var(--s2)}
+.trait p{color:var(--muted);font-size:var(--text-sm)}
+@media (max-width:820px){.traits{columns:1}}
+
+/* ── для кого: матрица ── */
+.matrix{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--hair)}
+.cell{padding:var(--s8);border-left:1px solid var(--hair);border-top:1px solid var(--hair)}
+.cell:nth-child(1),.cell:nth-child(2){border-top:none}
+.cell:nth-child(odd){border-left:none}
+.cell h3{
+  font-family:var(--font-display);font-size:var(--text-lg);font-weight:600;
+  margin-bottom:var(--s3);
+}
+.cell h3 .aud{color:var(--gold);font-style:italic;font-weight:500}
+.cell p{color:var(--muted);font-size:var(--text-sm)}
+@media (max-width:820px){
+  .matrix{grid-template-columns:1fr}
+  .cell{border-left:none;border-top:1px solid var(--hair)}
+  .cell:first-child{border-top:none}
+}
+
+/* ── FAQ ── */
+.faq{border-top:1px solid var(--hair)}
+.faq__item{border-bottom:1px solid var(--hair)}
+.faq__q{
+  width:100%;display:flex;justify-content:space-between;align-items:baseline;gap:var(--s6);
+  padding:var(--s5) 0;text-align:left;
+  font-family:var(--font-display);font-size:var(--text-lg);font-weight:500;
+  transition:color .18s var(--ease);
+}
+.faq__q:hover{color:var(--gold)}
+.faq__q .pm{
+  font-family:var(--font-mono);font-weight:400;font-size:1em;color:var(--gold);
+  transition:transform .25s var(--ease);flex-shrink:0;
+}
+.faq__item.open .pm{transform:rotate(45deg)}
+.faq__a{
+  display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s var(--ease);
+}
+.faq__item.open .faq__a{grid-template-rows:1fr}
+.faq__a>div{overflow:hidden}
+.faq__a p{
+  color:var(--muted);font-size:var(--text-sm);padding-bottom:var(--s5);max-width:70ch;
+}
+.faq__a strong{color:var(--ink)}
+
+/* ── final CTA ── */
+.cta{text-align:center;padding:clamp(var(--s16),9vw,var(--s24)) var(--s6)}
+.cta h2{
+  font-family:var(--font-display);font-weight:600;font-size:var(--text-2xl);
+  letter-spacing:-.01em;margin-bottom:var(--s5);
+}
+.cta p{color:var(--muted);margin-bottom:var(--s8)}
+.cta .a2btn--primary{font-size:var(--text-base);padding:1em 2.4em}
+
+/* ── telegram + contact ── */
+.closing{
+  max-width:var(--content);margin:0 auto;padding:0 var(--s6) var(--s16);
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--hair);
+  border:1px solid var(--hair);
+}
+.closing>div{background:var(--bg-raise);padding:var(--s8)}
+.closing h3{
+  font-family:var(--font-display);font-size:var(--text-lg);font-weight:600;
+  margin-bottom:var(--s3);
+}
+.closing p{color:var(--muted);font-size:var(--text-sm);margin-bottom:var(--s5)}
+.tg-link{
+  display:inline-flex;align-items:center;gap:var(--s3);text-decoration:none;
+  font-family:var(--font-mono);font-size:var(--text-sm);color:var(--sky);
+  border:1px solid var(--hair-strong);padding:.6em 1.2em;border-radius:999px;
+  transition:border-color .18s var(--ease),color .18s var(--ease);
+}
+.tg-link:hover{border-color:var(--sky)}
+/* static demo of the support chat */
+.chat-demo{
+  border:1px solid var(--hair-strong);border-radius:10px;
+  background:var(--bg-deep);overflow:hidden;
+}
+.chat-demo__head{
+  display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap;
+  padding:var(--s3) var(--s4);border-bottom:1px solid var(--hair);
+}
+.chat-demo__dot{
+  width:8px;height:8px;border-radius:50%;background:#2dd4bf;flex-shrink:0;
+  box-shadow:0 0 8px #2dd4bf;animation:pulse-dot 2s infinite;
+}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.5}}
+.chat-demo__title{font-weight:600;font-size:var(--text-sm)}
+.chat-demo__status{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted)}
+.chat-demo__badge{
+  margin-left:auto;font-family:var(--font-mono);font-size:var(--text-xs);
+  color:var(--gold);border:1px solid rgba(143,227,255,.35);
+  padding:.1em .6em;border-radius:999px;
+}
+.chat-demo__body{
+  display:flex;flex-direction:column;gap:var(--s3);
+  padding:var(--s5) var(--s4);min-height:340px;
+}
+.chat-demo__msg{
+  padding:var(--s3) var(--s4);
+  font-size:var(--text-sm);max-width:85%;line-height:1.5;
+}
+.chat-demo__msg--bot{
+  background:rgba(140,203,255,.08);border:1px solid var(--hair);
+  border-radius:12px 12px 12px 2px;color:var(--muted);
+  align-self:flex-start;
+}
+.chat-demo__msg--user{
+  background:linear-gradient(135deg,rgba(56,189,248,.22),rgba(139,92,246,.22));
+  border:1px solid rgba(140,203,255,.25);
+  border-radius:12px 12px 2px 12px;color:var(--ink);
+  align-self:flex-end;
+}
+.chat-demo__chips{display:flex;gap:var(--s2);flex-wrap:wrap;padding:0 var(--s4) var(--s3);border-top:1px solid var(--hair);padding-top:var(--s3);margin:0 var(--s4)}
+.chat-demo__chip{
+  font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted);
+  border:1px solid var(--hair-strong);border-radius:999px;padding:.25em .8em;
+}
+.chat-demo__chip.is-active{color:var(--gold);border-color:rgba(143,227,255,.5)}
+.chat-demo__input{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s3);
+  margin:0 var(--s4) var(--s2);padding:var(--s2) var(--s4);
+  border:1px solid var(--hair);border-radius:8px;
+}
+.chat-demo__placeholder{font-size:var(--text-xs);color:var(--faint)}
+.chat-demo__send{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--faint)}
+.chat-demo__hint{
+  font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted);
+  padding:0 var(--s4) var(--s3);
+}
+@media (max-width:820px){.closing{grid-template-columns:1fr}}
+
+/* ── footer ── */
+.site-footer{border-top:1px solid var(--hair);margin-top:var(--s16)}
+.site-footer__in{
+  max-width:var(--content);margin:0 auto;padding:var(--s6);
+  display:flex;justify-content:space-between;gap:var(--s4);flex-wrap:wrap;
+  font-family:var(--font-mono);font-size:var(--text-xs);color:var(--faint);
+}
+
+/* ── reveal on scroll ── */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none}
+  .draw{animation:none;stroke-dashoffset:0}
+}
+
 </style>
 {% endblock %}
 {% block content %}
@@ -327,355 +471,354 @@
     window.addEventListener('load', function () { window.scrollTo(0, 0); }, { once: true });
   }
 </script>
-<div class="about-page" id="about-top" style="scroll-margin-top: 24px;">
+<div class="about2" id="about-top" style="scroll-margin-top: 24px;">
 
   {# ── 0. Mobile notice ── #}
   <div class="mobile-notice">
-    <span class="mn-icon"></span>
+    <span class="mn-icon">📱</span>
     <span class="mn-text"><strong>Удобнее на компьютере</strong> — на телефоне доступны не все функции</span>
   </div>
 
   {# ── 1. Onboarding banner (only after signup) ── #}
   {% if request.args.get('onboarding') %}
   <div class="onboarding-banner">
-    <span> <strong>Добро пожаловать в FORMYLA.net!</strong> Это короткое знакомство — за 30 секунд поймёшь, что тут можно делать.</span>
+    <span>🎓 <strong>Добро пожаловать в FORMYLA.net!</strong> Это короткое знакомство — за 30 секунд поймёшь, что тут можно делать.</span>
     <a href="/intake" class="btn-secondary">Пройти анкету -></a>
   </div>
   {% endif %}
 
   {# ── 1.5. Кнопка «Пройти анкету» для тех, кто читает без анкеты ── #}
   {% if need_intake %}
-  <div style="text-align:center;background:linear-gradient(135deg,rgba(56,189,248,0.14),rgba(139,92,246,0.14));border:1px solid rgba(56,189,248,0.4);border-radius:20px;padding:26px 24px;margin-bottom:28px;">
-    <div style="color:var(--text-main);font-size:1.08em;font-weight:700;margin-bottom:6px;">Чтобы начать заниматься — пройди короткую анкету</div>
-    <div style="color:rgba(255,255,255,0.7);font-size:0.95em;margin-bottom:16px;">6 вопросов, 2 минуты. Дальше откроются задачи дня, куратор и весь остальной сайт.</div>
-    <a href="/intake" data-track="cta" style="display:inline-block;padding:15px 40px;background:linear-gradient(135deg,#38bdf8 0%,#8b5cf6 100%);color:#fff;text-decoration:none;border-radius:12px;font-size:1.08em;font-weight:700;box-shadow:0 6px 20px rgba(56,189,248,0.4);">Пройти анкету</a>
+  <div style="text-align:center;background:linear-gradient(135deg,rgba(56,189,248,.14),rgba(139,92,246,.14));border:1px solid rgba(56,189,248,.4);border-radius:20px;padding:26px 24px;margin-bottom:28px;">
+    <div style="color:#eaf0fa;font-size:1.08em;font-weight:700;margin-bottom:6px;">Чтобы начать заниматься — пройди короткую анкету</div>
+    <div style="color:rgba(255,255,255,.7);font-size:.95em;margin-bottom:16px;">6 вопросов, 2 минуты. Дальше откроются задачи дня, куратор и весь остальной сайт.</div>
+    <a href="/intake" data-track="cta" style="display:inline-block;padding:15px 40px;background:linear-gradient(135deg,#38bdf8 0%,#8b5cf6 100%);color:#fff;text-decoration:none;border-radius:12px;font-size:1.08em;font-weight:700;box-shadow:0 6px 20px rgba(56,189,248,.4);">Пройти анкету</a>
   </div>
   {% endif %}
 
-  {# ── 2. Hero ── #}
-  <section class="about-hero formyla-hero-v2" id="how-it-works">
-    <h1 class="about-title">FORMYLA.net</h1>
-    <p class="about-subtitle">Персональная подготовка к олимпиадам по математике.</p>
 
-    <p class="hero-description">
-      Это не школьный курс и не подготовка к экзаменам. Здесь только олимпиадные задачи:
-      всероссийская олимпиада, Эйлер, Физтех, Курчатов, Матпраздник и другие.
-    </p>
 
-    <div class="hero-proof">
-      <div class="hero-proof-item"><span class="hp-icon">🎯</span> Персональный план под твой класс и цель</div>
-      <div class="hero-proof-item"><span class="hp-icon">🤖</span> ИИ проверяет не только ответ, но и решение</div>
-      <div class="hero-proof-item"><span class="hp-icon">📅</span> 10 новых задач каждый день — серия не прерывается</div>
-      <div class="hero-proof-item"><span class="hp-icon">📚</span> 102 олимпиадных метода с разборами</div>
-      <div class="hero-proof-item"><span class="hp-icon">🆓</span> Бесплатно и без установки — всё в браузере</div>
+  <!-- ═══════════ HERO ═══════════ -->
+  <section class="hero">
+    <div class="hero__symbols" aria-hidden="true">
+      <span style="top:8%;left:4%;font-size:2.2rem">∑</span>
+      <span style="top:14%;right:10%;font-size:1.8rem">a²+b²=c²</span>
+      <span style="bottom:18%;left:8%;font-size:1.6rem">√2</span>
+      <span style="bottom:8%;right:6%;font-size:2rem">π</span>
+      <span style="top:64%;left:3%;font-size:1.4rem">n!</span>
     </div>
-    {% if not current_user.is_authenticated %}
-    <div class="hero-cta-block">
-      <a href="/login" class="hero-cta hero-cta-primary">Зарегистрироваться</a>
-      <p class="hero-cta-note">Без регистрации дальше никуда: анкета, задачи дня и персональный план открываются только после входа.</p>
-    </div>
-    {% endif %}
-  </section>
-
-  {# ── 3. Как это работает: анкета, якорные задачи, задачи дня ── #}
-  <section class="about-section">
-    <h2>⚙️ Как это работает</h2>
-
-    <div class="concept-grid">
-      <div class="concept-card">
-        <div class="concept-icon">📋</div>
-        <div class="concept-body">
-          <h3>📋 Анкета</h3>
-          <p>Сначала короткая анкета: класс, цель, опыт, сколько времени готов уделять, какие разделы даются тяжелее. По ответам система подбирает стартовый уровень.</p>
+    <div class="hero__in">
+      <div>
+        <p class="hero__eyebrow">О сайте</p>
+        <h1 class="hero__title">FORMYLA<span class="tld">.net</span></h1>
+        <p class="hero__subtitle">Персональная подготовка к олимпиадам по математике.</p>
+        <p class="hero__desc">Это не школьный курс и не подготовка к экзаменам. Здесь только олимпиадные задачи: всероссийская олимпиада, Эйлер, Физтех, Курчатов, Матпраздник и другие.</p>
+        <ul class="hero__proof">
+          <li><b>Персональный план</b> под твой класс и цель</li>
+          <li>ИИ проверяет не только ответ, но и <b>решение</b></li>
+          <li><b>10 новых задач</b> каждый день — серия не прерывается</li>
+          <li><b>102 олимпиадных метода</b> с разборами</li>
+          <li><b>Бесплатно</b> и без установки — всё в браузере</li>
+        </ul>
+        {% if not current_user.is_authenticated %}
+        <div class="hero__cta-row">
+          <a class="a2btn a2btn--primary" href="/login">Зарегистрироваться</a>
+          <p class="hero__cta-note">Без регистрации дальше никуда: анкета, задачи дня и персональный план открываются только после входа.</p>
         </div>
+        {% endif %}
       </div>
 
-      <div class="concept-card">
-        <div class="concept-icon">⚓</div>
-        <div class="concept-body">
-          <h3>⚓ Якорные задачи</h3>
+      <figure class="hero__figure" aria-hidden="true">
+        <svg viewBox="0 0 520 480" fill="none">
+          <!-- circumcircle -->
+          <circle class="draw d2" cx="260" cy="215" r="165" stroke="#8fe3ff" stroke-width="1.4"/>
+          <!-- triangle ABC: A(210°), B(330°), C(90°) on the circle, O — center -->
+          <path class="draw" d="M 117 132.5 L 403 132.5 L 260 380 Z" stroke="#eaf0fa" stroke-width="1.6"/>
+          <!-- sides from O -->
+          <path class="draw d1" d="M 260 215 L 117 132.5 M 260 215 L 403 132.5 M 260 215 L 260 380" stroke="#a78bfa" stroke-width=".8" opacity=".55"/>
+          <!-- altitude from C, perpendicular to AB -->
+          <path class="draw d3" d="M 260 380 L 260 132.5" stroke="#8ccbff" stroke-width="1" stroke-dasharray="5 5"/>
+          <rect x="260" y="132.5" width="12" height="12" stroke="#8ccbff" stroke-width="1" fill="none"/>
+          <!-- center -->
+          <circle class="draw d3" cx="260" cy="215" r="3.5" fill="#8fe3ff" stroke="none"/>
+          <!-- labels -->
+          <text class="fig-label" x="96" y="128">A</text>
+          <text class="fig-label" x="412" y="128">B</text>
+          <text class="fig-label" x="268" y="400">C</text>
+          <text class="fig-label fig-label--gold" x="240" y="208">O</text>
+          <text class="fig-label" x="272" y="300">h</text>
+          <text class="fig-label" x="60" y="462">Δ ABC, R — ?</text>
+        </svg>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ═══════════ 01 · КАК ЭТО РАБОТАЕТ ═══════════ -->
+  <section class="section" id="how">
+    <div class="section__head reveal">
+      <span class="section__no">§ 01</span>
+      <h2 class="section__title">Как это работает</h2>
+    </div>
+    <div class="steps">
+      <article class="step reveal">
+        <div class="step__num">01<small>ШАГ</small></div>
+        <div>
+          <h3>Анкета</h3>
+          <p>Сначала короткая анкета: класс, цель, опыт, сколько времени готов уделять, какие разделы даются тяжелее. По ответам система подбирает <strong>стартовый уровень</strong>.</p>
+        </div>
+      </article>
+      <article class="step reveal">
+        <div class="step__num">02<small>ШАГ</small></div>
+        <div>
+          <h3>Якорные задачи</h3>
           <p>Затем <strong>пять якорных задач</strong>. Они нужны, чтобы понять, где ты сейчас, а не чтобы поставить оценку. Ошибиться на них нормально.</p>
         </div>
-      </div>
-
-      <div class="concept-card">
-        <div class="concept-icon">🔥</div>
-        <div class="concept-body">
-          <h3>🔥 Задачи дня</h3>
+      </article>
+      <article class="step reveal">
+        <div class="step__num">03<small>ШАГ</small></div>
+        <div>
+          <h3>Задачи дня</h3>
           <p>Дальше начинаются <strong>задачи дня</strong>. Сложность и объём — те, которые ты выбрал в анкете; система подстраивает уровень по тому, как ты решаешь.</p>
         </div>
-      </div>
+      </article>
     </div>
   </section>
 
-  {# ── 4. Уровень ── #}
-  <section class="about-section">
-    <h2>📈 Уровень</h2>
-    <div class="concept-highlight">
-      <div class="concept-highlight-badge">1 -> 10</div>
-      <div class="concept-highlight-body">
-        <p>Уровень от <strong>1 до 10</strong> привязан к опыту (XP): каждые <strong>100 XP</strong> — новый уровень. За анкету начисляется <strong>+20 XP</strong>, за пройденный тест <strong>+20 XP</strong>, за правильно решённую задачу дня <strong>+5 XP</strong>. Сложность задач дня (1–4) подбирается отдельно и не равна уровню XP.</p>
-      </div>
+  <!-- ═══════════ 02 · УРОВЕНЬ / СЕРИЯ / ДОЛГ / КУРАТОР ═══════════ -->
+  <section class="section">
+    <div class="section__head reveal">
+      <span class="section__no">§ 02</span>
+      <h2 class="section__title">Система</h2>
     </div>
-  </section>
-
-  {# ── 5. Серия ── #}
-  <section class="about-section">
-    <h2>🔥 Серия</h2>
-    <div class="concept-highlight">
-      <div class="concept-highlight-badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">Серия</div>
-      <div class="concept-highlight-body">
+    <div class="rules">
+      <article class="rule-entry reveal">
+        <div class="rule-entry__term"><h3>Уровень</h3><span class="sym">1→4</span></div>
+        <p>Уровень от <strong>1 до 4</strong> привязан к опыту (XP): каждые <strong>100 XP</strong> — новый уровень.</p>
+        <div class="ledger">
+          <div><span>Анкета</span><b>+20 XP</b></div>
+          <div><span>Правильно решённая задача дня или на отработку</span><b>+5 XP</b></div>
+          <div><span>Правильно решённая олимпиадная задача</span><b>+10 XP</b></div>
+          <div><span>Пробник от 80%</span><b>+100 XP</b></div>
+          <div><span>Адаптивный тест</span><b>+50 XP</b></div>
+        </div>
+        <p style="margin-top:var(--s4)">За обычную задачу из каталога начисляется <strong>+10 XP × сложность</strong> и бонус за новую максимальную сложность. Сложность задач дня (1–4) подбирается отдельно и не равна уровню XP.</p>
+      </article>
+      <article class="rule-entry reveal">
+        <div class="rule-entry__term"><h3>Серия</h3><span class="sym">>80%</span></div>
         <p>Серия — это сколько дней подряд ты решаешь верно <strong>больше 80 процентов</strong> задач дня. Пропустил день или решил меньше — серия обнуляется и начинается заново.</p>
-      </div>
-    </div>
-  </section>
-
-  {# ── 6. Долг ── #}
-  <section class="about-section">
-    <h2>📅 Долг</h2>
-    <div class="concept-highlight">
-      <div class="concept-highlight-badge" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">Долг</div>
-      <div class="concept-highlight-body">
+      </article>
+      <article class="rule-entry reveal">
+        <div class="rule-entry__term"><h3>Долг</h3><span class="sym">7 дней</span></div>
         <p>Если не успел решить задачи, они не пропадают, а переходят в долг и ждут тебя сверху над сегодняшними. Каждая задача живёт в долге <strong>неделю</strong>, потом тихо исчезает без всяких штрафов. Пропуск дня ничего не ломает.</p>
-      </div>
+      </article>
+      <article class="rule-entry reveal">
+        <div class="rule-entry__term"><h3>Куратор</h3><span class="sym">AI</span></div>
+        <p>Куратор смотрит на твои настоящие данные: сколько решено, где проседаешь, что в долге, какая тема завтра. Он не хвалит просто так и не ругает — говорит по делу. <strong>Радары по подтемам</strong> показывают, где у тебя пусто, а где уже есть уверенность.</p>
+      </article>
     </div>
   </section>
 
-  {# ── 7. Куратор ── #}
-  <section class="about-section">
-    <h2>🎓 Куратор</h2>
-    <div class="concept-highlight">
-      <div class="concept-highlight-badge" style="background:linear-gradient(135deg,#38ef7d,#11998e);">AI</div>
-      <div class="concept-highlight-body">
-        <p>Куратор смотрит на твои настоящие данные: сколько решено, где проседаешь, что в долге, какая тема завтра. Он не хвалит просто так и не ругает — говорит по делу. Радары по подтемам показывают, где у тебя пусто, а где уже есть уверенность.</p>
-      </div>
+  <!-- ═══════════ 03 · ЧТО ЕСТЬ НА САЙТЕ ═══════════ -->
+  <section class="section" id="features">
+    <div class="section__head reveal">
+      <span class="section__no">§ 03</span>
+      <h2 class="section__title">Что есть на сайте</h2>
     </div>
-  </section>
-
-  {# ── 9. Разделы сайта ── #}
-  <section class="about-section">
-    <h2>📦 Что есть на сайте</h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <span class="feature-icon">🔥</span>
-        <h3>Задачи дня</h3>
+    <div class="toc">
+      <a class="toc__row reveal" href="/daily">
+        <span class="toc__num">01</span><span class="toc__head"><h3>Задачи дня</h3><span class="toc__leader"></span></span>
         <p>Каждый день персональный набор задач под твой уровень и текущие подтемы. Выдаётся из проверенного банка задач — без случайных генераций.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">🏆</span>
-        <h3>Реальные олимпиады</h3>
+      </a>
+      <a class="toc__row reveal" href="/olympiads">
+        <span class="toc__num">02</span><span class="toc__head"><h3>Реальные олимпиады</h3><span class="toc__leader"></span></span>
         <p>Туры ВсОШ, Турнира городов, Эйлера, Ломоносова, Физтеха, Курчатова — с разборами по темам, классам и уровням.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">🎓</span>
-        <h3>Куратор подготовки</h3>
+      </a>
+      <a class="toc__row reveal" href="/prep/coach">
+        <span class="toc__num">03</span><span class="toc__head"><h3>Куратор подготовки</h3><span class="toc__leader"></span></span>
         <p>Смотрит на твои реальные данные: сколько решено, где проседаешь, какая тема завтра. Радары по подтемам показывают пробелы.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">🧠</span>
-        <h3>ИИ-тьютор</h3>
-        <p>Может проверить твоё решение, дать подсказку или просто дать понятное решение. Сам определяет тему задачи и работает со всеми разделами.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">👥</span>
-        <h3>Сообщество</h3>
+      </a>
+      <a class="toc__row reveal" href="/ask">
+        <span class="toc__num">04</span><span class="toc__head"><h3>ИИ-тьютор</h3><span class="toc__leader"></span></span>
+        <p>Универсальный наставник: сам определяет тему задачи, работает в режиме «только подсказки» или даёт полный разбор.</p>
+      </a>
+      <a class="toc__row reveal" href="/leaderboard">
+        <span class="toc__num">05</span><span class="toc__head"><h3>Сообщество</h3><span class="toc__leader"></span></span>
         <p>Таблица лидеров, друзья и общий чат — следи за прогрессом и обсуждай решения с другими.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">👨‍👩‍👧</span>
-        <h3>Для родителей и учителей</h3>
+      </a>
+      <a class="toc__row reveal" href="/parent">
+        <span class="toc__num">06</span><span class="toc__head"><h3>Для родителей и учителей</h3><span class="toc__leader"></span></span>
         <p>Родитель видит прогресс ребёнка, учитель ведёт группы учеников. Каждому — свой отдельный кабинет.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">👤</span>
-        <h3>Профиль</h3>
+      </a>
+      <a class="toc__row reveal" href="/profile">
+        <span class="toc__num">07</span><span class="toc__head"><h3>Профиль</h3><span class="toc__leader"></span></span>
         <p>Уровень по разделам и подтемам, серия, календарь решённых задач и личные настройки.</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══════════ 04 · ИИ-НАСТАВНИК ═══════════ -->
+  <section class="pull">
+    <span class="pull__mark" aria-hidden="true">„</span>
+    <h2 class="reveal">Универсальный ИИ-наставник — один агент, все темы</h2>
+    <p class="reveal">Сам определяет тему задачи (алгебра, геометрия, теория чисел, комбинаторика, логика) и отвечает как профильный эксперт. Никогда не говорит «это не моя специализация» — работает со всем, что есть в олимпиадной математике 5–11 классов. <strong>Режим «только подсказки»</strong> помогает дойти до ответа самому.</p>
+  </section>
+
+  <!-- ═══════════ 05 · РЕАЛЬНЫЕ ОЛИМПИАДЫ ═══════════ -->
+  <section class="section">
+    <div class="section__head reveal">
+      <span class="section__no">§ 05</span>
+      <h2 class="section__title">Реальные олимпиады</h2>
+    </div>
+    <div class="stats reveal">
+      <div class="stat">
+        <div class="stat__num">8 000<sup>+</sup></div>
+        <p class="stat__label">задач из реальных туров ВсОШ, Турнира городов, Эйлера и Ломоносова</p>
+      </div>
+      <div class="stat">
+        <div class="stat__num">3 500<sup>+</sup></div>
+        <p class="stat__label">адаптивных задач, подбирающихся под твой уровень</p>
+      </div>
+      <div class="stat">
+        <div class="stat__num">5–11</div>
+        <p class="stat__label">классы: от первой олимпиады до выпускных туров</p>
       </div>
     </div>
   </section>
 
-  {# ── 10. ИИ-наставник ── #}
-  <section class="about-section">
-    <h2>🧠 Универсальный ИИ-наставник</h2>
-    <div class="features-grid" style="grid-template-columns: 1fr;">
-      <div class="feature-card" style="text-align:center;">
-        <span class="feature-icon"></span>
-        <h3>Один агент — все темы</h3>
-        <p>Может проверить твоё решение и показать, где ошибка, дать подсказку, чтобы дойти до ответа самому, или просто дать понятное решение. Сам определяет тему задачи (алгебра, геометрия, теория чисел, комбинаторика, логика) и отвечает как профильный эксперт. Никогда не говорит «это не моя специализация» — работает со всем, что есть в олимпиадной математике 5–11 классов.</p>
-      </div>
+  <!-- ═══════════ ХОЛОДНАЯ ГРАДИЕНТНАЯ СЦЕНА ═══════════ -->
+  <div class="band">
+    <div class="band__deco" aria-hidden="true">
+      <span class="bd bd1"></span><span class="bd bd2"></span><span class="bd bd3"></span>
+      <span class="band__ring band__ring--1"></span>
+      <span class="band__ring band__ring--2"></span>
+      <span class="bs" style="top:18%;left:10%">∑</span>
+      <span class="bs" style="top:30%;right:14%">π</span>
+      <span class="bs" style="bottom:36%;left:44%">√</span>
+      <span class="bs" style="top:10%;right:36%">α²</span>
+      <span class="bs" style="bottom:44%;right:30%">∫</span>
+    </div>
+    <div class="band__in">
+      <p class="band__eyebrow">§ 06</p>
+      <h2>Что делает FORMYLA.net особенной</h2>
+    </div>
+  </div>
+
+  <!-- ═══════════ отличия ═══════════ -->
+  <section class="section">
+    <div class="traits">
+      <div class="trait reveal"><span class="trait__n">i</span><div><h3>Специализированные задачи под темы</h3><p>Каждая задача привязана к конкретной теме и подтеме: алгебра, геометрия, теория чисел, комбинаторика, логика. Подбор идёт по твоим пробелам, а не по случайному списку.</p></div></div>
+      <div class="trait reveal"><span class="trait__n">ii</span><div><h3>Только олимпиады</h3><p>Не школьная программа, не ЕГЭ — только олимпиадная математика: ВсОШ, Эйлер, Физтех, Курчатов, Матпраздник.</p></div></div>
+      <div class="trait reveal"><span class="trait__n">iii</span><div><h3>Адаптивная сложность</h3><p>Сложность задач дня — от 1 до 4 — подстраивается под тебя. Решаешь — растёт, ошибаешься — плавно опускается. Без резких скачков.</p></div></div>
+      <div class="trait reveal"><span class="trait__n">iv</span><div><h3>Работает без VPN</h3><p>Серверы в РФ, всё работает напрямую. Никаких VPN, иностранных аккаунтов и сложностей с доступом.</p></div></div>
+      <div class="trait reveal"><span class="trait__n">v</span><div><h3>Режим «только подсказки»</h3><p>ИИ помогает наводящими вопросами и не даёт готовый ответ. Ты учишься решать, а не списывать.</p></div></div>
+      <div class="trait reveal"><span class="trait__n">vi</span><div><h3>Радары по подтемам</h3><p>Видно, где у тебя пробелы, а где уже уверенность. Куратор опирается на реальные данные, а не на догадки.</p></div></div>
+      <div class="trait reveal"><span class="trait__n">vii</span><div><h3>Система долга</h3><p>Не решил сегодня — задачи ждут тебя завтра. Неделя на каждую, потом исчезают без штрафов. Никакого давления.</p></div></div>
     </div>
   </section>
 
-  {# ── 11. Банк задач FORMYLA ── #}
-  <section class="about-section">
-    <h2>📚 Банк FORMYLA</h2>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-num">5 000+</div>
-        <div class="stat-label">задач под тест — банк тем для тестов</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">30 000+</div>
-        <div class="stat-label">банк задач дня — подбираются под твой уровень</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">5–11</div>
-        <div class="stat-label">классы: от первой олимпиады до выпускных туров</div>
-      </div>
+  <!-- ═══════════ ДЛЯ КОГО ═══════════ -->
+  <section class="section">
+    <div class="section__head reveal">
+      <span class="section__no">§ 07</span>
+      <h2 class="section__title">Для кого FORMYLA.net</h2>
     </div>
-  </section>
-
-  {# ── 12. Отличия ── #}
-  <section class="about-section">
-    <h2>✨ Что делает FORMYLA.net особенной</h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <span class="feature-icon">🎯</span>
-        <h3>Специализированные задачи под темы</h3>
-        <p>Каждая задача привязана к конкретной теме и подтеме: алгебра, геометрия, теория чисел, комбинаторика, логика. Подбор идёт по твоим пробелам, а не по случайному списку.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon"></span>
-        <h3>Только олимпиады</h3>
-        <p>Не школьная программа, не ЕГЭ — только олимпиадная математика: ВсОШ, Эйлер, Физтех, Курчатов, Матпраздник.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">📈</span>
-        <h3>Адаптивная сложность</h3>
-        <p>Сложность задач дня — от 1 до 4 — подстраивается под тебя. Решаешь — растёт, ошибаешься — плавно опускается. Без резких скачков.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">🇷🇺</span>
-        <h3>Работает без VPN</h3>
-        <p>Серверы в РФ, всё работает напрямую. Никаких VPN, иностранных аккаунтов и сложностей с доступом.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">💡</span>
-        <h3>Режим «только подсказки»</h3>
-        <p>ИИ помогает наводящими вопросами и не даёт готовый ответ. Ты учишься решать, а не списывать.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">🎯</span>
-        <h3>Радары по подтемам</h3>
-        <p>Видно, где у тебя пробелы, а где уже уверенность. Куратор опирается на реальные данные, а не на догадки.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">📅</span>
-        <h3>Система долга</h3>
-        <p>Не решил сегодня — задачи ждут тебя завтра. Неделя на каждую, потом исчезают без штрафов. Никакого давления.</p>
-      </div>
-    </div>
-  </section>
-
-  {# ── 13. Для кого ── #}
-  <section class="about-section">
-    <h2>💪 Для кого FORMYLA.net</h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <span class="feature-icon"></span>
-        <h3>Ученикам 5–7 класса</h3>
+    <div class="matrix">
+      <div class="cell reveal">
+        <h3>Ученикам <span class="aud">5–7 класса</span></h3>
         <p>Школьный этап ВсОШ, Матпраздник, логические игры. Первые олимпиады — без стресса и с поддержкой.</p>
       </div>
-      <div class="feature-card">
-        <span class="feature-icon"></span>
-        <h3>Ученикам 8–11 класса</h3>
+      <div class="cell reveal">
+        <h3>Ученикам <span class="aud">8–11 класса</span></h3>
         <p>Муниципальный, региональный и заключительный этапы. Турнир городов, Эйлер, Физтех, Курчатов. Полный охват.</p>
       </div>
-      <div class="feature-card">
-        <span class="feature-icon">👨‍👩‍👧</span>
+      <div class="cell reveal">
         <h3>Родителям</h3>
         <p>Видишь, какие темы ребёнок осилил, где буксует, сколько занимается каждый день. Без слежки — ребёнок сам выбирает, делиться или нет.</p>
       </div>
-      <div class="feature-card">
-        <span class="feature-icon">👨‍🏫</span>
+      <div class="cell reveal">
         <h3>Учителям</h3>
         <p>8 000+ задач с разборами по темам, классам и уровню. Готовая методичка для кружка. Бесплатно для учителей — напишите нам.</p>
       </div>
     </div>
   </section>
 
-  {# ── 14. FAQ ── #}
-  <section class="about-section">
-    <h2>❓ Частые вопросы</h2>
-    <div class="faq-list">
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Для какого класса подходит FORMYLA.net? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Платформа рассчитана на 5–11 классы. Сложность задач дня — от 1 до 4 — подстраивается под ученика автоматически. Для 5–7 классов — школьный этап ВсОШ, Матпраздник, логические игры. Для 8–11 — муниципальный/региональный этапы, Турнир городов, Эйлер, Физтех, Курчатов.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Как определяется уровень? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Уровень XP — от 1 до 10: каждые 100 XP дают новый уровень. Анкета даёт +20 XP, тест +20 XP, верная задача дня +5 XP. Сложность задач дня (1–4) определяется отдельно. Неверная проверенная задача XP не начисляет.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Что такое серия и долг? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a"><strong>Серия</strong> — сколько дней подряд ты решаешь верно больше 80% задач дня. Пропустил день или решил меньше — обнуляется. <strong>Долг</strong> — нерешённые задачи не пропадают, а висят над сегодняшними. Живут неделю, потом исчезают без штрафов. Пропуск дня ничего не ломает.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Нужен ли VPN? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Нет. Все серверы в РФ, ИИ-модели работают через российские прокси. Никаких VPN, иностранных аккаунтов или валютных карт не требуется.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Чем FORMYLA.net отличается от ChatGPT? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">ChatGPT — общий ИИ. FORMYLA.net заточена именно под олимпиадную математику: адаптивный уровень, персональный куратор, радары по подтемам, система долга и серий, банк 8000+ реальных олимпиадных задач с разборами. ChatGPT не подберёт задачи дня под твои пробелы и не построит план подготовки к ВсОШ.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Что такое куратор? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Куратор — это ИИ-помощник, который видит твои реальные данные: сколько решено, где проседаешь, что в долге, какая тема завтра. Он не хвалит просто так и не ругает — говорит по делу. Подсказывает, какой метод почитать перед завтрашней темой.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Какие разделы охватывает платформа? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Алгебра, теория чисел, геометрия, комбинаторика, логика и методы. В наборе дня всегда есть несколько разделов, даже если какой-то даётся тяжело: слабое подтягивается, но остальное не забывается.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Родитель: как добавить ребёнка? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Войдите в аккаунт родителя → раздел «👨‍👩‍👧 Мои гении (дети)» → в поле «Никнейм ребёнка» введите ник ученика (он указан у него в профиле) → нажмите «Привязать». После этого в вашем кабинете появятся его задачи, серия, уровень и статистика.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Учитель: как добавить ученика? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Войдите в аккаунт учителя → раздел «👨‍🏫 Мои ученики» → создайте группу (или откройте существующую) → нажмите «Добавить ученика» и введите его никнейм. Ученик появится в группе, вы сможете открыть его профиль и видеть все решённые задачи, уровень и серию.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Сколько стоит FORMYLA.net? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Сейчас FORMYLA.net полностью бесплатна: все разделы, задачи и ИИ-агенты доступны без подписок и оплат. Никаких тарифов и лимитов нет.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Есть ли мобильное приложение? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Нативного приложения пока нет, но сайт полностью адаптирован под смартфон. Отдельное приложение для iOS/Android — в планах на 2027 год.</div>
-      </div>
-
+  <!-- ═══════════ 08 · FAQ ═══════════ -->
+  <section class="section" id="faq">
+    <div class="section__head reveal">
+      <span class="section__no">§ 08</span>
+      <h2 class="section__title">Частые вопросы</h2>
     </div>
-  </section>
-
-  {# ── 15. Final CTA ── #}
-  <section class="about-section">
-    <div class="final-cta">
-      <h2>🚀 Готов начать?</h2>
-      <p>Пройди анкету, реши якорные задачи — и получи персональный план подготовки.</p>
-      <div class="final-cta-row">
-        <a href="/login" class="hero-cta hero-cta-primary">Войти в FORMYLA.net -></a>
+    <div class="faq reveal">
+      <div class="faq__item">
+        <button class="faq__q" type="button">Для какого класса подходит FORMYLA.net? <span class="pm">+</span></button>
+        <div class="faq__a"><div><p>Платформа рассчитана на 5–11 классы. Сложность задач дня — от 1 до 4 — подстраивается под ученика автоматически. Для 5–7 классов — школьный этап ВсОШ, Матпраздник, логические игры. Для 8–11 — муниципальный/региональный этапы, Турнир городов, Эйлер, Физтех, Курчатов.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button">Как определяется уровень? <span class="pm">+</span></button>
+        <div class="faq__a"><div><p>Уровень XP — от 1 до 4: каждые 100 XP дают новый уровень. Анкета даёт +20 XP, верная задача дня или на отработку — +5 XP, верная олимпиадная задача — +10 XP, обычная задача каталога — +10 XP × сложность с возможным бонусом за рекорд. Пробник от 80% даёт +100 XP, адаптивный тест — +50 XP. Сложность задач дня (1–4) определяется отдельно. Неверная проверенная задача XP не начисляет.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button">Что такое серия и долг? <span class="pm">+</span></button>
+        <div class="faq__a"><div><p><strong>Серия</strong> — сколько дней подряд ты решаешь верно больше 80% задач дня. Пропустил день или решил меньше — обнуляется. <strong>Долг</strong> — нерешённые задачи не пропадают, а висят над сегодняшними. Живут неделю, потом исчезают без штрафов. Пропуск дня ничего не ломает.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button">Нужен ли VPN? <span class="pm">+</span></button>
+        <div class="faq__a"><div><p>Нет. Все серверы в РФ, ИИ-модели работают через российские прокси. Никаких VPN, иностранных аккаунтов или валютных карт не требуется.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button">Чем FORMYLA.net отличается от ChatGPT? <span class="pm">+</span></button>
+        <div class="faq__a"><div><p>ChatGPT — общий ИИ. FORMYLA.net заточена именно под олимпиадную математику: адаптивный уровень, персональный куратор, радары по подтемам, система долга и серий, банк 8000+ реальных олимпиадных задач с разборами. ChatGPT не подберёт задачи дня под твои пробелы и не построит план подготовки к ВсОШ.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button">Что такое куратор? <span class="pm">+</span></button>
+        <div class="faq__a"><div><p>Куратор — это ИИ-помощник, который видит твои реальные данные: сколько решено, где проседаешь, что в долге, какая тема завтра. Он не хвалит просто так и не ругает — говорит по делу. Подсказывает, какой метод почитать перед завтрашней темой.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button">Какие разделы охватывает платформа? <span class="pm">+</span></button>
+        <div class="faq__a"><div><p>Алгебра, теория чисел, геометрия, комбинаторика, логика и методы. В наборе дня всегда есть несколько разделов, даже если какой-то даётся тяжело: слабое подтягивается, но остальное не забывается.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button">Родитель: как добавить ребёнка? <span class="pm">+</span></button>
+        <div class="faq__a"><div><p>Войдите в аккаунт родителя → раздел «👨‍👩‍👧 Мои гении (дети)» → в поле «Никнейм ребёнка» введите ник ученика (он указан у него в профиле) → нажмите «Привязать». После этого в вашем кабинете появятся его задачи, серия, уровень и статистика.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button">Учитель: как добавить ученика? <span class="pm">+</span></button>
+        <div class="faq__a"><div><p>Войдите в аккаунт учителя → раздел «👨‍🏫 Мои ученики» → создайте группу (или откройте существующую) → нажмите «Добавить ученика» и введите его никнейм. Ученик появится в группе, вы сможете открыть его профиль и видеть все решённые задачи, уровень и серию.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button">Сколько стоит FORMYLA.net? <span class="pm">+</span></button>
+        <div class="faq__a"><div><p>Сейчас FORMYLA.net полностью бесплатна: все разделы, задачи и ИИ-агенты доступны без подписок и оплат. Никаких тарифов и лимитов нет.</p></div></div>
+      </div>
+      <div class="faq__item">
+        <button class="faq__q" type="button">Есть ли мобильное приложение? <span class="pm">+</span></button>
+        <div class="faq__a"><div><p>Нативного приложения пока нет, но сайт полностью адаптирован под смартфон. Отдельное приложение для iOS/Android — в планах на 2027 год.</p></div></div>
       </div>
     </div>
   </section>
 
-  {# ── Telegram ── #}
-  <section class="about-section">
-    <h2>🔗 Присоединяйся</h2>
-    <p>Подписывайся на наш Telegram-канал — там задачи дня, разборы олимпиад и анонсы новых фич.</p>
-    <a href="https://t.me/FormylaMaths" target="_blank" class="tg-btn"> @FormylaMaths</a>
+  <!-- ═══════════ FINAL CTA ═══════════ -->
+  <section class="cta" id="start">
+    <h2 class="reveal">Готов начать?</h2>
+    <p class="reveal">Пройди анкету, реши якорные задачи — и получи персональный план подготовки.</p>
+    <a class="a2btn a2btn--primary reveal" href="/login">Войти в FORMYLA.net →</a>
   </section>
 
-  {# ── Красивый чат "Связаться с нами" с загрузкой файлов ── #}
+  
+
+  <!-- ═══════════ TELEGRAM ═══════════ -->
+  <section class="section" id="tg">
+    <div class="section__head reveal">
+      <span class="section__no">§ 09</span>
+      <h2 class="section__title">Присоединяйся</h2>
+    </div>
+    <p style="color:var(--muted);margin-bottom:var(--s5)">Подписывайся на наш Telegram-канал — там задачи дня, разборы олимпиад и анонсы новых фич.</p>
+    <a class="tg-link" href="https://t.me/FormylaMaths" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.6 18.9 19c-.2 1-.8 1.2-1.7.8l-4.6-3.4-2.2 2.1c-.2.2-.4.4-.9.4l.3-4.7L18.2 6.6c.4-.3-.1-.5-.6-.2L7.3 12.3 2.8 10.9c-1-.3-1-1 .2-1.4l18-6.9c.8-.3 1.5.2 1.2 1.4z" transform="scale(.92) translate(1,1)"/></svg>
+      @FormylaMaths
+    </a>
+  </section>
+
+{# ── Красивый чат "Связаться с нами" с загрузкой файлов ── #}
   <section class="about-section support-section" id="contact">
     <h2>💬 Связаться с нами</h2>
     <p>Нашли баг? Есть идея? Не получается решить? Напиши нам — ответим в Telegram-канале или на почту.</p>
@@ -973,11 +1116,7 @@
     </div>
   </section>
 
-  {# ── AI-помощник FORMYLA.net перенесён в чат куратора (/prep/coach). #}
-  {# ── Секция убрана по задаче V4. ───────────── #}
-
 </div>
-
 <script>
 // ── Contact chat: красивый чат "Связаться с нами" с загрузкой файлов ──
 (function initContactChat() {
@@ -1393,4 +1532,27 @@
 
 </script>
 
+<script>
+// FAQ accordion
+document.querySelectorAll('.faq__q').forEach(function(btn){
+  btn.setAttribute('aria-expanded', 'false');
+  btn.addEventListener('click', function(){
+    var item = btn.parentElement;
+    var wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq__item.open').forEach(function(i){
+      i.classList.remove('open'); i.querySelector('.faq__q').setAttribute('aria-expanded','false'); });
+    if(!wasOpen){ item.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+  });
+});
+// Reveal on scroll
+(function(){
+  if(!('IntersectionObserver' in window)){ document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in');}); return; }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:.08, rootMargin:'0px 0px -6% 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+})();
+</script>
 {% endblock %}
