@@ -27,6 +27,16 @@ CACHE = pathlib.Path(__file__).resolve().parent.parent / "cache"
 CACHE.mkdir(exist_ok=True)
 ENGINE_VERSION = "3.0"   # 3.0: цвета равных отрезков в обоих режимах, середина словами
 
+# «на чертеже нет точки N, названной в условии» — предупреждение теряет силу,
+# когда слой Луны сам достроил эту точку как доп. построение.
+_MISSING_POINT = re.compile(r"на чертеже нет точки ([A-Z](?:_?\d{1,2}|'{1,2})?), названной в условии")
+
+
+def _stale_missing_point(reason: str, plan) -> bool:
+    """True, если причина отказа ссылается на точку, которой теперь нет только в базовом чертеже."""
+    m = _MISSING_POINT.search(str(reason))
+    return bool(m) and m[1] in set(plan.points)
+
 
 @dataclass
 class Result:
@@ -906,6 +916,9 @@ def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
             continue                      # a squeezed drawing is worse than the sketch
         if with_aux:
             cplan, csol = _auxiliary_layer(cplan, csol, text, sess, budget, t_start)
+            # Слой Луны мог достроить точку, названную в условии: причина
+            # «на чертеже нет точки N» после этого уже не соответствует чертежу.
+            reasons = [r for r in reasons if not _stale_missing_point(r, cplan)]
         # The best-effort drawing must keep the statement drawn and marked too.
         try:
             from .statement import complete_statement_display
