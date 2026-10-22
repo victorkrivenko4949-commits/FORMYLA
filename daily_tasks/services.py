@@ -640,6 +640,57 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
     }
 
 
+def maybe_upgrade_undersized_sets() -> int:
+    """Пересоздать сегодняшние «урезанные» сеты задач (2026-10-23).
+
+    Норма задач стала 10 в день для всех (вопрос про время убран из
+    анкеты), а часть сегодняшних сетов была выдана по старым правилам
+    (лимит Free — 3 задачи / старая норма 5). Если у сета задач меньше
+    текущей нормы И по нему ещё нет ни одного ответа — сет удаляется:
+    при следующем заходе ученика pick_daily_set выдаст новый, полный,
+    из банка задач (синхронно, без нейросетей).
+
+    Сеты с ответами НИКОГДА не трогаются (не теряем прогресс ученика).
+    Идемпотентно: сеты полной нормы не удаляются. Возвращает число
+    удалённых сетов. Никогда не бросает."""
+    deleted = 0
+    try:
+        from services.daily_task_rotation import get_daily_task_count
+        today = today_in_user_tz()
+        sets = DailyTaskSet.query.filter_by(target_date=today).all()
+        for s in sets:
+            try:
+                items = (DailyTaskItem.query
+                        .filter(DailyTaskItem.daily_set_id == s.id)
+                        .all())
+                if not items:
+                    continue
+                answered = sum(1 for it in items if it.user_answer)
+                if answered > 0:
+                    continue  # есть прогресс — не трогаем
+                norm = get_daily_task_count(s.user_id)
+                if len(items) >= norm:
+                    continue  # сет уже полной нормы
+                logger.info(
+                    '[daily_tasks] upgrade set %s: user=%s has %d items < '
+                    'norm %d, no answers -> delete for re-issue',
+                    s.id, s.user_id, len(items), norm)
+                db.session.delete(s)
+                deleted += 1
+            except Exception as e:  # noqa: BLE001
+                logger.warning(
+                    '[daily_tasks] upgrade set %s failed: %s', s.id, e)
+        if deleted:
+            db.session.commit()
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[daily_tasks] upgrade undersized sets failed: %s', e)
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+    return deleted
+
+
 def get_job_status(user_id: int) -> Dict[str, Any]:
     """Получить статус фонового джоба генерации на сегодня.
 

@@ -403,6 +403,18 @@ try:
 except Exception as _e_pilot:
     print(f"[PILOT] ensure_pilot_subscriptions skipped: {_e_pilot}")
 
+# 2026-10-23: норма задач дня — 10 для всех. Пересоздаём сегодняшние
+# «урезанные» сеты (без ответов): при следующем заходе ученик получит
+# полный сет из банка. Сеты с ответами не трогаем. Никогда не роняет старт.
+try:
+    from daily_tasks.services import maybe_upgrade_undersized_sets
+    with app.app_context():
+        _upgraded = maybe_upgrade_undersized_sets()
+        if _upgraded:
+            print(f"[DAILY] re-issued {_upgraded} undersized daily sets (norm=10)")
+except Exception as _e_daily:
+    print(f"[DAILY] undersized sets cleanup skipped: {_e_daily}")
+
 
 # AUTO-MIGRATION: Add agent_type column if it doesn't exist
 # This runs on every startup to ensure database schema is up to date
