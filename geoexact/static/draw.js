@@ -202,7 +202,7 @@
         const sec = jobElapsed();
         const auxMode = root.querySelector('input[name="gx-mode"]:checked')?.value === "aux";
         status(data.status === "running"
-          ? (isSolution ? "Луна пишет полное решение, DeepSeek оформляет его в LaTeX… " + jobClock()
+          ? (isSolution ? "Тьютор решает задачу… " + jobClock()
               : "Чертёж строится в фоне — уже " + jobClock() + (!auxMode ? "" : (sec > 60
               ? " (сложная задача, около 100 секунд, не дольше 3 минут)"
               : " (с доп. построением обычно около 50 секунд, сложные около 100)"))

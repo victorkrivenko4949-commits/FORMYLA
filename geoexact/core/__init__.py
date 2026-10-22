@@ -43,6 +43,7 @@ from . import incircle_tangents as _incircle_tangents
 from . import radius_claims as _radius_claims
 from . import degenerate_policy as _degenerate_policy
 from . import label_subscripts as _label_subscripts
+from . import angle_marks_layout as _angle_marks_layout
 
 _difficulty.install(_llm)
 _general_position.install(_solver, _gates)
@@ -53,3 +54,4 @@ _degenerate_policy.install(_solver, _semantics)   # после convexity: сво
 _incircle_tangents.install(_semantics, _llm)
 _radius_claims.install(_semantics, _llm)
 _label_subscripts.install(_render)   # после bisector_marks: самый внешний слой рендера
+_angle_marks_layout.install(_render)   # после label_subscripts: дуга/подпись широкого угла
