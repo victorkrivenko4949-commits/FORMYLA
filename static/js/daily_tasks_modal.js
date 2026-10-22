@@ -359,8 +359,8 @@ function _dtRenderFeedbackHtml(el, text){
 // ── openTaskModal — рендер карточки задачи ─────────────────────────
 function openTaskModal(item, index){
   var overlay = document.getElementById('dt-modal-overlay');
-  var title   = document.getElementById('dt-modal-title');
-  var body    = document.getElementById('dt-modal-body');
+  var title   = document.getElementById('dt-legacy-modal-title');
+  var body    = document.getElementById('dt-legacy-modal-body');
   if(!overlay || !body) return;
   // Подтягиваем СВЕЖИЕ данные задачи по id из dt-init-data — иначе при
   // повторном открытии уже решённой задачи item.user_answer === null,

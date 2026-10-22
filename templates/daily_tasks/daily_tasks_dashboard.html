@@ -17,6 +17,48 @@
   #dt-modal-result{min-height:0 !important;height:auto !important;}
   #dt-modal-result:empty{display:none !important;margin:0 !important;}
 
+  /* ── Окно задачи: сбиваем ограничения класса .dt-modal из daily_tasks.css
+     (класс вешается на сам оверлей #dt-modal и резал его до 700px слева) ── */
+  #dt-modal {
+    max-width: none;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    animation: none;
+    background: rgba(7, 12, 24, 0.55);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+  }
+  #dt-modal > .dt-modal-box {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: dt-modal-in 0.25s ease;
+  }
+
+  /* Мобильная/Telegram-версия: окно задачи открывается на весь экран.
+     Оверлей без отступов, карточка на всю ширину и высоту, скролл — внутри. */
+  @media (max-width: 768px) {
+    #dt-modal { padding: 0 !important; align-items: stretch !important; }
+    #dt-modal > .dt-modal-box {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-height: 100vh !important;
+      min-height: 100dvh !important;
+      height: auto !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+      border: none !important;
+      padding: 60px 16px calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    #dt-modal #dt-modal-close {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
   .dt-latex-fallback {
     font-style: italic;
     color: var(--text);
@@ -169,20 +211,30 @@
   }
   .dt-debt-item-open {
     flex: none;
-    padding: 4px 12px;
-    background: rgba(229, 172, 58, 0.16);
-    border: 1px solid rgba(229, 172, 58, 0.4);
-    border-radius: 8px;
-    color: #E5AC3A;
-    font-size: 12px;
-    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #4C7DFF 0%, #6E8BFF 100%);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(76, 125, 255, 0.28);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
   }
   .dt-debt-item-open:hover {
-    background: rgba(229, 172, 58, 0.28);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(76, 125, 255, 0.38);
   }
+  .dt-debt-item-open:active { transform: scale(0.97); }
 
   /* Generating state */
   .dt-generating-card { padding: 40px 32px; }
@@ -266,6 +318,37 @@
     border-color: var(--accent);
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(76,125,255,0.12);
+  }
+  .dt-card:active {
+    transform: translateY(0) scale(0.985);
+    box-shadow: 0 4px 12px rgba(76,125,255,0.10);
+  }
+  .dt-card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  /* Явная аффорданс-кнопка «Решить →» в футере карточки */
+  .dt-card-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: var(--accent);
+    color: #E6EBF7;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    transition: background 0.2s ease;
+  }
+  .dt-card:hover .dt-card-cta { background: var(--accent-hi); }
+  .dt-card.dt-done .dt-card-cta,
+  .dt-card.dt-flagged .dt-card-cta {
+    background: transparent;
+    color: var(--accent-hi);
+    border: 1px solid var(--border);
+    padding: 6px 13px;
   }
   .dt-card.dt-flagged { border-color: rgba(229,172,58,0.3); }
   .dt-card.dt-done { border-color: rgba(62,207,142,0.2); }
@@ -386,6 +469,9 @@
   @media (max-width: 600px) {
     .dt-calibration-banner { flex-direction: column; align-items: stretch; }
     .dt-cal-banner-btn { align-self: flex-start; }
+    /* Долг на телефоне: строка в столбик, кнопка — во всю ширину */
+    .dt-debt-item { flex-wrap: wrap; }
+    .dt-debt-item-open { flex: 1 1 100%; margin-top: 8px; }
   }
 
   /* Calibration badge on card */
@@ -904,7 +990,7 @@
             <span class="dt-debt-item-topic">#{{ _dt.position }} {{ _dt.topic or '' }}</span>
             {% if _dt.difficulty_level %}<span class="dt-debt-item-level">уровень {{ _dt.difficulty_level }}</span>{% endif %}
             {% if _dt.days_left is not none %}<span class="dt-debt-item-days">{% if _dt.days_left >= 0 %}{{ _dt.days_left }} дн.{% else %}сгорел{% endif %}</span>{% endif %}
-            <button type="button" class="dt-debt-item-open" onclick="openDebtTask({{ _dt.id }})">Открыть задачу</button>
+            <button type="button" class="dt-debt-item-open" onclick="openDebtTask({{ _dt.id }})">Открыть задачу <span aria-hidden="true">&rarr;</span></button>
           </div>
           {% endfor %}
         </div>
@@ -940,15 +1026,17 @@
 
 </div>
 
-<!-- Modal -->
+<!-- Modal (легаси-окно из daily_tasks.js / daily_tasks_modal.js; ID переименованы
+     в *-legacy-*, чтобы не конфликтовать с динамической модалкой из ensureModal():
+     дубли ID ломали getElementById — заголовок задачи попадал в скрытое окно) -->
 <div id="dt-modal-overlay" class="dt-hidden">
   <div class="dt-modal">
-    <button class="dt-modal-close" id="dt-modal-close">&times;</button>
+    <button class="dt-modal-close" id="dt-legacy-modal-close">&times;</button>
     <div class="dt-modal-header">
-      <span class="dt-modal-title" id="dt-modal-title">Задача</span>
-      <span class="dt-modal-difficulty" id="dt-modal-difficulty"></span>
+      <span class="dt-modal-title" id="dt-legacy-modal-title">Задача</span>
+      <span class="dt-modal-difficulty" id="dt-legacy-modal-difficulty"></span>
     </div>
-    <div class="dt-modal-body" id="dt-modal-body"></div>
+    <div class="dt-modal-body" id="dt-legacy-modal-body"></div>
   </div>
 </div>
 
@@ -1359,6 +1447,11 @@
         statusHtml = '<span class="dt-card-status dt-pending">— Не решено</span>';
       }
 
+      // Явная аффорданс-кнопка: карточка и так кликабельна целиком,
+      // но кнопка «Решить →» делает это очевидным.
+      var ctaHtml = '<span class="dt-card-cta" aria-hidden="true">' +
+        (it.is_answered ? 'Открыть <span>\u2192</span>' : 'Решить <span>\u2192</span>') + '</span>';
+
       var calBadge = '';
       if (it.is_calibration) {
         calBadge = '<span class="dt-calibration-badge">Калибровка</span>';
@@ -1375,8 +1468,19 @@
         '<div class="dt-card-preview">' + escapeHtml(it.preview || it.text || '') + '</div>' +
         '<div class="dt-card-footer">' +
           statusHtml +
+          ctaHtml +
         '</div>';
 
+      // Доступ с клавиатуры + явная кликабельность всей карточки.
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-label', 'Задача ' + (idx + 1) + ': ' + (it.topic || '') + ' — открыть');
+      card.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openTask(it);
+        }
+      });
       card.addEventListener('click', function() { openTask(it); });
       grid.appendChild(card);
       if (typeof renderMath === 'function') renderMath(card);
@@ -1436,6 +1540,10 @@
     document.body.appendChild(ov);
     ov.addEventListener('click', function(e) { if (e.target === ov) closeModal(); });
     ov.querySelector('#dt-modal-close').addEventListener('click', closeModal);
+    // Esc закрывает окно задачи.
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && dtModalEl && dtModalEl.style.display !== 'none') closeModal();
+    });
 
     // ── Фото решения из тетрадки ──
     var photoBtn = ov.querySelector('#dt-photo-btn');
@@ -1465,7 +1573,16 @@
     return ov;
   }
 
-  function closeModal() { if (dtModalEl) dtModalEl.style.display = 'none'; }
+  function dtLockScroll(lock) {
+    // Окно задачи открыто — фон не прокручивается (актуально на телефоне,
+    // где модалка теперь на весь экран).
+    try { document.body.style.overflow = lock ? 'hidden' : ''; } catch (e) {}
+  }
+
+  function closeModal() {
+    if (dtModalEl) dtModalEl.style.display = 'none';
+    dtLockScroll(false);
+  }
 
   var dtCurrentItem = null;
   var dtSolutionPhotoFile = null;   // фото решения из тетрадки (File)
@@ -1550,9 +1667,13 @@
       }
     } catch (_e4) {}
     ensureModal();
+    dtLockScroll(true);
     dtCurrentItem = it;
     dtOpenStart = Date.now();
-    $('dt-modal-title').textContent = (it.topic || '') + (it.difficulty_level ? (' \u00b7 ' + it.difficulty_level) : '');
+    // Заголовок ищем внутри активного окна: раньше из-за дубля ID (легаси-разметка
+    // в шаблоне) текст попадал в скрытое окно и в модалке не отображался.
+    var titleEl = dtModalEl.querySelector('#dt-modal-title');
+    if (titleEl) titleEl.textContent = (it.topic || '') + (it.difficulty_level ? (' \u00b7 ' + it.difficulty_level) : '');
     $('dt-modal-statement').innerHTML = escapeHtmlPreserveLatex(it.text || it.preview || '');
     // DT_LATEX_FIX_V1: функция называется reRenderMath (base.html), чтобы
     // формулы \(...\), $...$, \begin{cases}... рендерились, а не показывались сырым \TeX.

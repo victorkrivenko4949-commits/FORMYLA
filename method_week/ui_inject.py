@@ -6,10 +6,19 @@
 from __future__ import annotations
 
 import logging
+import os
 
 from flask import request
 
 logger = logging.getLogger(__name__)
+
+
+def _ui_enabled() -> bool:
+    # Временно выключено (2026-10-22): по просьбе владельца блок «Куратор» +
+    # «Метод недели» с 3 задачами убран со страницы задач дня даже для
+    # тестовых аккаунтов. Вернуть: METHOD_WEEK_UI_ENABLED=1.
+    # API /method_week/* продолжает работать.
+    return os.environ.get('METHOD_WEEK_UI_ENABLED', '0') == '1'
 
 _SNIPPET = ('<div id="mw-root"></div>'
             '<script src="/static/method_week.js?v=1" defer></script></body>')
@@ -21,6 +30,8 @@ def install_ui_injector(app) -> None:
         try:
             path = (request.path or '').rstrip('/')
             if request.method != 'GET' or path != '/daily_tasks':
+                return resp
+            if not _ui_enabled():
                 return resp
             from flask_login import current_user
             from .access import user_allowed

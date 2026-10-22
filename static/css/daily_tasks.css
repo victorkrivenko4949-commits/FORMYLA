@@ -705,10 +705,19 @@
         font-size: 14px;
     }
 
+    /* Окно задачи на телефоне — на весь экран */
+    .dt-modal-overlay {
+        padding: 0;
+        align-items: stretch;
+    }
     .dt-modal {
         max-width: 100%;
-        border-radius: 14px;
-        max-height: 90vh;
+        width: 100%;
+        max-height: none;
+        height: 100vh;
+        height: 100dvh;
+        border-radius: 0;
+        border: none;
     }
 
     .dt-modal-header {

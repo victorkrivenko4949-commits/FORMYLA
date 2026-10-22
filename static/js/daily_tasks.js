@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ── Modal close handlers ──
-    var closeBtn = document.getElementById('dt-modal-close');
+    var closeBtn = document.getElementById('dt-legacy-modal-close');
     var overlay = document.getElementById('dt-modal-overlay');
 
     if (closeBtn) {
@@ -694,9 +694,9 @@ function openTaskModal(item, index) {
     } catch (_e) {}
 
     var overlay = document.getElementById('dt-modal-overlay');
-    var title = document.getElementById('dt-modal-title');
-    var difficulty = document.getElementById('dt-modal-difficulty');
-    var body = document.getElementById('dt-modal-body');
+    var title = document.getElementById('dt-legacy-modal-title');
+    var difficulty = document.getElementById('dt-legacy-modal-difficulty');
+    var body = document.getElementById('dt-legacy-modal-body');
 
     if (!overlay || !body) return;
 

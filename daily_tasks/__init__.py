@@ -23,8 +23,9 @@ _intake_probe_attach(daily_tasks_bp)
 
 # «Метод недели» + план куратора + paywall (ноябрь 2026). Подключается в момент
 # регистрации daily_tasks_bp в app.py — без правки app.py. Любая ошибка здесь
-# не ломает задачи дня. Тестовый период: видно только lavrik и victor
-# (METHOD_WEEK_ALLOWED_USERS), paywall выключен (PAYWALL_ENABLED=0).
+# не ломает задачи дня. Блоки на странице задач дня временно скрыты для всех
+# (method_week/ui_inject.py, вернуть: METHOD_WEEK_UI_ENABLED=1), API работает;
+# paywall выключен (PAYWALL_ENABLED=0).
 try:  # pragma: no cover
     from method_week import attach as _method_week_attach
     _method_week_attach(daily_tasks_bp)
