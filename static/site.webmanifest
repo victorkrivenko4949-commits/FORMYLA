@@ -14,6 +14,9 @@
   "background_color": "#0f172a",
   "categories": ["education"],
   "launch_handler": { "client_mode": "navigate-existing" },
+  "protocol_handlers": [
+    { "protocol": "web+formyla", "url": "/?source=pwa_open&launch=%s" }
+  ],
   "prefer_related_applications": false,
   "related_applications": [
     { "platform": "webapp", "url": "https://formyla.net/site.webmanifest" }

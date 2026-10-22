@@ -1,5 +1,5 @@
 /**
- * pwa_install.js — PWA_INSTALL_V4 (22.10.2026).
+ * pwa_install.js — PWA_INSTALL_V4.1 (22.10.2026).
  *
  * Состояния кнопки:
  *   install    — «📲 Скачать приложение» (пришёл beforeinstallprompt или это iOS)
@@ -12,12 +12,14 @@
  *   3) флаг в localStorage с прошлого раза.
  *   Если Chrome всё же присылает beforeinstallprompt — значит НЕ установлено, верим ему.
  *
- * «Открыть приложение» (V4) — реально запускает установленное приложение:
- *   Android  — переход на intent://<host>/?source=pwa_open#Intent;scheme=https;…;end.
- *              Android сам находит установленный WebAPK (у него intent-filter на наш scope)
- *              и открывает его; если приложения нет — S.browser_fallback_url вернёт на сайт.
- *   Desktop  — window.open(url, '_blank', 'noopener'): Chrome 139+ перехватывает такую
- *              навигацию (navigation capturing) и открывает окно установленного PWA.
+ * «Открыть приложение» — реально запускает установленное приложение.
+ *   Важно: браузеры НЕ перехватывают https-ссылки в приложение, если вкладка уже в scope
+ *   этого приложения (сайт → сайт = просто новая вкладка). Поэтому:
+ *   Desktop  — протокол web+formyla://open (protocol_handlers в манифесте). Chrome/Edge
+ *              передают его установленному PWA из любой вкладки (при первом разе спросят разрешение).
+ *              Если обработчика нет — страница никуда не уходит, показываем подсказку.
+ *   Android  — intent://<host>/?source=pwa_open#Intent;scheme=https;…;end. Android находит
+ *              установленный WebAPK (intent-filter на наш scope); нет — S.browser_fallback_url вернёт на сайт.
  *   iOS      — у Safari нет API для запуска web-app с главного экрана, показываем подсказку.
  *   Если через 1.5 с вкладка не ушла в фон — считаем, что не открылось, и показываем лист
  *   «Приложение установлено» с инструкцией. Фолбэк-URL /?source=pwa_open в обычной вкладке
@@ -43,6 +45,7 @@
   var LS_REPORTED = 'formyla_pwa_install_reported';
   var SS_SPLASH = 'formyla_pwa_splash_shown';
   var OPEN_PATH = '/?source=pwa_open';
+  var PROTOCOL_URL = 'web+formyla://open';
   var installingTimer = null;
   var openTimer = null;
 
@@ -54,6 +57,10 @@
     var ua = navigator.userAgent || '';
     var iPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
     return /iPhone|iPad|iPod/i.test(ua) || iPadOS;
+  }
+  function isChromium() {
+    var ua = navigator.userAgent || '';
+    return !!window.chrome || /Chrome|Chromium|Edg|YaBrowser|OPR/i.test(ua);
   }
   function platform() {
     if (isIOS()) return 'ios';
@@ -207,6 +214,7 @@
     '.pwa-sheet-wrap ol{padding-left:22px}',
     '.pwa-sheet-wrap .close{width:100%;padding:12px;border:none;border-radius:10px;background:#334155;color:#fff;font-size:15px;font-weight:600;cursor:pointer}',
     '.pwa-sheet-wrap .primary{width:100%;padding:12px;margin-bottom:10px;border:none;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#6366f1);color:#fff;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;display:block;text-align:center;font-family:inherit}',
+    '.pwa-sheet-wrap .secondary{display:block;text-align:center;margin:0 0 14px;color:#94a3b8;font-size:13px;text-decoration:underline}',
     '@media (min-width:769px){.pwa-sheet-wrap{align-items:center}.pwa-sheet-wrap .sheet{border-radius:16px}}'
   ].join('\n');
 
@@ -259,8 +267,12 @@
       return 'Иконка <b>FORMYLA</b> уже на главном экране или в списке приложений. Если по кнопке приложение не открылось — ' +
              'зайдите в <b>Настройки → Приложения → FORMYLA → Открывать поддерживаемые ссылки</b> и включите «Открывать в этом приложении».';
     }
-    return 'Иконка <b>FORMYLA</b> есть в меню «Пуск» / Launchpad и на странице chrome://apps. ' +
-           'Чтобы ссылки на сайт сами открывались в приложении, в настройках приложения (⋮ → Настройки) включите «Открывать поддерживаемые ссылки».';
+    if (!isChromium()) {
+      return 'Этот браузер не умеет запускать установленные приложения по кнопке — откройте иконку <b>FORMYLA</b> в меню «Пуск» / Launchpad.';
+    }
+    return 'При первом запуске браузер спросит «Открыть FORMYLA?» — нажмите <b>«Открыть»</b>. ' +
+           'Если ничего не произошло — один раз запустите <b>FORMYLA</b> с иконки (меню «Пуск» / Launchpad / chrome://apps), ' +
+           'чтобы приложение подхватило обновление, и повторите.';
   }
 
   function mountButtons() {
@@ -293,11 +305,13 @@
       '<li>Выберите <b>«На экран “Домой”»</b> и нажмите <b>«Добавить»</b>.</li></ol>' +
       '<button type="button" class="close">Понятно</button>');
 
+    var canRetry = platform() !== 'ios' && !(platform() === 'desktop' && !isChromium());
     var installedSheet = makeSheet('pwaInstalledSheet',
       '<h3>✅ Приложение установлено</h3>' +
       '<p>' + platformHint() + '</p>' +
       '<p style="font-size:13px;color:#94a3b8">Повторная установка не нужна: браузер не даст поставить приложение дважды.</p>' +
-      (platform() === 'ios' ? '' : '<button type="button" class="primary pwa-retry-open">🚀 Попробовать открыть ещё раз</button>') +
+      (canRetry ? '<button type="button" class="primary pwa-retry-open">🚀 Попробовать открыть ещё раз</button>' : '') +
+      '<a class="secondary" href="' + OPEN_PATH + '" target="_blank" rel="noopener">Или открыть сайт в новой вкладке</a>' +
       '<button type="button" class="close">Понятно</button>');
     var retry = installedSheet.querySelector('.pwa-retry-open');
     if (retry) retry.addEventListener('click', function () { closeSheet('pwaInstalledSheet'); openApp(); });
@@ -331,12 +345,13 @@
     var plat = platform();
     var target = window.location.origin + OPEN_PATH;
 
-    if (plat === 'ios') {               // у Safari нет способа запустить web-app с главного экрана
+    if (plat === 'ios' || (plat === 'desktop' && !isChromium())) {
+      // Safari (iOS/macOS) и Firefox не дают запустить установленное web-app из вкладки.
       openSheet('pwaInstalledSheet');
       return;
     }
 
-    // Если вкладка ушла в фон / потеряла фокус — приложение открылось.
+    // Если вкладка ушла в фон / потеряла фокус — приложение (или диалог браузера) открылось.
     var left = false;
     function onHide() { if (document.visibilityState === 'hidden') left = true; }
     function onBlur() { left = true; }
@@ -366,17 +381,13 @@
         window.location.href = intentUrl;
         return;
       }
-      // Desktop: новая top-level навигация без opener — Chrome 139+ перехватывает её
-      // и открывает окно установленного PWA (navigation capturing).
-      var w = window.open(target, '_blank', 'noopener');
-      if (!w) {                           // popup заблокирован — обычная ссылка
-        var a = document.createElement('a');
-        a.href = target; a.target = '_blank'; a.rel = 'noopener';
-        document.body.appendChild(a); a.click(); a.parentNode.removeChild(a);
-      }
+      // Desktop (Chromium): https-ссылки с самого сайта браузер в приложение не перехватывает
+      // (мы уже в scope), поэтому идём через зарегистрированный протокол — его Chrome/Edge
+      // отдают установленному PWA из любой вкладки. Нет обработчика — страница остаётся на месте.
+      console.log('[PWA] open via protocol:', PROTOCOL_URL);
+      window.location.href = PROTOCOL_URL;
     } catch (e) {
       console.warn('[PWA] openApp failed:', e);
-      window.open(target, '_blank', 'noopener');
     }
   }
 
@@ -439,6 +450,7 @@
     try {
       var u = new URL(window.location.href);
       u.searchParams.delete('source');
+      u.searchParams.delete('launch');
       window.history.replaceState(null, '', u.pathname + (u.search || '') + u.hash);
     } catch (e) {}
   }
