@@ -36,8 +36,10 @@
   }
 
   /* Мобильная/Telegram-версия: окно задачи открывается на весь экран.
-     Оверлей без отступов, карточка на всю ширину и высоту, скролл — внутри. */
-  @media (max-width: 768px) {
+     Оверлей без отступов, карточка на всю ширину и высоту, скролл — внутри.
+     Порог 1024px — чтобы и планшет, и телефон с «широким» viewport
+     получали полноэкранное окно. */
+  @media (max-width: 1024px) {
     #dt-modal { padding: 0 !important; align-items: stretch !important; }
     #dt-modal > .dt-modal-box {
       width: 100% !important;
@@ -57,6 +59,33 @@
       align-items: center;
       justify-content: center;
     }
+    /* Правила для футера карточки, CTA и долга — перенесены в конец
+       style-блока (после базовых правил .dt-card-cta), иначе базовый
+       каскад перебивал шрифт и паддинги. */
+  }
+
+  /* TG_FIX_V2: тот же полноэкранный режим, но включается JS-классом
+     .dt-modal-fs (openTask вешает при узком экране). Дублируем медиа-запрос —
+     в встроенном браузере Telegram кварки viewport иногда ломают
+     @media, а класс сработает всегда. */
+  #dt-modal.dt-modal-fs { padding: 0 !important; align-items: stretch !important; }
+  #dt-modal.dt-modal-fs > .dt-modal-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+    padding: 60px 16px calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  #dt-modal.dt-modal-fs #dt-modal-close {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .dt-latex-fallback {
@@ -469,9 +498,6 @@
   @media (max-width: 600px) {
     .dt-calibration-banner { flex-direction: column; align-items: stretch; }
     .dt-cal-banner-btn { align-self: flex-start; }
-    /* Долг на телефоне: строка в столбик, кнопка — во всю ширину */
-    .dt-debt-item { flex-wrap: wrap; }
-    .dt-debt-item-open { flex: 1 1 100%; margin-top: 8px; }
   }
 
   /* Calibration badge on card */
@@ -748,6 +774,29 @@
   }
   .dt-yearly-sub-num { font-size: 10px; font-weight: 700; color: var(--faint); width: 16px; text-align: center; }
   .dt-yearly-sub.is-today-sub .dt-yearly-sub-num { color: var(--accent-hi); }
+  /* TG_FIX_V2 (мобильные правила карточек и долга) — в конце style-блока,
+     чтобы перебивать базовые .dt-card-cta/.dt-debt-item-open выше.
+     Футер карточки: легаси-CSS (daily_tasks.css) переводит его в колонку
+     с отступом 42px, и кнопка «Решить →» сжималась до размера текста.
+     Возвращаем строку с переносом: статус сверху, кнопка — крупная,
+     во всю ширину карточки. */
+  @media (max-width: 1024px) {
+    .dt-card-footer {
+      flex-wrap: wrap;
+      flex-direction: row;
+      align-items: center;
+      padding-left: 0;
+    }
+    .dt-card-cta {
+      flex: 1 1 100%;
+      justify-content: center;
+      padding: 12px 16px;
+      font-size: 14.5px;
+    }
+    /* Долг: строка переносится, кнопка — обычной ширины (не растянута) */
+    .dt-debt-item { flex-wrap: wrap; row-gap: 6px; }
+    .dt-debt-item-open { margin-left: auto; }
+  }
 </style>
 {% endblock %}
 
@@ -1579,6 +1628,27 @@
     try { document.body.style.overflow = lock ? 'hidden' : ''; } catch (e) {}
   }
 
+  // TG_FIX_V2: полноэкранный режим окна задачи на узких экранах —
+  // классом, а не только @media: во встроенном браузере Telegram
+  // viewport иногда врёт, и медиа-запрос не срабатывает.
+  function dtSyncFullscreen() {
+    if (!dtModalEl) return;
+    var narrow = (window.innerWidth || 1024) <= 1024;
+    try {
+      if (!narrow && window.matchMedia && window.matchMedia('(max-width: 1024px)').matches) narrow = true;
+    } catch (e) {}
+    try {
+      // Телефон с «широким» layout viewport (кварк некоторых webview):
+      // окно всё равно делаем полноэкранным по физической ширине экрана.
+      if (!narrow && window.screen && (window.screen.width || 1024) <= 500) narrow = true;
+    } catch (e) {}
+    if (narrow) dtModalEl.classList.add('dt-modal-fs');
+    else dtModalEl.classList.remove('dt-modal-fs');
+  }
+  window.addEventListener('resize', function() {
+    if (dtModalEl && dtModalEl.style.display !== 'none') dtSyncFullscreen();
+  });
+
   function closeModal() {
     if (dtModalEl) dtModalEl.style.display = 'none';
     dtLockScroll(false);
@@ -1668,6 +1738,7 @@
     } catch (_e4) {}
     ensureModal();
     dtLockScroll(true);
+    dtSyncFullscreen();
     dtCurrentItem = it;
     dtOpenStart = Date.now();
     // Заголовок ищем внутри активного окна: раньше из-за дубля ID (легаси-разметка

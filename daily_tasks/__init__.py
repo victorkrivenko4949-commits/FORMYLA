@@ -52,6 +52,25 @@ except Exception as _sg_exc:  # noqa: F841
     import logging as _logging
     _logging.getLogger(__name__).error("daily_tasks solution_guard attach failed: %s", _sg_exc)
 
+# TG_FIX_V2: встроенный браузер Telegram (Android/iOS) кэширует HTML
+# /daily_tasks и после деплоя показывает старую страницу (старое окно задачи,
+# старые кнопки). Запрещаем кэширование HTML этой страницы — статику бьёт
+# asset_version, динамический HTML теперь всегда свежий.
+from flask import request as _dt_request
+
+
+@daily_tasks_bp.after_request
+def _dt_no_store_html(resp):
+    try:
+        if _dt_request.method == 'GET' and (_dt_request.path or '').rstrip('/') == '/daily_tasks':
+            if 'text/html' in resp.headers.get('Content-Type', ''):
+                resp.headers['Cache-Control'] = 'no-store, must-revalidate'
+                resp.headers['Pragma'] = 'no-cache'
+                resp.headers['Expires'] = '0'
+    except Exception:  # pragma: no cover
+        pass
+    return resp
+
 # Минимум 15 символов текстового решения для задач уровня 2+ (2, 3, 4), если нет
 # фото. Серверная проверка (before_request на /submit и /submit_ai) + клиентский
 # скрипт static/js/dt_solution_minlen.js (вставляется after_request-хуком).

@@ -749,6 +749,24 @@
    FIX: Missing JS-created classes (synced with daily_tasks.js)
    ════════════════════════════════════════════════════════ */
 
+/* TG_FIX_V2: окно задачи на весь экран — теперь и для планшетов (до 1024px).
+   Дублирует и расширяет блок 768px выше. */
+@media (max-width: 1024px) {
+    .dt-modal-overlay {
+        padding: 0;
+        align-items: stretch;
+    }
+    .dt-modal {
+        max-width: 100%;
+        width: 100%;
+        max-height: none;
+        height: 100vh;
+        height: 100dvh;
+        border-radius: 0;
+        border: none;
+    }
+}
+
 /* ── Card Header (JS uses .dt-card-header) ── */
 .dt-card-header {
     display: flex;
