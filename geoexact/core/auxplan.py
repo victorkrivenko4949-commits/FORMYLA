@@ -93,9 +93,10 @@ SYS_AUXPLAN = """Ты помогаешь оформить чертёж школ�
 {"idea": "одна строка по-русски: зачем это построение",
  "steps": [{"op": "translate", "out": "E", "args": ["D","B","C"]}],
  "aux_segments": [["C","E"]],
- "aux_extensions": [["A","D"]],
+ "aux_extensions": [],
  "aux_lines": [],
- "aux_circles": [["O","A"]]}
+ "aux_circles": [["O","A"]],
+ "result_marks": [{"pts": ["A","M"], "text": "6"}]}
 
 Правила:
 1. Не больше 6 новых точек; имена — заглавные латинские буквы, которых ещё нет на чертеже.
@@ -107,7 +108,15 @@ SYS_AUXPLAN = """Ты помогаешь оформить чертёж школ�
    доп. построение): добавляй только недостающее. Пустой ответ {"idea": "", "steps": []} допустим только
    для совсем элементарной задачи, где хороший учитель не рисует ничего сверх условия.
    Если решение можно упростить или прояснить построением, предложи его.
-5. Не пиши решение и ответ, не выдумывай данных, только построение."""
+5. Не пиши решение и ответ, не выдумывай данных, только построение.
+6. result_marks — ЧТО ПОЛУЧАЕТСЯ В ИТОГЕ построения: числовые длины отрезков, которые
+   построение даёт и которые реально используются в решении. Пример: медианы 9 и 12
+   пересекаются в точке M — тогда AM=6, MA1=3, BM=8, MB1=4 (медиана делится 2:1).
+   Указывай ровно эти отрезки (два конца уже есть на чертеже, отрезок нарисован) и
+   только те, что нужны решению, без лишних. Искомую величину задачи НЕ подписывай.
+   Число пиши в text без единиц измерения. Если построение даёт равенство отрезков
+   или прямой угол — засечки поставятся автоматически, result_marks для них не нужны.
+   Движок проверит каждую подпись по чертежу и отбросит неверную."""
 
 
 _CUE = re.compile(r"провед|продол|достро|параллел|перенес|сдвин|симметр|удво|отложим|отметим|"
@@ -337,6 +346,184 @@ def _expand_steps(steps, taken: set, why: list | None = None):
     return out
 
 
+def _numeric_label(text):
+    """Число из подписи длины: «6» — сразу, «AM = 6» — по хвосту после «=»."""
+    from .gates import numeric_mark_value
+    text = str(text or "").strip()
+    value = numeric_mark_value(text, angle=False)
+    if value is not None:
+        return value
+    m = re.search(r"=\s*([0-9]+(?:[.,][0-9]+)?)\s*$", text)
+    return float(m.group(1).replace(",", ".")) if m else None
+
+
+def _given_dists(plan):
+    """Данные длины: dist-ограничения плана — источник, не зависящий от текста меток."""
+    out = {}
+    for c in getattr(plan, "constraints", None) or []:
+        if getattr(c, "type", None) == "dist" and c.value is not None and len(c.args) == 2:
+            out[frozenset(c.args)] = float(c.value)
+    return out
+
+
+def _median_piece_marks(plan, known, referenced, visible):
+    """Теорема о медианах: центроид делит каждую медиану 2:1 (AG = 2/3·AA1).
+
+    Классический результат построения «обозначить точку пересечения медиан»: если
+    построение пользуется центроидом, а на нарисованной медиане известна полная
+    длина (данное dist-ограничение или числовая подпись), куски выводятся из
+    теоремы и сверяются с чертежом — даже если модель подписи результата
+    не прислала. Основание теоретическое, числовая сверка — та же, что у гейта.
+
+    Центроид ищется строго: line_intersect(X, M1, Y, M2), где M1 — середина
+    стороны, НЕ содержащей X, M2 — середина стороны, НЕ содержащей Y, и у сторон
+    есть общая вершина (иначе это середины несвязанных отрезков, а не медианы
+    одного треугольника — случайное отношение 2:1 не принимается)."""
+    mp_args = {c.out: set(c.args) for c in plan.constructions if c.op == "midpoint"}
+    if not mp_args:
+        return []
+    centroid = None
+    for c in plan.constructions:
+        if c.op != "line_intersect" or len(c.args) != 4:
+            continue
+        x, m1, y, m2 = c.args
+        if m1 not in mp_args or m2 not in mp_args:
+            continue
+        if x in mp_args[m1] or y in mp_args[m2]:
+            continue                    # «медиана» к середине своей же стороны
+        if not (mp_args[m1] & mp_args[m2]):
+            continue                    # нет общей вершины — не один треугольник
+        if c.out in referenced:
+            centroid = c.out
+            break
+    if centroid is None or centroid not in known:
+        return []
+    given = _given_dists(plan)
+    out: list[dict] = []
+    have = {tuple(m["pts"]) for m in plan.draw.length_marks}
+    have |= {tuple(m["pts"])[::-1] for m in plan.draw.length_marks}
+    for mark in plan.draw.length_marks:
+        pts = list(mark.get("pts") or [])
+        if len(pts) != 2:
+            continue
+        if frozenset(pts) not in visible:
+            continue
+        # медиана: ровно один конец — середина стороны
+        if not ((pts[0] in mp_args) ^ (pts[1] in mp_args)):
+            continue
+        full = given.get(frozenset(pts))
+        if full is None:
+            full = _numeric_label(mark.get("text"))
+        if full is None or full <= 0:
+            continue
+        a, b = (known[n] for n in pts)
+        g = known[centroid]
+        d = b - a
+        L2 = float(d @ d)
+        if L2 < 1e-12:
+            continue
+        t = float((g - a) @ d) / L2
+        if not (1e-6 < t < 1.0 - 1e-6):
+            continue                    # центроид не на этой медиане
+        vertex = pts[1] if pts[0] in mp_args else pts[0]
+        foot = pts[1] if vertex == pts[0] else pts[0]
+        for piece, value in (([vertex, centroid], full * 2.0 / 3.0),
+                             ([centroid, foot], full / 3.0)):
+            actual = float(np.linalg.norm(known[piece[0]] - known[piece[1]]))
+            tol = max(1e-7, value * 1e-4)   # тот же допуск, что у гейта
+            if abs(actual - value) > tol:
+                continue
+            if tuple(piece) in have:
+                continue
+            out.append({"pts": piece, "text": f"{value:g}", "layer": "aux"})
+    return out
+
+
+def _result_marks(value, known, alias, why, visible, plan, referenced, aux_drawn, derivable):
+    """Числовые подписи результата построения (data["result_marks"]).
+
+    Контракт «никаких непроверенных подписей»: каждая длина сверяется с чертежом
+    (допуск тот же, что у гейта: max(1e-7, |v|·1e-4)), имеет основание (отрезок
+    нарисован построением или является куском разделённого им отрезка) И
+    доказуема — выводится из теоремы или данного (derivable): центроид делит
+    медиану 2:1, данная длина dist-ограничением. Число, случайно совпавшее с
+    одним решением на постороннем или неопределённом построением отрезке,
+    результатом построения не считается. Неверная или безосновательная подпись
+    отбрасывается с причиной (в why для перепостроения и в notes для
+    пользователя), а не валит весь чертёж и не появляется без проверки."""
+    from .gates import numeric_mark_value
+
+    def drop(reason):
+        if why is not None:
+            why.append(reason)
+        plan.notes = ((plan.notes + " ") if plan.notes else "") + reason
+
+    out: list[dict] = []
+    if not isinstance(value, list):
+        return out
+    for mark in value[:12]:
+        if not isinstance(mark, dict):
+            continue
+        pts = list(mark.get("pts") or [])
+        text = str(mark.get("text") or "").strip()
+        if len(pts) != 2 or not text:
+            continue
+        pts = [alias.get(a, a) for a in pts]
+        if not all(a in known for a in pts):
+            drop("результат-подпись на неизвестных точках: " + ",".join(pts))
+            continue
+        wanted = _numeric_label(text)
+        if wanted is None:
+            drop(f"результат-подпись не число: {text!r} — отброшена")
+            continue
+        if "=" in text:                # «AM = 6» — имя отрезка рендер добавит сам
+            text = f"{wanted:g}"
+        actual = float(np.linalg.norm(known[pts[0]] - known[pts[1]]))
+        tol = max(1e-7, abs(wanted) * 1e-4)   # тот же допуск, что у гейта
+        if abs(actual - wanted) > tol:
+            drop(f"результат-подпись {','.join(pts)} {text!r} не сходится "
+                 f"(измерено {actual:.6g}) — отброшена")
+            continue
+        if not _mark_has_basis(pts, visible, known, referenced, aux_drawn):
+            drop("результат-подпись без основания (отрезок построением не тронут): "
+                 + ",".join(pts) + " — отброшена")
+            continue
+        proven = derivable.get(frozenset(pts))
+        if proven is None or abs(proven - wanted) > max(1e-7, abs(proven) * 1e-4):
+            drop("результат-подпись не доказана (нет теоремы или данного): "
+                 + ",".join(pts) + " — отброшена")
+            continue
+        out.append({"pts": pts, "text": text, "layer": "aux"})
+    return out
+
+
+def _mark_has_basis(pts, visible, known, referenced, aux_drawn):
+    """Основание подписи результата: отрезок нарисован построением (aux_drawn)
+    или является куском нарисованного отрезка, причём точка деления — та, которой
+    построение пользуется (referenced). Медиана AA1 делится центроидом G на
+    куски AG и GA1 — если построение ссылается на G, эти куски имеют основание."""
+    if frozenset(pts) in aux_drawn or frozenset(pts) in visible:
+        return frozenset(pts) in aux_drawn
+    for seg in visible:
+        a, b = (known[n] for n in seg)
+        d = b - a
+        length = float(np.linalg.norm(d))
+        if length < 1e-12:
+            continue
+        tol = 1e-6 * length
+        inside = []
+        for name, pt in zip(pts, (known[pts[0]], known[pts[1]])):
+            t = min(1.0, max(0.0, float((pt - a) @ d) / (length * length)))
+            if float(np.linalg.norm(pt - (a + t * d))) > tol:
+                inside = []
+                break
+            if 0.0 < t < 1.0:          # конец, лежащий строго внутри отрезка
+                inside.append(name)
+        if inside and all(n in referenced for n in inside):
+            return True
+    return False
+
+
 def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None:
     """Validate and execute an auxiliary plan. Returns (plan, coords) or None.
 
@@ -493,11 +680,48 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
             draw.aux_segments.append(s)
             have.add(frozenset(s))
     draw.aux_extensions += [e for e in extensions if e not in draw.aux_extensions]
+    if data.get("idea") and isinstance(data["idea"], str):
+        plan.notes = data["idea"][:300]     # the text always matches what is drawn
+    # Результат построения строго отмечается: числовые длины, которые оно даёт,
+    # — только с основанием и только на нарисованных отрезках; неверная или
+    # безосновательная подпись отбрасывается с причиной, а не валит весь чертёж.
+    # «Обозначить точку» — точка, на которую ссылается построение, обязана иметь
+    # подпись: рендер прячет имя по сырому hide_labels даже тогда, когда точка
+    # нарисована и построение ею пользуется (окружность финишер при этом оставляет,
+    # и на чертеже возникает безымянная точка). Центры вспомогательных окружностей
+    # и точки-свидетели радиуса — не «обозначенные» точки: имя не раскрываем.
+    referenced = {n for pr in segments + extensions + lines for n in pr if n}
+    referenced |= {arc.get(k) for arc in arcs for k in ("start", "end")}
+    aux_drawn = {frozenset(pr) for pr in segments + lines}
+    visible_aux = {frozenset(s) for f in ("segments", "aux_segments") for s in getattr(draw, f)}
+    for pr in segments:
+        visible_aux.add(frozenset(pr))
+    # Классический случай оформляем сами: теорема о медианах — центроид делит
+    # медиану 2:1, куски выводятся из данного (dist) или числовой подписи полной
+    # длины и сверяются с чертежом. Модель могла подписи результата не прислать.
+    derived = _median_piece_marks(plan, known, referenced, visible_aux)
+    derivable = {frozenset(m["pts"]): _numeric_label(m["text"]) for m in derived}
+    derivable.update(_given_dists(plan))
+    result_out = _result_marks(data.get("result_marks"), known, alias, why,
+                               visible_aux, plan, referenced, aux_drawn, derivable)
+    for m in result_out:
+        if not any(list(x["pts"]) == m["pts"] for x in draw.length_marks):
+            draw.length_marks.append(m)
+    for m in derived:
+        if not any(list(x["pts"]) == m["pts"] for x in draw.length_marks):
+            draw.length_marks.append(m)
+            result_out.append(m)
     draw.aux_lines += lines
     draw.aux_circles += circles
     draw.arcs += arcs
-    if data.get("idea") and isinstance(data["idea"], str):
-        plan.notes = data["idea"][:300]     # the text always matches what is drawn
+    referenced |= {n for m in result_out for n in m["pts"]}
+    if referenced and draw.hide_labels:
+        hidden_before = list(draw.hide_labels)
+        draw.hide_labels = [p for p in draw.hide_labels if p not in referenced]
+        if draw.hide_labels != hidden_before:
+            note = ("Точка " + ", ".join(sorted(set(hidden_before) - set(draw.hide_labels)))
+                    + " обозначена построением.")
+            plan.notes = ((plan.notes + " ") if plan.notes else "") + note
     if alias:
         note = "Точка " + "; ".join(f"{k} совпадает с {v}" for k, v in alias.items()) + "."
         plan.notes = ((plan.notes + " ") if plan.notes else "") + note
