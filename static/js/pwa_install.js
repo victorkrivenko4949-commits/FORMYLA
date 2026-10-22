@@ -1,5 +1,5 @@
 /**
- * pwa_install.js — PWA_INSTALL_V3 (11.10.2026).
+ * pwa_install.js — PWA_INSTALL_V4 (22.10.2026).
  *
  * Состояния кнопки:
  *   install    — «📲 Скачать приложение» (пришёл beforeinstallprompt или это iOS)
@@ -11,6 +11,17 @@
  *   2) navigator.getInstalledRelatedApps() + related_applications в манифесте;
  *   3) флаг в localStorage с прошлого раза.
  *   Если Chrome всё же присылает beforeinstallprompt — значит НЕ установлено, верим ему.
+ *
+ * «Открыть приложение» (V4) — реально запускает установленное приложение:
+ *   Android  — переход на intent://<host>/?source=pwa_open#Intent;scheme=https;…;end.
+ *              Android сам находит установленный WebAPK (у него intent-filter на наш scope)
+ *              и открывает его; если приложения нет — S.browser_fallback_url вернёт на сайт.
+ *   Desktop  — window.open(url, '_blank', 'noopener'): Chrome 139+ перехватывает такую
+ *              навигацию (navigation capturing) и открывает окно установленного PWA.
+ *   iOS      — у Safari нет API для запуска web-app с главного экрана, показываем подсказку.
+ *   Если через 1.5 с вкладка не ушла в фон — считаем, что не открылось, и показываем лист
+ *   «Приложение установлено» с инструкцией. Фолбэк-URL /?source=pwa_open в обычной вкладке
+ *   тоже показывает этот лист автоматически.
  *
  * Статистика: факт установки отправляется один раз на POST /api/pwa/installed
  * (appinstalled на Android/десктопе; первый запуск в standalone — на iPhone).
@@ -31,7 +42,9 @@
   var LS_DISMISSED = 'formyla_pwa_fab_dismissed';
   var LS_REPORTED = 'formyla_pwa_install_reported';
   var SS_SPLASH = 'formyla_pwa_splash_shown';
+  var OPEN_PATH = '/?source=pwa_open';
   var installingTimer = null;
+  var openTimer = null;
 
   function isStandalone() {
     return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
@@ -193,7 +206,7 @@
     '.pwa-sheet-wrap ol,.pwa-sheet-wrap p{margin:0 0 16px;line-height:1.6;color:#cbd5e1}',
     '.pwa-sheet-wrap ol{padding-left:22px}',
     '.pwa-sheet-wrap .close{width:100%;padding:12px;border:none;border-radius:10px;background:#334155;color:#fff;font-size:15px;font-weight:600;cursor:pointer}',
-    '.pwa-sheet-wrap .primary{width:100%;padding:12px;margin-bottom:10px;border:none;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#6366f1);color:#fff;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;display:block;text-align:center}',
+    '.pwa-sheet-wrap .primary{width:100%;padding:12px;margin-bottom:10px;border:none;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#6366f1);color:#fff;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;display:block;text-align:center;font-family:inherit}',
     '@media (min-width:769px){.pwa-sheet-wrap{align-items:center}.pwa-sheet-wrap .sheet{border-radius:16px}}'
   ].join('\n');
 
@@ -235,6 +248,20 @@
     return w;
   }
   function openSheet(id) { var s = document.getElementById(id); if (s) s.classList.add('is-open'); }
+  function closeSheet(id) { var s = document.getElementById(id); if (s) s.classList.remove('is-open'); }
+
+  function platformHint() {
+    var p = platform();
+    if (p === 'ios') {
+      return 'На iPhone/iPad Safari не умеет запускать приложение по кнопке — откройте иконку <b>FORMYLA</b> на главном экране.';
+    }
+    if (p === 'android') {
+      return 'Иконка <b>FORMYLA</b> уже на главном экране или в списке приложений. Если по кнопке приложение не открылось — ' +
+             'зайдите в <b>Настройки → Приложения → FORMYLA → Открывать поддерживаемые ссылки</b> и включите «Открывать в этом приложении».';
+    }
+    return 'Иконка <b>FORMYLA</b> есть в меню «Пуск» / Launchpad и на странице chrome://apps. ' +
+           'Чтобы ссылки на сайт сами открывались в приложении, в настройках приложения (⋮ → Настройки) включите «Открывать поддерживаемые ссылки».';
+  }
 
   function mountButtons() {
     var headerAuth = document.querySelector('.header > div');
@@ -266,13 +293,14 @@
       '<li>Выберите <b>«На экран “Домой”»</b> и нажмите <b>«Добавить»</b>.</li></ol>' +
       '<button type="button" class="close">Понятно</button>');
 
-    makeSheet('pwaInstalledSheet',
+    var installedSheet = makeSheet('pwaInstalledSheet',
       '<h3>✅ Приложение установлено</h3>' +
-      '<p>Иконка <b>FORMYLA</b> уже на главном экране (на компьютере — в меню «Пуск» / Launchpad). ' +
-      'Откройте её — приложение запустится в отдельном окне, без адресной строки.</p>' +
+      '<p>' + platformHint() + '</p>' +
       '<p style="font-size:13px;color:#94a3b8">Повторная установка не нужна: браузер не даст поставить приложение дважды.</p>' +
-      '<a class="primary" href="/?source=pwa_open" target="_blank" rel="noopener">Открыть здесь</a>' +
+      (platform() === 'ios' ? '' : '<button type="button" class="primary pwa-retry-open">🚀 Попробовать открыть ещё раз</button>') +
       '<button type="button" class="close">Понятно</button>');
+    var retry = installedSheet.querySelector('.pwa-retry-open');
+    if (retry) retry.addEventListener('click', function () { closeSheet('pwaInstalledSheet'); openApp(); });
 
     makeSheet('pwaHintSheet',
       '<h3>📲 Как установить</h3>' +
@@ -297,9 +325,64 @@
     if (reportSource) reportInstall(reportSource);
   }
 
+  /* ───── 6. Запуск установленного приложения ───── */
+  function openApp() {
+    track('pwa_open_click');
+    var plat = platform();
+    var target = window.location.origin + OPEN_PATH;
+
+    if (plat === 'ios') {               // у Safari нет способа запустить web-app с главного экрана
+      openSheet('pwaInstalledSheet');
+      return;
+    }
+
+    // Если вкладка ушла в фон / потеряла фокус — приложение открылось.
+    var left = false;
+    function onHide() { if (document.visibilityState === 'hidden') left = true; }
+    function onBlur() { left = true; }
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', onBlur);
+    window.addEventListener('blur', onBlur);
+
+    if (openTimer) clearTimeout(openTimer);
+    openTimer = setTimeout(function () {
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', onBlur);
+      window.removeEventListener('blur', onBlur);
+      openTimer = null;
+      if (left) { track('pwa_open_ok'); return; }
+      track('pwa_open_fallback');
+      openSheet('pwaInstalledSheet');
+    }, 1500);
+
+    try {
+      if (plat === 'android') {
+        // Android: явный intent на наш URL. WebAPK зарегистрирован как обработчик scope,
+        // поэтому система откроет именно приложение. Нет приложения → fallback на сайт.
+        var intentUrl = 'intent://' + window.location.host + OPEN_PATH +
+          '#Intent;scheme=https;action=android.intent.action.VIEW;' +
+          'S.browser_fallback_url=' + encodeURIComponent(target) + ';end';
+        console.log('[PWA] open via intent:', intentUrl);
+        window.location.href = intentUrl;
+        return;
+      }
+      // Desktop: новая top-level навигация без opener — Chrome 139+ перехватывает её
+      // и открывает окно установленного PWA (navigation capturing).
+      var w = window.open(target, '_blank', 'noopener');
+      if (!w) {                           // popup заблокирован — обычная ссылка
+        var a = document.createElement('a');
+        a.href = target; a.target = '_blank'; a.rel = 'noopener';
+        document.body.appendChild(a); a.click(); a.parentNode.removeChild(a);
+      }
+    } catch (e) {
+      console.warn('[PWA] openApp failed:', e);
+      window.open(target, '_blank', 'noopener');
+    }
+  }
+
   function onClick() {
     if (state === 'installing') return;
-    if (state === 'installed') { track('pwa_open_click'); openSheet('pwaInstalledSheet'); return; }
+    if (state === 'installed') { openApp(); return; }
     track('pwa_install_click');
     if (deferredPrompt) {
       var p = deferredPrompt;
@@ -348,11 +431,24 @@
     }
   }
 
+  // Попали на фолбэк-URL в обычной вкладке → приложение не открылось, подскажем что делать.
+  function handleOpenFallback() {
+    if (!/[?&]source=pwa_open(&|$)/.test(window.location.search)) return;
+    if (lsGet(LS_INSTALLED) !== '1') return;
+    setTimeout(function () { openSheet('pwaInstalledSheet'); }, 400);
+    try {
+      var u = new URL(window.location.href);
+      u.searchParams.delete('source');
+      window.history.replaceState(null, '', u.pathname + (u.search || '') + u.hash);
+    } catch (e) {}
+  }
+
   function init() {
     injectCSS();
     mountButtons();
     detectInstalled();
     if (isIOS() && state === 'hidden') setState('install');
+    handleOpenFallback();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
