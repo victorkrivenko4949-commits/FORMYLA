@@ -394,10 +394,12 @@ except Exception as _e_v10:
 # (victor, Lavrik — см. services/pilot.py). Выполняется после auto_migrate,
 # чтобы таблица subscriptions уже существовала. Никогда не роняет старт.
 try:
-    from services.pilot import ensure_pilot_subscriptions
+    from services.pilot import ensure_pilot_subscriptions, ensure_premium_launch_notice
     with app.app_context():
         if ensure_pilot_subscriptions():
             print("[PILOT] beta premium activated for pilot accounts")
+        if ensure_premium_launch_notice():
+            print("[PILOT] premium launch notice scheduled (3 Nov 19:00 MSK)")
 except Exception as _e_pilot:
     print(f"[PILOT] ensure_pilot_subscriptions skipped: {_e_pilot}")
 
@@ -2860,6 +2862,21 @@ def tutor_history_cleanup_job():
 # CRITICAL: this is the job that actually creates DailyTaskSet for users
 # at the start of each day. Without it, users see "no_set" and must
 # click "Generate" manually, waiting ~5 minutes for AI pipeline.
+# ПИЛОТ PREMIUM: фоновый обход пилотных аккаунтов — недельное сообщение
+# куратора (пишет первым после 7 дней подписки, DeepSeek + шаблон-фолбэк).
+# Дублируется ленивым триггером при открытии чата — двойная страховка.
+@scheduler.task('interval', id='curator_pilot_week1_sweep', minutes=60)
+def curator_pilot_week1_sweep_job():
+    with app.app_context():
+        try:
+            from services.curator_chat import sweep_pilot_week1
+            sent = sweep_pilot_week1()
+            if sent:
+                app.logger.info('[PILOT] curator week1 sweep: sent %d', sent)
+        except Exception as e:
+            app.logger.warning('[PILOT] curator week1 sweep failed: %s', e)
+
+
 @scheduler.task('cron', id='daily_midnight_assign', hour=0, minute=5)
 def daily_midnight_assign_job():
     """At 00:05 MSK, auto-assign daily tasks to active users.
@@ -13122,22 +13139,20 @@ def _is_premium_plan(plan_value):
 
 @app.context_processor
 def _inject_subscription_flags():
-    """Глобальный флаг is_premium для всех шаблонов.
-
-    Использовать в Jinja: {% if is_premium %}…{% endif %}.
-    Также нормализует устаревшие значения 'premium_monthly' / 'premium_yearly'
-    для текущего рендера (только в памяти — БД не трогаем здесь).
-    """
+    """Глобальные флаги is_premium / is_pilot / pilot_session для шаблонов."""
     try:
         if current_user.is_authenticated:
-            from services.pilot import is_pilot_user
+            from services.pilot import is_pilot_user, pilot_session_today
+            is_pilot = is_pilot_user(current_user)
+            session = pilot_session_today(current_user.id) if is_pilot else None
             return {
                 'is_premium': _is_premium_plan(current_user.current_plan),
-                'is_pilot': is_pilot_user(current_user),
+                'is_pilot': is_pilot,
+                'pilot_session': session,
             }
     except Exception:
         pass
-    return {'is_premium': False, 'is_pilot': False}
+    return {'is_premium': False, 'is_pilot': False, 'pilot_session': None}
 
 
 @app.context_processor

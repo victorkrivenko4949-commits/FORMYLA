@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS admin_notices (
     link_text VARCHAR(120),
     targets TEXT,
     active BOOLEAN NOT NULL DEFAULT TRUE,
+    activate_at TIMESTAMP,
     created_by INTEGER,
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 )
@@ -70,10 +71,36 @@ CREATE TABLE IF NOT EXISTS admin_notices (
     link_text VARCHAR(120),
     targets TEXT,
     active INTEGER NOT NULL DEFAULT 1,
+    activate_at TIMESTAMP,
     created_by INTEGER,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 )
 """
+
+
+def _ensure_activate_at_column() -> None:
+    """Отложенные уведомления: добавить колонку activate_at, если её нет.
+
+    NULL — показывать сразу; TIMESTAMP — показывать только после этого
+    момента (по UTC). Нужно для запланированных анонсов.
+    """
+    try:
+        dialect = db.engine.dialect.name
+        cols = {c['name'] for c in db.session.execute(text(
+            "SELECT column_name AS name FROM information_schema.columns "
+            "WHERE table_schema = 'public' AND table_name = 'admin_notices'"
+        )).mappings()} if dialect == 'postgresql' else {
+            r[1] for r in db.session.execute(text('PRAGMA table_info(admin_notices)')).all()}
+        if cols and 'activate_at' not in cols:
+            db.session.execute(text(
+                'ALTER TABLE admin_notices ADD COLUMN activate_at TIMESTAMP'))
+            db.session.commit()
+    except Exception as e:  # noqa: BLE001
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        logger.warning('[admin_notices] activate_at migration failed: %r', e)
 
 
 def _ensure_table() -> None:
@@ -93,6 +120,7 @@ def _ensure_table() -> None:
     except Exception as e:  # noqa: BLE001
         db.session.rollback()
         logger.warning('[admin_notices] ensure_table failed: %r', e)
+    _ensure_activate_at_column()
 
 
 def _is_admin() -> bool:
@@ -138,7 +166,7 @@ def admin_page():
         abort(403)
     _ensure_table()
     rows = db.session.execute(text(
-        'SELECT id, title, body, active, created_at '
+        'SELECT id, title, body, active, activate_at, created_at '
         'FROM admin_notices ORDER BY id DESC LIMIT 200'
     )).mappings().all()
     seen_counts = {}
@@ -185,10 +213,18 @@ def admin_create():
         abort(400)
     _ensure_table()
     try:
+        activate_at = None
+        raw_dt = (request.form.get('activate_at') or '').strip()
+        if raw_dt:
+            # datetime-local приходит в локальном времени админа. Сайт
+            # московский — трактуем ввод как МСК и переводим в UTC
+            # (сравнение в api_pending идёт с NOW() в UTC).
+            from datetime import timedelta as _td
+            activate_at = datetime.fromisoformat(raw_dt) - _td(hours=3)
         db.session.execute(text(
-            'INSERT INTO admin_notices (title, body, link_url, link_text, targets, active, created_by, created_at) '
-            'VALUES (:t, :b, NULL, NULL, NULL, :a, :cb, :ca)'
-        ), {'t': SENDERS[sender], 'b': body, 'a': True,
+            'INSERT INTO admin_notices (title, body, link_url, link_text, targets, active, activate_at, created_by, created_at) '
+            'VALUES (:t, :b, NULL, NULL, NULL, :a, :aa, :cb, :ca)'
+        ), {'t': SENDERS[sender], 'b': body, 'a': True, 'aa': activate_at,
             'cb': current_user.id, 'ca': datetime.utcnow()})
         db.session.commit()
     except Exception as e:  # noqa: BLE001
@@ -240,13 +276,28 @@ def api_pending():
         return jsonify({'pending': False})
     _ensure_table()
     try:
-        row = db.session.execute(text(
-            "SELECT n.id, n.title, n.body FROM admin_notices n "
-            "WHERE n.active = :a AND NOT EXISTS ("
-            "  SELECT 1 FROM site_notice_seen s "
-            "  WHERE s.user_id = :u AND s.notice_key = 'admin:' || CAST(n.id AS TEXT)) "
-            "ORDER BY n.id ASC LIMIT 1"
-        ), {'u': current_user.id, 'a': True}).mappings().first()
+        dialect = db.engine.dialect.name
+        if dialect == 'postgresql':
+            row = db.session.execute(text(
+                "SELECT n.id, n.title, n.body FROM admin_notices n "
+                "WHERE n.active = :a "
+                "AND (n.activate_at IS NULL OR n.activate_at <= NOW()) "
+                "AND NOT EXISTS ("
+                "  SELECT 1 FROM site_notice_seen s "
+                "  WHERE s.user_id = :u AND s.notice_key = 'admin:' || CAST(n.id AS TEXT)) "
+                "ORDER BY n.id ASC LIMIT 1"
+            ), {'u': current_user.id, 'a': True}).mappings().first()
+        else:
+            row = db.session.execute(text(
+                "SELECT n.id, n.title, n.body FROM admin_notices n "
+                "WHERE n.active = :a "
+                "AND (n.activate_at IS NULL OR n.activate_at <= :now) "
+                "AND NOT EXISTS ("
+                "  SELECT 1 FROM site_notice_seen s "
+                "  WHERE s.user_id = :u AND s.notice_key = 'admin:' || CAST(n.id AS TEXT)) "
+                "ORDER BY n.id ASC LIMIT 1"
+            ), {'u': current_user.id, 'a': True,
+                'now': datetime.utcnow()}).mappings().first()
     except Exception as e:  # noqa: BLE001
         db.session.rollback()
         logger.warning('[admin_notices] pending failed: %r', e)

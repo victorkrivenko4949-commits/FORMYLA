@@ -249,6 +249,24 @@ def _install_yookassa_pay(app) -> None:
         logger.exception("[yookassa_pay] auto-register failed: %r", e)
 
 
+def _install_curator_chat(app) -> None:
+    """CURATOR_CHAT_V1: чат «Куратор + Поддержка» (/curator) для пилота Premium.
+
+    Доступен только пилотным аккаунтам (services/pilot.py); остальные
+    получают 404. Отключить: CURATOR_CHAT_AUTOREG=0.
+    """
+    if os.environ.get("CURATOR_CHAT_AUTOREG", "1") == "0":
+        return
+    if getattr(app, "_curator_chat_installed", False):
+        return
+    try:
+        from routes.curator_chat import curator_chat_bp
+        _ORIG_REGISTER(app, curator_chat_bp)
+        app._curator_chat_installed = True
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[curator_chat] auto-register failed: %r", e)
+
+
 def _install(app) -> None:
     _install_pwa(app)
     _install_site_notices(app)
@@ -262,6 +280,7 @@ def _install(app) -> None:
     _install_limits(app)
     _install_admin_launch(app)
     _install_yookassa_pay(app)
+    _install_curator_chat(app)
     if os.environ.get("SURVEYS_AUTOREG", "1") != "0":
         from routes.surveys import install_surveys
         install_surveys(app, register=_ORIG_REGISTER)

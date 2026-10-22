@@ -2323,3 +2323,28 @@ class UsageDaily(db.Model):
 
     def __repr__(self):
         return f'<UsageDaily user={self.user_id} date={self.date}>'
+
+
+class CuratorChatMessage(db.Model):
+    """Чат с ИИ-куратором (пилот Premium).
+
+    Роли: 'user' — сообщение ученика, 'curator' — ответ ИИ-куратора,
+    'system' — служебные/фоновые сообщения (например, недельный отчёт).
+    Таблица создаётся auto_migrate; общение доступно только пилотным
+    аккаунтам (см. services/pilot.py).
+    """
+    __tablename__ = 'curator_chat_messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False, index=True)
+    role = db.Column(db.Text, nullable=False)          # user | curator | system
+    content = db.Column(db.Text, nullable=False)
+    meta_json = db.Column(db.Text, nullable=True)       # контекст генерации, fallback-флаг и т.п.
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index('ix_curator_chat_user_created', 'user_id', 'created_at'),
+    )
+
+    def __repr__(self):
+        return f'<CuratorChatMessage user={self.user_id} role={self.role} id={self.id}>'

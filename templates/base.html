@@ -222,6 +222,9 @@
             <!-- 2. Задачи дня + Куратор (видны всем ролям) -->
             <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="nav-item">📅 Задачи дня</a>
             <a href="{{ url_for('prep.coach') }}" class="nav-item">🎓 Куратор подготовки</a>
+            {% if is_pilot %}
+            <a href="/curator" class="nav-item" style="color:#f4b942;">💬 Куратор (чат)</a>
+            {% endif %}
             <a href="/olympiad-start" class="nav-item">📖 С чего начать</a>
             <a href="/articles" class="nav-item">📰 Статьи</a>
 
@@ -431,10 +434,17 @@
             <span class="bottom-nav-icon">🏆</span>
             <span class="bottom-nav-label">Олимпиады</span>
         </a>
+        {% if is_pilot %}
+        <a href="/curator" class="bottom-nav-item" data-path="/curator*,/prep/coach*">
+            <span class="bottom-nav-icon">🎓</span>
+            <span class="bottom-nav-label">Куратор</span>
+        </a>
+        {% else %}
         <a href="/prep/coach" class="bottom-nav-item" data-path="/prep/coach*">
             <span class="bottom-nav-icon">🎓</span>
             <span class="bottom-nav-label">Куратор</span>
         </a>
+        {% endif %}
         <a href="/misc" class="bottom-nav-item" data-path="/misc*,/profile*,/friends*,/leaderboard*,/chat*,/about*,/probniks*,/secrets*,/problems*,/matstat*,/index*">
             <span class="bottom-nav-icon">📦</span>
             <span class="bottom-nav-label">Прочее</span>
@@ -442,6 +452,22 @@
     </nav>
 
     <main class="main">
+        {% if is_pilot and pilot_session and pilot_session.enabled %}
+        <div style="max-width:1100px;margin:10px auto 0;padding:8px 16px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(244,185,66,.10),rgba(76,125,255,.10));border:1px solid rgba(244,185,66,.35);border-radius:12px;padding:9px 16px;font-size:13px;color:#e2e8f0;">
+            <span style="color:#f4b942;font-weight:800;">🔥 Premium-пилот</span>
+            <span>Неделя {{ pilot_session.week }}</span>
+            {% if pilot_session.session_type == 'rest' %}
+            <span style="color:#94a3b8;">сегодня выходной — отдыхай</span>
+            {% elif pilot_session.session_type == 'diagnostic' %}
+            <span>неделя 1: <strong>{{ pilot_session.session_label }}</strong></span>
+            {% else %}
+            <span>занятие {{ pilot_session.session_index }} из {{ pilot_session.total }}: <strong>{{ pilot_session.session_label }}</strong></span>
+            {% endif %}
+            <a href="/curator" style="margin-left:auto;color:#f4b942;font-weight:700;text-decoration:none;">💬 Куратор</a>
+          </div>
+        </div>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
 
