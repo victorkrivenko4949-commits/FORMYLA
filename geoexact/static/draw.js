@@ -10,6 +10,23 @@
   // Задание «полное решение»: тот же диалог с Луной продолжается просьбой
   // решить задачу, DeepSeek оформляет ответ в LaTeX, KaTeX рисует формулы.
   let solutionJob = null;
+  // Честный возраст задания: считается от серверного created (age_sec в
+  // /active и /jobs/<id>), а не от момента загрузки страницы. Возврат в
+  // раздел после смены другого показывает «уже строится 0:47», а не «часы
+  // с нуля» — раньше это выглядело как перезапуск генерации, хотя задание
+  // продолжало выполняться на сервере в фоне.
+  let jobAge = null, jobAgeAt = 0;
+  const setJobAge = sec => {
+    if (typeof sec === "number" && isFinite(sec) && sec >= 0) {
+      jobAge = sec; jobAgeAt = Date.now();
+    }
+  };
+  const jobElapsed = () => jobAge == null ? 0 :
+    Math.max(0, Math.round(jobAge + (Date.now() - jobAgeAt) / 1000));
+  const jobClock = () => {
+    const s = jobElapsed();
+    return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  };
   // Распознанное фото: {plain, raw}. Если пользователь не редактировал текст,
   // в конвейер уходит raw-версия (полная, с LaTeX-формулами), а пользователь
   // видит её же в читаемом виде без LaTeX.
@@ -148,12 +165,12 @@
   async function poll() {
     if (polling || !activeJob) return;
     polling = true; el("resume").hidden = true;
-    const started = Date.now();
     const isSolution = activeJob === solutionJob;
     try {
       for (let i = 0; i < 620; i++) {
         const data = await jsonResponse(await fetch(api + "/" + activeJob,
           {credentials: "same-origin", cache: "no-store"}));
+        if (data.age_sec != null) setJobAge(data.age_sec);
         if (data.status === "done" || data.status === "failed") {
           if (data.result?.kind === "solution") {
             // Решение (успешное или нет) не становится «последним чертежом»:
@@ -175,22 +192,24 @@
           el("submit").disabled = false;
           if (data.result?.ok) {
             show(data.result);
-            status(["approximate", "simplified", "sketch"].includes(data.result.verification)
-              ? "Чертёж готов (приближённый)." : "Чертёж готов.");
+            const total = jobElapsed();
+            const ready = ["approximate", "simplified", "sketch"].includes(data.result.verification)
+              ? "Чертёж готов (приближённый)." : "Чертёж готов.";
+            status(total >= 5 ? ready + " Строился " + jobClock() + "." : ready);
           }
           else status((data.result?.detail || "Не удалось построить чертёж.") +
             (data.result?.reason ? " Код: " + data.result.reason : ""));
           return;
         }
-        const sec = Math.round((Date.now() - started) / 1000);
-        const clock = Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
+        const sec = jobElapsed();
         const auxMode = root.querySelector('input[name="gx-mode"]:checked')?.value === "aux";
         status(data.status === "running"
-          ? (isSolution ? "Луна пишет полное решение, DeepSeek оформляет его в LaTeX… " + clock
-              : "Строим и проверяем чертёж… " + clock + (!auxMode ? "" : (sec > 60
-              ? " — сложная задача, около 100 секунд, не дольше 3 минут"
-              : " — с доп. построением обычно около 50 секунд, сложные около 100")))
-          : "Запрос в очереди… " + clock);
+          ? (isSolution ? "Луна пишет полное решение, DeepSeek оформляет его в LaTeX… " + jobClock()
+              : "Чертёж строится в фоне — уже " + jobClock() + (!auxMode ? "" : (sec > 60
+              ? " (сложная задача, около 100 секунд, не дольше 3 минут)"
+              : " (с доп. построением обычно около 50 секунд, сложные около 100)"))
+              + ". Раздел можно менять — построение не прервётся")
+          : "Запрос в очереди… " + jobClock() + " (очередь живёт на сервере, раздел менять можно)");
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
       throw new Error("Ожидание затянулось. Можно проверить готовность без нового платного запроса.");
@@ -243,7 +262,7 @@
           with_aux: retryOf ? true : root.querySelector('input[name="gx-mode"]:checked').value === "aux"
         }, retryOf ? {retry_of: retryOf} : {}))
       }));
-      activeJob = data.job_id; await poll();
+      activeJob = data.job_id; setJobAge(0); await poll();
     } catch (error) { status(error.message); el("submit").disabled = false; }
     finally { el("another").disabled = false; }
   }
@@ -437,7 +456,14 @@
   el("submit").disabled = true;
   fetch(root.dataset.active, {credentials: "same-origin", cache: "no-store"})
     .then(jsonResponse).then(async data => {
-      if (data.job_id) { activeJob = data.job_id; return poll(); }
+      if (data.job_id) {
+        // Возобновление после смены раздела: задание продолжало выполняться
+        // на сервере в фоне — подхватываем его таймер и тип (решение/чертёж).
+        activeJob = data.job_id;
+        if (data.with_aux === 2) solutionJob = data.job_id;
+        setJobAge(data.age_sec || 0);
+        return poll();
+      }
       // Последний готовый чертёж хранится на сервере: обновление страницы (и другое
       // устройство) не теряет его, даже если браузер не сохранил своё состояние.
       let job = saved.job;

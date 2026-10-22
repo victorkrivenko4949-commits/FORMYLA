@@ -283,14 +283,18 @@ class Queue:
 
     def get(self, jid, owner):
         with self.engine.connect() as c:
-            row = c.execute(select(jobs.c.status, jobs.c.payload).where(
+            row = c.execute(select(
+                jobs.c.status, jobs.c.payload, jobs.c.created).where(
                 jobs.c.id == jid, jobs.c.owner == owner)).first()
         if not row:
             return None
         if row.status in ("queued", "running"):
             # payload у незавершённого задания — служебная пометка (requeued),
-            # клиенту она не нужна.
-            return {"status": row.status, "result": None}
+            # клиенту она не нужна. age_sec — возраст задания по часам СЕРВЕРА:
+            # фронт показывает честный таймер даже после смены раздела и
+            # возврата на страницу (локальные часы браузера не используются).
+            return {"status": row.status, "result": None,
+                    "age_sec": round(time.time() - row.created, 1)}
         return {"status": row.status,
                 "result": json.loads(row.payload) if row.payload else None}
 

@@ -176,15 +176,32 @@ def last():
 @bp.get("/active")
 @login_required
 def active():
+    """Незавершённое задание пользователя + его возраст по часам сервера.
+
+    Задание живёт в БД и выполняется сервером независимо от страницы:
+    смена раздела не прерывает генерацию. age_sec и problem_head нужны
+    фронтенду, чтобы после возврата в раздел показать честный таймер
+    («уже строится N секунд»), а не «часы с нуля», которые выглядели как
+    перезапуск генерации.
+    """
     from sqlalchemy import select
     from .jobs import jobs
     queue = current_app.extensions["geoexact"]
     with queue.engine.connect() as c:
-        row = c.execute(select(jobs.c.id).where(
+        row = c.execute(select(
+            jobs.c.id, jobs.c.created, jobs.c.with_aux, jobs.c.problem
+        ).where(
             jobs.c.owner == str(current_user.get_id()),
             jobs.c.status.in_(["queued", "running"])
         ).order_by(jobs.c.created.desc()).limit(1)).first()
-    return jsonify(job_id=row.id if row else None)
+    if not row:
+        return jsonify(job_id=None)
+    # Служебные обёртки (история эксперта / задание «решение») не показываем.
+    problem = row.problem or ""
+    head = "" if problem.startswith("\x1e") else problem[:80]
+    return jsonify(job_id=row.id,
+                   age_sec=round(time.time() - row.created, 1),
+                   with_aux=int(row.with_aux or 0), problem_head=head)
 
 
 def _vision_request(url, key, model, mime, img_b64, *, thinking_off=False,
