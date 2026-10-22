@@ -408,6 +408,10 @@
                 <li class="highlight"><span class="feat-icon"></span>
                     <span>ИИ-тьютор и куратор по твоей олимпиаде</span></li>
                 <li class="highlight"><span class="feat-icon"></span>
+                    <span>Задачи дня под выбранную олимпиаду — выбор из 12 в каталоге</span></li>
+                <li class="highlight"><span class="feat-icon"></span>
+                    <span>102 олимпиадных метода — ключ к успеху</span></li>
+                <li class="highlight"><span class="feat-icon"></span>
                     <span>Генератор чертежей</span></li>
             </ul>
             <button class="btn-plan btn-plan-premium" onclick="pilotActivate('premium_intense', this)">
@@ -435,6 +439,10 @@
                 <li class="highlight"><span class="feat-icon"></span>
                     <span>ИИ-тьютор и куратор по твоей олимпиаде</span></li>
                 <li class="highlight"><span class="feat-icon"></span>
+                    <span>Задачи дня под выбранную олимпиаду — выбор из 12 в каталоге</span></li>
+                <li class="highlight"><span class="feat-icon"></span>
+                    <span>102 олимпиадных метода — ключ к успеху</span></li>
+                <li class="highlight"><span class="feat-icon"></span>
                     <span>Генератор чертежей</span></li>
             </ul>
             <button class="btn-plan btn-plan-premium" onclick="pilotActivate('premium_calm', this)">
@@ -442,6 +450,82 @@
             </button>
         </div>
 
+    </div>
+
+    <!-- ═══ Как проходит обучение (структура Premium) ═══ -->
+    <style>
+    .premium-course { margin: 8px 0 44px; }
+    .premium-course h2 {
+        font-size: 1.6em; font-weight: 800; text-align: center;
+        margin: 0 0 6px; color: #eaf3ff;
+    }
+    .premium-course .pc-sub {
+        text-align: center; color: #8fa3c0; margin: 0 0 26px; font-size: .98em;
+    }
+    .pc-grid {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    }
+    .pc-card {
+        background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.09);
+        border-radius: 18px; padding: 24px 20px; position: relative;
+        transition: transform .2s ease, border-color .2s ease;
+    }
+    .pc-card:hover { transform: translateY(-3px); border-color: rgba(56,189,248,0.45); }
+    .pc-step {
+        position: absolute; top: -14px; left: 20px;
+        background: linear-gradient(135deg, #38bdf8, #8b5cf6);
+        color: #fff; font-weight: 800; font-size: .8em;
+        padding: 4px 12px; border-radius: 999px; letter-spacing: .4px;
+    }
+    .pc-card h3 { margin: 8px 0 10px; font-size: 1.12em; color: #eaf3ff; }
+    .pc-card p { margin: 0 0 10px; color: #a9b9d3; font-size: .93em; line-height: 1.55; }
+    .pc-card b { color: #d7e6fb; }
+    .pc-week {
+        display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;
+    }
+    .pc-pill {
+        background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.3);
+        color: #bfe3ff; border-radius: 999px; padding: 5px 12px; font-size: .82em;
+    }
+    @media (max-width: 760px) {
+        .pc-grid { grid-template-columns: 1fr; }
+        .pc-card { margin-top: 10px; }
+    }
+    </style>
+    <div class="premium-course">
+        <h2>Как проходит обучение</h2>
+        <p class="pc-sub">Полный курс — примерно 3 месяца. Каждые 4 недели темы повторяются, но уровень выше.</p>
+        <div class="pc-grid">
+            <div class="pc-card">
+                <span class="pc-step">НЕДЕЛЯ 1</span>
+                <h3>Старт и диагностика</h3>
+                <p>Каждое утро — <b>тест из 5 задач</b> по теме дня, после него открываются <b>задачи дня</b> (5 шт) твоего уровня. Первая неделя — без методов и пробников: система узнаёт твой реальный уровень.</p>
+                <div class="pc-week">
+                    <span class="pc-pill">тест · 5 задач</span>
+                    <span class="pc-pill">задачи дня · 5 шт</span>
+                </div>
+            </div>
+            <div class="pc-card">
+                <span class="pc-step">НЕДЕЛИ 2–4</span>
+                <h3>Полный ритм</h3>
+                <p>Из 6 занятий в неделю: <b>1 пробник</b> — реальный вариант прошлых лет по регламенту твоей олимпиады, <b>1 занятие-метод</b> — 70% разбор метода + 30% решение 3 задач по нему, <b>4 занятия</b> — задачи дня. На «Спокойном» то же самое, но в 2 раза медленнее: метод и пробник — раз в 2 недели.</p>
+                <div class="pc-week">
+                    <span class="pc-pill">пробник · 1/нед</span>
+                    <span class="pc-pill">метод · 1/нед</span>
+                    <span class="pc-pill">задачи дня · 4/нед</span>
+                </div>
+            </div>
+            <div class="pc-card">
+                <span class="pc-step">ПОСЛЕ КУРСА</span>
+                <h3>Следующий уровень</h3>
+                <p>Через 3 месяца ты проходишь <b>те же темы уровнем выше</b> — и так до цели. Куратор следит за прогрессом по каждой теме, а <b>102 метода</b> и генератор чертежей всегда под рукой.</p>
+                <div class="pc-week">
+                    <span class="pc-pill">курс ~3 месяца</span>
+                    <span class="pc-pill">уровень выше</span>
+                    <span class="pc-pill">куратор с тобой</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
