@@ -17,6 +17,43 @@ logger = logging.getLogger(__name__)
 
 STREAK_DAYS_FOR_DAY_OFF = 3  # every 3 days of streak grant 1 day-off
 
+# STREAK_V2: день засчитывается в серию, если пользователь
+#   а) провёл на сайте больше 20 минут (учёт через site_stats/beat), ИЛИ
+#   б) правильно решил хотя бы одну задачу дня.
+# Максимум +1 за день, независимо от того, сколько условий выполнено.
+STREAK_TIME_MIN_SEC = 20 * 60
+
+_credit_column_ready = False
+
+
+def _ensure_credit_column() -> None:
+    """Идемпотентно добавить колонку streak_records.last_credit_date.
+
+    На проде таблица уже существует, поэтому db.create_all() колонку не
+    добавит — делаем ALTER TABLE по образцу site_stats.ensure_tables.
+    """
+    global _credit_column_ready
+    if _credit_column_ready:
+        return
+    try:
+        col = db.session.execute(db.text(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_name = 'streak_records' AND column_name = 'last_credit_date'"
+        )).first()
+    except Exception:
+        col = None  # SQLite: information_schema нет
+    if col is None:
+        try:
+            db.session.execute(db.text(
+                "ALTER TABLE streak_records ADD COLUMN last_credit_date DATE"
+            ))
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            # колонка уже есть (конкурентный вызов) — не страшно
+            logger.debug("ensure_credit_column: %r", e)
+    _credit_column_ready = True
+
 
 # ---------------------------------------------------------------------------
 # Core helpers
@@ -24,12 +61,50 @@ STREAK_DAYS_FOR_DAY_OFF = 3  # every 3 days of streak grant 1 day-off
 
 def get_or_create_streak(user_id: int) -> StreakRecord:
     """Return the StreakRecord for *user_id*, creating one if missing."""
+    _ensure_credit_column()
     rec = StreakRecord.query.filter_by(user_id=user_id).first()
     if rec is None:
         rec = StreakRecord(user_id=user_id)
         db.session.add(rec)
         db.session.flush()
     return rec
+
+
+def credit_streak_day(user_id: int, today: date, source: str = "task") -> bool:
+    """STREAK_V2: засчитать день в серию (идемпотентно, максимум +1 за день).
+
+    Вызывается когда выполнено ЛЮБОЕ из условий:
+      * ``source='time'``  — пользователь провёл на сайте > 20 минут;
+      * ``source='task'``  — правильно решена хотя бы одна задача дня.
+
+    Если день уже засчитан (last_credit_date == today) — ничего не делает.
+    Возвращает True, если серия увеличилась именно этим вызовом.
+    """
+    rec = get_or_create_streak(user_id)
+
+    if rec.last_credit_date == today:
+        return False  # за день уже был +1
+
+    # Пропуск > 1 дня без выходного — серия сломана, начинаем с 1.
+    if rec.last_solved_date is not None:
+        gap = (today - rec.last_solved_date).days
+        if gap > 1:
+            rec.current_streak = 0
+            rec.days_off_available = 0
+
+    rec.current_streak = (rec.current_streak or 0) + 1
+    rec.max_streak = max(rec.max_streak or 0, rec.current_streak)
+    if rec.current_streak % STREAK_DAYS_FOR_DAY_OFF == 0:
+        rec.days_off_available = (rec.days_off_available or 0) + 1
+
+    rec.last_solved_date = today
+    rec.last_credit_date = today
+    db.session.flush()
+    logger.info(
+        "streak credited: user=%s date=%s source=%s streak=%s",
+        user_id, today, source, rec.current_streak,
+    )
+    return True
 
 
 def check_streak_on_open(user_id: int, today: date) -> StreakRecord:
@@ -54,38 +129,18 @@ def check_streak_on_open(user_id: int, today: date) -> StreakRecord:
 
 
 def complete_day(user_id: int, today: date, all_correct: bool) -> StreakRecord:
-    """Called after the daily task set is fully answered.
+    """STREAK_V2: день засчитывается при ПЕРВОМ верном ответе на задачу дня.
 
-    *all_correct* must be ``True`` only when every item in the set
-    was answered correctly (+1).  Partial (0) or wrong (-2) answers
-    mean ``all_correct=False``.
-
-    On 100%:
-        current_streak += 1
-        max_streak = max(max_streak, current_streak)
-        Every STREAK_DAYS_FOR_DAY_OFF days -> days_off_available += 1
-
-    On not 100%:
-        current_streak = 0
-        days_off_available = 0
-
-    Always:
-        last_solved_date = today
+    Старая логика (сброс серии за неверно отвеченный сет) заменена:
+    ошибки больше не обнуляют серию — день просто не засчитывается,
+    если нет ни 20 минут на сайте, ни одного верного ответа.
+    Метод оставлен для совместимости вызовов: при ``all_correct``
+    делегирует :func:`credit_streak_day` (идемпотентно), иначе ничего
+    не меняет.
     """
-    rec = get_or_create_streak(user_id)
-
     if all_correct:
-        rec.current_streak = (rec.current_streak or 0) + 1
-        rec.max_streak = max(rec.max_streak or 0, rec.current_streak)
-        if rec.current_streak % STREAK_DAYS_FOR_DAY_OFF == 0:
-            rec.days_off_available = (rec.days_off_available or 0) + 1
-    else:
-        rec.current_streak = 0
-        rec.days_off_available = 0
-
-    rec.last_solved_date = today
-    db.session.flush()
-    return rec
+        credit_streak_day(user_id, today, source="task")
+    return get_or_create_streak(user_id)
 
 
 def take_day_off(user_id: int, today: date) -> bool:

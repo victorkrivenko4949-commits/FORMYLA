@@ -32,6 +32,7 @@ from .monthly_plan import get_or_build_plan, current_month_index, pick_day_subto
 from utils.math_text_fixer import wrap_bare_math
 from services.streak_service import (
     get_or_create_streak, check_streak_on_open, complete_day,
+    credit_streak_day,
     take_day_off, set_is_fully_answered, compute_all_correct,
 )
 
@@ -269,6 +270,15 @@ def _submit_bank_answer(task_id: int, issue):
             "_submit_bank_answer: db commit failed — ответ и/или XP ПОТЕРЯНЫ task=%d user=%s: %s",
             task_id, getattr(current_user, "id", None), e,
         )
+
+    # STREAK_V2: верный ответ на задачу из банка тоже засчитывает день
+    try:
+        if is_correct:
+            credit_streak_day(current_user.id, today_in_user_tz(), source="task")
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
+        logger.exception("streak credit failed (bank answer)")
 
     # LATEX_FIX_V2: сырой текст решения (без md_render) — фронт экранирует
     # и рендерит LaTeX через KaTeX сам, как для сгенерированных задач.
@@ -1091,6 +1101,16 @@ def submit_answer(item_id: int):
     except Exception:
         pass
 
+    # ── STREAK_V2: первый верный ответ на задачу дня = день засчитан ───
+    # (идемпотентно: максимум +1 за день, ошибки серию не сбрасывают).
+    if is_correct:
+        try:
+            credit_streak_day(current_user.id, today_in_user_tz(), source="task")
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            logger.exception("streak credit failed (submit)")
+
     # ── T8 streak: if set is fully answered, update streak ────────────
     if completed == total and total > 0:
         all_correct = compute_all_correct(item.daily_set_id)
@@ -1116,6 +1136,8 @@ def submit_answer(item_id: int):
                         all_correct = True
             except Exception:
                 pass
+        # STREAK_V2: complete_day лишь делегирует credit_streak_day —
+        # двойного +1 не будет (идемпотентность по last_credit_date).
         complete_day(current_user.id, today_in_user_tz(), all_correct)
 
     return jsonify(response), 200
@@ -1722,6 +1744,15 @@ def submit_answer_ai(item_id: int):
     except Exception as e:  # pragma: no cover
         db.session.rollback()
         logger.exception("submit_answer_ai: db commit failed: %s", e)
+
+    # STREAK_V2: верный ответ на задачу дня засчитывает день в серию
+    try:
+        if is_correct:
+            credit_streak_day(current_user.id, today_in_user_tz(), source="task")
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
+        logger.exception("streak credit failed (submit_ai)")
 
     # «Банк неточностей»: ставим решение в очередь на скрининг (фоновый анализ).
     try:

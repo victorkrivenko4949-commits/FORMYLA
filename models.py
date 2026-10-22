@@ -2129,6 +2129,9 @@ class StreakRecord(db.Model):
     max_streak = db.Column(db.Integer, default=0, nullable=False, server_default='0')
     days_off_available = db.Column(db.Integer, default=0, nullable=False, server_default='0')
     last_solved_date = db.Column(db.Date, nullable=True)
+    # STREAK_V2: дата, за которую серия уже получила +1 (20 мин на сайте
+    # ИЛИ верно решённая задача дня). Гарантирует максимум +1 за день.
+    last_credit_date = db.Column(db.Date, nullable=True)
 
     user = db.relationship('User', backref=db.backref('streak_record', uselist=False, lazy=True))
 

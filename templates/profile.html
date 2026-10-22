@@ -542,8 +542,11 @@
 
     <!-- Daily Quest Streak Widget (FULL_ACCESS_V1: виден и учителю/родителю) -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
-        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-            🔥Daily Quest Streak
+        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em; display:flex;align-items:center;gap:10px;">
+            <span>🔥Daily Quest Streak</span>
+            <button type="button" data-streak-how title="Как работает серия"
+                    style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.55);font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;"
+                    aria-label="Как работает серия">?</button>
         </h2>
         
         <div id="streakWidget" style="text-align: center; padding: 20px;">
@@ -552,7 +555,7 @@
                 <span id="currentStreak">0</span> дней
             </div>
             <div style="color: rgba(255, 255, 255, 0.45); font-size: 0.8em; margin-bottom: 0.5rem;">
-                дней подряд, когда решено верно больше 80% задач дня
+                дней подряд, когда ты провёл на сайте больше 20 минут или правильно решил хотя бы 1 задачу дня
             </div>
             <div style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1rem;">
                 Рекорд: <span id="longestStreak" style="color: #ffd700; font-weight: 600;">0</span> дней
@@ -942,5 +945,6 @@ function cancelSubscription() {
         .catch(() => { alert('Ошибка сети'); if (btn) { btn.disabled = false; btn.textContent = ' Отменить подписку'; } });
 }
 </script>
+<script src="{{ url_for('static', filename='js/streak_how.js') }}?v={{ asset_version }}"></script>
 {% endblock %}
 

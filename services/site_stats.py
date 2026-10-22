@@ -202,6 +202,20 @@ def credit_time(user_id: int, section: str, claimed_sec: int, page: str = '') ->
             db.session.execute(text(
                 'UPDATE users SET site_seconds_total = COALESCE(site_seconds_total, 0) + :n WHERE id = :u'
             ), {'u': user_id, 'n': credited})
+            # STREAK_V2: больше 20 минут на сайте за день — день засчитан в серию
+            try:
+                from services.streak_service import (
+                    credit_streak_day, STREAK_TIME_MIN_SEC,
+                )
+                row = db.session.execute(text(
+                    'SELECT COALESCE(SUM(seconds), 0) FROM site_time_sections '
+                    'WHERE user_id = :u AND day = :d AND section <> :gen'
+                ), {'u': user_id, 'd': day, 'gen': 'general'}).first()
+                today_sec = int(row[0] or 0) if row else 0
+                if today_sec > STREAK_TIME_MIN_SEC:
+                    credit_streak_day(user_id, day, source='time')
+            except Exception as e:
+                logger.warning('streak time-credit failed: %r', e)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
