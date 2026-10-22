@@ -11,6 +11,8 @@ import logging
 from datetime import date, timedelta
 from typing import Optional
 
+from sqlalchemy.exc import IntegrityError
+
 from models import db, StreakRecord
 
 logger = logging.getLogger(__name__)
@@ -42,6 +44,7 @@ def _ensure_credit_column() -> None:
     global _credit_column_ready
     if _credit_column_ready:
         return
+    column_confirmed = False
     try:
         with db.engine.connect() as conn:
             exists = conn.execute(db.text(
@@ -64,6 +67,7 @@ def _ensure_credit_column() -> None:
                 ))
                 conn.commit()
                 logger.info("streak_records.last_credit_date added + backfilled")
+            column_confirmed = True
     except Exception as e:
         # SQLite (нет information_schema) или колонка уже добавлена
         # конкурентным процессом — пробуем простой ALTER и считаем
@@ -76,10 +80,15 @@ def _ensure_credit_column() -> None:
                 ))
                 conn.commit()
                 logger.info("streak_records.last_credit_date added (sqlite)")
+                column_confirmed = True
         except Exception as e2:
-            if 'duplicate column' not in str(e2).lower():
+            if 'duplicate column' in str(e2).lower():
+                column_confirmed = True  # колонка есть — гонка деплоя
+            else:
                 logger.warning("ensure_credit_column: %r / %r", e, e2)
-    _credit_column_ready = True
+    if column_confirmed:
+        _credit_column_ready = True
+    # Без подтверждения флаг НЕ ставим — следующий вызов повторит попытку.
 
 
 # ---------------------------------------------------------------------------
@@ -92,6 +101,11 @@ def get_or_create_streak(user_id: int, *, for_update: bool = False) -> StreakRec
     *for_update* — захватить строку блокировкой (SELECT ... FOR UPDATE),
     чтобы конкурентные зачёты дня (время + задача одновременно) не дали
     двойной +1. Для SQLite блокировка — no-op, но там один писатель.
+
+    Создание записи при гонке защищено SAVEPOINT (begin_nested): при
+    конфликте уникальности откатывается ТОЛЬКО savepoint, а не вся
+    транзакция вызывающего кода (например, уже начисленные секунды
+    в heartbeat не теряются).
     """
     _ensure_credit_column()
     q = StreakRecord.query.filter_by(user_id=user_id)
@@ -99,13 +113,15 @@ def get_or_create_streak(user_id: int, *, for_update: bool = False) -> StreakRec
         q = q.with_for_update()
     rec = q.first()
     if rec is None:
-        rec = StreakRecord(user_id=user_id)
-        db.session.add(rec)
         try:
-            db.session.flush()
-        except Exception:
-            db.session.rollback()
+            with db.session.begin_nested():
+                rec = StreakRecord(user_id=user_id)
+                db.session.add(rec)
+                db.session.flush()
+        except IntegrityError:
             # Гонка создания записи двумя запросами — берём существующую.
+            # ORM-кэш мог держать «проигравший» объект — перечитываем.
+            db.session.expire_all()
             rec = q.first()
             if rec is None:
                 raise

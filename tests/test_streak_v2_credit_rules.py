@@ -206,3 +206,145 @@ def test_streak_v2_route_wrong_answer_no_credit(
         _db.session.expire_all()
         rec = get_or_create_streak(test_user.id)
         assert rec.current_streak == 0
+
+
+def test_streak_v2_creation_race_uses_savepoint(app, monkeypatch):
+    """Гонка создания StreakRecord: при IntegrityError откатывается
+    только savepoint, а не вся транзакция — несохранённые данные
+    вызывающего кода переживают конфликт.
+
+    Гонка имитируется: первый запрос «не видит» запись (её создал
+    конкурентный запрос между SELECT и INSERT), INSERT падает на
+    unique(user_id), код берёт существующую запись.
+    """
+    import services.streak_service as ss
+    with app.app_context():
+        from models import User, db
+        u = User(email="streak-race@example.com", name="race")
+        db.session.add(u)
+        db.session.commit()
+
+        # «Конкурентная» запись уже в базе (создана вторым запросом).
+        # Вставляем её ДО появления незакоммиченных данных, чтобы не
+        # держать write-lock SQLite дольше нужного.
+        from sqlalchemy import text as _text
+        with db.engine.connect() as conn:
+            conn.execute(_text(
+                "INSERT INTO streak_records (user_id) VALUES (:u)"
+            ), {'u': u.id})
+            conn.commit()
+
+        # Незакоммиченное изменение, которое НЕ должно потеряться
+        u2 = User(email="streak-pending@example.com", name="pending")
+        db.session.add(u2)
+
+        # Первый SELECT «не видит» запись — имитация окна гонки
+        _race_state = {"first_seen": False}
+
+        _real_query = ss.StreakRecord.query
+
+        class _RaceQuery:
+            def __init__(self, kw):
+                self.kw = kw
+            def with_for_update(self):
+                return self
+            def first(self):
+                if not _race_state["first_seen"]:
+                    _race_state["first_seen"] = True
+                    return None  # окно гонки: записи «ещё нет»
+                return _real_query.filter_by(**self.kw).first()
+
+        monkeypatch.setattr(
+            ss.StreakRecord, "query",
+            type("_P", (), {"filter_by": staticmethod(
+                lambda **kw: _RaceQuery(kw))})())
+
+        rec = ss.get_or_create_streak(u.id, for_update=True)
+        assert rec is not None
+        assert rec.user_id == u.id
+
+        # pending-объект пережил конфликт (не был откачен целиком)
+        db.session.flush()
+        assert User.query.filter_by(
+            email="streak-pending@example.com").count() == 1
+        db.session.rollback()
+
+
+def _fake_check_solution(**kwargs):
+    """Быстрый вердикт вместо реального AI-pipeline (для тестов)."""
+    return {"is_correct": True, "feedback": "Верно (тест)"}
+
+
+def test_streak_v2_route_submit_ai_credits(
+        app, auth_client, test_user, daily_set_with_items, monkeypatch):
+    """POST верного ответа через AI-проверку (/submit_ai) — серия +1."""
+    with app.app_context():
+        from models import db
+        from daily_tasks.models import DailyTaskItem
+        rec = get_or_create_streak(test_user.id)
+        rec.current_streak = 0
+        rec.last_credit_date = None
+        rec.last_solved_date = None
+
+        item = DailyTaskItem.query.filter_by(
+            daily_set_id=daily_set_with_items.id).order_by('position').first()
+        item.correct_answer = "42"
+        db.session.commit()
+        item_id = item.id
+
+    monkeypatch.setattr(
+        "services.solution_check_pipeline.check_solution",
+        _fake_check_solution)
+
+    r = auth_client.post(f'/daily_tasks/{item_id}/submit_ai',
+                        json={"answer": "42",
+                              "user_solution": "Просто вычислил: 6*7"})
+    assert r.status_code == 200
+
+    with app.app_context():
+        from models import db as _db
+        _db.session.expire_all()
+        rec = get_or_create_streak(test_user.id)
+        assert rec.current_streak == 1
+
+
+def test_streak_v2_route_bank_answer_credits(
+        app, auth_client, test_user, monkeypatch):
+    """Верный ответ на задачу из банка (через /submit_ai + BankIssue) — серия +1."""
+    from datetime import date as _date
+    with app.app_context():
+        from models import db, BankIssue, DailyTaskBank
+        rec = get_or_create_streak(test_user.id)
+        rec.current_streak = 0
+        rec.last_credit_date = None
+        rec.last_solved_date = None
+
+        bank_task = DailyTaskBank(
+            section="algebra", subtopic="linear_equations",
+            level=1, statement="Реши уравнение: 2x = 10",
+            answer="5", solution="x = 5")
+        db.session.add(bank_task)
+        db.session.flush()
+
+        issue = BankIssue(
+            user_id=test_user.id, task_id=bank_task.id,
+            subtopic="linear_equations", level=1,
+            issued_date=_date.today())
+        db.session.add(issue)
+        db.session.commit()
+        task_id = bank_task.id
+
+    monkeypatch.setattr(
+        "services.solution_check_pipeline.check_solution",
+        _fake_check_solution)
+
+    r = auth_client.post(f'/daily_tasks/{task_id}/submit_ai',
+                        json={"answer": "5",
+                              "user_solution": "Разделил обе части на 2"})
+    assert r.status_code == 200
+
+    with app.app_context():
+        from models import db as _db
+        _db.session.expire_all()
+        rec = get_or_create_streak(test_user.id)
+        assert rec.current_streak == 1
