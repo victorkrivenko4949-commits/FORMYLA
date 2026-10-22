@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
     pinned.forEach(function (p) {
       if (!p || !p.label || !p.href || p.href === '#') return;
       if (p.id === 'profile') return; // профиль авто-закреплён отдельной синей кнопкой
+      if (p.id === 'review' || (p.href || '').indexOf('/about#review-form') !== -1) return; // раздел отзывов удалён
       // These sections live in Misc; the start link has its own one-hour window.
       var materialPath;
       try { materialPath = new URL(p.href, window.location.origin).pathname.replace(/\/$/, ''); } catch (e) { materialPath = p.href; }

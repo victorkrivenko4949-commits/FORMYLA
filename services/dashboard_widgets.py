@@ -58,12 +58,6 @@ AVAILABLE_WIDGETS = [
         'description': 'О платформе FORMYLA.net',
     },
     {
-        'key': 'feedback',
-        'title': 'Написать отзыв',
-        'template': 'widgets/feedback.html',
-        'description': 'Предложения и пожелания',
-    },
-    {
         'key': 'profile',
         'title': 'Профиль',
         'template': 'widgets/profile.html',
