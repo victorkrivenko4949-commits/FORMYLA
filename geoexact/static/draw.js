@@ -192,10 +192,8 @@
           el("submit").disabled = false;
           if (data.result?.ok) {
             show(data.result);
-            const total = jobElapsed();
-            const ready = ["approximate", "simplified", "sketch"].includes(data.result.verification)
-              ? "Чертёж готов (приближённый)." : "Чертёж готов.";
-            status(total >= 5 ? ready + " Строился " + jobClock() + "." : ready);
+            status(["approximate", "simplified", "sketch"].includes(data.result.verification)
+              ? "Чертёж готов (приближённый)." : "Чертёж готов.");
           }
           else status((data.result?.detail || "Не удалось построить чертёж.") +
             (data.result?.reason ? " Код: " + data.result.reason : ""));
