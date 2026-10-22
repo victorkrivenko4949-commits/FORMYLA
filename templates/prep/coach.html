@@ -116,6 +116,9 @@
     <!-- ═══ GENERAL RADAR (шкала 0–4) ═══ -->
     <div class="coach-card" id="generalRadarCard">
       <h2>Радар по разделам (общий) · уровни 1–4</h2>
+      <div style="font-size:12.5px; color:rgba(255,255,255,0.45); margin:-6px 0 12px; line-height:1.5;">
+        Радары складываются по итогам прохождения тестов: каждый пройденный тест по теме даёт итог, который сразу учитывается в радаре.
+      </div>
       <div class="radar-chart" style="max-width:560px; margin:0 auto;">
         <canvas id="masteryRadar" data-mastery='{{ mastery_list_json | safe }}' width="400" height="400"></canvas>
       </div>
@@ -159,7 +162,10 @@
 
 <!-- ═══ SECTION RADARS (шкала 0–4) ═══ -->
 {% if section_radars %}
-<h2 style="font-size:16px; color:#E6EBF7; margin:0 0 12px;">Радары по разделам · уровень каждой темы 1–4</h2>
+<h2 style="font-size:16px; color:#E6EBF7; margin:0 0 4px;">Радары по разделам · уровень каждой темы 1–4</h2>
+<div style="font-size:12.5px; color:rgba(255,255,255,0.45); margin:0 0 12px; line-height:1.5;">
+  Радары складываются по итогам прохождения тестов: решай тесты по темам — итоги сразу попадают в радар.
+</div>
 <div class="section-radars-grid" id="sectionRadarsGrid">
   {% for sr in section_radars %}
   <div class="section-radar-card" id="radarCard{{ loop.index }}">
