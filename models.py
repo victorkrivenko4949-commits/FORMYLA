@@ -2266,3 +2266,60 @@ class BankIssue(db.Model):
 
     def __repr__(self):
         return f'<BankIssue user={self.user_id} task={self.task_id} date={self.issued_date}>'
+
+
+class Subscription(db.Model):
+    """Подписка пользователя (Premium).
+
+    Таблица создаётся auto_migrate; сервис services/subscription.py работает
+    с ней raw-SQL — имена колонок должны совпадать точно:
+    id, user_id, plan, status, started_at, expires_at, payment_id,
+    amount_rub, is_beta_access, created_at.
+    Канонический тариф для шаблонов хранится в users.current_plan ('premium'),
+    вариант тарифа (premium_intense / premium_calm / premium_monthly / …) — здесь.
+    """
+    __tablename__ = 'subscriptions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False, index=True)
+    plan = db.Column(db.Text, nullable=False)          # premium_intense | premium_calm | premium_monthly | premium_yearly
+    status = db.Column(db.Text, nullable=False, default='active', server_default='active')  # active | superseded | cancelled
+    started_at = db.Column(db.DateTime, nullable=True)
+    expires_at = db.Column(db.DateTime, nullable=True)
+    payment_id = db.Column(db.Text, nullable=True)
+    amount_rub = db.Column(db.Integer, nullable=True)
+    is_beta_access = db.Column(db.Boolean, nullable=False, default=False, server_default='0')
+    is_trial = db.Column(db.Boolean, nullable=False, default=False, server_default='0')
+    created_at = db.Column(db.DateTime, nullable=True)
+
+    __table_args__ = (
+        db.Index('ix_subscriptions_user_status', 'user_id', 'status'),
+    )
+
+    def __repr__(self):
+        return f'<Subscription user={self.user_id} plan={self.plan} status={self.status}>'
+
+
+class UsageDaily(db.Model):
+    """Дневная статистика использования (для лимитов тарифов).
+
+    Таблица создаётся auto_migrate; raw-SQL сервис пишет колонки:
+    user_id, date (ISO-строка), tasks_completed, ai_explanations_used,
+    tokens_consumed, cost_usd.
+    """
+    __tablename__ = 'usage_daily'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False, index=True)
+    date = db.Column(db.Text, nullable=False)  # 'YYYY-MM-DD'
+    tasks_completed = db.Column(db.Integer, nullable=False, default=0, server_default='0')
+    ai_explanations_used = db.Column(db.Integer, nullable=False, default=0, server_default='0')
+    tokens_consumed = db.Column(db.Integer, nullable=False, default=0, server_default='0')
+    cost_usd = db.Column(db.Float, nullable=False, default=0.0, server_default='0')
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'date', name='uq_usage_daily_user_date'),
+    )
+
+    def __repr__(self):
+        return f'<UsageDaily user={self.user_id} date={self.date}>'

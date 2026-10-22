@@ -384,6 +384,84 @@
          <strong style="color:#38ef7d;">Сейчас всё доступно бесплатно.</strong> Цены вернутся после выхода из бета-периода.
     </div>
 
+    {% if is_pilot %}
+    <!-- ═══ ПИЛОТ ПРЕМИУМА: виден только аккаунтам victor и Lavrik ═══ -->
+    <div class="plans-grid" style="margin-bottom: 40px;">
+
+        <!-- Тариф «Работяга» -->
+        <div class="plan-card premium">
+            <div class="plan-badge">🔥 ДЛЯ ГОТОВЫХ ПАХАТЬ</div>
+            <div class="plan-name">«Работяга»</div>
+            <div class="plan-price premium-price">
+                <span class="amount">800</span><span class="currency">₽</span>
+                <span class="period">в месяц</span>
+            </div>
+            <ul class="plan-features">
+                <li class="highlight"><span class="feat-icon"></span>
+                    <span><strong>6 занятий в неделю</strong></span></li>
+                <li><span class="feat-icon">[OK]</span>
+                    <span>1 пробник в неделю — реальный вариант прошлых лет, длительность по регламенту твоей олимпиады</span></li>
+                <li><span class="feat-icon">[OK]</span>
+                    <span>1 занятие-метод: 70% изучение метода + 30% решение 3 задач по нему</span></li>
+                <li><span class="feat-icon">[OK]</span>
+                    <span>4 занятия — задачи дня</span></li>
+                <li class="highlight"><span class="feat-icon"></span>
+                    <span>ИИ-тьютор и куратор по твоей олимпиаде</span></li>
+                <li class="highlight"><span class="feat-icon"></span>
+                    <span>Генератор чертежей</span></li>
+            </ul>
+            <button class="btn-plan btn-plan-premium" onclick="pilotActivate('premium_intense', this)">
+                Выбрать «Работяга»
+            </button>
+        </div>
+
+        <!-- Тариф «Спокойный» -->
+        <div class="plan-card premium">
+            <div class="plan-badge">😌 СВОЙ ТЕМП</div>
+            <div class="plan-name">«Спокойный»</div>
+            <div class="plan-price premium-price">
+                <span class="amount">500</span><span class="currency">₽</span>
+                <span class="period">в месяц</span>
+            </div>
+            <ul class="plan-features">
+                <li class="highlight"><span class="feat-icon"></span>
+                    <span><strong>3 занятия в неделю</strong> — то же самое, но в 2 раза медленнее</span></li>
+                <li><span class="feat-icon">[OK]</span>
+                    <span>Метод — раз в 2 недели</span></li>
+                <li><span class="feat-icon">[OK]</span>
+                    <span>Пробник — раз в 2 недели</span></li>
+                <li><span class="feat-icon">[OK]</span>
+                    <span>Задачи дня — остальное</span></li>
+                <li class="highlight"><span class="feat-icon"></span>
+                    <span>ИИ-тьютор и куратор по твоей олимпиаде</span></li>
+                <li class="highlight"><span class="feat-icon"></span>
+                    <span>Генератор чертежей</span></li>
+            </ul>
+            <button class="btn-plan btn-plan-premium" onclick="pilotActivate('premium_calm', this)">
+                Выбрать «Спокойный»
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+    function pilotActivate(plan, btn) {
+        if (btn) { btn.disabled = true; btn.textContent = 'Активируем...'; }
+        fetch('/api/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan: plan })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.ok) { location.reload(); }
+            else { alert('Ошибка: ' + (data.error || data.message || 'Попробуйте ещё раз')); if (btn) { btn.disabled = false; } }
+        })
+        .catch(err => { alert('Сеть недоступна'); if (btn) { btn.disabled = false; } });
+    }
+    </script>
+    {% endif %}
+
     <!-- Plan cards -->
     <div class="plans-grid">
 

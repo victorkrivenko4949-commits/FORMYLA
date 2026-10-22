@@ -390,6 +390,18 @@ except Exception as _e_v10:
     print(_tb_v10.format_exc())
 
 
+# ПИЛОТ PREMIUM: идемпотентная бета-активация тарифа для пилотных аккаунтов
+# (victor, Lavrik — см. services/pilot.py). Выполняется после auto_migrate,
+# чтобы таблица subscriptions уже существовала. Никогда не роняет старт.
+try:
+    from services.pilot import ensure_pilot_subscriptions
+    with app.app_context():
+        if ensure_pilot_subscriptions():
+            print("[PILOT] beta premium activated for pilot accounts")
+except Exception as _e_pilot:
+    print(f"[PILOT] ensure_pilot_subscriptions skipped: {_e_pilot}")
+
+
 # AUTO-MIGRATION: Add agent_type column if it doesn't exist
 # This runs on every startup to ensure database schema is up to date
 try:
@@ -13118,12 +13130,14 @@ def _inject_subscription_flags():
     """
     try:
         if current_user.is_authenticated:
+            from services.pilot import is_pilot_user
             return {
                 'is_premium': _is_premium_plan(current_user.current_plan),
+                'is_pilot': is_pilot_user(current_user),
             }
     except Exception:
         pass
-    return {'is_premium': False}
+    return {'is_premium': False, 'is_pilot': False}
 
 
 @app.context_processor
@@ -13148,12 +13162,39 @@ def api_subscribe():
     """API активации Premium (демо — без оплаты).
 
     Тело: {plan: 'premium_monthly'|'premium_yearly'}.
-    В БД сохраняем КАНОНИЧЕСКОЕ значение 'premium' — чтобы все шаблоны,
-    проверяющие `current_plan == 'premium'`, отображали статус корректно
-    после reload страницы.
+    Пилотные тарифы ('premium_intense', 'premium_calm') доступны только
+    аккаунтам из services/pilot.py — проверка на сервере.
+    В users.current_plan всегда сохраняем КАНОНИЧЕСКОЕ 'premium'.
     """
     data = request.get_json() or {}
     requested = data.get('plan', 'premium_monthly')
+
+    # Пилотные тарифы — только пилотным аккаунтам, через SubscriptionService
+    # (пишет строку в subscriptions + канонизирует users.current_plan).
+    if requested in ('premium_intense', 'premium_calm'):
+        from services.pilot import is_pilot_user
+        if not is_pilot_user(current_user):
+            return jsonify({'error': 'Тариф недоступен'}), 403
+        try:
+            from services.subscription import get_subscription_service
+            svc = get_subscription_service()
+            result = svc.activate_premium(
+                user_id=current_user.id,
+                plan=requested,
+                is_beta=True,
+            )
+            db.session.commit()
+            return jsonify({
+                'ok': True,
+                'plan': 'premium',
+                'plan_variant': requested,
+                'expires_at': (result.get('expires_at') or '')[:10],
+                'message': 'Тариф активирован!'
+            })
+        except Exception as e:
+            app.logger.error(f'[api_subscribe] pilot activation failed: {e}')
+            db.session.rollback()
+            return jsonify({'error': 'Не удалось активировать тариф'}), 500
 
     if requested not in ('premium_monthly', 'premium_yearly'):
         return jsonify({'error': 'Неизвестный тариф'}), 400
@@ -13184,6 +13225,18 @@ def api_cancel_subscription():
     """API отмены подписки Premium."""
     if not current_user.current_plan or current_user.current_plan == 'free':
         return jsonify({'error': 'У вас нет активной подписки'}), 400
+
+    # Синхронизируем таблицу subscriptions (mark superseded), чтобы
+    # users.current_plan и subscriptions не расходились.
+    try:
+        from services.subscription import get_subscription_service
+        get_subscription_service().cancel_subscription(current_user.id)
+        db.session.commit()
+    except Exception:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
 
     current_user.current_plan = 'free'
     current_user.plan_expires_at = None

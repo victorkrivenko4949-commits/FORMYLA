@@ -37,6 +37,38 @@ PLAN_LIMITS = {
         'duration_days': 30,
         'display_name': 'Premium',
     },
+    # ── Пилотные тарифы (видны только аккаунтам из services/pilot.py) ────────
+    'premium_intense': {
+        # «Работяга»: 800 ₽/мес, 6 занятий в неделю.
+        # Из 6 занятий: 1 пробник (реальный вариант прошлых лет,
+        # длительность по регламенту олимпиады), 1 занятие-метод
+        # (70% изучение метода + 30% решение 3 задач по методу),
+        # 4 занятия — задачи дня.
+        'tasks_per_day': None,
+        'tasks_per_day_soft': None,
+        'ai_explanations_per_day': None,
+        'ai_explanations_per_month': 600,
+        'ai_max_tokens': 12000,
+        'history_days': None,
+        'price_rub': 800,
+        'duration_days': 30,
+        'display_name': 'Premium «Работяга»',
+        'sessions_per_week': 6,
+    },
+    'premium_calm': {
+        # «Спокойный»: 500 ₽/мес, 3 занятия в неделю — то же самое,
+        # но в 2 раза медленнее: метод раз в 2 недели, пробник раз в 2 недели.
+        'tasks_per_day': None,
+        'tasks_per_day_soft': None,
+        'ai_explanations_per_day': None,
+        'ai_explanations_per_month': 300,
+        'ai_max_tokens': 8000,
+        'history_days': None,
+        'price_rub': 500,
+        'duration_days': 30,
+        'display_name': 'Premium «Спокойный»',
+        'sessions_per_week': 3,
+    },
     'premium_yearly': {
         'tasks_per_day': None,
         'tasks_per_day_soft': 500,
@@ -154,10 +186,15 @@ class SubscriptionService:
 
         if row:
             plan_val = self._row_get(row, 'plan', 'free')
-            if plan_val in ('premium_monthly', 'premium_yearly'):
+            # Любой известный premium-тариф из PLAN_LIMITS (включая пилотные
+            # premium_intense / premium_calm). Историческое значение 'premium'
+            # (каноническое в users.current_plan) трактуем как monthly.
+            if plan_val in PLAN_LIMITS and plan_val != 'free':
                 plan_key = plan_val
-                expires_at = self._row_get(row, 'expires_at')
-                is_beta = bool(self._row_get(row, 'is_beta_access', 0))
+            elif plan_val == 'premium':
+                plan_key = 'premium_monthly'
+            expires_at = self._row_get(row, 'expires_at')
+            is_beta = bool(self._row_get(row, 'is_beta_access', 0))
 
         limits = PLAN_LIMITS.get(plan_key, PLAN_LIMITS['free'])
         return {
@@ -273,16 +310,16 @@ class SubscriptionService:
             started_at.isoformat(), expires_at.isoformat(),
             payment_id,
             amount_rub or (0 if is_beta else limits['price_rub']),
-            1 if is_beta else 0,
+            bool(is_beta),
             now.isoformat(),
         ))
 
         try:
             self._execute("""
                 UPDATE users
-                SET current_plan = ?, plan_expires_at = ?
+                SET current_plan = 'premium', plan_expires_at = ?
                 WHERE id = ?
-            """, (plan, expires_at.isoformat(), user_id))
+            """, (expires_at.isoformat(), user_id))
         except Exception:
             pass
 
@@ -372,10 +409,19 @@ class SubscriptionService:
                         tokens: int = 0, cost_usd: float = 0.0):
         today = datetime.utcnow().date().isoformat()
 
-        self._execute("""
-            INSERT OR IGNORE INTO usage_daily (user_id, date)
-            VALUES (?, ?)
-        """, (user_id, today))
+        if self._is_raw_sqlite:
+            self._execute("""
+                INSERT OR IGNORE INTO usage_daily (user_id, date)
+                VALUES (?, ?)
+            """, (user_id, today))
+        else:
+            # PostgreSQL: диалект-совместимый upsert (SQLite-синтаксис
+            # INSERT OR IGNORE в PG не работает).
+            self._execute("""
+                INSERT INTO usage_daily (user_id, date)
+                VALUES (?, ?)
+                ON CONFLICT DO NOTHING
+            """, (user_id, today))
 
         if feature == 'task':
             self._execute("""
