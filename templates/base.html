@@ -453,18 +453,72 @@
 
     <main class="main">
         {% if is_pilot and pilot_session and pilot_session.enabled %}
-        <div style="max-width:1100px;margin:10px auto 0;padding:8px 16px;">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(244,185,66,.10),rgba(76,125,255,.10));border:1px solid rgba(244,185,66,.35);border-radius:12px;padding:9px 16px;font-size:13px;color:#e2e8f0;">
-            <span style="color:#f4b942;font-weight:800;">🔥 Premium-пилот</span>
-            <span>Неделя {{ pilot_session.week }}</span>
+        <style>
+          /* PILOT_BAR_V2: стеклянная плашка пилота с градиентной обводкой.
+             Наследует дизайн-систему: сланцевый фон, янтарный акцент пилота. */
+          .pilot-bar-wrap { max-width:1100px; margin:14px auto 0; padding:0 16px; }
+          .pilot-bar {
+            display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+            padding:10px 14px; border-radius:14px;
+            background:
+              linear-gradient(135deg, rgba(244,185,66,.07), rgba(56,189,248,.07)) padding-box,
+              linear-gradient(135deg, rgba(244,185,66,.45), rgba(56,189,248,.35)) border-box;
+            border:1px solid transparent;
+            backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+            box-shadow:0 4px 20px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.05);
+            font-size:13px; color:#e2e8f0;
+          }
+          .pilot-badge {
+            display:inline-flex; align-items:center; gap:6px;
+            padding:4px 11px; border-radius:999px;
+            background:rgba(244,185,66,.14);
+            border:1px solid rgba(244,185,66,.4);
+            color:#f4b942; font-weight:800; font-size:12px; letter-spacing:.02em;
+            text-shadow:0 0 12px rgba(244,185,66,.35); white-space:nowrap;
+          }
+          .pilot-week {
+            color:#94a3b8; font-weight:600; font-size:11.5px;
+            text-transform:uppercase; letter-spacing:.07em; white-space:nowrap;
+          }
+          .pilot-divider { width:1px; height:16px; background:rgba(255,255,255,.14); }
+          .pilot-session { color:#e2e8f0; line-height:1.35; min-width:0; }
+          .pilot-session strong { color:#fff; font-weight:700; }
+          .pilot-rest { color:#94a3b8; font-style:italic; }
+          .pilot-curator {
+            margin-left:auto; display:inline-flex; align-items:center; gap:7px;
+            padding:6px 14px; border-radius:999px;
+            background:rgba(244,185,66,.12);
+            border:1px solid rgba(244,185,66,.35);
+            color:#f4b942; font-weight:700; font-size:13px; text-decoration:none;
+            transition:background .18s ease, border-color .18s ease,
+                       transform .18s ease, box-shadow .18s ease;
+            white-space:nowrap;
+          }
+          .pilot-curator:hover {
+            background:rgba(244,185,66,.2); border-color:rgba(244,185,66,.6);
+            transform:translateY(-1px);
+            box-shadow:0 4px 14px rgba(244,185,66,.18);
+          }
+          @media (max-width:640px){
+            .pilot-bar-wrap { margin-top:10px; padding:0 10px; }
+            .pilot-bar { gap:8px; padding:9px 12px; font-size:12.5px; border-radius:12px; }
+            .pilot-curator { margin-left:0; }
+            .pilot-divider { display:none; }
+          }
+        </style>
+        <div class="pilot-bar-wrap">
+          <div class="pilot-bar">
+            <span class="pilot-badge">🔥 Premium-пилот</span>
+            <span class="pilot-week">Неделя {{ pilot_session.week }}</span>
+            <span class="pilot-divider" aria-hidden="true"></span>
             {% if pilot_session.session_type == 'rest' %}
-            <span style="color:#94a3b8;">сегодня выходной — отдыхай</span>
+            <span class="pilot-session pilot-rest">сегодня выходной — отдыхай</span>
             {% elif pilot_session.session_type == 'diagnostic' %}
-            <span>неделя 1: <strong>{{ pilot_session.session_label }}</strong></span>
+            <span class="pilot-session"><strong>{{ pilot_session.session_label }}</strong></span>
             {% else %}
-            <span>занятие {{ pilot_session.session_index }} из {{ pilot_session.total }}: <strong>{{ pilot_session.session_label }}</strong></span>
+            <span class="pilot-session">занятие {{ pilot_session.session_index }} из {{ pilot_session.total }}: <strong>{{ pilot_session.session_label }}</strong></span>
             {% endif %}
-            <a href="/curator" style="margin-left:auto;color:#f4b942;font-weight:700;text-decoration:none;">💬 Куратор</a>
+            <a href="/curator" class="pilot-curator">💬 Куратор</a>
           </div>
         </div>
         {% endif %}
