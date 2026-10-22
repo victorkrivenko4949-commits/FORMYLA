@@ -42,14 +42,19 @@ def chat_history():
     _pilot_or_404()
     try:
         from services.curator_chat import get_history
-        # Ленивый триггер недельного сообщения — НЕ ждём генерацию:
-        # запускаем фоновым потоком (планировщик также делает это раз в час),
-        # а историю отдаём сразу.
+        # Ленивый триггер: приветствие на старте + недельный отчёт — НЕ ждём
+        # генерацию (фоновый поток; планировщик также делает это раз в час).
         try:
             import threading as _th
-            from services.curator_chat import send_week1_message
-            _th.Thread(target=send_week1_message, args=(current_user.id,),
-                       daemon=True).start()
+            from services.curator_chat import send_welcome_message, send_week1_message
+
+            def _bg():
+                try:
+                    send_welcome_message(current_user.id)
+                    send_week1_message(current_user.id)
+                except Exception:
+                    pass
+            _th.Thread(target=_bg, daemon=True).start()
         except Exception:
             pass
         return jsonify({'ok': True, 'messages': get_history(current_user.id)})
@@ -109,7 +114,7 @@ def support_history():
         from sqlalchemy import text
         rows = db.session.execute(text(
             'SELECT id, message, created_at FROM support_messages '
-            'WHERE user_id = :u AND COALESCE(deleted_at, \'1970-01-01\') = \'1970-01-01\' '
+            'WHERE user_id = :u AND deleted_at IS NULL '
             'ORDER BY id DESC LIMIT 50'), {'u': current_user.id}).mappings().all()
         msg_ids = [r['id'] for r in rows]
         replies = {}
@@ -118,7 +123,7 @@ def support_history():
             rep_rows = db.session.execute(text(
                 f'SELECT support_message_id, reply_text, created_at '
                 f'FROM support_replies WHERE support_message_id IN ({in_clause}) '
-                f"AND COALESCE(deleted_at, '1970-01-01') = '1970-01-01' "
+                f'AND deleted_at IS NULL '
                 f'ORDER BY created_at ASC')).mappings().all()
             for rp in rep_rows:
                 replies.setdefault(rp['support_message_id'], []).append(rp)

@@ -72,10 +72,12 @@ SYSTEM_PROMPT = """Ты — куратор платформы FORMYLA, эксп�
 - КОРОТКО: не больше 120 слов в ответе, если ученик не просит подробный разбор.
 - Ты знаешь о ученике только то, что в блоке «Данные ученика». Не выдумывай факты.
 - Про льготы в вузы, сроки и правила конкретных олимпиад — если их нет в данных, честно скажи, что нужно уточнить, и предложи проверить на официальном сайте олимпиады. Никаких выдуманных цифр и обещаний.
+- ЕСЛИ УЧЕНИК ЕЩЁ НЕ ВЫБРАЛ олимпиады или темы — НЕ спрашивай «с чего хочешь начать» и не предлагай выбирать из пустоты: сам назови 2–3 конкретные темы или олимпиады под его класс и уровень, обоснуй, почему именно они. Решение предложи, а выбор не предлагай.
+- Всегда давай план на день: что именно сделать сегодня и сколько времени это займёт.
 - Если данных о занятиях нет — признаёшь это мягко («по решениям пока не видно, что ты занимался»), НЕ обвиняй и не стыди.
 - Не обещай лёгких побед. Мотивируй через цель и план, а не через «всё легко».
 - Если ученик пишет о проблеме с сайтом — попроси обратиться в Поддержку (отвечает всегда).
-- Задавай в конце короткий вопрос или давай конкретный следующий шаг."""
+- В конце — конкретный следующий шаг на сегодня, а не вопрос в пустоту."""
 
 
 # ── История ─────────────────────────────────────────────────────────────────
@@ -120,12 +122,18 @@ def _safe_q(query_fn) -> Any:
 
 
 def _earliest_subscription_started(user_id: int) -> Optional[datetime]:
-    """Старт ПЕРВОЙ подписки — начало обучения (не сбрасывается при
-    смене тарифа: берём MIN по всем подпискам пользователя)."""
+    """Старт ПЕРВОЙ пилотной подписки — начало обучения.
+
+    Берём MIN(started_at) только по пилотным тарифам (premium_intense /
+    premium_calm): старые исторические подписки (напр., протухший monthly
+    за 390 ₽) не должны запустить недельный отчёт раньше времени.
+    Смена пилотного тарифа дату не сбрасывает.
+    """
     try:
         row = db.session.execute(
             __import__('sqlalchemy').text(
-                'SELECT MIN(started_at) FROM subscriptions WHERE user_id = :u'),
+                "SELECT MIN(started_at) FROM subscriptions WHERE user_id = :u "
+                "AND plan IN ('premium_intense', 'premium_calm')"),
             {'u': user_id},
         ).first()
         if row and row[0]:
@@ -353,6 +361,98 @@ def generate_reply(user_id: int, user_text: str,
     return {'content': FALLBACK_MESSAGE, 'fallback': True}
 
 
+# ── Приветствие на старте (сразу, не через неделю) ─────────────────────────
+
+WELCOME_PROMPT_INSTRUCTION = (
+    "Напиши ученику ПЕРВОЕ приветственное сообщение от куратора. Представься "
+    "в одной фразе (куратор FORMYLA, веду тебя к олимпиадам). Поздоровься тепло. "
+    "Если в данных есть план на сегодня — сразу дай его (что сделать, сколько "
+    "времени займёт). Если ученик ещё не выбрал олимпиады — предложи сам 2–3 "
+    "конкретных варианта под его класс, не спрашивай «что ты хочешь». "
+    "Заканчивай конкретным шагом на сегодня. До 100 слов."
+)
+
+WELCOME_FALLBACK = (
+    "Привет! Я твой куратор на FORMYLA — веду тебя к олимпиадам и баллам.\n"
+    "\n"
+    "План на сегодня простой: зайди в «Задачи дня» и реши один блок — "
+    "это 15–30 минут. Этого достаточно для первого шага.\n"
+    "\n"
+    "Если что-то не получается или нужны советы по выбору олимпиад — "
+    "просто напиши мне здесь. Поехали!"
+)
+
+
+def daily_plan_block(user_id: int) -> str:
+    """План на день для контекста куратора (из пилотного расписания)."""
+    try:
+        from services.pilot import pilot_session_today
+        s = pilot_session_today(user_id)
+        if not s.get('enabled'):
+            return ''
+        plan_map = {
+            'diagnostic': 'диагностический тест-срез (5 задач, ~15 мин) + задачи дня по уровню',
+            'tasks': 'блок задач дня (5 задач, ~30 мин)',
+            'method': 'изучение метода: 70% разбор метода + 3 задачи на закрепление (~45 мин)',
+            'mock': 'пробник — реальный вариант прошлых лет по регламенту олимпиады',
+            'rest': 'выходной — отдых, можно по желанию повторить одну тему',
+        }
+        plan = plan_map.get(s.get('session_type'))
+        if not plan:
+            return ''
+        return f"- план на сегодня (неделя {s.get('week')}): {plan}"
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[curator_chat] daily plan failed: %s', e)
+        return ''
+
+
+def send_welcome_message(user_id: int) -> bool:
+    """Приветствие куратора при первом открытии чата (сразу на старте).
+
+    Отправляется один раз: если в чате ещё нет ни одного сообщения от
+    куратора/системы. Генерируется DeepSeek (приветствие + план на день),
+    при сбое — шаблон. Никогда не бросает.
+    """
+    try:
+        existing = (CuratorChatMessage.query
+                    .filter(CuratorChatMessage.user_id == user_id,
+                            CuratorChatMessage.role.in_(['curator', 'system']))
+                    .count())
+        if existing:
+            return False  # куратор уже писал — не дублируем
+
+        ctx = build_context(user_id)
+        plan_line = daily_plan_block(user_id)
+
+        text = None
+        try:
+            sys_block = _context_block(ctx)
+            if plan_line:
+                sys_block += '\n' + plan_line
+            messages: List[Dict[str, str]] = [
+                {'role': 'system', 'content': SYSTEM_PROMPT},
+                {'role': 'system', 'content': sys_block},
+                {'role': 'user', 'content': WELCOME_PROMPT_INSTRUCTION},
+            ]
+            text = _call_deepseek(messages).strip()
+        except Exception as e:  # noqa: BLE001
+            logger.warning('[curator_chat] welcome generation failed: %s', e)
+
+        if not text:
+            text = WELCOME_FALLBACK
+
+        add_message(user_id, 'system', text, meta={'kind': 'welcome'})
+        db.session.commit()
+        return True
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[curator_chat] welcome failed: %s', e)
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return False
+
+
 # ── Недельное сообщение (системный триггер) ────────────────────────────────
 
 def _subscription_started_at(user_id: int) -> Optional[datetime]:
@@ -458,13 +558,17 @@ def maybe_send_week1_message(user_id: int) -> bool:
 def sweep_pilot_week1() -> int:
     """Фоновый обход пилотных аккаунтов (вызывается планировщиком раз в час).
 
-    Возвращает число отправленных сообщений. Никогда не бросает.
+    Отправляет: приветствие (если куратор ещё не писал) и недельный отчёт
+    (через 7 дней после старта пилотной подписки). Возвращает число
+    отправленных сообщений. Никогда не бросает.
     """
     sent = 0
     try:
         from services.pilot import PILOT_USER_IDS
         for user_id in PILOT_USER_IDS:
             try:
+                if send_welcome_message(user_id):
+                    sent += 1
                 if send_week1_message(user_id):
                     sent += 1
             except Exception as e:  # noqa: BLE001
