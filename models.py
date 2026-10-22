@@ -45,6 +45,15 @@ class User(UserMixin, db.Model):
     # Trial (T4)
     trial_started_at = db.Column(db.DateTime, nullable=True, default=None)
 
+    # FOUNDERS_V1 (задача «Основатели», монетизация 01.11.2026).
+    # Моменты времени — naive UTC (как и весь проект: default=datetime.utcnow,
+    # сервер Render работает в UTC; users.created_at — тоже naive UTC).
+    # trial_until — конец триала (14 дней с выдачи); до подключения платежей не назначается.
+    is_founder = db.Column(db.Boolean, nullable=False, default=False, server_default='0')
+    founder_price_eligible = db.Column(db.Boolean, nullable=False, default=False, server_default='0')
+    founder_granted_at = db.Column(db.DateTime, nullable=True)
+    trial_until = db.Column(db.DateTime, nullable=True)
+
     # T10 — Parent/Teacher roles
     role = db.Column(db.String(16), nullable=False, default='student', server_default='student')
     child_email = db.Column(db.String(120), nullable=True)  # parent binds to child via email
@@ -1741,6 +1750,12 @@ def init_db(app):
 # моделей объект `db = SQLAlchemy()` (см. начало этого модуля) уже существовал
 # и не возникло циклического импорта.
 # ──────────────────────────────────────────────────────────────────────────────
+# BILLING_V1/FOUNDERS_V1: импортируем здесь, чтобы таблицы orders/purchases/
+# analytics_events/founder_grants попали в metadata ДО services/auto_migrate.py
+# (он вызывается в app.py до регистрации blueprint'ов).
+import models_billing        # noqa: E402,F401  (intentional late import)
+import models_founders       # noqa: E402,F401  (intentional late import)
+import models_ab             # noqa: E402,F401  (intentional late import)
 from models_olympiad import (  # noqa: E402  (intentional late import)
     Probnik,
     OlympiadTask,

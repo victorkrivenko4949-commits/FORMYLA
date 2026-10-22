@@ -324,7 +324,7 @@
                 <div class="drawer-avatar"></div>
                 <div>
                     <div class="drawer-username">{{ current_user.username }}</div>
-                    <div class="drawer-user-sub">{{ current_user.email or '' }}</div>
+                    <div class="drawer-user-sub">{% block drawer_user_email %}{{ current_user.email or '' }}{% endblock %}</div>
                 </div>
             </div>
         </div>

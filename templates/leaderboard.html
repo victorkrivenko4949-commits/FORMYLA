@@ -197,6 +197,7 @@
                 <div class="lb-user-info">
                     <div style="font-size: 1.1em; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         {{ entry.nickname }}
+                        {% if entry.user.is_founder %}<span title="Основатель: аккаунт создан до 01.11.2026" style="display: inline-block; vertical-align: middle; font-size: 0.72em; padding: 2px 8px; border-radius: 10px; background: linear-gradient(135deg, #f4b942, #d99a1f); color: #0b1020; font-weight: 800;">★</span>{% endif %}
                     </div>
                     <div style="font-size: 0.85em; color: var(--text-muted);">
                         Уровень {{ entry.level }}

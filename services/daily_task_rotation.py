@@ -411,8 +411,12 @@ def _map_canonical_to_bank_level(canonical_level: int) -> int:
     return max(1, min(4, canonical_level))
 
 
-def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, Any]:
+def pick_daily_set(user_id: int, force_regenerate: bool = False,
+                   max_tasks: Optional[int] = None) -> Dict[str, Any]:
     """Подобрать набор задач дня в соответствии с анкетой и level_engine.
+
+    max_tasks: LIMITS_V1 — кап набора для лимитированного Free
+    (3 задачи в день). None — без ограничения (прежнее поведение).
 
     ПРИОРИТЕТ: банк задач (JSON) -> AdaptiveTask (SQL) -> AI-генерация.
     Банк вызывается синхронно, прямо в запросе, без фоновых потоков
@@ -486,6 +490,9 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, An
 
     # ── Сбор параметров ───────────────────────────────────────────
     count = _get_daily_tasks_count(user_id)
+    # LIMITS_V1: кап набора для лимитированного Free
+    if max_tasks is not None and max_tasks >= 0:
+        count = min(count, max_tasks)
     ceiling = _get_route_ceiling(user_id)
     state = _get_level_state(user_id)
     by_section = state.get('by_section', {})

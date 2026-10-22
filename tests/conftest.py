@@ -16,6 +16,7 @@ instance/ is NEVER opened for write.  App context is pushed once in
 returned by dependent fixtures remain attached to their session.
 """
 
+import os
 import sqlite3
 import pytest
 
@@ -143,7 +144,8 @@ def app(tmp_path):
     import models_insights     # noqa: F401 insight models
 
     db_path = tmp_path / "test_formyla.db"
-    uri = 'sqlite:///' + db_path.as_posix()
+    # opt-in: весь ORM-набор тестов можно гонять на PostgreSQL (BILLING_TEST_PG_URL)
+    uri = os.environ.get('BILLING_TEST_PG_URL') or ('sqlite:///' + db_path.as_posix())
 
     test_app = Flask(__name__)
     test_app.config['TESTING'] = True
@@ -153,6 +155,13 @@ def app(tmp_path):
     test_app.config['SERVER_NAME'] = 'localhost'
 
     _db.init_app(test_app)
+    if os.environ.get('BILLING_TEST_PG_URL'):
+        # PostgreSQL-база живёт между тестами — начинаем каждый тест с чистой схемы
+        from sqlalchemy import text as _text
+        with test_app.app_context():
+            _db.session.execute(_text('DROP SCHEMA public CASCADE'))
+            _db.session.execute(_text('CREATE SCHEMA public'))
+            _db.session.commit()
     for ep in ['profile','logout','misc','about','pricing','welcome','leaderboard','secrets','probniks','figures','topics','friends','chat','daily','problems','matstat','subscription','social','onboarding','privacy','register','login','verify_code','olympiads']: test_app.add_url_rule('/'+ep, ep, lambda e=ep: e)
     test_app.add_url_rule('/', 'index', lambda: 'index')
 

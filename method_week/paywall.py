@@ -52,7 +52,13 @@ def paid_prefixes() -> List[str]:
 
 
 def user_has_paid_access(user) -> bool:
-    """True, если пользователю можно показывать платные разделы."""
+    """True, если пользователю можно показывать платные разделы.
+
+    FOUNDERS_V1: источник истины — services.access.resolve_access
+    (paid → founder → trial → free). User.is_trial_active() больше НЕ
+    используется: он всегда True и пропускал всех. Ошибка проверки —
+    fail-closed (платный доступ при сомнении не выдаётся).
+    """
     if user is None or not getattr(user, 'is_authenticated', False):
         return False
     uid = getattr(user, 'id', None)
@@ -63,22 +69,13 @@ def user_has_paid_access(user) -> bool:
     whitelist = {e.strip().lower() for e in os.environ.get('PAYWALL_WHITELIST', '').split(',') if e.strip()}
     if email and email in whitelist:
         return True
-    for meth in ('has_active_subscription', 'is_trial_active'):
-        fn = getattr(user, meth, None)
-        if callable(fn):
-            try:
-                if fn():
-                    return True
-            except Exception:
-                pass
     try:
-        from services.subscription import get_subscription_service
-        if get_subscription_service().get_user_plan(uid).get('is_premium'):
-            return True
+        from services.access import resolve_access
+        source, _ = resolve_access(user)
+        return source in ('paid', 'founder', 'trial')
     except Exception as exc:
-        logger.warning("paywall: subscription check failed user=%s: %s (fail open)", uid, exc)
-        return True
-    return False
+        logger.error("paywall: access check failed user=%s: %s (fail closed)", uid, exc)
+        return False
 
 
 def _is_paid_path(path: str) -> bool:
@@ -91,10 +88,20 @@ def _is_paid_path(path: str) -> bool:
 
 
 def _wants_json() -> bool:
+    if _env_bool('PAYWALL_JSON_HINT', False):
+        return True
     if request.is_json:
         return True
     accept = request.headers.get('Accept', '')
     return 'application/json' in accept and 'text/html' not in accept
+
+
+def _upgrade_price_label(user) -> str:
+    try:
+        from services.billing.catalog import upgrade_price_label
+        return upgrade_price_label(user)
+    except Exception:  # каталог не загрузился — paywall не роняем
+        return '490 ₽ за 30 дней'
 
 
 def install_paywall(app) -> None:
@@ -117,7 +124,7 @@ def install_paywall(app) -> None:
                     'error': 'payment_required',
                     'message': 'Этот раздел доступен по подписке Premium.',
                     'upgrade_url': upgrade,
-                    'upgrade_price': '390 руб/мес',
+                    'upgrade_price': _upgrade_price_label(current_user),
                 }), 402
             return redirect("%s?from=%s" % (upgrade, path))
         except Exception as exc:  # pragma: no cover — paywall никогда не роняет сайт

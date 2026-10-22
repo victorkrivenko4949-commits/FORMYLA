@@ -232,20 +232,36 @@ class SubscriptionService:
 
     def activate_premium(self, user_id: int, plan: str = 'premium_monthly',
                          payment_id: Optional[str] = None, is_beta: bool = True,
-                         amount_rub: Optional[int] = None) -> dict:
+                         amount_rub: Optional[int] = None,
+                         starts_at: Optional[datetime] = None,
+                         expires_at: Optional[datetime] = None) -> dict:
+        """BILLING_V1: starts_at/expires_at задаёт сервер (naive UTC или aware).
+        Если starts_at в будущем (продление после текущего оплаченного периода,
+        год Основателя с 01.02.2027) — действующая подписка НЕ помечается superseded,
+        чтобы не сократить оплаченный период. Без параметров поведение прежнее."""
         if plan not in PLAN_LIMITS:
             raise ValueError(f'Unknown plan: {plan}')
+
+        def _naive(dt):
+            if dt is not None and dt.tzinfo is not None:
+                from datetime import timezone as _tz
+                dt = dt.astimezone(_tz.utc).replace(tzinfo=None)
+            return dt
 
         limits = PLAN_LIMITS[plan]
         duration_days = limits.get('duration_days', 30)
         now = datetime.utcnow()
-        expires_at = now + timedelta(days=duration_days)
+        started_at = _naive(starts_at) or now
+        expires_at = _naive(expires_at) or (started_at + timedelta(days=duration_days))
+        if expires_at <= started_at:
+            raise ValueError('expires_at must be after starts_at')
 
-        self._execute("""
-            UPDATE subscriptions
-            SET status = 'superseded'
-            WHERE user_id = ? AND status = 'active'
-        """, (user_id,))
+        if started_at <= now:
+            self._execute("""
+                UPDATE subscriptions
+                SET status = 'superseded'
+                WHERE user_id = ? AND status = 'active'
+            """, (user_id,))
 
         self._execute("""
             INSERT INTO subscriptions
@@ -254,7 +270,7 @@ class SubscriptionService:
             VALUES (?, ?, 'active', ?, ?, ?, ?, ?, ?)
         """, (
             user_id, plan,
-            now.isoformat(), expires_at.isoformat(),
+            started_at.isoformat(), expires_at.isoformat(),
             payment_id,
             amount_rub or (0 if is_beta else limits['price_rub']),
             1 if is_beta else 0,

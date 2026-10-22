@@ -210,8 +210,11 @@ def _existing_issues_for_date(user_id: int, target_date: date) -> Dict[int, List
     return issues
 
 
-def build_daily_set(user_id: int, target_date: date) -> Dict[str, Any]:
+def build_daily_set(user_id: int, target_date: date, max_items: Optional[int] = None) -> Dict[str, Any]:
     """Собрать набор задач дня для ученика и даты.
+
+    max_items: LIMITS_V1 — ограничение набора для лимитированного Free
+    (3 задачи в день). None — без ограничения (прежнее поведение).
 
     Возвращает dict с ключами:
         items: list[DailyTaskBank],
@@ -317,6 +320,11 @@ def build_daily_set(user_id: int, target_date: date) -> Dict[str, Any]:
         items.extend(tasks)
         if exhausted:
             bank_exhausted = True
+
+    # LIMITS_V1: кап набора для лимитированного Free (само списание — в маршруте,
+    # атомарный try_consume до выдачи; здесь только форма набора)
+    if max_items is not None and max_items >= 0 and len(items) > max_items:
+        items = items[:max_items]
 
     # Записываем выданное в bank_issues.
     for task in items:

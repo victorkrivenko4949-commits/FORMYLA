@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="max-width:640px;margin:40px auto;">
+{% if error %}
+  <h2>Оплата не оформлена</h2>
+  <p>{{ error }}</p>
+  <p><a href="/subscribe">Вернуться к тарифам</a></p>
+{% elif order.status == 'paid' %}
+  <h2>Оплата подтверждена</h2>
+  <p>Доступ открыт{% if order.access_ends_at %} до {{ order.access_ends_at.strftime('%d.%m.%Y') }} (UTC){% endif %}.</p>
+  <p><a href="/daily_tasks">Перейти к задачам</a></p>
+  {% if send_goal %}
+  <span data-goal="payment_success" hidden></span>
+  {% if metrika_id %}<script>try{ym({{ metrika_id|int }},'reachGoal','payment_success',{order_id:'{{ order.id }}'});}catch(e){}</script>{% endif %}
+  {% endif %}
+{% elif poll %}
+  <h2 id="bill-title">Проверяем оплату…</h2>
+  <p id="bill-text">Обычно это занимает несколько секунд. Страницу можно не обновлять.</p>
+  <script>
+  (function(){var tries=0,max=40;
+    function tick(){tries++;fetch('/billing/status/{{ order.id }}',{credentials:'same-origin'})
+      .then(function(r){return r.json();}).then(function(d){
+        if(d.paid){location.replace('/billing/success?order={{ order.id }}');return;}
+        if(d.status==='failed'||d.status==='expired'){document.getElementById('bill-title').textContent='Платёж не прошёл';
+          document.getElementById('bill-text').textContent='Деньги не списаны. Попробуйте ещё раз или напишите в поддержку.';return;}
+        if(tries<max)setTimeout(tick,3000);else{document.getElementById('bill-text').textContent='Платёж ещё обрабатывается. Доступ появится автоматически после подтверждения банка.';}
+      }).catch(function(){if(tries<max)setTimeout(tick,3000);});}
+    setTimeout(tick,3000);})();
+  </script>
+{% else %}
+  <h2>Платёж не прошёл</h2>
+  <p>Деньги не списаны. <a href="/subscribe">Попробовать снова</a></p>
+{% endif %}
+</div>
+{% endblock %}

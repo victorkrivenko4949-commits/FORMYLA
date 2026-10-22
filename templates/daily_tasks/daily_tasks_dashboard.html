@@ -787,6 +787,11 @@
     </div>
   </div>
 
+  <!-- LIMITS_V1: мягкий лимит Free (partial, без редиректа) -->
+  {% if data and data.limit_reached %}
+  {% include 'partials/limit_reached.html' %}
+  {% endif %}
+
   <!-- Generating state -->
   <div id="dt-generating-state" class="dt-hidden">
     <div class="dt-generating-card">

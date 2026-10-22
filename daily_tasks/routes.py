@@ -357,6 +357,75 @@ def get_daily_tasks():
     user_id = current_user.id
     today = today_in_user_tz()
 
+    # ── LIMITS_V1: мягкие лимиты Free (3 задачи / 1 ИИ-разбор в день, МСК) ──
+    # Лимит действует только при resolve_access=free И apply_limits=True;
+    # PAYWALL_MODE=off выключает немедленно. Списание — атомарный try_consume.
+    # Повторное открытие того же набора и задачи из долга лимит НЕ расходуют.
+    from services import limits as _limits_svc
+    _lctx = _limits_svc.daily_context(current_user)
+
+    def _render_limit_reached():
+        """HTML-отказ: partial, текущая задача не теряется, редиректа нет."""
+        from services.ab import log_limit_shown
+        try:
+            log_limit_shown(current_user)
+        except Exception:
+            pass
+        data = {
+            "status": "limit_reached",
+            "daily_set_id": None,
+            "target_date": today.isoformat(),
+            "message": (
+                "Бесплатный план: 3 задачи и 1 ИИ-разбор в день. "
+                "Доступ восстановится в 00:00 по Москве."
+            ),
+            "class_level": None,
+            "summary": None,
+            "generated_at": None,
+            "total_cost_usd": None,
+            "progress": {"completed": 0, "total": 0},
+            "items": [],
+            "limit_reached": True,
+            "limit_ctx": _lctx,
+        }
+        return render_template(
+            "daily_tasks/daily_tasks_dashboard.html",
+            data={**data, "theme_today": _theme_for_day(today, None)},
+        ), 402
+
+    def _limit_cap_for_new_set():
+        """Атомарно резервировать задачи нового набора. Возвращает:
+        None — лимит не активен / набор уже есть (без списания);
+        int>=0 — сколько задач можно выдать (списано); -1 — лимит исчерпан."""
+        if not _lctx.get("active"):
+            return None
+        from models import BankIssue
+        from daily_tasks.models import DailyTaskSet as _DTS
+        already = (
+            _DTS.query.filter_by(user_id=user_id, target_date=today).first() is not None
+            or BankIssue.query.filter_by(user_id=user_id, issued_date=today).first() is not None
+        )
+        if already:
+            return None  # повторное открытие не списывает
+        if _lctx["tasks_remaining"] <= 0:
+            return -1
+        cap = _lctx["tasks_remaining"]
+        if not _limits_svc.try_consume(user_id, "free_tasks", _lctx["tasks_limit"], n=cap):
+            # конкурентный запрос списал одновременно: возможно, набор уже создан
+            if (_DTS.query.filter_by(user_id=user_id, target_date=today).first() is not None
+                    or BankIssue.query.filter_by(user_id=user_id, issued_date=today).first() is not None):
+                return None
+            return -1
+        return cap
+
+    def _refund_unused(cap, issued):
+        """Выдали меньше резерва — вернуть разницу (день не теряем)."""
+        if cap and issued is not None and issued < cap:
+            try:
+                _limits_svc.refund(user_id, "free_tasks", cap - issued)
+            except Exception:
+                pass
+
     # ── T8 streak: check on open ────────────────────────────────────
     streak = check_streak_on_open(user_id, today)
 
@@ -464,7 +533,13 @@ def get_daily_tasks():
     # FORMYLA_BANK.jsonl, которая умеет выдать задачи дня.
     try:
         from services.bank_daily import build_daily_set as _build_bank_set
-        _bank = _build_bank_set(user_id, today)
+        # LIMITS_V1: для нового набора — атомарный резерв, затем кап
+        _cap = _limit_cap_for_new_set()
+        if _cap == -1:
+            return _render_limit_reached()
+        _bank = _build_bank_set(user_id, today, max_items=_cap)
+        if _cap is not None:
+            _refund_unused(_cap, len(_bank.get("items") or []))
         if _bank.get("bank_empty"):
             logger.info(
                 "daily_tasks: bank_empty для user=%d — fallback на pick_daily_set",
@@ -592,9 +667,13 @@ def get_daily_tasks():
     if not daily_set:
         # Попытка создать набор через pick_daily_set
         # (анкета + level_engine). Если нет данных — классический empty-state.
+        # LIMITS_V1: атомарный резерв для нового набора + кап числа задач
+        _cap = _limit_cap_for_new_set()
+        if _cap == -1:
+            return _render_limit_reached()
         try:
             from services.daily_task_rotation import pick_daily_set
-            pick_daily_set(user_id, force_regenerate=False)
+            pick_daily_set(user_id, force_regenerate=False, max_tasks=_cap)
             # Перезапрашиваем только что созданный сет
             daily_set = DailyTaskSet.query.filter_by(
                 user_id=user_id, target_date=today,
@@ -603,6 +682,10 @@ def get_daily_tasks():
                 logger.info(
                     "DailyTaskSet auto-created via pick_daily_set for user=%d", user_id,
                 )
+                if _cap is not None:
+                    _n_items = (DailyTaskItem.query
+                                .filter_by(daily_set_id=daily_set.id).count())
+                    _refund_unused(_cap, _n_items)
         except Exception as _pds_err:
             logger.warning(
                 "pick_daily_set fallback failed for user=%d: %s", user_id, _pds_err,
@@ -1011,6 +1094,28 @@ def submit_answer(item_id: int):
     # ── T8 streak: if set is fully answered, update streak ────────────
     if completed == total and total > 0:
         all_correct = compute_all_correct(item.daily_set_id)
+        # LIMITS_V1: для лимитированного Free при N=3 день засчитывается при
+        # >=2 верных из 3 — это 67%, а НЕ 80%. N фиксируется для дневного
+        # набора (у лимитированного Free он капнут до 3); смена тарифа
+        # посреди дня не отменяет уже засчитанный день — complete_day
+        # вызывается один раз на набор. Исторические серии и XP не
+        # пересчитываются, для пользователей без лимита правило прежнее
+        # (100%), формула XP не меняется.
+        if not all_correct:
+            try:
+                from services.limits import limits_active as _la
+                if _la(current_user):
+                    from daily_tasks.models import DailyTaskItem as _DTI
+                    _n = int(total)
+                    _need = max(1, -(-2 * _n // 3))   # ceil(2N/3): N=3 -> 2
+                    _ok = (_DTI.query
+                           .filter_by(daily_set_id=item.daily_set_id)
+                           .filter(_DTI.is_correct.is_(True))
+                           .count())
+                    if _ok >= _need:
+                        all_correct = True
+            except Exception:
+                pass
         complete_day(current_user.id, today_in_user_tz(), all_correct)
 
     return jsonify(response), 200
