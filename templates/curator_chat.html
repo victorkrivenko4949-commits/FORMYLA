@@ -51,9 +51,36 @@
 .cur-send {
   padding: 0 20px; border: 0; border-radius: 12px; font: inherit; font-weight: 800;
   cursor: pointer; background: linear-gradient(135deg, #F4B942, #e09a1f); color: #1a1205;
+  display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 132px;
 }
-.cur-send:disabled { opacity: .55; cursor: default; }
-.cur-typing { color: #64748b; font-size: 12.5px; padding: 2px 16px 12px; display: none; }
+.cur-send:disabled { opacity: .8; cursor: default; }
+.cur-spin {
+  width: 16px; height: 16px; border-radius: 50%; display: inline-block; flex: none;
+  border: 2.5px solid rgba(26,18,5,.25); border-top-color: #1a1205; animation: cur-rot .8s linear infinite;
+}
+@keyframes cur-rot { to { transform: rotate(360deg); } }
+.cur-typing {
+  display: none; align-items: center; gap: 14px; margin: 4px 16px 14px; padding: 14px 18px;
+  border-radius: 14px; background: rgba(56,97,251,.12); border: 1px solid rgba(91,133,251,.32);
+  color: #e2e8f0; font-size: 18px; font-weight: 800; line-height: 1.3;
+}
+.cur-typing.show { display: flex; }
+.cur-typing .cur-t-ava {
+  width: 40px; height: 40px; border-radius: 50%; flex: none; font-size: 20px;
+  display: flex; align-items: center; justify-content: center; background: rgba(76,125,255,.22);
+}
+.cur-typing .cur-t-body { flex: 1; }
+.cur-dots { display: inline-flex; gap: 6px; margin-left: 6px; vertical-align: middle; }
+.cur-dots span {
+  width: 9px; height: 9px; border-radius: 50%; background: #f4b942;
+  animation: cur-bounce 1.2s infinite ease-in-out;
+}
+.cur-dots span:nth-child(2) { animation-delay: .15s; }
+.cur-dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes cur-bounce { 0%, 80%, 100% { transform: scale(.5); opacity: .4; } 40% { transform: scale(1); opacity: 1; } }
+.cur-typing .cur-typing-sub { display: block; font-size: 13px; font-weight: 500; color: #94a3b8; margin-top: 3px; }
+.cur-progress { height: 4px; border-radius: 4px; background: rgba(255,255,255,.08); margin-top: 8px; overflow: hidden; }
+.cur-progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #F4B942, #e09a1f); transition: width 1s linear; }
 .cur-empty { color: #64748b; text-align: center; padding: 60px 20px; font-size: 14.5px; line-height: 1.6; }
 </style>
 {% endblock %}
@@ -75,7 +102,14 @@
 
   <div class="cur-card" id="card-curator">
     <div class="cur-msgs" id="msgs"></div>
-    <div class="cur-typing" id="typing">Куратор думает… обычно до минуты</div>
+    <div class="cur-typing" id="typing">
+      <div class="cur-t-ava">🎓</div>
+      <div class="cur-t-body">
+        Куратор отвечает<span class="cur-dots"><span></span><span></span><span></span></span>
+        <span class="cur-typing-sub">Обычно до минуты · прошло <span id="typing-sec">0</span> с</span>
+        <div class="cur-progress"><i id="typing-bar"></i></div>
+      </div>
+    </div>
     <div class="cur-input">
       <textarea id="input-curator" placeholder="Напиши куратору…" maxlength="2000"></textarea>
       <button class="cur-send" id="send-curator">Отправить</button>
@@ -95,12 +129,34 @@
 (function () {
   var msgsEl = document.getElementById('msgs');
   var typingEl = document.getElementById('typing');
+  var typingSecEl = document.getElementById('typing-sec');
+  var typingBarEl = document.getElementById('typing-bar');
   var inputEl = document.getElementById('input-curator');
   var sendEl = document.getElementById('send-curator');
+  var typingTimer = null;
 
   function fmtTime(iso) {
     if (!iso) return '';
     try { return new Date(iso).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; }
+  }
+  function makeRow(role, content, createdAt) {
+    var row = document.createElement('div');
+    row.className = 'cur-msg ' + (role === 'user' ? 'user' : role === 'system' ? 'system' : 'curator');
+    var ava = document.createElement('div');
+    ava.className = 'cur-m-ava';
+    ava.textContent = role === 'user' ? '🧑' : (role === 'system' ? '⚡' : '🎓');
+    var body = document.createElement('div');
+    var bubble = document.createElement('div');
+    bubble.className = 'cur-bubble';
+    bubble.textContent = content || '';   // безопасно: без HTML-интерпретации
+    var time = document.createElement('span');
+    time.className = 'cur-m-time';
+    time.textContent = fmtTime(createdAt);
+    body.appendChild(bubble);
+    body.appendChild(time);
+    row.appendChild(ava);
+    row.appendChild(body);
+    return row;
   }
   function render(list) {
     msgsEl.innerHTML = '';
@@ -112,24 +168,7 @@
       return;
     }
     for (var i = 0; i < list.length; i++) {
-      var m = list[i];
-      var row = document.createElement('div');
-      row.className = 'cur-msg ' + (m.role === 'user' ? 'user' : m.role === 'system' ? 'system' : 'curator');
-      var ava = document.createElement('div');
-      ava.className = 'cur-m-ava';
-      ava.textContent = m.role === 'user' ? '🧑' : (m.role === 'system' ? '⚡' : '🎓');
-      var body = document.createElement('div');
-      var bubble = document.createElement('div');
-      bubble.className = 'cur-bubble';
-      bubble.textContent = m.content || '';   // безопасно: без HTML-интерпретации
-      var time = document.createElement('span');
-      time.className = 'cur-m-time';
-      time.textContent = fmtTime(m.created_at);
-      body.appendChild(bubble);
-      body.appendChild(time);
-      row.appendChild(ava);
-      row.appendChild(body);
-      msgsEl.appendChild(row);
+      msgsEl.appendChild(makeRow(list[i].role, list[i].content, list[i].created_at));
     }
     msgsEl.scrollTop = msgsEl.scrollHeight;
   }
@@ -141,23 +180,46 @@
       .catch(function () { render([]); });
   }
 
+  function startLoading() {
+    var sec = 0;
+    sendEl.disabled = true;
+    sendEl.innerHTML = '<span class="cur-spin"></span>Отправка';
+    typingSecEl.textContent = '0';
+    typingBarEl.style.width = '0';
+    typingEl.classList.add('show');
+    typingTimer = setInterval(function () {
+      sec++;
+      typingSecEl.textContent = sec;
+      typingBarEl.style.width = Math.min(95, Math.round(sec / 60 * 100)) + '%';
+    }, 1000);
+  }
+  function stopLoading() {
+    clearInterval(typingTimer);
+    typingEl.classList.remove('show');
+    sendEl.disabled = false;
+    sendEl.textContent = 'Отправить';
+  }
+
   function send() {
     var text = inputEl.value.trim();
-    if (!text) return;
-    sendEl.disabled = true;
-    typingEl.style.display = 'block';
+    if (!text || sendEl.disabled) return;
+    var empty = msgsEl.querySelector('.cur-empty');
+    if (empty) empty.remove();
+    msgsEl.appendChild(makeRow('user', text, new Date().toISOString()));
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+    inputEl.value = '';
+    startLoading();
     fetch('/api/curator/chat', {
       method: 'POST', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: text })
     }).then(function (r) { return r.json(); }).then(function (d) {
-      inputEl.value = '';
-      render(d.ok ? d.messages : null);
+      if (d.ok) { render(d.messages); } else { inputEl.value = text; load(); }
     }).catch(function () {
-      render(null);
+      inputEl.value = text;
+      load();
     }).finally(function () {
-      sendEl.disabled = false;
-      typingEl.style.display = 'none';
+      stopLoading();
     });
   }
 
@@ -193,22 +255,8 @@
         }
         for (var i = 0; i < list.length; i++) {
           var m = list[i];
-          var row = document.createElement('div');
-          row.className = 'cur-msg ' + (m.role === 'user' ? 'user' : 'curator');
-          var ava = document.createElement('div');
-          ava.className = 'cur-m-ava';
-          ava.textContent = m.role === 'user' ? '🧑' : '💬';
-          var body = document.createElement('div');
-          var bubble = document.createElement('div');
-          bubble.className = 'cur-bubble';
-          bubble.textContent = m.content || '';
-          var time = document.createElement('span');
-          time.className = 'cur-m-time';
-          time.textContent = fmtTime(m.created_at);
-          body.appendChild(bubble);
-          body.appendChild(time);
-          row.appendChild(ava);
-          row.appendChild(body);
+          var row = makeRow(m.role === 'user' ? 'user' : 'curator', m.content, m.created_at);
+          if (m.role !== 'user') { row.querySelector('.cur-m-ava').textContent = '💬'; }
           el.appendChild(row);
         }
         el.scrollTop = el.scrollHeight;
@@ -221,8 +269,9 @@
   var supInput = document.getElementById('input-support');
   supSend.addEventListener('click', function () {
     var text = supInput.value.trim();
-    if (!text) return;
+    if (!text || supSend.disabled) return;
     supSend.disabled = true;
+    supSend.innerHTML = '<span class="cur-spin"></span>Отправка';
     fetch('/api/curator/support', {
       method: 'POST', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
@@ -230,7 +279,10 @@
     }).then(function (r) { return r.json(); }).then(function (d) {
       supInput.value = '';
       loadSupport();
-    }).catch(function () {}).finally(function () { supSend.disabled = false; });
+    }).catch(function () {}).finally(function () {
+      supSend.disabled = false;
+      supSend.textContent = 'Отправить';
+    });
   });
 
   load();
