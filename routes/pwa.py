@@ -29,7 +29,7 @@ PWA_STATS_EXCLUDE_USERS — доп. список аккаунтов, чьи ус
 Когда будет удобно править base.html — добавьте в <head>:
     <link rel="manifest" href="/site.webmanifest">
 и перед </body>:
-    <script defer src="/static/js/pwa_install.js?v=4"></script>
+    <script defer src="/static/js/pwa_install.js?v=5"></script>
 Инжектор увидит, что теги уже есть, и ничего вставлять не будет.
 """
 from __future__ import annotations
@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 pwa_bp = Blueprint("pwa", __name__)
 
-PWA_VERSION = "4"
+PWA_VERSION = "5"
 _MANIFEST_TAG = '<link rel="manifest" href="/site.webmanifest">'
 _SCRIPT_TAG = '<script defer src="/static/js/pwa_install.js?v=%s"></script>' % PWA_VERSION
 _HEAD_RE = re.compile(r"<head(\s[^>]*)?>", re.IGNORECASE)

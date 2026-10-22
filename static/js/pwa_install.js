@@ -1,37 +1,23 @@
 /**
- * pwa_install.js — PWA_INSTALL_V4.1 (22.10.2026).
+ * pwa_install.js — PWA_INSTALL_V5 (22.10.2026).
  *
  * Состояния кнопки:
  *   install    — «📲 Скачать приложение» (пришёл beforeinstallprompt или это iOS)
- *   installing — «⏳ Устанавливаем…» (спиннер, пока Chrome ставит приложение)
- *   installed  — «✅ Открыть приложение» (повторно установить нельзя)
+ *   installing — «⏳ Устанавливаем…» (спиннер, пока браузер ставит приложение)
+ *   installed  — зависит от устройства:
+ *     • компьютер, Chrome/Edge  — «✅ Открыть приложение»: запуск через протокол web+formyla://open
+ *       (protocol_handlers в манифесте). Браузер один раз спросит разрешение, дальше открывает сразу.
+ *       Не открылось за 1.5 с — короткое уведомление на 3 с, без вкладок и окон.
+ *     • Android / iPhone / Firefox / Safari — браузеры не дают сайту запустить установленное
+ *       приложение, поэтому вместо нерабочей кнопки — плашка «✅ Приложение установлено»
+ *       (по нажатию — подсказка «откройте FORMYLA с главного экрана»). Плавающая кнопка скрывается.
  *
  * Как понимаем, что уже установлено:
- *   1) событие appinstalled (сразу после установки);
- *   2) navigator.getInstalledRelatedApps() + related_applications в манифесте;
- *   3) флаг в localStorage с прошлого раза.
- *   Если Chrome всё же присылает beforeinstallprompt — значит НЕ установлено, верим ему.
+ *   1) событие appinstalled; 2) navigator.getInstalledRelatedApps(); 3) флаг в localStorage.
+ *   Если браузер присылает beforeinstallprompt — значит НЕ установлено, верим ему.
  *
- * «Открыть приложение» — реально запускает установленное приложение.
- *   Важно: браузеры НЕ перехватывают https-ссылки в приложение, если вкладка уже в scope
- *   этого приложения (сайт → сайт = просто новая вкладка). Поэтому:
- *   Desktop  — протокол web+formyla://open (protocol_handlers в манифесте). Chrome/Edge
- *              передают его установленному PWA из любой вкладки (при первом разе спросят разрешение).
- *              Если обработчика нет — страница никуда не уходит, показываем подсказку.
- *   Android  — intent://<host>/?source=pwa_open#Intent;scheme=https;…;end. Android находит
- *              установленный WebAPK (intent-filter на наш scope); нет — S.browser_fallback_url вернёт на сайт.
- *   iOS      — у Safari нет API для запуска web-app с главного экрана, показываем подсказку.
- *   Если через 1.5 с вкладка не ушла в фон — считаем, что не открылось, и показываем лист
- *   «Приложение установлено» с инструкцией. Фолбэк-URL /?source=pwa_open в обычной вкладке
- *   тоже показывает этот лист автоматически.
- *
- * Статистика: факт установки отправляется один раз на POST /api/pwa/installed
- * (appinstalled на Android/десктопе; первый запуск в standalone — на iPhone).
- *
- * Обновления: при каждом открытии и возврате на вкладку проверяем новую версию
- * service worker; как только она активируется — страница перезагружается один раз,
- * чтобы приложение всегда было на той же версии, что и сайт.
- *
+ * Статистика: факт установки — один раз на POST /api/pwa/installed.
+ * Обновления: проверка новой версии service worker при открытии и возврате на вкладку.
  * Внутри установленного приложения (standalone): кнопок нет, показываем заставку.
  * Подключается автоматически (routes/pwa.py) только разрешённым пользователям (PWA_ALLOWED_USERS).
  */
@@ -44,10 +30,11 @@
   var LS_DISMISSED = 'formyla_pwa_fab_dismissed';
   var LS_REPORTED = 'formyla_pwa_install_reported';
   var SS_SPLASH = 'formyla_pwa_splash_shown';
-  var OPEN_PATH = '/?source=pwa_open';
   var PROTOCOL_URL = 'web+formyla://open';
   var installingTimer = null;
   var openTimer = null;
+  var toastTimer = null;
+  var fabEl = null;
 
   function isStandalone() {
     return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
@@ -60,13 +47,17 @@
   }
   function isChromium() {
     var ua = navigator.userAgent || '';
-    return !!window.chrome || /Chrome|Chromium|Edg|YaBrowser|OPR/i.test(ua);
+    if (/Firefox|FxiOS/i.test(ua)) return false;
+    return /Chrome|Chromium|Edg|YaBrowser|OPR/i.test(ua);
   }
   function platform() {
     if (isIOS()) return 'ios';
     if (/Android/i.test(navigator.userAgent || '')) return 'android';
     return 'desktop';
   }
+  // Можно ли с этой вкладки запустить установленное приложение.
+  function canLaunch() { return platform() === 'desktop' && isChromium(); }
+
   function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
   function lsSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
   function ssGet(key) { try { return sessionStorage.getItem(key); } catch (e) { return null; } }
@@ -101,7 +92,6 @@
   if ('serviceWorker' in navigator) {
     var hadController = !!navigator.serviceWorker.controller;
     var refreshing = false;
-    // Новый SW взял управление → перезагружаем страницу один раз, чтобы подтянуть новую версию.
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (!hadController || refreshing) { hadController = true; return; }
       refreshing = true;
@@ -118,11 +108,10 @@
 
         function check() { try { reg.update().catch(function () {}); } catch (e) {} }
         check();
-        setInterval(check, 30 * 60 * 1000);                       // раз в 30 минут
-        document.addEventListener('visibilitychange', function () { // и при возврате в приложение
+        setInterval(check, 30 * 60 * 1000);
+        document.addEventListener('visibilitychange', function () {
           if (document.visibilityState === 'visible') check();
         });
-        // Если новая версия уже скачана и ждёт — активируем её сразу.
         if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
         reg.addEventListener('updatefound', function () {
           var nw = reg.installing;
@@ -178,12 +167,12 @@
 
   if (isStandalone()) {
     lsSet(LS_INSTALLED, '1');
-    reportInstall('standalone_launch');   // iPhone не шлёт appinstalled — считаем первый запуск
+    reportInstall('standalone_launch');
     if (document.body) showSplash(); else document.addEventListener('DOMContentLoaded', showSplash);
     return;
   }
 
-  /* ───── 3. Стили кнопок ───── */
+  /* ───── 3. Стили ───── */
   var CSS = [
     '.pwa-install-btn{display:none;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;',
     '  border:1px solid rgba(56,239,125,.35);background:rgba(56,239,125,.10);color:#86efac;',
@@ -191,6 +180,8 @@
     '.pwa-install-btn:hover{background:rgba(56,239,125,.2)}',
     '.pwa-install-btn.is-visible{display:inline-flex}',
     '.pwa-install-btn[data-state="installed"],#pwaInstallFab[data-state="installed"]{border-color:rgba(56,189,248,.45);color:#7dd3fc;background:rgba(56,189,248,.10)}',
+    '.pwa-install-btn[data-state="done"]{border-color:rgba(148,163,184,.3);color:#94a3b8;background:transparent;cursor:default}',
+    '.pwa-install-btn[data-state="done"]:hover{background:transparent}',
     '.pwa-install-btn[data-state="installing"],#pwaInstallFab[data-state="installing"]{opacity:.85;pointer-events:none}',
     '.drawer-link.pwa-install-btn{display:none;width:100%;text-align:left;background:transparent;border:none;border-radius:0}',
     '.drawer-link.pwa-install-btn.is-visible{display:flex}',
@@ -199,12 +190,17 @@
     '  border:1px solid rgba(56,239,125,.45);background:rgba(15,23,42,.92);color:#86efac;',
     '  font-weight:600;font-size:14px;font-family:inherit;box-shadow:0 4px 16px rgba(0,0,0,.4);backdrop-filter:blur(6px)}',
     '#pwaInstallFab.is-visible{display:inline-flex}',
+    '#pwaInstallFab[data-state="done"]{display:none !important}',
     '#pwaInstallFab button{all:unset;cursor:pointer;font:inherit;color:inherit;display:inline-flex;align-items:center;gap:6px}',
     '#pwaInstallFab .pwa-fab-close{color:#64748b;font-size:16px;line-height:1;padding:2px 4px}',
     '.pwa-spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.25);border-top-color:currentColor;border-radius:50%;animation:pwaSpin .8s linear infinite}',
     '@keyframes pwaSpin{to{transform:rotate(360deg)}}',
     '@media (min-width:769px){#pwaInstallFab{display:none !important}}',
     '@media (max-width:768px){.header .pwa-install-btn{display:none !important}}',
+    '#pwaToast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);z-index:10001;',
+    '  max-width:min(92vw,420px);padding:12px 16px;border-radius:12px;background:#1e293b;color:#e2e8f0;border:1px solid rgba(56,189,248,.35);',
+    '  font-size:14px;line-height:1.45;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}',
+    '#pwaToast.is-open{opacity:1;transform:translate(-50%,0)}',
     '.pwa-sheet-wrap{position:fixed;inset:0;z-index:10000;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55)}',
     '.pwa-sheet-wrap.is-open{display:flex}',
     '.pwa-sheet-wrap .sheet{width:100%;max-width:480px;background:#1e293b;color:#e2e8f0;border-radius:16px 16px 0 0;',
@@ -213,8 +209,6 @@
     '.pwa-sheet-wrap ol,.pwa-sheet-wrap p{margin:0 0 16px;line-height:1.6;color:#cbd5e1}',
     '.pwa-sheet-wrap ol{padding-left:22px}',
     '.pwa-sheet-wrap .close{width:100%;padding:12px;border:none;border-radius:10px;background:#334155;color:#fff;font-size:15px;font-weight:600;cursor:pointer}',
-    '.pwa-sheet-wrap .primary{width:100%;padding:12px;margin-bottom:10px;border:none;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#6366f1);color:#fff;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;display:block;text-align:center;font-family:inherit}',
-    '.pwa-sheet-wrap .secondary{display:block;text-align:center;margin:0 0 14px;color:#94a3b8;font-size:13px;text-decoration:underline}',
     '@media (min-width:769px){.pwa-sheet-wrap{align-items:center}.pwa-sheet-wrap .sheet{border-radius:16px}}'
   ].join('\n');
 
@@ -226,14 +220,30 @@
     document.head.appendChild(s);
   }
 
-  /* ───── 4. Разметка ───── */
+  /* ───── 4. Уведомление (toast) ───── */
+  function toast(html) {
+    var t = document.getElementById('pwaToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'pwaToast';
+      t.setAttribute('role', 'status');
+      document.body.appendChild(t);
+    }
+    t.innerHTML = html;
+    t.classList.add('is-open');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('is-open'); }, 3000);
+  }
+
+  /* ───── 5. Разметка ───── */
   var buttons = [];
   var labels = [];
 
   var LABELS = {
     install:    '<span>📲</span><span>Скачать приложение</span>',
     installing: '<span class="pwa-spin"></span><span>Устанавливаем…</span>',
-    installed:  '<span>✅</span><span>Открыть приложение</span>'
+    installed:  '<span>✅</span><span>Открыть приложение</span>',
+    done:       '<span>✅</span><span>Приложение установлено</span>'
   };
 
   function makeBtn(className) {
@@ -256,24 +266,6 @@
     return w;
   }
   function openSheet(id) { var s = document.getElementById(id); if (s) s.classList.add('is-open'); }
-  function closeSheet(id) { var s = document.getElementById(id); if (s) s.classList.remove('is-open'); }
-
-  function platformHint() {
-    var p = platform();
-    if (p === 'ios') {
-      return 'На iPhone/iPad Safari не умеет запускать приложение по кнопке — откройте иконку <b>FORMYLA</b> на главном экране.';
-    }
-    if (p === 'android') {
-      return 'Иконка <b>FORMYLA</b> уже на главном экране или в списке приложений. Если по кнопке приложение не открылось — ' +
-             'зайдите в <b>Настройки → Приложения → FORMYLA → Открывать поддерживаемые ссылки</b> и включите «Открывать в этом приложении».';
-    }
-    if (!isChromium()) {
-      return 'Этот браузер не умеет запускать установленные приложения по кнопке — откройте иконку <b>FORMYLA</b> в меню «Пуск» / Launchpad.';
-    }
-    return 'При первом запуске браузер спросит «Открыть FORMYLA?» — нажмите <b>«Открыть»</b>. ' +
-           'Если ничего не произошло — один раз запустите <b>FORMYLA</b> с иконки (меню «Пуск» / Launchpad / chrome://apps), ' +
-           'чтобы приложение подхватило обновление, и повторите.';
-  }
 
   function mountButtons() {
     var headerAuth = document.querySelector('.header > div');
@@ -295,6 +287,7 @@
         lsSet(LS_DISMISSED, String(Date.now()));
       });
       document.body.appendChild(fab);
+      fabEl = fab;
       buttons.push(fab); labels.push(main);
     }
 
@@ -305,30 +298,21 @@
       '<li>Выберите <b>«На экран “Домой”»</b> и нажмите <b>«Добавить»</b>.</li></ol>' +
       '<button type="button" class="close">Понятно</button>');
 
-    var canRetry = platform() !== 'ios' && !(platform() === 'desktop' && !isChromium());
-    var installedSheet = makeSheet('pwaInstalledSheet',
-      '<h3>✅ Приложение установлено</h3>' +
-      '<p>' + platformHint() + '</p>' +
-      '<p style="font-size:13px;color:#94a3b8">Повторная установка не нужна: браузер не даст поставить приложение дважды.</p>' +
-      (canRetry ? '<button type="button" class="primary pwa-retry-open">🚀 Попробовать открыть ещё раз</button>' : '') +
-      '<a class="secondary" href="' + OPEN_PATH + '" target="_blank" rel="noopener">Или открыть сайт в новой вкладке</a>' +
-      '<button type="button" class="close">Понятно</button>');
-    var retry = installedSheet.querySelector('.pwa-retry-open');
-    if (retry) retry.addEventListener('click', function () { closeSheet('pwaInstalledSheet'); openApp(); });
-
     makeSheet('pwaHintSheet',
       '<h3>📲 Как установить</h3>' +
       '<p>Откройте меню браузера (⋮ или ⋯) и выберите <b>«Установить приложение»</b> или <b>«Добавить на главный экран»</b>.</p>' +
       '<button type="button" class="close">Понятно</button>');
   }
 
-  /* ───── 5. Состояния ───── */
+  /* ───── 6. Состояния ───── */
   function setState(next) {
+    if (next === 'installed' && !canLaunch()) next = 'done';
     state = next;
     var html = LABELS[next];
     if (!html) { buttons.forEach(function (b) { b.classList.remove('is-visible'); }); return; }
     labels.forEach(function (l) { l.innerHTML = html; });
     buttons.forEach(function (b) { b.setAttribute('data-state', next); b.classList.add('is-visible'); });
+    if (fabEl && next === 'done') fabEl.classList.remove('is-visible');
   }
 
   function markInstalled(reportSource) {
@@ -339,51 +323,26 @@
     if (reportSource) reportInstall(reportSource);
   }
 
-  /* ───── 6. Запуск установленного приложения ───── */
+  /* ───── 7. Запуск установленного приложения (только компьютер, Chrome/Edge) ───── */
   function openApp() {
     track('pwa_open_click');
-    var plat = platform();
-    var target = window.location.origin + OPEN_PATH;
-
-    if (plat === 'ios' || (plat === 'desktop' && !isChromium())) {
-      // Safari (iOS/macOS) и Firefox не дают запустить установленное web-app из вкладки.
-      openSheet('pwaInstalledSheet');
-      return;
-    }
-
-    // Если вкладка ушла в фон / потеряла фокус — приложение (или диалог браузера) открылось.
     var left = false;
     function onHide() { if (document.visibilityState === 'hidden') left = true; }
     function onBlur() { left = true; }
     document.addEventListener('visibilitychange', onHide);
-    window.addEventListener('pagehide', onBlur);
     window.addEventListener('blur', onBlur);
 
     if (openTimer) clearTimeout(openTimer);
     openTimer = setTimeout(function () {
       document.removeEventListener('visibilitychange', onHide);
-      window.removeEventListener('pagehide', onBlur);
       window.removeEventListener('blur', onBlur);
       openTimer = null;
       if (left) { track('pwa_open_ok'); return; }
       track('pwa_open_fallback');
-      openSheet('pwaInstalledSheet');
+      toast('Не получилось открыть автоматически — запустите <b>FORMYLA</b> из меню «Пуск» или с рабочего стола.');
     }, 1500);
 
     try {
-      if (plat === 'android') {
-        // Android: явный intent на наш URL. WebAPK зарегистрирован как обработчик scope,
-        // поэтому система откроет именно приложение. Нет приложения → fallback на сайт.
-        var intentUrl = 'intent://' + window.location.host + OPEN_PATH +
-          '#Intent;scheme=https;action=android.intent.action.VIEW;' +
-          'S.browser_fallback_url=' + encodeURIComponent(target) + ';end';
-        console.log('[PWA] open via intent:', intentUrl);
-        window.location.href = intentUrl;
-        return;
-      }
-      // Desktop (Chromium): https-ссылки с самого сайта браузер в приложение не перехватывает
-      // (мы уже в scope), поэтому идём через зарегистрированный протокол — его Chrome/Edge
-      // отдают установленному PWA из любой вкладки. Нет обработчика — страница остаётся на месте.
       console.log('[PWA] open via protocol:', PROTOCOL_URL);
       window.location.href = PROTOCOL_URL;
     } catch (e) {
@@ -394,10 +353,14 @@
   function onClick() {
     if (state === 'installing') return;
     if (state === 'installed') { openApp(); return; }
+    if (state === 'done') {
+      toast('Приложение уже установлено — откройте <b>FORMYLA</b> с главного экрана.');
+      return;
+    }
     track('pwa_install_click');
     if (deferredPrompt) {
       var p = deferredPrompt;
-      deferredPrompt = null;              // prompt() можно вызвать только один раз
+      deferredPrompt = null;
       setState('installing');
       p.prompt();
       p.userChoice.then(function (choice) {
@@ -405,7 +368,6 @@
         console.log('[PWA] install prompt:', choice && choice.outcome);
         if (ok) {
           track('pwa_install_accepted');
-          // Ждём appinstalled; если браузер его не пришлёт — через 6 с считаем установленным.
           installingTimer = setTimeout(function () { markInstalled('timer'); }, 6000);
         } else {
           setState('install');
@@ -421,8 +383,8 @@
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();
     deferredPrompt = e;
-    lsSet(LS_INSTALLED, '0');           // раз событие пришло — приложения точно нет
-    lsSet(LS_REPORTED, '0');            // новая установка — новая запись в статистике
+    lsSet(LS_INSTALLED, '0');
+    lsSet(LS_REPORTED, '0');
     if (state !== 'installing') setState('install');
     console.log('[PWA] beforeinstallprompt captured');
   });
@@ -442,11 +404,9 @@
     }
   }
 
-  // Попали на фолбэк-URL в обычной вкладке → приложение не открылось, подскажем что делать.
-  function handleOpenFallback() {
-    if (!/[?&]source=pwa_open(&|$)/.test(window.location.search)) return;
-    if (lsGet(LS_INSTALLED) !== '1') return;
-    setTimeout(function () { openSheet('pwaInstalledSheet'); }, 400);
+  // Протокол сработал, но открылась вкладка (обработчик не приложение) — чистим адрес.
+  function cleanLaunchParams() {
+    if (!/[?&](source=pwa_open|launch=)/.test(window.location.search)) return;
     try {
       var u = new URL(window.location.href);
       u.searchParams.delete('source');
@@ -460,7 +420,7 @@
     mountButtons();
     detectInstalled();
     if (isIOS() && state === 'hidden') setState('install');
-    handleOpenFallback();
+    cleanLaunchParams();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
