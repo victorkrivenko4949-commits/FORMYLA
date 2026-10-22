@@ -263,17 +263,20 @@ def _submit_bank_answer(task_id: int, issue):
                     current_user.id,
                 )
         db.session.commit()
+        _saved_ok = True
     except Exception as e:  # pragma: no cover
         db.session.rollback()
+        _saved_ok = False
         # ГРОМКИЙ лог: потеря XP критична — должна сразу падать в мониторинг.
         logger.exception(
             "_submit_bank_answer: db commit failed — ответ и/или XP ПОТЕРЯНЫ task=%d user=%s: %s",
             task_id, getattr(current_user, "id", None), e,
         )
 
-    # STREAK_V2: верный ответ на задачу из банка тоже засчитывает день
+    # STREAK_V2: верный ответ на задачу из банка тоже засчитывает день —
+    # только если ответ реально сохранён (не после rollback).
     try:
-        if is_correct:
+        if _saved_ok and is_correct:
             credit_streak_day(current_user.id, today_in_user_tz(), source="task")
             db.session.commit()
     except Exception:
@@ -1103,6 +1106,9 @@ def submit_answer(item_id: int):
 
     # ── STREAK_V2: первый верный ответ на задачу дня = день засчитан ───
     # (идемпотентно: максимум +1 за день, ошибки серию не сбрасывают).
+    # Старый блок «сет полностью отвечен» удалён: зачёт дня теперь
+    # происходит на ПЕРВОМ верном ответе, правило 2/3 из LIMITS_V1
+    # избыточно — один верный ответ уже засчитывает день.
     if is_correct:
         try:
             credit_streak_day(current_user.id, today_in_user_tz(), source="task")
@@ -1110,35 +1116,6 @@ def submit_answer(item_id: int):
         except Exception:
             db.session.rollback()
             logger.exception("streak credit failed (submit)")
-
-    # ── T8 streak: if set is fully answered, update streak ────────────
-    if completed == total and total > 0:
-        all_correct = compute_all_correct(item.daily_set_id)
-        # LIMITS_V1: для лимитированного Free при N=3 день засчитывается при
-        # >=2 верных из 3 — это 67%, а НЕ 80%. N фиксируется для дневного
-        # набора (у лимитированного Free он капнут до 3); смена тарифа
-        # посреди дня не отменяет уже засчитанный день — complete_day
-        # вызывается один раз на набор. Исторические серии и XP не
-        # пересчитываются, для пользователей без лимита правило прежнее
-        # (100%), формула XP не меняется.
-        if not all_correct:
-            try:
-                from services.limits import limits_active as _la
-                if _la(current_user):
-                    from daily_tasks.models import DailyTaskItem as _DTI
-                    _n = int(total)
-                    _need = max(1, -(-2 * _n // 3))   # ceil(2N/3): N=3 -> 2
-                    _ok = (_DTI.query
-                           .filter_by(daily_set_id=item.daily_set_id)
-                           .filter(_DTI.is_correct.is_(True))
-                           .count())
-                    if _ok >= _need:
-                        all_correct = True
-            except Exception:
-                pass
-        # STREAK_V2: complete_day лишь делегирует credit_streak_day —
-        # двойного +1 не будет (идемпотентность по last_credit_date).
-        complete_day(current_user.id, today_in_user_tz(), all_correct)
 
     return jsonify(response), 200
 
@@ -1730,6 +1707,7 @@ def submit_answer_ai(item_id: int):
                     current_user.id,
                 )
         db.session.commit()
+        _saved_ok = True
 
         # ── Записать результат в level_engine ──────────────────────────
         try:
@@ -1744,10 +1722,12 @@ def submit_answer_ai(item_id: int):
     except Exception as e:  # pragma: no cover
         db.session.rollback()
         logger.exception("submit_answer_ai: db commit failed: %s", e)
+        _saved_ok = False
 
-    # STREAK_V2: верный ответ на задачу дня засчитывает день в серию
+    # STREAK_V2: верный ответ на задачу дня засчитывает день в серию —
+    # только если ответ реально сохранён (не после rollback).
     try:
-        if is_correct:
+        if _saved_ok and is_correct:
             credit_streak_day(current_user.id, today_in_user_tz(), source="task")
             db.session.commit()
     except Exception:

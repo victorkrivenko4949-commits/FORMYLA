@@ -132,3 +132,77 @@ def test_streak_v2_time_credit_via_site_stats(app):
         _beat(section="daily")
         rec = get_or_create_streak(u.id)
         assert rec.current_streak == 1
+
+
+def test_streak_v2_transition_no_double_credit(app):
+    """Переходное состояние после деплоя: день уже засчитан старой логикой
+    (last_solved_date=today, last_credit_date=NULL + бэкфилл) — повторного +1 нет."""
+    with app.app_context():
+        from models import db
+        rec = get_or_create_streak(1)
+        rec.current_streak = 2
+        rec.last_solved_date = date(2026, 10, 23)
+        # бэкфилл из миграции помечает день как зачтённый:
+        rec.last_credit_date = date(2026, 10, 23)
+        db.session.flush()
+
+        ok = credit_streak_day(1, date(2026, 10, 23), source="task")
+        assert ok is False
+        assert rec.current_streak == 2
+
+
+def test_streak_v2_route_correct_answer_credits(
+        app, auth_client, test_user, daily_set_with_items):
+    """POST верного ответа на задачу дня через реальный маршрут — серия +1."""
+    with app.app_context():
+        from models import db
+        from daily_tasks.models import DailyTaskItem
+        rec = get_or_create_streak(test_user.id)
+        rec.current_streak = 0
+        rec.last_credit_date = None
+        rec.last_solved_date = None
+
+        item = DailyTaskItem.query.filter_by(
+            daily_set_id=daily_set_with_items.id).order_by('position').first()
+        item.correct_answer = "42"
+        db.session.commit()
+        item_id = item.id
+
+    r = auth_client.post(f'/daily_tasks/{item_id}/submit',
+                         json={"answer": "42"})
+    assert r.status_code == 200
+
+    with app.app_context():
+        from models import db as _db
+        _db.session.expire_all()
+        rec = get_or_create_streak(test_user.id)
+        assert rec.current_streak == 1
+        assert rec.last_credit_date is not None
+
+
+def test_streak_v2_route_wrong_answer_no_credit(
+        app, auth_client, test_user, daily_set_with_items):
+    """POST неверного ответа — серия не растёт."""
+    with app.app_context():
+        from models import db
+        from daily_tasks.models import DailyTaskItem
+        rec = get_or_create_streak(test_user.id)
+        rec.current_streak = 0
+        rec.last_credit_date = None
+        rec.last_solved_date = None
+
+        item = DailyTaskItem.query.filter_by(
+            daily_set_id=daily_set_with_items.id).order_by('position').first()
+        item.correct_answer = "42"
+        db.session.commit()
+        item_id = item.id
+
+    r = auth_client.post(f'/daily_tasks/{item_id}/submit',
+                         json={"answer": "13"})
+    assert r.status_code == 200
+
+    with app.app_context():
+        from models import db as _db
+        _db.session.expire_all()
+        rec = get_or_create_streak(test_user.id)
+        assert rec.current_streak == 0

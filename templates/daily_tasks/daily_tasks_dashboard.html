@@ -1005,7 +1005,7 @@
     {% if data and data.streak %}
     <div class="dt-streak-block" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;margin-bottom:14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);">
       <div style="display:flex;align-items:center;">
-        <div>
+        <div style="white-space:nowrap;">
           <span style="color:var(--muted);font-size:14px;">Серия:</span>
           <strong style="font-size:18px;margin-left:6px;">{{ data.streak.current_streak }} дней</strong>
           {% if data.streak.max_streak %}
@@ -1013,8 +1013,8 @@
           {% endif %}
         </div>
         <button type="button" data-streak-how title="Как работает серия"
-                style="margin-left:10px;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;"
-                aria-label="Как работает серия">?</button>
+                style="margin-left:10px;padding:3px 12px;border-radius:16px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;"
+                aria-label="Как работает серия">Как работает</button>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         {% if data.streak.days_off_available > 0 %}

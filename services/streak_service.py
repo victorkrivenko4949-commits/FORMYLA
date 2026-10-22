@@ -30,28 +30,55 @@ def _ensure_credit_column() -> None:
     """Идемпотентно добавить колонку streak_records.last_credit_date.
 
     На проде таблица уже существует, поэтому db.create_all() колонку не
-    добавит — делаем ALTER TABLE по образцу site_stats.ensure_tables.
+    добавит — делаем ALTER TABLE. ВАЖНО: ALTER выполняется в ОТДЕЛЬНОМ
+    соединении (db.engine), чтобы не коммитить/откатывать текущую
+    транзакцию пользователя, в которой могут быть несохранённые данные.
+
+    Одноразовый бэкфилл: last_credit_date = last_solved_date — чтобы
+    день, уже засчитанный старой логикой (полный сет на 100%), не был
+    засчитан повторно после деплоя. Консервативно: день, покрытый
+    выходным, тоже помечается как зачтённый (двойного +1 не будет).
     """
     global _credit_column_ready
     if _credit_column_ready:
         return
     try:
-        col = db.session.execute(db.text(
-            "SELECT column_name FROM information_schema.columns "
-            "WHERE table_name = 'streak_records' AND column_name = 'last_credit_date'"
-        )).first()
-    except Exception:
-        col = None  # SQLite: information_schema нет
-    if col is None:
+        with db.engine.connect() as conn:
+            exists = conn.execute(db.text(
+                "SELECT 1 FROM information_schema.columns "
+                "WHERE table_name = 'streak_records' "
+                "AND column_name = 'last_credit_date'"
+            )).first()
+            if exists is None:
+                # Отдельная автокоммит-транзакция, вне сессии пользователя.
+                conn.execute(db.text(
+                    "ALTER TABLE streak_records "
+                    "ADD COLUMN last_credit_date DATE"
+                ))
+                # Бэкфилл переходного состояния (см. докстринг).
+                conn.execute(db.text(
+                    "UPDATE streak_records "
+                    "SET last_credit_date = last_solved_date "
+                    "WHERE last_solved_date IS NOT NULL "
+                    "AND last_credit_date IS NULL"
+                ))
+                conn.commit()
+                logger.info("streak_records.last_credit_date added + backfilled")
+    except Exception as e:
+        # SQLite (нет information_schema) или колонка уже добавлена
+        # конкурентным процессом — пробуем простой ALTER и считаем
+        # «duplicate column» успехом.
         try:
-            db.session.execute(db.text(
-                "ALTER TABLE streak_records ADD COLUMN last_credit_date DATE"
-            ))
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            # колонка уже есть (конкурентный вызов) — не страшно
-            logger.debug("ensure_credit_column: %r", e)
+            with db.engine.connect() as conn:
+                conn.execute(db.text(
+                    "ALTER TABLE streak_records "
+                    "ADD COLUMN last_credit_date DATE"
+                ))
+                conn.commit()
+                logger.info("streak_records.last_credit_date added (sqlite)")
+        except Exception as e2:
+            if 'duplicate column' not in str(e2).lower():
+                logger.warning("ensure_credit_column: %r / %r", e, e2)
     _credit_column_ready = True
 
 
@@ -59,14 +86,29 @@ def _ensure_credit_column() -> None:
 # Core helpers
 # ---------------------------------------------------------------------------
 
-def get_or_create_streak(user_id: int) -> StreakRecord:
-    """Return the StreakRecord for *user_id*, creating one if missing."""
+def get_or_create_streak(user_id: int, *, for_update: bool = False) -> StreakRecord:
+    """Return the StreakRecord for *user_id*, creating one if missing.
+
+    *for_update* — захватить строку блокировкой (SELECT ... FOR UPDATE),
+    чтобы конкурентные зачёты дня (время + задача одновременно) не дали
+    двойной +1. Для SQLite блокировка — no-op, но там один писатель.
+    """
     _ensure_credit_column()
-    rec = StreakRecord.query.filter_by(user_id=user_id).first()
+    q = StreakRecord.query.filter_by(user_id=user_id)
+    if for_update:
+        q = q.with_for_update()
+    rec = q.first()
     if rec is None:
         rec = StreakRecord(user_id=user_id)
         db.session.add(rec)
-        db.session.flush()
+        try:
+            db.session.flush()
+        except Exception:
+            db.session.rollback()
+            # Гонка создания записи двумя запросами — берём существующую.
+            rec = q.first()
+            if rec is None:
+                raise
     return rec
 
 
@@ -79,8 +121,11 @@ def credit_streak_day(user_id: int, today: date, source: str = "task") -> bool:
 
     Если день уже засчитан (last_credit_date == today) — ничего не делает.
     Возвращает True, если серия увеличилась именно этим вызовом.
+
+    Атомарность: строка захватывается блокировкой SELECT ... FOR UPDATE,
+    поэтому одновременные зачёты «за время» и «за задачу» не дадут +2.
     """
-    rec = get_or_create_streak(user_id)
+    rec = get_or_create_streak(user_id, for_update=True)
 
     if rec.last_credit_date == today:
         return False  # за день уже был +1
