@@ -44,37 +44,33 @@ MSK_TZ = timezone(timedelta(hours=3))
 #   - после дня 7: полная норма из анкеты
 #   - если цикл не начат -> день 1
 CUTOFF_DAILY_TASKS = 5       # минимум в первые 7 дней
-DEFAULT_DAILY_TASKS = 5      # дефолт после дня 7 (30 мин)
+DEFAULT_DAILY_TASKS = 5      # legacy-дефолт (используется как fallback)
 MIN_DAILY_TASKS = 5          # абсолютный минимум
+DAILY_TASKS_PER_DAY = 10     # 2026-10-23: фиксированная норма для ВСЕХ —
+                              # вопрос про время убран из анкеты
 
 def get_daily_task_count(user_id: int) -> int:
     """ЕДИНЫЙ ИСТОЧНИК ПРАВДЫ: сколько задач получает ученик сегодня.
 
+    2026-10-23: норма фиксированная — 10 задач в день для всех (вопрос
+    про время убран из анкеты, ответ из анкеты игнорируется).
+
     Правило (виртуальный месяц = 31 день):
       - в день утреннего среза (cycle.blocked, первый день темы в 7-темном
-        месяце): срез 5 + задачи дня = max(дневная_норма - 5, 5);
+        месяце): срез 5 + задачи дня = 10 - 5 = 5;
       - в остальные дни (в т.ч. финальный месяц и повторы 29..31):
-        полная норма из анкеты.
+        полная норма 10.
     """
     from curator.monthly_cycle import get_cycle_info
 
     cycle = get_cycle_info(user_id)
 
-    # Дневная норма из анкеты
-    onboard = _get_onboarding(user_id)
-    daily_norm = DEFAULT_DAILY_TASKS
-    if onboard:
-        n = onboard.get('daily_tasks')
-        if isinstance(n, (int, float)) and n > 0:
-            daily_norm = int(n)
-
     if cycle.get('active') and cycle.get('blocked'):
         # Режим зондирования: срез 5 + задачи дня
-        tasks_after_probe = max(daily_norm - 5, MIN_DAILY_TASKS)
-        return tasks_after_probe
+        return max(DAILY_TASKS_PER_DAY - 5, MIN_DAILY_TASKS)
 
     # Остальные дни: полная норма
-    return max(daily_norm, MIN_DAILY_TASKS)
+    return DAILY_TASKS_PER_DAY
 
 # Канонические разделы level_engine
 CANONICAL_SECTIONS = ('algebra', 'geometry', 'combinatorics', 'logic', 'number_theory')

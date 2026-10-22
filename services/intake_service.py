@@ -288,7 +288,7 @@ def _resume_state(user_id: int, state: Dict[str, Any]) -> Dict[str, Any]:
             'question': _format_question(qmap[step]),
             'step': step,
             'q_index': q_index,
-            'total_questions': 6,
+            'total_questions': 5,
             'anchor': None,
         }
 
@@ -296,7 +296,7 @@ def _resume_state(user_id: int, state: Dict[str, Any]) -> Dict[str, Any]:
         idx = state.get('current_anchor_idx', 0)
         anchor_tasks = state.get('anchor_tasks', [])
         if idx < len(anchor_tasks):
-            state['total_questions'] = 11
+            state['total_questions'] = 10
             return _format_anchor_response(state, idx)
         # Якоря были пройдены, но финализация не отработала — завершаем.
         return finish(user_id, state)
@@ -360,7 +360,7 @@ def start(user_id: int) -> Dict[str, Any]:
     state = {
         'step': 'q1',
         'q_index': 1,          # 1-based index for progress display
-        'total_questions': 6,
+        'total_questions': 5,
         'answers': {},
         'anchor_tasks': [],
         'anchor_results': [],
@@ -379,7 +379,7 @@ def start(user_id: int) -> Dict[str, Any]:
         'question': _format_question(Q1_CLASS),
         'step': 'q1',
         'q_index': 1,
-        'total_questions': 6,
+        'total_questions': 5,
     }
 
 
@@ -412,14 +412,17 @@ def answer(user_id: int, qid: str, key: str) -> Dict[str, Any]:
             ),
         }
 
-    # ── Flow: q1 -> q2 -> q3 -> q4 -> q5 -> q6 -> anchors ────────────
+    # ── Flow: q1 -> q2 -> q3 -> q5 -> q6 -> anchors ────────────────────
+    # 2026-10-23: вопрос про время (q4) убран — норма задач фиксированная
+    # (10 в день). q4 оставлен в transitions для старых незавершённых
+    # сессий, чтобы они корректно дошли до конца.
 
     transitions = {
         'q1': ('q2', Q2_GOAL, 2),
         'q2': ('q3', Q3_EXPERIENCE, 3),
-        'q3': ('q4', Q4_TIME, 4),
-        'q4': ('q5', Q5_WEAK_SECTIONS, 5),
-        'q5': ('q6', Q6_COMMITMENT, 6),
+        'q3': ('q5', Q5_WEAK_SECTIONS, 4),
+        'q4': ('q5', Q5_WEAK_SECTIONS, 4),
+        'q5': ('q6', Q6_COMMITMENT, 5),
     }
 
     if current_step in transitions:
@@ -432,7 +435,7 @@ def answer(user_id: int, qid: str, key: str) -> Dict[str, Any]:
             'question': _format_question(next_q),
             'step': next_step,
             'q_index': qi,
-            'total_questions': 6,
+            'total_questions': 5,
             'anchor': None,
         }
 
@@ -452,8 +455,8 @@ def answer(user_id: int, qid: str, key: str) -> Dict[str, Any]:
         _call_set_prior(user_id, mu, sigma)
 
         state['step'] = 'anchors'
-        state['q_index'] = 7  # "шаг 7 из 11"
-        state['total_questions'] = 11  # 6 вопросов + 5 якорей
+        state['q_index'] = 6  # "шаг 6 из 10"
+        state['total_questions'] = 10  # 5 вопросов + 5 якорей
         try:
             anchor_tasks, anchor_meta = pick_anchors(grade)
         except Exception as _anchor_err:
@@ -529,8 +532,8 @@ def _format_anchor_response(state: Dict, idx: int) -> Dict[str, Any]:
         'done': False,
         'question': None,
         'step': 'anchors',
-        'q_index': 7 + idx,
-        'total_questions': 11,
+        'q_index': 6 + idx,
+        'total_questions': 10,
         'anchor': {
             'task_id': anchor['db_id'],
             'statement': anchor['statement'],
