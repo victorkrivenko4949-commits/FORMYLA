@@ -433,6 +433,10 @@ def _worst_themes(user_id: int, themes: List[str], k: int = REVIEW_DAYS) -> List
 
 def _cycle_payload(mc: Dict[str, Any], themes: List[str], done: List[str],
                    day_idx: int, finished: bool, current_theme: Optional[str]) -> Dict[str, Any]:
+    # 2026-10-23: тест (бывший «утренний срез») снова включён.
+    # blocked=True, пока тема дня ещё не протестирована: задачи дня
+    # выдаются только после прохождения теста по теме.
+    blocked = bool(current_theme) and not finished and current_theme not in done
     return {
         'active': True,
         'started_at': mc.get('started_at'),
@@ -441,7 +445,10 @@ def _cycle_payload(mc: Dict[str, Any], themes: List[str], done: List[str],
         'done_themes': done,
         'finished': finished,
         'current_theme': current_theme,
-        'blocked': False,
+        'blocked': blocked,
+        # Дата (ISO) последнего пройденного теста — чтобы в этот день
+        # выдавать 5 задач дня (5 тест + 5 задач = 10).
+        'last_probe_date': mc.get('last_probe_date'),
     }
 
 
@@ -510,12 +517,17 @@ def advance_day(user_id: int) -> Dict[str, Any]:
     if day_idx > MONTH_DAYS:
         return {'error': 'cycle_already_done'}
 
-    if len(themes) > 0 and day_idx <= ACTIVE_DAYS:
+    # 2026-10-23: ограничение day_idx <= ACTIVE_DAYS убрано — тест
+    # завершается пометкой темы в done в ЛЮБОЙ день цикла (раньше после
+    # 7-го дня тема не помечалась, и тест мог требоваться бесконечно).
+    if len(themes) > 0:
         current_theme = themes[(day_idx - 1) % len(themes)]
         if current_theme and current_theme not in done:
             done.append(current_theme)
 
     mc['done_themes'] = done
+    # День, в который пройден тест (для нормы задач дня: 5 вместо 10).
+    mc['last_probe_date'] = date.today().isoformat()
     _save_monthly_cycle(cs, mc)
     db.session.commit()
 

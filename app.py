@@ -13152,15 +13152,18 @@ def _inject_subscription_flags():
 
 @app.context_processor
 def _inject_user_helpers():
-    """Делает display_name_from_email и флаг активного среза доступными."""
+    """Делает display_name_from_email и флаг активного теста доступными."""
     from services.user_helpers import display_name_from_email
     helpers = dict(display_name_from_email=display_name_from_email)
-    # Флаг «есть незавершённый срез» — для глобального баннера «Вернуться в срез».
+    # Флаг «есть незавершённый тест» — для глобального баннера «Вернуться в тест».
+    # 2026-10-23: тест снова включён — берём реальное состояние.
     try:
-        # Срез убран из воронки (2026-09): баннер «Вернуться в срез»
-        # отключён — задачи дня больше не требуют среза. Страница /prep/probe
-        # остаётся доступной по прямой ссылке, но никуда не навязывается.
-        helpers['has_active_probe'] = False
+        from services.theme_probe import has_active_probe
+        from flask_login import current_user as _cu
+        if getattr(_cu, 'is_authenticated', False):
+            helpers['has_active_probe'] = bool(has_active_probe(_cu.id))
+        else:
+            helpers['has_active_probe'] = False
     except Exception:
         helpers['has_active_probe'] = False
     return helpers

@@ -503,7 +503,7 @@ def get_daily_tasks():
             "daily_set_id": None,
             "target_date": today.isoformat(),
             "message": (
-                f"До получения задач дня нужно выполнить утренний срез: "
+                f"До получения задач дня нужно пройти тест: "
                 f"«{blocked_theme_title}». 5 задач, примерно 15 минут."
             ),
             "class_level": None,
@@ -641,7 +641,7 @@ def get_daily_tasks():
             "daily_set_id": None,
             "target_date": today.isoformat(),
             "message": (
-                f"Сначала утренний срез: «{blocked_theme_title}». "
+                f"Сначала тест: «{blocked_theme_title}». "
                 f"5 задач, примерно 15 минут."
             ),
             "class_level": None,

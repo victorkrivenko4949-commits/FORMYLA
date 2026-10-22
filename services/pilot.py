@@ -169,9 +169,8 @@ def pilot_session_today(user_id: int) -> dict:
         weekday = now.weekday()  # 0=Пн … 6=Вс
 
         # Первая неделя — диагностическая: без методов и пробников,
-        # только тест-срез (утренний срез 5 задач) и задачи дня
-        # соответствующего уровня. (См. план Premium: «на первой неделе
-        # нет пробника и методов».)
+        # только тест (5 задач) и задачи дня соответствующего уровня.
+        # (См. план Premium: «на первой неделе нет пробника и методов».)
         if week == 1:
             if weekday == 6:
                 session_type, session_index = 'rest', None
@@ -184,7 +183,7 @@ def pilot_session_today(user_id: int) -> dict:
                 'session_type': session_type,
                 'session_index': session_index,
                 'total': 6 if variant == 'premium_intense' else 3,
-                'session_label': 'диагностическая неделя: тест-срез + задачи дня',
+                'session_label': 'диагностическая неделя: тест + задачи дня',
             }
             return out
 

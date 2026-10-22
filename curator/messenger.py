@@ -604,7 +604,7 @@ def _render_trigger(reason: str, facts: Dict[str, Any]) -> Optional[str]:
         day = facts.get("cycle_day")
         total = facts.get("slice_total", 0)
         if day is not None:
-            return f"Идёт день {day} месячного цикла из {total}, срез ещё не пройден."
+            return f"Идёт день {day} месячного цикла из {total}, тест ещё не пройден."
 
     if reason == "level_up":
         now = facts.get("level_now")

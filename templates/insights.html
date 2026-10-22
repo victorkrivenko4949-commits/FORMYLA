@@ -128,7 +128,7 @@ function loadInsights() {
                     '<div class="ins-meta">' +
                         '<span class="ins-progress">прогресс ' + it.progress_done + '/' + it.progress_total + '</span>' +
                         (it.occurrences > 1 ? '<span class="ins-repeat">повтор ×' + it.occurrences + '</span>' : '') +
-                        '<span>' + (it.source === 'srez' ? 'Срез' : 'Задача дня') + '</span>' +
+                        '<span>' + (it.source === 'srez' ? 'Тест' : 'Задача дня') + '</span>' +
                         '<span>severity ' + it.severity + '</span>' +
                     '</div>' +
                     '<div class="ins-detail" id="detail-' + it.id + '"></div>';

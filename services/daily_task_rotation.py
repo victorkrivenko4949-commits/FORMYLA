@@ -56,8 +56,9 @@ def get_daily_task_count(user_id: int) -> int:
     про время убран из анкеты, ответ из анкеты игнорируется).
 
     Правило (виртуальный месяц = 31 день):
-      - в день утреннего среза (cycle.blocked, первый день темы в 7-темном
-        месяце): срез 5 + задачи дня = 10 - 5 = 5;
+      - в день теста (тема дня ещё не протестирована, cycle.blocked)
+        ИЛИ в день, когда тест уже пройден (cycle.last_probe_date ==
+        сегодня): 5 тест + 5 задач дня = 10;
       - в остальные дни (в т.ч. финальный месяц и повторы 29..31):
         полная норма 10.
     """
@@ -65,9 +66,18 @@ def get_daily_task_count(user_id: int) -> int:
 
     cycle = get_cycle_info(user_id)
 
-    if cycle.get('active') and cycle.get('blocked'):
-        # Режим зондирования: срез 5 + задачи дня
-        return max(DAILY_TASKS_PER_DAY - 5, MIN_DAILY_TASKS)
+    if cycle.get('active'):
+        if cycle.get('blocked'):
+            # Режим зондирования: тест 5 + задачи дня
+            return max(DAILY_TASKS_PER_DAY - 5, MIN_DAILY_TASKS)
+        if cycle.get('last_probe_date'):
+            try:
+                from datetime import date as _date
+                if str(cycle.get('last_probe_date'))[:10] == _date.today().isoformat():
+                    # Тест пройден сегодня: 5 тест + 5 задач дня
+                    return max(DAILY_TASKS_PER_DAY - 5, MIN_DAILY_TASKS)
+            except Exception:
+                pass
 
     # Остальные дни: полная норма
     return DAILY_TASKS_PER_DAY

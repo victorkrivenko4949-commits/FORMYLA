@@ -901,13 +901,14 @@
       </div>
       {% endif %}
 
-  <!-- Blocked state (2026-09-15: срез временно отключён — без кнопки «пройти срез») -->
-  <div id="dt-blocked-state" class="dt-hidden">
+  <!-- Blocked state: сначала тест по теме дня, потом задачи дня -->
+  <div id="dt-blocked-state" class="{{ 'dt-hidden' if not (data and data.status == 'blocked') }}">
     <div class="dt-empty-card" style="border-color: rgba(99,102,241,0.35);">
-      <div class="dt-empty-title" style="color: #8c9abc;">Задачи дня готовятся</div>
+      <div class="dt-empty-title" style="color: #8c9abc;">Сначала — тест</div>
       <div class="dt-empty-sub" id="dt-blocked-message">
-        Задачи дня появятся автоматически — обнови страницу через пару минут.
+        {{ (data.message if data and data.message else 'Пройди тест по теме дня: 5 задач, примерно 15 минут. После него откроются задачи дня.') }}
       </div>
+      <a href="/prep/probe" class="dt-btn-primary" style="display:inline-block;margin-top:14px;padding:10px 22px;border-radius:10px;background:rgba(90,174,255,0.22);color:#eaf3ff;font-weight:600;text-decoration:none;">Пройти тест</a>
     </div>
   </div>
 
