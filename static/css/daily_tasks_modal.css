@@ -676,37 +676,14 @@
   border: 1px solid rgba(239,68,68,0.35);
 }
 
-/* Явный призыв к действию в подвале карточки */
+/* Явный призыв к действию в подвале карточки.
+   TG_FIX_V3: старая кнопка-призыв рисовалась здесь через ::after
+   ("Открыть задачу →" / "Посмотреть ✓"). Теперь в футере карточки —
+   настоящий элемент .dt-card-cta из шаблона, а ::after убран: иначе
+   на карточке было ДВЕ кнопки. */
 .page-daily-tasks .dt-card-footer { padding-top: 14px; flex-wrap: wrap; }
-.page-daily-tasks .dt-card:not(.dt-done) .dt-card-footer::after {
-  content: "Открыть задачу →";
-  margin-left: auto;
-  padding: 8px 14px;
-  border-radius: 9px;
-  background: var(--accent);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-  box-shadow: 0 3px 10px rgba(76,125,255,0.3);
-  transition: background .15s ease, transform .15s ease;
-}
-.page-daily-tasks .dt-card:not(.dt-done):hover .dt-card-footer::after {
-  background: var(--accent-hi);
-  transform: translateX(2px);
-}
-.page-daily-tasks .dt-card.dt-done .dt-card-footer::after {
-  content: "Посмотреть ✓";
-  margin-left: auto;
-  padding: 7px 12px;
-  border-radius: 9px;
-  background: rgba(62,207,142,0.12);
-  color: var(--ok);
-  border: 1px solid rgba(62,207,142,0.3);
-  font-size: 12.5px;
-  font-weight: 600;
-  white-space: nowrap;
-}
+.page-daily-tasks .dt-card:not(.dt-done) .dt-card-footer::after { content: none; }
+.page-daily-tasks .dt-card.dt-done .dt-card-footer::after { content: none; }
 
 /* Кнопки страницы — не меньше 44px под палец, видимый фокус */
 .page-daily-tasks .dt-btn-primary:not(.dt-btn),
@@ -722,7 +699,8 @@
   padding: 12px 28px;
   box-shadow: 0 4px 14px rgba(76,125,255,0.28);
 }
-.page-daily-tasks .dt-debt-item-open { min-height: 36px; padding: 6px 14px; font-size: 13px; }
+/* TG_FIX_V3: размер .dt-debt-item-open задаётся в шаблоне (44px, крупнее) —
+   старое правило 36px убрано, чтобы не перебивало */
 .page-daily-tasks .dt-btn-primary:focus-visible,
 .page-daily-tasks .dt-btn-secondary:focus-visible,
 .page-daily-tasks .dt-debt-item-open:focus-visible,
@@ -738,16 +716,7 @@
   color: var(--text) !important;
 }
 
-/* Мобильные: призыв на всю ширину карточки */
+/* Мобильные: карточка чуть компактнее (правила ::after-призыва удалены — TG_FIX_V3) */
 @media (max-width: 640px) {
   .page-daily-tasks .dt-card { padding: 16px 16px 14px 18px; }
-  .page-daily-tasks .dt-card:not(.dt-done) .dt-card-footer::after {
-    flex: 1 0 100%;
-    margin-left: 0;
-    margin-top: 10px;
-    text-align: center;
-    padding: 12px 14px;
-    font-size: 14px;
-  }
-  .page-daily-tasks .dt-card:not(.dt-done):hover .dt-card-footer::after { transform: none; }
 }
