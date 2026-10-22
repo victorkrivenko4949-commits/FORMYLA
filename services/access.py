@@ -100,6 +100,11 @@ def _paid_expires_at(user_id: int, now: datetime) -> Optional[datetime]:
 
     CAST(is_beta_access AS INTEGER) работает и для INTEGER (SQLite), и для
     BOOLEAN (PostgreSQL). is_trial-подписки не считаются оплатой.
+
+    Исключение — тарифы пилота premium_intense/premium_calm: они выдаются
+    без оплаты (is_beta), но дают ПОЛНЫЙ платный доступ — лимиты Free (3
+    задачи в день и т.п.) на пилотные аккаунты не действуют. Эти тарифы
+    доступны только пилотным аккаунтам (остальным /api/subscribe → 403).
     """
     now_n = _naive_utc(now)
     # started_at/expires_at могут быть записаны с 'T' или пробелом между датой
@@ -119,8 +124,11 @@ def _paid_expires_at(user_id: int, now: datetime) -> Optional[datetime]:
             WHERE user_id = :u
               AND status = 'active'
               AND plan LIKE 'premium%'
-              AND payment_id IS NOT NULL
-              AND COALESCE(CAST(is_beta_access AS INTEGER), 0) = 0
+              AND (
+                (payment_id IS NOT NULL
+                 AND COALESCE(CAST(is_beta_access AS INTEGER), 0) = 0)
+                OR plan IN ('premium_intense', 'premium_calm')
+              )
               AND COALESCE(CAST(is_trial AS INTEGER), 0) = 0
               AND {cond}
         """), {'u': user_id, 'now': now_n.isoformat(sep=' ')}).first()
