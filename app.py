@@ -1267,6 +1267,7 @@ try:
             ("ALTER TABLE users ADD COLUMN generation_reset_date DATE", "generation_reset_date"),
             ("ALTER TABLE users ADD COLUMN gens_extra_purchased INTEGER NOT NULL DEFAULT 0", "gens_extra_purchased"),
             (f"ALTER TABLE users ADD COLUMN gens_unlimited {_gens_unlimited_type}", "gens_unlimited"),
+            (f"ALTER TABLE users ADD COLUMN has_diamond {_gens_unlimited_type}", "has_diamond"),
         ):
             try:
                 db.session.execute(db.text(_stmt))

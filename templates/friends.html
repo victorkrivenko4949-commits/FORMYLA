@@ -33,7 +33,7 @@
           </div>
           <div class="req-info">
             <h3>{{ req.requester.name or req.requester.email }}</h3>
-            {% if req.requester.nickname %}<p class="req-nick">@{{ req.requester.nickname }}</p>{% endif %}
+            {% if req.requester.nickname %}<p class="req-nick">@{{ req.requester.nickname }}{% if req.requester.has_diamond %} 💎{% endif %}</p>{% endif %}
             <p class="req-stats">Уровень {{ req.requester.current_level }} · {{ req.requester.experience_points }} XP</p>
           </div>
           <div class="req-actions">
@@ -61,7 +61,7 @@
           </div>
           <div class="req-info">
             <h3>{{ req.addressee.name or req.addressee.email }}</h3>
-            {% if req.addressee.nickname %}<p class="req-nick">@{{ req.addressee.nickname }}</p>{% endif %}
+            {% if req.addressee.nickname %}<p class="req-nick">@{{ req.addressee.nickname }}{% if req.addressee.has_diamond %} 💎{% endif %}</p>{% endif %}
           </div>
           <button class="btn-cancel" data-rid="{{ req.id }}" onclick="cancelRequest(this)">Отменить</button>
         </article>
@@ -105,7 +105,7 @@
              class="fc-name-link" onclick="event.stopPropagation()">
             <div class="fc-name">{{ f.name or f.email }}</div>
           </a>
-          {% if f.nickname %}<div class="fc-nick">@{{ f.nickname }}</div>{% endif %}
+          {% if f.nickname %}<div class="fc-nick">@{{ f.nickname }}{% if f.has_diamond %} 💎{% endif %}</div>{% endif %}
           <div class="fc-stats">
             <span> {{ f.streak.current_streak if f.streak else 0 }}</span>
             <span>⭐ Ур. {{ f.current_level }}</span>

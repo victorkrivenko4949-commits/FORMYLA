@@ -235,6 +235,20 @@ def _install_admin_launch(app) -> None:
         logger.exception("[admin_launch] auto-register failed: %r", e)
 
 
+def _install_yookassa_pay(app) -> None:
+    """YOOKASSA_DIAMOND_V1: покупка значка алмаза 💎 после ника за 10 ₽ через ЮKassa (только для victor и lavrik)."""
+    if os.environ.get("YOOKASSA_PAY_AUTOREG", "1") == "0":
+        return
+    if app.extensions.get("yookassa_pay_installed"):
+        return
+    try:
+        from routes.yookassa_pay import install_yookassa_pay
+        install_yookassa_pay(app, register=_ORIG_REGISTER)
+        logger.info("[yookassa_pay] registered (/payments/yookassa/*, /api/payments/yookassa/webhook)")
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[yookassa_pay] auto-register failed: %r", e)
+
+
 def _install(app) -> None:
     _install_pwa(app)
     _install_site_notices(app)
@@ -247,6 +261,7 @@ def _install(app) -> None:
     _install_ab(app)
     _install_limits(app)
     _install_admin_launch(app)
+    _install_yookassa_pay(app)
     if os.environ.get("SURVEYS_AUTOREG", "1") != "0":
         from routes.surveys import install_surveys
         install_surveys(app, register=_ORIG_REGISTER)
@@ -308,7 +323,7 @@ try:
 
         def _patched_register_blueprint(self, blueprint, **options):
             result = _ORIG_REGISTER(self, blueprint, **options)
-            if getattr(blueprint, "name", "") not in ("admin_base", "pwa", "site_notices", "olymp_catalog", "chat_attachments", "surveys", "admin_notices", "stats_page", "billing", "admin_launch"):
+            if getattr(blueprint, "name", "") not in ("admin_base", "pwa", "site_notices", "olymp_catalog", "chat_attachments", "surveys", "admin_notices", "stats_page", "billing", "admin_launch", "yookassa_pay"):
                 _install(self)
             return result
 

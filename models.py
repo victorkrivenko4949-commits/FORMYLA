@@ -109,6 +109,9 @@ class User(UserMixin, db.Model):
     kimi_review_daily = db.Column(db.Boolean, default=False, server_default='0')
     kimi_review_method = db.Column(db.Boolean, default=False, server_default='0')
 
+    # YOOKASSA_DIAMOND_V1: платный значок алмаза 💎 после ника (10 ₽, для админов victor и lavrik)
+    has_diamond = db.Column(db.Boolean, default=False, server_default='0')
+
     @property
     def is_admin(self):
         """Админ — user_id == 1 (Victor), email в whitelist или nickname в whitelist.
@@ -123,10 +126,12 @@ class User(UserMixin, db.Model):
         }
         if (self.email or '').lower() in admin_emails:
             return True
-        # Whitelist по nickname — для друзей-модераторов поддержки.
-        # Case-insensitive: Lavrik / lavrik / LAVRIK все подходят.
+        # Whitelist по nickname — для владельца и друзей-модераторов поддержки.
+        # Case-insensitive: Lavrik / lavrik / LAVRIK / victor все подходят.
         admin_nicknames = {
             'lavrik',
+            'victor',
+            'victorkrivenko',
         }
         return (self.nickname or '').lower() in admin_nicknames
 
@@ -135,15 +140,19 @@ class User(UserMixin, db.Model):
         """Отображаемое имя: nickname (если не Гость-*) -> name -> email username -> Аноним"""
         # If user has a real nickname (not auto-generated guest)
         if self.nickname and not self.nickname.startswith('Гость-'):
-            return self.nickname
+            base = self.nickname
         # Yandex display name or real name
-        if self.name:
-            return self.name
+        elif self.name:
+            base = self.name
         # Email username (before @)
-        if self.email and '@' in self.email and not self.email.startswith('guest_'):
-            return self.email.split('@')[0]
-        # Fallback to nickname (Гость-XXXX) or Аноним
-        return self.nickname or 'Аноним'
+        elif self.email and '@' in self.email and not self.email.startswith('guest_'):
+            base = self.email.split('@')[0]
+        else:
+            # Fallback to nickname (Гость-XXXX) or Аноним
+            base = self.nickname or 'Аноним'
+        if getattr(self, 'has_diamond', False) and '💎' not in base:
+            return f"{base} 💎"
+        return base
     
     def generate_auth_code(self):
         """Генерировать 6-значный код авторизации"""
