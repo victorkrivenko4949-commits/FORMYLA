@@ -233,8 +233,10 @@ def maybe_ask_section_feedback(user_id: int, totals: dict) -> None:
     db = _db()
     try:
         db.session.execute(text(
+            # CAST обязателен: без него Postgres не может вывести тип :s
+            # (text в SELECT против varchar в колонке) — AmbiguousParameter
             'INSERT INTO section_feedback (user_id, section) '
-            'SELECT :u, :s WHERE NOT EXISTS (SELECT 1 FROM section_feedback WHERE user_id = :u AND section = :s)'
+            'SELECT :u, CAST(:s AS VARCHAR) WHERE NOT EXISTS (SELECT 1 FROM section_feedback WHERE user_id = :u AND section = :s)'
         ), {'u': user_id, 's': 'methods'})
         db.session.commit()
     except Exception as e:

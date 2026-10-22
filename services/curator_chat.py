@@ -158,9 +158,11 @@ def build_context(user_id: int) -> Dict[str, Any]:
     except Exception as e:  # noqa: BLE001
         logger.warning('[curator_chat] plan failed: %s', e)
 
-    # Анкета и класс (CuratorState)
+    # Анкета и класс (CuratorState): олимпиады — из target_olympiads,
+    # класс — из intake.class_level (подтверждён в анкете)
     grade = None
     intake = None
+    olympiads = None
     try:
         from models_curator import CuratorState
         from services.intake_service import _prep_state_dict
@@ -169,10 +171,23 @@ def build_context(user_id: int) -> Dict[str, Any]:
             grade = getattr(cs, 'grade', None)
             ps = _prep_state_dict(cs) or {}
             intake = ps.get('intake') or None
+            if not grade and isinstance(intake, dict) and intake.get('class_level'):
+                grade = intake.get('class_level')
+            to = getattr(cs, 'target_olympiads', None)
+            if isinstance(to, str):
+                try:
+                    to = json.loads(to)
+                except Exception:
+                    to = None
+            if isinstance(to, (list, tuple)) and to:
+                olympiads = ', '.join(str(o) for o in to)
+            elif isinstance(to, str) and to.strip():
+                olympiads = to.strip()
     except Exception as e:  # noqa: BLE001
         logger.warning('[curator_chat] curator_state failed: %s', e)
     ctx['grade'] = grade
-    ctx['intake'] = intake  # dict: completed, olympiads, ... (могут отсутствовать)
+    ctx['intake'] = intake
+    ctx['olympiads'] = olympiads
 
     # Задачи за первые 7 дней ОБУЧЕНИЯ (не «последние 7 дней от сейчас»):
     # считаем от старта первой подписки, чтобы видеть именно первую неделю.
@@ -263,9 +278,11 @@ def _context_block(ctx: Dict[str, Any]) -> str:
         lines.append(f"- класс: {ctx['grade']}")
     if ctx.get('plan_display'):
         lines.append(f"- тариф: {ctx['plan_display']}")
-    intake = ctx.get('intake') or {}
-    if isinstance(intake, dict):
-        olympiads = intake.get('olympiads') or intake.get('target_olympiads')
+    if ctx.get('olympiads'):
+        lines.append(f"- целевые олимпиады: {ctx['olympiads']}")
+    elif isinstance(ctx.get('intake'), dict):
+        # запасной вариант — старое место хранения
+        olympiads = ctx['intake'].get('olympiads') or ctx['intake'].get('target_olympiads')
         if olympiads:
             if isinstance(olympiads, (list, tuple)):
                 olympiads = ', '.join(str(o) for o in olympiads)
