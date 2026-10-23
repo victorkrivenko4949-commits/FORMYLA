@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """Readiness survey after intake and the admin Surveys section."""
+import hashlib
+import hmac
 import json
 import secrets
-from flask import Blueprint, abort, current_app, jsonify, render_template, request, session
+from flask import Blueprint, abort, current_app, jsonify, render_template, request
 from flask_login import current_user, login_required
 from sqlalchemy import inspect, text
 from models import db
@@ -50,6 +52,29 @@ def _intake_completed(user_id):
     return completed_intake(getattr(state, 'prep_state', None))
 
 
+def _readiness_csrf_token(user_id):
+    """Stateless CSRF-токен опроса готовности: HMAC(SECRET_KEY, user_id).
+
+    Токен намеренно НЕ хранится во Flask-сессии. Раньше /pending делал
+    session.setdefault(...), но на загрузке страницы /pending гонится с
+    параллельными API-поллингами (insights, site-notice, wb_call и др.),
+    а при постоянной сессии (SESSION_REFRESH_EACH_REQUEST) КАЖДЫЙ ответ
+    перезаписывает куку сессии своим снапшотом. Если ответ поллинга
+    приходил после ответа /pending — токен стирался из куки, и «Отправить»
+    падал с 403 «Обнови страницу и попробуй ещё раз» (гонка воспроизводилась
+    и на десктопе, и на телефоне; см. логи Render 22-23.10.2026).
+
+    HMAC от серверного SECRET_KEY даёт тот же уровень защиты от CSRF:
+    атакующий со стороннего сайта не может ни прочитать токен (GET /pending
+    под логином, same-origin), ни вычислить его без SECRET_KEY.
+    """
+    secret = current_app.config.get('SECRET_KEY') or ''
+    if isinstance(secret, str):
+        secret = secret.encode('utf-8')
+    msg = 'readiness_survey_csrf:{}'.format(user_id).encode('utf-8')
+    return hmac.new(secret, msg, hashlib.sha256).hexdigest()
+
+
 @surveys_bp.get('/api/readiness-survey/pending')
 @login_required
 def pending():
@@ -60,7 +85,7 @@ def pending():
         answered = db.session.execute(text(
             'SELECT answer FROM readiness_survey_answers WHERE user_id = :uid'
         ), {'uid': current_user.id}).first()
-        token = session.setdefault('readiness_survey_csrf', secrets.token_urlsafe(32))
+        token = _readiness_csrf_token(current_user.id)
         response = jsonify(pending=answered is None, csrf=token)
     response.headers['Cache-Control'] = 'no-store'
     return response
@@ -71,9 +96,9 @@ def pending():
 def answer():
     if getattr(current_user, 'is_guest', False):
         abort(403)
-    expected = session.get('readiness_survey_csrf')
+    expected = _readiness_csrf_token(current_user.id)
     supplied = request.headers.get('X-Readiness-CSRF', '')
-    if not expected or not secrets.compare_digest(expected, supplied):
+    if not supplied or not secrets.compare_digest(expected, supplied):
         return jsonify(ok=False, error='Обнови страницу и попробуй ещё раз.'), 403
     data = request.get_json(silent=True)
     choice = data.get('answer') if isinstance(data, dict) else None
