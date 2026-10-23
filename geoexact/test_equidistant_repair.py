@@ -228,3 +228,101 @@ def test_unrecognized_addendum_cancels_repair():
         before = json.dumps(plan.to_dict(), sort_keys=True)
         assert repair(PROBLEM + addendum, plan) is None, addendum
         assert json.dumps(plan.to_dict(), sort_keys=True) == before
+
+
+# Второй прод-инцидент (журнал сервера, WORKER_PLAN 02:00:58 MSK 24.10.2026):
+# ОБЕ точки X и Y закодированы как пересечение стороны BC с прямой DA
+# (прямой из заключения) — X совпадает с Y, вырожденный approximate-чертёж.
+# Draw и target восстановлены вручную: журнал хранит только структурные поля
+PRO_PLAN2 = {
+    "space": "plane",
+    "points": ["A", "B", "C", "O", "D", "X", "Y"],
+    "constructions": [
+        {"op": "free_point", "out": "A"},
+        {"op": "free_point", "out": "B"},
+        {"op": "free_point", "out": "C"},
+        {"op": "circumcenter", "out": "O", "args": ["A", "B", "C"]},
+        {"op": "reflect_point", "out": "D", "args": ["A", "O"]},
+        {"op": "line_intersect", "out": "X", "args": ["B", "C", "D", "A"]},
+        {"op": "line_intersect", "out": "Y", "args": ["B", "C", "D", "A"]},
+    ],
+    "constraints": [
+        {"type": "dist_eq", "args": ["B", "X", "X", "D"]},
+        {"type": "dist_eq", "args": ["C", "Y", "Y", "D"]},
+        {"type": "on_segment", "args": ["X", "B", "Y"]},
+        {"type": "on_segment", "args": ["Y", "X", "C"]},
+    ],
+    "draw": {
+        "segments": [["A", "B"], ["B", "C"], ["C", "A"], ["A", "D"], ["B", "D"],
+                     ["C", "D"], ["X", "D"], ["Y", "D"], ["B", "Y"], ["C", "Y"]],
+        "circles": [["O", "A"]],
+        "hide_labels": ["O"],
+    },
+    "target": {"kind": "none", "args": []},
+    "scale_free": True,
+    "notes": "текст условия",
+}
+
+
+def _pro2():
+    return FigurePlan.from_dict(json.loads(json.dumps(PRO_PLAN2)))
+
+
+def test_repair_replaces_foreign_line_intersect():
+    """Прямая из заключения (DA) в конструкции X/Y — то же переограничение,
+    что и окружность: чинится серединными перпендикулярами BD и CD."""
+    plan = _pro2()
+    msg = repair(PROBLEM, plan)
+    assert msg and "X" in msg and "Y" in msg
+    ops = {(c.op, c.out): c for c in plan.constructions}
+    x = ops[("line_intersect", "X")]
+    assert x.args == ["B", "C", "M", "N"]
+    assert ops[("midpoint", "M")].args == ["B", "D"]
+    y = ops[("line_intersect", "Y")]
+    assert y.args == ["B", "C", "M2", "N2"]
+    assert ops[("midpoint", "M2")].args == ["C", "D"]
+    assert ["M", "N"] in plan.draw.aux_lines and ["M2", "N2"] in plan.draw.aux_lines
+
+
+def test_repair_idempotent_on_canonical_plan():
+    """Повторный прогон по уже починенному плану — no-op: вставленные
+    серединные перпендикуляры не заменяются сами собой."""
+    plan = _pro2()
+    assert repair(PROBLEM, plan)
+    before = json.dumps(plan.to_dict(), sort_keys=True)
+    assert repair(PROBLEM, plan) is None
+    assert json.dumps(plan.to_dict(), sort_keys=True) == before
+
+
+def test_wrapper_fixes_pro_plan2_through_real_formalize():
+    """Регрессия второго инцидента через НАСТОЯЩУЮ formalize: план с прямой
+    DA превращается в верный чертёж — SVG проверен полностью."""
+    def chat(sess, model, system, user, max_out, stage, budget, **kw):
+        return json.dumps(PRO_PLAN2), None
+    with patch.object(L, "_chat", chat), \
+         patch.object(L, "classify", lambda *a, **k: {"ok": True, "class": "O", "space": "plane"}):
+        result = pipeline.generate(PROBLEM, use_cache=False)
+    assert result.ok and result.stage == "9-render", (result.stage, result.detail)
+    assert result.verification == "constraints_only", result.warnings
+    assert any("EQUIDISTANT_FIXED" in w for w in result.warnings)
+
+    pts = _svg_points(result.svg)
+    assert {"A", "B", "C", "D", "X", "Y", "O"} <= set(pts)
+    uniq = {tuple(round(x, 3) for x in pts[n]) for n in ("A", "B", "C", "D", "X", "Y")}
+    assert len(uniq) == 6, "слипшиеся точки на итоговом чертеже"
+
+    import numpy as np
+    A, B, C = (np.array(pts[k]) for k in "ABC")
+    O, D = np.array(pts["O"]), np.array(pts["D"])
+    for v, p, q in (("A", "B", "C"), ("B", "A", "C"), ("C", "A", "B")):
+        u, w = np.array(pts[p]) - np.array(pts[v]), np.array(pts[q]) - np.array(pts[v])
+        ang = math.degrees(math.acos(np.clip(u @ w / np.linalg.norm(u) / np.linalg.norm(w), -1, 1)))
+        assert ang < 89.0, f"треугольник не острый (угол {v} = {ang:.1f}°)"
+    assert np.linalg.norm(D - (2 * O - A)) < 1e-6 * max(np.linalg.norm(A - B), 1.0)
+    bc = C - B
+    t = {k: float((np.array(pts[k]) - B) @ bc / (bc @ bc)) for k in ("X", "Y")}
+    assert 0 < t["X"] < t["Y"] < 1, t
+    for (p1, p2, q1, q2) in (("B", "X", "X", "D"), ("C", "Y", "Y", "D")):
+        d1 = np.linalg.norm(np.array(pts[p1]) - np.array(pts[p2]))
+        d2 = np.linalg.norm(np.array(pts[q1]) - np.array(pts[q2]))
+        assert abs(d1 - d2) < 1e-3 * max(d1, d2), (p1, p2, d1, d2)
