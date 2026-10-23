@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "canvas": {"width": 600, "height": 500, "margin": 40},
+  "constructions": [
+    {"type": "free_point", "id": "A", "x": 100, "y": 420},
+    {"type": "free_point", "id": "D", "x": 520, "y": 420},
+    {"type": "free_point", "id": "B", "x": 180, "y": 80},
+    {"type": "free_point", "id": "C", "x": 440, "y": 80},
+    {"type": "segment", "id": "AB", "p1": "A", "p2": "B"},
+    {"type": "segment", "id": "BC", "p1": "B", "p2": "C"},
+    {"type": "segment", "id": "CD", "p1": "C", "p2": "D"},
+    {"type": "segment", "id": "DA", "p1": "D", "p2": "A"},
+    {"type": "free_point", "id": "M", "x": 140, "y": 250},
+    {"type": "free_point", "id": "N", "x": 480, "y": 250},
+    {"type": "midpoint_mark", "id": "mm_M", "p1": "A", "p2": "B", "point": "M"},
+    {"type": "midpoint_mark", "id": "mm_N", "p1": "C", "p2": "D", "point": "N"},
+    {"type": "segment", "id": "MN", "p1": "M", "p2": "N", "visual_role": "key_point"},
+    {"type": "parallel_mark", "id": "par_AD_BC", "p1": "A", "p2": "D", "p3": "B", "p4": "C"},
+    {"type": "length_label", "id": "len_AD", "p1": "A", "p2": "D", "text": "420"},
+    {"type": "length_label", "id": "len_BC", "p1": "B", "p2": "C", "text": "260"},
+    {"type": "length_label", "id": "len_MN", "p1": "M", "p2": "N", "text": "340"}
+  ],
+  "given_marks": [
+    {"type": "parallel_mark", "p1": "A", "p2": "D", "p3": "B", "p4": "C"},
+    {"type": "midpoint_mark", "p1": "A", "p2": "B", "point": "M"},
+    {"type": "midpoint_mark", "p1": "C", "p2": "D", "point": "N"},
+    {"type": "length_label", "p1": "A", "p2": "D", "text": "420"},
+    {"type": "length_label", "p1": "B", "p2": "C", "text": "260"}
+  ],
+  "assumptions": [
+    "Координаты A, D, B, C заданы условием задачи (числовые значения AD=420, BC=260 с точностью до масштаба чертежа).",
+    "M и N заданы как free_point с точными координатами середин AB и CD (140,250) и (480,250) — численно совпадают с midpoint(A,B) и midpoint(C,D), что подтверждено проверкой.",
+    "length_label для MN=340 отражает вычисляемую по условию величину (полусумма оснований) для последующей проверки решения, а не отдельное числовое данное условия."
+  ],
+  "aux": {"has_aux": false, "reason": "", "constructions": []}
+}

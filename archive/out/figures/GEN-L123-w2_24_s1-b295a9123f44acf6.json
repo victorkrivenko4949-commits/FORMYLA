@@ -1,0 +1,93 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point",
+   "id": "P",
+   "x": 6,
+   "y": 3
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AP"
+  },
+  {
+   "segment": "BP"
+  },
+  {
+   "segment": "CP"
+  },
+  {
+   "segment": "DP"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "D",
+    "A",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "AB",
+    "AD"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "P",
+   "line": "AD"
+  },
+  {
+   "type": "foot",
+   "id": "F",
+   "from": "P",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "G",
+   "from": "P",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "P",
+   "line": "CD"
+  }
+ ],
+ "reason": "Расстояния от P до сторон квадрата равны высотам треугольников с основаниями — сторонами квадрата.",
+ "draw_aux": [
+  {
+   "segment": "PE",
+   "style": "dashed"
+  },
+  {
+   "segment": "PF",
+   "style": "dashed"
+  },
+  {
+   "segment": "PG",
+   "style": "dashed"
+  },
+  {
+   "segment": "PH",
+   "style": "dashed"
+  }
+ ]
+}

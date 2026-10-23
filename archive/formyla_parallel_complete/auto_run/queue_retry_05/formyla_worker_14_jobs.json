@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0569-8-E2-L7-fill-0140",
+      "mode": "replace_bad",
+      "id": "8-E2-L7-fill-0140",
+      "grade": 8,
+      "difficulty": 7,
+      "theme": "Геометрия: подобие и окружность",
+      "subtopic": "Вписанные углы",
+      "method_code": "E2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

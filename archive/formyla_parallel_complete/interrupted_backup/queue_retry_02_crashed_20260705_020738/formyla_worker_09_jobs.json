@@ -1,0 +1,40 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0343-11-E1-5-L7-g911",
+      "mode": "replace_bad",
+      "id": "11-E1-5-L7-g911",
+      "grade": 11,
+      "difficulty": 7,
+      "theme": "Стереометрия, координаты и векторы",
+      "subtopic": "Векторы и координаты",
+      "method_code": "E1",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0369-8-C1-1-L8-gh2",
+      "mode": "replace_bad",
+      "id": "8-C1-1-L8-gh2",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Системы и текстовые задачи",
+      "subtopic": "Системы уравнений",
+      "method_code": "C1",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0477-9-G1-1-L8-gstub",
+      "mode": "replace_bad",
+      "id": "9-G1-1-L8-gstub",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Логика, инварианты, стратегии",
+      "subtopic": "Инварианты и раскраски",
+      "method_code": "G1",
+      "reasons": "mojibake, L8_solution_too_short",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

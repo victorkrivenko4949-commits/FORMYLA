@@ -1,0 +1,26 @@
+{
+  "jobs": [
+    {
+      "job_id": "fill-0229",
+      "mode": "fill_missing",
+      "grade": 9,
+      "difficulty": 7,
+      "theme": "Геометрия треугольника и окружности",
+      "subtopic": "Окружность и углы",
+      "method_code": "D2",
+      "quality_target": "L6=регион; L7=сложный регион; L8=финал/перечневые, не одношаговая техника",
+      "worker": 9
+    },
+    {
+      "job_id": "fill-0298",
+      "mode": "fill_missing",
+      "grade": 10,
+      "difficulty": 8,
+      "theme": "Теория чисел старшего уровня",
+      "subtopic": "Простые делители и НОД-конструкции",
+      "method_code": "E3",
+      "quality_target": "L6=регион; L7=сложный регион; L8=финал/перечневые, не одношаговая техника",
+      "worker": 18
+    }
+  ]
+}

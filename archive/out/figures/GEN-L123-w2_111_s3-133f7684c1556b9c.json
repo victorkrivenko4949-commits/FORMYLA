@@ -1,0 +1,141 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "AI",
+   "line2": "BC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AL",
+   "ratio": 0.25
+  },
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "D",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "F",
+   "from": "D",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "T",
+   "from": "D",
+   "line": "BC"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "D",
+   "through": "T"
+  },
+  {
+   "type": "line_circle",
+   "id": "G",
+   "circle": "w",
+   "line": "EF",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AL",
+   "style": "soft"
+  },
+  {
+   "segment": "DE",
+   "style": "soft"
+  },
+  {
+   "segment": "DF",
+   "style": "soft"
+  },
+  {
+   "segment": "DT",
+   "style": "dashed"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "line": "EF",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "E",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "F",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "D",
+    "T",
+    "B"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "D",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "?"
+  },
+  {
+   "equal": [
+    "DE",
+    "DF"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

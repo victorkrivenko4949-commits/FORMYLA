@@ -1,0 +1,107 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": -22
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": -56
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "w",
+   "angle": -84
+  },
+  {
+   "type": "point_on_circle",
+   "id": "E",
+   "circle": "w",
+   "angle": -125
+  }
+ ],
+ "draw": [
+  {
+   "segment": "OA"
+  },
+  {
+   "segment": "OB"
+  },
+  {
+   "segment": "OC"
+  },
+  {
+   "segment": "OD"
+  },
+  {
+   "segment": "OE"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "O",
+    "B"
+   ],
+   "text": "22°"
+  },
+  {
+   "angle": [
+    "B",
+    "O",
+    "C"
+   ],
+   "text": "34°"
+  },
+  {
+   "angle": [
+    "C",
+    "O",
+    "D"
+   ],
+   "text": "28°"
+  },
+  {
+   "angle": [
+    "D",
+    "O",
+    "E"
+   ],
+   "text": "41°"
+  },
+  {
+   "angle": [
+    "A",
+    "O",
+    "E"
+   ],
+   "text": "125°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

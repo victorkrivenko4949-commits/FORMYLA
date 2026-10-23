@@ -1,0 +1,50 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AB",
+   "ratio": 0.25
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "BC",
+   "ratio": 0.6667
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "AN",
+   "line2": "CM"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "BK",
+   "line2": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AN"
+  },
+  {
+   "segment": "CM"
+  },
+  {
+   "segment": "BL"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

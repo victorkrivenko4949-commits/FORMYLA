@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500">
+<rect x="0" y="0" width="600" height="500" fill="#0F1729"/>
+<defs>
+  <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6,3 L0,6 Z" fill="#73B6E6"/></marker>
+  <style>
+    .label{font-family:Arial,Helvetica,sans-serif;font-size:14px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2px;stroke-linejoin:round}
+    .num{font-family:Arial,Helvetica,sans-serif;font-size:12px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2px;stroke-linejoin:round}
+  </style>
+</defs>
+<!-- coordinate axes -->
+<g stroke="#73B6E6" stroke-width="1.2" stroke-linecap="round" opacity="0.65">
+  <line x1="70" y1="250" x2="530" y2="250"/>
+  <line x1="300" y1="470" x2="300" y2="30"/>
+</g>
+<g stroke="#73B6E6" stroke-width="1" opacity="0.65">
+  <path d="M530 250 l-8 -4 v8 z M300 30 l-4 8 h8 z" fill="#73B6E6"/>
+  <line x1="200" y1="245" x2="200" y2="255"/><line x1="100" y1="245" x2="100" y2="255"/>
+  <line x1="400" y1="245" x2="400" y2="255"/><line x1="500" y1="245" x2="500" y2="255"/>
+  <line x1="295" y1="350" x2="305" y2="350"/><line x1="295" y1="450" x2="305" y2="450"/>
+  <line x1="295" y1="150" x2="305" y2="150"/><line x1="295" y1="50" x2="305" y2="50"/>
+</g>
+<g class="num">
+  <text x="200" y="270">−5</text><text x="100" y="270">−10</text><text x="400" y="270">5</text><text x="500" y="270">10</text>
+  <text x="285" y="350">−5</text><text x="285" y="450">−10</text><text x="285" y="150">5</text><text x="285" y="50">10</text>
+  <text x="540" y="250">x</text><text x="300" y="20">y</text>
+</g>
+<!-- reflection lines -->
+<line x1="80" y1="30" x2="520" y2="470" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="80" y1="470" x2="520" y2="30" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="240" y1="30" x2="240" y2="470" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round"/>
+<g class="label">
+  <text x="455" y="80">y = −x</text>
+  <text x="458" y="430">y = x</text>
+  <text x="268" y="55">x = −3</text>
+</g>
+<!-- successive perpendicular displacement segments -->
+<g fill="none" stroke="#73B6E6" stroke-width="1.2" stroke-dasharray="4 4" stroke-linecap="round" marker-end="url(#arrow)">
+  <line x1="220" y1="310" x2="360" y2="170"/>
+  <line x1="360" y1="170" x2="120" y2="170"/>
+  <line x1="120" y1="170" x2="380" y2="430"/>
+</g>
+<!-- final distance -->
+<line x1="220" y1="310" x2="380" y2="430" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round"/>
+<text x="300" y="385" class="num">|MM₃| = 10</text>
+<!-- points -->
+<g fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.2">
+  <circle cx="220" cy="310" r="3.5"/><circle cx="360" cy="170" r="3.5"/><circle cx="120" cy="170" r="3.5"/><circle cx="380" cy="430" r="3.5"/>
+</g>
+<g class="label">
+  <text x="205" y="330">M₀(−4;−3)</text>
+  <text x="390" y="155">M₁(3;4)</text>
+  <text x="105" y="150">M₂(−9;4)</text>
+  <text x="425" y="445">M₃(4;−9)</text>
+</g>
+</svg>

@@ -1,0 +1,32 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0631",
+      "mode": "replace_bad",
+      "id": "8-G2-5-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Комбинаторика, логика, инварианты",
+      "subtopic": "Инварианты и Дирихле",
+      "method_code": "G2",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 11
+    },
+    {
+      "job_id": "audit-0112-8-E3-1-L8-g678",
+      "mode": "replace_bad",
+      "id": "8-E3-1-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Геометрия: подобие и окружность",
+      "subtopic": "Касательные и хорды",
+      "method_code": "E3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

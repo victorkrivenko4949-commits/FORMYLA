@@ -1,0 +1,21 @@
+=== User 1302 ===
+user=1302 current_month=None preferred_grade=9
+
+=== DailyTaskBank count ===
+daily_task_bank rows=0
+
+=== UserSubtopicAssignment for 1302 ===
+count=0
+
+=== get_active_subtopics ===
+status={"plan_missing": true, "month": 1, "count": 0}
+assignments=0
+
+=== bank_daily.build_daily_set ===
+keys={"items": 0, "plan_missing": true, "bank_exhausted": false, "bank_empty": true, "week_number": null, "subtopics": 0}
+
+=== get_cycle_info ===
+{"active": true, "started_at": "2026-09-05T12:54:25.887707+00:00", "day_index": 1, "themes": ["G9_T05", "G9_T16", "G9_T10", "G9_T13", "G9_T01", "G9_T06", "G9_T11"], "done_themes": ["G9_T05"], "finished": false, "current_theme": "G9_T05", "blocked": false}
+
+=== pick_daily_set (rotation) ===
+keys={"tasks": 8, "subject": "math", "shown_date": "2026-09-05", "count": 8}

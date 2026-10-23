@@ -1,0 +1,59 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "B",
+   "line": "AD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "circle": "w",
+   "style": "dashed"
+  },
+  {
+   "segment": "BH",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "D",
+    "A",
+    "B"
+   ],
+   "text": "60°"
+  },
+  {
+   "right_angle": [
+    "B",
+    "H",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "AB",
+    "CD"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

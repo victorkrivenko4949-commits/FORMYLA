@@ -1,0 +1,142 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 70
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 160
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "w",
+   "angle": 260
+  },
+  {
+   "type": "point_on_circle",
+   "id": "M1",
+   "circle": "w",
+   "angle": 35
+  },
+  {
+   "type": "point_on_circle",
+   "id": "M2",
+   "circle": "w",
+   "angle": 115
+  },
+  {
+   "type": "point_on_circle",
+   "id": "M3",
+   "circle": "w",
+   "angle": 210
+  },
+  {
+   "type": "point_on_circle",
+   "id": "M4",
+   "circle": "w",
+   "angle": 310
+  },
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "cyclic"
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "AC",
+   "line2": "BD"
+  },
+  {
+   "type": "triangle",
+   "id": "KAB",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I1",
+   "of": "KAB"
+  },
+  {
+   "type": "triangle",
+   "id": "KBC",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I2",
+   "of": "KBC"
+  },
+  {
+   "type": "triangle",
+   "id": "KCD",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I3",
+   "of": "KCD"
+  },
+  {
+   "type": "triangle",
+   "id": "KDA",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I4",
+   "of": "KDA"
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w"
+  },
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "line": "I1I3",
+   "style": "accent"
+  },
+  {
+   "line": "I2I4",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

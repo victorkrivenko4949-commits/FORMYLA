@@ -1,0 +1,95 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid",
+   "bases": [
+    "AD",
+    "BC"
+   ]
+  },
+  {
+   "type": "point",
+   "id": "M",
+   "x": 0.2,
+   "y": 0.2125
+  },
+  {
+   "type": "point",
+   "id": "N",
+   "x": 0.8,
+   "y": 0.2125
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "AMN"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "BMN"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AM"
+  },
+  {
+   "segment": "BM"
+  },
+  {
+   "segment": "CN"
+  },
+  {
+   "segment": "DN"
+  },
+  {
+   "segment": "MN",
+   "style": "accent"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "CN"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BM",
+    "DN"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "BM",
+   "line2": "AD",
+   "reason": "Продолжение BM до пересечения с AD; вводит углы α и β в решении."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "KM",
+   "style": "dashed"
+  }
+ ]
+}

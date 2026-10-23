@@ -1,0 +1,1057 @@
+/* Daily Tasks — FORMYLA Design System v3 */
+/* Styles for the AI-generated daily math problems feature */
+
+:root {
+    --daily-teal: #11998e;
+    --daily-neon: #38ef7d;
+    --daily-flame: #f97316;
+    --dt-bg-card: rgba(20, 30, 45, 0.75);
+    --dt-border: rgba(56, 239, 125, 0.15);
+    --dt-border-hover: rgba(56, 239, 125, 0.4);
+    --dt-text-secondary: rgba(255, 255, 255, 0.6);
+    --dt-text-body: rgba(255, 255, 255, 0.85);
+    --dt-gradient: linear-gradient(135deg, var(--daily-teal), var(--daily-neon));
+    --dt-shadow: 0 0 40px rgba(56, 239, 125, 0.08);
+}
+
+/* ── Hidden Utility ── */
+.dt-hidden { display: none !important; }
+
+/* ── Container ── */
+.dt-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ── Hero Section ── */
+.dt-hero {
+    background: linear-gradient(135deg,
+                rgba(17,153,142,0.15),
+                rgba(56,239,125,0.12));
+    border: 1px solid rgba(56,239,125,0.3);
+    border-radius: 16px;
+    padding: 28px 32px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(56,239,125,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.dt-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(56,239,125,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.dt-hero-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 1;
+}
+
+.dt-hero-subtitle {
+    font-size: 15px;
+    color: var(--dt-text-secondary);
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Empty State ── */
+.dt-empty {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.dt-empty-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+    display: block;
+    animation: dt-float 3s ease-in-out infinite;
+}
+
+@keyframes dt-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+
+.dt-empty-text {
+    font-size: 18px;
+    color: var(--dt-text-secondary);
+    margin-bottom: 24px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+}
+
+.btn-generate {
+    background: var(--dt-gradient);
+    color: #fff;
+    border: none;
+    padding: 14px 36px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 20px rgba(56,239,125,0.25);
+    letter-spacing: 0.3px;
+}
+
+.btn-generate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(56,239,125,0.35);
+}
+
+.btn-generate:active {
+    transform: translateY(0);
+}
+
+/* ── Generating State ── */
+.dt-generating {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.dt-gen-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(56,239,125,0.15);
+    border-top-color: var(--daily-neon);
+    border-radius: 50%;
+    animation: dt-spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes dt-spin {
+    to { transform: rotate(360deg); }
+}
+
+.dt-generating h3 {
+    font-size: 20px;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.dt-generating p {
+    color: var(--dt-text-secondary);
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.dt-gen-progress {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.dt-progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--dt-text-secondary);
+    margin-bottom: 6px;
+}
+
+.dt-progress-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.dt-progress-bar-fill {
+    height: 100%;
+    background: var(--dt-gradient);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    width: 0%;
+}
+
+/* ── Ready State: Header ── */
+.dt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.dt-header-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.dt-header-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    color: var(--dt-text-secondary);
+}
+
+.dt-header-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dt-header-meta .dt-badge {
+    background: rgba(56,239,125,0.15);
+    color: var(--daily-neon);
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+/* ── Summary Card ── */
+.dt-summary-card {
+    background: var(--dt-bg-card);
+    border: 1px solid var(--dt-border);
+    border-left: 4px solid var(--daily-neon);
+    border-radius: 14px;
+    padding: 20px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-start;
+    backdrop-filter: blur(12px);
+}
+
+.dt-summary-text {
+    flex: 1;
+    min-width: 200px;
+    font-size: 15px;
+    color: var(--dt-text-body);
+    line-height: 1.6;
+}
+
+.dt-summary-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+}
+
+.dt-summary-meta .dt-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--dt-text-secondary);
+    background: rgba(255,255,255,0.04);
+    padding: 6px 14px;
+    border-radius: 20px;
+}
+
+/* ── Partial Notice ── */
+.dt-partial-notice {
+    background: rgba(249,115,22,0.1);
+    border: 1px solid rgba(249,115,22,0.25);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--daily-flame);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dt-partial-notice::before {
+    content: '⚠️';
+    font-size: 18px;
+}
+
+/* ── Regenerate Section ── */
+.dt-regenerate-section {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 8px 0;
+}
+
+.btn-regenerate {
+    background: rgba(255,255,255,0.06);
+    color: var(--dt-text-body);
+    border: 1px solid var(--dt-border);
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-regenerate:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--dt-border-hover);
+    color: #fff;
+}
+
+/* ── Task Grid ── */
+.dt-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ── Task Card ── */
+.dt-card {
+    background: var(--dt-bg-card);
+    border: 1px solid var(--dt-border);
+    border-radius: 14px;
+    padding: 20px 24px 16px;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(12px);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dt-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(56,239,125,0.12);
+    border-color: var(--dt-border-hover);
+}
+
+.dt-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.dt-card-number {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--dt-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(56,239,125,0.25);
+}
+
+.dt-card-body {
+    flex: 1;
+    font-size: 15px;
+    color: var(--dt-text-body);
+    line-height: 1.65;
+    min-width: 0;
+}
+
+.dt-card-body .task-text {
+    margin-bottom: 8px;
+}
+
+.dt-card-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-left: 52px;
+}
+
+.dt-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dt-topic {
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    background: rgba(17,153,142,0.15);
+    color: var(--daily-teal);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.dt-difficulty {
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    background: rgba(249,115,22,0.12);
+    color: var(--daily-flame);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.dt-answer-btn {
+    background: rgba(56,239,125,0.1);
+    color: var(--daily-neon);
+    border: 1px solid rgba(56,239,125,0.2);
+    padding: 6px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.dt-answer-btn:hover {
+    background: rgba(56,239,125,0.18);
+    border-color: rgba(56,239,125,0.35);
+    transform: translateY(-1px);
+}
+
+.dt-card-status {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 8px;
+}
+
+.dt-card-status.solved {
+    color: var(--daily-neon);
+    background: rgba(56,239,125,0.12);
+}
+
+.dt-card-status.failed {
+    color: #ef4444;
+    background: rgba(239,68,68,0.12);
+}
+
+/* ── Modal Overlay ── */
+.dt-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: dt-fade-in 0.2s ease;
+}
+
+@keyframes dt-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.dt-modal {
+    background: var(--dt-bg-card);
+    border: 1px solid var(--dt-border);
+    border-radius: 18px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: dt-modal-in 0.25s ease;
+}
+
+@keyframes dt-modal-in {
+    from { transform: translateY(20px) scale(0.97); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.dt-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.dt-modal-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.dt-modal-close {
+    background: none;
+    border: none;
+    color: var(--dt-text-secondary);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.15s;
+}
+
+.dt-modal-close:hover {
+    color: #fff;
+}
+
+.dt-modal-body {
+    padding: 20px 24px 24px;
+}
+
+.dt-modal-body .task-text {
+    font-size: 16px;
+    color: var(--dt-text-body);
+    line-height: 1.7;
+    margin-bottom: 20px;
+}
+
+/* ── Answer Form ── */
+.dt-answer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dt-answer-form label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dt-text-secondary);
+}
+
+.dt-answer-input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--dt-border);
+    background: rgba(0,0,0,0.3);
+    color: #fff;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.dt-answer-input:focus {
+    border-color: var(--daily-neon);
+    box-shadow: 0 0 0 3px rgba(56,239,125,0.12);
+}
+
+.dt-answer-input::placeholder {
+    color: rgba(255,255,255,0.3);
+}
+
+.dt-submit-btn {
+    align-self: flex-end;
+    background: var(--dt-gradient);
+    color: #fff;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dt-submit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(56,239,125,0.25);
+}
+
+.dt-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ── Answer Result ── */
+.dt-result {
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-top: 16px;
+}
+
+.dt-result-correct {
+    background: rgba(56,239,125,0.1);
+    border: 1px solid rgba(56,239,125,0.25);
+    color: var(--daily-neon);
+}
+
+.dt-result-wrong {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.2);
+    color: #fca5a5;
+}
+
+.dt-result-wrong .correct-answer {
+    display: block;
+    margin-top: 8px;
+    color: var(--daily-neon);
+    font-weight: 600;
+}
+
+/* ── Hint Section ── */
+.dt-hint-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.dt-hint-btn {
+    background: rgba(249,115,22,0.1);
+    color: var(--daily-flame);
+    border: 1px solid rgba(249,115,22,0.2);
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dt-hint-btn:hover {
+    background: rgba(249,115,22,0.18);
+    border-color: rgba(249,115,22,0.35);
+}
+
+.dt-hint-content {
+    margin-top: 12px;
+    padding: 14px 18px;
+    background: rgba(249,115,22,0.06);
+    border: 1px solid rgba(249,115,22,0.15);
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--dt-text-body);
+    line-height: 1.6;
+}
+
+/* ── Page-Level Body Styles ── */
+.page-daily-tasks {
+    background: linear-gradient(180deg, rgba(17,153,142,0.06) 0%, transparent 300px);
+}
+
+/* ── Mobile Responsive ── */
+@media (max-width: 768px) {
+    .dt-container {
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .dt-hero {
+        padding: 20px 16px;
+    }
+
+    .dt-hero-title {
+        font-size: 20px;
+    }
+
+    .dt-hero-subtitle {
+        font-size: 13px;
+    }
+
+    .dt-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dt-header-title {
+        font-size: 18px;
+    }
+
+    .dt-header-meta {
+        font-size: 13px;
+        gap: 10px;
+    }
+
+    .dt-card {
+        padding: 16px;
+    }
+
+    .dt-card-top {
+        gap: 12px;
+    }
+
+    .dt-card-number {
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+    }
+
+    .dt-card-body {
+        font-size: 14px;
+    }
+
+    .dt-card-footer {
+        padding-left: 42px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .dt-summary-card {
+        padding: 16px;
+    }
+
+    .dt-summary-text {
+        font-size: 14px;
+    }
+
+    .dt-modal {
+        max-width: 100%;
+        border-radius: 14px;
+        max-height: 90vh;
+    }
+
+    .dt-modal-header {
+        padding: 16px 18px 10px;
+    }
+
+    .dt-modal-body {
+        padding: 16px 18px 20px;
+    }
+
+    .dt-modal-body .task-text {
+        font-size: 14px;
+    }
+
+    .dt-empty {
+        padding: 40px 16px;
+    }
+
+    .dt-empty-text {
+        font-size: 16px;
+    }
+
+    .dt-generating {
+        padding: 40px 16px;
+    }
+}
+
+/* ════════════════════════════════════════════════════════
+   FIX: Missing JS-created classes (synced with daily_tasks.js)
+   ════════════════════════════════════════════════════════ */
+
+/* ── Card Header (JS uses .dt-card-header) ── */
+.dt-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+/* ── Topic Badge (JS uses .dt-topic-badge) ── */
+.dt-topic-badge {
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    background: rgba(17,153,142,0.15);
+    color: var(--daily-teal);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* ── Card Preview (JS uses .dt-card-preview) ── */
+.dt-card-preview {
+    font-size: 14px;
+    color: var(--dt-text-secondary);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+/* ── Card Status variants (JS uses .dt-correct / .dt-incorrect / .dt-pending) ── */
+.dt-card-status.dt-correct {
+    color: var(--daily-neon);
+    background: rgba(56,239,125,0.12);
+}
+.dt-card-status.dt-incorrect {
+    color: #ef4444;
+    background: rgba(239,68,68,0.12);
+}
+.dt-card-status.dt-pending {
+    color: var(--dt-text-secondary);
+    background: rgba(255,255,255,0.05);
+}
+
+/* ── Flag Badge (JS uses .dt-flag-badge) ── */
+.dt-flag-badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 1px 8px;
+    border-radius: 10px;
+    background: rgba(249,115,22,0.15);
+    color: var(--daily-flame);
+    margin-left: 8px;
+    font-weight: 600;
+}
+
+/* ── Flagged card ── */
+.dt-card.dt-flagged {
+    border-color: rgba(249,115,22,0.3);
+}
+.dt-card.dt-done {
+    border-left: 3px solid var(--daily-neon);
+}
+
+/* ── Task Info (modal) ── */
+.dt-task-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.dt-info-chip {
+    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    color: var(--dt-text-secondary);
+    border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── Flagged Warning (modal) ── */
+.dt-flagged-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(249,115,22,0.1);
+    border: 1px solid rgba(249,115,22,0.2);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--daily-flame);
+}
+.dt-flag-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* ── Reason Hint ── */
+.dt-reason-text {
+    font-size: 14px;
+    color: var(--dt-text-secondary);
+    padding: 10px 14px;
+    background: rgba(56,189,248,0.06);
+    border: 1px solid rgba(56,189,248,0.12);
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+/* ── Task Text (modal body) ── */
+.dt-task-text {
+    font-size: 16px;
+    color: var(--dt-text-body);
+    line-height: 1.7;
+    margin-bottom: 20px;
+}
+
+/* ── Answer Label ── */
+.dt-answer-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dt-text-secondary);
+    margin-bottom: 8px;
+}
+
+/* ── Answer Actions ── */
+.dt-answer-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+/* ── Check / Hint buttons ── */
+.dt-btn-check {
+    background: var(--dt-gradient);
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.dt-btn-check:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(56,239,125,0.25);
+}
+.dt-btn-check:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+.dt-btn-hint {
+    background: rgba(249,115,22,0.1);
+    color: var(--daily-flame);
+    border: 1px solid rgba(249,115,22,0.2);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.dt-btn-hint:hover {
+    background: rgba(249,115,22,0.18);
+    border-color: rgba(249,115,22,0.35);
+}
+.dt-btn-hint:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ── Hint Box ── */
+.dt-hint-box {
+    margin-top: 12px;
+    padding: 14px 18px;
+    background: rgba(249,115,22,0.06);
+    border: 1px solid rgba(249,115,22,0.15);
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--dt-text-body);
+    line-height: 1.6;
+}
+
+/* ── Result (modal) ── */
+.dt-result {
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-top: 16px;
+}
+.dt-result-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+.dt-result-text {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.dt-result-correct-answer {
+    margin-top: 8px;
+    color: var(--daily-neon);
+    font-weight: 600;
+    font-size: 14px;
+}
+.dt-result-solution {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--dt-text-body);
+    line-height: 1.6;
+}
+
+/* ── Modal Overlay Show State (JS adds .dt-open) ── */
+.dt-modal-overlay.dt-open {
+    display: flex !important;
+}
+
+/* ── Spinner (template uses .dt-spinner / .dt-spinner-ring) ── */
+.dt-spinner {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 20px;
+    position: relative;
+}
+.dt-spinner-ring {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(56,239,125,0.15);
+    border-top-color: var(--daily-neon);
+    border-radius: 50%;
+    animation: dt-spin 0.8s linear infinite;
+}
+
+/* ── Progress Fill (template uses .dt-progress-fill) ── */
+.dt-progress-fill {
+    height: 100%;
+    background: var(--dt-gradient);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+}
+
+/* ── Regenerate Button (template uses .dt-btn-regenerate) ── */
+.dt-btn-regenerate {
+    background: rgba(255,255,255,0.06);
+    color: var(--dt-text-body);
+    border: 1px solid var(--dt-border);
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.dt-btn-regenerate:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--dt-border-hover);
+    color: #fff;
+}
+
+/* ── Meta Badges (template uses .dt-meta-badge, .dt-grade-badge, .dt-cost-badge) ── */
+.dt-meta-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--dt-text-secondary);
+    background: rgba(255,255,255,0.04);
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+.dt-grade-badge {
+    color: var(--daily-neon);
+    background: rgba(56,239,125,0.08);
+}
+.dt-cost-badge {
+    color: var(--daily-flame);
+    background: rgba(249,115,22,0.08);
+}
+
+/* ── Notice Icon ── */
+.dt-notice-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* ── Gen Subtitle ── */
+.dt-gen-subtitle {
+    font-size: 14px;
+    color: var(--dt-text-secondary);
+    margin-bottom: 24px;
+}
+
+/* ── Progress Label items ── */
+.dt-step-name {
+    color: var(--dt-text-secondary);
+    font-size: 13px;
+}
+.dt-eta {
+    color: var(--dt-text-secondary);
+    font-size: 13px;
+}
+
+/* ── Modal Title ── */
+.dt-modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+}

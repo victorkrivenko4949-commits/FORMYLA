@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Поддержка — Inbox{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/support_chat.css') }}?v={{ asset_version }}">
+{% endblock %}
+
+{% block content %}
+<div class="support-page-wrap">
+    <header class="support-page-header">
+        <h1> Поддержка — Inbox</h1>
+        <p>Все обращения пользователей через «Связаться с нами». Жалоба пользователя слева, ваш ответ — справа. Ответ улетит ему на сайт и на e-mail.</p>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for cat, msg in messages %}
+                <div class="support-toast {{ 'success' if cat == 'success' else 'error' }}">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if not tickets %}
+        <div class="support-empty">
+            Пока обращений нет. Здесь появятся жалобы пользователей.
+        </div>
+    {% endif %}
+
+    {% for t in tickets %}
+    <div class="ticket-card">
+        <div class="ticket-head">
+            <div>
+                <span class="ticket-user">{{ t.user_nickname or '(гость)' }}</span>
+                <span class="cat-badge">{{ t.category }}</span>
+                {% if t.user_email %}
+                <span class="ticket-email">{{ t.user_email }}</span>
+                {% endif %}
+            </div>
+            <div class="ticket-meta">
+                #{{ t.id }}{% if t.created_at %} · {{ (t.created_at.strftime('%d.%m.%Y %H:%M') if t.created_at.strftime is defined else t.created_at|string)[:16] }}{% endif %}
+            </div>
+        </div>
+
+        {% if t.page_url %}
+        <div class="ticket-page-url">
+             <a href="{{ t.page_url }}" target="_blank" rel="noopener">{{ t.page_url }}</a>
+        </div>
+        {% endif %}
+
+        {# Полная переписка — двусторонний чат.
+           ADMIN VIEW: user complaints = LEFT, support replies = RIGHT. #}
+        <div class="support-chat" id="chat-{{ t.id }}">
+            {% for m in t.messages %}
+                {% set is_support = (m.sender == 'admin' or m.sender == 'support' or m.is_admin) %}
+                {% if is_support %}
+                    <div class="support-message support-message-admin" data-msg-id="{{ m.id }}">
+                        <div class="support-message-meta">
+                            Поддержка FORMYLA.net{% if m.created_at %} · {{ (m.created_at.strftime('%d.%m %H:%M') if m.created_at.strftime is defined else m.created_at|string)[:16] }}{% endif %}
+                            {% if not m.deleted %}
+                            <span class="support-msg-actions">
+                                <button type="button" class="support-msg-action" data-action="edit" title="Изменить">изм.</button>
+                                <button type="button" class="support-msg-action" data-action="delete" title="Удалить">удалить</button>
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% if m.deleted %}
+                            <div class="support-message-bubble support-msg-deleted">Сообщение удалено</div>
+                        {% else %}
+                            <div class="support-message-bubble">{{ m.text }}
+                                {% if m.edited_at %}<span class="support-edited-tag">(изменено)</span>{% endif %}
+                            </div>
+                            {% if m.attachment_url %}
+                            <a class="support-msg-photo" href="{{ m.attachment_url }}" target="_blank" rel="noopener">
+                                <img src="{{ m.attachment_url }}" alt="{{ m.attachment_name or 'фото' }}" loading="lazy">
+                            </a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="support-message support-message-user" data-msg-id="{{ m.id }}">
+                        <div class="support-message-meta">
+                            {{ t.user_nickname or 'Пользователь' }}{% if m.created_at %} · {{ (m.created_at.strftime('%d.%m %H:%M') if m.created_at.strftime is defined else m.created_at|string)[:16] }}{% endif %}
+                        </div>
+                        {% if m.deleted %}
+                            <div class="support-message-bubble support-msg-deleted">Сообщение удалено</div>
+                        {% else %}
+                            <div class="support-message-bubble">{{ m.text }}
+                                {% if m.edited_at %}<span class="support-edited-tag">(изменено)</span>{% endif %}
+                            </div>
+                            {% if m.attachment_url %}
+                            <a class="support-msg-photo" href="{{ m.attachment_url }}" target="_blank" rel="noopener">
+                                <img src="{{ m.attachment_url }}" alt="{{ m.attachment_name or 'фото' }}" loading="lazy">
+                            </a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <form method="POST"
+              action="{{ url_for('admin_support.admin_support_reply', msg_id=t.id) }}"
+              class="support-composer"
+              enctype="multipart/form-data"
+              data-role="admin"
+              data-label="Поддержка FORMYLA.net">
+            {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+            <button type="button" class="attach-btn" title="Прикрепить фото">+</button>
+            <input type="file" name="photo" accept="image/*" class="support-photo-input" hidden>
+            <span class="support-photo-chip" hidden></span>
+            <textarea name="reply_text"
+                      rows="1"
+                      maxlength="5000"
+                      placeholder="Ответить пользователю… (Ctrl+Enter — отправить)"></textarea>
+            <button type="submit" class="send-btn">Отправить</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+
+<script src="{{ url_for('static', filename='js/support_chat.js') }}?v={{ asset_version }}" defer></script>
+{% endblock %}

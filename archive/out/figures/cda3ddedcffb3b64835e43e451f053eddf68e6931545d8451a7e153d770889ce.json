@@ -1,0 +1,122 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AC"
+  },
+  {
+   "type": "line_circle",
+   "id": "R",
+   "circle": "w",
+   "line": "OK",
+   "pick": 0
+  },
+  {
+   "type": "reflect_point",
+   "id": "S",
+   "of": "R",
+   "over": "O"
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "O",
+   "line": "BR"
+  },
+  {
+   "type": "foot",
+   "id": "Q",
+   "from": "O",
+   "line": "BS"
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "CB"
+  },
+  {
+   "type": "midpoint",
+   "id": "F",
+   "of": "AB"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "line": "BR",
+   "style": "dashed"
+  },
+  {
+   "line": "BS",
+   "style": "dashed"
+  },
+  {
+   "segment": "OP",
+   "style": "soft"
+  },
+  {
+   "segment": "OQ",
+   "style": "soft"
+  },
+  {
+   "segment": "EF"
+  },
+  {
+   "line": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O",
+    "P",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "Q",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "BE",
+    "EC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BF",
+    "FA"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

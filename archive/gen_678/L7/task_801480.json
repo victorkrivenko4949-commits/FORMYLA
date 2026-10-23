@@ -1,0 +1,20 @@
+{
+  "id": 801480,
+  "task_text": "В треугольнике $ABC$ на сторонах $AB$ и $AC$ выбраны точки $M$ и $N$ соответственно так, что $MN \\parallel BC$ и $MN = BM + CN$. Докажите, что прямая $MN$ проходит через центр вписанной окружности треугольника $ABC$.",
+  "solution": "Обозначим $BC = a$, $CA = b$, $AB = c$. Пусть $BM = x$, $CN = y$. Из $MN \\parallel BC$ следует подобие $\\triangle AMN \\sim \\triangle ABC$, поэтому $\\frac{MN}{a} = \\frac{AM}{c} = \\frac{AN}{b} = \\frac{c-x}{c} = \\frac{b-y}{b}$. Отсюда $\\frac{x}{c} = \\frac{y}{b} = 1 - \\frac{MN}{a}$. Обозначим $t = \\frac{x}{c} = \\frac{y}{b}$, тогда $x = ct$, $y = bt$, $MN = a(1-t)$. Условие $MN = BM + CN$ даёт $a(1-t) = c t + b t = t(b+c)$, откуда $a = t(a+b+c)$, т.е. $t = \\frac{a}{a+b+c}$. Теперь рассмотрим биссектрису $\\angle A$ треугольника $ABC$; пусть она пересекает $BC$ в точке $D$, а прямую $MN$ в точке $P$. Так как $MN \\parallel BC$, по теореме Фалеса $\\frac{AP}{AD} = \\frac{AM}{AB} = \\frac{c-x}{c} = 1-t$. Найдём расстояние от $P$ до стороны $BC$. Оно равно расстоянию между параллельными прямыми $MN$ и $BC$, которое можно вычислить как разность высот: $h_a - h_{AMN}$, где $h_a$ — высота $\\triangle ABC$ из $A$, а $h_{AMN}$ — высота $\\triangle AMN$ из $A$. Из подобия $h_{AMN} = (1-t)h_a$, значит, расстояние $d(P,BC) = t h_a$. Далее найдём расстояние от $P$ до стороны $AB$. Поскольку $P$ лежит на биссектрисе $AD$, это расстояние равно $AP \\cdot \\sin\\frac{\\alpha}{2}$, где $\\alpha = \\angle A$. Известно, что длина биссектрисы $AD = \\frac{2bc}{b+c}\\cos\\frac{\\alpha}{2}$. Тогда $AP = (1-t)AD$, и $d(P,AB) = (1-t)\\cdot\\frac{2bc}{b+c}\\cos\\frac{\\alpha}{2}\\cdot\\sin\\frac{\\alpha}{2} = (1-t)\\frac{bc}{b+c}\\sin\\alpha$. Выразим $h_a = \\frac{bc\\sin\\alpha}{a}$. Таким образом, $d(P,AB) = (1-t)\\frac{bc}{b+c}\\sin\\alpha$, а $d(P,BC) = t\\frac{bc\\sin\\alpha}{a}$. Приравняем их: $(1-t)\\frac{bc}{b+c}\\sin\\alpha = t\\frac{bc\\sin\\alpha}{a} \\iff \\frac{1-t}{b+c} = \\frac{t}{a} \\iff a(1-t) = t(b+c)$, что совпадает с полученным из условия равенством $a = t(a+b+c)$. Следовательно, $d(P,AB) = d(P,BC)$. Но $P$ равноудалена от $AB$ и $AC$ как точка на биссектрисе. Значит, $P$ равноудалена от всех трёх сторон треугольника, т.е. является центром вписанной окружности. Таким образом, $MN$ проходит через инцентр $ABC$.",
+  "correct_answer": "Прямая MN проходит через центр вписанной окружности треугольника ABC.",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Параметризация через подобие и вычисление расстояний до сторон",
+  "idea_count": 5,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T13:17:17.218902+00:00"
+}

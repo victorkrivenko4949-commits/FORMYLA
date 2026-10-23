@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 440" role="img" aria-label="F1, zadacha 2.1: triangle ABC, DE parallel BC, AD=3, DB=6, AE=4, EC=?">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="460" height="440" rx="14"/>
+  <polygon class="edge" points="230.00,50.00 70.00,380.00 390.00,380.00"/>
+  <line class="aux" x1="176.67" y1="160.00" x2="283.33" y2="160.00"/>
+  <circle class="dot" cx="230.00" cy="50.00" r="4.00"/>
+  <text class="label" x="230.00" y="30.00" text-anchor="middle" dominant-baseline="middle">A</text>
+  <circle class="dot" cx="70.00" cy="380.00" r="4.00"/>
+  <text class="label" x="52.00" y="398.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dot" cx="390.00" cy="380.00" r="4.00"/>
+  <text class="label" x="408.00" y="398.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <circle class="dot" cx="176.67" cy="160.00" r="4.00"/>
+  <text class="label" x="156.67" y="160.00" text-anchor="middle" dominant-baseline="middle">D</text>
+  <circle class="dot" cx="283.33" cy="160.00" r="4.00"/>
+  <text class="label" x="303.33" y="160.00" text-anchor="middle" dominant-baseline="middle">E</text>
+  <text class="num" x="219.53" y="112.85" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text class="num" x="141.33" y="278.73" text-anchor="middle" dominant-baseline="middle">6</text>
+  <text class="num" x="240.47" y="112.85" text-anchor="middle" dominant-baseline="middle">4</text>
+  <text class="num" x="318.67" y="278.73" text-anchor="middle" dominant-baseline="middle">?</text>
+  <polyline class="tick" fill="none" points="226.00,156.00 234.00,160.00 226.00,164.00"/>
+  <polyline class="tick" fill="none" points="226.00,376.00 234.00,380.00 226.00,384.00"/>
+</svg>

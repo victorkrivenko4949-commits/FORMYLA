@@ -1,0 +1,85 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "P",
+   "circle": "w1",
+   "angle": 90
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AP"
+  },
+  {
+   "type": "reflect_point",
+   "id": "Q",
+   "of": "B",
+   "over": "N"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "A",
+   "through": "C"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "S",
+   "circle": "w2",
+   "angle": 90
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "CS"
+  },
+  {
+   "type": "reflect_point",
+   "id": "R",
+   "of": "A",
+   "over": "K"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABPQ"
+  },
+  {
+   "polygon": "ACRS"
+  },
+  {
+   "segment": "AM"
+  },
+  {
+   "segment": "PM",
+   "style": "accent"
+  },
+  {
+   "segment": "MS",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

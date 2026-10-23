@@ -1,0 +1,59 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "general"
+  }
+ ],
+ "aux": [
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "on": "CD",
+   "ratio": 0.6
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "on": "BL",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "on": "AD",
+   "ratio": 0.3
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "on": "CL",
+   "ratio": 0.5
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BM",
+   "style": "accent"
+  },
+  {
+   "segment": "ML",
+   "style": "soft"
+  },
+  {
+   "segment": "KM",
+   "style": "accent"
+  },
+  {
+   "segment": "MN",
+   "style": "accent"
+  }
+ ],
+ "marks": []
+}

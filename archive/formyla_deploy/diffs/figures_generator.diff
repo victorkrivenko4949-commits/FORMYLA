@@ -1,0 +1,73 @@
+--- /tmp/fg_old.py	2026-09-01 15:22:16.131792668 +0000
++++ /tmp/fg_new.py	2026-09-01 15:22:16.135792668 +0000
+@@ -1892,18 +1892,67 @@
+             _charge_credit(job_id)
+             return
+ 
+-    # ── visual_check (повторно) ──
++    # ── visual_check (повторно) — CH-fix: не роняем aux на косметике ──
++    #
++    # Раньше ЛЮБАЯ запись в visual.get("errors") приводила к _drop_aux(...).
++    # Это давало ложные срабатывания на LABEL_COLLISION / TICK_OVERLAP и т.п.,
++    # особенно на incircle-цепочках (много подписей у O, A1, B1, C1).
++    #
++    # Теперь: HARD-коды роняют aux, SOFT-коды только логируются.  Список
++    # HARD-кодов синхронизирован с движком: см. _is_soft_violation() и
++    # маркер "Проверка 2" в engine.py — визуал-аудит должен быть
++    # НЕ строже, чем встроенные проверки движка.
+     _set_stage(job, "visual_check")
++    _t_visual = time.perf_counter()
++    visual = None
+     try:
+         visual = audit_rendered_figure(aux_svg, aux_ctx, merged, condition_text,
+                                        settings=engine.settings)
+-    except Exception:
++    except Exception as _e:
++        logger.warning("[figures_gen] aux visual_check crashed job %d: %s",
++                       job_id, _e)
+         visual = None
+-    if visual and visual.get("errors"):
++
++    # Классификация ошибок.  HARD означает «чертёж действительно неверен»;
++    # SOFT — «косметика» (подписи, штрихи, дужки).
++    HARD_VISUAL_CODES = {
++        "MISSING_POINT", "MISSING_LABEL", "DEGENERATE_TRIANGLE",
++        "LINE_OUT_OF_CANVAS", "POINT_NOT_ON_LINE", "CIRCLE_RADIUS_ZERO",
++        "INCIDENCE_VIOLATED", "CONDITION_NOT_REALIZED",
++    }
++    errors = (visual or {}).get("errors", []) or []
++    hard_errs = [e for e in errors if e.split(":")[0] in HARD_VISUAL_CODES]
++    soft_errs = [e for e in errors if e.split(":")[0] not in HARD_VISUAL_CODES]
++
++    # Всегда логируем стадию — чтобы в UI/БД была видна реальная причина.
++    if visual is not None:
++        _record_stage(
++            job_id, "visual_check",
++            coverage_score=visual.get("visual_score"),
++            validation_passed=(not hard_errs),
++            error_codes=[e.split(":")[0] for e in errors],
++            latency_ms=int((time.perf_counter() - _t_visual) * 1000),
++            visual_score=visual.get("visual_score"),
++            label_collisions=len([e for e in errors if "LABEL_COLLISION" in e]),
++        )
++
++    if hard_errs:
++        # Явная запись о том, ЧТО именно сломано, — облегчает диагностику.
++        job.aux_fail_reason = _fmt_plan_json({
++            "hard_codes": [e.split(":")[0] for e in hard_errs],
++            "hard_errors": hard_errs[:5],
++        })
++        db.session.commit()
+         _drop_aux(job, base_svg, "aux_visual_check_failed")
+         _charge_credit(job_id)
+         return
+ 
++    if soft_errs:
++        # Не роняем aux: помечаем предупреждение и продолжаем.
++        job.aux_reason = (job.aux_reason or "") + \
++            f" [visual_warnings: {len(soft_errs)}]"
++        db.session.commit()
++
+     # ── completeness_check (Gemini vision) ──
+     # Проверяем, что все равные углы/отрезки отмечены, все известные длины и
+     # углы подписаны, искомый объект помечен «?».  Если неполно — просим

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ olympiad.full_title }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 16px;">
+    <a href="/olympiads" class="btn-back-catalog"
+       style="display:inline-flex; align-items:center; gap:8px;
+              padding:10px 18px; background:rgba(56,189,248,0.12);
+              border:1px solid rgba(56,189,248,0.35); color:#e2e8f0;
+              border-radius:10px; text-decoration:none; font-weight:600;
+              font-size:0.95em; transition: all .15s ease;">
+        <span style="font-size:1.1em;"><-</span> Назад к каталогу
+    </a>
+</div>
+<style>
+    .btn-back-catalog:hover {
+        background: rgba(56,189,248,0.22) !important;
+        border-color: rgba(56,189,248,0.6) !important;
+        color: #fff !important;
+        transform: translateX(-2px);
+    }
+</style>
+
+<h1 class="page-title">{{ olympiad.full_title }}</h1>
+<p class="page-subtitle">
+    {{ combo.year }} год, {{ combo.grade }} класс — {{ combo.round_title | default('') }}
+</p>
+<p style="color: var(--text-muted, #94a3b8); margin-bottom:20px;">Задач в пробнике: {{ problems|length }}</p>
+
+<div style="background:var(--bg-card,rgba(30,41,59,0.6)); padding:20px; border-radius:12px; margin:20px 0; border-left:4px solid var(--accent-1,#3b82f6);">
+    <p style="margin:0; color:var(--text-soft,#cbd5e1);">
+        Это реальный пробник олимпиады. Попробуй решить все задачи самостоятельно. У тебя есть 3 часа!
+    </p>
+</div>
+
+{% for day_block in day_blocks %}
+{% set ns = namespace(show_header=true) %}
+{% if day_block.day is not none and day_blocks|length > 1 %}
+<div style="background:linear-gradient(135deg, rgba(56,189,248,0.15), rgba(99,102,241,0.10)); padding:16px 20px; margin:24px 0 16px 0; border-radius:12px; border:1px solid rgba(56,189,248,0.25); text-align:center;">
+    <span style="font-size:1.2em; font-weight:700; color:#38bdf8; letter-spacing:0.5px;">День {{ day_block.day }}</span>
+</div>
+{% elif combo_day is not none and day_blocks|length == 1 %}
+<div style="background:linear-gradient(135deg, rgba(56,189,248,0.15), rgba(99,102,241,0.10)); padding:16px 20px; margin:24px 0 16px 0; border-radius:12px; border:1px solid rgba(56,189,248,0.25); text-align:center;">
+    <span style="font-size:1.2em; font-weight:700; color:#38bdf8; letter-spacing:0.5px;">День {{ combo_day }}</span>
+</div>
+{% endif %}
+{% for p in day_block.problems %}
+<div style="background:var(--bg-card,rgba(30,41,59,0.6)); padding:20px 24px; margin-bottom:12px; border-radius:12px; border:1px solid var(--border-soft,#334155);">
+    <span style="display:inline-block; background:var(--accent-1,#3b82f6); color:#fff; padding:3px 12px; border-radius:6px; font-weight:600; font-size:0.92em;">Задача {{ p.num }}</span>
+    <div style="color:var(--text-soft,#e2e8f0); font-size:16px; line-height:1.8; margin-top:12px;">
+        {{ p.text | safe }}
+    </div>
+    {% if p.get("image") %}
+    <div class="problem-image" style="text-align:center; margin:16px 0;">
+        <img src="{{ url_for('static', filename=p.image) }}" alt="Иллюстрация к задаче"
+             loading="lazy"
+             style="max-width:560px; width:100%; height:auto; border-radius:10px; padding:12px; background:#ffffff; box-shadow: 0 2px 12px rgba(0,0,0,0.15);">
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+{% endfor %}
+
+<div style="text-align: center; margin-top: 40px; display:flex; flex-wrap:wrap; gap:12px; justify-content:center;">
+    <a href="/olympiads/solution/{{ combo.id }}" class="btn-primary" style="padding: 14px 40px; font-size: 16px;">
+        Показать ответы и решения
+    </a>
+    <a href="/olympiads" class="btn-secondary" style="padding: 14px 40px; font-size: 16px;">
+        <- Назад к каталогу
+    </a>
+</div>
+{% endblock %}

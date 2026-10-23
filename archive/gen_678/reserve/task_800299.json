@@ -1,0 +1,20 @@
+{
+  "id": 800299,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $D$, $E$, $F$ соответственно так, что $BD:DC = CE:EA = AF:FB = 2:1$. Прямые $AD$, $BE$, $CF$ пересекаются попарно, образуя треугольник $PQR$ (где $P = AD \\cap BE$, $Q = BE \\cap CF$, $R = CF \\cap AD$). Найдите отношение площади треугольника $PQR$ к площади треугольника $ABC$.",
+  "solution": "Введём барицентрические координаты. Пусть $A(1,0,0)$, $B(0,1,0)$, $C(0,0,1)$. По условию $BD:DC=2:1$, поэтому точка $D$ на $BC$ имеет координаты $(0,1,2)$ (с точностью до множителя). Аналогично $CE:EA=2:1$ даёт $E(2,0,1)$, а $AF:FB=2:1$ даёт $F(1,2,0)$. \n\nНайдём пересечение $AD$ и $BE$. Точка на $AD$ имеет вид $\\alpha A + \\beta D = (\\alpha, \\beta, 2\\beta)$. Точка на $BE$: $\\gamma B + \\delta E = (2\\delta, \\gamma, \\delta)$. Приравнивание даёт $\\alpha = 2\\delta$, $\\beta = \\gamma$, $2\\beta = \\delta$. Из третьего $\\delta=2\\beta$, тогда $\\alpha=4\\beta$, $\\gamma=\\beta$. Получаем координаты $P (4\\beta,\\beta,2\\beta) \\sim (4,1,2)$. \n\nАналогично $Q=BE\\cap CF$: точка на $BE$ $(2\\delta,\\gamma,\\delta)$, на $CF$ $\\zeta F + \\epsilon C = (\\zeta, 2\\zeta, \\epsilon)$. Приравнивание: $2\\delta=\\zeta$, $\\gamma=2\\zeta$, $\\delta=\\epsilon$. Тогда $\\gamma=4\\delta$, откуда $Q(2\\delta,4\\delta,\\delta)\\sim(2,4,1)$. \n\n$R=CF\\cap AD$: точка на $CF$ $(\\zeta,2\\zeta,\\epsilon)$, на $AD$ $(\\alpha,\\beta,2\\beta)$. Получаем $\\alpha=\\zeta$, $\\beta=2\\zeta$, $\\epsilon=2\\beta=4\\zeta$, т.е. $R(\\zeta,2\\zeta,4\\zeta)\\sim(1,2,4)$. \n\nНормируем координаты, разделив каждую на сумму: $P\\left(\\frac{4}{7},\\frac{1}{7},\\frac{2}{7}\\right)$, $Q\\left(\\frac{2}{7},\\frac{4}{7},\\frac{1}{7}\\right)$, $R\\left(\\frac{1}{7},\\frac{2}{7},\\frac{4}{7}\\right)$. Площадь треугольника $PQR$ относительно $ABC$ равна модулю определителя матрицы из этих координат:\n$$\n\\det\\begin{pmatrix}\n\\frac{4}{7} & \\frac{1}{7} & \\frac{2}{7} \\\\\n\\frac{2}{7} & \\frac{4}{7} & \\frac{1}{7} \\\\\n\\frac{1}{7} & \\frac{2}{7} & \\frac{4}{7}\n\\end{pmatrix} = \\frac{1}{7^3}\\begin{vmatrix}\n4 & 1 & 2 \\\\\n2 & 4 & 1 \\\\\n1 & 2 & 4\n\\end{vmatrix} = \\frac{1}{343}\\cdot 49 = \\frac{1}{7}.\n$$\nТаким образом, $[PQR] = \\frac{1}{7}[ABC]$.",
+  "correct_answer": "$\\frac{1}{7}$",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Барицентрические координаты (или формула Рауса)",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.802,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T11:21:45.496153+00:00"
+}

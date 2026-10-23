@@ -1,0 +1,151 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "P",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "cP",
+   "center": "P",
+   "through": "A"
+  },
+  {
+   "type": "circle",
+   "id": "cA",
+   "center": "A",
+   "through": "P"
+  },
+  {
+   "type": "circle_circle",
+   "id": "B",
+   "circle1": "cP",
+   "circle2": "cA",
+   "pick": 0
+  },
+  {
+   "type": "reflect_point",
+   "id": "Q",
+   "of": "A",
+   "over": "P"
+  },
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "A",
+   "over": "Q"
+  },
+  {
+   "type": "midpoint",
+   "id": "R",
+   "of": "QD"
+  },
+  {
+   "type": "circle",
+   "id": "wA",
+   "center": "A",
+   "through": "D"
+  },
+  {
+   "type": "circle",
+   "id": "wD",
+   "center": "D",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "E",
+   "circle1": "wA",
+   "circle2": "wD",
+   "pick": 0
+  },
+  {
+   "type": "reflect_line",
+   "id": "C",
+   "of": "B",
+   "over": "EQ"
+  },
+  {
+   "type": "midpoint",
+   "id": "M1",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "M2",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "M3",
+   "of": "CD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AD",
+   "style": "accent"
+  },
+  {
+   "segment": "BC",
+   "style": "accent"
+  },
+  {
+   "line": "PM1",
+   "style": "dashed"
+  },
+  {
+   "line": "QM2",
+   "style": "dashed"
+  },
+  {
+   "line": "RM3",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "M1",
+    "P"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "M2",
+    "Q"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "M3",
+    "R"
+   ]
+  },
+  {
+   "equal": [
+    "AP",
+    "PQ",
+    "QR",
+    "RD"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

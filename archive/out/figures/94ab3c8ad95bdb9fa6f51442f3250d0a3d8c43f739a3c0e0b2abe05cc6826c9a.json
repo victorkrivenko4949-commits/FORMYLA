@@ -1,0 +1,101 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "BK",
+   "line2": "CN"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R",
+   "of": "AB",
+   "ratio": 0.6666666666666666
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "AKN"
+  },
+  {
+   "type": "line_circle",
+   "id": "P",
+   "circle": "w",
+   "line": "RM",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "Q",
+   "circle": "w",
+   "line": "RM",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "AKN",
+   "style": "soft"
+  },
+  {
+   "segment": "BK",
+   "style": "soft"
+  },
+  {
+   "segment": "CN",
+   "style": "soft"
+  },
+  {
+   "line": "PQ",
+   "style": "dashed"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "100°"
+  },
+  {
+   "equal": [
+    "AN",
+    "NB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AK",
+    "KC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

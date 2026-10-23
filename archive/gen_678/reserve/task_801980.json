@@ -1,0 +1,20 @@
+{
+  "id": 801980,
+  "task_text": "В треугольнике $ABC$ проведена медиана $AD$. На отрезке $AD$ взята точка $K$ такая, что $AK:KD=1:2$. Прямые $BK$ и $CK$ пересекают стороны $AC$ и $AB$ в точках $E$ и $F$ соответственно. Найдите отношение площади треугольника $AEF$ к площади треугольника $ABC$.",
+  "solution": "Введём векторные координаты: поместим точку $A$ в начало, $B$ и $C$ — векторы $\\vec{b}$ и $\\vec{c}$. Так как $D$ — середина $BC$, то $\\vec{d}=\\frac{\\vec{b}+\\vec{c}}{2}$. Точка $K$ делит отрезок $AD$ в отношении $AK:KD=1:2$, откуда $\\vec{k}=\\frac{1}{3}\\vec{d}=\\frac{\\vec{b}+\\vec{c}}{6}$.\n\nНайдём точку $E = BK \\cap AC$. Параметризация: $BK$: $\\vec{b}+t(\\vec{k}-\\vec{b})$, $AC$: $s\\vec{c}$. Приравниваем:\n$\\vec{b}+t\\left(\\frac{\\vec{b}+\\vec{c}}{6}-\\vec{b}\\right)=s\\vec{c}$,\n$\\vec{b}+t\\frac{-5\\vec{b}+\\vec{c}}{6}=s\\vec{c}$.\nCравнивая коэффициенты при $\\vec{b}$ и $\\vec{c}$, получаем $1-\\frac{5t}{6}=0$, $\\frac{t}{6}=s$. Отсюда $t=\\frac{6}{5}$, $s=\\frac{1}{5}$. Значит, $AE:EC = s:(1-s)=1:4$, т.е. $AE=\\frac{1}{5}AC$.\n\nАналогично для $F = CK \\cap AB$. Параметризация: $CK$: $\\vec{c}+u(\\vec{k}-\\vec{c})$, $AB$: $v\\vec{b}$. Подставляем:\n$\\vec{c}+u\\left(\\frac{\\vec{b}+\\vec{c}}{6}-\\vec{c}\\right)=v\\vec{b}$,\n$\\vec{c}+u\\frac{\\vec{b}-5\\vec{c}}{6}=v\\vec{b}$.\nОтсюда $1-\\frac{5u}{6}=0$, $\\frac{u}{6}=v$; $u=\\frac{6}{5}$, $v=\\frac{1}{5}$. Следовательно, $AF:FB = v:(1-v)=1:4$, т.е. $AF=\\frac{1}{5}AB$.\n\nПлощади треугольников с общим углом $A$:\n$S_{AEF}=\\frac{1}{2}\\cdot AE\\cdot AF\\cdot\\sin\\angle A$,\n$S_{ABC}=\\frac{1}{2}\\cdot AB\\cdot AC\\cdot\\sin\\angle A$.\nОтношение:\n$\\frac{S_{AEF}}{S_{ABC}}=\\frac{AE\\cdot AF}{AB\\cdot AC}=\\frac{1}{5}\\cdot\\frac{1}{5}=\\frac{1}{25}$.",
+  "correct_answer": "$$\\frac{1}{25}$$",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Векторный метод или теорема Менелая для нахождения отношений деления сторон, затем вычисление площади через общий угол.",
+  "idea_count": 3,
+  "is_clone": true,
+  "clone_similarity": 0.745,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:39:26.359164+00:00"
+}

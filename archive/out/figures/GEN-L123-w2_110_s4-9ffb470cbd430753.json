@@ -1,0 +1,99 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "BC",
+   "ratio": 0.45
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "K",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "Q",
+   "from": "K",
+   "line": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "segment": "AB"
+  },
+  {
+   "segment": "AC"
+  },
+  {
+   "segment": "KP"
+  },
+  {
+   "segment": "KQ"
+  },
+  {
+   "segment": "AK",
+   "style": "accent"
+  },
+  {
+   "polygon": "APKQ",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "P",
+    "K"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "Q",
+    "K"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "68°"
+  },
+  {
+   "angle": [
+    "P",
+    "K",
+    "Q"
+   ],
+   "text": "112°"
+  },
+  {
+   "angle": [
+    "K",
+    "A",
+    "P"
+   ],
+   "text": "?"
+  },
+  {
+   "angle": [
+    "K",
+    "A",
+    "Q"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

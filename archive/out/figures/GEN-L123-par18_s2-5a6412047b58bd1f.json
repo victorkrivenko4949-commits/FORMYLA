@@ -1,0 +1,115 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "F",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "G",
+   "of": "CD"
+  },
+  {
+   "type": "midpoint",
+   "id": "H",
+   "of": "DA"
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "P",
+   "of": [
+    "AF",
+    "DE"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "of": [
+    "AF",
+    "BG"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "R",
+   "of": [
+    "BG",
+    "CH"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "S",
+   "of": [
+    "CH",
+    "DE"
+   ]
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AF"
+  },
+  {
+   "segment": "BG"
+  },
+  {
+   "segment": "CH"
+  },
+  {
+   "segment": "DE"
+  }
+ ],
+ "draw_aux": [
+  {
+   "polygon": "PQRS",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right": "DAB"
+  },
+  {
+   "equal": [
+    "AE",
+    "EB"
+   ]
+  },
+  {
+   "equal": [
+    "BF",
+    "FC"
+   ]
+  },
+  {
+   "equal": [
+    "CG",
+    "GD"
+   ]
+  },
+  {
+   "equal": [
+    "DH",
+    "HA"
+   ]
+  }
+ ]
+}

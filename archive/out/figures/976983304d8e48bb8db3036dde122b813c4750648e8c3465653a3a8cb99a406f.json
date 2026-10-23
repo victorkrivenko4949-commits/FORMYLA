@@ -1,0 +1,143 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "A",
+   "through": "O"
+  },
+  {
+   "type": "circle",
+   "id": "c2",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "P",
+   "circle1": "c1",
+   "circle2": "c2",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "Q",
+   "circle1": "c1",
+   "circle2": "c2",
+   "pick": 1
+  },
+  {
+   "type": "midpoint",
+   "id": "S",
+   "of": "AQ"
+  },
+  {
+   "type": "reflect_point",
+   "id": "R",
+   "of": "P",
+   "over": "S"
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "AR",
+   "line2": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "MKN"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "line": "AR",
+   "style": "accent"
+  },
+  {
+   "circle": "w2",
+   "style": "accent"
+  },
+  {
+   "polygon": "MKN",
+   "style": "soft"
+  },
+  {
+   "segment": "AO",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "MB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AN",
+    "NC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "K"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "K"
+   ],
+   "text": "α"
+  },
+  {
+   "right_angle": [
+    "O",
+    "A",
+    "R"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

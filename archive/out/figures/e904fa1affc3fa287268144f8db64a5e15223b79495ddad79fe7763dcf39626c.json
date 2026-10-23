@@ -1,0 +1,150 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "cA",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "line_circle",
+   "id": "Y",
+   "circle": "cA",
+   "line": "AI",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "Z",
+   "circle": "cA",
+   "line": "AI",
+   "pick": 1
+  },
+  {
+   "type": "circle",
+   "id": "cY",
+   "center": "Y",
+   "through": "Z"
+  },
+  {
+   "type": "circle",
+   "id": "cZ",
+   "center": "Z",
+   "through": "Y"
+  },
+  {
+   "type": "circle_circle",
+   "id": "R",
+   "circle1": "cY",
+   "circle2": "cZ",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "S",
+   "circle1": "cY",
+   "circle2": "cZ",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "IB",
+   "line1": "RS",
+   "line2": "BI"
+  },
+  {
+   "type": "intersection",
+   "id": "IC",
+   "line1": "RS",
+   "line2": "CI"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "P",
+   "circle": "w",
+   "angle": 40
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X",
+   "of": "OP",
+   "ratio": 0.35
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "line": "AI",
+   "style": "dashed"
+  },
+  {
+   "line": "RS",
+   "style": "dashed"
+  },
+  {
+   "line": "BI",
+   "style": "soft"
+  },
+  {
+   "line": "CI",
+   "style": "soft"
+  },
+  {
+   "segment": "OP",
+   "style": "dashed"
+  },
+  {
+   "segment": "XB",
+   "style": "accent"
+  },
+  {
+   "segment": "XC",
+   "style": "accent"
+  },
+  {
+   "segment": "XIB",
+   "style": "accent"
+  },
+  {
+   "segment": "XIC",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "I",
+    "A",
+    "R"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

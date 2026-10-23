@@ -1,0 +1,83 @@
+{
+  "audit_timestamp": "2026-07-18T10:38:07.703403+00:00",
+  "grid_file": "target_grid.json",
+  "taxonomy_source": "canonical_taxonomy.json",
+  "taxonomy_sha256": "115f4f7d811acb31894e1d638a4715abbe142e85cf4ab776f75057808953300f",
+  "grid_sha256": "a3727f040aa2b34e1a4bfb505c9f0bf6b550cf56b686b079cacce61f86f2022c",
+  "scope": {
+    "allowed_grade_topic_pairs": 43,
+    "allowed_grade_topic_subtopic_cells": 128,
+    "excluded_subtopic_cells": 1,
+    "levels_per_cell": 3,
+    "total_slots": 384,
+    "slots_l1": 128,
+    "slots_l2": 128,
+    "slots_l3": 128,
+    "tasks_per_slot": 5,
+    "expected_tasks_l1": 640,
+    "expected_tasks_l2": 640,
+    "expected_tasks_l3": 640,
+    "total_expected_tasks": 1920,
+    "grade_breakdown": {
+      "5": {
+        "topics": 6,
+        "allowed_subtopic_cells": 18,
+        "excluded_subtopic_cells": 0,
+        "slots": 54,
+        "expected_tasks": 270
+      },
+      "6": {
+        "topics": 6,
+        "allowed_subtopic_cells": 18,
+        "excluded_subtopic_cells": 0,
+        "slots": 54,
+        "expected_tasks": 270
+      },
+      "7": {
+        "topics": 6,
+        "allowed_subtopic_cells": 18,
+        "excluded_subtopic_cells": 0,
+        "slots": 54,
+        "expected_tasks": 270
+      },
+      "8": {
+        "topics": 6,
+        "allowed_subtopic_cells": 17,
+        "excluded_subtopic_cells": 1,
+        "slots": 51,
+        "expected_tasks": 255
+      },
+      "9": {
+        "topics": 6,
+        "allowed_subtopic_cells": 18,
+        "excluded_subtopic_cells": 0,
+        "slots": 54,
+        "expected_tasks": 270
+      },
+      "10": {
+        "topics": 6,
+        "allowed_subtopic_cells": 18,
+        "excluded_subtopic_cells": 0,
+        "slots": 54,
+        "expected_tasks": 270
+      },
+      "11": {
+        "topics": 7,
+        "allowed_subtopic_cells": 21,
+        "excluded_subtopic_cells": 0,
+        "slots": 63,
+        "expected_tasks": 315
+      }
+    }
+  },
+  "invariants": {
+    "all_referenced_topics_exist_in_taxonomy": true,
+    "missing_topic_ids": [],
+    "all_subtopics_s0_s1_s2_present": true,
+    "missing_subtopic_refs": [],
+    "levels_are_L1_L2_L3": true,
+    "exclusions_matched": true
+  },
+  "all_invariants_pass": true,
+  "status": "GRID_OK"
+}

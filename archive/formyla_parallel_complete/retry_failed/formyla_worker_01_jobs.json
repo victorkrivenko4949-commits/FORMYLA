@@ -1,0 +1,26 @@
+{
+  "jobs": [
+    {
+      "job_id": "fill-0263",
+      "mode": "fill_missing",
+      "grade": 10,
+      "difficulty": 1,
+      "theme": "Стереометрия и векторы",
+      "subtopic": "Сечения",
+      "method_code": "D3",
+      "quality_target": "соответствие уровню и теме",
+      "worker": 3
+    },
+    {
+      "job_id": "fill-0134",
+      "mode": "fill_missing",
+      "grade": 8,
+      "difficulty": 7,
+      "theme": "Теория чисел: остатки и диофантовы",
+      "subtopic": "Делимость и разложение",
+      "method_code": "F3",
+      "quality_target": "L6=регион; L7=сложный регион; L8=финал/перечневые, не одношаговая техника",
+      "worker": 14
+    }
+  ]
+}

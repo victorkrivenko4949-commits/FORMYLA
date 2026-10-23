@@ -1,0 +1,69 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "AB",
+   "ratio": 0.3333333333333333
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "CK",
+   "line2": "BM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BM"
+  },
+  {
+   "segment": "CK",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "P",
+   "of": "BK"
+  },
+  {
+   "type": "reflect_point",
+   "id": "E",
+   "of": "C",
+   "over": "P"
+  },
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "AC",
+   "line2": "BE",
+   "reason": "Через B проводим прямую, параллельную CK, до пересечения с продолжением AC в точке D."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BD",
+   "style": "dashed"
+  },
+  {
+   "segment": "CD",
+   "style": "soft"
+  }
+ ]
+}

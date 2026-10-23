@@ -1,0 +1,94 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X",
+   "of": "AB",
+   "ratio": 0.5555555556
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y",
+   "of": "AC",
+   "ratio": 0.4444444444
+  },
+  {
+   "type": "triangle",
+   "id": "AXY",
+   "kind": "any"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "AXY"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AH",
+   "style": "dashed"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "AC",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "A",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "B"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "XY",
+   "reason": "M — середина диагонали XY прямоугольника AXKY."
+  },
+  {
+   "type": "reflect_point",
+   "id": "K",
+   "of": "A",
+   "over": "M",
+   "reason": "K — четвёртая вершина прямоугольника AXKY; она лежит на BC и на окружности w."
+  }
+ ],
+ "draw_aux": [
+  {
+   "polygon": "AXKY",
+   "style": "soft"
+  },
+  {
+   "segment": "AK",
+   "style": "dashed"
+  }
+ ]
+}

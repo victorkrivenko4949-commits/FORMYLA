@@ -1,0 +1,45 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "cyclic"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  }
+ ],
+ "aux": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "general"
+  },
+  {
+   "type": "triangle",
+   "id": "BCD",
+   "kind": "general"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "circle": "w"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AC",
+   "style": "accent"
+  },
+  {
+   "segment": "BD",
+   "style": "accent"
+  }
+ ],
+ "marks": []
+}

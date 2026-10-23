@@ -1,0 +1,58 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "AB",
+   "ratio": 0.35
+  },
+  {
+   "type": "incenter",
+   "id": "O",
+   "of": "AKC"
+  },
+  {
+   "type": "incenter",
+   "id": "Q",
+   "of": "BKC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "KC",
+   "style": "soft"
+  },
+  {
+   "segment": "KO",
+   "style": "soft"
+  },
+  {
+   "segment": "KQ",
+   "style": "soft"
+  },
+  {
+   "polygon": "OQC",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "C",
+    "A"
+   ],
+   "text": "120°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

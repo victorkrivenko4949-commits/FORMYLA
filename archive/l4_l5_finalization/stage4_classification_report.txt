@@ -1,0 +1,80 @@
+======================================================================
+  STAGE 4: CLASSIFICATION REPORT
+======================================================================
+
+  Total classified: 63
+  KEEP    : 3
+  FIX     : 40
+  REPLACE : 20
+  REVIEW  : 0
+
+----------------------------------------------------------------------
+  ID                   Cell                         Q Category   Reason
+----------------------------------------------------------------------
+  c5307bfa5ccd         G6|L5|T006|S2             38.2 REPLACE    solver_failed_very_short_solution
+  c28e94076cc6         G6|L5|T006|S2             42.8 FIX        short_solution:118chars
+  72feb7a8c418         G6|L5|T006|S2             43.3 FIX        short_solution:71chars
+  ef0b407220bb         G5|L5|T022|S1             43.6 REPLACE    duplicate_detected
+  cdf76dff28bc         G6|L5|T006|S2             43.8 FIX        short_solution:69chars
+  f7a0c59e2019         G6|L5|T006|S2             44.9 FIX        short_solution:119chars
+  053f552cec0f         G5|L5|T022|S1             46.0 REPLACE    duplicate_detected
+  668efb906002         G5|L5|T022|S1             46.4 REPLACE    duplicate_detected
+  88d9f7084cd2         G5|L5|T002|S2             49.0 REPLACE    solver_failed_low_quality
+  d8b9d06cc096         G5|L5|T004|S2             51.5 REPLACE    solver_failed_very_short_solution
+  c48f84e6585b         G5|L5|T022|S1             52.1 REPLACE    duplicate_detected
+  7681c5edc853         G5|L5|T004|S2             52.2 REPLACE    solver_failed_very_short_solution
+  8b95dc7d5035         G5|L5|T004|S2             52.2 REPLACE    solver_failed_very_short_solution
+  ffac6a343086         G5|L5|T004|S2             52.2 FIX        short_solution:12chars
+  167562c3d464         G7|L5|T003|S1             52.2 FIX        solver_failed; short_solution:182chars
+  6787c2edde0d         G7|L5|T003|S1             53.8 FIX        short_solution:88chars
+  a8a672e7f2b3         G5|L5|T002|S2             54.4 FIX        solver_failed
+  04ad8880942f         G5|L4|T022|S2             55.0 FIX        short_solution:166chars
+  d454a6c61c44         G5|L5|T002|S1             55.6 REPLACE    duplicate_detected
+  e8e10be25736         G6|L5|T032|S1             55.7 REPLACE    duplicate_detected
+  f29e647f9881         G5|L4|T022|S2             55.8 FIX        short_solution:194chars
+  486d7f4431a0         G5|L5|T004|S2             56.1 FIX        short_solution:77chars
+  581cc39bf4f0         G5|L4|T008|S1             57.3 FIX        short_solution:201chars
+  f5a31a5003df         G6|L5|T032|S1             59.0 FIX        short_solution:184chars
+  495e06fc6844         G5|L5|T024|S1             59.1 FIX        short_solution:127chars
+  ab5bf34e626a         G11|L5|T001|S2            60.2 FIX        solver_failed; short_solution:186chars
+  97762757cf9e         G5|L5|T024|S1             61.2 FIX        short_solution:162chars
+  b0283feaaa8f         G5|L4|T005|S0             61.4 FIX        short_solution:165chars
+  139c195d2b47         G5|L5|T022|S0             61.4 FIX        solver_failed; short_solution:240chars
+  d7b30d0953e4         G5|L5|T022|S2             61.9 FIX        solver_failed; short_solution:203chars
+  2411a1ae595e         G5|L4|T005|S0             62.0 FIX        short_solution:198chars
+  6e06828e3d72         G5|L5|T022|S0             62.0 FIX        solver_failed; short_solution:231chars
+  defdb4650efb         G5|L5|T002|S2             62.8 FIX        solver_failed
+  db39686b4adf         G5|L5|T005|S2             63.4 FIX        solver_failed; short_solution:245chars
+  b83ab2ce0b72         G5|L5|T024|S2             64.0 FIX        short_solution:208chars
+  69a8bb8eb7cb         G7|L5|T003|S2             64.2 REPLACE    duplicate_detected
+  274146cf37e5         G11|L5|T001|S2            64.3 FIX        solver_failed
+  c4cfd64d2456         G7|L5|T003|S2             64.3 REPLACE    duplicate_detected
+  e011d46e1c08         G5|L5|T022|S0             64.9 FIX        solver_failed
+  f03be060f6b3         G11|L5|T001|S2            65.0 REPLACE    duplicate_detected
+  4a1f362c3106         G11|L5|T034|S0            65.0 FIX        solver_failed; short_solution:232chars
+  aca199da7d47         G7|L5|T003|S1             65.4 KEEP       all_roles_ok
+  468aa9188b50         G11|L5|T001|S1            65.5 FIX        solver_failed
+  5557f065526c         G5|L5|T024|S1             65.6 FIX        short_solution:235chars
+  0cabbe464aa4         G6|L5|T032|S1             65.6 REPLACE    duplicate_detected
+  41132df26c2a         G5|L5|T002|S1             66.0 FIX        solver_failed
+  bd869dd1c1d3         G5|L5|T002|S1             66.5 KEEP       all_roles_ok
+  7dbecced5add         G5|L5|T024|S2             66.9 FIX        short_solution:256chars
+  623e35b0654d         G11|L5|T001|S2            67.2 REPLACE    duplicate_detected
+  75db01688ab4         G5|L4|T005|S0             67.4 FIX        solver_failed; short_solution:265chars
+  11ae5d991c89         G7|L5|T023|S1             67.5 REPLACE    duplicate_detected
+  812f4b5f4d2c         G7|L5|T023|S1             67.6 REPLACE    duplicate_detected
+  d21e045486af         G5|L5|T008|S0             67.8 FIX        short_solution:272chars
+  cf1b975a398e         G5|L5|T024|S0             68.0 FIX        solver_failed
+  a03ed1222b30         G11|L5|T043|S1            68.1 REPLACE    arbiter_errors:Неправильное применение теоремы Паппа-Гульдина: для объёма тела вращения нужно использовать площадь поверхности, а не объём.; Ошибочное утверждение о цилиндре с нулевой высотой.; Неверный итоговый ответ.
+  a2974faf4afe         G5|L5|T022|S0             68.1 FIX        solver_failed; short_solution:276chars
+  a0b8a1c1d792         G5|L5|T024|S1             68.2 FIX        short_solution:279chars
+  96c72e3bb0e7         G5|L5|T005|S0             68.4 FIX        short_solution:281chars
+  627b2ba84fe6         G5|L5|T005|S2             68.8 FIX        short_solution:288chars
+  5109f65b67aa         G6|L5|T016|S1             69.2 REPLACE    duplicate_detected
+  bff87d012432         G5|L5|T008|S1             69.3 FIX        short_solution:296chars
+  a7b6a236ee58         G11|L5|T021|S1            69.9 FIX        solver_failed
+  4cf0c4d29402         G6|L5|T018|S1             69.9 KEEP       all_roles_ok
+
+======================================================================
+  END OF REPORT
+======================================================================

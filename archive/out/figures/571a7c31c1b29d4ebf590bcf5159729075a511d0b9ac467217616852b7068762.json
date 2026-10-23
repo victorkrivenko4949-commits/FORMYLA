@@ -1,0 +1,129 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "B",
+   "line": "AI"
+  },
+  {
+   "type": "foot",
+   "id": "Q",
+   "from": "B",
+   "line": "CI"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "line": "AP",
+   "style": "soft"
+  },
+  {
+   "line": "CQ",
+   "style": "soft"
+  },
+  {
+   "segment": "BP",
+   "style": "soft"
+  },
+  {
+   "segment": "BQ",
+   "style": "soft"
+  },
+  {
+   "segment": "AC",
+   "style": "accent"
+  },
+  {
+   "segment": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "P",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "Q",
+    "C"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "P"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "P",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "Q"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "Q",
+    "C",
+    "A"
+   ],
+   "text": "β"
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "A1",
+   "line1": "BQ",
+   "line2": "AC",
+   "reason": "Продолжение BQ до AC для доказательства через среднюю линию"
+  },
+  {
+   "type": "intersection",
+   "id": "C1",
+   "line1": "BP",
+   "line2": "AC",
+   "reason": "Продолжение BP до AC для доказательства через среднюю линию"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "QA1",
+   "style": "dashed"
+  },
+  {
+   "segment": "PC1",
+   "style": "dashed"
+  }
+ ]
+}

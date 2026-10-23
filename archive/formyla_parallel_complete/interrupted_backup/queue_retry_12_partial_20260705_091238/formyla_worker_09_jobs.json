@@ -1,0 +1,28 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0348-8-F2-5-L8-g678",
+      "mode": "replace_bad",
+      "id": "8-F2-5-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Теория чисел: остатки и диофантовы",
+      "subtopic": "Диофантовы уравнения",
+      "method_code": "F2",
+      "reasons": "duplicate_task_text",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0279-9-E2-5-L8-g911",
+      "mode": "replace_bad",
+      "id": "9-E2-5-L8-g911",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Теория чисел",
+      "subtopic": "Диофантовы уравнения",
+      "method_code": "E2",
+      "reasons": "duplicate_task_text",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

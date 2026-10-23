@@ -1,0 +1,20 @@
+{
+  "id": 801995,
+  "task_text": "В треугольнике $ABC$ точка $M$ — середина $BC$. Окружность с центром $M$, проходящая через $B$ и $C$, пересекает стороны $AB$ и $AC$ в точках $P$ и $Q$ соответственно (отличных от $A$). Докажите, что $PQ \\parallel BC$.",
+  "solution": "1. Так как окружность имеет центр $M$ и проходит через $B$ и $C$, то $MB = MC = MP = MQ$. Поэтому точки $B$, $C$, $P$, $Q$ лежат на одной окружности. \n\n2. Четырёхугольник $BPQC$ вписанный. Следовательно, сумма противоположных углов равна $180^\\circ$: $\\angle BPQ + \\angle BCQ = 180^\\circ$ и $\\angle CQP + \\angle CBP = 180^\\circ$. \n\n3. Точки $A$, $P$, $B$ лежат на одной прямой, поэтому $\\angle APQ$ и $\\angle BPQ$ смежные: $\\angle APQ = 180^\\circ - \\angle BPQ$. Из равенства $\\angle BPQ = 180^\\circ - \\angle BCQ$ получаем $\\angle APQ = \\angle BCQ = \\angle C$ треугольника $ABC$. \n\n4. Аналогично, $A$, $Q$, $C$ лежат на одной прямой, значит $\\angle AQP = 180^\\circ - \\angle CQP$. Из $\\angle CQP = 180^\\circ - \\angle CBP$ следует $\\angle AQP = \\angle CBP = \\angle B$ треугольника $ABC$. \n\n5. Таким образом, в треугольниках $APQ$ и $ABC$: $\\angle A$ — общий, $\\angle APQ = \\angle C$, $\\angle AQP = \\angle B$. Следовательно, $\\triangle APQ \\sim \\triangle ABC$ с соответствием $A \\leftrightarrow A$, $P \\leftrightarrow C$, $Q \\leftrightarrow B$. \n\n6. Из подобия имеем $\\angle APQ = \\angle ACB$ и $\\angle AQP = \\angle ABC$. Прямые $PQ$ и $BC$ образуют с секущей $AB$ соответственные углы $\\angle AQP$ и $\\angle ABC$, которые равны. Поэтому $PQ \\parallel BC$.",
+  "correct_answer": "$PQ \\parallel BC$ (требуется доказать)",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 4,
+  "key_method": "Свойство вписанного четырёхугольника и подобие треугольников",
+  "idea_count": 5,
+  "is_clone": true,
+  "clone_similarity": 0.728,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:42:30.208613+00:00"
+}

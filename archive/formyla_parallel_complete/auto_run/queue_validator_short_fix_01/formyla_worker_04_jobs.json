@@ -1,0 +1,835 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0016-8-D3-5-L8-g678",
+      "mode": "replace_bad",
+      "id": "8-D3-5-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Функции и графики",
+      "subtopic": "Пересечения",
+      "method_code": "D3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "replace-0473",
+      "mode": "replace_bad",
+      "id": "8-A3-2-L8-gh5",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Квадратные уравнения и теорема Виета",
+      "subtopic": "Уравнения с параметром",
+      "method_code": "A3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 1
+    },
+    {
+      "job_id": "replace-0486",
+      "mode": "replace_bad",
+      "id": "8-B2-1-L7-g678",
+      "grade": 8,
+      "difficulty": 7,
+      "theme": "Неравенства и преобразования",
+      "subtopic": "Тождественные преобразования",
+      "method_code": "B2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 1
+    },
+    {
+      "job_id": "replace-0194",
+      "mode": "replace_bad",
+      "id": "6-C1-3-L8-g678",
+      "grade": 6,
+      "difficulty": 8,
+      "theme": "Целые числа и координаты",
+      "subtopic": "Действия с целыми и модуль",
+      "method_code": "C1",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 2
+    },
+    {
+      "job_id": "replace-0892",
+      "mode": "replace_bad",
+      "id": "11-A3-4-L8-gh5",
+      "grade": 11,
+      "difficulty": 8,
+      "theme": "Многочлены, последовательности, функциональные уравнения",
+      "subtopic": "Последовательности",
+      "method_code": "A3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 2
+    },
+    {
+      "job_id": "replace-0710",
+      "mode": "replace_bad",
+      "id": "9-E2-4-L7-g911",
+      "grade": 9,
+      "difficulty": 7,
+      "theme": "Теория чисел",
+      "subtopic": "Диофантовы уравнения",
+      "method_code": "E2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 2
+    },
+    {
+      "job_id": "replace-0326",
+      "mode": "replace_bad",
+      "id": "7-C2-3-L8-g678",
+      "grade": 7,
+      "difficulty": 8,
+      "theme": "Функции и графики",
+      "subtopic": "Чтение графиков",
+      "method_code": "C2",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 3
+    },
+    {
+      "job_id": "replace-0923",
+      "mode": "replace_bad",
+      "id": "11-C3-1-L8-gh3",
+      "grade": 11,
+      "difficulty": 8,
+      "theme": "Неравенства и оценки",
+      "subtopic": "Экстремумы",
+      "method_code": "C3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 3
+    },
+    {
+      "job_id": "replace-0022",
+      "mode": "replace_bad",
+      "id": "5-A2-3-L8-gh1",
+      "grade": 5,
+      "difficulty": 8,
+      "theme": "Числа и делимость",
+      "subtopic": "Деление с остатком",
+      "method_code": "A2",
+      "reasons": [
+        "simple_mod",
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 58,
+      "worker": 4
+    },
+    {
+      "job_id": "replace-0824",
+      "mode": "replace_bad",
+      "id": "10-E2-1-L8-g911",
+      "grade": 10,
+      "difficulty": 8,
+      "theme": "Теория чисел старшего уровня",
+      "subtopic": "Диофантовы",
+      "method_code": "E2",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 4
+    },
+    {
+      "job_id": "replace-0542",
+      "mode": "replace_bad",
+      "id": "8-D2-1-L7-g678",
+      "grade": 8,
+      "difficulty": 7,
+      "theme": "Функции и графики",
+      "subtopic": "Графики с модулем",
+      "method_code": "D2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 4
+    },
+    {
+      "job_id": "replace-0162",
+      "mode": "replace_bad",
+      "id": "6-A3-1-L8-gh1",
+      "grade": 6,
+      "difficulty": 8,
+      "theme": "Числа, делимость, НОД/НОК",
+      "subtopic": "Закономерности и ребусы",
+      "method_code": "A3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 5
+    },
+    {
+      "job_id": "replace-0860",
+      "mode": "replace_bad",
+      "id": "10-G2-1-L8-gh4",
+      "grade": 10,
+      "difficulty": 8,
+      "theme": "Логика, множества, функции и отображения",
+      "subtopic": "Отображения и функции",
+      "method_code": "G2",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 5
+    },
+    {
+      "job_id": "replace-0699",
+      "mode": "replace_bad",
+      "id": "9-D3-3-L8-gst2",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Геометрия треугольника и окружности",
+      "subtopic": "Менелай/Чева (база)",
+      "method_code": "D3",
+      "reasons": [
+        "simple_mod",
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 58,
+      "worker": 6
+    },
+    {
+      "job_id": "replace-0292",
+      "mode": "replace_bad",
+      "id": "7-B1-2-L8-g678",
+      "grade": 7,
+      "difficulty": 8,
+      "theme": "Линейные уравнения и системы",
+      "subtopic": "Линейные уравнения",
+      "method_code": "B1",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 6
+    },
+    {
+      "job_id": "replace-0135",
+      "mode": "replace_bad",
+      "id": "5-E3-34-L7-g",
+      "grade": 5,
+      "difficulty": 7,
+      "theme": "Комбинаторика и логика",
+      "subtopic": "Чётность и взвешивания",
+      "method_code": "E3",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 6
+    },
+    {
+      "job_id": "replace-0219",
+      "mode": "replace_bad",
+      "id": "6-D1-1-L7-g678",
+      "grade": 6,
+      "difficulty": 7,
+      "theme": "Уравнения и текстовые задачи",
+      "subtopic": "Линейные уравнения",
+      "method_code": "D1",
+      "reasons": [
+        "simple_mod",
+        "short_solution_L7L8"
+      ],
+      "priority": 47,
+      "worker": 7
+    },
+    {
+      "job_id": "replace-0657",
+      "mode": "replace_bad",
+      "id": "9-A3-4-L8-gh5",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Квадратные уравнения, Виет, параметры",
+      "subtopic": "Биквадратные",
+      "method_code": "A3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 7
+    },
+    {
+      "job_id": "replace-0930",
+      "mode": "replace_bad",
+      "id": "11-D2-2-L7-gh3",
+      "grade": 11,
+      "difficulty": 7,
+      "theme": "Функции, графики и параметры",
+      "subtopic": "Задачи с параметром",
+      "method_code": "D2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 7
+    },
+    {
+      "job_id": "replace-0336",
+      "mode": "replace_bad",
+      "id": "7-C3-3-L8-g678",
+      "grade": 7,
+      "difficulty": 8,
+      "theme": "Функции и графики",
+      "subtopic": "Пересечения и взаимное расположение",
+      "method_code": "C3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 8
+    },
+    {
+      "job_id": "replace-0350",
+      "mode": "replace_bad",
+      "id": "7-D2-1-L7-g678",
+      "grade": 7,
+      "difficulty": 7,
+      "theme": "Геометрия треугольников и углов",
+      "subtopic": "Признаки равенства треугольников",
+      "method_code": "D2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 8
+    },
+    {
+      "job_id": "replace-0765",
+      "mode": "replace_bad",
+      "id": "10-A2-2-L8-g911",
+      "grade": 10,
+      "difficulty": 8,
+      "theme": "Показательные и логарифмические выражения",
+      "subtopic": "Показательные уравнения",
+      "method_code": "A2",
+      "reasons": [
+        "simple_mod",
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 58,
+      "worker": 9
+    },
+    {
+      "job_id": "replace-0795",
+      "mode": "replace_bad",
+      "id": "10-C1-1-L8-gh5",
+      "grade": 10,
+      "difficulty": 8,
+      "theme": "Системы, параметры и неравенства",
+      "subtopic": "Системы и параметры",
+      "method_code": "C1",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 9
+    },
+    {
+      "job_id": "replace-0210",
+      "mode": "replace_bad",
+      "id": "6-C3-4-L7-g678",
+      "grade": 6,
+      "difficulty": 7,
+      "theme": "Целые числа и координаты",
+      "subtopic": "Координатная плоскость",
+      "method_code": "C3",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 9
+    },
+    {
+      "job_id": "replace-0169",
+      "mode": "replace_bad",
+      "id": "6-B1-2-L8-g678",
+      "grade": 6,
+      "difficulty": 8,
+      "theme": "Дроби, отношения, проценты",
+      "subtopic": "Пропорции",
+      "method_code": "B1",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 10
+    },
+    {
+      "job_id": "replace-0097",
+      "mode": "replace_bad",
+      "id": "5-D2-32-L7-g",
+      "grade": 5,
+      "difficulty": 7,
+      "theme": "Текстовые задачи",
+      "subtopic": "На работу",
+      "method_code": "D2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 10
+    },
+    {
+      "job_id": "replace-0933",
+      "mode": "replace_bad",
+      "id": "11-D2-5-L7-gst2",
+      "grade": 11,
+      "difficulty": 7,
+      "theme": "Функции, графики и параметры",
+      "subtopic": "Задачи с параметром",
+      "method_code": "D2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 10
+    },
+    {
+      "job_id": "replace-0299",
+      "mode": "replace_bad",
+      "id": "7-B2-2-L8-g678",
+      "grade": 7,
+      "difficulty": 8,
+      "theme": "Линейные уравнения и системы",
+      "subtopic": "Системы",
+      "method_code": "B2",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 11
+    },
+    {
+      "job_id": "replace-0297",
+      "mode": "replace_bad",
+      "id": "7-B2-4-L7-g678",
+      "grade": 7,
+      "difficulty": 7,
+      "theme": "Линейные уравнения и системы",
+      "subtopic": "Системы",
+      "method_code": "B2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 11
+    },
+    {
+      "job_id": "replace-0817",
+      "mode": "replace_bad",
+      "id": "10-D3-1-L7-g911",
+      "grade": 10,
+      "difficulty": 7,
+      "theme": "Стереометрия и векторы",
+      "subtopic": "Сечения",
+      "method_code": "D3",
+      "reasons": [
+        "simple_mod",
+        "short_solution_L7L8"
+      ],
+      "priority": 47,
+      "worker": 12
+    },
+    {
+      "job_id": "replace-0637",
+      "mode": "replace_bad",
+      "id": "8-G3-1-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Комбинаторика, логика, инварианты",
+      "subtopic": "Игры",
+      "method_code": "G3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 12
+    },
+    {
+      "job_id": "replace-0274",
+      "mode": "replace_bad",
+      "id": "7-A1-3-L8-g678",
+      "grade": 7,
+      "difficulty": 8,
+      "theme": "Выражения, степени, многочлены",
+      "subtopic": "Формулы сокращённого умножения",
+      "method_code": "A1",
+      "reasons": [
+        "simple_mod",
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 58,
+      "worker": 13
+    },
+    {
+      "job_id": "replace-0349",
+      "mode": "replace_bad",
+      "id": "7-D1-5-L8-g678",
+      "grade": 7,
+      "difficulty": 8,
+      "theme": "Геометрия треугольников и углов",
+      "subtopic": "Углы и параллельные",
+      "method_code": "D1",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 13
+    },
+    {
+      "job_id": "replace-0100",
+      "mode": "replace_bad",
+      "id": "5-D2-35-L7-g",
+      "grade": 5,
+      "difficulty": 7,
+      "theme": "Текстовые задачи",
+      "subtopic": "На работу",
+      "method_code": "D2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 13
+    },
+    {
+      "job_id": "replace-0282",
+      "mode": "replace_bad",
+      "id": "7-A2-5-L8-g678",
+      "grade": 7,
+      "difficulty": 8,
+      "theme": "Выражения, степени, многочлены",
+      "subtopic": "Преобразование выражений",
+      "method_code": "A2",
+      "reasons": [
+        "simple_mod",
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 58,
+      "worker": 14
+    },
+    {
+      "job_id": "replace-0639",
+      "mode": "replace_bad",
+      "id": "8-G3-3-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Комбинаторика, логика, инварианты",
+      "subtopic": "Игры",
+      "method_code": "G3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 14
+    },
+    {
+      "job_id": "replace-0857",
+      "mode": "replace_bad",
+      "id": "10-G2-7-L7-gf",
+      "grade": 10,
+      "difficulty": 7,
+      "theme": "Логика, множества, функции и отображения",
+      "subtopic": "Отображения и функции",
+      "method_code": "G2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 14
+    },
+    {
+      "job_id": "replace-0176",
+      "mode": "replace_bad",
+      "id": "6-B2-2-L8-g678",
+      "grade": 6,
+      "difficulty": 8,
+      "theme": "Дроби, отношения, проценты",
+      "subtopic": "Проценты",
+      "method_code": "B2",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 15
+    },
+    {
+      "job_id": "replace-0173",
+      "mode": "replace_bad",
+      "id": "6-B2-2-L7-g678",
+      "grade": 6,
+      "difficulty": 7,
+      "theme": "Дроби, отношения, проценты",
+      "subtopic": "Проценты",
+      "method_code": "B2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 15
+    },
+    {
+      "job_id": "replace-0343",
+      "mode": "replace_bad",
+      "id": "7-D1-1-L7-g678",
+      "grade": 7,
+      "difficulty": 7,
+      "theme": "Геометрия треугольников и углов",
+      "subtopic": "Углы и параллельные",
+      "method_code": "D1",
+      "reasons": [
+        "simple_mod",
+        "short_solution_L7L8"
+      ],
+      "priority": 47,
+      "worker": 16
+    },
+    {
+      "job_id": "replace-0174",
+      "mode": "replace_bad",
+      "id": "6-B2-3-L7-g678",
+      "grade": 6,
+      "difficulty": 7,
+      "theme": "Дроби, отношения, проценты",
+      "subtopic": "Проценты",
+      "method_code": "B2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 16
+    },
+    {
+      "job_id": "replace-0344",
+      "mode": "replace_bad",
+      "id": "7-D1-2-L7-g678",
+      "grade": 7,
+      "difficulty": 7,
+      "theme": "Геометрия треугольников и углов",
+      "subtopic": "Углы и параллельные",
+      "method_code": "D1",
+      "reasons": [
+        "simple_mod",
+        "short_solution_L7L8"
+      ],
+      "priority": 47,
+      "worker": 17
+    },
+    {
+      "job_id": "replace-0643",
+      "mode": "replace_bad",
+      "id": "9-A1-1-L8-gh4",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Квадратные уравнения, Виет, параметры",
+      "subtopic": "Теорема Виета",
+      "method_code": "A1",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 17
+    },
+    {
+      "job_id": "replace-0577",
+      "mode": "replace_bad",
+      "id": "8-E3-4-L7-g678",
+      "grade": 8,
+      "difficulty": 7,
+      "theme": "Геометрия: подобие и окружность",
+      "subtopic": "Касательные и хорды",
+      "method_code": "E3",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 17
+    },
+    {
+      "job_id": "replace-0183",
+      "mode": "replace_bad",
+      "id": "6-B3-1-L8-g678",
+      "grade": 6,
+      "difficulty": 8,
+      "theme": "Дроби, отношения, проценты",
+      "subtopic": "Смеси и средние",
+      "method_code": "B3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 18
+    },
+    {
+      "job_id": "replace-0644",
+      "mode": "replace_bad",
+      "id": "9-A1-1-L8-gh5",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Квадратные уравнения, Виет, параметры",
+      "subtopic": "Теорема Виета",
+      "method_code": "A1",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 18
+    },
+    {
+      "job_id": "replace-0180",
+      "mode": "replace_bad",
+      "id": "6-B3-3-L7-g678",
+      "grade": 6,
+      "difficulty": 7,
+      "theme": "Дроби, отношения, проценты",
+      "subtopic": "Смеси и средние",
+      "method_code": "B3",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 18
+    },
+    {
+      "job_id": "replace-0105",
+      "mode": "replace_bad",
+      "id": "5-D2-40-L8-g",
+      "grade": 5,
+      "difficulty": 8,
+      "theme": "Текстовые задачи",
+      "subtopic": "На работу",
+      "method_code": "D2",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 19
+    },
+    {
+      "job_id": "replace-0550",
+      "mode": "replace_bad",
+      "id": "8-D2-4-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Функции и графики",
+      "subtopic": "Графики с модулем",
+      "method_code": "D2",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 19
+    },
+    {
+      "job_id": "replace-0258",
+      "mode": "replace_bad",
+      "id": "6-E3-1-L7-g678",
+      "grade": 6,
+      "difficulty": 7,
+      "theme": "Геометрия, комбинаторика и логика",
+      "subtopic": "Инварианты и игры",
+      "method_code": "E3",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 19
+    },
+    {
+      "job_id": "replace-0029",
+      "mode": "replace_bad",
+      "id": "5-A3-38-L8-g",
+      "grade": 5,
+      "difficulty": 8,
+      "theme": "Числа и делимость",
+      "subtopic": "Числовые ребусы и закономерности",
+      "method_code": "A3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 20
+    },
+    {
+      "job_id": "replace-0610",
+      "mode": "replace_bad",
+      "id": "8-F3-4-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Теория чисел: остатки и диофантовы",
+      "subtopic": "Делимость и разложение",
+      "method_code": "F3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 20
+    },
+    {
+      "job_id": "replace-0259",
+      "mode": "replace_bad",
+      "id": "6-E3-2-L7-g678",
+      "grade": 6,
+      "difficulty": 7,
+      "theme": "Геометрия, комбинаторика и логика",
+      "subtopic": "Инварианты и игры",
+      "method_code": "E3",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 20
+    }
+  ]
+}

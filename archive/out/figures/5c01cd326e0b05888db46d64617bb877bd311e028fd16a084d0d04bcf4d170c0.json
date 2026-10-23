@@ -1,0 +1,98 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 3
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": -2,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 2,
+   "y": 0
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "point",
+   "id": "K",
+   "x": 4,
+   "y": 4
+  },
+  {
+   "type": "quad",
+   "id": "ABHK",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "OK",
+   "line2": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "M",
+   "from": "L",
+   "line": "AH"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABHK",
+   "style": "soft"
+  },
+  {
+   "segment": "OH",
+   "style": "dashed"
+  },
+  {
+   "segment": "OK",
+   "style": "accent"
+  },
+  {
+   "segment": "AH",
+   "style": "soft"
+  },
+  {
+   "segment": "LM",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "L",
+    "M",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "AM",
+    "MH"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

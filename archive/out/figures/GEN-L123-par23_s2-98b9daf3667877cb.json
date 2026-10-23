@@ -1,0 +1,89 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AB",
+   "ratio": 0.3
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "CD",
+   "ratio": 0.6
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "MN",
+   "ratio": 0.5
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "AC",
+   "line2": "BD"
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "AQ"
+  },
+  {
+   "type": "midpoint",
+   "id": "F",
+   "of": "BQ"
+  },
+  {
+   "type": "midpoint",
+   "id": "G",
+   "of": "CQ"
+  },
+  {
+   "type": "midpoint",
+   "id": "H",
+   "of": "DQ"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "dashed"
+  },
+  {
+   "segment": "BD",
+   "style": "dashed"
+  },
+  {
+   "segment": "PA",
+   "style": "soft"
+  },
+  {
+   "segment": "PB",
+   "style": "soft"
+  },
+  {
+   "segment": "PC",
+   "style": "soft"
+  },
+  {
+   "segment": "PD",
+   "style": "soft"
+  },
+  {
+   "polygon": "EFGH",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

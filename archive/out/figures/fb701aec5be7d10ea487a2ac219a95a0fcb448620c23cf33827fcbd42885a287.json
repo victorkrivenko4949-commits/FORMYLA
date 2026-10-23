@@ -1,0 +1,115 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "D"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A",
+   "circle": "w",
+   "angle": 326
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 34
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 232
+  },
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "cyclic"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X",
+   "of": "BC",
+   "ratio": 0.7405
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AX",
+   "style": "soft"
+  },
+  {
+   "segment": "DX",
+   "style": "soft"
+  },
+  {
+   "circle": "w",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "34°"
+  },
+  {
+   "angle": [
+    "X",
+    "D",
+    "C"
+   ],
+   "text": "52°"
+  },
+  {
+   "equal": [
+    "AD",
+    "DC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AB",
+    "BX"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "circle",
+   "id": "d",
+   "center": "D",
+   "through": "C",
+   "reason": "Окружность с центром D радиуса DC; на ней лежат A, C и X, так как AD=DC и XD=DC."
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "d",
+   "style": "dashed"
+  }
+ ]
+}

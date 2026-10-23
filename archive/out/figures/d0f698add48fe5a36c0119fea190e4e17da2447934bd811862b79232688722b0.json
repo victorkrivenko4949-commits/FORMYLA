@@ -1,0 +1,107 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 8,
+   "y": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "O",
+   "of": "AB",
+   "ratio": 0.25
+  },
+  {
+   "type": "circle",
+   "id": "big",
+   "center": "M",
+   "through": "A"
+  },
+  {
+   "type": "circle",
+   "id": "small",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "tangent_point",
+   "id": "C",
+   "circle": "small",
+   "from": "B",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "big",
+   "line": "BC",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "circle": "big"
+  },
+  {
+   "circle": "small"
+  },
+  {
+   "segment": "AB",
+   "style": "dashed"
+  },
+  {
+   "segment": "BD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "D",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "C",
+    "B"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "segment",
+   "id": "AD",
+   "reason": "∠ADB опирается на диаметр AB, поэтому AD⊥BD, и AD∥OC."
+  },
+  {
+   "type": "segment",
+   "id": "OC",
+   "reason": "OC — радиус к точке касания C, поэтому OC⊥BD."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "segment": "OC",
+   "style": "soft"
+  }
+ ]
+}

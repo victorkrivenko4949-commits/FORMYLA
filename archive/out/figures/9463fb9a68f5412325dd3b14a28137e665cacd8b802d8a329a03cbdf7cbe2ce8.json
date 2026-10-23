@@ -1,0 +1,95 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "AD",
+   "ratio": 0.48
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "KB"
+  },
+  {
+   "segment": "KM"
+  },
+  {
+   "segment": "MD"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "46°"
+  },
+  {
+   "angle": [
+    "K",
+    "M",
+    "D"
+   ],
+   "text": "?"
+  },
+  {
+   "equal": [
+    "BK",
+    "BM"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BM",
+    "MD"
+   ],
+   "ticks": 1
+  },
+  {
+   "right_angle": [
+    "B",
+    "D",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "D"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "segment",
+   "id": "BD",
+   "from": "B",
+   "to": "D",
+   "reason": "Диагональ BD нужна для доказательства прямоугольности углов BDC и ABD."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BD",
+   "style": "soft"
+  }
+ ]
+}

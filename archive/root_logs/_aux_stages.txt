@@ -1,0 +1,12 @@
+job=2078 stage=aux_template_match role=None     provider=None           model=None attempt=1 in=None out=None reas=None val=1 cov=None vis=None err=None fb=0 to=0
+job=2078 stage=aux_usefulness     role=None     provider=None           model=None attempt=1 in=None out=None reas=None val=1 cov=0.6 vis=None err=None fb=0 to=0
+job=2078 stage=completeness_check role=None     provider=None           model=None attempt=1 in=None out=None reas=None val=0 cov=None vis=None err=["INCOMPLETE"] fb=0 to=0
+job=2102 stage=aux_template_match role=None     provider=None           model=None attempt=1 in=None out=None reas=None val=1 cov=None vis=None err=None fb=0 to=0
+job=2102 stage=aux_usefulness     role=None     provider=None           model=None attempt=1 in=None out=None reas=None val=1 cov=0.6 vis=None err=None fb=0 to=0
+job=2102 stage=completeness_check role=None     provider=None           model=None attempt=1 in=None out=None reas=None val=0 cov=None vis=None err=["INCOMPLETE"] fb=0 to=0
+job=2117 stage=aux_template_match role=None     provider=None           model=None attempt=1 in=None out=None reas=None val=1 cov=None vis=None err=None fb=0 to=0
+job=2117 stage=aux_usefulness     role=None     provider=None           model=None attempt=1 in=None out=None reas=None val=1 cov=0.6 vis=None err=None fb=0 to=0
+job=2117 stage=aux_template_match role=None     provider=None           model=None attempt=1 in=None out=None reas=None val=1 cov=None vis=None err=None fb=0 to=0
+job=2117 stage=aux_usefulness     role=None     provider=None           model=None attempt=1 in=None out=None reas=None val=1 cov=0.6 vis=None err=None fb=0 to=0
+job=2117 stage=completeness_check role=None     provider=None           model=None attempt=1 in=None out=None reas=None val=0 cov=None vis=None err=["INCOMPLETE"] fb=0 to=0
+job=2117 stage=completeness_check role=None     provider=None           model=None attempt=1 in=None out=None reas=None val=0 cov=None vis=None err=["INCOMPLETE"] fb=0 to=0

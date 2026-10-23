@@ -1,0 +1,99 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "A",
+   "through": "C"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "w1",
+   "line": "AI",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "N",
+   "circle": "w1",
+   "line": "AB",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "CNM",
+   "style": "accent"
+  },
+  {
+   "segment": "AN",
+   "style": "soft"
+  },
+  {
+   "segment": "AM",
+   "style": "soft"
+  },
+  {
+   "circle": "w1",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AC",
+    "AM",
+    "AN"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "M"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "M",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "A",
+    "N",
+    "M"
+   ],
+   "text": "φ"
+  },
+  {
+   "angle": [
+    "C",
+    "N",
+    "M"
+   ],
+   "text": "φ"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,4 @@
+[olympiads.py] Loaded 5267 entries from JSONL
+ВНИМАНИЕ: Файл adaptive_data.py не найден или пуст.
+[figures_manifest] MANIFEST.json not found - figures disabled
+DEBUG: Загружено 81 привязок картинок из problem_images.py

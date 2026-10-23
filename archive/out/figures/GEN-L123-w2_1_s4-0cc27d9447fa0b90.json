@@ -1,0 +1,77 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AB",
+   "ratio": 0.375
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "120°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "D"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "D",
+    "C",
+    "B"
+   ],
+   "text": "60°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "C",
+   "through": "B",
+   "reason": "Вспомогательная окружность для построения точки E"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "c1",
+   "line": "AC",
+   "pick": 1,
+   "reason": "Точка E на продолжении AC за C с CE=BC, чтобы получить равносторонний треугольник BCE и подобие ACD и AEB"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CE",
+   "style": "soft"
+  },
+  {
+   "segment": "BE",
+   "style": "soft"
+  }
+ ]
+}

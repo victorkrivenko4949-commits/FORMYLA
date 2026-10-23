@@ -1,0 +1,78 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "cyclic"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "triangle",
+   "id": "ABD",
+   "kind": "any"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AC",
+   "line2": "BD"
+  },
+  {
+   "type": "circumcircle",
+   "id": "o1",
+   "of": "APB"
+  },
+  {
+   "type": "circumcircle",
+   "id": "o2",
+   "of": "CPD"
+  },
+  {
+   "type": "circle_circle",
+   "id": "Q",
+   "circle1": "o1",
+   "circle2": "o2",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w"
+  },
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "circle": "o1",
+   "style": "soft"
+  },
+  {
+   "circle": "o2",
+   "style": "soft"
+  },
+  {
+   "line": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

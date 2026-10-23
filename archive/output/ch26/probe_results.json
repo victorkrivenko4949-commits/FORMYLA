@@ -1,0 +1,74 @@
+[
+  {
+    "task_uid": "GEN-L123-w2_63_s6-e60cb48e7a",
+    "used_inscribed": true,
+    "used_point_on_circle": false,
+    "n_incidences": 0,
+    "incidence_passed": true,
+    "max_dev": 2.842170943040401e-14,
+    "status": "done",
+    "svg_path": "c:\\Users\\Redmi\\Desktop\\Новая папка (2)\\output\\ch26\\svg\\GEN-L123-w2_63_s6-e60cb48e7a_base.svg",
+    "latency_ms": 6287,
+    "condition": "В окружность вписан четырёхугольник ABCD. Известно, что ∠ABD = 40°, ∠CBD = 25°, "
+  },
+  {
+    "task_uid": "GEN-L123-w2_92_s4-2faec78478",
+    "used_inscribed": true,
+    "used_point_on_circle": false,
+    "n_incidences": 6,
+    "incidence_passed": true,
+    "max_dev": 2.842170943040401e-14,
+    "status": "failed",
+    "svg_path": "",
+    "latency_ms": 4887,
+    "condition": "В окружность вписан четырёхугольник ABCD. Известно, что его диагонали AC и BD пе"
+  },
+  {
+    "task_uid": "GEN-L123-par7_s2-90fb8853c0f",
+    "used_inscribed": true,
+    "used_point_on_circle": true,
+    "n_incidences": 4,
+    "incidence_passed": true,
+    "max_dev": 2.842170943040401e-14,
+    "status": "done",
+    "svg_path": "c:\\Users\\Redmi\\Desktop\\Новая папка (2)\\output\\ch26\\svg\\GEN-L123-par7_s2-90fb8853c0f_base.svg",
+    "latency_ms": 6017,
+    "condition": "В окружность вписан равнобедренный треугольник ABC (AB = BC). На дуге AC, не сод"
+  },
+  {
+    "task_uid": "GEN-L123-w2_100_s5-12e4ca2ae",
+    "used_inscribed": true,
+    "used_point_on_circle": false,
+    "n_incidences": 0,
+    "incidence_passed": true,
+    "max_dev": 2.842170943040401e-14,
+    "status": "done",
+    "svg_path": "c:\\Users\\Redmi\\Desktop\\Новая папка (2)\\output\\ch26\\svg\\GEN-L123-w2_100_s5-12e4ca2ae_base.svg",
+    "latency_ms": 6014,
+    "condition": "В окружность вписан четырёхугольник ABCD. Известно, что ∠ABD = 40°, ∠ADB = 30°, "
+  },
+  {
+    "task_uid": "GEN-L123-w2_18_s3-083bf3a56f",
+    "used_inscribed": true,
+    "used_point_on_circle": false,
+    "n_incidences": 6,
+    "incidence_passed": true,
+    "max_dev": 2.842170943040401e-14,
+    "status": "failed",
+    "svg_path": "",
+    "latency_ms": 4889,
+    "condition": "В окружность вписан четырёхугольник ABCD, диагонали которого пересекаются в точк"
+  },
+  {
+    "task_uid": "GEN-L123-w2_74_s6-b4a2c2ea09",
+    "used_inscribed": true,
+    "used_point_on_circle": true,
+    "n_incidences": 5,
+    "incidence_passed": true,
+    "max_dev": 2.842170943040401e-14,
+    "status": "done",
+    "svg_path": "c:\\Users\\Redmi\\Desktop\\Новая папка (2)\\output\\ch26\\svg\\GEN-L123-w2_74_s6-b4a2c2ea09_base.svg",
+    "latency_ms": 6174,
+    "condition": "В окружность вписан четырёхугольник ABCD. На дуге BC, не содержащей точек A и D,"
+  }
+]

@@ -1,0 +1,152 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "R",
+   "circle": "w",
+   "line": "BI",
+   "pick": 1
+  },
+  {
+   "type": "reflect_point",
+   "id": "S",
+   "of": "R",
+   "over": "O"
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "O",
+   "line": "BI"
+  },
+  {
+   "type": "foot",
+   "id": "Q",
+   "from": "O",
+   "line": "BS"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "X",
+   "of": "MN"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "line": "BI",
+   "style": "dashed"
+  },
+  {
+   "line": "BS",
+   "style": "dashed"
+  },
+  {
+   "segment": "OP",
+   "style": "soft"
+  },
+  {
+   "segment": "OQ",
+   "style": "soft"
+  },
+  {
+   "segment": "MN",
+   "style": "accent"
+  },
+  {
+   "segment": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O",
+    "P",
+    "R"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "Q",
+    "S"
+   ]
+  },
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AN",
+    "NB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "MX",
+    "XN"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "B",
+   "over": "O",
+   "reason": "Точка D диаметрально противоположна B; гомотетия с центром B и коэффициентом 2 переводит O,P,Q в D,R,S, а отрезок MN — в AC. Диаметр RS проходит через середину AC, значит его прообраз PQ делит MN пополам."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BD",
+   "style": "dashed"
+  },
+  {
+   "segment": "RS",
+   "style": "dashed"
+  }
+ ]
+}

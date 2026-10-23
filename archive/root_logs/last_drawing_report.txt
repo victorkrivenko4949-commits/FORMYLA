@@ -1,0 +1,143 @@
+============================================================================
+  META
+============================================================================
+id            : 27
+created_at    : 2026-05-16 12:01:22.070865
+status        : ok
+model         : anthropic/claude-opus-4.7
+user_id       : 2
+render_ms     : 47721
+cost_usd      : 0.40149
+repair_iters  : 1
+critique_rounds: 0
+critique_accepted: 0
+critique_rejected: 0
+image_size    : 69887
+image_path    : C:\Users\Victor\Desktop\Новая папка (2)\static\generated\drawing_06cb2967d7e04b3d9484dbfd7d9e6984.png
+
+============================================================================
+  PROBLEM
+============================================================================
+    Дан треугольник ABC, вписанный в окружность Ω с центром O. На окружности взята произвольная точка P 
+    (отличная от вершин). Из P опустили перпендикуляры на стороны треугольника: на BC — основание X, на 
+    CA — основание Y, на AB — основание Z. Постройте чертёж: треугольник ABC, окружность Ω, центр O, 
+    точку P на окружности, три перпендикуляра пунктиром, основания X, Y, Z, и проведите через них прямую
+     Симсона жирной сплошной линией. Все семь точек подпишите.
+
+============================================================================
+  FINAL CODE (after all critique rounds)
+============================================================================
+    # === ПЛАН ПОСТРОЕНИЯ ===
+    # 1) Окружность Ω с центром O=(0,0) и радиусом R=1.
+    # 2) Вершины A, B, C на окружности заданы углами:
+    #    A: угол 110°, B: угол 210°, C: угол 340°.
+    # 3) Точка P на окружности под углом 50°.
+    # 4) X — основание перпендикуляра из P на прямую BC.
+    # 5) Y — основание перпендикуляра из P на прямую CA.
+    # 6) Z — основание перпендикуляра из P на прямую AB.
+    # 7) Прямая Симсона проходит через X, Y, Z.
+    # === КОНЕЦ ПЛАНА ===
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    def foot(P, U, V):
+        UV = V - U
+        t = np.dot(P - U, UV) / np.dot(UV, UV)
+        return U + t * UV, t
+
+    O = np.array([0.0, 0.0])
+    R = 1.0
+
+    ang = lambda d: np.array([np.cos(np.radians(d)), np.sin(np.radians(d))])
+    A = R * ang(110)
+    B = R * ang(210)
+    C = R * ang(340)
+    P = R * ang(50)
+
+    for Pt, name in [(A,'A'),(B,'B'),(C,'C'),(P,'P')]:
+        assert abs(np.linalg.norm(Pt - O) - R) < 1e-9, f'{name} not on Ω'
+
+    X, tX = foot(P, B, C)
+    Y, tY = foot(P, C, A)
+    Z, tZ = foot(P, A, B)
+
+    assert abs(np.dot(P - X, C - B)) < 1e-9
+    assert abs(np.dot(P - Y, A - C)) < 1e-9
+    assert abs(np.dot(P - Z, B - A)) < 1e-9
+
+    v1 = Y - X
+    v2 = Z - X
+    cross = v1[0]*v2[1] - v1[1]*v2[0]
+    assert abs(cross) < 1e-9, f'Simson line failed, cross={cross}'
+
+    pts = {'A':A,'B':B,'C':C,'P':P,'O':O,'X':X,'Y':Y,'Z':Z}
+    diag = 2*R*1.3
+    names = list(pts.keys())
+    for i in range(len(names)):
+        for j in range(i+1, len(names)):
+            n1, n2 = names[i], names[j]
+            assert np.linalg.norm(pts[n1]-pts[n2]) > 0.12*diag*0.4, f'{n1}{n2} too close'
+
+    fig, ax = plt.subplots(figsize=(10,10), dpi=140)
+    ax.set_aspect('equal')
+    ax.axis('off')
+
+    th = np.linspace(0, 2*np.pi, 400)
+    ax.plot(R*np.cos(th), R*np.sin(th), 'k-', lw=2)
+
+    tri = np.array([A,B,C,A])
+    ax.plot(tri[:,0], tri[:,1], 'k-', lw=2)
+
+    triple = [X,Y,Z]
+    best = None
+    bd = -1
+    for i in range(len(triple)):
+        for j in range(i+1, len(triple)):
+            d = np.linalg.norm(triple[i]-triple[j])
+            if d > bd:
+                bd = d
+                best = (triple[i], triple[j])
+    p1, p2 = best
+    direction = (p2-p1)/np.linalg.norm(p2-p1)
+    ext = 0.4
+    L1 = p1 - direction*ext
+    L2 = p2 + direction*ext
+    ax.plot([L1[0],L2[0]],[L1[1],L2[1]], 'k-', lw=3)
+
+    for F in (X,Y,Z):
+        ax.plot([P[0],F[0]],[P[1],F[1]], 'k--', lw=1.5, dashes=(5,4))
+
+    all_pts = {'A':A,'B':B,'C':C,'P':P,'O':O,'X':X,'Y':Y,'Z':Z}
+    for n,p in all_pts.items():
+        ax.plot(p[0], p[1], 'ko', ms=5)
+
+    offsets = {
+        'A': (-0.08, 0.06),
+        'B': (-0.10, -0.04),
+        'C': (0.08, -0.04),
+        'P': (0.08, 0.06),
+        'O': (0.04, -0.08),
+        'X': (-0.02, -0.12),
+        'Y': (0.08, 0.04),
+        'Z': (-0.12, 0.02),
+    }
+    for n,p in all_pts.items():
+        dx,dy = offsets[n]
+        ax.text(p[0]+dx, p[1]+dy, n, fontsize=20, ha='center', va='center',
+                family='sans-serif', color='k')
+
+    xs = [p[0] for p in all_pts.values()] + list(R*np.cos(th))
+    ys = [p[1] for p in all_pts.values()] + list(R*np.sin(th))
+    xmin,xmax = min(xs), max(xs)
+    ymin,ymax = min(ys), max(ys)
+    mx = max(xmax-xmin, ymax-ymin)
+    pad = 0.12*mx
+    ax.set_xlim(xmin-pad, xmax+pad)
+    ax.set_ylim(ymin-pad, ymax+pad)
+
+============================================================================
+  CRITIQUE
+============================================================================
+    [no critique recorded -- row may predate the critic stage]
+

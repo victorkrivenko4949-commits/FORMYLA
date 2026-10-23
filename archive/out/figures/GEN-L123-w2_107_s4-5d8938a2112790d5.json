@@ -1,0 +1,233 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 12,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 12,
+   "y": 8
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 0,
+   "y": 8
+  },
+  {
+   "type": "point",
+   "id": "E",
+   "x": 1,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "F",
+   "x": 7,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "G",
+   "x": 7,
+   "y": 7
+  },
+  {
+   "type": "point",
+   "id": "H",
+   "x": 1,
+   "y": 7
+  },
+  {
+   "type": "point",
+   "id": "I",
+   "x": 9,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "J",
+   "x": 11,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "K",
+   "x": 11,
+   "y": 3
+  },
+  {
+   "type": "point",
+   "id": "L",
+   "x": 9,
+   "y": 3
+  },
+  {
+   "type": "point",
+   "id": "M",
+   "x": 9,
+   "y": 4
+  },
+  {
+   "type": "point",
+   "id": "N",
+   "x": 10,
+   "y": 4
+  },
+  {
+   "type": "point",
+   "id": "O",
+   "x": 10,
+   "y": 5
+  },
+  {
+   "type": "point",
+   "id": "P",
+   "x": 9,
+   "y": 5
+  },
+  {
+   "type": "point",
+   "id": "Q",
+   "x": 10,
+   "y": 6
+  },
+  {
+   "type": "point",
+   "id": "R",
+   "x": 11,
+   "y": 6
+  },
+  {
+   "type": "point",
+   "id": "S",
+   "x": 11,
+   "y": 7
+  },
+  {
+   "type": "point",
+   "id": "T",
+   "x": 10,
+   "y": 7
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "EFGH",
+   "style": "accent"
+  },
+  {
+   "polygon": "IJKL",
+   "style": "accent"
+  },
+  {
+   "polygon": "MNOP",
+   "style": "accent"
+  },
+  {
+   "polygon": "QRST",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "C",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "D",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "D",
+    "A",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "E",
+    "F",
+    "G"
+   ]
+  },
+  {
+   "right_angle": [
+    "F",
+    "G",
+    "H"
+   ]
+  },
+  {
+   "right_angle": [
+    "G",
+    "H",
+    "E"
+   ]
+  },
+  {
+   "right_angle": [
+    "H",
+    "E",
+    "F"
+   ]
+  },
+  {
+   "equal": [
+    "EF",
+    "FG"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "IJ",
+    "JK"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "MN",
+    "NO"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "QR",
+    "RS"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

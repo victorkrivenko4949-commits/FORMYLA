@@ -1,0 +1,126 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "BC"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "C",
+   "through": "H"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "w1",
+   "line": "AC",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "F",
+   "circle": "w1",
+   "line": "BC",
+   "pick": 0
+  },
+  {
+   "type": "reflect_point",
+   "id": "P",
+   "of": "E",
+   "over": "M"
+  },
+  {
+   "type": "reflect_point",
+   "id": "Q",
+   "of": "F",
+   "over": "N"
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "AQ",
+   "line2": "BP"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CH",
+   "style": "dashed"
+  },
+  {
+   "segment": "AP",
+   "style": "soft"
+  },
+  {
+   "segment": "BQ",
+   "style": "soft"
+  },
+  {
+   "segment": "AQ",
+   "style": "accent"
+  },
+  {
+   "segment": "BP",
+   "style": "accent"
+  },
+  {
+   "segment": "CX",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "H",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "AP",
+    "CH",
+    "BQ"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "X",
+    "C"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,87 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "CI",
+   "line2": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "CB"
+  },
+  {
+   "type": "reflect_point",
+   "id": "K",
+   "of": "L",
+   "over": "O"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AK",
+   "line2": "CL"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "CLBK"
+  },
+  {
+   "segment": "AK",
+   "style": "accent"
+  },
+  {
+   "segment": "LK",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "C",
+    "L"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "L",
+    "C",
+    "B"
+   ],
+   "text": "α"
+  },
+  {
+   "equal": [
+    "CL",
+    "BK"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "LB",
+    "CK"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,15 @@
+{
+  "jobs": [
+    {
+      "job_id": "fill-0073",
+      "mode": "fill_missing",
+      "grade": 6,
+      "difficulty": 4,
+      "theme": "Числа, делимость, НОД/НОК",
+      "subtopic": "Закономерности и ребусы",
+      "method_code": "A3",
+      "quality_target": "соответствие уровню и теме",
+      "worker": 13
+    }
+  ]
+}

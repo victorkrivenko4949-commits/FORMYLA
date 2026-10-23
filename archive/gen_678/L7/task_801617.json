@@ -1,0 +1,20 @@
+{
+  "id": 801617,
+  "task_text": "Многочлен $P(x)$ степени $n$ с целыми коэффициентами таков, что для всех целых $k=0,1,\\dots,n$ значение $P(k)$ делится на $k+1$. Докажите, что $P(-1)$ делится на $n+1$.",
+  "solution": "Пусть $P(x)$ степени $n$. Используем интерполяционную формулу Лагранжа: $$P(x)=\\sum_{i=0}^n P(i)\\cdot L_i(x),\\quad L_i(x)=\\prod_{\\substack{j=0\\\\ j\\neq i}}^n \\frac{x-j}{i-j}.$$ Подставим $x=-1$: $$P(-1)=\\sum_{i=0}^n P(i)\\cdot \\prod_{j\\neq i}\\frac{-1-j}{i-j} = \\sum_{i=0}^n P(i)\\cdot \\prod_{j\\neq i}\\frac{-(j+1)}{i-j}= \\sum_{i=0}^n P(i)\\cdot (-1)^n\\prod_{j\\neq i}\\frac{j+1}{i-j}.$$ Теперь вычислим произведение. Заметим, что $\\prod_{j\\neq i}(j+1)=\\frac{(n+1)!}{i+1}$, а $\\prod_{j\\neq i}(i-j)=(-1)^{n-i}i!(n-i)!$. Тогда $$\\prod_{j\\neq i}\\frac{j+1}{i-j}= \\frac{(n+1)!/(i+1)}{(-1)^{n-i}i!(n-i)!}=(-1)^{n-i}\\frac{(n+1)!}{(i+1)i!(n-i)!}=(-1)^{n-i}\\binom{n+1}{i+1}.$$ Следовательно, $$P(-1)=\\sum_{i=0}^n P(i)(-1)^n(-1)^{n-i}\\binom{n+1}{i+1}=\\sum_{i=0}^n P(i)(-1)^i\\binom{n+1}{i+1}.$$ По условию $P(i)=(i+1)a_i$, где $a_i\\in\\mathbb{Z}$. Тогда $$P(-1)=\\sum_{i=0}^n (-1)^i (i+1)a_i\\binom{n+1}{i+1}=\\sum_{i=0}^n (-1)^i a_i (i+1)\\binom{n+1}{i+1}.$$ Но $(i+1)\\binom{n+1}{i+1}=(n+1)\\binom{n}{i}$ (проверяется раскрытием факториалов). Таким образом, $$P(-1)=(n+1)\\sum_{i=0}^n (-1)^i a_i\\binom{n}{i}.$$ Сумма $\\sum_{i=0}^n (-1)^i a_i\\binom{n}{i}$ является целым числом, поэтому $P(-1)$ делится на $n+1$.",
+  "correct_answer": "P(-1) делится на n+1",
+  "class_level": 9,
+  "topic": "Алгебра",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Интерполяция Лагранжа с последующим использованием комбинаторных тождеств",
+  "idea_count": 5,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T13:34:52.713881+00:00"
+}

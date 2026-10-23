@@ -1,0 +1,108 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "isosceles"
+  },
+  {
+   "type": "midpoint",
+   "id": "M1",
+   "of": "AC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "B",
+   "over": "M1"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "P",
+   "circle": "w",
+   "angle": 330
+  },
+  {
+   "type": "midpoint",
+   "id": "M2",
+   "of": "PC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "Q",
+   "of": "A",
+   "over": "M2"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "APQC"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "DP",
+   "style": "accent"
+  },
+  {
+   "segment": "DQ",
+   "style": "accent"
+  },
+  {
+   "segment": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AP",
+    "AB"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "M3",
+   "of": "PB"
+  },
+  {
+   "type": "reflect_point",
+   "id": "X",
+   "of": "A",
+   "over": "M3"
+  }
+ ],
+ "draw_aux": [
+  {
+   "polygon": "APXB",
+   "style": "dashed"
+  },
+  {
+   "segment": "AX",
+   "style": "dashed"
+  },
+  {
+   "segment": "PB",
+   "style": "dashed"
+  },
+  {
+   "segment": "QB",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Строим ромб APXB; тогда AX∥DQ и PB⊥AX, а также QB⊥DP, значит B — ортоцентр треугольника DPQ."
+}

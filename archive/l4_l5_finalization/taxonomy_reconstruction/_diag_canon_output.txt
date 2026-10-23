@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "c:\Users\Victor\Desktop\Новая папка (2)\l4_l5_finalization\taxonomy_reconstruction\_diag_canon.py", line 13, in <module>
+    g = info.get('grade')
+        ^^^^^^^^
+AttributeError: 'list' object has no attribute 'get'

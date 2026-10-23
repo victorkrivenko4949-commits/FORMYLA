@@ -1,0 +1,956 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Профиль - FORMYLA.net{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mastery.css') }}?v=1">
+<style>
+/* ===== Progress Modal & Button ===== */
+.progress-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(59,130,246,0.15));
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 14px;
+    color: var(--text-main);
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(6px);
+}
+.progress-btn:hover {
+    background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(59,130,246,0.25));
+    border-color: rgba(56,189,248,0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(56,189,248,0.15);
+}
+.progress-btn:active {
+    transform: translateY(0);
+}
+
+/* Overlay */
+.progress-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.progress-modal-overlay.active {
+    display: flex;
+}
+
+/* Modal */
+.progress-modal {
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-soft, #334155);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 760px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    animation: progressFadeIn 0.25s ease;
+}
+@keyframes progressFadeIn {
+    from { opacity: 0; transform: scale(0.96) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.progress-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-soft, #334155);
+}
+.progress-modal-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    color: var(--text-main, #f1f5f9);
+}
+.progress-modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted, #94a3b8);
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.2s;
+}
+.progress-modal-close:hover {
+    color: var(--text-main, #f1f5f9);
+}
+
+.progress-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 200px;
+    position: relative;
+}
+
+.progress-chart-wrapper {
+    width: 100%;
+    min-height: 320px;
+    position: relative;
+}
+
+#progressChart {
+    width: 100% !important;
+    max-height: 400px;
+}
+
+/* Empty state */
+.progress-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-soft, #cbd5e1);
+}
+.progress-empty p {
+    margin: 8px 0;
+}
+
+/* Loading */
+.progress-loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-soft, #cbd5e1);
+}
+.progress-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border-soft, #334155);
+    border-top-color: #38bdf8;
+    border-radius: 50%;
+    animation: progressSpin 0.7s linear infinite;
+    margin: 0 auto 12px;
+}
+@keyframes progressSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+    .progress-modal {
+        max-width: 100%;
+        border-radius: 16px;
+    }
+    .progress-modal-header {
+        padding: 16px 18px;
+    }
+    .progress-modal-body {
+        padding: 16px;
+    }
+    .progress-chart-wrapper {
+        min-height: 240px;
+    }
+    .progress-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 50px auto; padding: 0 20px;">
+    
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
+             Мой профиль
+             {% if user.is_founder %}
+             <span title="Аккаунт создан до 01.11.2026" style="display: inline-block; vertical-align: middle; font-size: 0.4em; padding: 4px 12px; border-radius: 12px; background: linear-gradient(135deg, #f4b942, #d99a1f); color: #0b1020; font-weight: 800; letter-spacing: 0.5px;">★ Основатель</span>
+             {% endif %}
+        </h1>
+        <p style="font-size: 1.1em; color: var(--text-soft);">
+            {{ user.email }}
+        </p>
+    </div>
+
+    <!-- Входящие запросы на привязку от родителя -->
+    {% if parent_link_requests %}
+    {% for req in parent_link_requests %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 26px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(56, 189, 248, 0.45); box-shadow: 0 8px 32px rgba(56, 189, 248, 0.15); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 12px; font-size: 1.35em;">
+            👪 Запрос на привязку от родителя
+        </h2>
+        <p style="color: var(--text-soft); margin-bottom: 18px; line-height: 1.5;">
+            <strong style="color: var(--text-main);">{{ req.parent_name }}{% if req.parent_nickname %} (@{{ req.parent_nickname }}){% endif %}</strong>
+            хочет привязать ваш аккаунт как родитель и видеть ваш прогресс.
+            Решение принимаете вы:
+        </p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <form method="POST" action="{{ url_for('parent_teacher.parent_link_respond', link_id=req.id) }}" style="margin: 0;">
+                <input type="hidden" name="action" value="accept">
+                <input type="hidden" name="next" value="/profile">
+                <button type="submit"
+                        style="padding: 14px 34px; min-height: 48px; background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; border: none; border-radius: 12px; font-size: 1.05em; font-weight: 700; cursor: pointer; box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35); transition: transform 0.15s ease;"
+                        onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    ✓ Принять
+                </button>
+            </form>
+            <form method="POST" action="{{ url_for('parent_teacher.parent_link_respond', link_id=req.id) }}" style="margin: 0;">
+                <input type="hidden" name="action" value="reject">
+                <input type="hidden" name="next" value="/profile">
+                <button type="submit"
+                        style="padding: 14px 26px; min-height: 48px; background: rgba(148, 163, 184, 0.08); color: var(--text-soft); border: 1px solid var(--border-soft); border-radius: 12px; font-size: 1em; font-weight: 600; cursor: pointer;"
+                        title="Отклонить запрос только сейчас — родитель сможет отправить его повторно">
+                    Отклонить
+                </button>
+            </form>
+            <form method="POST" action="{{ url_for('parent_teacher.parent_link_respond', link_id=req.id) }}" style="margin: 0;"
+                  onsubmit="return confirm('Заблокировать запросы на привязку от этого аккаунта? Они больше не будут приходить.');">
+                <input type="hidden" name="action" value="block">
+                <input type="hidden" name="next" value="/profile">
+                <button type="submit"
+                        style="padding: 14px 26px; min-height: 48px; background: transparent; color: #f87171; border: 1px solid rgba(248, 113, 113, 0.45); border-radius: 12px; font-size: 1em; font-weight: 600; cursor: pointer;"
+                        title="Больше не получать запросы от этого родителя">
+                    🚫 Заблокировать
+                </button>
+            </form>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.82em; margin-top: 14px; margin-bottom: 0;">
+            «Отклонить» — разовый отказ, запрос можно будет отправить повторно. «Заблокировать» — запросы от этого аккаунта больше не придут.
+        </p>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Информация об аккаунте -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
+             Информация об аккаунте
+        </h2>
+        
+        <div style="display: grid; gap: 15px;">
+            <!-- Никнейм с возможностью редактирования -->
+            <div style="padding: 12px 0; border-bottom: 1px solid var(--border-soft);">
+                <div id="nickname-display" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <span style="color: var(--text-muted);">Никнейм:</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="nickname-current-value" style="color: var(--accent-2); font-weight: 600; word-break: break-word; max-width: 60vw;">
+                            {% if user.nickname %}@{{ user.nickname }}{% if user.has_diamond %} <span title="Алмазный статус FORMYLA" style="filter:drop-shadow(0 0 6px rgba(56,189,248,0.65));">💎</span>{% endif %}{% else %}Не установлен{% endif %}
+                        </span>
+                        <button type="button" onclick="showNicknameForm()" aria-label="Изменить никнейм"
+                                style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); color: var(--accent-2); cursor: pointer; font-size: 15px; padding: 8px 12px; min-width: 40px; min-height: 40px; border-radius: 8px; transition: transform 0.2s, background 0.2s;"
+                                onmouseover="this.style.background='rgba(56, 189, 248, 0.18)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.08)'">
+                            ✏️
+                        </button>
+                    </div>
+                </div>
+                <form id="nickname-form" action="/update_nickname" method="POST" style="display: none;" onsubmit="return submitNicknameAjax(event)">
+                    <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                        <input type="text" id="nickname-input" name="nickname" value="{{ user.nickname or '' }}"
+                               placeholder="Например: anna_2010 или Łukasz" required autofocus
+                               autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"
+                               minlength="3" maxlength="30"
+                               style="flex: 1 1 220px; min-width: 0; padding: 12px 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main); caret-color: var(--accent-2); font-size: 16px;">
+                        <button type="submit" id="nickname-save-btn" class="btn-primary" style="padding: 12px 20px; min-height: 44px;">Сохранить</button>
+                        <button type="button" onclick="hideNicknameForm()" class="btn-secondary" style="padding: 12px 20px; min-height: 44px;">Отмена</button>
+                    </div>
+                    <div id="nickname-feedback" role="status" aria-live="polite"
+                         style="display: none; margin-top: 10px; padding: 10px 12px; border-radius: 8px; font-size: 14px; line-height: 1.4;"></div>
+                    <div style="margin-top: 8px; color: var(--text-muted); font-size: 12.5px; line-height: 1.4;">
+                        3–30 символов. Можно использовать буквы (включая ąćęłńóśźż, кириллицу), цифры, «-» и «_».
+                    </div>
+                </form>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-soft);">
+                <span style="color: var(--text-muted);">Почта:</span>
+                <span style="color: var(--text-main); font-weight: 500;">{{ user.email }}</span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-soft);">
+                <span style="color: var(--text-muted);">Дата регистрации:</span>
+                <span style="color: var(--text-main);">{{ user.created_at.strftime('%d.%m.%Y') if user.created_at else 'Н/Д' }}</span>
+            </div>
+            
+            {% if user.last_login %}
+            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-soft);">
+                <span style="color: var(--text-muted);">Последний вход:</span>
+                <span style="color: var(--text-main);">{{ user.last_login.strftime('%d.%m.%Y %H:%M') }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── Сменить аккаунт (только администратор) ── -->
+    {% set admin_nicks = ['pavelznaka', 'victorkrivenko', 'victor', 'nikolaev', 'lavrik'] %}
+    {% set is_admin = current_user.is_authenticated and (current_user.nickname or '')|lower in admin_nicks %}
+    {% if is_admin %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(251,191,36,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: #fbbf24; margin-bottom: 8px; font-size: 1.5em;">
+            🔐 Аккаунт поддержки
+        </h2>
+        <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 14px;">
+            Вы вошли как <strong>@{{ current_user.nickname }}{% if current_user.has_diamond %} 💎{% endif %}</strong> — это служебный аккаунт поддержки.
+            Вам доступны все функции обычного пользователя и дополнительные админ-разделы ниже.
+        </p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="/admin/users" style="padding: 12px 24px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.4); border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-block;">
+                📊 Статистика пользователей
+            </a>
+            <a href="/admin/support" style="padding: 12px 24px; background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.4); border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-block;">
+                💬 Чат поддержки
+            </a>
+            <button onclick="switchProfile()" style="padding: 12px 24px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 15px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                🔄 Переключить аккаунт
+            </button>
+            <span id="switchStatus" style="color: var(--text-muted); font-size: 14px; align-self: center;"></span>
+        </div>
+    </div>
+    <script>
+    async function switchProfile() {
+        var status = document.getElementById('switchStatus');
+        if (!status) return;
+        status.textContent = 'Открываю страницу входа...';
+        status.style.color = '#fbbf24';
+        // Logout then redirect to login
+        try {
+            await fetch('/logout', { method: 'GET', credentials: 'include' });
+        } catch(e) {}
+        window.location.href = '/login';
+    }
+    </script>
+
+    {% if is_admin %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(167,139,250,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: #a78bfa; margin-bottom: 12px; font-size: 1.5em;">
+            Админ-раздел
+        </h2>
+        <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 14px;">
+            Полная статистика по каждому пользователю: входы, задачи, уровень, рейтинг, время на сайте.
+        </p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="/admin/users" style="padding: 12px 24px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.4); border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-block;">
+                📊 Статистика пользователей
+            </a>
+            <a href="/admin/support" style="padding: 12px 24px; background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.4); border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-block;">
+                💬 Чат поддержки
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- ── Выбор класса / Роль ── -->
+    {% if is_teacher_or_parent %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="margin: 0 0 4px; font-size: 1.1em; color: var(--text-main);">
+            {% if user_role == 'teacher' %}👨‍🏫 Учитель{% else %}👨‍👩‍👧 Родитель{% endif %}
+          </h3>
+          <p style="margin: 0; color: var(--text-muted); font-size: 0.85em;">
+            {% if user_role == 'teacher' %}
+            Вы учитель: вам доступны все разделы ученика, а здесь — ваши группы и ученики.
+            {% else %}
+            Вы родитель: вам доступны все разделы ученика, а здесь — прогресс ваших детей.
+            {% endif %}
+          </p>
+        </div>
+        <a href="{{ '/teacher' if user_role == 'teacher' else '/parent' }}"
+           style="display: inline-block; padding: 10px 20px; border-radius: 10px; background: linear-gradient(135deg, #38ef7d, #11998e); color: #000; font-weight: 700; text-decoration: none; font-size: 0.95em; transition: transform 0.2s;"
+           onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+          Перейти в раздел
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if is_diamond_buyer or is_diamond_admin %}
+    <!-- ── YOOKASSA_DIAMOND_V1: Платный значок алмаза (для victor, lavrik и тестового кабинета ЮKassa) ── -->
+    <div id="yookassa-card" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.92)); backdrop-filter: blur(12px); padding: 26px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(56, 189, 248, 0.45); box-shadow: 0 10px 36px rgba(56, 189, 248, 0.15); margin-bottom: 30px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+            <h2 style="color: #38bdf8; margin: 0; font-size: 1.45em; display: flex; align-items: center; gap: 10px;">
+                <span>💎 Значок алмаза после ника</span>
+                <span style="font-size: 0.65em; padding: 4px 10px; border-radius: 999px; background: rgba(56, 189, 248, 0.16); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 700;">10 ₽ · ЮKassa</span>
+            </h2>
+            {% if is_diamond_admin %}
+            <span style="font-size: 12px; padding: 4px 10px; border-radius: 8px; background: rgba(251, 191, 36, 0.14); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);">
+                Видно только админам (victor и lavrik)
+            </span>
+            {% endif %}
+        </div>
+
+        <p style="color: var(--text-soft); margin: 0 0 16px; font-size: 14.5px; line-height: 1.5;">
+            Покупка добавляет персональный цифровой значок <strong style="color: #38bdf8;">💎</strong> сразу после вашего ника в профиле, шапке, рейтинге и списке друзей (получение услуги: мгновенная автоматическая активация в личном кабинете сразу после оплаты):
+            <span style="display: inline-block; margin-left: 6px; padding: 3px 10px; border-radius: 8px; background: rgba(56, 189, 248, 0.12); color: #e0f2fe; font-weight: 700;">
+                @{{ user.nickname or 'victor' }} 💎
+            </span>
+        </p>
+
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px;">
+            {% if user.has_diamond %}
+            <span style="padding: 8px 14px; border-radius: 10px; background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); font-weight: 700; font-size: 14px;">
+                ✅ Значок 💎 активен на вашем аккаунте
+            </span>
+            {% else %}
+            <span style="padding: 8px 14px; border-radius: 10px; background: rgba(148, 163, 184, 0.12); color: var(--text-muted); border: 1px solid var(--border-soft); font-size: 14px;">
+                Статус: пока не куплен · Цена: 10 ₽
+            </span>
+            {% endif %}
+
+            {% if is_diamond_admin %}
+                {% if yookassa_cfg and yookassa_cfg.configured %}
+                <span style="padding: 8px 14px; border-radius: 10px; background: rgba(56, 189, 248, 0.12); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 13px;">
+                    🟢 ЮKassa подключена (Shop ID: {{ yookassa_cfg.shop_id }}{% if yookassa_cfg.is_test %} · тест{% else %} · боевой{% endif %})
+                </span>
+                {% else %}
+                <span style="padding: 8px 14px; border-radius: 10px; background: rgba(245, 158, 11, 0.14); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 13px;">
+                    🟡 Укажите Shop ID и Секретный ключ ЮKassa ниже
+                </span>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: {% if is_diamond_admin %}18px{% else %}0{% endif %};">
+            <form method="POST" action="{{ url_for('yookassa_pay.buy_diamond') }}" style="margin: 0;">
+                <button type="submit"
+                        style="padding: 13px 26px; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 6px 20px rgba(14, 165, 233, 0.35); transition: transform 0.15s ease;"
+                        onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    💎 {% if user.has_diamond %}Купить ещё раз за 10 ₽ (тест оплаты){% else %}Купить значок алмаза за 10 ₽{% endif %}
+                </button>
+            </form>
+
+            {% if is_diamond_admin and user.has_diamond %}
+            <form method="POST" action="{{ url_for('yookassa_pay.toggle_diamond') }}" style="margin: 0;">
+                <input type="hidden" name="action" value="off">
+                <button type="submit"
+                        style="padding: 12px 18px; background: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.35); border-radius: 10px; font-weight: 600; font-size: 13.5px; cursor: pointer;">
+                    Снять 💎 (для проверки с нуля)
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        {% if is_diamond_admin %}
+        <details {% if not (yookassa_cfg and yookassa_cfg.configured) %}open{% endif %} style="background: rgba(15, 23, 42, 0.55); border: 1px solid var(--border-soft); border-radius: 12px; padding: 14px 18px;">
+            <summary style="cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px;">
+                ⚙️ Настройка ключей ЮKassa (Shop ID и Секретный ключ)
+            </summary>
+            <form method="POST" action="{{ url_for('yookassa_pay.save_config') }}" style="margin-top: 14px; display: grid; gap: 12px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+                    <div>
+                        <label style="display: block; color: var(--text-muted); font-size: 12.5px; margin-bottom: 4px;">
+                            Shop ID (Идентификатор магазина в ЛК ЮKassa):
+                        </label>
+                        <input type="text" name="shop_id" value="{{ yookassa_cfg.shop_id if yookassa_cfg else '' }}"
+                               placeholder="Например: 123456" required
+                               style="width: 100%; padding: 10px 12px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main); font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; color: var(--text-muted); font-size: 12.5px; margin-bottom: 4px;">
+                            Секретный ключ (Интеграция → Ключи API):
+                        </label>
+                        <input type="password" name="secret_key" value="{{ yookassa_cfg.secret_key if yookassa_cfg else '' }}"
+                               placeholder="live_... или test_..." required
+                               style="width: 100%; padding: 10px 12px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main); font-size: 14px;">
+                    </div>
+                </div>
+                <div style="color: var(--text-muted); font-size: 12.5px; line-height: 1.45;">
+                    URL для HTTP-уведомлений в ЮKassa (Интеграция → HTTP-уведомления):
+                    <code style="color: #7dd3fc; background: rgba(56, 189, 248, 0.1); padding: 2px 6px; border-radius: 4px;">{{ request.host_url.rstrip('/') }}/api/payments/yookassa/webhook</code>
+                </div>
+                <div>
+                    <button type="submit" style="padding: 10px 20px; background: rgba(56, 189, 248, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.45); border-radius: 8px; font-weight: 700; font-size: 13.5px; cursor: pointer;">
+                        💾 Проверить и сохранить ключи ЮKassa
+                    </button>
+                </div>
+            </form>
+
+            {% if yookassa_recent_payments %}
+            <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-soft);">
+                <div style="color: var(--text-muted); font-size: 12.5px; margin-bottom: 8px; font-weight: 600;">Последние платежи:</div>
+                <div style="display: grid; gap: 6px; font-size: 12.5px;">
+                    {% for p in yookassa_recent_payments %}
+                    <div style="display: flex; justify-content: space-between; gap: 8px; color: var(--text-soft);">
+                        <span>{{ p.created_at }} · {{ '%.0f'|format(p.amount_rub) }} ₽ · <code style="font-size:11.5px;">{{ p.payment_id }}</code></span>
+                        <strong style="color: {% if p.status == 'succeeded' %}#4ade80{% elif p.status == 'canceled' %}#f87171{% else %}#fbbf24{% endif %};">{{ p.status }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </details>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- ── Доступ ── -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(56,239,125,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px; text-align: center;">
+        <h3 style="color: var(--text-main); margin-bottom: 12px;">🎉 Всё бесплатно</h3>
+        <p style="color: var(--text-soft); margin-bottom: 0;">
+            Все разделы, задачи, ИИ-агенты, доска и AI-чертежи доступны без подписок и оплат.
+        </p>
+    </div>
+    <!-- ── /Доступ ── -->
+
+    <!-- Привязанные аккаунты -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
+             Привязанные аккаунты
+        </h2>
+        
+        <div style="display: grid; gap: 15px;">
+            <!-- Яндекс ID -->
+            <div style="padding: 15px; background: rgba(30, 41, 59, 0.6); border-radius: var(--radius-sm); border: 1px solid var(--border-soft);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 24px;"></span>
+                        <div>
+                            <div style="color: var(--text-main); font-weight: 600;">Яндекс ID</div>
+                            {% set yandex_account = user.oauth_accounts.filter_by(provider='yandex').first() %}
+                            {% if yandex_account %}
+                            <div style="color: #86efac; font-size: 14px; margin-top: 4px;">
+                                [OK] Привязан
+                            </div>
+                            {% else %}
+                            <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+                                Не привязан
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if not yandex_account %}
+                    <a href="{{ url_for('link_yandex') }}"
+                       style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
+                              background:linear-gradient(135deg,#fc0,#f90);color:#000;
+                              font-weight:600;font-size:13px;border-radius:10px;
+                              text-decoration:none;transition:opacity 0.2s;"
+                       onmouseover="this.style.opacity='0.85'"
+                       onmouseout="this.style.opacity='1'">
+                       Привязать Яндекс ID
+                    </a>
+                    {% else %}
+                    <span style="color: #86efac; font-weight: 600;">[OK] Подключено</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <p style="color: var(--text-muted); font-size: 14px; margin-top: 15px; margin-bottom: 0;">
+             Привязка аккаунтов позволяет входить на сайт разными способами с одним профилем
+        </p>
+    </div>
+
+    <!-- Daily Quest Streak Widget (FULL_ACCESS_V1: виден и учителю/родителю) -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em; display:flex;align-items:center;gap:10px;">
+            <span>🔥Daily Quest Streak</span>
+            <button type="button" data-streak-how title="Как работает серия"
+                    style="padding:4px 14px;border-radius:16px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;"
+                    aria-label="Как работает серия">Как работает</button>
+        </h2>
+        
+        <div id="streakWidget" style="text-align: center; padding: 20px;">
+            <div style="font-size: 5rem; margin-bottom: 1rem; filter: drop-shadow(0 0 20px rgba(255, 100, 0, 0.8));"></div>
+            <div style="font-size: 3rem; font-weight: 900; color: #38ef7d; margin-bottom: 0.5rem;">
+                <span id="currentStreak">0</span> дней
+            </div>
+            <div style="color: rgba(255, 255, 255, 0.45); font-size: 0.8em; margin-bottom: 0.5rem;">
+                дней подряд, когда ты провёл на сайте больше 20 минут или правильно решил хотя бы 1 задачу дня
+            </div>
+            <div style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1rem;">
+                Рекорд: <span id="longestStreak" style="color: #ffd700; font-weight: 600;">0</span> дней
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; text-decoration: none; border-radius: 10px; font-weight: 600; transition: all 0.3s ease;">
+                     Перейти к задачам дня
+                </a>
+            </div>
+        </div>
+        
+        <!-- Daily Quest History (last 7 days) -->
+        <div style="margin-top: 2rem;">
+            <h3 style="color: var(--text-main); font-size: 1.2em; margin-bottom: 1rem;">История последних 7 дней</h3>
+            <div id="questHistory" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem;">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SVG gradient for rings -->
+    <svg width="0" height="0" style="position:absolute">
+      <defs>
+        <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#11998e"/>
+          <stop offset="100%" stop-color="#38ef7d"/>
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <!-- Прогресс по темам -->
+    {% if progress_dict %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
+             Мой прогресс по темам
+        </h2>
+        
+        <div style="display: grid; gap: 15px;">
+            {% for topic_key, progress in progress_dict.items() %}
+            <div style="padding: 15px; background: rgba(30, 41, 59, 0.6); border-radius: var(--radius-sm); border: 1px solid var(--border-soft);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="color: var(--text-main); font-weight: 600;">{{ progress.name_ru }}</div>
+                    <div style="padding: 4px 12px; background: {% if progress.level >= 5 %}#10b981{% elif progress.level >= 3 %}#f59e0b{% else %}#ef4444{% endif %}; color: white; border-radius: 12px; font-size: 14px; font-weight: 600;">
+                        Уровень {{ ((progress.level|float * 8 / 7) | round | int) }}/8
+                    </div>
+                </div>
+                
+                <div style="width: 100%; height: 8px; background: rgba(100, 116, 139, 0.3); border-radius: 4px; overflow: hidden;">
+                    <div style="width: {{ (progress.level / 7 * 100)|round }}%; height: 100%; background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); transition: width 0.3s;"></div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px; color: var(--text-muted);">
+                    <span>Решено: {{ progress.correct }}/{{ progress.attempted }} ({{ progress.accuracy|round }}%)</span>
+                    {% if progress.last_test %}
+                    <span>{{ progress.last_test.strftime('%d.%m.%Y') }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Входящие заявки -->
+    {% if incoming_requests %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-top: 30px; border-left: 4px solid #f59e0b;">
+        <h3 style="color: #f59e0b; margin-bottom: 20px;"> Входящие заявки ({{ incoming_requests|length }})</h3>
+        
+        <div style="display: grid; gap: 15px;">
+            {% for req in incoming_requests %}
+            <div style="padding: 15px; background: rgba(30, 41, 59, 0.6); border-radius: 8px; border: 1px solid var(--border-soft);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="color: var(--text-main); font-weight: 600;">
+                            {{ req.teacher.name or req.teacher.email }}
+                        </div>
+                        <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+                            {% if req.teacher.nickname %}@{{ req.teacher.nickname }}{% else %}{{ req.teacher.email }}{% endif %}
+                        </div>
+                        <div style="color: var(--text-soft); font-size: 13px; margin-top: 4px;">
+                            Хочет добавить вас в ученики
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <form action="{{ url_for('accept_request', mentorship_id=req.mentorship.id) }}" method="POST" style="display: inline;">
+                            <button type="submit" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                [OK] Принять
+                            </button>
+                        </form>
+                        <form action="{{ url_for('reject_request', mentorship_id=req.mentorship.id) }}" method="POST" style="display: inline;">
+                            <button type="submit" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                 Отклонить
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Мои друзья -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 20px 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-top: 30px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+        <div>
+            <h3 style="color: var(--text-main); margin: 0 0 4px;"> Мои друзья</h3>
+            <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Добавляйте друзей и соревнуйтесь вместе!</p>
+        </div>
+        <a href="/friends" class="btn-primary" style="padding: 10px 22px; text-decoration: none; white-space: nowrap;">Перейти в раздел друзей</a>
+    </div>
+
+
+    </div>
+
+    <!-- Действия -->
+    <div style="text-align: center; margin-top: 40px;">
+        <a href="{{ url_for('index') }}"
+           style="display: inline-block; color: var(--text-soft); text-decoration: none; padding: 12px 24px; border: 1px solid var(--border-mid); border-radius: var(--radius-sm); transition: all 0.3s; margin-right: 10px;"
+           onmouseover="this.style.borderColor='var(--accent-2)'; this.style.color='var(--accent-2)'"
+           onmouseout="this.style.borderColor='var(--border-mid)'; this.style.color='var(--text-soft)'"
+        >
+             На главную
+        </a>
+        
+        <a href="{{ url_for('logout') }}" onclick="return confirmLogout(event)"
+           style="display: inline-block; color: var(--text-soft); text-decoration: none; padding: 12px 24px; border: 1px solid var(--border-mid); border-radius: var(--radius-sm); transition: all 0.3s;"
+           onmouseover="this.style.borderColor='#ef4444'; this.style.color='#fca5a5'"
+           onmouseout="this.style.borderColor='var(--border-mid)'; this.style.color='var(--text-soft)'"
+        >
+             🚪 Выйти
+        </a>
+    </div>
+
+    <!-- ── Удаление аккаунта (в самом конце профиля) ── -->
+    <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border-soft); text-align: center;">
+        <button type="button" onclick="deleteAccount()"
+                style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; cursor: pointer; padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; transition: all 0.2s;"
+                onmouseover="this.style.background='rgba(239, 68, 68, 0.18)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'">
+            🗑️ Удалить аккаунт
+        </button>
+        <p style="margin-top: 10px; color: var(--text-muted); font-size: 12px; line-height: 1.5;">
+            Удаление безвозвратно сотрёт все данные: прогресс, решения, серию, планы и переписку.
+        </p>
+    </div>
+
+</div>
+
+<!-- Chart.js for Radar Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- Chart.js Progress Graph -->
+<script src="{{ url_for('static', filename='js/progress.js') }}?v={{ asset_version }}"></script>
+
+<script>
+function showNicknameForm() {
+    document.getElementById('nickname-display').style.display = 'none';
+    const form = document.getElementById('nickname-form');
+    form.style.display = 'block';
+    const fb = document.getElementById('nickname-feedback');
+    if (fb) { fb.style.display = 'none'; fb.textContent = ''; }
+    const input = document.getElementById('nickname-input');
+    if (input) {
+        setTimeout(() => {
+            try { input.focus(); input.select(); } catch (e) {}
+        }, 30);
+    }
+}
+
+function hideNicknameForm() {
+    document.getElementById('nickname-display').style.display = 'flex';
+    document.getElementById('nickname-form').style.display = 'none';
+    const fb = document.getElementById('nickname-feedback');
+    if (fb) { fb.style.display = 'none'; fb.textContent = ''; }
+}
+
+function _showNicknameFeedback(msg, kind) {
+    const fb = document.getElementById('nickname-feedback');
+    if (!fb) return;
+    fb.textContent = msg;
+    fb.style.display = 'block';
+    if (kind === 'error') {
+        fb.style.background = 'rgba(239, 68, 68, 0.10)';
+        fb.style.border = '1px solid rgba(239, 68, 68, 0.35)';
+        fb.style.color = '#fca5a5';
+    } else {
+        fb.style.background = 'rgba(56, 239, 125, 0.10)';
+        fb.style.border = '1px solid rgba(56, 239, 125, 0.35)';
+        fb.style.color = '#86efac';
+    }
+}
+
+async function deleteAccount() {
+    const confirmed = confirm(
+        '⚠️ Вы точно хотите удалить аккаунт?\n\n' +
+        'Это действие безвозвратно.\n' +
+        'Все данные (прогресс, решения, серия, планы, переписка) будут стёрты.\n\n' +
+        'Удалить аккаунт?'
+    );
+    if (!confirmed) return;
+
+    try {
+        const resp = await fetch('/account/delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ confirm: 'DELETE' })
+        });
+        let data = {};
+        try { data = await resp.json(); } catch (e) { data = {}; }
+        if (!resp.ok) {
+            alert((data && data.error) || 'Не удалось удалить аккаунт. Попробуйте ещё раз.');
+            return;
+        }
+        // Успех: переходим на страницу входа
+        window.location.href = '/login';
+    } catch (err) {
+        alert('Сеть недоступна. Повторите попытку.');
+    }
+}
+
+async function submitNicknameAjax(ev) {
+    if (ev) ev.preventDefault();
+    const input = document.getElementById('nickname-input');
+    const btn = document.getElementById('nickname-save-btn');
+    if (!input) return false;
+    const value = (input.value || '').trim();
+    if (!value) {
+        _showNicknameFeedback('Никнейм не может быть пустым', 'error');
+        return false;
+    }
+    if (btn) { btn.disabled = true; btn.textContent = 'Сохраняем…'; }
+    try {
+        const resp = await fetch('/update_nickname', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ nickname: value })
+        });
+        let data = {};
+        try { data = await resp.json(); } catch (e) { data = {}; }
+        if (!resp.ok || data.success === false) {
+            const errMsg = (data && data.error) || 'Не удалось обновить никнейм';
+            _showNicknameFeedback(errMsg, 'error');
+            if (btn) { btn.disabled = false; btn.textContent = 'Сохранить'; }
+            return false;
+        }
+        // Success
+        const newNick = (data && data.nickname) ? data.nickname : value;
+        const display = document.getElementById('nickname-current-value');
+        const hasDiamond = {{ 'true' if user.has_diamond else 'false' }};
+        if (display) display.textContent = '@' + newNick + (hasDiamond ? ' 💎' : '');
+        _showNicknameFeedback('Никнейм сохранён [OK]', 'ok');
+        setTimeout(() => { hideNicknameForm(); }, 700);
+    } catch (err) {
+        _showNicknameFeedback('Сеть недоступна. Повторите попытку.', 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Сохранить'; }
+    }
+    return false;
+}
+
+// Load Daily Quest Streak Data
+async function loadStreakData() {
+    try {
+        const response = await fetch('/api/daily/status');
+        const data = await response.json();
+        
+        if (data.exists) {
+            document.getElementById('currentStreak').textContent = data.streak || 0;
+        }
+        
+        document.getElementById('longestStreak').textContent = data.longest_streak ?? data.streak ?? 0;
+        
+    } catch (error) {
+        console.error('Error loading streak data:', error);
+    }
+}
+
+// Mastery radar is handled by static/js/mastery_radar.js
+function loadMasteryData() {
+    // No-op: radar chart is rendered via mastery_radar.js using data-mastery attribute
+}
+
+// Load data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadStreakData();
+    loadMasteryData();
+    // initYandexLinkWidget() — заменено на простую ссылку /yandex_login
+});
+
+// Yandex ID linking widget (same flow as login)
+function initYandexLinkWidget() {
+    const container = document.getElementById('yandex-link-container');
+    const loading = document.getElementById('yandex-link-loading');
+    if (!container) return;  // Already linked
+
+    const clientId = "{{ config.YANDEX_CLIENT_ID if config.YANDEX_CLIENT_ID else '' }}";
+    if (!clientId) {
+        if (loading) loading.textContent = 'Yandex OAuth не настроен';
+        return;
+    }
+
+    const domain = "{{ config.DOMAIN_URL if config.DOMAIN_URL else 'http://localhost:5000' }}";
+
+    window.onload_yandex_link = function() {
+        window.YaAuthSuggest.init(
+            {
+                client_id: clientId,
+                response_type: "token",
+                redirect_uri: domain + "/yandex_receiver"
+            },
+            domain,
+            {
+                view: "button",
+                parentId: "yandex-link-container",
+                buttonView: "main",
+                buttonTheme: "dark",
+                buttonSize: "m",
+                buttonBorderRadius: 8
+            }
+        )
+        .then(result => {
+            if (loading) loading.style.display = 'none';
+            container.style.display = 'flex';
+            return result.handler();
+        })
+        .then(data => {
+            // Set linking mode before sending token
+            fetch('/link_yandex', { method: 'GET', redirect: 'manual' });
+            
+            fetch('/auth/yandex/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    access_token: data.access_token,
+                    linking_mode: true
+                })
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    window.location.href = result.redirect_url || '/profile';
+                } else {
+                    alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+                }
+            });
+        })
+        .catch(err => {
+            console.log('Yandex link cancelled:', err);
+            if (loading) loading.style.display = 'none';
+            container.style.display = 'flex';
+        });
+    };
+
+    // Load Yandex SDK
+    const script = document.createElement('script');
+    script.src = 'https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js';
+    script.onload = window.onload_yandex_link;
+    document.head.appendChild(script);
+}
+</script>
+
+<script>
+function cancelSubscription() {
+    if (!confirm('Вы уверены, что хотите отменить подписку Premium?')) return;
+    var btn = document.getElementById('cancelSubBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Отменяем...'; }
+    fetch('/api/cancel_subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+        .then(r => r.json())
+        .then(data => {
+            if (data.ok) {
+                alert(data.message || 'Подписка отменена.');
+                location.reload();
+            } else {
+                alert('Ошибка: ' + (data.error || 'Попробуйте ещё раз'));
+                if (btn) { btn.disabled = false; btn.textContent = ' Отменить подписку'; }
+            }
+        })
+        .catch(() => { alert('Ошибка сети'); if (btn) { btn.disabled = false; btn.textContent = ' Отменить подписку'; } });
+}
+</script>
+<script src="{{ url_for('static', filename='js/streak_how.js') }}?v={{ asset_version }}"></script>
+{% endblock %}
+

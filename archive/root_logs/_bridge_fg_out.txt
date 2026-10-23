@@ -1,0 +1,32 @@
+2026-09-01 22:32:03,352 [INFO] h2 | __main__ | hostname.verified configured=DESKTOP-OLJ4LRK actual=desktop-olj4lrk
+2026-09-01 22:32:04,082 [INFO] h2 | __main__ | nats.connected url=ParseResult(scheme='nats', netloc='192.168.99.11:4222', path='', params='', query='', fragment='') client_id=263560
+2026-09-01 22:32:04,082 [INFO] h2 | __main__ | evt.publisher ready node_id=victor dual_publish=False
+2026-09-01 22:32:04,473 [ERROR] h2 | __main__ | ownership.kv open FAILED (fail-closed before subscribe): ownership KV 'owui_roo_bridge_victor_ownership' missing/invalid server TTL (ttl=None); server-side TTL is mandatory
+2026-09-01 22:32:04,479 [INFO] h2 | owui_roo_bridge.core.subjects | evt.published subject=h2.roo_bridge.node.victor.evt.error op=error corr_id=bootstrap
+Traceback (most recent call last):
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\_bridge_fg.py", line 14, in <module>
+    runpy.run_module('owui_roo_bridge', run_name='__main__', alter_sys=True)
+  File "<frozen runpy>", line 226, in run_module
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\ProgramData\H2\bridge_venv\Lib\site-packages\owui_roo_bridge\__main__.py", line 4033, in <module>
+    main()
+  File "C:\ProgramData\H2\bridge_venv\Lib\site-packages\owui_roo_bridge\__main__.py", line 4025, in main
+    asyncio.run(_run())
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\ProgramData\H2\bridge_venv\Lib\site-packages\owui_roo_bridge\__main__.py", line 3780, in _run
+    _kv = await open_ownership_kv(_js, cfg_raw=_cfg_obj.raw)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\H2\bridge_venv\Lib\site-packages\owui_roo_bridge\core\ownership_kv.py", line 67, in open_ownership_kv
+    await _validate_kv_config(kv, name, renew_interval_s=renew_interval_s)
+  File "C:\ProgramData\H2\bridge_venv\Lib\site-packages\owui_roo_bridge\core\ownership_kv.py", line 103, in _validate_kv_config
+    raise LeaseUnavailableError(
+owui_roo_bridge.core.ownership_lease.LeaseUnavailableError: ownership KV 'owui_roo_bridge_victor_ownership' missing/invalid server TTL (ttl=None); server-side TTL is mandatory

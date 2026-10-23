@@ -1,0 +1,258 @@
+# -*- coding: utf-8 -*-
+"""
+Brevo (formerly Sendinblue) transactional email service.
+
+Sends welcome / password-reset / payment-receipt emails through the Brevo
+REST API. Falls back to a no-op (with a logged warning) when BREVO_API_KEY
+is not configured, so local development keeps working without a real key.
+
+Environment variables:
+    BREVO_API_KEY        — API key from https://app.brevo.com -> SMTP & API
+    BREVO_SENDER_EMAIL   — verified sender address (default: no-reply@formyla.com)
+    BREVO_SENDER_NAME    — display name (default: FORMYLA.net)
+"""
+from __future__ import annotations
+
+import logging
+import os
+from typing import Optional
+
+log = logging.getLogger(__name__)
+
+
+def _get_api_client():
+    """Lazy import + lazy init of the Brevo SDK client.
+
+    Returns (TransactionalEmailsApi, SendSmtpEmail_cls) on success, or
+    (None, None) when either the SDK is missing or BREVO_API_KEY is unset.
+    """
+    api_key = os.environ.get("BREVO_API_KEY", "").strip()
+    if not api_key:
+        return None, None
+    try:
+        import sib_api_v3_sdk
+        from sib_api_v3_sdk.rest import ApiException  # noqa: F401 (used by caller)
+    except ImportError:
+        log.warning("sib-api-v3-sdk is not installed; emails disabled")
+        return None, None
+
+    cfg = sib_api_v3_sdk.Configuration()
+    cfg.api_key["api-key"] = api_key
+    api_client = sib_api_v3_sdk.ApiClient(cfg)
+    return (
+        sib_api_v3_sdk.TransactionalEmailsApi(api_client),
+        sib_api_v3_sdk.SendSmtpEmail,
+    )
+
+
+def _sender_block() -> dict:
+    return {
+        "email": os.environ.get("BREVO_SENDER_EMAIL", "no-reply@formyla.com"),
+        "name": os.environ.get("BREVO_SENDER_NAME", "FORMYLA.net"),
+    }
+
+
+def send_email(
+    to_email: str,
+    subject: str,
+    html_content: str,
+    text_content: Optional[str] = None,
+    to_name: Optional[str] = None,
+) -> bool:
+    """Send a transactional email through Brevo.
+
+    Returns True on success, False on any failure (and logs the reason).
+    Never raises — callers can safely fire-and-forget.
+    """
+    if not to_email:
+        log.warning("send_email: empty recipient, skipped")
+        return False
+
+    api, SendSmtpEmail = _get_api_client()
+    if api is None:
+        log.info("send_email: BREVO_API_KEY not set, skipping email to %s", to_email)
+        return False
+
+    payload = SendSmtpEmail(
+        sender=_sender_block(),
+        to=[{"email": to_email, "name": to_name or to_email}],
+        subject=subject,
+        html_content=html_content,
+        text_content=text_content or _strip_html(html_content),
+    )
+
+    try:
+        api.send_transac_email(payload)
+        log.info("Brevo: email sent to %s | subject=%r", to_email, subject)
+        return True
+    except Exception as exc:  # noqa: BLE001 — Brevo SDK raises ApiException + httpx errors
+        log.error("Brevo: failed to send email to %s: %s", to_email, exc)
+        # Best-effort: report to Sentry if available
+        try:
+            import sentry_sdk
+            sentry_sdk.capture_exception(exc)
+        except Exception:
+            pass
+        return False
+
+
+def _strip_html(html: str) -> str:
+    """Very small HTML -> text fallback for the text_content field."""
+    import re
+    text = re.sub(r"<br\s*/?>", "\n", html or "", flags=re.IGNORECASE)
+    text = re.sub(r"</p\s*>", "\n\n", text, flags=re.IGNORECASE)
+    text = re.sub(r"<[^>]+>", "", text)
+    return text.strip()
+
+
+# ─────────────────────────── Pre-built templates ───────────────────────────
+
+def send_welcome_email(user) -> bool:
+    """Welcome a new user right after registration.
+
+    `user` is a SQLAlchemy User row with .email and (optionally) .nickname.
+    """
+    email = getattr(user, "email", None)
+    if not email:
+        return False
+    name = getattr(user, "nickname", None) or getattr(user, "display_name", None) or email.split("@")[0]
+    subject = "Добро пожаловать в FORMYLA.net!"
+    html = f"""
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937;">
+      <h1 style="color:#7c3aed;margin:0 0 12px;">Привет, {name}!</h1>
+      <p>Спасибо, что зарегистрировался в <strong>FORMYLA.net</strong> — платформе подготовки к математическим олимпиадам.</p>
+      <p>Что ты можешь сделать прямо сейчас:</p>
+      <ul>
+        <li>Пройти <a href="https://formyla.net/intake/" style="color:#0ea5e9;">короткую анкету</a> — 6 вопросов и 5 задач, подберём стартовый уровень.</li>
+        <li>Решить <a href="https://formyla.net/daily_tasks" style="color:#0ea5e9;">задачи дня</a> — каждый день новая подборка.</li>
+        <li>Выбрать свою олимпиаду в <a href="https://formyla.net/olympiads/menu" style="color:#0ea5e9;">каталоге олимпиад</a>.</li>
+      </ul>
+      <p style="margin-top:24px;">Если что-то непонятно — напиши прямо в форму поддержки на <a href="https://formyla.net/about">странице «О нас»</a>.</p>
+      <p style="color:#6b7280;font-size:13px;margin-top:32px;">Это автоматическое письмо, отвечать на него не нужно.</p>
+    </div>
+    """
+    return send_email(email, subject, html, to_name=name)
+
+
+def send_onboarding_nudge(user) -> bool:
+    """Напоминание новичку на следующее утро после регистрации.
+
+    Шлём тем, кто зарегистрировался, но не прошёл онбординг:
+    просим вернуться за ~12–24 часа после первого визита.
+    """
+    email = getattr(user, "email", None)
+    if not email:
+        return False
+    name = getattr(user, "nickname", None) or getattr(user, "display_name", None) or email.split("@")[0]
+    subject = "FORMYLA.net: тебя ждут первые задачи"
+    html = f"""
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937;">
+      <h1 style="color:#7c3aed;margin:0 0 12px;">Доброе утро, {name}!</h1>
+      <p>Вчера ты зарегистрировался в <strong>FORMYLA.net</strong>, но не дошёл до первых задач. Это займёт меньше 10 минут:</p>
+      <ul>
+        <li><a href="https://formyla.net/intake/" style="color:#0ea5e9;">Пройди короткую анкету</a> — 6 вопросов, и мы подберём тебе уровень.</li>
+        <li>Сразу после анкеты откроются <a href="https://formyla.net/daily_tasks" style="color:#0ea5e9;">задачи дня</a> — уровень уже подобран под тебя.</li>
+      </ul>
+      <p>Если анкета уже пройдена — можешь сразу открыть <a href="https://formyla.net/daily_tasks" style="color:#0ea5e9;">задачи дня</a>.</p>
+      <p style="color:#6b7280;font-size:13px;margin-top:32px;">Это автоматическое напоминание, отвечать не нужно.</p>
+    </div>
+    """
+    return send_email(email, subject, html, to_name=name)
+
+
+def send_daily_tasks_deadline(user, hours_left: int = 5) -> bool:
+    """Напоминание: до конца задач дня осталось меньше `hours_left` часов.
+
+    Шлётся в 19:00 и 21:00 МСК тем, у кого сегодня есть готовый набор
+    задач дня и он ещё не полностью решён (см. app.py:
+    daily_quest_deadline_reminder_job).
+    """
+    email = getattr(user, "email", None)
+    if not email:
+        return False
+    name = getattr(user, "nickname", None) or getattr(user, "name", None) or email.split("@")[0]
+    subject = f"FORMYLA.net: до конца задач дня меньше {hours_left} часов"
+    html = f"""
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937;">
+      <h1 style="color:#7c3aed;margin:0 0 12px;">⏳ {name}, задачи дня ещё не решены</h1>
+      <p>До конца сегодняшнего набора осталось меньше {hours_left} часов. Завтра задачи обновятся, а серия дней засчитывается только при полностью решённом наборе.</p>
+      <p style="text-align:center;margin:24px 0;">
+        <a href="https://formyla.net/daily_tasks" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Открыть задачи дня</a>
+      </p>
+      <p style="color:#6b7280;font-size:13px;margin-top:32px;">Это автоматическое напоминание, отвечать не нужно.</p>
+    </div>
+    """
+    return send_email(email, subject, html, to_name=name)
+
+
+def send_daily_tasks_deadline_digest(
+    admin_email: str,
+    total_pending: int,
+    recipients: list,
+    hours_left: int = 5,
+) -> bool:
+    """Админ-дайджест: кому ушло вечернее напоминание о задачах дня.
+
+    recipients — список dict'ов с ключами id/email/name. Шлём только
+    когда total_pending > 0, чтобы не спамить пустым отчётом.
+    """
+    if not admin_email or total_pending <= 0:
+        return False
+    rows = "".join(
+        f'<tr><td style="padding:4px 12px;border-bottom:1px solid #e5e7eb;">#{r.get("id", "?")}</td>'
+        f'<td style="padding:4px 12px;border-bottom:1px solid #e5e7eb;">{r.get("name") or "—"}</td>'
+        f'<td style="padding:4px 12px;border-bottom:1px solid #e5e7eb;">{r.get("email") or "—"}</td></tr>'
+        for r in recipients
+    )
+    subject = f"FORMYLA.net digest: напоминания о задачах дня ({total_pending})"
+    html = f"""
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:640px;margin:0 auto;padding:24px;color:#1f2937;">
+      <h1 style="color:#7c3aed;margin:0 0 12px;">Вечернее напоминание о задачах дня</h1>
+      <p>До конца задач дня меньше {hours_left} часов. Не закончили сегодняшний набор: <strong>{total_pending}</strong>. Им отправлены email и push-напоминание:</p>
+      <table style="border-collapse:collapse;font-size:14px;margin-top:12px;">
+        <tr style="color:#6b7280;text-align:left;"><th style="padding:4px 12px;">ID</th><th style="padding:4px 12px;">Имя</th><th style="padding:4px 12px;">Email</th></tr>
+        {rows}
+      </table>
+      <p style="color:#6b7280;font-size:13px;margin-top:24px;">Автоматический дайджест, отвечать не нужно.</p>
+    </div>
+    """
+    return send_email(admin_email, subject, html, to_name="Admin")
+
+
+def send_password_reset(user, reset_link: str) -> bool:
+    """Send a password-reset link (auth is passwordless today, so this is
+    reserved for future use — e.g. account recovery via Telegram-linked email)."""
+    email = getattr(user, "email", None)
+    if not email or not reset_link:
+        return False
+    name = getattr(user, "nickname", None) or email.split("@")[0]
+    subject = "FORMYLA.net: восстановление доступа"
+    html = f"""
+    <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937;">
+      <h2 style="color:#7c3aed;">Восстановление доступа</h2>
+      <p>Привет, {name}. По твоему запросу мы выслали ссылку для входа без пароля:</p>
+      <p style="text-align:center;margin:24px 0;">
+        <a href="{reset_link}" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Войти в FORMYLA.net</a>
+      </p>
+      <p style="color:#6b7280;font-size:13px;">Если ссылку запрашивал не ты — просто проигнорируй это письмо. Ссылка действует 30 минут.</p>
+    </div>
+    """
+    return send_email(email, subject, html, to_name=name)
+
+
+def send_payment_receipt(user, plan: str, amount_rub: int, period: str = "месяц") -> bool:
+    """Confirmation receipt after a successful subscription payment."""
+    email = getattr(user, "email", None)
+    if not email:
+        return False
+    name = getattr(user, "nickname", None) or email.split("@")[0]
+    subject = f"FORMYLA.net Pro {period}: оплата получена"
+    html = f"""
+    <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937;">
+      <h2 style="color:#7c3aed;">Спасибо за оплату!</h2>
+      <p>Привет, {name}. Мы получили {amount_rub} руб. за тариф <strong>{plan}</strong> ({period}).</p>
+      <p>Доступ ко всем функциям Pro уже активирован. Перейти к занятиям: <a href="https://formyla.com/profile" style="color:#0ea5e9;">личный кабинет</a>.</p>
+      <p style="color:#6b7280;font-size:13px;margin-top:24px;">Чек об оплате будет также доступен в разделе «История платежей».</p>
+    </div>
+    """
+    return send_email(email, subject, html, to_name=name)

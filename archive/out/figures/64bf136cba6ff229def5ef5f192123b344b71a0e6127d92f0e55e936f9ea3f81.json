@@ -1,0 +1,82 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "AM",
+   "ratio": 0.333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "AM",
+   "ratio": 0.667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AC",
+   "ratio": 0.4
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AM",
+   "style": "soft"
+  },
+  {
+   "polygon": "KPL",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AK",
+    "KL"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "KL",
+    "LM"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AC",
+   "reason": "N — середина AC; отрезок MN — средняя линия, используется в доказательстве."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "MN",
+   "style": "soft"
+  }
+ ]
+}

@@ -1,0 +1,76 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "CM"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "ACM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CM"
+  },
+  {
+   "circle": "w"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "AM",
+    "MB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CK",
+    "KM"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "line_circle",
+   "id": "L",
+   "circle": "w",
+   "line": "AM",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "N",
+   "circle": "w",
+   "line": "AC",
+   "pick": 0
+  }
+ ],
+ "draw_aux": [],
+ "reason": "Точки касания вписанной окружности со сторонами AM и AC нужны для применения свойства равенства отрезков касательных, проведённых из одной точки."
+}

@@ -1,0 +1,20 @@
+{
+  "id": 802085,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$ и $AB$ взяты точки $D$, $E$ и $F$ соответственно так, что $BD:DC = 1:2$, $CE:EA = 2:1$ и $AF:FB = 2:1$. Отрезки $AD$, $BE$ и $CF$ попарно пересекаются, образуя треугольник $XYZ$ (где $X = BE \\cap CF$, $Y = CF \\cap AD$, $Z = AD \\cap BE$). Найдите отношение площади треугольника $XYZ$ к площади треугольника $ABC$.",
+  "solution": "Введём барицентрические координаты относительно треугольника $ABC$: $A(1,0,0)$, $B(0,1,0)$, $C(0,0,1)$. Тогда по условию:\n- $D$ на $BC$: $BD:DC = 1:2$ ⇒ $D = (0,1,2)$ (после нормировки $D = (0,\\frac13,\\frac23)$).\n- $E$ на $CA$: $CE:EA = 2:1$ ⇒ $AE:EC = 1:2$ ⇒ $E = (2,0,1)$ (нормировка $E = (\\frac23,0,\\frac13)$).\n- $F$ на $AB$: $AF:FB = 2:1$ ⇒ $F = (1,2,0)$ (нормировка $F = (\\frac13,\\frac23,0)$).\n\nНайдём точку $Z = AD \\cap BE$. Параметризации:\n- $AD$: $A + \\lambda(D-A) = (1,0,0)+\\lambda(-1,\\frac13,\\frac23) = (1-\\lambda,\\frac\\lambda3,\\frac{2\\lambda}{3})$;\n- $BE$: $B + \\mu(E-B) = (0,1,0)+\\mu(\\frac23,-1,\\frac13) = (\\frac{2\\mu}{3},1-\\mu,\\frac\\mu3)$.\nПриравниваем координаты:\n$$\n\\begin{cases}\n1-\\lambda = \\frac{2\\mu}{3},\\\\\n\\frac\\lambda3 = 1-\\mu,\\\\\n\\frac{2\\lambda}{3} = \\frac\\mu3.\n\\end{cases}\n$$\nИз третьего $2\\lambda = \\mu$. Подставляем во второе: $\\frac\\lambda3 = 1-2\\lambda$ ⇒ $\\frac\\lambda3+2\\lambda=1$ ⇒ $\\frac{7\\lambda}{3}=1$ ⇒ $\\lambda=\\frac37$, $\\mu=\\frac67$. Тогда $Z = (1-\\frac37,\\frac{3/7}{3},\\frac{2\\cdot3/7}{3}) = (\\frac47,\\frac17,\\frac27)$ (сумма $\\frac77=1$).\n\nАналогично, в силу циклической симметрии (отрезки $AD$, $BE$, $CF$ образуют циклическую конфигурацию с теми же отношениями) получаем:\n$$X = BE\\cap CF = (\\frac27,\\frac47,\\frac17),\\quad Y = CF\\cap AD = (\\frac17,\\frac27,\\frac47).$$\n\nПлощадь треугольника $XYZ$ в барицентрических координатах равна $S_{ABC}$, умноженной на модуль определителя матрицы из координат точек:\n$$\nS_{XYZ} = S_{ABC}\\cdot\\left|\\det\\begin{pmatrix}\n\\frac27 & \\frac47 & \\frac17\\\\\n\\frac17 & \\frac27 & \\frac47\\\\\n\\frac47 & \\frac17 & \\frac27\n\\end{pmatrix}\\right|.\n$$\nВынесем $\\frac17$ из каждой строки:\n$$\nS_{XYZ} = S_{ABC}\\cdot\\frac{1}{7^3}\\left|\\det\\begin{pmatrix}\n2 & 4 & 1\\\\\n1 & 2 & 4\\\\\n4 & 1 & 2\n\\end{pmatrix}\\right|.\n$$\nВычислим определитель:\n$$\n\\begin{aligned}\n\\det &= 2\\cdot2\\cdot2 + 4\\cdot4\\cdot4 + 1\\cdot1\\cdot1 - (1\\cdot2\\cdot4 + 4\\cdot1\\cdot2 + 2\\cdot4\\cdot1) \\\\\n&= 8+64+1 - (8+8+8) = 73 - 24 = 49.\n\\end{aligned}\n$$\nТаким образом,\n$$\nS_{XYZ} = S_{ABC}\\cdot\\frac{49}{7^3} = S_{ABC}\\cdot\\frac{49}{343} = \\frac{1}{7}S_{ABC}.\n$$\n\nОтвет: $\\dfrac{1}{7}$.",
+  "correct_answer": "$$\\frac{1}{7}$$",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Барицентрические координаты и вычисление определителя",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.822,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:59:05.496890+00:00"
+}

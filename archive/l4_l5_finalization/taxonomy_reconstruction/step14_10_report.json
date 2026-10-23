@@ -1,0 +1,323 @@
+{
+  "step": "14.10",
+  "description": "Unit tests (10) + retest (10+20)",
+  "part1_unit_tests": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "tests": [
+      {
+        "test_name": "UT-01: parse_slot_key valid format",
+        "passed": true,
+        "details": "parse_slot_key('G10|L4|T013|S0')=('10', 'L4', 'T013', 'S0'), expected=('10', 'L4', 'T013', 'S0')"
+      },
+      {
+        "test_name": "UT-02: parse_slot_key malformed returns None",
+        "passed": true,
+        "details": "Tested 4 malformed inputs, all returned None"
+      },
+      {
+        "test_name": "UT-03: build_canonical_lookup cell count",
+        "passed": true,
+        "details": "lookup has 558 entries, canonical_cells has 558 cells"
+      },
+      {
+        "test_name": "UT-04: lookup key fields present",
+        "passed": true,
+        "details": "Missing fields across all entries: none"
+      },
+      {
+        "test_name": "UT-05: valid topic_ids T001-T041",
+        "passed": true,
+        "details": "Expected 41 topics, got 41. Missing: none. Extra: none"
+      },
+      {
+        "test_name": "UT-06: invalid topic_ids excluded",
+        "passed": true,
+        "details": "T042/T043 in valid set: False"
+      },
+      {
+        "test_name": "UT-07: cell key format validation",
+        "passed": true,
+        "details": "Issues: 0"
+      },
+      {
+        "test_name": "UT-08: combo mismatch detection",
+        "passed": true,
+        "details": "Checked 20 entries, invalid combo issues: 0"
+      },
+      {
+        "test_name": "UT-09: valid candidate identification",
+        "passed": true,
+        "details": "Checked 20 entries, issues: 0"
+      },
+      {
+        "test_name": "UT-10: C10 false rejection detection",
+        "passed": true,
+        "details": "Checked 20 entries, issues: 0"
+      }
+    ]
+  },
+  "part2_retest_10": {
+    "description": "Verify all 11 invalid_topic entries (T042/T043) are garbage",
+    "total": 11,
+    "passed": true,
+    "results": [
+      {
+        "slot_key": "G11|L4|T043|S0",
+        "topic_id": "T043",
+        "is_phantom_topic": true,
+        "has_canonical_cell": false,
+        "is_garbage": true,
+        "task_output_preview": "(empty)"
+      },
+      {
+        "slot_key": "G11|L4|T043|S1",
+        "topic_id": "T043",
+        "is_phantom_topic": true,
+        "has_canonical_cell": false,
+        "is_garbage": true,
+        "task_output_preview": "(empty)"
+      },
+      {
+        "slot_key": "G11|L4|T043|S2",
+        "topic_id": "T043",
+        "is_phantom_topic": true,
+        "has_canonical_cell": false,
+        "is_garbage": true,
+        "task_output_preview": "(empty)"
+      },
+      {
+        "slot_key": "G11|L5|T043|S1",
+        "topic_id": "T043",
+        "is_phantom_topic": true,
+        "has_canonical_cell": false,
+        "is_garbage": true,
+        "task_output_preview": "(empty)"
+      },
+      {
+        "slot_key": "G11|L5|T043|S2",
+        "topic_id": "T043",
+        "is_phantom_topic": true,
+        "has_canonical_cell": false,
+        "is_garbage": true,
+        "task_output_preview": "(empty)"
+      },
+      {
+        "slot_key": "G8|L4|T042|S0",
+        "topic_id": "T042",
+        "is_phantom_topic": true,
+        "has_canonical_cell": false,
+        "is_garbage": true,
+        "task_output_preview": "(empty)"
+      },
+      {
+        "slot_key": "G8|L4|T042|S1",
+        "topic_id": "T042",
+        "is_phantom_topic": true,
+        "has_canonical_cell": false,
+        "is_garbage": true,
+        "task_output_preview": "(empty)"
+      },
+      {
+        "slot_key": "G8|L4|T042|S2",
+        "topic_id": "T042",
+        "is_phantom_topic": true,
+        "has_canonical_cell": false,
+        "is_garbage": true,
+        "task_output_preview": "(empty)"
+      },
+      {
+        "slot_key": "G8|L5|T042|S0",
+        "topic_id": "T042",
+        "is_phantom_topic": true,
+        "has_canonical_cell": false,
+        "is_garbage": true,
+        "task_output_preview": "(empty)"
+      },
+      {
+        "slot_key": "G8|L5|T042|S1",
+        "topic_id": "T042",
+        "is_phantom_topic": true,
+        "has_canonical_cell": false,
+        "is_garbage": true,
+        "task_output_preview": "(empty)"
+      },
+      {
+        "slot_key": "G8|L5|T042|S2",
+        "topic_id": "T042",
+        "is_phantom_topic": true,
+        "has_canonical_cell": false,
+        "is_garbage": true,
+        "task_output_preview": "(empty)"
+      }
+    ]
+  },
+  "part2_retest_20": {
+    "description": "Verify C10 false rejections with correct canonical taxonomy",
+    "total": 20,
+    "confirmed": 20,
+    "results": [
+      {
+        "slot_key": "G10|L5|T028|S0",
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Стереометрия: аксиомы и прямые",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L4|T013|S1",
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Неравенства: показательные и логарифмические",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L5|T028|S1",
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Стереометрия: аксиомы и прямые",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L4|T013|S2",
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Неравенства: показательные и логарифмические",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L4|T039|S1",
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Уравнения: показательные и логарифмические",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L4|T039|S0",
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Уравнения: показательные и логарифмические",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L4|T028|S0",
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: аксиомы и прямые",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L4|T028|S2",
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: аксиомы и прямые",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L4|T014|S0",
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Неравенства: тригонометрические",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L4|T014|S2",
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Неравенства: тригонометрические",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L5|T029|S2",
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Стереометрия: многогранники",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L5|T029|S0",
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Стереометрия: многогранники",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L5|T013|S1",
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Неравенства: показательные и логарифмические",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L5|T013|S0",
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Неравенства: показательные и логарифмические",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L4|T030|S0",
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: тела вращения",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L5|T014|S2",
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Неравенства: тригонометрические",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L5|T014|S0",
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Неравенства: тригонометрические",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L4|T029|S2",
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: многогранники",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L4|T029|S0",
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: многогранники",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      },
+      {
+        "slot_key": "G10|L4|T030|S2",
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: тела вращения",
+        "is_false_rejection": true,
+        "c10_passed": false,
+        "would_pass_with_correct": true
+      }
+    ]
+  }
+}

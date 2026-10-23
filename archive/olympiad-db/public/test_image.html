@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Test Image</title></head>
+<body>
+  <h1>Test Image Loading</h1>
+  <p>Path from JSONL: <code>out/images/euler/euler_2009_tasks.pdf/euler_2009_regional_g8_n2_p1_cropde2ac903.png</code></p>
+  <p>Converted URL: <code>/images/euler/euler_2009_tasks.pdf/euler_2009_regional_g8_n2_p1_cropde2ac903.png</code></p>
+  <img src="/images/euler/euler_2009_tasks.pdf/euler_2009_regional_g8_n2_p1_cropde2ac903.png"
+       alt="Test Euler image"
+       style="max-width:100%;border:2px solid red;">
+  <hr>
+  <p>Also test with a different approach - via onerror handler:</p>
+  <img src="/images/euler/euler_2009_tasks.pdf/euler_2009_regional_g8_n2_p1_cropde2ac903.png"
+       onerror="this.alt='IMAGE FAILED TO LOAD!';this.style.border='5px solid red';"
+       style="max-width:100%;border:2px solid blue;">
+  <script>
+    // Test if the image URL matches what the JS generates
+    var path = 'out/images/euler/euler_2009_tasks.pdf/euler_2009_regional_g8_n2_p1_cropde2ac903.png';
+    var url = '/' + path.replace(/^out\//, '');
+    document.getElementById('info').textContent = 'imageSrc("' + path + '") = "' + url + '"';
+  </script>
+  <p id="info"></p>
+</body>
+</html>

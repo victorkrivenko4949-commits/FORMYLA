@@ -1,0 +1,20 @@
+{
+  "id": 801820,
+  "task_text": "В треугольнике $ABC$ проведена биссектриса $AD$. В треугольники $ABD$ и $ACD$ вписаны окружности, касающиеся отрезка $AD$ в точках $X$ и $Y$ соответственно. Докажите, что $$XY = \\frac{|AB-AC|\\cdot(AB+AC-BC)}{2(AB+AC)}.$$",
+  "solution": "Обозначим AB=c, AC=b, BC=a. BD=x, CD=y, x+y=a. По свойству биссектрисы: x = ac/(b+c), y = ab/(b+c).\n\nДля треугольника ABD: полупериметр p1 = (c+x+AD)/2. Отрезок AX = p1 - x = (c+AD-x)/2.\nАналогично AY = (b+AD-y)/2.\nТогда XY = |AX - AY| = |(c+AD-x)/2 - (b+AD-y)/2| = |c-b + (y-x)|/2.\nПодставляем y-x = a(b-c)/(b+c).\nПолучаем c-b + y-x = (c-b) + a(b-c)/(b+c) = (c-b)(1 - a/(b+c)).\nМодуль: |c-b|·|1 - a/(b+c)| = |b-c|·(1 - a/(b+c)), так как 1 - a/(b+c) > 0 по неравенству треугольника.\nСледовательно, XY = |b-c|·(1 - a/(b+c))/2 = |b-c|·(b+c-a)/(2(b+c)).\nЗаменив |b-c| = |AB-AC| и b+c-a = AB+AC-BC, получаем XY = |AB-AC|·(AB+AC-BC)/(2(AB+AC)).",
+  "correct_answer": "$$XY = \\frac{|AB-AC|\\cdot(AB+AC-BC)}{2(AB+AC)}$$",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Свойство отрезков касательных и алгебраическое преобразование",
+  "idea_count": 3,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T14:13:17.898213+00:00"
+}

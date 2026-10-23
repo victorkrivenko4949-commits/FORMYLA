@@ -1,0 +1,69 @@
+--- /tmp/s_old.json	2026-09-01 15:22:16.139792668 +0000
++++ /tmp/s_new.json	2026-09-01 15:22:16.139792668 +0000
+@@ -42,6 +42,11 @@
+               "free_point",
+               "midpoint",
+               "point_on_segment",
++              "point_on_circle",
++              "inscribed_polygon",
++              "reflect_point",
++              "rotate_point",
++              "parallel_line",
+               "foot_perpendicular",
+               "intersect_lines",
+               "intersect_line_circle",
+@@ -88,6 +93,9 @@
+               "equal_segments_mark",
+               "equal_angles_mark",
+               "right_angle_mark",
++              "midpoint_mark",
++              "parallel_mark",
++              "perpendicular_mark",
+               "angle_label",
+               "length_label",
+               "hatch_region",
+@@ -171,7 +179,43 @@
+           "extend_by": {
+             "type": "number", "exclusiveMinimum": 0.0,
+             "description": "Длина продолжения в пикселях (относительных единицах)"
+-          }
++          },
++
++          "point": {"type": "string", "description": "id точки для reflect_point/rotate_point/parallel_line"},
++          "line": {"type": "string", "description": "id прямой для parallel_line (или пара точек)"},
++          "degrees": {"type": "number", "description": "Угол поворота в градусах (rotate_point)"},
++          "maps": {
++            "type": "array", "minItems": 2, "maxItems": 2,
++            "items": {"type": "string"},
++            "description": "Пара [A, C]: rotate_point вокруг center так, чтобы A перешла в C"
++          },
++          "angle_deg": {"type": "number", "description": "Угол в градусах для point_on_circle"},
++          "between": {
++            "type": "array", "minItems": 2, "maxItems": 2,
++            "items": {"type": "string"},
++            "description": "Две точки: point_on_circle ложится на дугу между ними"
++          },
++          "vertices": {
++            "type": "array", "minItems": 3,
++            "items": {"type": "string"},
++            "description": "Список id вершин inscribed_polygon в порядке обхода"
++          },
++          "order": {
++            "enum": ["ccw", "cw"],
++            "description": "Направление обхода inscribed_polygon (по умолчанию ccw)"
++          },
++          "min_arc_deg": {
++            "type": "number", "minimum": 0.0,
++            "description": "Минимальная дуга между соседними вершинами inscribed_polygon"
++          },
++          "start_angle_deg": {"type": "number", "description": "Базовый угол inscribed_polygon"},
++          "radius_point": {"type": "string", "description": "id точки — радиус = dist(center, radius_point)"},
++          "through": {"type": "string", "description": "Синоним radius_point для circle_center_radius"},
++          "foot_id": {"type": "string", "description": "id основания перпендикуляра для altitude (напр. A1)"},
++          "style": {"type": "string", "description": "Семантический стиль (aux/base)"},
++          "visual_role": {"type": "string", "description": "CH16: визуальная роль объекта"},
++          "l1": {"description": "Синоним line1: id либо пара точек"},
++          "l2": {"description": "Синоним line2: id либо пара точек"}
+         }
+       }
+     }

@@ -1,0 +1,20 @@
+{
+  "id": 800304,
+  "task_text": "В треугольнике $ABC$ на стороне $BC$ взята точка $D$ такая, что $BD:DC = 1:2$. На стороне $CA$ взята точка $E$ такая, что $CE:EA = 2:3$. На стороне $AB$ взята точка $F$ такая, что $AF:FB = 3:4$. На отрезке $AD$ взята точка $K$ так, что $AK:KD = 5:2$. На отрезке $BE$ взята точка $L$ так, что $BL:LE = 4:3$. На отрезке $CF$ взята точка $M$ так, что $CM:MF = 6:1$. Найдите отношение площади треугольника $KLM$ к площади треугольника $ABC$.",
+  "solution": "Введём барицентрические координаты относительно треугольника $ABC$: $A(1,0,0)$, $B(0,1,0)$, $C(0,0,1)$.\n\n1. Точка $D$ на $BC$ с $BD:DC=1:2$: $D = \\left(0, \\frac{DC}{BD+DC}, \\frac{BD}{BD+DC}\\right) = \\left(0, \\frac{2}{3}, \\frac{1}{3}\\right)$.\n2. Точка $E$ на $CA$ с $CE:EA=2:3$: $E = \\left(\\frac{EA}{CE+EA}, 0, \\frac{CE}{CE+EA}\\right) = \\left(\\frac{3}{5}, 0, \\frac{2}{5}\\right)$.\n3. Точка $F$ на $AB$ с $AF:FB=3:4$: $F = \\left(\\frac{FB}{AF+FB}, \\frac{AF}{AF+FB}, 0\\right) = \\left(\\frac{4}{7}, \\frac{3}{7}, 0\\right)$.\n\n4. Точка $K$ на $AD$ с $AK:KD=5:2$. В барицентрических координатах $K = \\frac{\\beta A + \\alpha D}{\\alpha+\\beta}$, где $\\alpha=5,\\beta=2$:\n   $K = \\left(\\frac{2}{7}, \\frac{5\\cdot\\frac{2}{3}}{7}, \\frac{5\\cdot\\frac{1}{3}}{7}\\right) = \\left(\\frac{2}{7},\\frac{10}{21},\\frac{5}{21}\\right) = \\left(\\frac{6}{21},\\frac{10}{21},\\frac{5}{21}\\right)$.\n\n5. Точка $L$ на $BE$ с $BL:LE=4:3$: $L = \\frac{\\delta B + \\gamma E}{\\gamma+\\delta}$ с $\\gamma=4,\\delta=3$:\n   $L = \\left(\\frac{4\\cdot\\frac{3}{5}}{7}, \\frac{3}{7}, \\frac{4\\cdot\\frac{2}{5}}{7}\\right) = \\left(\\frac{12}{35}, \\frac{3}{7}, \\frac{8}{35}\\right) = \\left(\\frac{12}{35},\\frac{15}{35},\\frac{8}{35}\\right)$.\n\n6. Точка $M$ на $CF$ с $CM:MF=6:1$: $M = \\frac{\\zeta C + \\varepsilon F}{\\varepsilon+\\zeta}$ с $\\varepsilon=6,\\zeta=1$:\n   $M = \\left(\\frac{6\\cdot\\frac{4}{7}}{7}, \\frac{6\\cdot\\frac{3}{7}}{7}, \\frac{1}{7}\\right) = \\left(\\frac{24}{49},\\frac{18}{49},\\frac{7}{49}\\right)$.\n\n7. Отношение площадей $\\frac{S_{KLM}}{S_{ABC}}$ равно модулю определителя матрицы, составленной из строк $K,L,M$:\n   \\[\n   \\det\\begin{pmatrix}\n   \\frac{6}{21} & \\frac{10}{21} & \\frac{5}{21} \\\\\n   \\frac{12}{35} & \\frac{15}{35} & \\frac{8}{35} \\\\\n   \\frac{24}{49} & \\frac{18}{49} & \\frac{7}{49}\n   \\end{pmatrix}\n   \\]\n   Вынесем общие множители из строк:\n   \\[\n   \\det = \\frac{1}{21}\\cdot\\frac{1}{35}\\cdot\\frac{1}{49}\\cdot\\det\\begin{pmatrix}\n   6 & 10 & 5 \\\\\n   12 & 15 & 8 \\\\\n   24 & 18 & 7\n   \\end{pmatrix}\n   \\]\n   Вычислим определитель целочисленной матрицы:\n   \\[\n   \\det = 6\\cdot(15\\cdot7-8\\cdot18) -10\\cdot(12\\cdot7-8\\cdot24) +5\\cdot(12\\cdot18-15\\cdot24) \n   = 6\\cdot(105-144) -10\\cdot(84-192) +5\\cdot(216-360)\n   = 6\\cdot(-39) -10\\cdot(-108) +5\\cdot(-144) = -234+1080-720 = 126.\n   \\]\n   Следовательно,\n   \\[\n   \\det = \\frac{126}{21\\cdot35\\cdot49} = \\frac{126}{36015} = \\frac{42}{12005} = \\frac{6}{1715}.\n   \\]\n   Модуль определителя равен $\\frac{6}{1715}$.\n\n8. Таким образом, $\\displaystyle \\frac{S_{KLM}}{S_{ABC}} = \\frac{6}{1715}$.",
+  "correct_answer": "6/1715",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 8,
+  "real_level": 8,
+  "key_method": "Барицентрические координаты и определитель для нахождения отношения площадей",
+  "idea_count": 4,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T11:18:40.771329+00:00"
+}

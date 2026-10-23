@@ -1,0 +1,136 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circle",
+   "id": "cAB",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "M",
+   "circle": "cAB",
+   "angle": -90
+  },
+  {
+   "type": "midpoint",
+   "id": "O1",
+   "of": "AM"
+  },
+  {
+   "type": "reflect_point",
+   "id": "N",
+   "of": "B",
+   "over": "O1"
+  },
+  {
+   "type": "circle",
+   "id": "cBC",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "Q",
+   "circle": "cBC",
+   "angle": -90
+  },
+  {
+   "type": "midpoint",
+   "id": "O2",
+   "of": "CQ"
+  },
+  {
+   "type": "reflect_point",
+   "id": "P",
+   "of": "B",
+   "over": "O2"
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "MQ",
+   "line2": "NP"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABMN"
+  },
+  {
+   "polygon": "BCPQ"
+  },
+  {
+   "line": "MQ",
+   "style": "soft"
+  },
+  {
+   "line": "NP",
+   "style": "soft"
+  },
+  {
+   "segment": "AX",
+   "style": "accent"
+  },
+  {
+   "segment": "CX",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "70°"
+  },
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "M"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "B",
+    "Q"
+   ]
+  },
+  {
+   "equal": [
+    "AB",
+    "BM"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "BQ"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "X",
+    "C"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

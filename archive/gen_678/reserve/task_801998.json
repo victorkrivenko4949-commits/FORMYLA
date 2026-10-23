@@ -1,0 +1,20 @@
+{
+  "id": 801998,
+  "task_text": "Найдите все натуральные числа $n$, для которых число $n^3 - n$ делится на $2025$.",
+  "solution": "$$2025 = 3^4 \\cdot 5^2 = 81 \\cdot 25.$$ Разложим: $n^3-n = (n-1)n(n+1)$ — произведение трёх последовательных целых чисел. Среди трёх последовательных чисел лишь одно может делиться на $3$ (но может давать любую степень тройки) и лишь одно — на $5$. Поэтому для делимости на $81$ необходимо, чтобы одно из чисел $n-1,n,n+1$ делилось на $81$. Аналогично для делимости на $25$ необходимо, чтобы одно из этих чисел делилось на $25$ (возможно, то же самое, если оно делится на $2025$). Рассмотрим 6 случаев:\n\n1. $n$ кратно $81$.\n   а) $n-1$ кратно $25$: $n \\equiv 1 \\pmod{25}$.\n   б) $n+1$ кратно $25$: $n \\equiv 24 \\pmod{25}$.\n\n2. $n-1$ кратно $81$ (т.е. $n \\equiv 1 \\pmod{81}$).\n   а) $n$ кратно $25$: $n \\equiv 0 \\pmod{25}$.\n   б) $n+1$ кратно $25$: $n \\equiv 24 \\pmod{25}$.\n\n3. $n+1$ кратно $81$ (т.е. $n \\equiv 80 \\pmod{81}$).\n   а) $n-1$ кратно $25$: $n \\equiv 1 \\pmod{25}$.\n   б) $n$ кратно $25$: $n \\equiv 0 \\pmod{25}$.\n\nРешим каждую систему сравнений с помощью Китайской теоремы об остатках (модули $81$ и $25$ взаимно просты).\n\n- Случай 1а: $n \\equiv 0 \\pmod{81}$, $n \\equiv 1 \\pmod{25}$. $81k \\equiv 1 \\pmod{25} \\Rightarrow 6k \\equiv 1 \\Rightarrow k \\equiv 21 \\pmod{25}$. $n \\equiv 81\\cdot21 = 1701 \\pmod{2025}$.\n- 1б: $n \\equiv 0 \\pmod{81}$, $n \\equiv 24 \\pmod{25} \\Rightarrow 6k \\equiv 24 \\Rightarrow k \\equiv 4 \\pmod{25}$. $n \\equiv 81\\cdot4 = 324 \\pmod{2025}$.\n- 2а: $n \\equiv 1 \\pmod{81}$, $n \\equiv 0 \\pmod{25} \\Rightarrow 6k+1 \\equiv 0 \\Rightarrow 6k \\equiv 24 \\Rightarrow k \\equiv 4 \\pmod{25}$. $n \\equiv 81\\cdot4+1 = 325 \\pmod{2025}$.\n- 2б: $n \\equiv 1 \\pmod{81}$, $n \\equiv 24 \\pmod{25} \\Rightarrow 6k+1 \\equiv 24 \\Rightarrow 6k \\equiv 23 \\Rightarrow k \\equiv 8 \\pmod{25}$ (так как $6\\cdot8=48\\equiv23$). $n \\equiv 81\\cdot8+1 = 649 \\pmod{2025}$.\n- 3а: $n \\equiv 80 \\pmod{81}$, $n \\equiv 1 \\pmod{25} \\Rightarrow 6k+5 \\equiv 1 \\Rightarrow 6k \\equiv -4 \\equiv 21 \\Rightarrow k \\equiv 16 \\pmod{25}$ (так как $6\\cdot16=96\\equiv21$). $n \\equiv 81\\cdot16+80 = 1376 \\pmod{2025}$.\n- 3б: $n \\equiv 80 \\pmod{81}$, $n \\equiv 0 \\pmod{25} \\Rightarrow 6k+5 \\equiv 0 \\Rightarrow 6k \\equiv -5 \\equiv 20 \\Rightarrow k \\equiv 20 \\pmod{25}$ (так как $6\\cdot20=120\\equiv20$). $n \\equiv 81\\cdot20+80 = 1700 \\pmod{2025}$.\n\nТаким образом, условие выполняется тогда и только тогда, когда остаток $n$ при делении на $2025$ равен одному из шести чисел: $324,\\,325,\\,649,\\,1376,\\,1700,\\,1701$.\n\nОтвет: $n = 2025k + r$, где $k$ — целое неотрицательное, $r \\in \\{324,325,649,1376,1700,1701\\}$.",
+  "correct_answer": "$$n \\equiv 324,\\,325,\\,649,\\,1376,\\,1700,\\,1701 \\pmod{2025}$$",
+  "class_level": 8,
+  "topic": "Теория чисел",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Разложение на множители, анализ делимости на степень простого числа, китайская теорема об остатках",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 1.0,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:45:16.764799+00:00"
+}

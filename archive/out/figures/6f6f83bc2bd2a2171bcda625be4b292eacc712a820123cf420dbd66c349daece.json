@@ -1,0 +1,75 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABDF",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "C",
+   "of": "BD",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "DF",
+   "ratio": 0.666667
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABDF",
+   "style": "soft"
+  },
+  {
+   "polygon": "ABC",
+   "style": "dashed"
+  },
+  {
+   "polygon": "CDE",
+   "style": "dashed"
+  },
+  {
+   "polygon": "AFE",
+   "style": "dashed"
+  },
+  {
+   "polygon": "ACE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "F",
+    "E"
+   ]
+  },
+  {
+   "right_angle": [
+    "E",
+    "D",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "E",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "AE",
+    "EC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

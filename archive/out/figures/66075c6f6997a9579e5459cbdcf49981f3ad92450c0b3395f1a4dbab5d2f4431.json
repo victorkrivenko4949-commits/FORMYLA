@@ -1,0 +1,54 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "reflect_line",
+   "id": "B1",
+   "of": "B",
+   "over": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "AO",
+   "line2": "B1C"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "line": "AO",
+   "style": "soft"
+  },
+  {
+   "line": "B1C",
+   "style": "soft"
+  },
+  {
+   "segment": "KB",
+   "style": "soft"
+  },
+  {
+   "segment": "KB1",
+   "style": "soft"
+  },
+  {
+   "segment": "AK",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

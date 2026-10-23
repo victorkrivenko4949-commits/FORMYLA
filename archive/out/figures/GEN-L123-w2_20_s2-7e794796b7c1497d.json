@@ -1,0 +1,132 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 0.302,
+   "y": 0.831
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 0.5,
+   "y": -0.866
+  },
+  {
+   "type": "point",
+   "id": "E",
+   "x": 1.371,
+   "y": 1.0195
+  },
+  {
+   "type": "circumcircle",
+   "id": "circABC",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "CD",
+   "line2": "AE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABD",
+   "style": "soft"
+  },
+  {
+   "polygon": "BCE",
+   "style": "soft"
+  },
+  {
+   "segment": "CD"
+  },
+  {
+   "segment": "AE"
+  },
+  {
+   "circle": "circABC",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "D"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "E"
+   ],
+   "text": "60°"
+  },
+  {
+   "equal": [
+    "AB",
+    "BD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "BE"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "ABP",
+   "reason": "Из условия: A, B, P, O лежат на этой окружности"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "omega",
+   "style": "dashed"
+  }
+ ]
+}

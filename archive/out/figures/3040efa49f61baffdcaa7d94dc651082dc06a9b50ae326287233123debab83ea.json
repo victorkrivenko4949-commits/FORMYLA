@@ -1,0 +1,102 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "line_circle",
+   "id": "X",
+   "circle": "c1",
+   "line": "AC",
+   "pick": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "XC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "cX",
+   "center": "X",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "cC",
+   "center": "C",
+   "through": "X"
+  },
+  {
+   "type": "circle_circle",
+   "id": "N",
+   "circle1": "cX",
+   "circle2": "cC",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "line": "MN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "N",
+    "M",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "XM",
+    "MC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcenter",
+   "id": "O2",
+   "of": "BCX"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "BCX"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w2",
+   "style": "soft"
+  },
+  {
+   "segment": "MO2",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Строится окружность BCX и её центр O2; по доказательству O2 лежит на перпендикуляре к AC через M и является серединой дуги BC описанной окружности ABC."
+}

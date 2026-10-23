@@ -1,0 +1,99 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "O1",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w0",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "w0",
+   "line": "AO1",
+   "pick": 1
+  },
+  {
+   "type": "reflect_point",
+   "id": "O2",
+   "of": "O1",
+   "over": "M"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "M",
+   "through": "B"
+  },
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "C",
+   "over": "M"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w0",
+   "style": "soft"
+  },
+  {
+   "circle": "w1"
+  },
+  {
+   "segment": "AO1",
+   "style": "soft"
+  },
+  {
+   "segment": "BO2",
+   "style": "soft"
+  },
+  {
+   "segment": "O1O2",
+   "style": "soft"
+  },
+  {
+   "segment": "DC",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O1",
+    "B",
+    "O2"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "2α"
+  },
+  {
+   "angle": [
+    "B",
+    "O2",
+    "D"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

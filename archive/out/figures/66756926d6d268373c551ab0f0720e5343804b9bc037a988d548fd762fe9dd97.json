@@ -1,0 +1,140 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "omega",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "E",
+   "circle": "omega",
+   "angle": 70
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "omega",
+   "angle": 120
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "omega",
+   "angle": 170
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "omega",
+   "angle": 220
+  },
+  {
+   "type": "point_on_circle",
+   "id": "F",
+   "circle": "omega",
+   "angle": 290
+  },
+  {
+   "type": "incircle",
+   "id": "inc",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "BC",
+   "line2": "DF"
+  },
+  {
+   "type": "intersection",
+   "id": "Y",
+   "line1": "BC",
+   "line2": "DE"
+  },
+  {
+   "type": "intersection",
+   "id": "Z",
+   "line1": "EF",
+   "line2": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "T",
+   "line1": "EF",
+   "line2": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "circle": "omega"
+  },
+  {
+   "polygon": "AECDBF"
+  },
+  {
+   "polygon": "ABC",
+   "style": "soft"
+  },
+  {
+   "polygon": "DEF",
+   "style": "soft"
+  },
+  {
+   "line": "BC",
+   "style": "dashed"
+  },
+  {
+   "line": "EF",
+   "style": "dashed"
+  },
+  {
+   "circle": "inc",
+   "style": "soft"
+  },
+  {
+   "polygon": "XYTZ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "DB",
+    "DC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC",
+   "reason": "центр общей вписанной окружности; DI — биссектриса угла EDF"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AD",
+   "style": "dashed"
+  },
+  {
+   "segment": "DI",
+   "style": "dashed"
+  }
+ ]
+}

@@ -1,0 +1,53 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "D",
+   "of": "AC"
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "BD"
+  },
+  {
+   "type": "intersection",
+   "id": "F",
+   "line1": "AE",
+   "line2": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "segment": "AF",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "FC",
+   "reason": "Берём K — середину FC. Тогда DK — средняя линия в треугольнике AFC, поэтому DK ∥ AF; далее EF — средняя линия в треугольнике BDK, откуда BF=FK=KC."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "DK",
+   "style": "dashed"
+  }
+ ]
+}

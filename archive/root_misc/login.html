@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Вход - FORMYLA</title>
+    <meta name="description" content="FORMYLA — онлайн-платформа для подготовки школьников 5–11 классов к олимпиадам по математике: ВсОШ, Ломоносов, Эйлер, Турнир городов. ИИ-тьютор, задачи дня, теория, разборы.">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/style.css?v=5">
+    <link rel="stylesheet" href="/static/css/nav.css?v=1784415778">
+    <link rel="stylesheet" href="/static/css/mobile.css?v=3">
+    <link rel="stylesheet" href="/static/css/mobile_features.css?v=1784415778">
+    <link rel="stylesheet" href="/static/css/errors.css?v=1784415778">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    
+    <!-- KaTeX for math rendering — синхронная загрузка + скрытие до рендера,
+         чтобы не было «вспышки» сырого $LaTeX$ перед заменой на формулы. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+      /* Прячем содержимое до завершения рендера KaTeX. Применяется только
+         если есть потенциально математический контент (через JS-флаг).
+         Fail-safe: автоматически снимается через 1500ms, чтобы страница
+         НЕ зависла навсегда если KaTeX упал. */
+      html:not(.katex-ready) body.has-math .oly-md,
+      html:not(.katex-ready) body.has-math .task-text,
+      html:not(.katex-ready) body.has-math .problem-card,
+      html:not(.katex-ready) body.has-math .ai-feedback,
+      html:not(.katex-ready) body.has-math [data-katex] {
+        visibility: hidden;
+      }
+    </style>
+    <!-- preload — браузер начинает качать ещё до парсинга остального HTML -->
+    <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js">
+    <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js">
+    <!-- Синхронная загрузка: блокирует парсинг до загрузки KaTeX,
+         но даёт ГАРАНТИЮ что renderMathInElement доступна как только
+         DOM закончит парсить body. -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+      // Помечаем body как «возможно содержит math» — чтобы CSS-скрытие
+      // действовало только на странички с формулами, а не на всю морду.
+      (function(){
+        try {
+          document.documentElement.classList.add('katex-loading');
+          // Fail-safe: если KaTeX не справится за 1.5s — показываем как есть.
+          setTimeout(function(){
+            document.documentElement.classList.remove('katex-loading');
+            document.documentElement.classList.add('katex-ready');
+          }, 1500);
+        } catch(e){}
+      })();
+      // Рендер сразу при готовности DOM. Используем DOMContentLoaded —
+      // он срабатывает СРАЗУ как только тело распаршено, не дожидаясь
+      // картинок/iframe'ов, поэтому быстрее чем 'load'.
+      document.addEventListener('DOMContentLoaded', function(){
+        var t0 = performance.now();
+        try {
+          // Помечаем body — теперь CSS-скрытие активируется (если оно нужно)
+          document.body.classList.add('has-math');
+          if (typeof renderMathInElement === 'function') {
+            renderMathInElement(document.body, {
+              delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$',  right: '$',  display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+              ],
+              throwOnError: false,
+              // ignoredTags — НЕ трогать содержимое <script>, <style>, <code>,
+              // <pre> чтобы не ломать примеры кода / синтаксис.
+              ignoredTags: ['script','noscript','style','textarea','pre','code']
+            });
+          }
+        } catch(e) { console.warn('KaTeX render error', e); }
+        finally {
+          // Снимаем класс «загрузка» — содержимое становится видимым.
+          document.documentElement.classList.remove('katex-loading');
+          document.documentElement.classList.add('katex-ready');
+          if (window.console && console.log) {
+            console.log('✓ KaTeX rendered in ' + Math.round(performance.now()-t0) + 'ms');
+          }
+        }
+      });
+    </script>
+
+    <!-- Global KaTeX re-render helper (defined early so child templates can use it) -->
+    <script>
+    function reRenderMath(element) {
+        if (typeof renderMathInElement === 'function') {
+            renderMathInElement(element || document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ],
+                throwOnError: false
+            });
+        } else {
+            console.warn('KaTeX auto-render not loaded yet — reRenderMath deferred');
+        }
+    }
+    </script>
+    
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    
+
+    
+    
+    <script type="text/javascript">
+       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+       m[i].l=1*new Date();
+       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+       (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+       ym(109394525, "init", {
+            clickmap:true,
+            trackLinks:true,
+            accurateTrackBounce:true,
+            webvisor:true
+       });
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/109394525" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    
+
+    <script defer src="/static/js/analytics.js?v=1784415778"></script>
+    <!-- Mobile home swipe-pager (≤768px). На десктопе скрипт ничего не делает (init ищет #mHome, которого там нет). -->
+    <script defer src="/static/js/mobile_home_slider.js?v=1784415778"></script>
+</head>
+<body class="">
+    <header class="header">
+        <a href="/olympiads/methods" class="logo">
+            <svg class="site-logo" width="200" height="60" viewBox="0 0 350 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="grad_logo" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#38ef7d"/>
+                        <stop offset="100%" stop-color="#11998e"/>
+                    </linearGradient>
+                </defs>
+                <text x="100" y="65" font-family="'Segoe UI', sans-serif" font-style="italic" font-weight="800" font-size="38" fill="#ffffff" letter-spacing="2">FORMYLA</text>
+                <polygon points="50,20 75,35 75,65 50,80 25,65 25,35" fill="none" stroke="url(#grad_logo)" stroke-width="4"/>
+                <polyline points="35,42 50,50 50,80" fill="none" stroke="url(#grad_logo)" stroke-width="4"/>
+                <line x1="50" y1="50" x2="65" y2="42" stroke="url(#grad_logo)" stroke-width="4"/>
+                <circle cx="50" cy="50" r="4" fill="#fff"/>
+            </svg>
+        </a>
+
+        <!-- Бургер-кнопка для мобильных -->
+        <button class="nav-burger" onclick="toggleMobileNav()"
+                aria-label="Меню" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <nav class="nav" id="navLinks">
+            <!-- Задачи дня -->
+            <a href="/daily_tasks/" class="daily-nav-link nav-link nav-pill">
+                <span class="daily-flame">🔥</span>
+                <span class="daily-text">Задачи дня</span>
+                
+            </a>
+
+            <!-- 📚 Тренировка (dropdown) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    📚 Тренировка <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="/">📐 Темы</a>
+                    <a href="/probniks">📊 Тест по темам</a>
+                    <a href="/secrets">🗝️ Секреты</a>
+                    
+                </div>
+            </div>
+
+            <!-- 🏆 Олимпиады (dropdown) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    🏆 Олимпиады <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="/olympiads">📖 Каталог</a>
+                    <a href="/olympiads/courses">🆕 Курсы (ВсОШ-2027)</a>
+                    <a href="/olympiads/methods">📚 Каталог методов (102)</a>
+                    <a href="/olympiad-prep/calendar">📅 Календарь олимпиад</a>
+                    
+                </div>
+            </div>
+            
+            <!-- 🧭 Куратор подготовки (dropdown) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    🧭 Куратор подготовки <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="/prep/coach">🧭 Чат-куратор</a>
+            </div>
+        </div>
+
+            <!-- 🎨 Доска (dropdown: ИИ-чертёж + бесконечная доска + встреча с учителем) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    🎨 Доска <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="/drawing">📐 ИИ-чертёж по задаче</a>
+                    <a href="/drawing?tab=whiteboard">🖍️ Доска и встреча (камера/звук)</a>
+                    
+                </div>
+            </div>
+
+            <!--  Тьютор (плоская ссылка, открывает плавающий виджет) -->
+            
+
+            <!-- 👥 Сообщество (dropdown) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    👥 Сообщество <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="/leaderboard">🏆 Лидеры</a>
+                    <a href="/friends">🤝 Друзья</a>
+                    <a href="/chat">💬 Чат</a>
+                </div>
+            </div>
+
+            <!-- ℹ️ О сайте (плоская ссылка) -->
+            <a href="/about" class="nav-item">ℹ️ О сайте</a>
+            <a href="/about#review-form" class="nav-item">✍️ Написать отзыв</a>
+        </nav>
+        
+        <!-- Форма поиска -->
+        <form action="/problems" method="get" style="margin-left: auto; display: flex; gap: 8px;">
+            <input type="text" name="q" placeholder="🔍 Поиск по задачам..."
+                   value=""
+                   style="padding: 8px 16px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #fff; min-width: 250px; font-size: 14px;">
+            <button type="submit" style="padding: 8px 20px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">
+                Найти
+            </button>
+        </form>
+
+        <!-- Авторизация -->
+        <div style="display: flex; align-items: center; gap: 12px; margin-left: 16px;">
+            
+                <!-- Неавторизованный пользователь -->
+                <a href="/login"
+                   style="padding: 10px 24px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; transition: transform 0.2s; box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3);"
+                   onmouseover="this.style.transform='translateY(-2px)'"
+                   onmouseout="this.style.transform='translateY(0)'">
+                    🚀 Начать
+                </a>
+            
+        </div>
+    </header>
+
+    <!-- Баннер восстановления теста -->
+    <div id="testResumeBanner" style="display:none;background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid #38bdf8;border-radius:8px;padding:12px 20px;margin:8px auto;max-width:900px;align-items:center;justify-content:space-between;gap:12px;">
+        <span style="color:#e2e8f0;font-size:0.95em;">Вы вышли из теста. <span style="color:#38bdf8;font-weight:600;">Продолжить тест?</span></span>
+        <div style="display:flex;gap:8px;flex-shrink:0;">
+            
+            <button onclick="resumeAdaptiveTest()" style="padding:6px 16px;border:none;border-radius:6px;background:#38bdf8;color:#0f172a;font-weight:600;cursor:pointer;">Продолжить</button>
+            <button onclick="dismissTestBanner()" style="padding:6px 10px;border:none;border-radius:6px;background:transparent;color:#64748b;cursor:pointer;font-size:1.1em;">x</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         MOBILE DRAWER MENU (hidden on desktop via CSS)
+         ═══════════════════════════════════════════════ -->
+    <div class="mobile-drawer-overlay" id="drawerOverlay"></div>
+    <aside class="mobile-drawer" id="mobileDrawer">
+        <!-- Drawer header -->
+        <div class="drawer-header">
+            <span class="drawer-logo">FORMYLA</span>
+            <button class="drawer-close" onclick="closeDrawer()" aria-label="Закрыть">✕</button>
+        </div>
+
+        <!-- User info -->
+        
+
+        <!-- Search -->
+        <div class="drawer-search">
+            <form action="/problems" method="get">
+                <input type="text" name="q" placeholder="🔍 Поиск задач..."
+                       value="">
+                <button type="submit">Найти</button>
+            </form>
+        </div>
+
+        <!-- Navigation links -->
+        <nav class="drawer-nav">
+            <div class="drawer-section-title">Главное</div>
+            <a href="/daily_tasks/" class="drawer-link">
+                <span class="drawer-link-icon">🔥</span>
+                Задачи дня
+                
+            </a>
+            <a href="/" class="drawer-link">
+                <span class="drawer-link-icon">📐</span>
+                Темы
+            </a>
+
+            <div class="drawer-divider"></div>
+            <div class="drawer-section-title">Тренировка</div>
+            <a href="/probniks" class="drawer-link">
+                <span class="drawer-link-icon">📊</span>
+                Тест по темам
+            </a>
+            <a href="/secrets" class="drawer-link">
+                <span class="drawer-link-icon">🗝️</span>
+                Секреты
+            </a>
+
+            <div class="drawer-divider"></div>
+            <div class="drawer-section-title">Олимпиады</div>
+            <a href="/olympiad-prep/calendar" class="drawer-link">
+                <span class="drawer-link-icon">📅</span>
+                Календарь олимпиад
+            </a>
+            <a href="/olympiads" class="drawer-link">
+                <span class="drawer-link-icon">📖</span>
+                Каталог олимпиад
+            </a>
+            <a href="/olympiads/courses" class="drawer-link">
+                <span class="drawer-link-icon">🆕</span>
+                Курсы (ВсОШ-2027)
+            </a>
+            <a href="/olympiads/methods" class="drawer-link">
+                <span class="drawer-link-icon">📚</span>
+                Теоретические методы
+            </a>
+            <a href="/olympiads/predict-methods" class="drawer-link">
+                <span class="drawer-link-icon">🔮</span>
+                Предикт методов
+            </a>
+            
+            <div class="drawer-divider"></div>
+            <div class="drawer-section-title">Чертёж</div>
+            <a href="/drawing" class="drawer-link">
+                <span class="drawer-link-icon">📐</span>
+                Генератор чертежей
+            </a>
+
+            <div class="drawer-divider"></div>
+            <div class="drawer-section-title">Сообщество</div>
+            <a href="/leaderboard" class="drawer-link">
+                <span class="drawer-link-icon">🏆</span>
+                Лидеры
+            </a>
+            <a href="/friends" class="drawer-link">
+                <span class="drawer-link-icon">🤝</span>
+                Друзья
+            </a>
+            <a href="/chat" class="drawer-link">
+                <span class="drawer-link-icon">💬</span>
+                Чат
+            </a>
+
+            
+
+            <div class="drawer-divider"></div>
+            <a href="/about" class="drawer-link">
+                <span class="drawer-link-icon">ℹ️</span>
+                О сайте
+            </a>
+            <a href="/about#review-form" class="drawer-link">
+                <span class="drawer-link-icon">✍️</span>
+                Написать отзыв
+            </a>
+
+            
+        </nav>
+
+        <!-- Footer: auth actions -->
+        <div class="drawer-footer">
+            
+            <a href="/login" class="drawer-link" style="color: #38bdf8;">
+                <span class="drawer-link-icon">🚀</span>
+                Войти / Регистрация
+            </a>
+            
+        </div>
+    </aside>
+
+    <!-- ═══════════════════════════════════════════════
+         BOTTOM NAVIGATION BAR (hidden on desktop via CSS)
+         ═══════════════════════════════════════════════ -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <a href="/" class="bottom-nav-item" data-path="/">
+            <span class="bottom-nav-icon">🏠</span>
+            <span class="bottom-nav-label">Главная</span>
+        </a>
+        <a href="/daily_tasks/" class="bottom-nav-item" data-path="/daily*">
+            <span class="bottom-nav-icon">🔥</span>
+            <span class="bottom-nav-label">Задачи дня</span>
+            
+        </a>
+        <a href="/olympiads" class="bottom-nav-item" data-path="/olympiads*,/practice*">
+            <span class="bottom-nav-icon">🏆</span>
+            <span class="bottom-nav-label">Олимпиады</span>
+        </a>
+        <a href="/leaderboard" class="bottom-nav-item" data-path="/leaderboard*,/friends*">
+            <span class="bottom-nav-icon">👥</span>
+            <span class="bottom-nav-label">Рейтинг</span>
+        </a>
+        
+        
+        <a href="/login" class="bottom-nav-item" data-path="/login*,/register*">
+            <span class="bottom-nav-icon">🚀</span>
+            <span class="bottom-nav-label">Войти</span>
+        </a>
+        
+    </nav>
+
+    <main class="main">
+        
+<div class="container" style="max-width: 500px; margin: 80px auto; padding: 0 20px;">
+    
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
+            👋 Вход в FORMYLA
+        </h1>
+        <p style="font-size: 1.1em; color: var(--text-soft);">
+            Введите email - мы отправим вам код
+        </p>
+    </div>
+
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 40px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
+        
+        
+            
+        
+
+        <form method="POST" action="/login" id="login-form" onsubmit="return handleLoginSubmit(event)">
+            
+            <div style="margin-bottom: 30px;">
+                <label for="email" style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500; font-size: 1.1em;">
+                    📧 Ваш Email
+                </label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    placeholder="your@email.com"
+                    autofocus
+                    style="width: 100%; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); font-size: 18px; color: var(--text-main); caret-color: var(--accent-2); transition: all 0.3s;"
+                    onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(56, 189, 248, 0.1)'"
+                    onblur="this.style.borderColor='var(--border-mid)'; this.style.boxShadow='none'"
+                >
+            </div>
+
+            <div style="background: rgba(56, 189, 248, 0.1); padding: 15px; border-radius: var(--radius-sm); margin-bottom: 25px; border-left: 3px solid var(--accent-2);">
+                <p style="margin: 0; color: var(--text-soft); font-size: 0.95em;">
+                    🔒 <strong>Без пароля!</strong> Мы отправим вам 6-значный код для входа
+                </p>
+            </div>
+
+            <button
+                type="submit"
+                id="submit-btn"
+                style="width: 100%; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; padding: 16px; font-size: 18px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.3s; font-weight: 600; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: center; gap: 10px;"
+                onmouseover="if(!this.disabled) { this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(56, 189, 248, 0.4)'; }"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(56, 189, 248, 0.3)'"
+            >
+                <span id="btn-text">📨 Получить код</span>
+                <span id="btn-spinner" style="display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;"></span>
+            </button>
+
+        </form>
+
+        <!-- Разделитель -->
+        <div style="text-align: center; margin: 25px 0; color: var(--text-muted);">или</div>
+
+        <!-- Индикатор загрузки для Яндекс кнопки -->
+        <div id="yandex-loading" style="width: 100%; display: flex; justify-content: center; align-items: center; padding: 16px; background: rgba(30, 41, 59, 0.6); border-radius: var(--radius-sm); gap: 10px;">
+            <div style="width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: var(--accent-2); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+            <span style="color: var(--text-soft);">Загрузка Яндекс ID...</span>
+        </div>
+
+        <!-- Кнопка Яндекса (SDK виджет) -->
+        <div id="yandex-button-container" style="width: 100%; display: none; justify-content: center;"></div>
+
+        
+
+    </div>
+
+</div>
+
+<style>
+input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+
+<script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js"></script>
+<script>
+// Защита от двойного клика на кнопке "Получить код"
+let isSubmitting = false;
+
+function handleLoginSubmit(event) {
+    if (isSubmitting) {
+        event.preventDefault();
+        return false;
+    }
+    
+    isSubmitting = true;
+    const btn = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-text');
+    const btnSpinner = document.getElementById('btn-spinner');
+    
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    btn.style.cursor = 'not-allowed';
+    btnText.textContent = 'Отправка...';
+    btnSpinner.style.display = 'inline-block';
+    
+    return true;
+}
+
+window.onload = function() {
+    window.YaAuthSuggest.init(
+        {
+            client_id: "f4cd6d13f99b474181aa80975472800c",
+            response_type: "token",
+            redirect_uri: "https://formyla-com.onrender.com/yandex_receiver"
+        },
+        "https://formyla-com.onrender.com",
+        {
+            view: "button",
+            parentId: "yandex-button-container",
+            buttonView: "main",
+            buttonTheme: "dark",
+            buttonSize: "l",
+            buttonBorderRadius: 8
+        }
+    )
+    .then(result => {
+        // Скрываем индикатор загрузки, показываем кнопку
+        document.getElementById('yandex-loading').style.display = 'none';
+        document.getElementById('yandex-button-container').style.display = 'flex';
+        return result.handler();
+    })
+    .then(data => {
+        fetch('/auth/yandex/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({access_token: data.access_token})
+        })
+        .then(r => r.json())
+        .then(result => {
+            if(result.success) {
+                window.location.href = result.redirect_url || '/';
+            } else {
+                alert("Ошибка: " + result.error);
+            }
+        });
+    })
+    .catch(err => {
+        console.log('OAuth отменен:', err);
+        // В случае ошибки тоже показываем кнопку
+        document.getElementById('yandex-loading').style.display = 'none';
+        document.getElementById('yandex-button-container').style.display = 'flex';
+    });
+};
+</script>
+
+
+    </main>
+    <!-- Global KaTeX re-render helper placeholder — real definition is in <head> -->
+
+    
+
+    <script>
+    async function checkAnswer(problemId) {
+        const inputEl = document.getElementById(`user-answer-${problemId}`);
+        const feedbackEl = document.getElementById(`feedback-${problemId}`);
+        const formEl = document.getElementById(`answer-form-${problemId}`);
+        const solutionEl = document.getElementById(`solution-container-${problemId}`);
+        
+        const userAnswer = inputEl.value.trim();
+        
+        // DEBUG: Логирование для отладки
+        console.log("=== ФРОНТЕНД ПРОВЕРКА ===");
+        console.log("Problem ID:", problemId);
+        console.log("Введенный ответ:", userAnswer);
+        
+        if (!userAnswer) {
+            feedbackEl.innerHTML = '<span style="color: #f59e0b;">⚠️ Введите ответ</span>';
+            return;
+        }
+        
+        feedbackEl.innerHTML = '<span style="color: #94a3b8;">Проверяем...</span>';
+        
+        try {
+            const response = await fetch('/api/check_answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    problem_id: problemId,
+                    user_answer: userAnswer
+                })
+            });
+            
+            const data = await response.json();
+            
+            // DEBUG: Логирование ответа сервера
+            console.log("Ответ сервера:", data);
+            console.log("Правильный ответ из БД:", data.correct_answer);
+            console.log("Результат проверки:", data.correct);
+            console.log("========================");
+            
+            if (data.correct) {
+                feedbackEl.innerHTML = '<span style="color: #10b981; font-weight: 600;">✅ Верно! Отличная работа!</span>';
+                
+                // Показываем решение
+                if (solutionEl) {
+                    solutionEl.style.display = 'block';
+                }
+                
+                // Через 1 секунду перезагружаем страницу для обновления статуса
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                feedbackEl.innerHTML = `<span style="color: #ef4444; font-weight: 600;">❌ Неверно. Попробуйте еще раз!</span>`;
+                inputEl.value = '';
+                inputEl.focus();
+            }
+        } catch (error) {
+            feedbackEl.innerHTML = '<span style="color: #ef4444;">Ошибка при проверке. Попробуйте еще раз.</span>';
+            console.error('Error:', error);
+        }
+    }
+    </script>
+    
+    
+    <!-- AI Тьютор - плавающий виджет с выбором агента (PREMIUM UX) -->
+
+
+    
+
+    
+    
+    <!-- Глобальный Caps Lock для полей ввода -->
+    <script src="/static/js/caps_lock.js"></script>
+    <!-- Mastery Radar Chart -->
+    <script src="/static/js/mastery_radar.js?v=1784415778"></script>
+    <!-- Мобильная навигация (drawer + bottom nav) -->
+    <script src="/static/js/mobile_nav.js?v=2"></script>
+    <!-- Dropdown навигация -->
+    <script src="/static/js/nav.js?v=1784415778"></script>
+    <!-- Paywall модалка (должна быть до api.js) -->
+    <script src="/static/js/paywall.js?v=1784415778"></script>
+    <!-- API wrapper с автоматическим перехватом 403 -->
+    <script src="/static/js/api.js?v=1784415778"></script>
+    <script src="/static/js/profile_sync.js?v=1784415778"></script>
+    
+    <script>
+    // ─── Восстановление адаптивного теста ───
+    async function checkActiveTest() {
+        try {
+            const r = await fetch('/api/test/active', { credentials: 'same-origin' });
+            if (!r.ok) return;
+            const data = await r.json();
+            if (data?.active && data?.session?.id) {
+                window._activeSessionId = data.session.id;
+                const banner = document.getElementById('testResumeBanner');
+                if (banner && !location.pathname.startsWith('/adaptive_test_simple') && sessionStorage.getItem('testBannerDismissed') !== '1') banner.style.display = 'flex';
+            }
+        } catch(e) { /* ignore */ }
+    }
+    function resumeAdaptiveTest() {
+        const sid = window._activeSessionId;
+        if (sid) window.location.href = '/adaptive_test_simple?session=' + sid;
+    }
+    async function abandonAdaptiveTest() {
+        const sid = window._activeSessionId;
+        if (!sid) return;
+        try {
+            await fetch('/api/test/' + sid + '/abandon', { method: 'POST', credentials: 'same-origin' });
+        } catch(e) {}
+        dismissTestBanner();
+    }
+    function dismissTestBanner() {
+        const banner = document.getElementById('testResumeBanner');
+        if (banner) banner.style.display = 'none';
+    }
+    document.addEventListener('DOMContentLoaded', checkActiveTest);
+    </script>
+
+    
+    
+    
+    
+    <iframe id="wbCallEngine"
+            src="/static/call_engine.html"
+            style="display:none; width:0; height:0; border:0;"
+            aria-hidden="true"
+            title="WebRTC Call Engine"></iframe>
+
+    
+    
+    
+    
+    <style>
+        #cf-pip-overlay {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 280px;
+            background: #1a1d29;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 999999;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #fff;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        #cf-pip-overlay.cf-pip-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #cf-pip-overlay .cf-pip-video-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background: #0d0f17;
+            overflow: hidden;
+        }
+        #cf-pip-overlay .cf-pip-video-wrap video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        #cf-pip-overlay .cf-pip-info {
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: #222639;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        #cf-pip-overlay .cf-pip-info-left {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+        }
+        #cf-pip-overlay .cf-pip-room {
+            font-size: 13px;
+            font-weight: 600;
+            color: #38bdf8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #cf-pip-overlay .cf-pip-room::before {
+            content: "● ";
+            color: #22c55e;
+        }
+        #cf-pip-overlay .cf-pip-status {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+        }
+        #cf-pip-overlay .cf-pip-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        #cf-pip-overlay .cf-pip-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+            padding: 0;
+            line-height: 1;
+        }
+        #cf-pip-overlay .cf-pip-btn:hover {
+            background: rgba(255,255,255,0.16);
+        }
+        #cf-pip-overlay .cf-pip-btn--expand {
+            background: #38bdf8;
+            color: #0f172a;
+        }
+        #cf-pip-overlay .cf-pip-btn--expand:hover {
+            background: #7dd3fc;
+        }
+        #cf-pip-overlay .cf-pip-btn--leave {
+            color: #ef4444;
+        }
+        #cf-pip-overlay .cf-pip-btn--leave:hover {
+            background: rgba(239,68,68,0.2);
+        }
+        #cf-pip-overlay .cf-pip-count {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            margin-left: 4px;
+        }
+    </style>
+
+    <div id="cf-pip-overlay">
+        <div class="cf-pip-video-wrap">
+            <video id="cf-pip-video" autoplay playsinline muted></video>
+        </div>
+        <div class="cf-pip-info">
+            <div class="cf-pip-info-left">
+                <div class="cf-pip-room" id="cf-pip-code">---</div>
+                <div>
+                    <span class="cf-pip-status" id="cf-pip-status">Ожидание...</span>
+                    <span class="cf-pip-count" id="cf-pip-count">1</span>
+                </div>
+            </div>
+            <div class="cf-pip-actions">
+                <button class="cf-pip-btn cf-pip-btn--expand" title="Развернуть" onclick="if(window.__pipManager)window.__pipManager.expand()">⛶</button>
+                <button class="cf-pip-btn cf-pip-btn--leave" title="Покинуть" onclick="if(window.__pipManager)window.__pipManager.clear()">✕</button>
+            </div>
+        </div>
+    </div>
+
+    <script defer src="/static/js/wb_pip.js?v=1784415778"></script>
+    
+</body>
+</html>

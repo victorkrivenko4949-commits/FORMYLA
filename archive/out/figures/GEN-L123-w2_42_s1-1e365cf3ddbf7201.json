@@ -1,0 +1,108 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circle",
+   "id": "wM1",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "wM2",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "M",
+   "circle1": "wM1",
+   "circle2": "wM2",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "wN1",
+   "center": "A",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "wN2",
+   "center": "C",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "N",
+   "circle1": "wN1",
+   "circle2": "wN2",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "CM",
+   "line2": "BN"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABM"
+  },
+  {
+   "polygon": "ACN"
+  },
+  {
+   "segment": "CM",
+   "style": "accent"
+  },
+  {
+   "segment": "BN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "40°"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "A"
+   ],
+   "text": "80°"
+  },
+  {
+   "angle": [
+    "B",
+    "P",
+    "C"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

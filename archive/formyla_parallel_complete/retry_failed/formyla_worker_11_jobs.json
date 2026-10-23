@@ -1,0 +1,26 @@
+{
+  "jobs": [
+    {
+      "job_id": "fill-0149",
+      "mode": "fill_missing",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Геометрия: подобие и окружность",
+      "subtopic": "Касательные и хорды",
+      "method_code": "E3",
+      "quality_target": "L6=регион; L7=сложный регион; L8=финал/перечневые, не одношаговая техника",
+      "worker": 9
+    },
+    {
+      "job_id": "fill-0158",
+      "mode": "fill_missing",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Функции и графики",
+      "subtopic": "Пересечения",
+      "method_code": "D3",
+      "quality_target": "L6=регион; L7=сложный регион; L8=финал/перечневые, не одношаговая техника",
+      "worker": 18
+    }
+  ]
+}

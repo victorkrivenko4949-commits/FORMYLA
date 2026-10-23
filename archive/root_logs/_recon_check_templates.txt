@@ -1,0 +1,5 @@
+templates\about.html line 616: <label>Email <span class="muted">(необязательно)</span></label>
+templates\about.html line 1105: placeholder="📧 Email (необязательно — чтобы мы могли ответить)" maxlength="120">
+templates\about_legacy.html line 157: <label>Email <span class="muted">(необязательно)</span></label>
+templates\chat.html line 1104: <input class="tp-note" id="tpNote" placeholder="Комментарий (необязательно)…">
+templates\daily_tasks\daily_tasks_dashboard.html line 752: <input type="text" id="dt-topic-input" class="dt-topic-input" value="{{ data.theme_today or 'Теория чисел' }}" placehold

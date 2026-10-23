@@ -1,0 +1,59 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "BC"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AE",
+   "line2": "BD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AE"
+  },
+  {
+   "segment": "BD"
+  },
+  {
+   "polygon": "BOE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "BE",
+    "EC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AC",
+   "line2": "BD",
+   "reason": "Проводим диагональ AC; в треугольнике ABC отрезки AE и BP являются медианами, пересекающимися в O."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AC",
+   "style": "dashed"
+  }
+ ]
+}

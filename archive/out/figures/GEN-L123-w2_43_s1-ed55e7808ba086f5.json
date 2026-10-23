@@ -1,0 +1,69 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "B",
+   "line": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AM"
+  },
+  {
+   "segment": "BH"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AM",
+    "BH"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "K",
+   "from": "M",
+   "line": "AC",
+   "reason": "Опускаем перпендикуляр из M на AC, чтобы использовать среднюю линию и получить угол 30°."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "MK",
+   "style": "soft"
+  }
+ ]
+}

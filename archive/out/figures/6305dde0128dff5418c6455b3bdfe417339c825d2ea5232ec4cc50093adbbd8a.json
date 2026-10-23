@@ -1,0 +1,70 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AC",
+   "ratio": 0.625
+  },
+  {
+   "type": "triangle",
+   "id": "ABM",
+   "kind": "scalene"
+  },
+  {
+   "type": "triangle",
+   "id": "BCM",
+   "kind": "scalene"
+  },
+  {
+   "type": "incircle",
+   "id": "omega1",
+   "of": "ABM"
+  },
+  {
+   "type": "incircle",
+   "id": "omega2",
+   "of": "BCM"
+  },
+  {
+   "type": "circle_circle",
+   "id": "P",
+   "circle1": "omega1",
+   "circle2": "omega2",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AM",
+   "style": "soft"
+  },
+  {
+   "segment": "CM",
+   "style": "soft"
+  },
+  {
+   "segment": "BM",
+   "style": "soft"
+  },
+  {
+   "circle": "omega1",
+   "style": "soft"
+  },
+  {
+   "circle": "omega2",
+   "style": "soft"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

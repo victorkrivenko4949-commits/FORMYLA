@@ -1,0 +1,71 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "incenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "line": "BO",
+   "circle": "w",
+   "pick": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "AOC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BD"
+  },
+  {
+   "circle": "w"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "DA",
+   "style": "accent"
+  },
+  {
+   "segment": "DC",
+   "style": "accent"
+  },
+  {
+   "segment": "DO",
+   "style": "accent"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "DA",
+    "DC",
+    "DO"
+   ]
+  }
+ ]
+}

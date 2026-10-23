@@ -1,0 +1,15 @@
+{
+  "jobs": [
+    {
+      "job_id": "fill-0297",
+      "mode": "fill_missing",
+      "grade": 10,
+      "difficulty": 8,
+      "theme": "Стереометрия и векторы",
+      "subtopic": "Объёмы",
+      "method_code": "D2",
+      "quality_target": "L6=регион; L7=сложный регион; L8=финал/перечневые, не одношаговая техника",
+      "worker": 17
+    }
+  ]
+}

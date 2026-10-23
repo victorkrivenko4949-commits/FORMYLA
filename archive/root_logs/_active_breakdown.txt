@@ -1,0 +1,7 @@
+active by (generation_mode, status):
+  ('condition_solution', 'base_thinking', 4)
+  ('condition_solution', 'queued', 767)
+active by priority:
+  (-1, 761)
+  (1, 10)
+active jobs=771, unique problems=390

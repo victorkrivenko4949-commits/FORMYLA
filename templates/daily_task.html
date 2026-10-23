@@ -1,0 +1,764 @@
+{% extends "base.html" %}
+
+{% block title %}Задача {{ task_index + 1 }} - Daily Quest - FORMYLA.net{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/daily.css') }}?v={{ asset_version }}">
+{% endblock %}
+
+{% block content %}
+<div class="daily-task-container">
+    <!-- Header -->
+    <div class="task-header-section">
+        <a href="{{ url_for('daily_quest_main') }}" class="back-button">← Назад к квесту</a>
+        <div class="task-progress-mini">
+            <span>Задача {{ task_index + 1 }} из {{ total_tasks }}</span>
+        </div>
+    </div>
+
+    <!-- Task Card -->
+    <div class="task-content-card">
+        <div class="task-meta">
+            <span class="task-topic-badge">{{ task.get('subject', task.get('topic', 'Математика')) }}</span>
+            <span class="task-difficulty-badge">Уровень {{ task.get('difficulty', 3) }}</span>
+        </div>
+
+        <div class="task-text">
+            {{ task.get('text', '')|safe }}
+        </div>
+
+        <!-- Answer Input -->
+        <div class="answer-section">
+            <label for="userAnswer" class="answer-label">Ваш ответ:</label>
+            <input type="text"
+                   id="userAnswer"
+                   class="answer-input"
+                   placeholder="Введите краткий ответ (число, выражение)"
+                   autocomplete="off">
+            
+            <!-- D1: Как решал - мягкий блок -->
+            <div class="solution-method-tabs" style="display:flex; gap:0; margin-bottom:12px; border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.12); margin-top:16px;">
+              <button class="solution-method-tab active" type="button" onclick="switchDailySolutionMethod('text')" id="dailyTabText"
+                      style="flex:1; padding:10px 16px; text-align:center; cursor:pointer; background:rgba(0,0,0,0.2); color:rgba(255,255,255,0.5); font-size:14px; font-weight:600; border:none; transition:all 0.2s;">
+                 Текстом
+              </button>
+              <button class="solution-method-tab" type="button" onclick="switchDailySolutionMethod('photo')" id="dailyTabPhoto"
+                      style="flex:1; padding:10px 16px; text-align:center; cursor:pointer; background:rgba(0,0,0,0.2); color:rgba(255,255,255,0.5); font-size:14px; font-weight:600; border:none; transition:all 0.2s;">
+                 Фотографией
+              </button>
+            </div>
+            <label for="userSolution" class="answer-label">Покажи решение, если хочешь разбор</label>
+            <div class="solution-method-body" id="dailyMethodBodyText">
+              <textarea id="userSolution"
+                        class="answer-input"
+                        placeholder="Опишите ход решения по шагам..."
+                        rows="5"
+                        style="resize: vertical; min-height: 100px; font-family: inherit;"></textarea>
+              <div id="dailySolutionCounter" style="text-align:right;font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px;">0 символов</div>
+            </div>
+            <div class="solution-method-body" id="dailyMethodBodyPhoto" style="display:none;">
+              <div class="photo-upload-area" id="dailyPhotoDropArea" onclick="document.getElementById('dailyPhotoInput').click()"
+                   style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; border:2px dashed rgba(255,255,255,0.15); border-radius:10px; cursor:pointer; background:rgba(0,0,0,0.15);">
+                <div style="font-size:32px; margin-bottom:8px;">📸</div>
+                <div style="font-size:14px; color:rgba(255,255,255,0.5);">Нажмите или перетащите фото решения<br><small>jpg, png, heic - до 12 МБ</small></div>
+                <img id="dailyPhotoPreviewImg" style="display:none; max-width:100%; max-height:200px; border-radius:8px; margin-top:8px;" alt="preview">
+                <button type="button" id="dailyPhotoRemoveBtn" style="display:none; margin-top:8px; padding:4px 12px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:6px; color:#e86a62; font-size:12px; cursor:pointer;" onclick="event.stopPropagation();removeDailyPhoto()">🗑️ Удалить фото</button>
+              </div>
+              <input type="file" id="dailyPhotoInput" accept="image/jpeg,image/png,image/heic,image/heif" style="display:none;" onchange="handleDailyPhotoSelect(this)">
+            </div>
+            
+            <button onclick="submitAnswer()" id="submitBtn" class="submit-button" disabled style="position:sticky; bottom:0; z-index:10; background:var(--surface); padding:12px 0;">
+                📤 Отправить решение
+            </button>
+            <div id="submitHint" style="text-align:center; font-size:13px; color:rgba(255,255,255,0.4); margin-top:4px; padding-bottom:8px;">Опиши решение или прикрепи фото</div>
+        </div>
+
+        <!-- Feedback Section -->
+        <div id="feedbackSection" class="feedback-section" style="display: none;">
+            <div id="feedbackContent"></div>
+        </div>
+    </div>
+
+    <!-- AI Tutor Widget (reuse from exam) -->
+    <div class="ai-tutor-hint">
+        <p>💡 Нужна подсказка? Используй AI-тьютора!</p>
+        <button onclick="openAITutor()" class="ai-tutor-button">
+            🤖 Открыть AI-тьютора
+        </button>
+    </div>
+</div>
+
+
+<script>
+const taskIndex = {{ task_index }};
+const taskId = {{ task.get('id', 0) }};
+let dailyCurrentMethod = 'text';
+let dailySelectedPhotoFile = null;
+
+// D1: switch solution method tabs
+function switchDailySolutionMethod(method) {
+  dailyCurrentMethod = method;
+  var tabT = document.getElementById('dailyTabText');
+  var tabP = document.getElementById('dailyTabPhoto');
+  if(tabT) tabT.style.background = method === 'text' ? 'rgba(99,102,241,0.2)' : 'rgba(0,0,0,0.2)';
+  if(tabT) tabT.style.color = method === 'text' ? '#8c9abc' : 'rgba(255,255,255,0.5)';
+  if(tabT) tabT.style.borderBottom = method === 'text' ? '2px solid #4c7dff' : 'none';
+  if(tabP) tabP.style.background = method === 'photo' ? 'rgba(99,102,241,0.2)' : 'rgba(0,0,0,0.2)';
+  if(tabP) tabP.style.color = method === 'photo' ? '#8c9abc' : 'rgba(255,255,255,0.5)';
+  if(tabP) tabP.style.borderBottom = method === 'photo' ? '2px solid #4c7dff' : 'none';
+  document.getElementById('dailyMethodBodyText').style.display = method === 'text' ? 'block' : 'none';
+  document.getElementById('dailyMethodBodyPhoto').style.display = method === 'photo' ? 'block' : 'none';
+  updateSubmitButtonState();
+}
+
+// D1: photo select handler
+function handleDailyPhotoSelect(input) {
+  var file = input.files[0];
+  if(!file) return;
+  if(file.size > 12 * 1024 * 1024){
+    alert('Размер фотографии превышает 12 МБ.');
+    input.value = '';
+    return;
+  }
+  var ext = file.name.split('.').pop().toLowerCase();
+  if(['jpg','jpeg','png','heic','heif'].indexOf(ext) === -1){
+    alert('Неподдерживаемый формат. Принимаются jpg, png, heic.');
+    input.value = '';
+    return;
+  }
+  dailySelectedPhotoFile = file;
+  updateSubmitButtonState();
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var img = document.getElementById('dailyPhotoPreviewImg');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    var area = document.getElementById('dailyPhotoDropArea');
+    area.style.borderStyle = 'solid';
+    area.style.borderColor = 'rgba(56,239,125,0.3)';
+    area.style.background = 'rgba(56,239,125,0.05)';
+    document.getElementById('dailyPhotoRemoveBtn').style.display = 'inline-block';
+  };
+  reader.readAsDataURL(file);
+}
+
+// D1: remove photo
+function removeDailyPhoto() {
+  dailySelectedPhotoFile = null;
+  document.getElementById('dailyPhotoInput').value = '';
+  document.getElementById('dailyPhotoPreviewImg').style.display = 'none';
+  var area = document.getElementById('dailyPhotoDropArea');
+  area.style.borderStyle = 'dashed';
+  area.style.borderColor = 'rgba(255,255,255,0.15)';
+  area.style.background = 'rgba(0,0,0,0.15)';
+  document.getElementById('dailyPhotoRemoveBtn').style.display = 'none';
+  updateSubmitButtonState();
+}
+
+// D2: update submit button state based on solution presence
+function updateSubmitButtonState() {
+  var btn = document.getElementById('submitBtn');
+  var hint = document.getElementById('submitHint');
+  if(!btn) return;
+  var hasText = false;
+  var ta = document.getElementById('userSolution');
+  if(ta && ta.value.trim().length > 0) hasText = true;
+  var hasPhoto = (dailySelectedPhotoFile !== null);
+  var ok = (dailyCurrentMethod === 'photo') ? hasPhoto : hasText;
+  if(hint) hint.textContent = (dailyCurrentMethod === 'photo') ? 'Прикрепи фото решения' : 'Опиши решение или прикрепи фото';
+  if(ok) {
+    btn.disabled = false;
+    if(hint) hint.style.display = 'none';
+  } else {
+    btn.disabled = true;
+    if(hint) hint.style.display = 'block';
+  }
+}
+
+// D1: drag-and-drop for photo area (daily)
+(function(){
+  var dropArea = document.getElementById('dailyPhotoDropArea');
+  if(!dropArea) return;
+  ['dragenter','dragover','dragleave','drop'].forEach(function(evt){
+    dropArea.addEventListener(evt, function(e){ e.preventDefault(); e.stopPropagation(); });
+  });
+  dropArea.addEventListener('dragenter', function(){ dropArea.style.borderColor = 'rgba(76,125,255,0.5)'; });
+  dropArea.addEventListener('dragleave', function(){ dropArea.style.borderColor = 'rgba(255,255,255,0.15)'; });
+  dropArea.addEventListener('drop', function(e){
+    dropArea.style.borderColor = 'rgba(255,255,255,0.15)';
+    var files = e.dataTransfer.files;
+    if(files.length > 0){
+      var input = document.getElementById('dailyPhotoInput');
+      // Set the file on the input
+      var dt = new DataTransfer();
+      dt.items.add(files[0]);
+      input.files = dt.files;
+      handleDailyPhotoSelect(input);
+    }
+  });
+})();
+
+// D1: solution text counter
+(function(){
+  var ta = document.getElementById('userSolution');
+  if(!ta) return;
+  ta.addEventListener('input', function(){
+    var cnt = document.getElementById('dailySolutionCounter');
+    if(cnt) cnt.textContent = ta.value.length + ' символов';
+    updateSubmitButtonState();
+  });
+})();
+
+// D1: image compression - reusing _compressImage from daily_tasks_modal.js if available, fallback inline
+function dailyCompressImage(file){
+  if(typeof _compressImage === 'function') return _compressImage(file, 1500, 0.8);
+  // Fallback: simple canvas compress
+  var maxDim = 1500, quality = 0.8;
+  if(!file.type || file.type.indexOf('image/') !== 0) return Promise.resolve(file);
+  return createImageBitmap(file).then(function(bitmap){
+    var w = bitmap.width, h = bitmap.height;
+    if(Math.max(w,h) > maxDim){
+      var k = maxDim / Math.max(w,h);
+      w = Math.round(w*k); h = Math.round(h*k);
+    }
+    var cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    cv.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+    return new Promise(function(res){
+      cv.toBlob(function(blob){
+        if(!blob) return res(file);
+        res(new File([blob], (file.name||'photo')+'.jpg', { type:'image/jpeg' }));
+      }, 'image/jpeg', quality);
+    });
+  }).catch(function(){ return file; });
+}
+
+async function submitAnswer() {
+    const answerInput = document.getElementById('userAnswer');
+    const answer = answerInput.value.trim();
+    
+    if (!answer) {
+        alert('Пожалуйста, введите ответ');
+        return;
+    }
+    
+    // Collect solution if present
+    var solutionText = '';
+    var solutionPhoto = null;
+    if(dailyCurrentMethod === 'text'){
+      var st = document.getElementById('userSolution');
+      solutionText = st ? st.value.trim() : '';
+    } else if(dailyCurrentMethod === 'photo' && dailySelectedPhotoFile){
+      solutionPhoto = dailySelectedPhotoFile;
+    }
+    
+    // D2: reject if no solution
+    var hasSolution = (dailyCurrentMethod === 'text' && solutionText.length > 0) ||
+                      (dailyCurrentMethod === 'photo' && solutionPhoto !== null);
+    if(!hasSolution){
+      updateSubmitButtonState();
+      var hintEl = document.getElementById('submitHint');
+      if(hintEl){ hintEl.style.display = 'block'; hintEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      return;
+    }
+    
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Проверяем...';
+    
+    try {
+        var bodyPayload;
+        if(solutionPhoto){
+            var compressedFile = await dailyCompressImage(solutionPhoto);
+            bodyPayload = new FormData();
+            bodyPayload.append('answer', answer);
+            bodyPayload.append('solution_method', 'photo');
+            bodyPayload.append('solution_photo', compressedFile, compressedFile.name || 'solution.jpg');
+            if(solutionText) bodyPayload.append('solution_text', solutionText);
+            var response = await fetch(`/daily_tasks/{{ task.get('daily_item_id', 0) }}/submit`, {
+                method: 'POST',
+                body: bodyPayload
+            });
+        } else {
+            bodyPayload = JSON.stringify({ answer: answer, solution_method: 'text', solution_text: solutionText });
+            var response = await fetch(`/daily_tasks/{{ task.get('daily_item_id', 0) }}/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: bodyPayload
+            });
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showFeedback(data);
+        } else {
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            } else {
+                alert('Ошибка: ' + (data.message || data.error || 'Неизвестная ошибка'));
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📤 Отправить решение';
+            }
+        }
+    } catch (error) {
+        console.error('Error submitting answer:', error);
+        alert('Ошибка отправки ответа');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '📤 Отправить решение';
+    }
+}
+
+// Нормализация ASCII-«сахара» в TeX внутри одной math-строки.
+// Принимает СОДЕРЖИМОЕ math-блока (без разделителей) и возвращает корректный TeX.
+function normalizeMathPiece(s) {
+    if (!s) return s;
+    let out = s;
+    // sqrt(...) -> \sqrt{...} (с поддержкой одного уровня вложенных скобок)
+    for (let i = 0; i < 4; i++) {
+        const before = out;
+        out = out.replace(/\bsqrt\s*\(([^()]*)\)/g, '\\sqrt{$1}');
+        if (out === before) break;
+    }
+    // cbrt(x) -> \sqrt[3]{x}
+    out = out.replace(/\bcbrt\s*\(([^()]*)\)/g, '\\sqrt[3]{$1}');
+    // Стрелки и неравенства
+    out = out.replace(/=>/g, '\\Rightarrow ')
+             .replace(/<=/g, '\\le ')
+             .replace(/>=/g, '\\ge ')
+             .replace(/!=/g, '\\ne ')
+             .replace(/<->/g, '\\leftrightarrow ')
+             .replace(/->/g, '\\to ');
+    // ± / ×
+    out = out.replace(/\+-/g, '\\pm ').replace(/(?<!\\)\*/g, '\\cdot ');
+    return out;
+}
+
+// Готовит correct_answer к показу.
+// Нормализует ASCII-сахар внутри каждого math-блока и оборачивает голую формулу.
+function prepareCorrectAnswer(s) {
+    if (s == null) return '';
+    let str = String(s).trim();
+    if (!str) return '';
+    const hasDelims = /\$|\\\(|\\\[/.test(str);
+    const hasCyrillic = /[А-Яа-яЁё]/.test(str);
+    if (!hasDelims && !hasCyrillic &&
+        /[=^_+\-*\/()\[\]]|sqrt|frac|\\\w/.test(str)) {
+        return '\\(' + normalizeMathPiece(str) + '\\)';
+    }
+    // Смешанный текст с math-блоками — гоним через тот же пайплайн, что и AI feedback
+    return renderAIMarkdown(str);
+}
+
+function renderAIMarkdown(text) {
+    if (text == null) return '';
+    let raw = String(text);
+
+    // 0) Чиним частую ошибку моделей: они вставляют \cdot \cdot вокруг bold-фрагментов
+    //    вместо ** (Markdown). Превращаем обратно в **, чтобы Markdown-парсер сделал <strong>.
+    //    Паттерны: "\cdot \cdot Текст:\cdot \cdot", "\\cdot\\cdot Текст\\cdot\\cdot".
+    raw = raw.replace(/\\cdot\s*\\cdot\s*([^\n]+?)\s*\\cdot\s*\\cdot/g, '**$1**');
+    //    Иногда одиночные \cdot вокруг строки — тоже косяк bold.
+    raw = raw.replace(/(^|\n)\\cdot\s+([^\n]+?)\s+\\cdot(\s|$|:)/g, '$1**$2**$3');
+
+    // 1) Вырезаем все math-блоки и нормализуем их содержимое.
+    //    ВАЖНО: normalizeMathPiece применяется ТОЛЬКО к содержимому формул,
+    //    иначе она ломает Markdown bold (** -> \cdot \cdot) и обычный текст.
+    const placeholders = [];
+    const protect = (re, openLen, closeLen) => {
+        raw = raw.replace(re, (m) => {
+            const inner = m.slice(openLen, m.length - closeLen);
+            const fixed = m.slice(0, openLen) + normalizeMathPiece(inner) + m.slice(m.length - closeLen);
+            placeholders.push(fixed);
+            return `@@MATH${placeholders.length - 1}@@`;
+        });
+    };
+    protect(/\$\$[\s\S]+?\$\$/g, 2, 2);
+    protect(/\\\[[\s\S]+?\\\]/g, 2, 2);
+    protect(/\\\([\s\S]+?\\\)/g, 2, 2);
+    protect(/\$[^\n$]+?\$/g, 1, 1);
+
+    // 1.5) После защиты math-блоков — нормализуем «голую» математику в оставшемся тексте
+    //      (sqrt(13), =>, +- и т. п.), но ОСТОРОЖНО — без затрагивания * (которые в bold).
+    raw = raw.replace(/\bsqrt\(/g, '\\sqrt(')
+             .replace(/\+-/g, '±')
+             .replace(/<=>/g, '⇔')
+             .replace(/=>/g, '⇒')
+             .replace(/->/g, '→');
+
+    // 2) Косметика «вне формул»: разрываем стену текста перед "Случай N", "Ответ:", "Проверка:".
+    raw = raw.replace(/\s*(Случай\s*\d+\s*:)/g, '\n\n$1')
+             .replace(/\s*(Ответ\s*:)/g, '\n\n$1')
+             .replace(/\s*(Проверка\s*:)/g, '\n$1');
+
+    let html;
+    if (window.marked) {
+        try {
+            html = window.marked.parse(raw, { breaks: true, gfm: true });
+        } catch (e) {
+            html = raw.replace(/\n/g, '<br>');
+        }
+    } else {
+        html = raw.replace(/\n/g, '<br>');
+    }
+    // 3) Возвращаем LaTeX обратно
+    html = html.replace(/@@MATH(\d+)@@/g, (_, i) => placeholders[Number(i)] || '');
+    return html;
+}
+
+function showFeedback(data) {
+    const feedbackSection = document.getElementById('feedbackSection');
+    const feedbackContent = document.getElementById('feedbackContent');
+    
+    let html = '';
+    const aiHtml = renderAIMarkdown(data.ai_feedback || '');
+    const correctAnswer = prepareCorrectAnswer(data.correct_answer);
+    
+    if (data.is_correct) {
+        html = `
+            <div class="feedback-correct">
+                <div class="feedback-icon">✓</div>
+                <h3>Правильно!</h3>
+                <p class="xp-earned">+${data.xp_earned} XP</p>
+                <div class="ai-feedback">${aiHtml}</div>
+                ${data.quest_completed ?
+                    '<p class="quest-complete-notice">🎉 Квест завершён! Бонус: +100 XP</p>' :
+                    ''}
+            </div>
+        `;
+        
+        // Redirect after delay
+        setTimeout(() => {
+            if (data.quest_completed) {
+                window.location.href = '/daily/complete';
+            } else {
+                window.location.href = '/daily';
+            }
+        }, 3000);
+    } else {
+        html = `
+            <div class="feedback-incorrect">
+                <div class="feedback-icon">✗</div>
+                <h3>Неправильно</h3>
+                <div class="correct-answer-block"><span class="correct-answer-label">Правильный ответ:</span> <div class="correct-answer-math">${correctAnswer}</div></div>
+                <div class="ai-feedback">${aiHtml}</div>
+                <button onclick="tryAgain()" class="try-again-button">Попробовать ещё раз</button>
+            </div>
+        `;
+    }
+    
+    feedbackContent.innerHTML = html;
+    feedbackSection.style.display = 'block';
+    
+    // Re-render KaTeX inside the freshly-inserted feedback
+    if (typeof reRenderMath === 'function') {
+        reRenderMath(feedbackSection);
+    } else if (typeof renderMathInElement === 'function') {
+        renderMathInElement(feedbackSection, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$',  right: '$',  display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+            ],
+            throwOnError: false
+        });
+    }
+    
+    // Scroll to feedback
+    feedbackSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function tryAgain() {
+    const feedbackSection = document.getElementById('feedbackSection');
+    feedbackSection.style.display = 'none';
+    
+    const answerInput = document.getElementById('userAnswer');
+    answerInput.value = '';
+    answerInput.focus();
+    
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = false;
+    submitBtn.textContent = '📤 Отправить решение';
+}
+
+function openAITutor() {
+    // Open AI tutor modal if available
+    if (typeof showTutorWidget === 'function') {
+        showTutorWidget();
+    } else {
+        alert('AI-тьютор временно недоступен');
+    }
+}
+
+// Allow Enter key to submit
+document.getElementById('userAnswer').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        submitAnswer();
+    }
+});
+</script>
+
+<style>
+.daily-task-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.task-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.back-button {
+    color: #3ECF8E;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    transform: translateX(-5px);
+}
+
+.task-progress-mini {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.task-content-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.task-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.task-topic-badge,
+.task-difficulty-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.task-topic-badge {
+    background: linear-gradient(135deg, #3ECF8E, #3ECF8E);
+    color: #fff;
+}
+
+.task-difficulty-badge {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.task-text {
+    color: #fff;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+}
+
+.answer-section {
+    margin-bottom: 2rem;
+}
+
+.answer-label {
+    display: block;
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.answer-input {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.answer-input:focus {
+    outline: none;
+    border-color: #3ECF8E;
+    box-shadow: 0 0 20px rgba(56, 239, 125, 0.3);
+}
+
+.submit-button {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #3ECF8E, #3ECF8E);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(56, 239, 125, 0.4);
+}
+
+.submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.feedback-section {
+    margin-top: 2rem;
+    animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.feedback-correct,
+.feedback-incorrect {
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.feedback-correct {
+    background: rgba(56, 239, 125, 0.1);
+    border: 2px solid rgba(56, 239, 125, 0.5);
+}
+
+.feedback-incorrect {
+    background: rgba(239, 68, 68, 0.1);
+    border: 2px solid rgba(239, 68, 68, 0.5);
+}
+
+.feedback-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.feedback-correct .feedback-icon {
+    color: #3ECF8E;
+}
+
+.feedback-incorrect .feedback-icon {
+    color: #E86A62;
+}
+
+.feedback-correct h3 {
+    color: #3ECF8E;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.feedback-incorrect h3 {
+    color: #E86A62;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.xp-earned {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3ECF8E;
+    margin-bottom: 1rem;
+}
+
+.ai-feedback {
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+}
+
+.quest-complete-notice {
+    margin-top: 1rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #E5AC3A;
+}
+
+.try-again-button {
+    margin-top: 1rem;
+    padding: 0.8rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.try-again-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.ai-tutor-hint {
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+}
+
+.ai-tutor-hint p {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1rem;
+}
+
+.ai-tutor-button {
+    padding: 0.8rem 2rem;
+    background: linear-gradient(135deg, #4C7DFF, #6B95FF);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ai-tutor-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+@media (max-width: 768px) {
+    .daily-task-container {
+        padding: 1rem 0.5rem;
+    }
+
+    .task-content-card {
+        padding: 1.5rem;
+    }
+
+    .task-text {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}

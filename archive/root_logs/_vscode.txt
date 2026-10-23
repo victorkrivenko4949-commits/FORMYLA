@@ -1,0 +1,23 @@
+50: $NodePath = Join-Path $ConfigDir "node.json"
+54: $RooBridgeExtensionId = "local.roo-bridge"
+55: $RooBridgeExtensionVersion = "0.6.56"
+56: $RooBridgeVsix = Join-Path $BundleRoot "extensions\roo-bridge-0.6.56.vsix"
+135:     Stop-Block "BLOCK_ROO_BRIDGE_VSIX_MISSING" $RooBridgeVsix
+137: $CodeCli = (Get-Command code.cmd -ErrorAction SilentlyContinue).Source
+139:     $CodeCli = (Get-Command code.exe -ErrorAction SilentlyContinue).Source
+142:     Stop-Block "BLOCK_VSCODE_CLI_MISSING" "code.cmd/code.exe not found in PATH."
+146:     Stop-Block "BLOCK_VSCODE_VERSION" "expected=1.135.0 actual=$($CodeVersionOutput -join '|')"
+148: $Extensions = @(& $CodeCli --list-extensions --show-versions 2>&1)
+150:     Stop-Block "BLOCK_VSCODE_EXTENSION_ENUMERATION" ($Extensions -join "|")
+152: if (-not ($Extensions -match '(?i)^rooveterinaryinc\.roo-cline@3\.54\.0$')) {
+155: $BridgeExtensionExact = $Extensions -match "(?i)^$([regex]::Escape($RooBridgeExtensionId))@$([regex]::Escape($RooBridgeExtensionVersion))$"
+156: if (-not $BridgeExtensionExact) {
+157:     $InstallOutput = @(& $CodeCli --install-extension $RooBridgeVsix --force 2>&1)
+159:         Stop-Block "BLOCK_ROO_BRIDGE_VSIX_INSTALL" ($InstallOutput -join "|")
+161:     $Extensions = @(& $CodeCli --list-extensions --show-versions 2>&1)
+162:     if (-not ($Extensions -match "(?i)^$([regex]::Escape($RooBridgeExtensionId))@$([regex]::Escape($RooBridgeExtensionVersion))$")) {
+163:         Stop-Block "BLOCK_ROO_BRIDGE_VSIX_VERSION" "required=$RooBridgeExtensionId@$RooBridgeExtensionVersion"
+185:             $pidAlive = $null -ne (Get-Process -Id ([int]$entry.pid_vscode) -ErrorAction SilentlyContinue)
+212: Write-Host "PASS_ROO_BRIDGE_EXTENSION=$RooBridgeExtensionId@$RooBridgeExtensionVersion"
+252:     node_id = $NodeId
+321:         -Description "H2 OWUI-Roo Bridge for node victor" | Out-Null

@@ -1,0 +1,97 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "square"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AD"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "BC"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "A",
+   "through": "D"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "E",
+   "circle": "w1",
+   "angle": 15
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AE",
+   "line2": "MN"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AP"
+  },
+  {
+   "segment": "DP"
+  },
+  {
+   "polygon": "BPC",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "P",
+    "A",
+    "D"
+   ],
+   "text": "15°"
+  },
+  {
+   "angle": [
+    "P",
+    "D",
+    "A"
+   ],
+   "text": "15°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "point_on_circle",
+   "id": "F",
+   "circle": "w1",
+   "angle": 60,
+   "reason": "Строим равносторонний треугольник ADF на стороне AD внутрь квадрата; он даёт углы 60° и позволяет сравнить треугольники APD и BFC."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AF",
+   "style": "soft"
+  },
+  {
+   "segment": "DF",
+   "style": "soft"
+  },
+  {
+   "segment": "BF",
+   "style": "soft"
+  },
+  {
+   "segment": "CF",
+   "style": "soft"
+  }
+ ]
+}

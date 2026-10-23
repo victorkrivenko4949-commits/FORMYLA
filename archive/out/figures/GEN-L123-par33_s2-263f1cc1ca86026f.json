@@ -1,0 +1,62 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "C",
+   "line": "AB"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CH",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "15°"
+  },
+  {
+   "right_angle": [
+    "C",
+    "H",
+    "A"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CM",
+   "style": "soft"
+  }
+ ],
+ "aux_reason": "Проводим медиану CM к гипотенузе: в прямоугольном треугольнике медиана равна половине гипотенузы, поэтому CM=AM=MB=4, что позволяет использовать равнобедренный треугольник AMC и найти CH через синус угла 30°."
+}

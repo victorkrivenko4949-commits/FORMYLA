@@ -1,0 +1,12 @@
+﻿python :   File "<string>", line 1
+строка:1 знак:45
++ ...  папка (2); python -c 'import sys; sys.path.insert(0, "l4_l5_completi ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (  File "<string>", line 1:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    import sys; sys.path.insert(0, l4_l5_completion_work); from _stage6_targeted_generation import _extract_tasks_known
+_structure; print(import
+                                                                                                                       
+                  ^^^^^^
+SyntaxError: invalid syntax

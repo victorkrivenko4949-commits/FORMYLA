@@ -1,0 +1,32 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0797",
+      "mode": "replace_bad",
+      "id": "10-C1-3-L8-gh5",
+      "grade": 10,
+      "difficulty": 8,
+      "theme": "Системы, параметры и неравенства",
+      "subtopic": "Системы и параметры",
+      "method_code": "C1",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 11
+    },
+    {
+      "job_id": "audit-0608-11-B2-7-L8-gf",
+      "mode": "replace_bad",
+      "id": "11-B2-7-L8-gf",
+      "grade": 11,
+      "difficulty": 8,
+      "theme": "Тригонометрия и смешанные уравнения",
+      "subtopic": "Смешанные уравнения",
+      "method_code": "B2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

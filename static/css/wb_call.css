@@ -1,0 +1,476 @@
+/* =====================================================================
+   FORMYLA.net Whiteboard — 1-to-1 video call panel
+   Loaded only by templates/drawing.html.  All selectors are scoped under
+   .wb-call-panel / #wbCallPanel so we don't leak into the rest of the UI.
+   ===================================================================== */
+
+/* ── Accent call button () — should pop out of the toolbar ───────── */
+.icon-btn.icon-btn-call,
+button.icon-btn-call,
+[data-wb-call-open].icon-btn-call,
+#wbCallToggle.icon-btn-call{
+    background:linear-gradient(135deg,#22c55e,#16a34a) !important;
+    color:#fff !important;
+    border:1px solid rgba(255,255,255,.22) !important;
+    box-shadow:0 4px 12px rgba(34,197,94,.30) !important;
+    position:relative;
+    transition:transform .18s ease, box-shadow .18s ease;
+}
+.icon-btn.icon-btn-call:hover,
+button.icon-btn-call:hover,
+[data-wb-call-open].icon-btn-call:hover,
+#wbCallToggle.icon-btn-call:hover{
+    transform:translateY(-1px) scale(1.04);
+    box-shadow:0 8px 20px rgba(34,197,94,.45) !important;
+}
+.icon-btn.icon-btn-call:active,
+button.icon-btn-call:active,
+[data-wb-call-open].icon-btn-call:active{
+    transform:translateY(0) scale(.98);
+}
+.icon-btn.icon-btn-call::after,
+button.icon-btn-call::after,
+[data-wb-call-open].icon-btn-call::after{
+    display:none;
+}
+
+/* ── Floating panel ────────────────────────────────────────────────── */
+.wb-call-panel{
+    position:absolute;
+    right:14px;
+    bottom:14px;
+    z-index:50;
+    width:360px;
+    max-width:calc(100vw - 28px);
+    background:rgba(15,23,42,.92);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:14px;
+    box-shadow:0 16px 40px rgba(0,0,0,.45);
+    color:#e6e8ee;
+    font-family:inherit;
+    overflow:hidden;
+    user-select:none;
+}
+.wb-call-panel[hidden]{ display:none !important; }
+
+/* Head */
+.wb-call-panel .wbc-head{
+    display:flex; align-items:center; gap:8px;
+    padding:9px 12px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    background:rgba(255,255,255,.02);
+}
+.wb-call-panel .wbc-title{
+    font-weight:600;
+    font-size:13.5px;
+    color:#fff;
+}
+.wb-call-panel .wbc-status{
+    margin-left:auto;
+    font-size:11.5px;
+    color:#94a3b8;
+    max-width:220px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.wb-call-panel .wbc-status[data-kind="ok"]   { color:#4ade80; }
+.wb-call-panel .wbc-status[data-kind="warn"] { color:#fbbf24; }
+.wb-call-panel .wbc-status[data-kind="err"]  { color:#f87171; }
+.wb-call-panel .wbc-x{
+    background:transparent; border:none; color:#94a3b8;
+    width:24px; height:24px; line-height:1; font-size:18px;
+    border-radius:6px; cursor:pointer;
+    padding:0; margin-left:4px;
+}
+.wb-call-panel .wbc-x:hover{ background:rgba(255,255,255,.10); color:#fff; }
+
+/* Room code input row */
+.wb-call-panel .wbc-room-row{
+    display:flex; gap:6px;
+    padding:10px 12px;
+}
+.wb-call-panel .wbc-room-row[hidden]{ display:none !important; }
+.wb-call-panel input#wbCallRoom{
+    flex:1; min-width:0;
+    padding:8px 10px;
+    background:rgba(15,23,42,.7);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:8px;
+    color:#fff;
+    font-size:13.5px;
+    outline:none;
+    font-family:inherit;
+}
+.wb-call-panel input#wbCallRoom:focus{
+    border-color:rgba(74,168,255,.55);
+    box-shadow:0 0 0 3px rgba(74,168,255,.15);
+}
+.wb-call-panel .wbc-btn{
+    border:none; cursor:pointer;
+    padding:8px 12px;
+    border-radius:8px;
+    font-weight:600; font-size:13px;
+    color:#fff;
+    font-family:inherit;
+    transition:transform .15s ease, box-shadow .15s ease;
+}
+.wb-call-panel .wbc-hint{
+    padding:0 10px 6px;
+    font-size:11.5px;
+    line-height:1.4;
+    color:#94a3b8;
+    transition:color .15s ease;
+}
+.wb-call-panel .wbc-hint[data-kind="ok"]   { color:#86efac; }
+.wb-call-panel .wbc-hint[data-kind="warn"] { color:#fbbf24; }
+.wb-call-panel .wbc-hint[data-kind="err"]  { color:#f87171; }
+
+.wb-call-panel .wbc-btn-ghost{
+    background:rgba(255,255,255,.06);
+    color:#e2e8f0;
+    border:1px solid rgba(255,255,255,.10);
+    padding:0 10px;
+    border-radius:8px;
+    font-size:14px;
+    transition:background .15s ease, transform .15s ease;
+}
+.wb-call-panel .wbc-btn-ghost:hover{
+    background:rgba(255,255,255,.12);
+    transform:translateY(-1px);
+}
+
+/* Invite-друга */
+.wb-call-panel .wbc-invite-row{
+    padding:0 10px 8px;
+    display:flex;
+}
+.wb-call-panel .wbc-btn-invite{
+    flex:1;
+    height:34px;
+    border:1px dashed rgba(74,168,255,.35);
+    background:rgba(74,168,255,.08);
+    color:#cbd5e1;
+    border-radius:8px;
+    font-size:13px;
+    cursor:pointer;
+    transition:background .15s ease, border-color .15s ease, color .15s ease;
+}
+.wb-call-panel .wbc-btn-invite:hover{
+    background:rgba(74,168,255,.18);
+    border-color:rgba(74,168,255,.6);
+    color:#fff;
+}
+
+.wb-call-panel .wbc-friends-list{
+    margin:0 10px 10px;
+    background:rgba(15,23,42,.55);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:10px;
+    overflow:hidden;
+    max-height:230px;
+    display:flex;
+    flex-direction:column;
+}
+.wb-call-panel .wbc-friends-list[hidden]{ display:none !important; }
+.wb-call-panel .wbc-friends-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 12px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    font-size:12px;
+    color:#94a3b8;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+}
+.wb-call-panel .wbc-friends-close{
+    background:transparent;
+    border:none;
+    color:#94a3b8;
+    width:22px;
+    height:22px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:16px;
+    line-height:1;
+}
+.wb-call-panel .wbc-friends-close:hover{
+    background:rgba(255,255,255,.08);
+    color:#fff;
+}
+.wb-call-panel .wbc-friends-body{
+    overflow-y:auto;
+    flex:1;
+}
+.wb-call-panel .wbc-friends-loading,
+.wb-call-panel .wbc-friends-empty{
+    padding:14px 12px;
+    color:#94a3b8;
+    font-size:13px;
+    text-align:center;
+}
+.wb-call-panel .wbc-friends-empty a{
+    color:#7dd3fc;
+    text-decoration:underline;
+}
+
+.wb-call-panel .wbc-friend-item{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 10px;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid rgba(255,255,255,.04);
+    color:#e2e8f0;
+    cursor:pointer;
+    text-align:left;
+    font-size:13.5px;
+    transition:background .12s ease;
+}
+.wb-call-panel .wbc-friend-item:hover{
+    background:rgba(74,168,255,.10);
+}
+.wb-call-panel .wbc-friend-item:disabled{
+    opacity:.6;
+    cursor:default;
+}
+.wb-call-panel .wbc-friend-avatar{
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    object-fit:cover;
+    flex-shrink:0;
+    background:rgba(255,255,255,.06);
+}
+.wb-call-panel .wbc-friend-avatar-fallback{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#cbd5e1;
+    font-weight:600;
+    font-size:13px;
+}
+.wb-call-panel .wbc-friend-name{
+    flex:1;
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+.wb-call-panel .wbc-friend-invite{
+    color:#7dd3fc;
+    font-size:12px;
+    font-weight:600;
+    flex-shrink:0;
+}
+.wb-call-panel .wbc-friend-invite-sent{
+    color:#86efac;
+}
+
+.wb-call-panel .wbc-btn-primary{
+    background:linear-gradient(135deg,#4aa8ff,#8b5cf6);
+    box-shadow:0 4px 14px rgba(139,92,246,.30);
+}
+.wb-call-panel .wbc-btn-primary:hover{ transform:translateY(-1px); }
+
+/* Video tiles */
+.wb-call-panel .wbc-videos{
+    position:relative;
+    padding:0 10px 10px;
+}
+.wb-call-panel .wbc-videos[hidden]{ display:none !important; }
+.wb-call-panel .wbc-vid{
+    position:relative;
+    width:100%;
+    border-radius:10px;
+    overflow:hidden;
+    background:#0b1020;
+    aspect-ratio: 4 / 3;
+}
+.wb-call-panel .wbc-vid video{
+    width:100%; height:100%;
+    object-fit:cover;
+    background:#0b1020;
+    transform:scaleX(-1);  /* mirror like every video-call client */
+}
+.wb-call-panel .wbc-vid-self{
+    position:absolute;
+    right:18px;
+    bottom:62px;
+    width:30%;
+    min-width:80px;
+    aspect-ratio: 4 / 3;
+    border:1.5px solid rgba(255,255,255,.45);
+    border-radius:8px;
+    box-shadow:0 4px 12px rgba(0,0,0,.45);
+    overflow:hidden;
+    z-index:2;
+}
+.wb-call-panel .wbc-vid .wbc-tag{
+    position:absolute;
+    left:6px; bottom:6px;
+    padding:2px 7px;
+    border-radius:999px;
+    background:rgba(0,0,0,.55);
+    color:#fff;
+    font-size:10.5px;
+    letter-spacing:.02em;
+}
+.wb-call-panel .wbc-vid-self .wbc-tag{ font-size:9.5px; padding:1px 6px; }
+
+/* Toolbar (mic / cam / leave / copy) */
+.wb-call-panel .wbc-toolbar{
+    display:flex; gap:6px; justify-content:center;
+    padding:0 10px 12px;
+}
+.wb-call-panel .wbc-toolbar[hidden]{ display:none !important; }
+.wb-call-panel .wbc-icon{
+    width:38px; height:38px;
+    border-radius:50%;
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.10);
+    font-size:16px;
+    cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center;
+    transition:background .15s, transform .15s;
+    line-height:1;
+}
+.wb-call-panel .wbc-icon:hover{
+    background:rgba(255,255,255,.16);
+    transform:translateY(-1px);
+}
+.wb-call-panel .wbc-icon.off{
+    background:rgba(248,113,113,.18);
+    border-color:rgba(248,113,113,.45);
+    color:#fecaca;
+}
+.wb-call-panel .wbc-icon-danger{
+    background:linear-gradient(135deg,#ef4444,#dc2626);
+    border-color:rgba(255,255,255,.15);
+}
+.wb-call-panel .wbc-icon-danger:hover{
+    background:linear-gradient(135deg,#dc2626,#b91c1c);
+}
+
+/* ── Mobile: full-width sheet across the bottom of the canvas ─────── */
+@media (max-width: 640px){
+    .wb-call-panel{
+        right:8px; left:8px;
+        bottom:8px;
+        width:auto;
+        max-width:none;
+    }
+    .wb-call-panel .wbc-videos{ padding:0 8px 8px; }
+    .wb-call-panel .wbc-vid-self{
+        right:14px; bottom:54px;
+        width:33%;
+    }
+    .wb-call-panel .wbc-toolbar{ padding:0 8px 10px; }
+    .wb-call-panel .wbc-icon{ width:42px; height:42px; }
+    .wb-call-panel.minimized{ width:140px; height:105px; right:8px; bottom:8px; border-radius:10px; }
+}
+
+/* ── Minimized / PiP mode ──────────────────────────────────────────── */
+.wb-call-panel.minimized{
+    width:180px;
+    height:135px;
+    position:fixed !important;
+    right:14px;
+    bottom:14px;
+    z-index:10000 !important;
+    border-radius:12px;
+    cursor:pointer;
+    overflow:hidden;
+    border:2px solid rgba(34,197,94,.6);
+    box-shadow:0 8px 24px rgba(0,0,0,.5);
+    transition:width .25s ease, height .25s ease, border-radius .25s ease;
+}
+.wb-call-panel.minimized:hover{
+    border-color:rgba(34,197,94,.9);
+    box-shadow:0 8px 28px rgba(34,197,94,.25);
+}
+.wb-call-panel.minimized .wbc-head,
+.wb-call-panel.minimized .wbc-hint,
+.wb-call-panel.minimized .wbc-room-row,
+.wb-call-panel.minimized .wbc-invite-row,
+.wb-call-panel.minimized .wbc-friends-list,
+.wb-call-panel.minimized .wbc-vid-self,
+.wb-call-panel.minimized .wbc-toolbar,
+.wb-call-panel.minimized .wbc-videos .wbc-tag{
+    display:none !important;
+}
+.wb-call-panel.minimized .wbc-videos{
+    display:block !important;
+    padding:0;
+    width:100%;
+    height:100%;
+}
+.wb-call-panel.minimized .wbc-vid{
+    width:100%;
+    height:100%;
+    border-radius:0;
+    aspect-ratio:auto;
+}
+.wb-call-panel.minimized .wbc-vid video{
+    object-fit:cover;
+}
+/* Small overlay badge on PiP — shows call duration / status */
+.wb-call-panel.minimized .pip-badge{
+    position:absolute;
+    left:6px;
+    bottom:6px;
+    padding:2px 8px;
+    border-radius:999px;
+    background:rgba(0,0,0,.65);
+    color:#fff;
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:.02em;
+    pointer-events:none;
+    display:flex;
+    align-items:center;
+    gap:4px;
+}
+.wb-call-panel.minimized .pip-badge .pip-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#22c55e;
+    display:inline-block;
+    animation:pipPulse 2s ease-in-out infinite;
+}
+@keyframes pipPulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity:.4; }
+}
+/* Close (end call) button on PiP */
+.wb-call-panel.minimized .pip-end{
+    position:absolute;
+    top:6px;
+    right:6px;
+    width:24px;
+    height:24px;
+    border-radius:50%;
+    background:rgba(239,68,68,.85);
+    border:none;
+    color:#fff;
+    font-size:13px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    opacity:0;
+    transition:opacity .2s ease;
+}
+.wb-call-panel.minimized:hover .pip-end{
+    opacity:1;
+}
+.wb-call-panel.minimized .pip-end:hover{
+    background:#ef4444;
+    transform:scale(1.1);
+}

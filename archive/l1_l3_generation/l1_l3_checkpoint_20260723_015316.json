@@ -1,0 +1,745 @@
+{
+ "ts": "2026-07-23T03:45:54.298554",
+ "approved": 387,
+ "failed": 115,
+ "cells": {
+  "G6|T027|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G6|T027|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G6|T027|L3": {
+   "count": 3,
+   "shortage": 2,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G7|T022|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G7|T022|L2": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G7|T022|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G7|T024|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G7|T024|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G7|T024|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G7|T032|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G7|T032|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G7|T032|L3": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G7|T033|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G7|T033|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G7|T033|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G8|T026|L1": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G8|T026|L2": {
+   "count": 0,
+   "shortage": 5,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G8|T026|L3": {
+   "count": 0,
+   "shortage": 5,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G8|T037|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G8|T037|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G8|T037|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G8|T038|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G8|T038|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G8|T038|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T002|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T002|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T002|L3": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G9|T004|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T004|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T004|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T006|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T006|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T006|L3": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G9|T009|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T009|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T009|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T011|L1": {
+   "count": 2,
+   "shortage": 3,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G9|T011|L2": {
+   "count": 0,
+   "shortage": 5,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G9|T011|L3": {
+   "count": 0,
+   "shortage": 5,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G9|T016|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T016|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T016|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T019|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T019|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T019|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T020|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T020|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T020|L3": {
+   "count": 4,
+   "shortage": 1,
+   "status": "PARTIAL",
+   "blocked": false
+  },
+  "G9|T023|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T023|L2": {
+   "count": 3,
+   "shortage": 2,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G9|T023|L3": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G9|T025|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T025|L2": {
+   "count": 0,
+   "shortage": 5,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G9|T025|L3": {
+   "count": 1,
+   "shortage": 4,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G9|T041|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T041|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G9|T041|L3": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G10|T012|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G10|T012|L2": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G10|T012|L3": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G10|T017|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G10|T017|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G10|T017|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G10|T018|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G10|T018|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G10|T018|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G10|T035|L1": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G10|T035|L2": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G10|T035|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G10|T036|L1": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G10|T036|L2": {
+   "count": 3,
+   "shortage": 2,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G10|T036|L3": {
+   "count": 3,
+   "shortage": 2,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G10|T039|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G10|T039|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G10|T039|L3": {
+   "count": 3,
+   "shortage": 2,
+   "status": "PARTIAL",
+   "blocked": false
+  },
+  "G11|T001|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T001|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T001|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T003|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T003|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T003|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T005|L1": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T005|L2": {
+   "count": 3,
+   "shortage": 2,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T005|L3": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T007|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T007|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T007|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T008|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T008|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T008|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T010|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T010|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T010|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T013|L1": {
+   "count": 1,
+   "shortage": 4,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T013|L2": {
+   "count": 2,
+   "shortage": 3,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T013|L3": {
+   "count": 1,
+   "shortage": 4,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T014|L1": {
+   "count": 2,
+   "shortage": 3,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T014|L2": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T014|L3": {
+   "count": 2,
+   "shortage": 3,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T015|L1": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T015|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T015|L3": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T021|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T021|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T021|L3": {
+   "count": 4,
+   "shortage": 1,
+   "status": "PARTIAL",
+   "blocked": false
+  },
+  "G11|T028|L1": {
+   "count": 4,
+   "shortage": 1,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T028|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T028|L3": {
+   "count": 1,
+   "shortage": 4,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T029|L1": {
+   "count": 2,
+   "shortage": 3,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T029|L2": {
+   "count": 0,
+   "shortage": 5,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T029|L3": {
+   "count": 0,
+   "shortage": 5,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T030|L1": {
+   "count": 1,
+   "shortage": 4,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T030|L2": {
+   "count": 0,
+   "shortage": 5,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T030|L3": {
+   "count": 0,
+   "shortage": 5,
+   "status": "EMPTY",
+   "blocked": false
+  },
+  "G11|T031|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T031|L2": {
+   "count": 3,
+   "shortage": 2,
+   "status": "PARTIAL",
+   "blocked": false
+  },
+  "G11|T031|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T034|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T034|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T034|L3": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T040|L1": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T040|L2": {
+   "count": 5,
+   "shortage": 0,
+   "status": "READY",
+   "blocked": false
+  },
+  "G11|T040|L3": {
+   "count": 4,
+   "shortage": 1,
+   "status": "PARTIAL",
+   "blocked": false
+  }
+ }
+}

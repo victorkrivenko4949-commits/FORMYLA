@@ -1,0 +1,178 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "OH",
+   "line2": "AM"
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "AB",
+   "line2": "CD"
+  },
+  {
+   "type": "intersection",
+   "id": "F",
+   "line1": "BD",
+   "line2": "AC"
+  },
+  {
+   "type": "line_circle",
+   "id": "X",
+   "circle": "w",
+   "line": "EH",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "Y",
+   "circle": "w",
+   "line": "FH",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AH"
+  },
+  {
+   "segment": "AM"
+  },
+  {
+   "segment": "OH"
+  },
+  {
+   "segment": "CE"
+  },
+  {
+   "segment": "BF"
+  },
+  {
+   "segment": "EX"
+  },
+  {
+   "segment": "FY"
+  },
+  {
+   "segment": "BY"
+  },
+  {
+   "segment": "CX"
+  },
+  {
+   "circle": "w"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "quad",
+   "id": "AHBN",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "BN",
+   "line2": "EH"
+  },
+  {
+   "type": "quad",
+   "id": "AHCL",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "CL",
+   "line2": "FH"
+  },
+  {
+   "type": "intersection",
+   "id": "Hp",
+   "line1": "AH",
+   "line2": "PQ"
+  },
+  {
+   "type": "intersection",
+   "id": "Tb",
+   "line1": "AH",
+   "line2": "BY"
+  },
+  {
+   "type": "intersection",
+   "id": "Tc",
+   "line1": "AH",
+   "line2": "CX"
+  }
+ ],
+ "draw_aux": [
+  {
+   "line": "BN",
+   "style": "dashed"
+  },
+  {
+   "line": "CL",
+   "style": "dashed"
+  },
+  {
+   "segment": "EP",
+   "style": "dashed"
+  },
+  {
+   "segment": "FQ",
+   "style": "dashed"
+  },
+  {
+   "segment": "PQ",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Для доказательства строим P и Q (PB⊥BC, QC⊥BC), затем вспомогательные точки пересечения с AH."
+}

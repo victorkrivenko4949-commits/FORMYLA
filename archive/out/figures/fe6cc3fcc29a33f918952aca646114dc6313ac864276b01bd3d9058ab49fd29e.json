@@ -1,0 +1,104 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "circumcircle",
+   "id": "Omega",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "midpoint",
+   "id": "D",
+   "of": "AC"
+  },
+  {
+   "type": "line_circle",
+   "id": "S",
+   "circle": "Omega",
+   "line": "OD",
+   "pick": 0
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AB",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "BC",
+   "ratio": 0.5
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "MN",
+   "line2": "AC"
+  },
+  {
+   "type": "incenter",
+   "id": "P",
+   "of": "AMK"
+  },
+  {
+   "type": "reflect_point",
+   "id": "R",
+   "of": "N",
+   "over": "C"
+  },
+  {
+   "type": "incenter",
+   "id": "U",
+   "of": "CRK"
+  },
+  {
+   "type": "reflect_point",
+   "id": "T",
+   "of": "K",
+   "over": "N"
+  },
+  {
+   "type": "incenter",
+   "id": "V",
+   "of": "CNT"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "CU",
+   "line2": "NV"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "Omega"
+  },
+  {
+   "line": "MN"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "CN"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

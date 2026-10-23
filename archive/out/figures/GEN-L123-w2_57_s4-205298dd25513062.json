@@ -1,0 +1,132 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 6,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 90
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 10
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "w",
+   "angle": 65
+  },
+  {
+   "type": "point_on_circle",
+   "id": "E",
+   "circle": "w",
+   "angle": 25
+  }
+ ],
+ "draw": [
+  {
+   "segment": "OA"
+  },
+  {
+   "segment": "OB"
+  },
+  {
+   "segment": "OC",
+   "style": "soft"
+  },
+  {
+   "segment": "OD",
+   "style": "soft"
+  },
+  {
+   "segment": "OE",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "O",
+    "B"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "O",
+    "C"
+   ],
+   "text": "10°"
+  },
+  {
+   "angle": [
+    "B",
+    "O",
+    "D"
+   ],
+   "text": "25°"
+  },
+  {
+   "angle": [
+    "C",
+    "O",
+    "E"
+   ],
+   "text": "15°"
+  },
+  {
+   "angle": [
+    "P",
+    "O",
+    "Q"
+   ],
+   "text": "45°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "point",
+   "id": "P",
+   "x": 7.81,
+   "y": 1.73
+  },
+  {
+   "type": "point",
+   "id": "Q",
+   "x": 4.3,
+   "y": 6.75
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "OP",
+   "style": "accent"
+  },
+  {
+   "segment": "OQ",
+   "style": "accent"
+  }
+ ],
+ "reason": "Биссектрисы углов AOE и BOE проведены через P и Q; угол между ними равен полусумме ∠AOE и ∠BOE, то есть (25°+65°)/2=45°."
+}

@@ -1,0 +1,95 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "isosceles"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AB",
+   "ratio": 0.7
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "AC",
+   "ratio": 0.7
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X",
+   "of": "BI",
+   "ratio": 0.9
+  },
+  {
+   "type": "foot",
+   "id": "M",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "reflect_line",
+   "id": "R",
+   "of": "X",
+   "over": "AM"
+  },
+  {
+   "type": "incenter",
+   "id": "J",
+   "of": "APQ"
+  },
+  {
+   "type": "intersection",
+   "id": "Y",
+   "line1": "XR",
+   "line2": "QJ"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "PQ",
+   "style": "soft"
+  },
+  {
+   "line": "BX",
+   "style": "dashed"
+  },
+  {
+   "line": "QY",
+   "style": "dashed"
+  },
+  {
+   "segment": "XY",
+   "style": "soft"
+  },
+  {
+   "segment": "PX",
+   "style": "accent"
+  },
+  {
+   "segment": "CY",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "AC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

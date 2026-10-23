@@ -1,0 +1,86 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "AB",
+   "ratio": 0.3
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "BC",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "CD",
+   "ratio": 0.7
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "KM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD",
+   "style": "soft"
+  },
+  {
+   "polygon": "KLM",
+   "style": "accent"
+  },
+  {
+   "segment": "LO",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "K",
+    "B",
+    "L"
+   ]
+  },
+  {
+   "right_angle": [
+    "M",
+    "C",
+    "L"
+   ]
+  },
+  {
+   "right_angle": [
+    "L",
+    "O",
+    "K"
+   ]
+  },
+  {
+   "equal": [
+    "KL",
+    "LM"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "K",
+    "L",
+    "M"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

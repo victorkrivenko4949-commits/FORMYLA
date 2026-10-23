@@ -1,0 +1,90 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "G",
+   "of": "AB",
+   "ratio": 0.35
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AD",
+   "ratio": 0.45
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "G",
+   "line": "DC"
+  },
+  {
+   "type": "foot",
+   "id": "F",
+   "from": "E",
+   "line": "BC"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "EF",
+   "line2": "GH"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "GH"
+  },
+  {
+   "segment": "EF"
+  }
+ ],
+ "marks": [
+  {
+   "text": "6",
+   "at": [
+    "A",
+    "G",
+    "O",
+    "E"
+   ]
+  },
+  {
+   "text": "10",
+   "at": [
+    "G",
+    "B",
+    "F",
+    "O"
+   ]
+  },
+  {
+   "text": "15",
+   "at": [
+    "E",
+    "O",
+    "H",
+    "D"
+   ]
+  },
+  {
+   "text": "?",
+   "at": [
+    "O",
+    "F",
+    "C",
+    "H"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

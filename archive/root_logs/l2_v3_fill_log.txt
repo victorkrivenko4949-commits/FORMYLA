@@ -1,0 +1,432 @@
+2026-07-15 22:40:42,345 - __main__ - INFO - Loaded 11511 total tasks
+2026-07-15 22:40:42,347 - __main__ - INFO - L1: 2473 tasks, L2: 4363 tasks
+2026-07-15 22:40:42,352 - __main__ - INFO - Found 58 cells with holes, need 145 tasks total
+2026-07-15 22:40:42,352 - __main__ - INFO - Need distribution: {1: 25, 2: 5, 3: 2, 4: 26}
+2026-07-15 22:40:42,352 - __main__ - INFO - Cells to process: 58 (skipping 0 completed)
+2026-07-15 22:40:42,352 - ai.deepseek_client - INFO - 🔄 Using official DeepSeek API (direct)
+2026-07-15 22:40:42,354 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:40:42,355 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:40:42,355 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:41:16,306 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:3: SyntaxWarning: invalid escape sequence '\l'
+2026-07-15 22:41:16,308 - __main__ - WARNING - [L2|9|Метод интервалов] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:41:19,308 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:41:19,867 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:41:19,869 - __main__ - WARNING - [L2|9|Геометрия. Площади треугольников] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:41:21,565 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:41:21,567 - __main__ - WARNING - [L2|9|Геометрия. Площади фигур] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:41:22,869 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:41:24,568 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:41:55,475 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:3: SyntaxWarning: invalid escape sequence '\l'
+<unknown>:5: SyntaxWarning: invalid escape sequence '\l'
+<unknown>:8: SyntaxWarning: invalid escape sequence '\l'
+2026-07-15 22:41:55,477 - __main__ - WARNING - [L2|9|Метод интервалов] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:41:58,478 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:41:59,924 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:41:59,925 - __main__ - WARNING - [L2|9|Геометрия. Площади треугольников] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:42:02,630 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:42:02,631 - __main__ - WARNING - [L2|9|Геометрия. Площади фигур] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:42:02,926 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:42:05,632 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:42:16,886 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:42:16,887 - __main__ - INFO - [L2|9|Геометрия. Площади фигур] ✓ Generated 4/4 tasks
+2026-07-15 22:42:16,887 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:42:16,887 - __main__ - INFO - [1/58] ✓ L2|9|Геометрия. Площади фигур — +4 tasks
+2026-07-15 22:42:22,907 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:3: SyntaxWarning: invalid escape sequence '\l'
+2026-07-15 22:42:22,909 - __main__ - WARNING - [L2|9|Метод интервалов] Attempt 3: JSON parse failed, retrying...
+2026-07-15 22:42:25,910 - __main__ - ERROR - [L2|9|Метод интервалов] All 3 attempts failed!
+2026-07-15 22:42:25,910 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:42:25,910 - __main__ - ERROR - [2/58] ✗ L2|9|Метод интервалов — FAILED
+2026-07-15 22:42:43,116 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:42:43,118 - __main__ - WARNING - [L2|9|Геометрия. Площади треугольников] Attempt 3: JSON parse failed, retrying...
+2026-07-15 22:42:46,118 - __main__ - ERROR - [L2|9|Геометрия. Площади треугольников] All 3 attempts failed!
+2026-07-15 22:42:46,118 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:42:46,118 - __main__ - ERROR - [3/58] ✗ L2|9|Геометрия. Площади треугольников — FAILED
+2026-07-15 22:42:49,432 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:42:49,435 - __main__ - WARNING - [L2|9|Комбинаторная геометрия. Принцип Дирихле] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:42:52,435 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:43:02,354 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:43:02,357 - __main__ - INFO - [L2|9|Теория игр] ✓ Generated 4/4 tasks
+2026-07-15 22:43:02,357 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:43:02,357 - __main__ - INFO - [4/58] ✓ L2|9|Теория игр — +4 tasks
+2026-07-15 22:43:05,442 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:43:05,444 - __main__ - WARNING - [L2|9|Комбинаторика. Инварианты] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:43:08,445 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:43:26,722 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:43:26,726 - __main__ - WARNING - [L2|9|Комбинаторная геометрия. Принцип Дирихле] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:43:29,726 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:43:37,195 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:43:37,198 - __main__ - WARNING - [L2|9|Теория чисел. Инварианты] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:43:37,424 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:43:37,426 - __main__ - INFO - [L2|9|Комбинаторика. Инварианты] ✓ Generated 4/4 tasks
+2026-07-15 22:43:37,426 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:43:37,427 - __main__ - INFO - [5/58] ✓ L2|9|Комбинаторика. Инварианты — +4 tasks
+2026-07-15 22:43:37,429 - __main__ - INFO - Checkpoint saved: 12 tasks so far
+2026-07-15 22:43:40,198 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:43:44,273 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:43:44,275 - __main__ - INFO - [L2|9|Комбинаторная геометрия. Принцип Дирихле] ✓ Generated 4/4 tasks
+2026-07-15 22:43:44,275 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:43:44,275 - __main__ - INFO - [6/58] ✓ L2|9|Комбинаторная геометрия. Принцип Дирихле — +4 tasks
+2026-07-15 22:44:03,882 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:44:03,886 - __main__ - WARNING - [L2|9|Алгебра. Уравнения и неравенства] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:44:06,887 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:44:13,275 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:44:13,277 - __main__ - WARNING - [L2|10|Линейные диофантовы уравнения] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:44:15,349 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:44:15,352 - __main__ - WARNING - [L2|9|Теория чисел. Инварианты] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:44:16,277 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:44:18,352 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:44:26,642 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:44:26,643 - __main__ - WARNING - [L2|9|Алгебра. Уравнения и неравенства] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:44:29,644 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:44:31,455 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:44:31,456 - __main__ - INFO - [L2|10|Линейные диофантовы уравнения] ✓ Generated 4/4 tasks
+2026-07-15 22:44:31,457 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:44:31,457 - __main__ - INFO - [7/58] ✓ L2|10|Линейные диофантовы уравнения — +4 tasks
+2026-07-15 22:44:52,926 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:44:52,928 - __main__ - WARNING - [L2|9|Теория чисел. Инварианты] Attempt 3: JSON parse failed, retrying...
+2026-07-15 22:44:55,928 - __main__ - ERROR - [L2|9|Теория чисел. Инварианты] All 3 attempts failed!
+2026-07-15 22:44:55,929 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:44:55,929 - __main__ - ERROR - [8/58] ✗ L2|9|Теория чисел. Инварианты — FAILED
+2026-07-15 22:44:59,399 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:5: SyntaxWarning: invalid escape sequence '\p'
+<unknown>:10: SyntaxWarning: invalid escape sequence '\c'
+<unknown>:20: SyntaxWarning: invalid escape sequence '\g'
+2026-07-15 22:44:59,403 - __main__ - INFO - [L2|10|Теория чисел. Диофантовы уравнения] ✓ Generated 4/4 tasks
+2026-07-15 22:44:59,404 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:44:59,404 - __main__ - INFO - [9/58] ✓ L2|10|Теория чисел. Диофантовы уравнения — +4 tasks
+2026-07-15 22:44:59,681 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:44:59,683 - __main__ - WARNING - [L2|9|Алгебра. Уравнения и неравенства] Attempt 3: JSON parse failed, retrying...
+2026-07-15 22:45:02,684 - __main__ - ERROR - [L2|9|Алгебра. Уравнения и неравенства] All 3 attempts failed!
+2026-07-15 22:45:02,684 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:45:02,684 - __main__ - ERROR - [10/58] ✗ L2|9|Алгебра. Уравнения и неравенства — FAILED
+2026-07-15 22:45:02,686 - __main__ - INFO - Checkpoint saved: 24 tasks so far
+2026-07-15 22:45:16,387 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:45:16,388 - __main__ - INFO - [L2|9|Логика (рыцари и лжецы)] ✓ Generated 4/4 tasks
+2026-07-15 22:45:16,388 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:45:16,389 - __main__ - INFO - [11/58] ✓ L2|9|Логика (рыцари и лжецы) — +4 tasks
+2026-07-15 22:45:23,372 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:45:23,373 - __main__ - WARNING - [L2|9|Логика. Рыцари, лжецы, хитрецы] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:45:26,374 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:45:32,660 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:45:32,661 - __main__ - INFO - [L2|10|Уравнения с модулями] ✓ Generated 4/4 tasks
+2026-07-15 22:45:32,662 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:45:32,662 - __main__ - INFO - [12/58] ✓ L2|10|Уравнения с модулями — +4 tasks
+2026-07-15 22:45:33,635 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:45:33,639 - __main__ - WARNING - [L2|10|Комбинаторика: принцип Дирихле и экстремальные задачи] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:45:36,640 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:45:46,820 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:3: SyntaxWarning: invalid escape sequence '\s'
+<unknown>:5: SyntaxWarning: invalid escape sequence '\s'
+<unknown>:8: SyntaxWarning: invalid escape sequence '\s'
+<unknown>:10: SyntaxWarning: invalid escape sequence '\s'
+<unknown>:13: SyntaxWarning: invalid escape sequence '\ '
+<unknown>:14: SyntaxWarning: invalid escape sequence '\s'
+<unknown>:15: SyntaxWarning: invalid escape sequence '\p'
+<unknown>:18: SyntaxWarning: invalid escape sequence '\l'
+<unknown>:20: SyntaxWarning: invalid escape sequence '\R'
+2026-07-15 22:45:46,823 - __main__ - INFO - [L2|11|Алгебра. Уравнения и системы] ✓ Generated 4/4 tasks
+2026-07-15 22:45:46,823 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:45:46,823 - __main__ - INFO - [13/58] ✓ L2|11|Алгебра. Уравнения и системы — +4 tasks
+2026-07-15 22:45:55,266 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:45:55,269 - __main__ - WARNING - [L2|9|Логика. Рыцари, лжецы, хитрецы] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:45:58,269 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:45:58,406 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:3: SyntaxWarning: invalid escape sequence '\ '
+<unknown>:5: SyntaxWarning: invalid escape sequence '\D'
+<unknown>:8: SyntaxWarning: invalid escape sequence '\ '
+<unknown>:13: SyntaxWarning: invalid escape sequence '\ '
+<unknown>:15: SyntaxWarning: invalid escape sequence '\R'
+<unknown>:18: SyntaxWarning: invalid escape sequence '\ '
+<unknown>:20: SyntaxWarning: invalid escape sequence '\s'
+2026-07-15 22:45:58,408 - __main__ - INFO - [L2|9|Системы линейных уравнений] ✓ Generated 4/4 tasks
+2026-07-15 22:45:58,408 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:45:58,408 - __main__ - INFO - [14/58] ✓ L2|9|Системы линейных уравнений — +4 tasks
+2026-07-15 22:46:13,534 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:46:13,537 - __main__ - WARNING - [L2|10|Комбинаторика: принцип Дирихле и экстремальные задачи] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:46:16,537 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:46:24,542 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:46:24,543 - __main__ - WARNING - [L2|8|Алгебра. Уравнения с параметрами и модулем] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:46:27,544 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:46:27,717 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:46:27,719 - __main__ - INFO - [L2|10|Комбинаторика: принцип Дирихле и экстремальные задачи] ✓ Generated 4/4 tasks
+2026-07-15 22:46:27,719 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:46:27,719 - __main__ - INFO - [15/58] ✓ L2|10|Комбинаторика: принцип Дирихле и экстремальные задачи — +4 tasks
+2026-07-15 22:46:27,722 - __main__ - INFO - Checkpoint saved: 44 tasks so far
+2026-07-15 22:46:33,172 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:46:33,174 - __main__ - WARNING - [L2|9|Логика. Рыцари, лжецы, хитрецы] Attempt 3: JSON parse failed, retrying...
+2026-07-15 22:46:36,174 - __main__ - ERROR - [L2|9|Логика. Рыцари, лжецы, хитрецы] All 3 attempts failed!
+2026-07-15 22:46:36,175 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:46:36,175 - __main__ - ERROR - [16/58] ✗ L2|9|Логика. Рыцари, лжецы, хитрецы — FAILED
+2026-07-15 22:46:56,575 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:3: SyntaxWarning: invalid escape sequence '\l'
+2026-07-15 22:46:56,577 - __main__ - WARNING - [L2|8|Алгебра. Рациональные неравенства] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:46:58,412 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:46:58,414 - __main__ - WARNING - [L2|8|Алгебра. Уравнения с параметрами и модулем] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:46:59,578 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:47:01,414 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:47:01,613 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:47:01,617 - __main__ - WARNING - [L2|9|Иррациональные неравенства] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:47:04,617 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:47:25,458 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:47:25,460 - __main__ - WARNING - [L2|8|Алгебра. Уравнения с параметрами и модулем] Attempt 3: JSON parse failed, retrying...
+2026-07-15 22:47:28,461 - __main__ - ERROR - [L2|8|Алгебра. Уравнения с параметрами и модулем] All 3 attempts failed!
+2026-07-15 22:47:28,461 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:47:28,461 - __main__ - ERROR - [17/58] ✗ L2|8|Алгебра. Уравнения с параметрами и модулем — FAILED
+2026-07-15 22:47:33,041 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:47:33,043 - __main__ - WARNING - [L2|8|Алгебра. Рациональные неравенства] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:47:35,922 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:47:35,923 - __main__ - INFO - [L2|9|Последовательности] ✓ Generated 4/4 tasks
+2026-07-15 22:47:35,923 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:47:35,923 - __main__ - INFO - [18/58] ✓ L2|9|Последовательности — +4 tasks
+2026-07-15 22:47:36,044 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:47:36,638 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:47:36,640 - __main__ - WARNING - [L2|9|Иррациональные неравенства] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:47:39,641 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:48:03,447 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:48:03,449 - __main__ - WARNING - [L2|8|Алгебра. Рациональные неравенства] Attempt 3: JSON parse failed, retrying...
+2026-07-15 22:48:03,682 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:3: SyntaxWarning: invalid escape sequence '\l'
+2026-07-15 22:48:03,684 - __main__ - WARNING - [L2|9|Неравенства с модулями] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:48:06,450 - __main__ - ERROR - [L2|8|Алгебра. Рациональные неравенства] All 3 attempts failed!
+2026-07-15 22:48:06,450 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:48:06,450 - __main__ - ERROR - [19/58] ✗ L2|8|Алгебра. Рациональные неравенства — FAILED
+2026-07-15 22:48:06,684 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:48:08,998 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:48:09,000 - __main__ - WARNING - [L2|9|Иррациональные неравенства] Attempt 3: JSON parse failed, retrying...
+2026-07-15 22:48:12,001 - __main__ - ERROR - [L2|9|Иррациональные неравенства] All 3 attempts failed!
+2026-07-15 22:48:12,001 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:48:12,002 - __main__ - ERROR - [20/58] ✗ L2|9|Иррациональные неравенства — FAILED
+2026-07-15 22:48:12,004 - __main__ - INFO - Checkpoint saved: 48 tasks so far
+2026-07-15 22:48:36,281 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:3: SyntaxWarning: invalid escape sequence '\g'
+<unknown>:5: SyntaxWarning: invalid escape sequence '\g'
+<unknown>:8: SyntaxWarning: invalid escape sequence '\l'
+2026-07-15 22:48:36,283 - __main__ - WARNING - [L2|11|Алгебра. Неравенства] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:48:38,577 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:48:38,580 - __main__ - WARNING - [L2|9|Неравенства с модулями] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:48:39,283 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:48:39,466 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:48:39,469 - __main__ - WARNING - [L2|11|Тригонометрия и смешанные уравнения] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:48:41,580 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:48:42,470 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:48:56,910 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:48:56,911 - __main__ - INFO - [L2|11|Алгебра. Неравенства] ✓ Generated 4/4 tasks
+2026-07-15 22:48:56,911 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:48:56,912 - __main__ - INFO - [21/58] ✓ L2|11|Алгебра. Неравенства — +4 tasks
+2026-07-15 22:49:03,411 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:49:03,413 - __main__ - INFO - [L2|11|Тригонометрия и смешанные уравнения] ✓ Generated 4/4 tasks
+2026-07-15 22:49:03,413 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:49:03,413 - __main__ - INFO - [22/58] ✓ L2|11|Тригонометрия и смешанные уравнения — +4 tasks
+2026-07-15 22:49:06,695 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:3: SyntaxWarning: invalid escape sequence '\l'
+2026-07-15 22:49:06,696 - __main__ - WARNING - [L2|9|Неравенства с модулями] Attempt 3: JSON parse failed, retrying...
+2026-07-15 22:49:09,696 - __main__ - ERROR - [L2|9|Неравенства с модулями] All 3 attempts failed!
+2026-07-15 22:49:09,697 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:49:09,697 - __main__ - ERROR - [23/58] ✗ L2|9|Неравенства с модулями — FAILED
+2026-07-15 22:49:12,795 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:49:12,798 - __main__ - INFO - [L2|11|Геометрия. Стереометрия] ✓ Generated 4/4 tasks
+2026-07-15 22:49:12,798 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:49:12,798 - __main__ - INFO - [24/58] ✓ L2|11|Геометрия. Стереометрия — +4 tasks
+2026-07-15 22:49:29,217 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:5: SyntaxWarning: invalid escape sequence '\p'
+<unknown>:17: SyntaxWarning: invalid escape sequence '\c'
+<unknown>:21: SyntaxWarning: invalid escape sequence '\p'
+<unknown>:23: SyntaxWarning: invalid escape sequence '\o'
+2026-07-15 22:49:29,221 - __main__ - WARNING - [L2|11|Комплексные числа и многочлены] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:49:32,221 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:49:37,608 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:49:37,610 - __main__ - WARNING - [L2|11|Многочлены. Арифметическая прогрессия] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:49:40,610 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:49:47,980 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:49:47,983 - __main__ - WARNING - [L2|8|Комбинаторика. Принцип Дирихле] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:49:50,983 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:50:01,477 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:50:01,480 - __main__ - INFO - [L2|8|Комбинаторика. Принцип Дирихле] ✓ Generated 3/3 tasks
+2026-07-15 22:50:01,480 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:50:01,480 - __main__ - INFO - [25/58] ✓ L2|8|Комбинаторика. Принцип Дирихле — +3 tasks
+2026-07-15 22:50:01,485 - __main__ - INFO - Checkpoint saved: 63 tasks so far
+2026-07-15 22:50:02,656 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:50:02,658 - __main__ - WARNING - [L2|11|Комплексные числа и многочлены] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:50:05,659 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:50:06,728 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:50:06,731 - __main__ - WARNING - [L2|11|Многочлены. Арифметическая прогрессия] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:50:09,732 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:50:33,638 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:50:33,640 - __main__ - WARNING - [L2|11|Теория чисел. Диофантовы задачи] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:50:33,852 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:50:33,854 - __main__ - WARNING - [L2|11|Комплексные числа и многочлены] Attempt 3: JSON parse failed, retrying...
+2026-07-15 22:50:34,674 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:50:34,676 - __main__ - WARNING - [L2|11|Многочлены. Арифметическая прогрессия] Attempt 3: JSON parse failed, retrying...
+2026-07-15 22:50:36,640 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:50:36,855 - __main__ - ERROR - [L2|11|Комплексные числа и многочлены] All 3 attempts failed!
+2026-07-15 22:50:36,855 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:50:36,855 - __main__ - ERROR - [26/58] ✗ L2|11|Комплексные числа и многочлены — FAILED
+2026-07-15 22:50:37,677 - __main__ - ERROR - [L2|11|Многочлены. Арифметическая прогрессия] All 3 attempts failed!
+2026-07-15 22:50:37,677 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:50:37,677 - __main__ - ERROR - [27/58] ✗ L2|11|Многочлены. Арифметическая прогрессия — FAILED
+2026-07-15 22:50:45,980 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:50:45,981 - __main__ - INFO - [L2|5|Делимость чисел] ✓ Generated 2/2 tasks
+2026-07-15 22:50:45,981 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:50:45,982 - __main__ - INFO - [28/58] ✓ L2|5|Делимость чисел — +2 tasks
+2026-07-15 22:50:49,118 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:50:49,119 - __main__ - INFO - [L2|6|Игры] ✓ Generated 2/2 tasks
+2026-07-15 22:50:49,120 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:50:49,120 - __main__ - INFO - [29/58] ✓ L2|6|Игры — +2 tasks
+2026-07-15 22:50:55,848 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:50:55,849 - __main__ - INFO - [L2|6|Теория чисел, делимость] ✓ Generated 2/2 tasks
+2026-07-15 22:50:55,849 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:50:55,849 - __main__ - INFO - [30/58] ✓ L2|6|Теория чисел, делимость — +2 tasks
+2026-07-15 22:50:55,853 - __main__ - INFO - Checkpoint saved: 69 tasks so far
+2026-07-15 22:50:56,290 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:50:56,291 - __main__ - INFO - [L2|7|Делимость целых чисел] ✓ Generated 2/2 tasks
+2026-07-15 22:50:56,292 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:50:56,292 - __main__ - INFO - [31/58] ✓ L2|7|Делимость целых чисел — +2 tasks
+2026-07-15 22:50:59,206 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:50:59,207 - __main__ - INFO - [L2|7|Комбинаторика. Принцип Дирихле] ✓ Generated 1/1 tasks
+2026-07-15 22:50:59,207 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:50:59,208 - __main__ - INFO - [32/58] ✓ L2|7|Комбинаторика. Принцип Дирихле — +1 tasks
+2026-07-15 22:51:07,612 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:51:07,614 - __main__ - WARNING - [L2|11|Теория чисел. Диофантовы задачи] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:51:07,629 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:51:07,631 - __main__ - INFO - [L2|8|Неравенства] ✓ Generated 2/2 tasks
+2026-07-15 22:51:07,631 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:07,631 - __main__ - INFO - [33/58] ✓ L2|8|Неравенства — +2 tasks
+2026-07-15 22:51:10,614 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:15,714 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:51:15,715 - __main__ - INFO - [L2|10|Геометрическая прогрессия] ✓ Generated 1/1 tasks
+2026-07-15 22:51:15,716 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:15,716 - __main__ - INFO - [34/58] ✓ L2|10|Геометрическая прогрессия — +1 tasks
+2026-07-15 22:51:22,513 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:51:22,514 - __main__ - INFO - [L2|10|Логика. Игровые стратегии] ✓ Generated 1/1 tasks
+2026-07-15 22:51:22,515 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:22,515 - __main__ - INFO - [35/58] ✓ L2|10|Логика. Игровые стратегии — +1 tasks
+2026-07-15 22:51:22,519 - __main__ - INFO - Checkpoint saved: 76 tasks so far
+2026-07-15 22:51:25,883 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:3: SyntaxWarning: invalid escape sequence '\ '
+2026-07-15 22:51:25,886 - __main__ - INFO - [L2|10|Геометрическая прогрессия. Системы уравнений] ✓ Generated 1/1 tasks
+2026-07-15 22:51:25,886 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:25,886 - __main__ - INFO - [36/58] ✓ L2|10|Геометрическая прогрессия. Системы уравнений — +1 tasks
+2026-07-15 22:51:30,128 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:51:30,129 - __main__ - INFO - [L2|10|Теория чисел. Модульная арифметика и Китайская теорема об остатках] ✓ Generated 1/1 tasks
+2026-07-15 22:51:30,130 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:30,130 - __main__ - INFO - [37/58] ✓ L2|10|Теория чисел. Модульная арифметика и Китайская теорема об остатках — +1 tasks
+2026-07-15 22:51:30,383 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:51:30,385 - __main__ - INFO - [L2|10|Теория чисел. Системы линейных сравнений] ✓ Generated 1/1 tasks
+2026-07-15 22:51:30,385 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:30,385 - __main__ - INFO - [38/58] ✓ L2|10|Теория чисел. Системы линейных сравнений — +1 tasks
+2026-07-15 22:51:33,351 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:51:33,353 - __main__ - INFO - [L2|10|Теория чисел: остатки и делимость] ✓ Generated 1/1 tasks
+2026-07-15 22:51:33,353 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:33,353 - __main__ - INFO - [39/58] ✓ L2|10|Теория чисел: остатки и делимость — +1 tasks
+2026-07-15 22:51:38,075 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:51:38,076 - __main__ - WARNING - [L2|11|Теория чисел. Диофантовы задачи] Attempt 3: JSON parse failed, retrying...
+2026-07-15 22:51:41,077 - __main__ - ERROR - [L2|11|Теория чисел. Диофантовы задачи] All 3 attempts failed!
+2026-07-15 22:51:41,077 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:41,077 - __main__ - ERROR - [40/58] ✗ L2|11|Теория чисел. Диофантовы задачи — FAILED
+2026-07-15 22:51:41,082 - __main__ - INFO - Checkpoint saved: 80 tasks so far
+2026-07-15 22:51:43,713 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:51:43,714 - __main__ - INFO - [L2|6|Проценты] ✓ Generated 1/1 tasks
+2026-07-15 22:51:43,714 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:43,714 - __main__ - INFO - [41/58] ✓ L2|6|Проценты — +1 tasks
+2026-07-15 22:51:47,959 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:51:47,960 - __main__ - INFO - [L2|6|Арифметика] ✓ Generated 1/1 tasks
+2026-07-15 22:51:47,960 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:47,961 - __main__ - INFO - [42/58] ✓ L2|6|Арифметика — +1 tasks
+2026-07-15 22:51:51,093 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:51:51,094 - __main__ - INFO - [L2|6|Делимость чисел] ✓ Generated 1/1 tasks
+2026-07-15 22:51:51,094 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:51,094 - __main__ - INFO - [43/58] ✓ L2|6|Делимость чисел — +1 tasks
+2026-07-15 22:51:52,174 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:51:52,176 - __main__ - WARNING - [L2|10|Теория чисел. Китайская теорема об остатках] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:51:55,176 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:58,778 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:51:58,779 - __main__ - INFO - [L2|7|Уравнения] ✓ Generated 1/1 tasks
+2026-07-15 22:51:58,780 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:51:58,780 - __main__ - INFO - [44/58] ✓ L2|7|Уравнения — +1 tasks
+2026-07-15 22:52:02,436 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:52:02,439 - __main__ - WARNING - [L2|9|Логика. Рыцари и лжецы] Attempt 1: JSON parse failed, retrying...
+2026-07-15 22:52:03,850 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:5: SyntaxWarning: invalid escape sequence '\g'
+2026-07-15 22:52:03,852 - __main__ - INFO - [L2|8|Квадратные уравнения с модулем] ✓ Generated 1/1 tasks
+2026-07-15 22:52:03,852 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:52:03,853 - __main__ - INFO - [45/58] ✓ L2|8|Квадратные уравнения с модулем — +1 tasks
+2026-07-15 22:52:03,858 - __main__ - INFO - Checkpoint saved: 85 tasks so far
+2026-07-15 22:52:05,439 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:52:17,769 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:52:17,771 - __main__ - WARNING - [L2|10|Теория чисел. Китайская теорема об остатках] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:52:20,771 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:52:21,529 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:3: SyntaxWarning: invalid escape sequence '\s'
+<unknown>:5: SyntaxWarning: invalid escape sequence '\g'
+2026-07-15 22:52:21,532 - __main__ - INFO - [L2|8|Иррациональные уравнения] ✓ Generated 1/1 tasks
+2026-07-15 22:52:21,532 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:52:21,533 - __main__ - INFO - [46/58] ✓ L2|8|Иррациональные уравнения — +1 tasks
+2026-07-15 22:52:34,919 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:52:34,922 - __main__ - WARNING - [L2|9|Логика. Рыцари и лжецы] Attempt 2: JSON parse failed, retrying...
+2026-07-15 22:52:37,922 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:52:39,714 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:52:39,716 - __main__ - INFO - [L2|8|Геометрия: подобие и окружность] ✓ Generated 1/1 tasks
+2026-07-15 22:52:39,716 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:52:39,716 - __main__ - INFO - [47/58] ✓ L2|8|Геометрия: подобие и окружность — +1 tasks
+2026-07-15 22:52:42,692 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:52:42,693 - __main__ - INFO - [L2|8|Геометрия: подобие] ✓ Generated 1/1 tasks
+2026-07-15 22:52:42,694 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:52:42,694 - __main__ - INFO - [48/58] ✓ L2|8|Геометрия: подобие — +1 tasks
+2026-07-15 22:52:43,513 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:52:43,517 - __main__ - WARNING - [L2|10|Теория чисел. Китайская теорема об остатках] Attempt 3: JSON parse failed, retrying...
+2026-07-15 22:52:45,676 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:52:45,677 - __main__ - INFO - [L2|8|Теория чисел: остатки] ✓ Generated 1/1 tasks
+2026-07-15 22:52:45,677 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:52:45,678 - __main__ - INFO - [49/58] ✓ L2|8|Теория чисел: остатки — +1 tasks
+2026-07-15 22:52:46,518 - __main__ - ERROR - [L2|10|Теория чисел. Китайская теорема об остатках] All 3 attempts failed!
+2026-07-15 22:52:46,518 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:52:46,518 - __main__ - ERROR - [50/58] ✗ L2|10|Теория чисел. Китайская теорема об остатках — FAILED
+2026-07-15 22:52:46,523 - __main__ - INFO - Checkpoint saved: 89 tasks so far
+2026-07-15 22:52:53,496 - ai.deepseek_client - INFO - ✓ Request successful
+<unknown>:3: SyntaxWarning: invalid escape sequence '\c'
+<unknown>:4: SyntaxWarning: invalid escape sequence '\i'
+<unknown>:5: SyntaxWarning: invalid escape sequence '\p'
+2026-07-15 22:52:53,498 - __main__ - INFO - [L2|10|Показательные уравнения с параметром] ✓ Generated 1/1 tasks
+2026-07-15 22:52:53,498 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:52:53,499 - __main__ - INFO - [51/58] ✓ L2|10|Показательные уравнения с параметром — +1 tasks
+2026-07-15 22:52:58,375 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:52:58,376 - __main__ - INFO - [L2|10|Теория чисел. Системы сравнений] ✓ Generated 1/1 tasks
+2026-07-15 22:52:58,377 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:52:58,377 - __main__ - INFO - [52/58] ✓ L2|10|Теория чисел. Системы сравнений — +1 tasks
+2026-07-15 22:52:58,904 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:52:58,906 - __main__ - INFO - [L2|10|Теория чисел старшего уровня] ✓ Generated 1/1 tasks
+2026-07-15 22:52:58,906 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:52:58,906 - __main__ - INFO - [53/58] ✓ L2|10|Теория чисел старшего уровня — +1 tasks
+2026-07-15 22:53:02,338 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:53:02,340 - __main__ - INFO - [L2|9|Логика. Рыцари и лжецы] ✓ Generated 1/1 tasks
+2026-07-15 22:53:02,340 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:53:02,340 - __main__ - INFO - [54/58] ✓ L2|9|Логика. Рыцари и лжецы — +1 tasks
+2026-07-15 22:53:02,457 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:53:02,459 - __main__ - INFO - [L2|10|Теория чисел. Делимость чисел] ✓ Generated 1/1 tasks
+2026-07-15 22:53:02,459 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 22:53:02,459 - __main__ - INFO - [55/58] ✓ L2|10|Теория чисел. Делимость чисел — +1 tasks
+2026-07-15 22:53:02,466 - __main__ - INFO - Checkpoint saved: 94 tasks so far
+2026-07-15 22:53:03,092 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:53:03,094 - __main__ - INFO - [L2|11|Теория чисел и диофантовы задачи] ✓ Generated 1/1 tasks
+2026-07-15 22:53:03,094 - __main__ - INFO - [56/58] ✓ L2|11|Теория чисел и диофантовы задачи — +1 tasks
+2026-07-15 22:53:05,488 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:53:05,489 - __main__ - INFO - [L2|8|Теория чисел. Теория чисел и диофантовы задачи] ✓ Generated 1/1 tasks
+2026-07-15 22:53:05,489 - __main__ - INFO - [57/58] ✓ L2|8|Теория чисел. Теория чисел и диофантовы задачи — +1 tasks
+2026-07-15 22:53:07,391 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 22:53:07,393 - __main__ - INFO - [L2|11|Комбинаторика. Принцип включения-исключения] ✓ Generated 1/1 tasks
+2026-07-15 22:53:07,393 - __main__ - INFO - [58/58] ✓ L2|11|Комбинаторика. Принцип включения-исключения — +1 tasks
+2026-07-15 22:53:07,398 - __main__ - INFO - Checkpoint saved: 97 tasks so far
+2026-07-15 22:53:07,403 - __main__ - INFO - Checkpoint saved: 97 tasks so far
+2026-07-15 22:53:07,406 - __main__ - INFO - Saved 97 new tasks to adaptive_data/_new_fill_tasks.json
+2026-07-15 22:53:07,865 - __main__ - INFO - Merged: +88 new tasks, skipped 9 duplicates
+2026-07-15 22:53:08,144 - __main__ - INFO - Merged into adaptive_data/adaptive_full_9120_fixed.json — total 11599 tasks
+2026-07-15 22:53:08,144 - __main__ - INFO - 
+============================================================
+2026-07-15 22:53:08,144 - __main__ - INFO - Generation complete!
+2026-07-15 22:53:08,144 - __main__ - INFO -   Cells processed: 45
+2026-07-15 22:53:08,144 - __main__ - INFO -   New tasks generated: 97
+2026-07-15 22:53:08,144 - __main__ - INFO -   Cells STILL with holes: 13
+2026-07-15 22:53:08,144 - __main__ - INFO -   Remaining tasks needed: 48

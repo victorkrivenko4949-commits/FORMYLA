@@ -1,0 +1,83 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "cyclic"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "line_circle",
+   "id": "K",
+   "circle": "w1",
+   "line": "AC",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "D",
+   "through": "C"
+  },
+  {
+   "type": "line_circle",
+   "id": "L",
+   "circle": "w2",
+   "line": "BD",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "circle": "w",
+   "style": "dashed"
+  },
+  {
+   "segment": "AC",
+   "style": "dashed"
+  },
+  {
+   "segment": "BD",
+   "style": "dashed"
+  },
+  {
+   "segment": "KL",
+   "style": "accent"
+  },
+  {
+   "segment": "AD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AK",
+    "AB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "DL",
+    "DC"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

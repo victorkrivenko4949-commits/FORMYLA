@@ -1,0 +1,77 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "circle",
+   "id": "omegaA",
+   "center": "A",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "omegaB",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "omegaA",
+   "line": "AB",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "omegaB",
+   "line": "AB",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "omegaA",
+   "style": "soft"
+  },
+  {
+   "circle": "omegaB",
+   "style": "soft"
+  },
+  {
+   "segment": "DE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "AC",
+    "AE"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "BD"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,1962 @@
+# -*- coding: utf-8 -*-
+"""
+daily_tasks/routes.py — Flask endpoints для раздела «Задачи дня».
+
+Endpoints
+---------
+* ``GET    /daily_tasks``           — главная страница / данные сета
+* ``POST   /daily_tasks/<item_id>/submit`` — отправить ответ
+* ``GET    /daily_tasks/<item_id>/hint``    — получить подсказку
+* ``POST   /daily_tasks/regenerate``        — перегенерировать сегодняшний сет
+* ``GET    /daily_tasks/job_status``        — polling статуса генерации
+
+TZ Section 5 (document lines 479–571).
+"""
+
+from __future__ import annotations
+
+import logging
+from datetime import datetime, date, timedelta
+from calendar import monthrange
+from typing import Any, Dict, Optional
+
+from flask import jsonify, render_template, request, current_app
+from flask_login import current_user, login_required
+from models import db
+from models_curator import CuratorState
+from . import daily_tasks_bp
+from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob, TaskPool
+from . import services
+from .services import today_in_user_tz
+from .monthly_plan import get_or_build_plan, current_month_index, pick_day_subtopic, subtopic_title
+from utils.math_text_fixer import wrap_bare_math
+from services.streak_service import (
+    get_or_create_streak, check_streak_on_open, complete_day,
+    credit_streak_day,
+    take_day_off, set_is_fully_answered, compute_all_correct,
+)
+
+# 24h TTL для сета «Задач дня»: после истечения сет автоматически
+# помечается как expired при следующем GET /daily_tasks, и пользователю
+# показывается чистое empty-state с кнопкой «Сгенерировать».
+DAILY_SET_TTL = timedelta(hours=24)
+
+# Российские темы для поля «Тема дня» — ротация по дню и классу.
+_RU_THEMES = [
+    "Теория чисел",
+    "Геометрия",
+    "Алгебра",
+    "Комбинаторика",
+    "Логика и игры",
+]
+
+
+def _theme_for_day(target_date, class_level=None) -> str:
+    """Детерминированная тема дня: меняется ежедневно и зависит от класса."""
+    try:
+        doy = target_date.timetuple().tm_yday
+    except Exception:
+        doy = 0
+    cls = int(class_level) if class_level else 0
+    return _RU_THEMES[(doy + cls) % len(_RU_THEMES)]
+
+
+def _set_expires_at(daily_set: DailyTaskSet) -> datetime | None:
+    """Момент истечения 24h-окна сета (UTC). None — если ещё не готов."""
+    anchor = daily_set.generated_at
+    if anchor is None:
+        return None
+    return anchor + DAILY_SET_TTL
+
+
+def _is_expired(daily_set: DailyTaskSet) -> bool:
+    """True, если сет старше 24 часов и должен быть помечен expired."""
+    exp = _set_expires_at(daily_set)
+    if exp is None:
+        return False
+    return datetime.utcnow() >= exp
+
+# Единый сервис AI-проверки (общий с /api/check_adaptive_answer).
+# Опциональный импорт — файла может не быть на проде.
+try:
+    from services.ai_tutor_review import review_attempt, solve_task
+except ModuleNotFoundError:
+    review_attempt = None
+    solve_task = None
+
+# DeepSeek-клиент берём опционально — если AI недоступен, review_attempt
+# вернёт fallback с эталонным ответом из БД.
+try:  # pragma: no cover — best-effort import
+    from ai.deepseek_client import DeepSeekClient  # type: ignore
+    _DEEPSEEK_AVAILABLE = True
+except ImportError:
+    DeepSeekClient = None  # type: ignore[assignment]
+    _DEEPSEEK_AVAILABLE = False
+
+logger = logging.getLogger(__name__)
+
+
+def _save_solution_photos(user_id: int, images_b64: list) -> list:
+    """USERS_STATS_V2: сохраняет фото решений в хранилище и возвращает список URL.
+    Никогда не бросает — при любой ошибке возвращает то, что успело сохраниться."""
+    urls = []
+    if not images_b64:
+        return urls
+    try:
+        import base64
+        from services.storage import upload_photo, StorageError
+        for b in images_b64[:3]:
+            try:
+                photo_bytes = base64.b64decode(b)
+                url, _ = upload_photo(photo_bytes, user_id, 'image/jpeg')
+                if url:
+                    urls.append(url)
+            except Exception as e:
+                logger.warning('_save_solution_photos: image failed: %s', e)
+    except Exception as e:
+        logger.warning('_save_solution_photos: storage unavailable: %s', e)
+    return urls
+
+
+def _submit_bank_answer(task_id: int, issue):
+    """AI-проверка и сохранение ответа на задачу из банка (DailyTaskBank).
+
+    2026-09-14: раньше ответы на банковские задачи не сохранялись —
+    после перезахода на страницу задачу можно было ответить заново.
+    Сохраняем в BankIssue (user_answer/is_correct/answered_at).
+    """
+    from models import DailyTaskBank
+    task = db.session.get(DailyTaskBank, task_id)
+    if not task:
+        return jsonify({"status": "error", "message": "Задача не найдена"}), 404
+
+    if issue.user_answer is not None:
+        # Уже отвечено — отдаём ранее сохранённые ответ и разбор, чтобы
+        # фронт показал то же самое, что после ответа (а не пустую форму).
+        from services.md_render import md_render as _mdr
+        from utils.math_text_fixer import wrap_bare_math as _wbm
+        return jsonify({
+            "status": "already_answered",
+            "message": "На эту задачу уже отвечено.",
+            "already_answered": True,
+            "is_correct": bool(issue.is_correct),
+            "user_answer": issue.user_answer or "",
+            "correct_answer": task.answer or "",
+            # LATEX_FIX_V2: сырой текст решения (без md_render) — фронт
+            # экранирует HTML и рендерит LaTeX через KaTeX. Раньше отдавали
+            # готовый HTML, который экранировался фронтом и показывался
+            # как видимый текст <p>/<br>.
+            "solution": _wbm(task.solution or ""),
+        }), 409
+
+    data = request.get_json(silent=True) or {}
+    user_answer = (data.get("user_answer") or data.get("answer") or "").strip()
+    user_solution = (data.get("user_solution") or "").strip()
+    if not user_answer:
+        return jsonify({"status": "error", "message": "Не указан ответ"}), 400
+
+    raw_images = []
+    single = data.get("solution_image_b64", "") or ""
+    if single:
+        raw_images.append(single)
+    multi = data.get("solution_images_b64") or []
+    if isinstance(multi, list):
+        for it in multi:
+            if isinstance(it, str) and it.strip():
+                raw_images.append(it)
+    images_b64 = [
+        (b.split(",", 1)[-1] if b.startswith("data:") else b)
+        for b in raw_images if b
+    ]
+
+    if not user_solution and not images_b64:
+        return jsonify({
+            "status": "error",
+            "error": "Опиши решение или прикрепи фото.",
+        }), 400
+
+    # ── AI-проверка (тот же pipeline) ───────────────────────────────
+    is_correct = False
+    feedback = ""
+    score = None
+    try:
+        from services.solution_check_pipeline import check_solution
+        import concurrent.futures as _cf
+        with _cf.ThreadPoolExecutor(max_workers=1) as _executor:
+            _future = _executor.submit(
+                check_solution,
+                entity_type="daily_task",
+                task_text=task.statement or "",
+                correct_answer=task.answer or "",
+                solution_ref=task.solution or "",
+                user_answer=user_answer,
+                user_solution=user_solution,
+                images_b64=images_b64,
+                difficulty_level=task.level or 1,
+            )
+            try:
+                _verdict = _future.result(timeout=60)
+            except _cf.TimeoutError:
+                _verdict = None
+        if _verdict:
+            is_correct = bool(_verdict.get("is_correct"))
+            feedback = _verdict.get("feedback") or ""
+            score = _verdict.get("score")
+    except Exception as e:
+        logger.exception("_submit_bank_answer: pipeline failed: %s", e)
+
+    # 2026-09-15: фото не распозналось — не пишем «неверно», просим
+    # переслать. Ответ не сохраняем, чтобы можно было попробовать ещё раз.
+    if _verdict and _verdict.get("ocr_failed"):
+        return jsonify({
+            "status": "error",
+            "ocr_failed": True,
+            "message": _verdict.get("feedback") or (
+                "Не удалось разобрать, что написано на фото. "
+                "Сфотографируй решение чётче или опиши шаги текстом."
+            ),
+        }), 422
+
+    if not feedback:
+        # Fallback без AI: умное сравнение ответа с эталоном
+        # (0,5↔0.5, «x=5»↔«5», пробелы, регистр — как в банке неточностей).
+        try:
+            from utils.math_answer_utils import compare_math_answers
+            is_correct = bool(compare_math_answers(
+                user_answer, task.answer or ""
+            ))
+        except Exception:
+            is_correct = False
+        feedback = "Молодец, верно!" if is_correct else "Неверно. Посмотри решение ниже."
+
+    # ── Сохраняем в BankIssue ────────────────────────────────────────
+    # ОДНА транзакция: ответ и +5 XP коммитятся вместе. Раньше было два
+    # commit подряд — если между ними что-то падало, ответ сохранялся,
+    # а XP терялся молча (баг 15.09: верный ответ без +5 в лидерборде).
+    from datetime import datetime as _dt
+    try:
+        issue.user_answer = user_answer[:4000]
+        issue.is_correct = is_correct
+        issue.answered_at = _dt.utcnow()
+        issue.ai_feedback = (feedback or "")[:8000]
+        # USERS_STATS_V2: сохраняем фото решений, чтобы админ видел их
+        if images_b64:
+            _photo_urls = _save_solution_photos(current_user.id, images_b64)
+            if _photo_urls:
+                import json as _json_ph
+                issue.solution_photos_json = _json_ph.dumps(_photo_urls)
+        try:
+            issue.time_spent_seconds = int(data.get("time_spent_seconds") or 0)
+        except (TypeError, ValueError):
+            issue.time_spent_seconds = 0
+
+        if is_correct and not issue.xp_awarded:
+            from models import User as _User
+            _u = db.session.get(_User, current_user.id)
+            if _u is not None:
+                _u.experience_points = (_u.experience_points or 0) + 5
+                _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+                issue.xp_awarded = True
+            else:
+                logger.error(
+                    "_submit_bank_answer: user %s not found — XP не начислен",
+                    current_user.id,
+                )
+        db.session.commit()
+        _saved_ok = True
+    except Exception as e:  # pragma: no cover
+        db.session.rollback()
+        _saved_ok = False
+        # ГРОМКИЙ лог: потеря XP критична — должна сразу падать в мониторинг.
+        logger.exception(
+            "_submit_bank_answer: db commit failed — ответ и/или XP ПОТЕРЯНЫ task=%d user=%s: %s",
+            task_id, getattr(current_user, "id", None), e,
+        )
+
+    # STREAK_V2: верный ответ на задачу из банка тоже засчитывает день —
+    # только если ответ реально сохранён (не после rollback).
+    try:
+        if _saved_ok and is_correct:
+            credit_streak_day(current_user.id, today_in_user_tz(), source="task")
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
+        logger.exception("streak credit failed (bank answer)")
+
+    # LATEX_FIX_V2: сырой текст решения (без md_render) — фронт экранирует
+    # и рендерит LaTeX через KaTeX сам, как для сгенерированных задач.
+    return jsonify({
+        "status": "success",
+        "score": score,
+        "feedback": feedback,
+        "is_correct": is_correct,
+        "correct_answer": task.answer or "",
+        "user_answer": issue.user_answer or "",
+        "solution": wrap_bare_math(task.solution or ""),
+    })
+
+
+def _bank_progress(user_id: int, bank_items) -> dict:
+    """Прогресс по банковским задачам дня: сколько уже отвечено."""
+    from models import BankIssue
+    total = len(bank_items)
+    if not total:
+        return {"completed": 0, "total": 0}
+    task_ids = [t.id for t in bank_items]
+    completed = BankIssue.query.filter(
+        BankIssue.user_id == user_id,
+        BankIssue.task_id.in_(task_ids),
+        BankIssue.user_answer.isnot(None),
+    ).count()
+    return {"completed": completed, "total": total}
+
+
+def _serialize_bank_items(user_id: int, bank_items) -> list:
+    """Сериализует задачи банка для шаблона, подтягивая ответы ученика
+    из bank_issues (2026-09-14: раньше всегда отдавали user_answer=None)."""
+    from models import BankIssue
+    task_ids = [t.id for t in bank_items]
+    issues = {}
+    if task_ids:
+        rows = BankIssue.query.filter(
+            BankIssue.user_id == user_id,
+            BankIssue.task_id.in_(task_ids),
+        ).all()
+        issues = {r.task_id: r for r in rows}
+    out = []
+    for i, t in enumerate(bank_items):
+        iss = issues.get(t.id)
+        out.append({
+            "id": t.id,
+            "position": getattr(t, "position", None) or (i + 1),
+            "task_text": wrap_bare_math(t.statement or ""),
+            "text": wrap_bare_math(t.statement or ""),
+            "correct_answer": t.answer or "",
+            "solution": wrap_bare_math(t.solution or ""),
+            "subtopic": t.subtopic or "",
+            "topic": t.section or "",
+            "difficulty": t.level or 1,
+            "difficulty_level": t.level or 1,
+            "user_answer": (iss.user_answer if iss else None),
+            "is_correct": (iss.is_correct if iss else None),
+            "is_answered": bool(iss and iss.user_answer),
+            # 2026-09-15: ИИ-разбор сохраняем в БД — не теряем после выхода.
+            "ai_feedback": (iss.ai_feedback if iss else None),
+            "answered_at": (iss.answered_at.isoformat() if iss and iss.answered_at else None),
+            "is_flagged": False,
+            "is_calibration": False,
+            "figure_url": None,
+        })
+    return out
+
+
+# ──────────────────────────────────────────────────────────────────────
+# GET /daily_tasks
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/", methods=["GET"])
+@login_required
+def get_daily_tasks():
+    """Получить сегодняшний набор задач или статус генерации.
+
+    * Нет сета -> 404 ``{"status": "no_set", "message": "..."}`` (JSON)
+                 или рендер шаблона с теми же данными (HTML)
+    * Генерация -> 202 ``{"status": "generating", "progress_pct": ..., ...}``
+    * Готов / частично -> 200 с полным набором задач
+    """
+    if not current_user.has_access():
+        return render_template('trial_expired.html'), 402
+    user_id = current_user.id
+    today = today_in_user_tz()
+
+    # ── LIMITS_V1: мягкие лимиты Free (3 задачи / 1 ИИ-разбор в день, МСК) ──
+    # Лимит действует только при resolve_access=free И apply_limits=True;
+    # PAYWALL_MODE=off выключает немедленно. Списание — атомарный try_consume.
+    # Повторное открытие того же набора и задачи из долга лимит НЕ расходуют.
+    from services import limits as _limits_svc
+    _lctx = _limits_svc.daily_context(current_user)
+
+    def _render_limit_reached():
+        """HTML-отказ: partial, текущая задача не теряется, редиректа нет."""
+        from services.ab import log_limit_shown
+        try:
+            log_limit_shown(current_user)
+        except Exception:
+            pass
+        data = {
+            "status": "limit_reached",
+            "daily_set_id": None,
+            "target_date": today.isoformat(),
+            "message": (
+                "Бесплатный план: 3 задачи и 1 ИИ-разбор в день. "
+                "Доступ восстановится в 00:00 по Москве."
+            ),
+            "class_level": None,
+            "summary": None,
+            "generated_at": None,
+            "total_cost_usd": None,
+            "progress": {"completed": 0, "total": 0},
+            "items": [],
+            "limit_reached": True,
+            "limit_ctx": _lctx,
+        }
+        return render_template(
+            "daily_tasks/daily_tasks_dashboard.html",
+            data={**data, "theme_today": _theme_for_day(today, None)},
+        ), 402
+
+    def _limit_cap_for_new_set():
+        """Атомарно резервировать задачи нового набора. Возвращает:
+        None — лимит не активен / набор уже есть (без списания);
+        int>=0 — сколько задач можно выдать (списано); -1 — лимит исчерпан."""
+        if not _lctx.get("active"):
+            return None
+        from models import BankIssue
+        from daily_tasks.models import DailyTaskSet as _DTS
+        already = (
+            _DTS.query.filter_by(user_id=user_id, target_date=today).first() is not None
+            or BankIssue.query.filter_by(user_id=user_id, issued_date=today).first() is not None
+        )
+        if already:
+            return None  # повторное открытие не списывает
+        if _lctx["tasks_remaining"] <= 0:
+            return -1
+        cap = _lctx["tasks_remaining"]
+        if not _limits_svc.try_consume(user_id, "free_tasks", _lctx["tasks_limit"], n=cap):
+            # конкурентный запрос списал одновременно: возможно, набор уже создан
+            if (_DTS.query.filter_by(user_id=user_id, target_date=today).first() is not None
+                    or BankIssue.query.filter_by(user_id=user_id, issued_date=today).first() is not None):
+                return None
+            return -1
+        return cap
+
+    def _refund_unused(cap, issued):
+        """Выдали меньше резерва — вернуть разницу (день не теряем)."""
+        if cap and issued is not None and issued < cap:
+            try:
+                _limits_svc.refund(user_id, "free_tasks", cap - issued)
+            except Exception:
+                pass
+
+    # ── T8 streak: check on open ────────────────────────────────────
+    streak = check_streak_on_open(user_id, today)
+
+    # ── Lazy-init цикла: если анкета пройдена, но месячного цикла ещё нет ──
+    # (например, пользователь прошёл анкету до деплоя этих фиксов), создаём
+    # цикл здесь, чтобы /daily_tasks показал «Сначала пройди утренний срез»,
+    # а не «Задач пока нет».
+    try:
+        from curator.monthly_cycle import get_cycle_info, build_or_get_cycle
+        _cycle_probe = get_cycle_info(user_id)
+        if not _cycle_probe.get('active'):
+            from models_curator import CuratorState
+            _cs = CuratorState.query.filter_by(user_id=user_id).first()
+            _intake_done = False
+            _grade = None
+            if _cs is not None:
+                import json as _json_li
+                _raw = getattr(_cs, 'prep_state', None)
+                _ps = None
+                if isinstance(_raw, dict):
+                    _ps = _raw
+                elif isinstance(_raw, str):
+                    try:
+                        _ps = _json_li.loads(_raw)
+                    except Exception:
+                        _ps = None
+                if isinstance(_ps, dict):
+                    _intake_done = bool((_ps.get('intake') or {}).get('completed'))
+                _grade = getattr(_cs, 'grade', None)
+            if _intake_done:
+                if _grade is None:
+                    from models import User
+                    _u = User.query.get(user_id)
+                    _grade = getattr(_u, 'preferred_grade', None) or getattr(_u, 'class_level', None) if _u else None
+                if _grade:
+                    try:
+                        build_or_get_cycle(user_id, int(_grade))
+                    except Exception:
+                        pass
+    except Exception:
+        pass
+
+    # ── Цикл месяца: реальная тема дня + блокировка срезом ──────────
+    cycle_info = {}
+    blocked = False
+    blocked_theme_title = None
+    try:
+        from curator.monthly_cycle import get_cycle_info
+        cycle_info = get_cycle_info(user_id)
+        if cycle_info.get('active') and cycle_info.get('blocked') and not cycle_info.get('finished'):
+            blocked = True
+            _ct = cycle_info.get('current_theme', '')
+            from daily_tasks.monthly_plan import subtopic_title as _stt
+            blocked_theme_title = _stt(_ct) if _ct else 'тема дня'
+    except Exception:
+        pass
+
+    # ── Реальная тема дня из цикла (fallback на ротацию) ────────────
+    real_theme_title = None
+    if cycle_info.get('current_theme'):
+        try:
+            from daily_tasks.monthly_plan import subtopic_title as _stt2
+            real_theme_title = _stt2(cycle_info['current_theme'])
+        except Exception:
+            pass
+    if not real_theme_title:
+        real_theme_title = _theme_for_day(today, None)
+
+    # ── BLOCKED: если в первую неделю срез не пройден — блокируем
+    # выдачу задач дня ДО обращения к банку (иначе банк вернёт
+    # plan_missing/empty и пользователь не увидит требование среза). ──
+    if blocked:
+        data = {
+            "status": "blocked",
+            "daily_set_id": None,
+            "target_date": today.isoformat(),
+            "message": (
+                f"До получения задач дня нужно пройти тест: "
+                f"«{blocked_theme_title}». 5 задач, примерно 15 минут."
+            ),
+            "class_level": None,
+            "summary": None,
+            "generated_at": None,
+            "total_cost_usd": None,
+            "progress": {"completed": 0, "total": 0},
+            "items": [],
+            "blocked": True,
+            "blocked_theme": cycle_info.get('current_theme'),
+            "blocked_theme_title": blocked_theme_title,
+            "probe_url": "/prep/probe",
+        }
+        return render_template(
+            "daily_tasks/daily_tasks_dashboard.html",
+            data={**data, "theme_today": real_theme_title},
+        )
+
+    # ── BANK: задачи дня выдаются из предзаполненного банка ─────────
+    # build_daily_set сам пишет выданное в bank_issues и идемпотентен
+    # по (user_id, issued_date). Флаги plan_missing/bank_exhausted/
+    # bank_empty дают код 200 с русским текстом.
+    # ── BANK: предзаполненный daily_task_bank (заливает человек). ──────
+    # Если банк пуст (bank_empty) или план месяца не задан в
+    # UserSubtopicAssignment (plan_missing), НЕ показываем empty-state:
+    # проваливаемся ниже к pick_daily_set — ротации по monthly_cycle +
+    # FORMYLA_BANK.jsonl, которая умеет выдать задачи дня.
+    try:
+        from services.bank_daily import build_daily_set as _build_bank_set
+        # LIMITS_V1: для нового набора — атомарный резерв, затем кап
+        _cap = _limit_cap_for_new_set()
+        if _cap == -1:
+            return _render_limit_reached()
+        _bank = _build_bank_set(user_id, today, max_items=_cap)
+        if _cap is not None:
+            _refund_unused(_cap, len(_bank.get("items") or []))
+        if _bank.get("bank_empty"):
+            logger.info(
+                "daily_tasks: bank_empty для user=%d — fallback на pick_daily_set",
+                user_id,
+            )
+        elif _bank.get("plan_missing"):
+            logger.info(
+                "daily_tasks: plan_missing для user=%d — fallback на pick_daily_set",
+                user_id,
+            )
+        else:
+            if _bank.get("bank_exhausted"):
+                logger.warning(
+                    "daily_tasks: bank_exhausted для user=%d date=%s, выдано %d задач",
+                    user_id, today, len(_bank.get("items", [])),
+                )
+            _bank_items = _bank.get("items", [])
+            if _bank_items:
+                _bank_data = {
+                    "status": "ready" if _bank_items else "partial",
+                    "daily_set_id": None,
+                    "target_date": today.isoformat(),
+                    "class_level": None,
+                    "summary": None,
+                    "generated_at": None,
+                    "total_cost_usd": None,
+                    "bank_exhausted": bool(_bank.get("bank_exhausted")),
+                    "progress": _bank_progress(user_id, _bank_items),
+                    "items": _serialize_bank_items(user_id, _bank_items),
+                }
+                return render_template(
+                    "daily_tasks/daily_tasks_dashboard.html",
+                    data={**_bank_data, "theme_today": real_theme_title},
+                )
+    except Exception as _bank_err:
+        logger.exception("daily_tasks: build_daily_set failed for user=%d: %s", user_id, _bank_err)
+
+    # ── всегда отдаём HTML (страница, а не API) ──────────────────────
+    # Браузеры шлют Accept: */*, что совпадает с application/json,
+    # поэтому accept_json ложно срабатывает. Фикс: всегда HTML.
+    wants_html = True
+
+    daily_set: DailyTaskSet | None = DailyTaskSet.query.filter_by(
+        user_id=user_id,
+        target_date=today,
+    ).first()
+
+    # ── P4 DEBT: при первом заходе ученика обновляем долг ────────────────
+    try:
+        from services.daily_debt import refresh_debt_for_user
+        refresh_debt_for_user(user_id)
+    except Exception as _debt_err:
+        logger.warning("daily_debt refresh failed for user=%d: %s", user_id, _debt_err)
+
+    # ── 24h-TTL: если сет старше 24 часов от generated_at — помечаем
+    # expired «лениво» прямо в этом запросе.
+    # P4: ПЕРЕД expire мигрируем нерешённые задачи в долг.
+    if (
+        daily_set
+        and daily_set.status not in ("expired", "generating")
+        and _is_expired(daily_set)
+    ):
+        # Мигрируем нерешённое этого сета в долг перед expire
+        try:
+            from services.daily_debt import migrate_to_debt
+            migrate_to_debt(user_id, daily_set.target_date + __import__('datetime').timedelta(days=1))
+        except Exception:
+            pass
+        try:
+            daily_set.status = "expired"
+            db.session.commit()
+            logger.info(
+                "DailyTaskSet #%s expired (>24h since generated_at=%s)",
+                daily_set.id, daily_set.generated_at,
+            )
+        except Exception:  # pragma: no cover
+            db.session.rollback()
+        daily_set = None
+
+    # ── BLOCKED: morning probe not done ─────────────────────────────────
+    # Проверяем monthly cycle: если probe ещё не пройден — блокируем задачи дня
+    blocked = False
+    blocked_theme = None
+    blocked_theme_title = None
+    try:
+        from curator.monthly_cycle import get_cycle_info
+        cycle = get_cycle_info(user_id)
+        if cycle.get('active') and cycle.get('blocked') and not cycle.get('finished'):
+            blocked = True
+            blocked_theme = cycle.get('current_theme', '')
+            from daily_tasks.monthly_plan import subtopic_title
+            blocked_theme_title = subtopic_title(blocked_theme) if blocked_theme else 'тема дня'
+    except Exception:
+        pass
+
+    if blocked:
+        data = {
+            "status": "blocked",
+            "daily_set_id": None,
+            "target_date": today.isoformat(),
+            "message": (
+                f"Сначала тест: «{blocked_theme_title}». "
+                f"5 задач, примерно 15 минут."
+            ),
+            "class_level": None,
+            "summary": None,
+            "generated_at": None,
+            "total_cost_usd": None,
+            "progress": {"completed": 0, "total": 0},
+            "items": [],
+            "blocked": True,
+            "blocked_theme": blocked_theme,
+            "blocked_theme_title": blocked_theme_title,
+            "probe_url": "/prep/probe",
+        }
+        if wants_html:
+            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
+        return jsonify({
+            "status": "blocked",
+            "message": data["message"],
+            "probe_url": "/prep/probe",
+        }), 200
+
+    # ── нет сета (или только что протух) ─────────────────────────────
+    if not daily_set:
+        # Попытка создать набор через pick_daily_set
+        # (анкета + level_engine). Если нет данных — классический empty-state.
+        # LIMITS_V1: атомарный резерв для нового набора + кап числа задач
+        _cap = _limit_cap_for_new_set()
+        if _cap == -1:
+            return _render_limit_reached()
+        try:
+            from services.daily_task_rotation import pick_daily_set
+            pick_daily_set(user_id, force_regenerate=False, max_tasks=_cap)
+            # Перезапрашиваем только что созданный сет
+            daily_set = DailyTaskSet.query.filter_by(
+                user_id=user_id, target_date=today,
+            ).first()
+            if daily_set and daily_set.status in ("ready", "partial"):
+                logger.info(
+                    "DailyTaskSet auto-created via pick_daily_set for user=%d", user_id,
+                )
+                if _cap is not None:
+                    _n_items = (DailyTaskItem.query
+                                .filter_by(daily_set_id=daily_set.id).count())
+                    _refund_unused(_cap, _n_items)
+        except Exception as _pds_err:
+            logger.warning(
+                "pick_daily_set fallback failed for user=%d: %s", user_id, _pds_err,
+            )
+
+    if not daily_set:
+        data = {
+            "status": "no_set",
+            "daily_set_id": None,
+            "target_date": today.isoformat(),
+            "message": (
+                "Пройди адаптивный тест, чтобы получить персональные задачи на день. "
+                "Или нажми «Сгенерировать» вручную."
+            ),
+            "class_level": None,
+            "summary": None,
+            "generated_at": None,
+            "total_cost_usd": None,
+            "progress": {"completed": 0, "total": 0},
+            "items": [],
+        }
+        if wants_html:
+            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
+        return jsonify({
+            "status": "no_set",
+            "message": data["message"],
+        }), 404
+
+    # ── генерация в процессе ─────────────────────────────────────────
+    if daily_set.status == "generating":
+        job = DailyGenerationJob.query.filter_by(
+            user_id=user_id,
+            target_date=today,
+        ).first()
+
+        # FIX: сет застрял в 'generating', но активного джоба нет.
+        # Бывает после рестарта gunicorn: поток умер, сет остался generating,
+        # фронт делает job_status -> 404 -> location.reload() = бесконечный
+        # рефреш. Размораживаем сет в failed и СРАЗУ проваливаемся в ветку
+        # failed/ready ниже (не отдаём status=generating, иначе фронт снова
+        # пойдёт в polling -> 404 -> reload).
+        if job is None:
+            try:
+                daily_set.status = "failed"
+                daily_set.reason_summary = (
+                    "[ERROR] Генерация прервана - попробуйте ещё раз"
+                )
+                daily_set.generated_at = datetime.utcnow()
+                db.session.commit()
+                logger.warning(
+                    "daily_tasks: un-stuck generating set #%s (no job) -> failed",
+                    daily_set.id,
+                )
+            except Exception as _unstuck_err:
+                db.session.rollback()
+                logger.warning("daily_tasks: un-stuck failed: %s", _unstuck_err)
+        if job is not None:
+            # считаем примерное ETA (если знаем, когда начали)
+            eta_seconds = None
+            elapsed_seconds = None
+            started_at_iso = None
+            if job and job.started_at:
+                elapsed = (datetime.utcnow() - job.started_at).total_seconds()
+                eta_seconds = max(0, int(90 - elapsed))  # ~90 секунд в среднем
+                elapsed_seconds = max(0, int(elapsed))
+                # started_at в БД хранится как datetime.utcnow() (naive UTC).
+                # Отдаём ISO-строку с явным суффиксом 'Z', чтобы JS
+                # Date.parse(...) корректно интерпретировал её как UTC.
+                started_at_iso = job.started_at.isoformat() + "Z"
+
+            data = {
+                "status": "generating",
+                "daily_set_id": daily_set.id,
+                "target_date": today.isoformat(),
+                "progress_pct": job.progress_pct if job else 0,
+                "current_step": job.current_step if job else None,
+                "eta_seconds": eta_seconds,
+                # Fix «прошло X:XX» сбрасывается при F5: отдаём серверное
+                # время старта (UTC, ISO с 'Z') + уже посчитанное elapsed,
+                # чтобы JS-таймер мог восстановиться с правильной отметки.
+                "started_at": started_at_iso,
+                "elapsed_seconds": elapsed_seconds,
+                "class_level": None,
+                "summary": None,
+                "generated_at": None,
+                "total_cost_usd": None,
+                "progress": {"completed": 0, "total": 0},
+                "items": [],
+            }
+            if wants_html:
+                return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
+            return jsonify({
+                "status": "generating",
+                "daily_set_id": daily_set.id,
+                "progress_pct": job.progress_pct if job else 0,
+                "current_step": job.current_step if job else None,
+                "eta_seconds": eta_seconds,
+                "started_at": started_at_iso,
+                "elapsed_seconds": elapsed_seconds,
+            }), 202
+
+    # ── failed / ready / partial ─────────────────────────────────────
+    # пользуемся сервисной функцией, которая уже умеет сериализовать
+    svc_data = services.get_daily_tasks(user_id)
+
+    # добавляем вычисляемое поле progress
+    items = svc_data.get("items", [])
+    completed = sum(
+        1 for it in items if it.get("user_answer") is not None
+    )
+
+    # Для failed-сета подтягиваем error_message из джоба — фронт покажет его
+    # в understandable виде, плюс кнопку «Попробовать снова».
+    error_message = None
+    if svc_data.get("status") == "failed":
+        job = DailyGenerationJob.query.filter_by(
+            user_id=user_id, target_date=today,
+        ).first()
+        if job and job.error_message:
+            error_message = job.error_message
+
+    # ── Completeness-баннер: считаем сколько задач калибровочные ─────
+    # (для UI достаточно: число калибровочных / общее число задач).
+    calibration_items_count = sum(
+        1 for it in items if it.get("is_calibration")
+    )
+    has_calibration = calibration_items_count > 0
+
+    expires_at_dt = _set_expires_at(daily_set)
+    data = {
+        "date": today.isoformat(),
+        "status": svc_data["status"],
+        "daily_set_id": svc_data["daily_set_id"],
+        "target_date": svc_data.get("target_date"),
+        "class_level": daily_set.class_level,
+        "summary": svc_data.get("reason_summary"),
+        "generated_at": svc_data.get("generated_at"),
+        # 24h-окно: ISO-строка момента, когда задачи протухнут.
+        # Фронт использует это значение для обратного отсчёта вверху страницы.
+        "expires_at": expires_at_dt.isoformat() + "Z" if expires_at_dt else None,
+        "ttl_seconds": int(DAILY_SET_TTL.total_seconds()),
+        "total_cost_usd": svc_data.get("total_cost_usd"),
+        "error_message": error_message,
+        "progress": {
+            "completed": completed,
+            "total": len(items),
+        },
+        "items": items,
+        # PR percent_to_level + calibration
+        "calibration_items_count": calibration_items_count,
+        "has_calibration": has_calibration,
+        # подсказка на которой страницу идти за тестами (для баннера)
+        "adaptive_tests_url": "/adaptive_test_simple",
+    }
+
+    # ── P4 DEBT: добавляем долг в data ──────────────────────────────────
+    try:
+        from services.daily_debt import get_debt_items, get_debt_count
+        debt_items = get_debt_items(user_id)
+        if debt_items:
+            # Группируем по дате выдачи
+            from collections import defaultdict
+            by_date: dict = defaultdict(list)
+            for di in debt_items:
+                by_date[di['issued_date'] or '?'].append(di)
+            debt_summary = {
+                'total': len(debt_items),
+                'by_date': [
+                    {'date': d, 'count': len(tasks), 'tasks': tasks}
+                    for d, tasks in sorted(by_date.items(), reverse=True)
+                ],
+            }
+            data['debt'] = debt_summary
+        # debt=None означает «долга нет» — шаблон его не отрисует
+    except Exception as _debt_err:
+        logger.warning("get_debt_items failed: %s", _debt_err)
+
+    # ──   Monthly plan (prep_plan from CuratorState) ────────────
+    plan_data = _build_monthly_plan_data(user_id, today)
+    if plan_data:
+        data["plan_data"] = plan_data
+
+    # ── T8 streak data for template ──────────────────────────────────
+    streak_rec = get_or_create_streak(user_id)
+    data["streak"] = {
+        "current_streak": streak_rec.current_streak or 0,
+        "max_streak": streak_rec.max_streak or 0,
+        "days_off_available": streak_rec.days_off_available or 0,
+    }
+
+    if wants_html:
+        return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": real_theme_title})
+    return jsonify(data), 200
+
+
+def _build_monthly_plan_data(user_id: int, today: date) -> Optional[Dict[str, Any]]:
+    """Построить plan_data для календаря подтем из CuratorState.prep_plan.
+
+    Возвращает dict с ключами:
+        current_month (int) — 1-based номер текущего месяца
+        today_subtopic (str) — русское название подтемы дня
+        today_subtopic_slug (str) — slug подтемы дня
+        months (list) — список месяцев с подтемами
+        anchor_date (str) — дата якоря
+        grade (int) — класс
+    или None, если у пользователя нет curator_state или плана.
+    """
+    from models_curator import CuratorState as _CS
+    try:
+        cs: Optional[_CS] = _CS.query.filter_by(user_id=user_id).first()
+        if not cs or not cs.grade:
+            return None
+        grade = cs.grade
+        plan = get_or_build_plan(cs, grade, today)
+        if not plan or not plan.get("months"):
+            return None
+
+        current_month = current_month_index(plan, today)
+        today_subtopic_slug = pick_day_subtopic(plan, today)
+        today_subtopic_title = subtopic_title(today_subtopic_slug) if today_subtopic_slug else None
+
+        months_data = []
+        for m in plan.get("months", []):
+            subs = []
+            for slug in m.get("subtopics", []):
+                subs.append({
+                    "slug": str(slug),
+                    "title": subtopic_title(str(slug)),
+                })
+            months_data.append({
+                "index": m["index"],
+                "subtopics": subs,
+            })
+
+        return {
+            "current_month": current_month,
+            "today_subtopic": today_subtopic_title,
+            "today_subtopic_slug": today_subtopic_slug,
+            "months": months_data,
+            "anchor_date": plan.get("anchor_date"),
+            "grade": grade,
+        }
+    except Exception as exc:
+        logger.warning("[monthly_plan] _build_monthly_plan_data failed: %s", exc, exc_info=True)
+        return None
+
+
+# ──────────────────────────────────────────────────────────────────────
+# POST /daily_tasks/<item_id>/submit
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/<int:item_id>/submit", methods=["POST"])
+@login_required
+def submit_answer(item_id: int):
+    """Отправить ответ на задачу.
+
+    Request JSON:
+        ``{"answer": "...", "solution_method": "text"|"photo",
+          "solution_text": "...", "time_spent_seconds": 320}``
+    Or multipart form with ``solution_photo`` file.
+
+    D1: решение необязательно. Если решение прислано (текст или файл) -
+    сохраняется в solution_attempts с attempt_type='daily'.
+    """
+    # ── загружаем задачу ─────────────────────────────────────────────
+    item: DailyTaskItem | None = DailyTaskItem.query.get(item_id)
+    if not item:
+        return jsonify({"success": False, "message": "Задача не найдена"}), 404
+
+    # ── проверяем принадлежность current_user ───────────────────────
+    daily_set = DailyTaskSet.query.get(item.daily_set_id)
+    if not daily_set or daily_set.user_id != current_user.id:
+        return jsonify({"success": False, "message": "Задача не принадлежит текущему пользователю"}), 403
+
+    # ── проверяем, что задача ещё не отвечена ───────────────────────
+    if item.user_answer is not None:
+        return jsonify({
+            "success": False,
+            "message": "Ответ на эту задачу уже был отправлен",
+            "is_correct": item.is_correct,
+            "correct_answer": item.correct_answer,
+            "solution": item.solution,
+        }), 409
+
+    # ── парсим тело запроса (JSON или multipart) ────────────────────
+    data: Dict[str, Any] = request.get_json(silent=True) or {}
+    if request.form:
+        data = {**data, **request.form.to_dict()}
+    answer: str = data.get("answer", "")
+    time_spent: int | None = data.get("time_spent_seconds")
+    solution_method: str = (data.get("solution_method") or "").strip().lower()
+    solution_text: str = (data.get("solution_text") or "").strip()
+
+    if not answer:
+        return jsonify({"success": False, "message": "Поле 'answer' обязательно"}), 400
+
+    # ── сохраняем ответ через сервис ────────────────────────────────
+    result = services.submit_answer(
+        item_id=item_id,
+        answer=answer,
+        time_spent=time_spent,
+    )
+
+    if not result.get("success"):
+        return jsonify(result), 400
+
+    # ── D1: сохраняем SolutionAttempt если решение прислано ─────────
+    file_path_rel = None
+    file_size = None
+    if solution_method == 'photo' and 'solution_photo' in request.files:
+        photo_file = request.files['solution_photo']
+        if photo_file and photo_file.filename:
+            photo_bytes = photo_file.read()
+            content_type = photo_file.content_type or 'application/octet-stream'
+
+            from services.photo_upload import prepare_photo, PhotoError
+            try:
+                photo_bytes, content_type = prepare_photo(
+                    photo_bytes, content_type, photo_file.filename or '',
+                )
+            except PhotoError as pe:
+                return jsonify(error=pe.message), pe.status
+
+            from services.storage import upload_photo, StorageError
+            try:
+                file_path_rel, _ = upload_photo(photo_bytes, current_user.id, content_type)
+            except StorageError as se:
+                return jsonify(error=str(se)), 500
+            file_size = len(photo_bytes)
+
+    # D1: запись в solution_attempts только если решение присутствует
+    if solution_method in ('text', 'photo'):
+        has_solution = (solution_method == 'text' and len(solution_text) > 0) or \
+                       (solution_method == 'photo' and file_path_rel is not None)
+        if has_solution:
+            try:
+                from models import SolutionAttempt
+                # DailyTaskItem has no FK to adaptive_tasks, use item.id as task_id
+                attempt = SolutionAttempt(
+                    user_id=current_user.id,
+                    task_id=item_id,
+                    probe_id=None,
+                    attempt_type='daily',
+                    solution_text=solution_text if solution_method == 'text' else None,
+                    file_path=file_path_rel if solution_method == 'photo' else None,
+                    file_size=file_size if solution_method == 'photo' else None,
+                )
+                db.session.add(attempt)
+                db.session.commit()
+            except Exception:
+                pass  # SolutionAttempt save failure must not block answer
+
+    # ── считаем прогресс сета ────────────────────────────────────────
+    all_items = DailyTaskItem.query.filter_by(daily_set_id=item.daily_set_id).all()
+    completed = sum(1 for it in all_items if it.user_answer is not None)
+    total = len(all_items)
+
+    # ── формируем пояснение ─────────────────────────────────────────
+    is_correct = result.get("is_correct", False)
+    explanation = (
+        "Молодец, верно!"
+        if is_correct
+        else "Неверно. Попробуй ещё раз или посмотри решение."
+    )
+
+    # ── weakness_update (заглушка — в MVP обновляем через адаптивный тест) ─
+    weakness_update = {
+        "topic": item.topic,
+        "new_score": None,
+        "delta": None,
+    }
+
+    response = {
+        "is_correct": is_correct,
+        "correct_answer": result.get("correct_answer"),
+        "solution": item.solution,
+        "explanation": explanation,
+        "set_progress": {
+            "completed": completed,
+            "total": total,
+        },
+        "weakness_update": weakness_update,
+        "has_aux": bool(item.has_aux),
+        "aux_svg_path": item.aux_svg_path if item.has_aux else None,
+        "aux_reason": item.aux_reason if item.has_aux else None,
+    }
+
+    # CH10: Kimi review
+    try:
+        from services.kimi_review import review_text as _kimi_text
+        kimi = _kimi_text(
+            task_text=(item.question or ""),
+            correct_answer=(item.correct_answer or ""),
+            solution_text=answer,
+            surface="daily_task",
+        )
+        if kimi and not kimi.get("error"):
+            response["kimi_review"] = {
+                "label": kimi.get("label"),
+                "raw_response": kimi.get("raw_response", ""),
+            }
+    except Exception:
+        pass
+
+    # ── STREAK_V2: первый верный ответ на задачу дня = день засчитан ───
+    # (идемпотентно: максимум +1 за день, ошибки серию не сбрасывают).
+    # Старый блок «сет полностью отвечен» удалён: зачёт дня теперь
+    # происходит на ПЕРВОМ верном ответе, правило 2/3 из LIMITS_V1
+    # избыточно — один верный ответ уже засчитывает день.
+    if is_correct:
+        try:
+            credit_streak_day(current_user.id, today_in_user_tz(), source="task")
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            logger.exception("streak credit failed (submit)")
+
+    return jsonify(response), 200
+
+
+# ──────────────────────────────────────────────────────────────────────
+# GET /daily_tasks/<item_id>/hint
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/<int:item_id>/hint", methods=["GET"])
+@login_required
+def get_hint(item_id: int):
+    """Получить подсказку для задачи.
+
+    Query params:
+        ``?index=0`` — индекс подсказки (по умолчанию 0)
+
+    Возвращает:
+        ``hint``, ``total_hints``, ``hint_index``
+    """
+    # ── проверяем, что задача принадлежит current_user ──────────────
+    item: DailyTaskItem | None = DailyTaskItem.query.get(item_id)
+    if not item:
+        return jsonify({"success": False, "message": "Задача не найдена"}), 404
+
+    daily_set = DailyTaskSet.query.get(item.daily_set_id)
+    if not daily_set or daily_set.user_id != current_user.id:
+        return jsonify({"success": False, "message": "Задача не принадлежит текущему пользователю"}), 403
+
+    hint_index = request.args.get("index", 0, type=int)
+
+    result = services.get_hint(item_id=item_id, hint_index=hint_index)
+
+    if not result.get("success"):
+        return jsonify(result), 404
+
+    return jsonify(result), 200
+
+
+# ──────────────────────────────────────────────────────────────────────
+# POST /daily_tasks/take-day-off — T8 streak
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/take-day-off", methods=["POST"])
+@login_required
+def take_day_off_route():
+    """Взять выходной: сохранить серию, не менять mu/sigma."""
+    user_id = current_user.id
+    today = today_in_user_tz()
+    ok = take_day_off(user_id, today)
+    if not ok:
+        return jsonify({"success": False, "message": "Нет доступных выходных"}), 400
+    return jsonify({"success": True}), 200
+
+
+# ──────────────────────────────────────────────────────────────────────
+# POST /daily_tasks/pledge — нажатие чекбокса «Согласен» (DT_PLEDGE_V1)
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/pledge", methods=["POST"])
+@login_required
+def pledge_route():
+    """DT_PLEDGE_V1: фиксируем каждое нажатие (отметку) чекбокса
+    «Согласен: постараюсь заходить как можно чаще» на странице задач дня.
+    Событие пишется в site_events (kind='dt_pledge') и попадает
+    в админ-статистику /admin/users (блок «Обещание регулярности»).
+    Снятие галочки не считается нажатием.
+    """
+    try:
+        from routes.admin_support import log_site_event
+        log_site_event(current_user.id, "dt_pledge")
+    except Exception as _pe:
+        current_app.logger.warning("dt_pledge log failed: %r", _pe)
+        return jsonify({"success": False}), 200
+    return jsonify({"success": True}), 200
+
+
+# ──────────────────────────────────────────────────────────────────────
+# POST /daily_tasks/regenerate
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/regenerate", methods=["POST"])
+@login_required
+def regenerate():
+    """Перегенерировать сегодняшний набор задач.
+
+    AI-генерация «Задач дня» отключена (см. AI_GENERATION_ENABLED в
+    daily_tasks/services.py). Выдача задач дня идёт только из банка
+    daily_task_bank, поэтому ручная перегенерация LLM недоступна.
+    """
+    return jsonify({
+        "status": "disabled",
+        "message": "AI-генерация задач дня отключена. Задачи выдаются из банка.",
+    }), 200
+
+
+# ──────────────────────────────────────────────────────────────────────
+# GET /daily_tasks/job_status
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/job_status", methods=["GET"])
+@login_required
+def job_status():
+    """Polling-эндпоинт для фронта во время генерации.
+
+    Возвращает состояние ``DailyGenerationJob`` для сегодняшней даты.
+    """
+    result = services.get_job_status(current_user.id)
+
+    if result.get("state") == "no_job":
+        return jsonify({"state": "no_job", "message": "Нет активной генерации"}), 404
+
+    return jsonify(result), 200
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Fix 6: GET /daily-tasks/status — статус пула для фронта (polling 2 с)
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/status", methods=["GET"])
+@login_required
+def daily_tasks_pool_status():
+    """Вернуть статус ``task_pool``'а (предгенерация после адаптивного теста).
+
+    Фронт делает GET /daily-tasks/status каждые 2 с, пока status = ``generating``.
+    Как только статус сменится на ``ready`` / ``partial`` — фронт переходит к
+    GET /daily_tasks.
+    """
+    from daily_tasks.profile import build_profile
+    from daily_tasks.services import compute_cache_key
+
+    profile = build_profile(current_user.id)
+    cache_key = compute_cache_key(profile)
+
+    pool = TaskPool.query.filter_by(cache_key=cache_key).first()
+    if not pool:
+        return jsonify({
+            "status": "no_pool",
+            "pool_id": None,
+            "message": "Пул ещё не создан",
+        }), 404
+
+    return jsonify({
+        "status": pool.status,
+        "pool_id": pool.id,
+        "expires_at": pool.expires_at.isoformat() if pool.expires_at else None,
+        "message": {
+            "generating": "Задачи генерируются",
+            "ready": "Пул готов",
+            "partial": "Пул готов (частично)",
+            "failed": "Генерация не удалась",
+        }.get(pool.status, "Неизвестный статус"),
+        "valid_count": pool.valid_count,
+    }), 200
+
+
+# ──────────────────────────────────────────────────────────────────────
+# POST /daily_tasks/<item_id>/submit_ai
+# ──────────────────────────────────────────────────────────────────────
+#
+# 1-в-1 с /api/check_adaptive_answer (раздел «Адаптивный тест»):
+# принимает {user_answer, user_solution, solution_image_b64?,
+# solution_images_b64?}, прогоняет через services.ai_tutor_review.
+# Сохраняет в DailyTaskItem (user_answer, is_correct, answered_at).
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/<int:item_id>/solve", methods=["POST"])
+@login_required
+def solve_task_preview(item_id: int):
+    """AI решает задачу с нуля (превью) — вызывается при открытии задачи до того,
+    как ученик написал свой ответ."""
+    item = DailyTaskItem.query.get(item_id)
+    if not item:
+        return jsonify({"status": "error", "message": "Задача не найдена"}), 404
+
+    daily_set = DailyTaskSet.query.get(item.daily_set_id)
+    if not daily_set or daily_set.user_id != current_user.id:
+        return jsonify({
+            "status": "error",
+            "message": "Задача не принадлежит текущему пользователю",
+        }), 403
+
+    if solve_task is None:
+        # Fallback: отдаём эталонное решение из БД
+        return jsonify({
+            "status": "success",
+            "solution": item.solution or "Решение временно недоступно.",
+        })
+
+    import concurrent.futures as _cf
+    _result = None
+    try:
+        with _cf.ThreadPoolExecutor(max_workers=1) as _executor:
+            _future = _executor.submit(
+                solve_task,
+                task_text=item.task_text or "",
+                correct_answer=item.correct_answer or "",
+                solution_ref=item.solution or "",
+                deepseek_client_cls=DeepSeekClient if _DEEPSEEK_AVAILABLE else None,
+                deepseek_available=_DEEPSEEK_AVAILABLE,
+                max_tokens=4096,
+            )
+            try:
+                _result = _future.result(timeout=20)
+            except _cf.TimeoutError:
+                logger.warning("solve_task_preview: solve_task timed out after 20s — fallback")
+    except Exception as e:
+        logger.exception("solve_task_preview: solve_task failed: %s", e)
+
+    if _result and _result.get("success"):
+        return jsonify({
+            "status": "success",
+            "solution": _result.get("solution", ""),
+        })
+
+    # Fallback: эталонное решение из БД
+    return jsonify({
+        "status": "success",
+        "solution": item.solution or "Решение временно недоступно.",
+    })
+
+
+@daily_tasks_bp.route("/<int:item_id>/analyze_techniques", methods=["POST"])
+@login_required
+def analyze_techniques(item_id: int):
+    """TECHNIQUES_V1: определяет, какие из 102 методов использованы в решении.
+
+    Принимает id задачи. Для AI-сгенерированных задач (DailyTaskItem) —
+    проверяет принадлежность пользователю. Для банковских (DailyTaskBank →
+    BankIssue) — тоже через принадлежность issue.
+
+    Отдает DeepSeek-flash условие + решение + список всех 102 методов
+    (только код и название — контент методов не отправляем).
+    Возвращает список подходящих методов с URL для перехода.
+    """
+    from services import atlas_methods
+
+    # ── Восстанавливаем условие + решение в зависимости от источника ──
+    task_text = ""
+    solution = ""
+    task_label = ""
+
+    # 1) Сгенерированная ежедневная задача
+    item = DailyTaskItem.query.get(item_id)
+    if item:
+        daily_set = DailyTaskSet.query.get(item.daily_set_id)
+        if not daily_set or daily_set.user_id != current_user.id:
+            return jsonify({
+                "status": "error",
+                "message": "Задача не принадлежит текущему пользователю",
+            }), 403
+        task_text = item.task_text or ""
+        solution = item.solution or ""
+        task_label = f"Задача #{item.position or '—'}"
+        source = "generated"
+    else:
+        # 2) Банковская задача: ищем по BankIssue (user → task)
+        from models import DailyTaskBank, BankIssue
+        issue = BankIssue.query.filter_by(
+            user_id=current_user.id, task_id=item_id,
+        ).first()
+        if not issue:
+            return jsonify({
+                "status": "error",
+                "message": "Задача не найдена или не принадлежит пользователю",
+            }), 404
+        bank_task = db.session.get(DailyTaskBank, item_id)
+        if not bank_task:
+            return jsonify({
+                "status": "error",
+                "message": "Задача не найдена в банке",
+            }), 404
+        task_text = getattr(bank_task, "statement", "") or ""
+        solution = getattr(bank_task, "solution", "") or ""
+        task_label = f"Банковская задача #{item_id}"
+        source = "bank"
+
+    if not solution.strip():
+        return jsonify({
+            "status": "error",
+            "message": "У задачи нет эталонного решения",
+        }), 400
+
+    if not _DEEPSEEK_AVAILABLE or DeepSeekClient is None:
+        return jsonify({
+            "status": "error",
+            "message": "AI-проверка временно недоступна",
+        }), 503
+
+    # ── Берём минимальный список методов: код + название + раздел 1 строкой ─
+    cache = atlas_methods._load_atlas()
+    all_methods = cache.get("methods", [])  # type: ignore[assignment]
+    if not all_methods:
+        return jsonify({
+            "status": "error",
+            "message": "Атлас методов недоступен",
+        }), 503
+
+    # Формат: "A1 — Прямые вычисления и арифметика\nA2 — Текстовые задачи (общее)\n..."
+    catalog_lines = []
+    for m in all_methods:
+        if isinstance(m, dict):
+            code = m.get("method_code", "")
+            name = m.get("method_name", "")
+            section = m.get("section", "")
+            if code and name:
+                catalog_lines.append(f"{code} ({section}) — {name}")
+    catalog = "\n".join(catalog_lines)
+
+    # Ограничиваем размеры, чтобы промпт помещался
+    MAX_PROMPT_CONDITION = 4000
+    MAX_PROMPT_SOLUTION = 6000
+    MAX_PROMPT_CATALOG = 8000  # 102 * ~60 символов каждая, но с запасом
+
+    task_text_trimmed = (task_text or "")[:MAX_PROMPT_CONDITION]
+    solution_trimmed = (solution or "")[:MAX_PROMPT_SOLUTION]
+    catalog_trimmed = catalog[:MAX_PROMPT_CATALOG]
+
+    prompt = f"""Ты — эксперт по олимпиадной математике. Твоя задача: определить, какие методы/приёмы из приведённого каталога использованы в решении задачи.
+
+## Каталог всех методов (102)
+{catalog_trimmed}
+
+## Условие задачи
+{task_text_trimmed}
+
+## Решение задачи
+{solution_trimmed}
+
+---
+
+Ответь строго в формате JSON (массив кодов методов):
+["A1", "C4"]
+
+Правила:
+- Указывай ТОЛЬКО те методы, которые реально использованы в приведённом решении.
+- Не додумывай и не добавляй смежные методы.
+- Если решение — чистая арифметика без специальных методов, верни пустой массив [].
+- Обычно используется 1-3 метода. Не больше 3.
+"""
+
+    # ── Вызов DeepSeek flash ──────────────────────────────────────────────
+    import json, re
+    client = DeepSeekClient()  # сам прочитает DEEPSEEK_API_KEY
+    try:
+        raw = client.generate(
+            prompt,
+            system_prompt="Ты — помощник, возвращающий только валидный JSON-массив. Никаких пояснений, только JSON.",
+            temperature=0.1,
+            max_tokens=200,
+        )
+    except Exception as e:
+        logger.exception("analyze_techniques: deepseek failed: %s", e)
+        return jsonify({
+            "status": "error",
+            "message": "AI временно недоступен",
+        }), 503
+
+    # ── Парсим ответ ──────────────────────────────────────────────────────
+    codes = []
+    parsed_ok = False
+    try:
+        # Иногда модель добавляет markdown-блоки — ищем только массив
+        m = re.search(r'\[.*?\]', raw, re.DOTALL)
+        if m:
+            codes = json.loads(m.group(0))
+            if isinstance(codes, list):
+                parsed_ok = True
+    except (json.JSONDecodeError, TypeError):
+        pass
+    if not parsed_ok:
+        # fallback: ищем коды вида A1, B12 в тексте
+        codes = re.findall(r'[A-Z][0-9]+[a-z]*', raw)
+        codes = list(dict.fromkeys(codes))  # dedupe, keep order
+
+    # ── Фильтруем по реальному каталогу, чтобы не было выдуманных кодов ──
+    methods_out = []
+    valid_codes = {m.get("method_code") for m in all_methods if isinstance(m, dict)}
+    for code in codes:
+        if isinstance(code, str) and code in valid_codes:
+            method_data = atlas_methods.get_method(code)
+            if method_data:
+                methods_out.append({
+                    "code": code,
+                    "name": method_data.get("method_name", ""),
+                    "section": method_data.get("section", ""),
+                    # TECHNIQUES_V2: ведём на страницу-враппер /olympiads/methods
+                    # (шапка сайта + iframe атласа), hash пробрасывается в iframe
+                    # — откроется карточка конкретного метода с шапкой сайта.
+                    # НЕ /olympiads/methods/atlas.html (нет шапки) и
+                    # НЕ /olympiads/methods/<code> (старое: чистый текст,
+                    # Methods Block без визуализаций из атласа).
+                    "url": f"/olympiads/methods#/methods/{code}",
+                })
+
+    return jsonify({
+        "status": "success",
+        "task_label": task_label,
+        "source": source,
+        "methods": methods_out,
+    })
+
+
+@daily_tasks_bp.route("/<int:item_id>/submit_ai", methods=["POST"])
+@login_required
+def submit_answer_ai(item_id: int):
+    """AI-проверка решения «Задач дня» — тот же pipeline, что в адаптивном тесте."""
+    # ── Сначала проверяем, не задача ли это из банка ─────────────────
+    # Фронт задач дня шлёт id банковской задачи (daily_task_bank.id),
+    # а раньше тут искали только в daily_task_items — ответ на задачу
+    # из банка либо падал 404, либо (хуже) попадал в чужую задачу с
+    # тем же id. BankIssue однозначно связывает (user, task_id).
+    from models import BankIssue
+    _bank_issue = BankIssue.query.filter_by(
+        user_id=current_user.id, task_id=item_id,
+    ).first()
+    if _bank_issue is not None:
+        return _submit_bank_answer(item_id, _bank_issue)
+
+    item = DailyTaskItem.query.get(item_id)
+    if not item:
+        return jsonify({"status": "error", "message": "Задача не найдена"}), 404
+
+    daily_set = DailyTaskSet.query.get(item.daily_set_id)
+    if not daily_set or daily_set.user_id != current_user.id:
+        return jsonify({
+            "status": "error",
+            "message": "Задача не принадлежит текущему пользователю",
+        }), 403
+
+    if item.user_answer is not None and item.is_correct:
+        return jsonify({
+            "status": "error",
+            "message": "На эту задачу уже отвечено.",
+            "already_answered": True,
+            "is_correct": item.is_correct,
+            "correct_answer": item.correct_answer,
+            "solution": item.solution,
+        }), 409
+
+    data = request.get_json(silent=True) or {}
+    user_answer = (data.get("user_answer") or data.get("answer") or "").strip()
+    user_solution = (data.get("user_solution") or "").strip()
+    if not user_answer:
+        return jsonify({
+            "status": "error",
+            "message": "Не указан ответ",
+        }), 400
+
+    # Собираем фото (solution_image_b64 + solution_images_b64), режем data:
+    raw_images = []
+    single = data.get("solution_image_b64", "") or ""
+    if single:
+        raw_images.append(single)
+    multi = data.get("solution_images_b64") or []
+    if isinstance(multi, list):
+        for it in multi:
+            if isinstance(it, str) and it.strip():
+                raw_images.append(it)
+
+    def _strip_dataurl(b: str) -> str:
+        return b.split(",", 1)[-1] if b.startswith("data:") else b
+
+    images_b64 = [_strip_dataurl(b) for b in raw_images if b]
+
+    # D2: серверная проверка наличия решения перед AI-вызовом
+    has_solution_text = len(user_solution.strip()) > 0
+    has_solution_photo = len(images_b64) > 0
+    if not has_solution_text and not has_solution_photo:
+        return jsonify({
+            "status": "error",
+            "error": "Опиши решение или прикрепи фото.",
+        }), 400
+
+    # Если AI-проверка недоступна (нет файла services/ai_tutor_review.py на проде)
+    if review_attempt is None:
+        return jsonify({
+            "status": "error",
+            "message": "AI-проверка временно недоступна",
+        }), 503
+
+    # Единый pipeline проверки (OCR + checker) с жёстким таймаутом 60 секунд.
+    import concurrent.futures as _cf
+    _verdict = None
+    try:
+        from services.solution_check_pipeline import check_solution
+        with _cf.ThreadPoolExecutor(max_workers=1) as _executor:
+            _future = _executor.submit(
+                check_solution,
+                entity_type="daily_task",
+                task_text=item.task_text or "",
+                correct_answer=item.correct_answer or "",
+                solution_ref=item.solution or "",
+                user_answer=user_answer,
+                user_solution=user_solution,
+                images_b64=images_b64,
+                difficulty_level=getattr(item, "difficulty_level", 4) or 4,
+            )
+            try:
+                _verdict = _future.result(timeout=60)
+            except _cf.TimeoutError:
+                logger.warning("submit_answer_ai: pipeline timed out after 60s — fallback")
+    except Exception as e:  # pragma: no cover
+        logger.exception("submit_answer_ai: pipeline failed: %s", e)
+
+    from services.md_render import md_render
+    from utils.math_text_fixer import wrap_bare_math
+
+    if _verdict is None:
+        # Таймаут или ошибка — сохраняем ответ без AI-проверки.
+        # Fallback: сверяем введённый ответ с эталоном тем же умным
+        # сравнением, что в банке неточностей (учитывает 0,5↔0.5, x=5↔5).
+        # Иначе XP за верные ответы терялись при каждом сбое AI (баг 15.09).
+        score = 0.0
+        try:
+            from utils.math_answer_utils import compare_math_answers
+            is_correct = bool(compare_math_answers(
+                user_answer, item.correct_answer or ""
+            ))
+        except Exception:
+            is_correct = False
+        feedback = (
+            "Молодец, верно!"
+            if is_correct
+            else "AI-проверка временно недоступна. Ответ сохранён."
+        )
+    elif _verdict.get("ocr_failed"):
+        # 2026-09-15: фото не распозналось — НЕ считаем «неверно», просто
+        # просим перефотографировать. Ответ в БД не пишем, чтобы можно было
+        # попробовать ещё раз.
+        return jsonify({
+            "status": "error",
+            "ocr_failed": True,
+            "message": _verdict.get("feedback") or (
+                "Не удалось разобрать, что написано на фото. "
+                "Сфотографируй решение чётче или опиши шаги текстом."
+            ),
+        }), 422
+    else:
+        score = float(_verdict.get("score", 0.0))
+        feedback = str(md_render(wrap_bare_math(_verdict.get("feedback") or "")))
+        # В задачах дня не показываем строку «Оценка тьютора: ±N балл».
+        import re as _re_fb
+        feedback = _re_fb.sub(
+            r"(?is)^\s*\*\*Оценка тьютора:[^*]*\*\*\s*(\n|$)",
+            "",
+            feedback,
+        )
+        is_correct = bool(_verdict.get("is_correct"))
+        # Низкое доверие OCR — предупреждаем ученика
+        if _verdict.get("ocr") and _verdict["ocr"].get("low_confidence"):
+            warn = _verdict["ocr"].get("warning") or "Распознавание фото ненадёжно."
+            feedback = f"⚠️ {warn}<br><br>{feedback}"
+
+    # Сохраняем ответ ученика в БД
+    from datetime import datetime as _dt
+    try:
+        item.user_answer = user_answer[:4000]
+        item.is_correct = is_correct
+        item.answered_at = _dt.utcnow()
+        item.ai_feedback = (feedback or "")[:8000]
+        # USERS_STATS_V2: сохраняем фото решений, чтобы админ видел их
+        if images_b64:
+            _photo_urls = _save_solution_photos(current_user.id, images_b64)
+            if _photo_urls:
+                import json as _json_ph
+                item.solution_photos_json = _json_ph.dumps(_photo_urls)
+        try:
+            item.time_spent_seconds = int(data.get("time_spent_seconds") or 0)
+        except (TypeError, ValueError):
+            item.time_spent_seconds = 0
+        # ОДНА транзакция: ответ и +5 XP коммитятся вместе (см. _submit_bank_answer).
+        if is_correct and not item.xp_awarded:
+            from models import User as _User
+            _u = db.session.get(_User, current_user.id)
+            if _u is not None:
+                _u.experience_points = (_u.experience_points or 0) + 5
+                _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+                item.xp_awarded = True
+            else:
+                logger.error(
+                    "submit_answer_ai: user %s not found — XP не начислен",
+                    current_user.id,
+                )
+        db.session.commit()
+        _saved_ok = True
+
+        # ── Записать результат в level_engine ──────────────────────────
+        try:
+            from services.daily_task_rotation import record_daily_answer
+            record_daily_answer(current_user.id, item.id, is_correct)
+            logger.info(
+                "submit_answer_ai: level_engine updated user=%d item=%d correct=%s",
+                current_user.id, item.id, is_correct,
+            )
+        except Exception as _le_err:
+            logger.warning("submit_answer_ai: level_engine update failed: %s", _le_err)
+    except Exception as e:  # pragma: no cover
+        db.session.rollback()
+        logger.exception("submit_answer_ai: db commit failed: %s", e)
+        _saved_ok = False
+
+    # STREAK_V2: верный ответ на задачу дня засчитывает день в серию —
+    # только если ответ реально сохранён (не после rollback).
+    try:
+        if _saved_ok and is_correct:
+            credit_streak_day(current_user.id, today_in_user_tz(), source="task")
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
+        logger.exception("streak credit failed (submit_ai)")
+
+    # «Банк неточностей»: ставим решение в очередь на скрининг (фоновый анализ).
+    try:
+        from services.insight_queue import enqueue_screen
+        enqueue_screen(
+            user_id=current_user.id,
+            task_text=item.task_text or "",
+            correct_answer=item.correct_answer or "",
+            solution_ref=item.solution or "",
+            user_solution=user_solution or user_answer,
+            topic=getattr(item, "topic", "") or "",
+            difficulty_level=getattr(item, "difficulty_level", 4) or 4,
+            time_spent_sec=int(data.get("time_spent_seconds") or 0) or None,
+            source="daily_task",
+            source_task_id=item.id,
+        )
+    except Exception:
+        pass  # анализ неточностей никогда не должен ронять основной поток
+
+    # Прогресс сета
+    try:
+        all_items = DailyTaskItem.query.filter_by(daily_set_id=item.daily_set_id).all()
+        completed = sum(1 for it in all_items if it.user_answer is not None)
+        total = len(all_items)
+    except Exception:
+        completed = total = 0
+
+    return jsonify({
+        "status": "success",
+        "score": score,
+        "feedback": feedback,
+        "is_correct": is_correct,
+        "correct_answer": item.correct_answer or "",
+        "solution": str(md_render(wrap_bare_math(item.solution or ""))),
+        "set_progress": {"completed": completed, "total": total},
+    })
+
+
+# ──────────────────────────────────────────────────────────────────────
+# GET /daily_tasks/calendar?year=YYYY&month=MM
+# ──────────────────────────────────────────────────────────────────────
+#
+# Возвращает агрегированную статистику по решённым задачам за каждый день
+# указанного месяца (по умолчанию — текущий месяц). Используется для
+# вертикального календаря справа от блока «Задачи дня».
+#
+# Цвета подсветки на фронте:
+#   0          -> серая
+#   1–3        -> бледно-зелёная
+#   4–6        -> зелёная
+#   7–9        -> яркая зелёная
+#   10 (или больше) -> золотая (с короной)
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/calendar", methods=["GET"])
+@login_required
+def calendar_stats():
+    """Статистика по решённым задачам за каждый день месяца."""
+    today = today_in_user_tz()
+    try:
+        year = int(request.args.get("year") or today.year)
+        month = int(request.args.get("month") or today.month)
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "message": "Неверный year/month"}), 400
+
+    if month < 1 or month > 12:
+        return jsonify({"success": False, "message": "Неверный month"}), 400
+
+    last_day = monthrange(year, month)[1]
+    first_dt = date(year, month, 1)
+    last_dt = date(year, month, last_day)
+
+    # Берём ВСЕ сеты пользователя за этот месяц (включая expired).
+    # expired-сеты тоже видны на календаре — их данные сохраняются,
+    # пользователь видит свою историю.
+    sets = (
+        DailyTaskSet.query
+        .filter(
+            DailyTaskSet.user_id == current_user.id,
+            DailyTaskSet.target_date >= first_dt,
+            DailyTaskSet.target_date <= last_dt,
+        )
+        .all()
+    )
+    set_ids = [s.id for s in sets]
+    set_by_id = {s.id: s for s in sets}
+
+    # Подтягиваем items одним запросом (избегаем N+1).
+    items_by_set: Dict[int, list] = {sid: [] for sid in set_ids}
+    if set_ids:
+        items = (
+            DailyTaskItem.query
+            .filter(DailyTaskItem.daily_set_id.in_(set_ids))
+            .all()
+        )
+        for it in items:
+            items_by_set.setdefault(it.daily_set_id, []).append(it)
+
+    # Собираем массив с статистикой по каждому дню месяца.
+    days = []
+    for d in range(1, last_day + 1):
+        the_date = date(year, month, d)
+        ds = next(
+            (s for s in sets if s.target_date == the_date),
+            None,
+        )
+        solved = 0
+        total = 0
+        status = None
+        if ds is not None:
+            ds_items = items_by_set.get(ds.id, [])
+            total = len(ds_items)
+            solved = sum(1 for it in ds_items if it.is_correct)
+            status = ds.status
+
+        # Категория для подсветки на фронте (информативно — фронт может
+        # сам пересчитать, но сервер тоже отдаёт для удобства).
+        if total == 0:
+            tier = "empty"
+        elif solved == 0:
+            tier = "gray"
+        elif solved <= 3:
+            tier = "pale"
+        elif solved <= 6:
+            tier = "green"
+        elif solved <= 9:
+            tier = "bright"
+        else:  # >= 10
+            tier = "gold"
+
+        days.append({
+            "date": the_date.isoformat(),
+            "day": d,
+            "solved": solved,
+            "total": total,
+            "status": status,
+            "tier": tier,
+            "is_today": (the_date == today),
+            "is_future": (the_date > today),
+        })
+
+    return jsonify({
+        "success": True,
+        "year": year,
+        "month": month,
+        "today": today.isoformat(),
+        "days": days,
+    }), 200
+
+
+# ──────────────────────────────────────────────────────────────────────
+# GET /daily_tasks/day_history/<date>
+# ──────────────────────────────────────────────────────────────────────
+#
+# Возвращает список задач (и их статусы) за указанный день.
+# Используется для модалки/панели, которая открывается по клику на
+# дату в календаре.
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/day_history/<date_iso>", methods=["GET"])
+@login_required
+def day_history(date_iso: str):
+    """Список задач, решённых пользователем в указанную дату."""
+    try:
+        target = date.fromisoformat(date_iso)
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "message": "Неверный формат даты (ожидается YYYY-MM-DD)",
+        }), 400
+
+    daily_set = DailyTaskSet.query.filter_by(
+        user_id=current_user.id,
+        target_date=target,
+    ).first()
+
+    if not daily_set:
+        return jsonify({
+            "success": True,
+            "date": date_iso,
+            "has_set": False,
+            "solved": 0,
+            "total": 0,
+            "status": None,
+            "items": [],
+        }), 200
+
+    items = (
+        DailyTaskItem.query
+        .filter_by(daily_set_id=daily_set.id)
+        .order_by(DailyTaskItem.position.asc())
+        .all()
+    )
+
+    items_payload = []
+    for it in items:
+        # Краткий превью текста задачи (для модалки).
+        preview = wrap_bare_math((it.task_text or "").strip())
+        if len(preview) > 220:
+            preview = preview[:220].rstrip() + "…"
+        items_payload.append({
+            "id": it.id,
+            "position": it.position,
+            "topic": it.topic,
+            "subject": it.subject,
+            "difficulty_level": it.difficulty_level,
+            "preview": preview,
+            "is_correct": it.is_correct,
+            "is_answered": it.user_answer is not None,
+            "answered_at": it.answered_at.isoformat() + "Z" if it.answered_at else None,
+        })
+
+    solved = sum(1 for it in items if it.is_correct)
+    total = len(items)
+
+    return jsonify({
+        "success": True,
+        "date": date_iso,
+        "has_set": True,
+        "daily_set_id": daily_set.id,
+        "status": daily_set.status,
+        "solved": solved,
+        "total": total,
+        "items": items_payload,
+    }), 200

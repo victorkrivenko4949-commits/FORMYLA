@@ -1,0 +1,89 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "equilateral"
+  },
+  {
+   "type": "point",
+   "id": "P",
+   "x": 0.642857,
+   "y": 0.123718
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AP",
+   "style": "soft"
+  },
+  {
+   "segment": "BP",
+   "style": "soft"
+  },
+  {
+   "segment": "CP",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "BC",
+    "CA"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "P",
+    "B"
+   ],
+   "text": "150°"
+  },
+  {
+   "angle": [
+    "B",
+    "P",
+    "C"
+   ],
+   "text": "120°"
+  },
+  {
+   "angle": [
+    "C",
+    "P",
+    "A"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [
+  {
+   "type": "point",
+   "id": "P'",
+   "x": 0.214286,
+   "y": 0.61859,
+   "reason": "Поворот P на 60° вокруг A, переводящий B в C; треугольник APP' равносторонний."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AP'",
+   "style": "dashed"
+  },
+  {
+   "segment": "PP'",
+   "style": "dashed"
+  },
+  {
+   "segment": "CP'",
+   "style": "dashed"
+  }
+ ]
+}

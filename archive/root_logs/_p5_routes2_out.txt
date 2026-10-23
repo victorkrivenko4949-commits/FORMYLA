@@ -1,0 +1,999 @@
+2026-08-04 02:05:07,163 - app - INFO - [security] init_security applied (headers + csrf helpers)
+2026-08-04 02:05:07,279 - app - INFO - === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+2026-08-04 02:05:10,086 - routes.figures_generator - INFO - [figures_gen] reasoner prompt loaded (6847 chars)
+2026-08-04 02:05:11,101 - routes.wb_ws - INFO - [ws] SocketIO initialized on namespace /ws-call
+2026-08-04 02:05:11,155 - services.vsosh_10_11_additive_seed - INFO - [VSOSH10_11-ADD] DB already has 43 probniks (target 43) - skip
+2026-08-04 02:05:17,405 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:05:17,439 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:05:17,439 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:05:17,441 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:05:17,441 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:05:17,441 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:05:17,441 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:05:17,441 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:05:17,444 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-08-04 02:05:17,444 - apscheduler.scheduler - INFO - Added job "daily_quest_deadline_reminder_job" to job store "default"
+2026-08-04 02:05:17,446 - apscheduler.scheduler - INFO - Added job "curator_evening_notification_job" to job store "default"
+2026-08-04 02:05:17,446 - apscheduler.scheduler - INFO - Added job "curator_morning_prep_reminder_job" to job store "default"
+2026-08-04 02:05:17,446 - apscheduler.scheduler - INFO - Added job "curator_evening_prep_generate_job" to job store "default"
+2026-08-04 02:05:17,446 - apscheduler.scheduler - INFO - Added job "process_pregen_queue_job" to job store "default"
+2026-08-04 02:05:17,446 - apscheduler.scheduler - INFO - Added job "daily_midnight_assign_job" to job store "default"
+2026-08-04 02:05:17,446 - apscheduler.scheduler - INFO - Added job "daily_buffer_fill_job" to job store "default"
+2026-08-04 02:05:17,446 - apscheduler.scheduler - INFO - Scheduler started
+2026-08-04 02:05:17,879 - daily_tasks.profile - INFO - build_profile: user=1 grade=9 completeness=0.00 measured=0/7 weak=7 (cal=7) strong=0 slots=(m=0,c=10)
+2026-08-04 02:05:17,968 - daily_tasks.profile - INFO - build_profile: user=1 grade=9 completeness=0.00 measured=0/7 weak=7 (cal=7) strong=0 slots=(m=0,c=10)
+2026-08-04 02:05:17,996 - app - ERROR - Exception on /prep/coach [GET]
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+ℹ️  SENTRY_DSN не задан — Sentry отключен.
+✅ ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)
+============================================================
+P12 TASK3: проверка переменных окружения
+  Всего переменных в окружении: 80
+  Все 9 проверяемых переменных заданы.
+============================================================
+[DB] Using: sqlite:///c:/Users/Redmi/Desktop/Новая папка (2)/instance/formyla.db@***
+============================================================
+DEBUG: Flask-Mail Configuration:
+MAIL_SERVER = smtp.yandex.ru
+MAIL_PORT = 587
+MAIL_USE_TLS = True
+MAIL_USE_SSL = False
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = **************** (16 символов)
+============================================================
+✅ База данных инициализирована
+[AUTO-MIGRATE/V10] Schema up-to-date — nothing to do
+[AUTO-MIGRATION] ✓ Column 'agent_type' already exists
+[AUTO-MIGRATION] ✓ Column 'subtopic' already exists
+[AUTO-MIGRATION] ✓ Column 'attempts_count' already exists
+[AUTO-MIGRATION] ✓ Column 'solves_count' already exists
+[AUTO-MIGRATION] ✓ Column 'actual_solve_rate' already exists
+[AUTO-MIGRATION] ✓ Column 'suggested_level' already exists
+[AUTO-MIGRATION] ✓ Column 'needs_reclassification' already exists
+[AUTO-MIGRATION] ✓ Column 'last_calibrated_at' already exists
+[AUTO-MIGRATION] ✓ Column 'task_type' already exists
+[AUTO-MIGRATION] ✓ Column 'source' already exists
+[AUTO-MIGRATION] ✓ Column 'origin' already exists
+[AUTO-MIGRATION] ✓ Column 'methods_json' already exists
+[AUTO-MIGRATION] ✓ Column 'theme_id' already exists
+[AUTO-MIGRATION] ✓ Column 'theme_title' already exists
+[AUTO-MIGRATION] ✓ Column 'is_calibration' already exists on daily_task_items
+[AUTO-MIGRATION] ✓ Column 'prep_state' already exists on curator_state
+[AUTO-MIGRATION] ✓ Column 'level_mu' already exists on curator_state
+[AUTO-MIGRATION] ✓ Column 'level_sigma' already exists on curator_state
+[AUTO-MIGRATION] ✓ Column 'level_by_section' already exists on curator_state
+[AUTO-MIGRATION] ✓ Column 'level_updated_at' already exists on curator_state
+[AUTO-MIGRATION] ✓ Table 'tutor_calls' ready
+[AUTO-MIGRATION] ✓ Column 'figure_json' already exists on adaptive_tasks
+[AUTO-MIGRATION] ✓ Column 'figure_status' already exists on adaptive_tasks
+[AUTO-MIGRATION] ✓ Column 'figure_json' already exists on daily_task_items
+[AUTO-MIGRATION] ✓ Column 'figure_status' already exists on daily_task_items
+[AUTO-MIGRATION] ✓ Group chat tables already exist
+[AUTO-MIGRATION] ✓ olympiad_task_attempts.status already normalized
+  [pregen_queue migration] dialect = sqlite
+  ✅ pre_gen_queue: 11 колонок
+[migration] pre_gen_queue table ensured
+[AUTO-MIGRATION] ✓ figure_jobs table already exists
+[AUTO-MIGRATION] ✓ friendships table schema OK
+[AUTO-MIGRATION] ✓ support_messages table already exists
+[AUTO-MIGRATION] ✓ site_reviews table already exists
+[AUTO-MIGRATION] ✓ Column 'solved_indices' already exists
+[BP] prep_bp registered (/prep)
+[BP] olympiad_prep_bp registered (/olympiad-prep)
+[BP] account_bp registered (/account)
+[BP] figures_bp registered (/figures)
+[BP] figures_gen_bp registered (/figures/generate)
+[BP] wb_call_bp registered (/api/wb_call/*)
+[BP] wb_meet_bp registered (/api/wb_meet/*)
+[BP] conference_api_bp registered (/api/conference/*)
+[BP] chat_presence_bp registered (/api/chat/*/presence, typing)
+[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)
+[BP] admin_support_bp registered (/admin/support, /my/support)
+[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)
+[SocketIO] Conference WebSocket signalling initialized (/ws-call)
+[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)
+[VSOSH10_11-ADD] result={'status': 'skipped', 'reason': 'already_present', 'count': 43}
+[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)
+[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 860 rows
+[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 860 rows
+[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 9000 rows
+[LATEX-ROOT-DB-FIX] total rows updated: 0
+[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 860}, 'method_tasks': {'updated': 0, 'scanned': 860}, 'adaptive_tasks': {'updated': 0, 'scanned': 9000}}
+[OLYMPIAD-SEED] Theory source: c:\Users\Redmi\Desktop\Новая папка (2)\data\olympiads\methods_catalog_105.json (102 rows; in DB: 102 — ensuring all present)
+[OLYMPIAD-SEED] TheoryBlock: created 0 rows, updated 0 rows
+[THEORY-SEED] body source: c:\Users\Redmi\Desktop\Новая папка (2)\data\olympiads\theory_65_methods.json (65 rows)
+[THEORY-SEED] body source: c:\Users\Redmi\Desktop\Новая папка (2)\data\olympiads\theory_24_methods.json (24 rows)
+[THEORY-SEED] Theory bodies filled: 0 methods updated
+[THEORY-MD] No MD content parsed from c:\Users\Redmi\Desktop\Новая папка (2)\data\olympiads\formyla_vsosh9_10_methods_combined.md
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-1' not found in DB — skipping
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-2' not found in DB — skipping
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-3' not found in DB — skipping
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-4' not found in DB — skipping
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-5' not found in DB — skipping
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-6' not found in DB — skipping
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-7' not found in DB — skipping
+[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)
+[THEORY-FIX] No placeholder method names — nothing to do
+[SECRETS-SEED] Already populated (102 rows)
+[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)
+[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded
+[BP] telegram_auth_bp registered (/auth/telegram/callback)
+  [daily_tasks migration] dialect = sqlite
+  ✅ daily_task_sets: 10 колонок
+  ✅ daily_task_items: 32 колонок
+  ✅ daily_generation_jobs: 11 колонок
+  [task_pool migration] dialect = sqlite
+  ✅ task_pool: 12 колонок
+  ✅ user_task_assignments: 5 колонок
+[BP] daily_tasks_bp registered (/daily_tasks)
+  [curator migration] dialect = sqlite
+  ✅ student_diagnostics: 14 колонок
+  ✅ learning_plans: 18 колонок
+  ✅ task_attempts: 19 колонок
+  ✅ progress_log: 16 колонок
+  ✅ task_bank: 11 колонок
+[BP] curator_bp registered (/curator) — diagnostics, plans, tutor, progress
+[BP] intake_bp registered (/intake)
+  [test_sessions migration] dialect = sqlite
+  ✅ test_sessions: 16 колонок
+[BP] test_sessions migration ensured
+[JINJA] filter md_render registered
+[JINJA] filter inject_geometry registered
+✅ VAPID keys loaded — Web Push notifications enabled
+✓ APScheduler started - Daily Quest cron jobs active
+olympiads.py: старый формат, 5218 задач -> 1209 пробников
+Пробников всего: 1209, с задачами: 1209
+Адаптивный тест: загружено 0 задач из adaptive_data
+OLYMPIADS_INFO: 13 олимпиад с grades/rounds
+TOTAL_GET_ROUTES: 182
+
+======================================================================
+[ERROR e262e8c4] 500 Internal Server Error
+======================================================================
+2026-08-04 02:05:18,001 - app - ERROR - [e262e8c4] 500: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+
+2026-08-04 02:05:18,073 - app - INFO - coach_greeting: next_action succeeded kind=onboarding title='Анкета и знакомство'
+2026-08-04 02:05:20,729 - routes.grade - WARNING - grade-5/algebra domain failed: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again. — aborting 404
+2026-08-04 02:05:20,734 - routes.grade - WARNING - grade-5/algebra domain failed: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again. — aborting 404
+2026-08-04 02:05:20,742 - routes.grade - WARNING - grade-6/algebra domain failed: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again. — aborting 404
+2026-08-04 02:05:20,746 - routes.grade - WARNING - grade-6/algebra domain failed: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again. — aborting 404
+2026-08-04 02:05:20,877 - services.daily_debt - INFO - daily_debt: user=1 migrated 5 items to debt
+2026-08-04 02:05:20,898 - daily_tasks.task_bank - INFO - Загрузка банка задач: C:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\data\task_bank\formyla_grade9.json
+2026-08-04 02:05:21,167 - daily_tasks.task_bank - INFO - Банк для 9-го класса загружен: 3500 пробников
+2026-08-04 02:05:21,170 - daily_tasks.task_bank - INFO - Банк: выбран пробник 'g9__Квадратные уравнения, Виет, параметры__L6__day2' для grade=9 level=3 day=2
+2026-08-04 02:05:21,218 - services.daily_task_rotation - INFO - daily_rotation BANK: user=1 grade=9 bank_level=3 bank_day=2 count=5
+2026-08-04 02:05:21,220 - daily_tasks.routes - INFO - DailyTaskSet auto-created via pick_daily_set for user=1
+2026-08-04 02:05:21,636 - daily_tasks.profile - INFO - build_profile: user=1 grade=9 completeness=0.00 measured=0/7 weak=7 (cal=7) strong=0 slots=(m=0,c=10)
+2026-08-04 02:05:21,690 - curator.diagnostics - WARNING - [diagnostics] No task found for topic=logic diff=4, trying adjacent difficulty
+2026-08-04 02:05:21,694 - curator.diagnostics - WARNING - [diagnostics] No task at all for topic=logic, skipping
+2026-08-04 02:05:21,702 - curator.diagnostics - WARNING - [diagnostics] No task found for topic=number_theory diff=4, trying adjacent difficulty
+2026-08-04 02:05:21,704 - curator.diagnostics - WARNING - [diagnostics] No task at all for topic=number_theory, skipping
+2026-08-04 02:05:21,851 - curator.routes - ERROR - [routes] prep/morning-test failed: cannot import name 'get_morning_test' from 'curator.monthly_cycle' (C:\Users\Redmi\Desktop\Новая папка (2)\curator\monthly_cycle.py)
+2026-08-04 02:05:21,858 - curator.routes - ERROR - [routes] prep/progress failed: cannot import name 'get_cycle_progress' from 'curator.monthly_cycle' (C:\Users\Redmi\Desktop\Новая папка (2)\curator\monthly_cycle.py)
+2026-08-04 02:05:21,891 - daily_tasks.profile - INFO - build_profile: user=1 grade=9 completeness=0.00 measured=0/7 weak=7 (cal=7) strong=0 slots=(m=0,c=10)
+2026-08-04 02:05:21,902 - app - ERROR - Exception on /prep/coach [GET]
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+2026-08-04 02:05:21,904 - app - ERROR - [9e053443] 500: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+
+2026-08-04 02:05:21,942 - daily_tasks.profile - INFO - build_profile: user=1 grade=9 completeness=0.00 measured=0/7 weak=7 (cal=7) strong=0 slots=(m=0,c=10)
+2026-08-04 02:05:21,950 - app - ERROR - Exception on /prep/coach [GET]
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+2026-08-04 02:05:21,952 - app - ERROR - [926971fc] 500: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+
+2026-08-04 02:05:22,081 - root - WARNING - Job 1 not found.
+2026-08-04 02:05:22,085 - root - WARNING - Job 1 not found.
+2026-08-04 02:05:22,272 - app - ERROR - Exception on /topics [GET]
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\app.py", line 3402, in topics
+    return render_template("topics.html",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 150, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 66, in get_source
+    return self._get_source_fast(environment, template)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 100, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: topics.html
+2026-08-04 02:05:22,292 - app - ERROR - [ff5f3a04] 500: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\app.py", line 3402, in topics
+    return render_template("topics.html",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 150, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 66, in get_source
+    return self._get_source_fast(environment, template)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 100, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: topics.html
+
+2026-08-04 02:05:22,299 - app - ERROR - Exception on /topics [GET]
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\app.py", line 3402, in topics
+    return render_template("topics.html",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 150, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 66, in get_source
+    return self._get_source_fast(environment, template)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 100, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: topics.html
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+
+======================================================================
+
+[olympiad_prep] index: found 10 active olympiads
+[olympiad_prep] index: found 10 active olympiads
+
+======================================================================
+[ERROR 9e053443] 500 Internal Server Error
+======================================================================
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+
+======================================================================
+
+
+======================================================================
+[ERROR 926971fc] 500 Internal Server Error
+======================================================================
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+
+======================================================================
+
+
+======================================================================
+[ERROR ff5f3a04] 500 Internal Server Error
+======================================================================
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\app.py", line 3402, in topics
+    return render_template("topics.html",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 150, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 66, in get_source
+    return self._get_source_fast(environment, template)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 100, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: topics.html
+
+======================================================================
+
+
+======================================================================
+[ERROR 08c876ab] 500 Internal Server Error
+======================================================================
+2026-08-04 02:05:22,302 - app - ERROR - [08c876ab] 500: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\app.py", line 3402, in topics
+    return render_template("topics.html",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 150, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 66, in get_source
+    return self._get_source_fast(environment, template)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 100, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: topics.html
+
+2026-08-04 02:05:23,189 - root - WARNING - === ДЕБАГ OLYMPIAD_DATA ===
+2026-08-04 02:05:23,206 - root - WARNING - Тип normalized_data: <class 'dict'>
+2026-08-04 02:05:23,206 - root - WARNING - Ключи первого уровня (Олимпиады): ['euler', 'formula_unity', 'kurchatov', 'lomonosov', 'phystech', 'pvg', 'spbgu', 'turgor', 'vsosh', 'vysshaya_proba']
+2026-08-04 02:05:23,206 - root - WARNING - Пример ключа: euler, тип значения: <class 'dict'>
+2026-08-04 02:05:23,206 - root - WARNING - Ключи второго уровня для 'euler' (Года): ['2009', '2010', '2011', '2012', '2013']
+2026-08-04 02:05:23,206 - root - WARNING - Всего олимпиад: 14
+2026-08-04 02:05:23,206 - root - WARNING - ===========================
+2026-08-04 02:05:23,260 - root - WARNING - === ДЕБАГ OLYMPIAD_DATA ===
+2026-08-04 02:05:23,260 - root - WARNING - Тип normalized_data: <class 'dict'>
+2026-08-04 02:05:23,261 - root - WARNING - Ключи первого уровня (Олимпиады): ['euler', 'formula_unity', 'kurchatov', 'lomonosov', 'phystech', 'pvg', 'spbgu', 'turgor', 'vsosh', 'vysshaya_proba']
+2026-08-04 02:05:23,261 - root - WARNING - Пример ключа: euler, тип значения: <class 'dict'>
+2026-08-04 02:05:23,261 - root - WARNING - Ключи второго уровня для 'euler' (Года): ['2009', '2010', '2011', '2012', '2013']
+2026-08-04 02:05:23,261 - root - WARNING - Всего олимпиад: 14
+2026-08-04 02:05:23,261 - root - WARNING - ===========================
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\app.py", line 3402, in topics
+    return render_template("topics.html",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 150, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 66, in get_source
+    return self._get_source_fast(environment, template)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 100, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: topics.html
+
+======================================================================
+
+[olympiad_adaptive] Loaded 3300 tasks
+
+--- RESULTS (364 entries) ---
+/prep/                                                  anon  200  34366
+/prep/                                                  auth  200  67800
+/prep/new                                               anon  200  34366
+/prep/new                                               auth  200  84364
+/prep/<int:plan_id>                                     anon  200  34366
+/prep/<int:plan_id>                                     auth  404  87
+/prep/<int:plan_id>/day/<int:day_id>                    anon  200  34366
+/prep/<int:plan_id>/day/<int:day_id>                    auth  404  87
+/prep/<int:plan_id>/today                               anon  200  34366
+/prep/<int:plan_id>/today                               auth  404  87
+/prep/coach                                             anon  200  34366
+/prep/coach                                             auth  500  68286
+/prep/probe                                             anon  200  34366
+/prep/probe                                             auth  200  82382
+/prep/coach/greeting                                    anon  200  34366
+/prep/coach/greeting                                    auth  200  1752
+/prep/coach/history                                     anon  200  34366
+/prep/coach/history                                     auth  200  16
+/prep/onboarding                                        anon  200  34366
+/prep/onboarding                                        auth  200  82382
+/olympiad-prep                                          anon  200  41759
+/olympiad-prep                                          auth  200  82273
+/olympiad-prep/calendar                                 anon  200  44264
+/olympiad-prep/calendar                                 auth  200  84778
+/olympiad-prep/<slug>                                   anon  404  27741
+/olympiad-prep/<slug>                                   auth  404  68255
+/account/privacy                                        anon  200  34366
+/account/privacy                                        auth  200  75864
+/account/merge_preview                                  anon  200  34366
+/account/merge_preview                                  auth  200  112906
+/figures                                                anon  200  46210
+/figures                                                auth  200  86727
+/pricing                                                anon  200  32383
+/pricing                                                auth  200  73132
+/payment-stub                                           anon  200  32204
+/payment-stub                                           auth  200  72718
+/api/figures/balance                                    anon  200  36
+/api/figures/balance                                    auth  200  54
+/api/figures/transactions                               anon  200  34366
+/api/figures/transactions                               auth  200  459
+/figures/aux/probe/<int:task_id>                        anon  200  34366
+/figures/aux/probe/<int:task_id>                        auth  403  192
+/figures/aux/daily/<int:item_id>                        anon  200  34366
+/figures/aux/daily/<int:item_id>                        auth  403  192
+/figures/aux/method/<int:method_task_id>                anon  404  106
+/figures/aux/method/<int:method_task_id>                auth  404  106
+/figures/generate                                       anon  200  35741
+/figures/generate                                       auth  200  76255
+/figures/generate/status/<int:job_id>                   anon  404  27741
+/figures/generate/status/<int:job_id>                   auth  404  68255
+/api/wb_call/ice                                        anon  200  139
+/api/wb_call/ice                                        auth  200  139
+/api/wb_call/status                                     anon  200  109
+/api/wb_call/status                                     auth  200  109
+/api/wb_call/invites/poll                               anon  200  15
+/api/wb_call/invites/poll                               auth  200  15
+/api/wb_meet/config                                     anon  200  110
+/api/wb_meet/config                                     auth  200  110
+/api/wb_meet/status                                     anon  200  43
+/api/wb_meet/status                                     auth  200  43
+/api/chat/<int:friend_id>/presence                      anon  200  34366
+/api/chat/<int:friend_id>/presence                      auth  403  24
+/olympiads/                                             anon  200  36270
+/olympiads/                                             auth  200  76784
+/olympiads/courses                                      anon  200  36270
+/olympiads/courses                                      auth  200  76784
+/olympiads/course/<int:grade>                           anon  200  36270
+/olympiads/course/<int:grade>                           auth  200  76784
+/olympiads/course-probnik                               anon  200  27856
+/olympiads/course-probnik                               auth  200  68370
+/olympiads/course-probnik/10                            anon  200  27858
+/olympiads/course-probnik/10                            auth  200  68372
+/olympiads/course-probnik/11                            anon  200  27858
+/olympiads/course-probnik/11                            auth  200  68372
+/olympiads/probnik/<code>                               anon  404  27741
+/olympiads/probnik/<code>                               auth  404  68255
+/olympiads/task/<int:task_id>                           anon  200  68099
+/olympiads/task/<int:task_id>                           auth  200  108611
+/olympiads/probnik/<code>/active                        anon  200  34366
+/olympiads/probnik/<code>/active                        auth  404  68255
+/olympiads/probnik/<code>/submit                        anon  200  34366
+/olympiads/probnik/<code>/submit                        auth  404  68255
+/olympiads/predict-methods                              anon  200  34857
+/olympiads/predict-methods                              auth  200  75371
+/olympiads/methods                                      anon  200  4010194
+/olympiads/methods                                      auth  200  4010194
+/olympiads/methods/<method_code>                        anon  404  27741
+/olympiads/methods/<method_code>                        auth  404  68255
+/olympiads/methods/section/<int:grade>/<section_name>   anon  200  27946
+/olympiads/methods/section/<int:grade>/<section_name>   auth  200  68460
+/olympiads/methods/task/<method_task_id>                anon  404  27741
+/olympiads/methods/task/<method_task_id>                auth  404  68255
+/olympiads/my-progress                                  anon  200  34366
+/olympiads/my-progress                                  auth  200  68864
+/admin/support                                          anon  200  34366
+/admin/support                                          auth  200  73481
+/my/support                                             anon  200  34366
+/my/support                                             auth  200  71428
+/api/my/support/messages                                anon  200  34366
+/api/my/support/messages                                auth  200  304
+/api/my/support/unread_count                            anon  200  34366
+/api/my/support/unread_count                            auth  200  13
+/grade-5                                                anon  200  29387
+/grade-5                                                auth  200  69901
+/grade-6                                                anon  200  29392
+/grade-6                                                auth  200  69906
+/grade-5/<string:domain>                                anon  404  27741
+/grade-5/<string:domain>                                auth  404  68255
+/grade-6/<string:domain>                                anon  404  27741
+/grade-6/<string:domain>                                auth  404  68255
+/grade-task/<int:task_id>                               anon  404  27741
+/grade-task/<int:task_id>                               auth  404  68255
+/api/concierge/intents                                  anon  200  1399
+/api/concierge/intents                                  auth  200  1399
+/auth/telegram/callback                                 anon  200  34327
+/auth/telegram/callback                                 auth  200  77929
+/daily_tasks/                                           anon  200  34366
+/daily_tasks/                                           auth  200  136280
+/daily_tasks/<int:item_id>/hint                         anon  200  34366
+/daily_tasks/<int:item_id>/hint                         auth  404  152
+/daily_tasks/job_status                                 anon  200  34366
+/daily_tasks/job_status                                 auth  404  154
+/daily_tasks/status                                     anon  200  34366
+/daily_tasks/status                                     auth  404  136
+/daily_tasks/calendar                                   anon  200  34366
+/daily_tasks/calendar                                   auth  200  3632
+/daily_tasks/day_history/<date_iso>                     anon  200  34366
+/daily_tasks/day_history/<date_iso>                     auth  200  99
+/curator/diagnostics/<int:session_id>/next              anon  200  550
+/curator/diagnostics/<int:session_id>/next              auth  200  550
+/curator/diagnostics/<int:session_id>/result            anon  200  232
+/curator/diagnostics/<int:session_id>/result            auth  200  232
+/curator/plans                                          anon  401  43
+/curator/plans                                          auth  200  22
+/curator/plans/<int:plan_id>                            anon  404  38
+/curator/plans/<int:plan_id>                            auth  404  38
+/curator/plans/<int:plan_id>/tasks                      anon  404  64
+/curator/plans/<int:plan_id>/tasks                      auth  404  38
+/curator/tutor/attempts/<int:user_id>/<int:task_id>     anon  200  78
+/curator/tutor/attempts/<int:user_id>/<int:task_id>     auth  403  37
+/curator/progress/<int:user_id>                         anon  200  327
+/curator/progress/<int:user_id>                         auth  403  37
+/curator/progress/<int:user_id>/streak                  anon  200  103
+/curator/progress/<int:user_id>/streak                  auth  403  37
+/curator/progress/<int:user_id>/stuck                   anon  200  119
+/curator/progress/<int:user_id>/stuck                   auth  403  37
+/curator/progress/<int:user_id>/weekly                  anon  200  654
+/curator/progress/<int:user_id>/weekly                  auth  403  37
+/curator/progress/<int:user_id>/dynamics                anon  200  22
+/curator/progress/<int:user_id>/dynamics                auth  403  37
+/curator/prep/today                                     anon  401  43
+/curator/prep/today                                     auth  200  22
+/curator/prep/morning-test                              anon  401  43
+/curator/prep/morning-test                              auth  500  220
+/curator/prep/progress                                  anon  401  43
+/curator/prep/progress                                  auth  500  222
+/curator                                                anon  200  34366
+/curator                                                auth  500  68286
+/curator/                                               anon  200  34366
+/curator/                                               auth  500  68286
+/curator/health                                         anon  200  170
+/curator/health                                         auth  200  170
+/intake/                                                anon  200  34366
+/intake/                                                auth  200  82382
+/health                                                 anon  200  172
+/health                                                 auth  200  172
+/debug/routes                                           anon  200  1461
+/debug/routes                                           auth  200  1461
+/debug-sentry                                           anon  404  27741
+/debug-sentry                                           auth  404  68255
+/scheduler                                              anon  200  76
+/scheduler                                              auth  200  76
+/scheduler/jobs/<job_id>                                anon  404  36
+/scheduler/jobs/<job_id>                                auth  404  36
+/scheduler/jobs                                         anon  200  2271
+/scheduler/jobs                                         auth  200  2271
+/healthz                                                anon  200  16
+/healthz                                                auth  200  16
+/__version                                              anon  200  216
+/__version                                              auth  200  216
+/__diag/method/<method_code>                            anon  404  22
+/__diag/method/<method_code>                            auth  404  22
+/call                                                   anon  200  34366
+/call                                                   auth  200  94557
+/conference                                             anon  200  34366
+/conference                                             auth  200  68005
+/welcome                                                anon  200  32569
+/welcome                                                auth  200  73083
+/                                                       anon  200  37299
+/                                                       auth  200  77929
+/topics                                                 anon  500  27772
+/topics                                                 auth  500  68286
+/leaderboard                                            anon  200  46456
+/leaderboard                                            auth  200  86970
+/section/<subject_key>                                  anon  200  29068
+/section/<subject_key>                                  auth  200  69582
+/section/<subject_key>/<subtopic_key>                   anon  404  27741
+/section/<subject_key>/<subtopic_key>                   auth  404  68255
+/problems                                               anon  200  39304
+/problems                                               auth  200  79818
+/problem/<int:problem_id>                               anon  404  27741
+/problem/<int:problem_id>                               auth  404  68255
+/problems/<int:problem_id>                              anon  404  27741
+/problems/<int:problem_id>                              auth  404  68255
+/probniks                                               anon  200  30895
+/probniks                                               auth  200  71409
+/olympiad-test                                          anon  200  32976
+/olympiad-test                                          auth  200  73490
+/olympiad-test/select-section                           anon  200  32976
+/olympiad-test/select-section                           auth  200  73490
+/olympiad-test/select-theme                             anon  200  32976
+/olympiad-test/select-theme                             auth  200  73490
+/olympiad-test/select-level                             anon  200  32976
+/olympiad-test/select-level                             auth  200  73490
+/olympiad-test/start                                    anon  200  32976
+/olympiad-test/start                                    auth  200  73490
+/olympiads                                              anon  200  123360
+/olympiads                                              auth  200  163874
+/olympiads/solution/<int:combo_id>                      anon  200  34654
+/olympiads/solution/<int:combo_id>                      auth  200  81165
+/dev_login                                              anon  200  77929
+/dev_login                                              auth  200  77929
+/login                                                  anon  200  77929
+/login                                                  auth  200  77929
+/verify-code                                            anon  200  77929
+/verify-code                                            auth  200  77929
+/logout                                                 anon  200  37299
+/logout                                                 auth  200  37299
+/yandex_login                                           anon  ERR  Following external redirects is not supported.
+/yandex_login                                           auth  ERR  Following external redirects is not supported.
+/yandex_receiver                                        anon  200  4800
+/yandex_receiver                                        auth  200  4800
+/link_yandex                                            anon  200  34366
+/link_yandex                                            auth  200  34366
+/api/tutor/history                                      anon  200  34366
+/api/tutor/history                                      auth  200  34366
+/profile                                                anon  200  34366
+/profile                                                auth  200  34366
+/exam/<int:exam_id>                                     anon  200  34366
+/exam/<int:exam_id>                                     auth  200  34366
+/exam/<int:exam_id>/results                             anon  200  34366
+/exam/<int:exam_id>/results                             auth  200  34366
+/free_mock/start                                        anon  200  34366
+/free_mock/start                                        auth  200  34366
+/free_mock/test                                         anon  200  34366
+/free_mock/test                                         auth  200  34366
+/adaptive_test/select_class                             anon  200  32976
+/adaptive_test/select_class                             auth  200  32976
+/adaptive_test/select_topic                             anon  200  32976
+/adaptive_test/select_topic                             auth  200  32976
+/adaptive_test/start_grade                              anon  200  32976
+/adaptive_test/start_grade                              auth  200  32976
+/adaptive_test/select_grade                             anon  200  30895
+/adaptive_test/select_grade                             auth  200  30895
+/adaptive_test/start                                    anon  200  30895
+/adaptive_test/start                                    auth  200  30895
+/api/test/active                                        anon  200  35305
+/api/test/active                                        auth  200  35305
+/api/test/<int:session_id>/resume                       anon  200  34366
+/api/test/<int:session_id>/resume                       auth  200  34366
+/adaptive_test_simple                                   anon  200  32976
+/adaptive_test_simple                                   auth  200  32976
+/adaptive_test_simple/finish                            anon  200  30895
+/adaptive_test_simple/finish                            auth  200  30895
+/adaptive_test_simple/results                           anon  200  30895
+/adaptive_test_simple/results                           auth  200  30895
+/api/problem/<int:problem_id>                           anon  200  35292
+/api/problem/<int:problem_id>                           auth  200  35292
+/adaptive-test/<int:test_id>                            anon  200  34366
+/adaptive-test/<int:test_id>                            auth  200  34366
+/adaptive-test/<int:test_id>/results                    anon  200  34366
+/adaptive-test/<int:test_id>/results                    auth  200  34366
+/social                                                 anon  200  34366
+/social                                                 auth  200  34366
+/api/social/search-users                                anon  200  34366
+/api/social/search-users                                auth  200  34366
+/api/social/friends/list                                anon  200  34366
+/api/social/friends/list                                auth  200  34366
+/api/social/mentorship/students                         anon  200  34366
+/api/social/mentorship/students                         auth  200  34366
+/api/social/mentorship/teachers                         anon  200  34366
+/api/social/mentorship/teachers                         auth  200  34366
+/student/<int:student_id>                               anon  200  34366
+/student/<int:student_id>                               auth  200  34366
+/secrets                                                anon  200  34366
+/secrets                                                auth  200  34366
+/secrets/<int:secret_id>                                anon  200  90313
+/secrets/<int:secret_id>                                auth  200  90313
+/api/secrets                                            anon  200  34366
+/api/secrets                                            auth  200  34366
+/admin/tutor_stats                                      anon  200  33988
+/admin/tutor_stats                                      auth  200  33988
+/admin/needs_review                                     anon  200  33988
+/admin/needs_review                                     auth  200  33988
+/admin/fix_latex_rac                                    anon  401  44
+/admin/fix_latex_rac                                    auth  401  44
+/admin/figures                                          anon  200  34366
+/admin/figures                                          auth  200  34366
+/admin/figures/tasks                                    anon  200  34366
+/admin/figures/tasks                                    auth  200  34366
+/admin/figures/counts                                   anon  200  34366
+/admin/figures/counts                                   auth  200  34366
+/api/daily-task                                         anon  200  34366
+/api/daily-task                                         auth  200  34366
+/daily-set                                              anon  200  34366
+/daily-set                                              auth  200  34366
+/friends                                                anon  200  34366
+/friends                                                auth  200  34366
+/chat/<int:friend_id>                                   anon  200  34366
+/chat/<int:friend_id>                                   auth  200  34366
+/chat                                                   anon  200  34366
+/chat                                                   auth  200  34366
+/api/chat/conversations                                 anon  200  34366
+/api/chat/conversations                                 auth  200  34366
+/api/chat/<int:friend_id>/messages                      anon  200  34366
+/api/chat/<int:friend_id>/messages                      auth  200  34366
+/api/chat/unread_total                                  anon  200  34366
+/api/chat/unread_total                                  auth  200  34366
+/api/chat/task-suggestions                              anon  200  34366
+/api/chat/task-suggestions                              auth  200  34366
+/adaptive_task/<int:task_id>                            anon  200  34366
+/adaptive_task/<int:task_id>                            auth  200  34366
+/notifications                                          anon  200  34366
+/notifications                                          auth  200  34366
+/api/notifications/count                                anon  200  34366
+/api/notifications/count                                auth  200  34366
+/u/<nickname>                                           anon  200  34366
+/u/<nickname>                                           auth  200  34366
+/api/profile/<nickname>                                 anon  200  34366
+/api/profile/<nickname>                                 auth  200  34366
+/user/<int:user_id>                                     anon  200  34366
+/user/<int:user_id>                                     auth  200  34366
+/api/migrate/tables                                     anon  200  34366
+/api/migrate/tables                                     auth  200  34366
+/api/migrate/export                                     anon  200  34366
+/api/migrate/export                                     auth  200  34366
+/api/profile                                            anon  200  34366
+/api/profile                                            auth  200  34366
+/api/progress/<int:user_id>                             anon  200  34366
+/api/progress/<int:user_id>                             auth  200  34366
+/subscribe                                              anon  200  34366
+/subscribe                                              auth  200  34366
+/sql                                                    anon  200  34366
+/sql                                                    auth  200  34366
+/about                                                  anon  200  95248
+/about                                                  auth  200  95248
+/misc                                                   anon  200  31516
+/misc                                                   auth  200  31516
+/api/reviews                                            anon  200  34366
+/api/reviews                                            auth  200  34366
+/api/groups                                             anon  200  34366
+/api/groups                                             auth  200  34366
+/api/groups/<int:group_id>/members                      anon  200  34366
+/api/groups/<int:group_id>/members                      auth  200  34366
+/api/groups/<int:group_id>/info                         anon  200  34366
+/api/groups/<int:group_id>/info                         auth  200  34366
+/api/users/<int:user_id>/info                           anon  200  34366
+/api/users/<int:user_id>/info                           auth  200  34366
+/api/groups/<int:group_id>/messages                     anon  200  34366
+/api/groups/<int:group_id>/messages                     auth  200  34366
+/groups/<int:group_id>                                  anon  200  34366
+/groups/<int:group_id>                                  auth  200  34366
+/matstat                                                anon  200  34366
+/matstat                                                auth  200  34366
+
+BAD_COUNT=9
+  BAD: /prep/coach auth 500
+  BAD: /curator/prep/morning-test auth 500
+  BAD: /curator/prep/progress auth 500
+  BAD: /curator auth 500
+  BAD: /curator/ auth 500
+  BAD: /topics anon 500
+  BAD: /topics auth 500
+  BAD: /yandex_login anon ERR
+  BAD: /yandex_login auth ERR
+404_COUNT=42
+  404: /prep/<int:plan_id> auth
+  404: /prep/<int:plan_id>/day/<int:day_id> auth
+  404: /prep/<int:plan_id>/today auth
+  404: /olympiad-prep/<slug> anon
+  404: /olympiad-prep/<slug> auth
+  404: /figures/aux/method/<int:method_task_id> anon
+  404: /figures/aux/method/<int:method_task_id> auth
+  404: /figures/generate/status/<int:job_id> anon
+  404: /figures/generate/status/<int:job_id> auth
+  404: /olympiads/probnik/<code> anon
+  404: /olympiads/probnik/<code> auth
+  404: /olympiads/probnik/<code>/active auth
+  404: /olympiads/probnik/<code>/submit auth
+  404: /olympiads/methods/<method_code> anon
+  404: /olympiads/methods/<method_code> auth
+  404: /olympiads/methods/task/<method_task_id> anon
+  404: /olympiads/methods/task/<method_task_id> auth
+  404: /grade-5/<string:domain> anon
+  404: /grade-5/<string:domain> auth
+  404: /grade-6/<string:domain> anon
+  404: /grade-6/<string:domain> auth
+  404: /grade-task/<int:task_id> anon
+  404: /grade-task/<int:task_id> auth
+  404: /daily_tasks/<int:item_id>/hint auth
+  404: /daily_tasks/job_status auth
+  404: /daily_tasks/status auth
+  404: /curator/plans/<int:plan_id> anon
+  404: /curator/plans/<int:plan_id> auth
+  404: /curator/plans/<int:plan_id>/tasks anon
+  404: /curator/plans/<int:plan_id>/tasks auth
+  404: /debug-sentry anon
+  404: /debug-sentry auth
+  404: /scheduler/jobs/<job_id> anon
+  404: /scheduler/jobs/<job_id> auth
+  404: /__diag/method/<method_code> anon
+  404: /__diag/method/<method_code> auth
+  404: /section/<subject_key>/<subtopic_key> anon
+  404: /section/<subject_key>/<subtopic_key> auth
+  404: /problem/<int:problem_id> anon
+  404: /problem/<int:problem_id> auth
+  404: /problems/<int:problem_id> anon
+  404: /problems/<int:problem_id> auth
+DONE
+[olympiads.py] Loaded 5218 entries from JSONL
+��������: ���� adaptive_data.py �� ������ ��� ����.
+[figures_manifest] MANIFEST.json not found - figures disabled
+DEBUG: ��������� 81 �������� �������� �� problem_images.py

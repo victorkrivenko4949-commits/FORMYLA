@@ -1,0 +1,20 @@
+{
+  "id": 801330,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $D$, $E$, $F$ соответственно так, что $BD:DC = CE:EA = AF:FB = 1:2$. Прямые $AD$, $BE$, $CF$ пересекаются, образуя треугольник $XYZ$ (точки пересечения: $X = AD \\cap BE$, $Y = BE \\cap CF$, $Z = CF \\cap AD$). Докажите, что площадь треугольника $XYZ$ в $7$ раз меньше площади треугольника $ABC$.",
+  "solution": "Пусть площадь треугольника $ABC$ равна $1$. Введём барицентрические координаты. Положим $A=(1,0,0)$, $B=(0,1,0)$, $C=(0,0,1)$. Так как $BD:DC=1:2$, точка $D$ делит $BC$ в отношении $1:2$ от $B$ к $C$, поэтому $D=(0,\\frac{2}{3},\\frac{1}{3})$. Аналогично $E=(\\frac{1}{3},0,\\frac{2}{3})$, $F=(\\frac{2}{3},\\frac{1}{3},0)$.\n\nНайдём $X = AD \\cap BE$. Параметризуем прямую $AD$: $A + u(D-A) = (1-u,\\frac{2u}{3},\\frac{u}{3})$. Прямую $BE$: $B + v(E-B) = (\\frac{v}{3},1-v,\\frac{2v}{3})$. Приравнивая координаты, получаем систему:\n\\[\n\\begin{cases}\n1-u = \\frac{v}{3}\\\\\n\\frac{2u}{3} = 1-v\\\\\n\\frac{u}{3} = \\frac{2v}{3}\n\\end{cases}\n\\]\nИз третьего уравнения $u=2v$. Подставляем в первое: $1-2v=\\frac{v}{3}\\Rightarrow 1=\\frac{7v}{3}\\Rightarrow v=\\frac{3}{7}$, $u=\\frac{6}{7}$. Тогда $X = \\left(1-\\frac{6}{7},\\frac{2\\cdot6/7}{3},\\frac{6/7}{3}\\right)=\\left(\\frac{1}{7},\\frac{4}{7},\\frac{2}{7}\\right)$.\n\nАналогично находим $Y = BE \\cap CF$. Прямая $CF$: $C + w(F-C) = \\left(\\frac{2w}{3},\\frac{w}{3},1-w\\right)$. Приравниваем к $BE$: $(\\frac{v}{3},1-v,\\frac{2v}{3}) = (\\frac{2w}{3},\\frac{w}{3},1-w)$. Из первого $v=2w$, из третьего $\\frac{2v}{3}=1-w\\Rightarrow \\frac{4w}{3}=1-w\\Rightarrow 1=\\frac{7w}{3}\\Rightarrow w=\\frac{3}{7}$, $v=\\frac{6}{7}$. Тогда $Y = \\left(\\frac{2}{7},\\frac{1}{7},\\frac{4}{7}\\right)$.\n\nТеперь $Z = AD \\cap CF$. Приравниваем $(1-u,\\frac{2u}{3},\\frac{u}{3})$ и $(\\frac{2w}{3},\\frac{w}{3},1-w)$. Из второго $\\frac{2u}{3}=\\frac{w}{3}\\Rightarrow w=2u$. Из первого $1-u=\\frac{2w}{3}=\\frac{4u}{3}\\Rightarrow 1=\\frac{7u}{3}\\Rightarrow u=\\frac{3}{7}$, $w=\\frac{6}{7}$. Тогда $Z = \\left(\\frac{4}{7},\\frac{2}{7},\\frac{1}{7}\\right)$.\n\nПлощадь треугольника $XYZ$ в барицентрических координатах равна модулю определителя матрицы, составленной из его вершин (площадь $ABC$ принята за $1$):\n\\[\n\\det\\begin{pmatrix}\n\\frac{1}{7} & \\frac{4}{7} & \\frac{2}{7}\\\\\n\\frac{2}{7} & \\frac{1}{7} & \\frac{4}{7}\\\\\n\\frac{4}{7} & \\frac{2}{7} & \\frac{1}{7}\n\\end{pmatrix}=\\left(\\frac{1}{7}\\right)^3\\det\\begin{pmatrix}\n1 & 4 & 2\\\\\n2 & 1 & 4\\\\\n4 & 2 & 1\n\\end{pmatrix}=\\frac{1}{343}\\cdot49=\\frac{1}{7}.\n\\]\nТаким образом, $S_{XYZ}=\\frac{1}{7}S_{ABC}$, что и требовалось доказать.",
+  "correct_answer": "Площадь треугольника XYZ в 7 раз меньше площади треугольника ABC",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Барицентрические координаты",
+  "idea_count": 5,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T12:33:35.768524+00:00"
+}

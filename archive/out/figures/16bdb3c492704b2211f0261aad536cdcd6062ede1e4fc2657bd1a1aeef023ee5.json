@@ -1,0 +1,88 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "CM"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "K",
+   "circle": "w",
+   "line": "BN",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "line": "BN",
+   "style": "soft"
+  },
+  {
+   "segment": "AK",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "AB",
+    "BC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AM",
+    "MC"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "CN",
+    "NM"
+   ],
+   "ticks": 3
+  },
+  {
+   "angle": [
+    "K",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

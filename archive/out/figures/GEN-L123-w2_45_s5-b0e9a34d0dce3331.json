@@ -1,0 +1,72 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "BC",
+   "ratio": 0.37
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "BC",
+   "ratio": 0.68
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AP"
+  },
+  {
+   "segment": "AQ"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "P"
+   ],
+   "text": "15°"
+  },
+  {
+   "angle": [
+    "P",
+    "A",
+    "Q"
+   ],
+   "text": "15°"
+  },
+  {
+   "angle": [
+    "Q",
+    "A",
+    "C"
+   ],
+   "text": "15°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "A",
+   "line": "BC"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AH",
+   "style": "dashed"
+  }
+ ]
+}

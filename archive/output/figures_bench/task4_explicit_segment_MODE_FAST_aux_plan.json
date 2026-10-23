@@ -1,0 +1,1 @@
+{"has_aux": true, "reason": "", "constructions": [{"type": "segment", "id": "seg_MC", "p1": "M", "p2": "C", "style": "aux", "dashed": true, "visual_role": "aux", "purpose": "Соединяет вершину C с серединой M стороны AB, разбивая треугольник ABC на два треугольника AMC и BMC.", "solution_evidence": {"step_no": 1, "quote": "Проведём отрезок MC."}}]}

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}База — всё, что сделано — Админ FORMYLA.net{% endblock %}
+{% block extra_css %}
+<style>
+  .ab-wrap { max-width: 1240px; margin: 24px auto; padding: 0 16px; color: var(--text, #e2e8f0); }
+  .ab-title { font-size: 26px; font-weight: 800; margin-bottom: 4px; }
+  .ab-sub { color: var(--muted, #94a3b8); font-size: 14px; margin-bottom: 18px; }
+  .ab-tabs { display:flex; gap:8px; flex-wrap:wrap; margin: 10px 0 18px; }
+  .ab-tabs a { padding:8px 14px; border-radius:10px; background: var(--card, #141a2e); border:1px solid rgba(255,255,255,.08); color: var(--text,#e2e8f0); text-decoration:none; font-weight:600; font-size:14px; }
+  .ab-tabs a.active { background:#f4b942; color:#0b1020; border-color:#f4b942; }
+  .ab-cards { display:grid; grid-template-columns: repeat(auto-fit, minmax(170px,1fr)); gap:12px; margin-bottom: 22px; }
+  .ab-card { background: var(--card, #141a2e); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px 16px; }
+  .ab-card .v { font-size: 26px; font-weight: 800; }
+  .ab-card .l { color: var(--muted,#94a3b8); font-size: 12px; margin-top:2px; }
+  .ab-sec { margin: 26px 0 10px; font-size: 18px; font-weight: 800; display:flex; align-items:center; gap:10px; }
+  .ab-sec small { color: var(--muted,#94a3b8); font-weight: 500; font-size: 13px; }
+  table.ab { width:100%; border-collapse: collapse; font-size: 13.5px; background: var(--card,#141a2e); border-radius: 12px; overflow:hidden; }
+  table.ab th, table.ab td { padding: 8px 10px; border-bottom:1px solid rgba(255,255,255,.06); text-align:left; vertical-align: top; }
+  table.ab th { color: var(--muted,#94a3b8); font-weight:600; font-size:12px; text-transform: uppercase; letter-spacing:.03em; }
+  table.ab tr:hover td { background: rgba(255,255,255,.03); }
+  .ab-num { text-align:right !important; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ab-pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11.5px; background: rgba(244,185,66,.15); color:#f4b942; font-weight:700; }
+  .ab-pill.g { background: rgba(34,197,94,.15); color:#4ade80; }
+  .ab-pill.r { background: rgba(239,68,68,.15); color:#f87171; }
+  .ab-pill.b { background: rgba(96,165,250,.15); color:#93c5fd; }
+  .ab-user { color:#f4b942; font-weight:700; text-decoration:none; }
+  .ab-user:hover { text-decoration: underline; }
+  .ab-search { display:flex; gap:8px; margin: 8px 0 14px; }
+  .ab-search input { flex:1; max-width:420px; padding:9px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); color: var(--text,#e2e8f0); font-size:14px; }
+  .ab-search button { padding:9px 14px; border-radius:10px; background:#f4b942; color:#0b1020; border:0; font-weight:800; cursor:pointer; }
+  .ab-mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: var(--muted,#94a3b8); }
+  .ab-cat { margin-top: 18px; }
+  .ab-cat h3 { font-size: 15px; margin: 0 0 6px; color: var(--text,#e2e8f0); }
+  .ab-thumb { width:38px; height:38px; object-fit:cover; border-radius:6px; border:1px solid rgba(255,255,255,.12); margin-right:4px; background:#fff; }
+  .ab-err { color:#f87171; font-size: 12px; }
+  details.ab-cols summary { cursor:pointer; color: var(--muted,#94a3b8); font-size:12px; }
+  .ab-muted { color: var(--muted,#94a3b8); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="ab-wrap">
+  <div class="ab-title">📦 База — всё, что сделано на сайте</div>
+  <div class="ab-sub">
+    Снимок {{ summary.generated_at }} UTC · БД: {{ summary.dialect }} ·
+    таблиц: {{ summary.totals.tables }} (с привязкой к пользователю: {{ summary.totals.user_tables }},
+    контентных: {{ summary.totals.content_tables }}) · строк всего: {{ "{:,}".format(summary.totals.rows).replace(",", " ") }}
+  </div>
+
+  <div class="ab-tabs">
+    <a href="/admin/users">Пользователи (статистика)</a>
+    <a href="/admin/base" class="active">База</a>
+    <a href="#ab-users">Юзеры →</a>
+    <a href="#ab-feed">Лента →</a>
+    <a href="#ab-tables">Таблицы →</a>
+    <a href="/admin/base/api/summary" target="_blank">JSON</a>
+  </div>
+
+  <div class="ab-cards">
+    <div class="ab-card"><div class="v">{{ summary.headline.answers }}</div><div class="l">Задачи и ответы пользователей</div></div>
+    <div class="ab-card"><div class="v">{{ summary.headline.solutions }}</div><div class="l">Решения / попытки</div></div>
+    <div class="ab-card"><div class="v">{{ summary.headline.figures }}</div><div class="l">Чертежи (сгенерировано)</div></div>
+    <div class="ab-card"><div class="v">{{ summary.headline.tutor }}</div><div class="l">Сообщений AI-тьютору</div></div>
+    <div class="ab-card"><div class="v">{{ summary.headline.bank }}</div><div class="l">Задач в банке</div></div>
+    <div class="ab-card"><div class="v">{{ users|length }}</div><div class="l">Пользователей в списке</div></div>
+  </div>
+
+  {# ───────── Пользователи ───────── #}
+  <div class="ab-sec" id="ab-users">Пользователи <small>нажми на имя — откроется всё, что сделал именно он</small></div>
+  <form class="ab-search" method="get" action="/admin/base">
+    <input type="text" name="q" value="{{ q }}" placeholder="Поиск: имя, email, telegram, id (например lavrik)">
+    <button type="submit">Найти</button>
+    {% if q %}<a class="ab-tabs" href="/admin/base" style="align-self:center;color:var(--muted)">сброс</a>{% endif %}
+  </form>
+  <table class="ab">
+    <thead><tr>
+      <th>ID</th><th>Пользователь</th><th>Профиль</th>
+      <th class="ab-num">Всего</th><th class="ab-num">Ответы</th><th class="ab-num">Решения</th>
+      <th class="ab-num">Чертежи</th><th class="ab-num">AI-тьютор</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for u in users %}
+      <tr>
+        <td class="ab-mono">{{ u.id }}</td>
+        <td><a class="ab-user" href="/admin/base/user/{{ u.id }}">{{ u.name }}</a>
+          {% if u.is_admin %}<span class="ab-pill r">admin</span>{% endif %}
+          {% if u.is_guest %}<span class="ab-pill">guest</span>{% endif %}</td>
+        <td class="ab-mono">{% for k, v in u.fields.items() if k not in ('id','is_admin','is_guest') and v %}{{ k }}={{ v }}{% if not loop.last %} · {% endif %}{% endfor %}</td>
+        <td class="ab-num"><b>{{ u.total }}</b></td>
+        <td class="ab-num">{{ u.answers }}</td>
+        <td class="ab-num">{{ u.solutions }}</td>
+        <td class="ab-num">{{ u.figures }}</td>
+        <td class="ab-num">{{ u.tutor }}</td>
+        <td><a class="ab-user" href="/admin/base/user/{{ u.id }}">открыть →</a></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="9" class="ab-muted">Никого не найдено{% if q %} по запросу «{{ q }}»{% endif %}.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {# ───────── Лента ───────── #}
+  <div class="ab-sec" id="ab-feed">Лента последних действий <small>все таблицы с user_id, по времени</small></div>
+  <table class="ab">
+    <thead><tr><th>Когда</th><th>Кто</th><th>Что</th><th>Детали</th></tr></thead>
+    <tbody>
+    {% for e in feed %}
+      <tr>
+        <td class="ab-mono" style="white-space:nowrap">{{ e.when }}</td>
+        <td>{% if e.user_id %}<a class="ab-user" href="/admin/base/user/{{ e.user_id }}">#{{ e.user_id }}</a>{% else %}—{% endif %}</td>
+        <td><span class="ab-pill b">{{ e.category }}</span> {{ e.label }} <span class="ab-mono">id={{ e.id }}</span></td>
+        <td>{% for img in e.images %}<a href="{{ img }}" target="_blank"><img class="ab-thumb" src="{{ img }}" loading="lazy" alt=""></a>{% endfor %}
+            <span class="ab-mono">{{ e.summary }}</span></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="ab-muted">Нет таблиц с временной колонкой — лента пуста.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {# ───────── Все таблицы по категориям ───────── #}
+  <div class="ab-sec" id="ab-tables">Вся база по разделам <small>каждая таблица, счётчики и свежесть</small></div>
+  {% for cat in summary.by_category %}
+  <div class="ab-cat">
+    <h3>{{ cat.category }} <span class="ab-pill">{{ cat.rows }} строк</span></h3>
+    <table class="ab">
+      <thead><tr>
+        <th>Таблица</th><th class="ab-num">Строк</th><th class="ab-num">Юзеров</th>
+        <th class="ab-num">24ч</th><th class="ab-num">7д</th><th class="ab-num">30д</th><th>Последняя запись</th><th>Колонки</th>
+      </tr></thead>
+      <tbody>
+      {% for t in cat.tables %}
+        <tr>
+          <td>{{ t.label }}<br><span class="ab-mono">{{ t.table }}{% if t.user_fk %} · {{ t.user_fk }}{% endif %}</span>
+              {% if t.error %}<div class="ab-err">{{ t.error }}</div>{% endif %}</td>
+          <td class="ab-num"><b>{{ t.rows if t.rows is not none else '—' }}</b></td>
+          <td class="ab-num">{{ t.users if t.users is not none else '—' }}</td>
+          <td class="ab-num">{{ t.last_24h if t.last_24h is not none else '—' }}</td>
+          <td class="ab-num">{{ t.last_7d if t.last_7d is not none else '—' }}</td>
+          <td class="ab-num">{{ t.last_30d if t.last_30d is not none else '—' }}</td>
+          <td class="ab-mono">{{ t.last_at or '—' }}</td>
+          <td><details class="ab-cols"><summary>{{ t.columns|length }} кол.</summary><span class="ab-mono">{{ t.columns|join(', ') }}</span></details></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

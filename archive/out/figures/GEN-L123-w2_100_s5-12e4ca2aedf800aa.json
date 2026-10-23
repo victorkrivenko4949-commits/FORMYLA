@@ -1,0 +1,59 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "cyclic"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "P",
+   "of": [
+    "AC",
+    "BD"
+   ]
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w"
+  },
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC"
+  },
+  {
+   "segment": "BD"
+  }
+ ],
+ "draw_aux": [],
+ "marks": [
+  {
+   "right": "DAC"
+  },
+  {
+   "right": "DBC"
+  },
+  {
+   "angle": [
+    "ACD",
+    "ABD"
+   ]
+  },
+  {
+   "angle": [
+    "ACB",
+    "ADB"
+   ]
+  }
+ ]
+}

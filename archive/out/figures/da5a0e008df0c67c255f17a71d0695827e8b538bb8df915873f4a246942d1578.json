@@ -1,0 +1,74 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "N",
+   "circle": "w",
+   "line": "AI",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "w",
+   "line": "CI",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "MN",
+   "line2": "BO"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "line": "AI",
+   "style": "soft"
+  },
+  {
+   "line": "CI",
+   "style": "soft"
+  },
+  {
+   "segment": "MN"
+  },
+  {
+   "segment": "BO"
+  },
+  {
+   "line": "XI",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

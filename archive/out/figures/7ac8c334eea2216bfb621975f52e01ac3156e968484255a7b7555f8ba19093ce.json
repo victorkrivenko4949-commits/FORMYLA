@@ -1,0 +1,100 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "cyclic"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X",
+   "of": "AB",
+   "ratio": 0.3
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y",
+   "of": "BC",
+   "ratio": 0.65
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "XY"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "XY",
+   "style": "soft"
+  },
+  {
+   "segment": "AM",
+   "style": "accent"
+  },
+  {
+   "segment": "MC",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AX",
+    "CD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CY",
+    "AD"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "K",
+   "of": "X",
+   "over": "A"
+  },
+  {
+   "type": "reflect_point",
+   "id": "L",
+   "of": "Y",
+   "over": "C"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "KY",
+   "style": "dashed"
+  },
+  {
+   "segment": "XL",
+   "style": "dashed"
+  },
+  {
+   "segment": "KX",
+   "style": "dashed"
+  },
+  {
+   "segment": "LY",
+   "style": "dashed"
+  }
+ ]
+}

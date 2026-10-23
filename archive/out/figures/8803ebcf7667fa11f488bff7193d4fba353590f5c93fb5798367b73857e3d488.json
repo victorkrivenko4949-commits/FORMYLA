@@ -1,0 +1,86 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "isosceles"
+  },
+  {
+   "type": "incenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "O",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "M",
+   "from": "O",
+   "line": "AC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "M",
+   "over": "A"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "segment": "EM",
+   "style": "soft"
+  },
+  {
+   "segment": "DE",
+   "style": "accent"
+  },
+  {
+   "segment": "AO",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AD",
+    "AE"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AM",
+    "MC"
+   ],
+   "ticks": 2
+  },
+  {
+   "right_angle": [
+    "D",
+    "E",
+    "M"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,132 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "M",
+   "from": "A",
+   "line": "DE"
+  },
+  {
+   "type": "foot",
+   "id": "N",
+   "from": "C",
+   "line": "DE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD",
+   "style": "dashed"
+  },
+  {
+   "segment": "CE",
+   "style": "dashed"
+  },
+  {
+   "line": "DE",
+   "style": "soft"
+  },
+  {
+   "segment": "AM",
+   "style": "dashed"
+  },
+  {
+   "segment": "CN",
+   "style": "dashed"
+  },
+  {
+   "segment": "ME",
+   "style": "accent"
+  },
+  {
+   "segment": "DN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "D",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "E",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "M",
+    "E"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "N",
+    "D"
+   ]
+  },
+  {
+   "equal": [
+    "ME",
+    "DN"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "AC"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "foot",
+   "id": "K",
+   "from": "O",
+   "line": "DE"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
+   "style": "dashed"
+  },
+  {
+   "segment": "OK",
+   "style": "soft"
+  }
+ ]
+}

@@ -1,0 +1,12 @@
+{
+  "combo_index": 31,
+  "total_combos": 32,
+  "existing_counts": {
+    "F6_8": {
+      "generated": 25,
+      "failed": 0
+    }
+  },
+  "last_task": "8-F6-25",
+  "timestamp": "2026-07-02T20:55:12.864282+00:00"
+}

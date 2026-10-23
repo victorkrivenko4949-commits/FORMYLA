@@ -1,0 +1,113 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 2,
+   "y": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "AC"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 56
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "w",
+   "angle": 248
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AC",
+   "line2": "BD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "circle": "w"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "28°"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "D"
+   ],
+   "text": "34°"
+  },
+  {
+   "angle": [
+    "C",
+    "B",
+    "D"
+   ],
+   "text": "56°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "AD",
+   "line2": "BC",
+   "reason": "Продолжения сторон AD и BC пересекаются в точке E; угол между прямыми AD и BC равен углу AEB"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "DE",
+   "style": "dashed"
+  },
+  {
+   "segment": "CE",
+   "style": "dashed"
+  }
+ ]
+}

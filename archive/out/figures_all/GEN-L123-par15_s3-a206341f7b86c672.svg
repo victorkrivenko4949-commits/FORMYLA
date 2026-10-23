@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<rect width="620" height="620" fill="#070C18"/>
+<polygon points="107.9,156.0 121.1,534.6 560.0,357.3" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="107.9" y1="156.0" x2="413.7" y2="416.4" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<circle cx="260.8" cy="286.2" r="200.8" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="413.7" y1="416.4" x2="117.4" y2="426.7" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="121.1" y1="534.6" x2="117.4" y2="426.7" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<path d="M 120.2 508.6 A 26 26 0 0 1 145.2 524.9" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="143.5" y="505.2" fill="#8C9ABC" font-size="15" text-anchor="middle">60°</text>
+<polyline points="130.4,426.3 130.8,439.3 117.8,439.7" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<circle cx="107.9" cy="156.0" r="3.4" fill="#E6EBF7"/>
+<text x="97.9" y="144.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="121.1" cy="534.6" r="3.4" fill="#E6EBF7"/>
+<text x="107.0" y="554.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="560.0" cy="357.3" r="3.4" fill="#E6EBF7"/>
+<text x="580.0" y="363.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="413.7" cy="416.4" r="3.4" fill="#E6EBF7"/>
+<text x="423.7" y="439.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="260.8" cy="286.2" r="3.4" fill="#E6EBF7"/>
+<text x="270.8" y="274.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">M1</text>
+<circle cx="117.4" cy="426.7" r="3.4" fill="#E6EBF7"/>
+<text x="97.4" y="432.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">E</text>
+</svg>

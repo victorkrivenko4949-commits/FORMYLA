@@ -1,0 +1,15 @@
+== status distribution ==
+{'base_thinking': 2, 'done': 680, 'failed': 517, 'queued': 6}
+
+== active (non-final) jobs with updated_at ==
+  job=2149 status=queued         prio=1 mode=condition_solution age=1218s
+  job=2150 status=queued         prio=1 mode=condition_solution age=1218s
+  job=2151 status=queued         prio=1 mode=condition_solution age=1218s
+  job=2152 status=queued         prio=1 mode=condition_solution age=1218s
+  job=2153 status=queued         prio=1 mode=condition_solution age=1218s
+  job=2154 status=queued         prio=1 mode=condition_solution age=1218s
+  job=2146 status=base_thinking  prio=1 mode=condition_solution age=399s
+  job=2148 status=base_thinking  prio=1 mode=condition_solution age=223s
+
+== queued count by priority ==
+{1: 6}

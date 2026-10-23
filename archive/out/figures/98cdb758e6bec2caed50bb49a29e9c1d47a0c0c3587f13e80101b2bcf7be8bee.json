@@ -1,0 +1,118 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "O",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "O",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "F",
+   "from": "O",
+   "line": "CA"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "ABC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "dashed"
+  },
+  {
+   "segment": "OD",
+   "style": "soft"
+  },
+  {
+   "segment": "OE",
+   "style": "soft"
+  },
+  {
+   "segment": "OF",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O",
+    "D",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "E",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "F",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "AD",
+    "AF"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BD",
+    "BE"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "CE",
+    "CF"
+   ],
+   "ticks": 3
+  },
+  {
+   "equal": [
+    "OD",
+    "OE"
+   ],
+   "ticks": 4
+  },
+  {
+   "equal": [
+    "OE",
+    "OF"
+   ],
+   "ticks": 4
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

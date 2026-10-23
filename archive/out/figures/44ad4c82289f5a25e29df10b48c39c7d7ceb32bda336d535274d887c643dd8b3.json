@@ -1,0 +1,92 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "C",
+   "through": "D"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "E",
+   "circle": "w",
+   "angle": 220
+  },
+  {
+   "type": "midpoint",
+   "id": "F",
+   "of": "AE"
+  },
+  {
+   "type": "midpoint",
+   "id": "G",
+   "of": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AE",
+   "style": "soft"
+  },
+  {
+   "segment": "DE",
+   "style": "accent"
+  },
+  {
+   "segment": "FG",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "CD",
+    "CE"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AF",
+    "FE"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "BG",
+    "GC"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "H",
+   "of": "DE",
+   "reason": "H — середина DE, чтобы провести среднюю линию FH и медиану CH в равнобедренном треугольнике DCE"
+  }
+ ],
+ "draw_aux": [
+  {
+   "point": "H"
+  },
+  {
+   "segment": "FH",
+   "style": "dashed"
+  },
+  {
+   "segment": "CH",
+   "style": "dashed"
+  }
+ ]
+}

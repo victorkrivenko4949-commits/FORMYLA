@@ -1,0 +1,128 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "C",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "Q",
+   "circle": "w1",
+   "angle": 90
+  },
+  {
+   "type": "midpoint",
+   "id": "T1",
+   "of": "AQ"
+  },
+  {
+   "type": "reflect_point",
+   "id": "P",
+   "of": "C",
+   "over": "T1"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "M",
+   "circle": "w2",
+   "angle": 90
+  },
+  {
+   "type": "midpoint",
+   "id": "T2",
+   "of": "BM"
+  },
+  {
+   "type": "reflect_point",
+   "id": "N",
+   "of": "C",
+   "over": "T2"
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "PM",
+   "line2": "AN"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ACQP"
+  },
+  {
+   "polygon": "BCMN"
+  },
+  {
+   "line": "PM",
+   "style": "accent"
+  },
+  {
+   "line": "AN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "60°"
+  },
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "Q"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "C",
+    "M"
+   ]
+  },
+  {
+   "equal": [
+    "AC",
+    "CQ"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "CM"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "P",
+    "X",
+    "A"
+   ],
+   "text": "60°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

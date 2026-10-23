@@ -1,0 +1,142 @@
+[SANITIZED PARSE] Also FAILED at pos 2242: Unterminated string starting at
+  Sanitized context: 'ости. Между ними нет дуг, и они образуют искомое разбиение.",\n      "solution": "Рассмотрим ориентированный граф, вершины которого — города, а дуги — дороги. По'
+
+
+======================================================================
+CELL: G5|L5|T005|S1 (needed=5)
+Size: 10293 bytes
+Starts with: '{\n  "tasks": [\n    {\n      "statement": "В треугольнике \\(ABC\\) сторона \\(AB\\) р'
+Ends with: 'сторон треугольников \\(ABD\\) и \\(ADC\\): \\(AB^2 + BD^2 + AD^2 + AD^2 + DC^2 + AC^2 = 200\\). Подставляем: \\(36 + x^2 + AD^'
+[DIRECT PARSE] FAILED at pos 56: Invalid \escape
+--- Context around error position ---
+Context (56 chars before error):
+'{\n  "tasks": [\n    {\n      "statement": "В треугольнике '
+^^^ 56 chars ^^^
+vvv ERROR AT THIS POINT vvv
+'\\(ABC\\) сторона \\(AB\\) равна 10, сторона \\(BC\\) равна 12, а сторона \\(AC\\) равна 14. На стороне \\(BC\\) выбрана точка \\(D\\) так, что периметр треугольн'
+--- End context ---
+[SANITIZED PARSE] Also FAILED at pos 10230: Unterminated string starting at
+  Sanitized context: '\\(BD\\\\).",\n      "answer": "\\\\(BD = 5\\\\) или \\\\(BD = 3.6\\\\)",\n      "solution": "Пусть \\\\(BD = x\\\\), тогда \\\\(DC = 8 - x\\\\). Сумма квадратов сторон треугольнико'
+
+
+======================================================================
+CELL: G5|L5|T008|S1 (needed=5)
+Size: 12211 bytes
+Starts with: '{\n  "tasks": [\n    {\n      "statement": "В некоторой стране каждый город соединё'
+Ends with: 'о требуется найти единственное решение. Возможно, есть дополнительное условие, что гномы не могут быть одновременно прав'
+[DIRECT PARSE] FAILED at pos 7526: Unterminated string starting at
+--- Context around error position ---
+Context (150 chars before error):
+'ас ровно четыре лжеца». Пятый сказал: «Среди нас ровно пять лжецов». Сколько лжецов среди них на самом деле?",\n      "answer": "4",\n      "solution": '
+^^^ 150 chars ^^^
+vvv ERROR AT THIS POINT vvv
+'"Обозначим количество лжецов через k. Каждый гном делает утверждение о количестве лжецов. Если гном говорит правду, то его утверждение истинно, и k ра'
+--- End context ---
+[SANITIZED PARSE] Also FAILED at pos 7526: Unterminated string starting at
+  Sanitized context: 'колько лжецов среди них на самом деле?",\n      "answer": "4",\n      "solution": "Обозначим количество лжецов через k. Каждый гном делает утверждение о количеств'
+
+
+======================================================================
+CELL: G6|L5|T016|S1 (needed=5)
+Size: 10430 bytes
+Starts with: '{\n  "tasks": [\n    {\n      "statement": "В параллелограмме \\(ABCD\\) точка \\(M\\) '
+Ends with: 'реугольника \\(AOB\\) к площади параллелограмма. В квадрате получили 1/5. Может быть, нужно найти площадь треугольника \\(A'
+[DIRECT PARSE] FAILED at pos 59: Invalid \escape
+--- Context around error position ---
+Context (59 chars before error):
+'{\n  "tasks": [\n    {\n      "statement": "В параллелограмме '
+^^^ 59 chars ^^^
+vvv ERROR AT THIS POINT vvv
+'\\(ABCD\\) точка \\(M\\) — середина стороны \\(BC\\), а точка \\(N\\) — середина стороны \\(CD\\). Отрезки \\(AM\\) и \\(BN\\) пересекаются в точке \\(O\\). Найдите о'
+--- End context ---
+[SANITIZED PARSE] Also FAILED at pos 11013: Expecting ',' delimiter
+  Sanitized context: 'то ответ 1/6? Возможно, я ошибся в условии? Проверим еще раз: в задаче сказано "параллелограмм \\(ABCD\\)", точка \\\\(M\\\\) — середина \\\\(BC\\\\), \\\\(N\\\\) — середина '
+
+
+======================================================================
+CELL: G6|L5|T018|S2 (needed=5)
+Size: 10743 bytes
+Starts with: '{\n  "tasks": [\n    {\n      "statement": "В треугольнике \\(ABC\\) на стороне \\(BC\\'
+Ends with: 'угольника, но у нас есть еще точки \\(D\\) и \\(E\\) на сторонах, поэтому разбиение более мелкое. Действительно, треугольник'
+[DIRECT PARSE] FAILED at pos 56: Invalid \escape
+--- Context around error position ---
+Context (56 chars before error):
+'{\n  "tasks": [\n    {\n      "statement": "В треугольнике '
+^^^ 56 chars ^^^
+vvv ERROR AT THIS POINT vvv
+'\\(ABC\\) на стороне \\(BC\\) выбрана точка \\(D\\) так, что \\(BD:DC = 2:3\\). На стороне \\(AC\\) выбрана точка \\(E\\) так, что \\(AE:EC = 1:2\\). Отрезки \\(AD\\)'
+--- End context ---
+[SANITIZED PARSE] Also FAILED at pos 397: Unterminated string starting at
+  Sanitized context: 'треугольника \\\\(ABC\\\\) равна 60.",\n      "answer": "\\\\(8\\\\)",\n      "solution": "Пусть \\\\(S_{ABC}=60\\\\). Проведем через точку \\\\(D\\\\) прямую, параллельную \\\\(BE'
+
+
+======================================================================
+CELL: G6|L5|T033|S2 (needed=5)
+Size: 9023 bytes
+Starts with: '{\n  "tasks": [\n    {\n      "statement": "Три бригады рабочих должны выполнить за'
+Ends with: ' = 1/12 - 1/30 = 5/60 - 2/60 = 3/60 = 1/20\\). Значит, первый за 20 дней, второй за 30 дней. Ответ: 20 и 30."\n    }\n  ]\n}'
+[DIRECT PARSE] FAILED at pos 517: Invalid \escape
+--- Context around error position ---
+Context (150 chars before error):
+'ельно?",\n      "answer": "Первая — за 10 дней, вторая — за 12 дней, третья — за 18 дней.",\n      "solution": "Пусть первая бригада выполняет заказ за '
+^^^ 150 chars ^^^
+vvv ERROR AT THIS POINT vvv
+'\\(x\\) дней, тогда вторая — за \\(x+2\\) дня, третья — за \\(x+8\\) дней. Производительности: \\(\\frac{1}{x}\\), \\(\\frac{1}{x+2}\\), \\(\\frac{1}{x+8}\\). За 3 д'
+--- End context ---
+[SANITIZED PARSE] Also FAILED at pos 3936: Expecting ',' delimiter
+  Sanitized context: ' у нас нет связи между \\\\(t\\\\) и \\\\(s\\\\). Задача некорректна? Переформулируем: "Если первый будет работать на 2 часа дольше, чем второй, то они изготовят 120 де'
+
+
+======================================================================
+CELL: G5|L5|T004|S0 (needed=4)
+Size: 13183 bytes
+Starts with: '{\n  "tasks": [\n    {\n      "statement": "В стране 7 городов. Некоторые пары горо'
+Ends with: 'рые попарно соединены (это треугольник), и другой. В нашем графе есть два непересекающихся треугольника: например, верши'
+[DIRECT PARSE] FAILED at pos 11859: Unterminated string starting at
+--- Context around error position ---
+Context (150 chars before error):
+' исходные 6 точек являются вершинами выпуклого шестиугольника.",\n      "answer": "Исходные точки образуют выпуклый шестиугольник.",\n      "solution": '
+^^^ 150 chars ^^^
+vvv ERROR AT THIS POINT vvv
+'"Граф, описанный в условии, — это граф, состоящий из двух треугольников (каждая вершина соединена с двумя другими, образуя треугольник, и еще с одной '
+--- End context ---
+[SANITIZED PARSE] Also FAILED at pos 11859: Unterminated string starting at
+  Sanitized context: ' "answer": "Исходные точки образуют выпуклый шестиугольник.",\n      "solution": "Граф, описанный в условии, — это граф, состоящий из двух треугольников (каждая '
+
+
+======================================================================
+CELL: G6|L5|T018|S1 (needed=4)
+Size: 11691 bytes
+Starts with: '{\n  "tasks": [\n    {\n      "statement": "В круге проведены два взаимно перпендик'
+Ends with: 'же они пересекаются попарно в точках (1,1), (1,-1), (-1,1), (-1,-1)? Проверим (1,1): для (x-1)^2+y^2=1: (0)^2+1^2=1, да;'
+[DIRECT PARSE] FAILED at pos 333: Unterminated string starting at
+--- Context around error position ---
+Context (150 chars before error):
+'нутрь круга. Найдите площадь получившейся фигуры (заштрихованной), если радиус исходного круга равен 2.",\n      "answer": "4π - 8",\n      "solution": '
+^^^ 150 chars ^^^
+vvv ERROR AT THIS POINT vvv
+'"Пусть радиус большого круга R=2. Четыре полуокружности на радиусах имеют радиус r=1. Площадь большого круга πR²=4π. Площадь четырёх полуокружностей: '
+--- End context ---
+[SANITIZED PARSE] Also FAILED at pos 333: Unterminated string starting at
+  Sanitized context: 'и радиус исходного круга равен 2.",\n      "answer": "4π - 8",\n      "solution": "Пусть радиус большого круга R=2. Четыре полуокружности на радиусах имеют радиус'
+
+======================================================================
+DIAGNOSIS COMPLETE
+======================================================================
+======================================================================
+DIAGNOSING FAILED RAW RESPONSES
+======================================================================
+
+======================================================================
+CELL: G5|L5|T004|S2 (needed=5)
+Size: 13923 bytes
+Starts with: '{\n  "tasks": [\n    {\n      "statement": "� ������ ���� 10 �������, ��������� �� '
+Ends with: '�� ���� ����. �� ��� �� ������������. ��������, ����� ������������, ��� ����� ������ 10, � ������� 3, � �� ������� � ���'
+[DIRECT PARSE] FAILED at pos 2242: Unterminated string starting at
+--- Context around error position ---
+Context (150 chars before error):
+'�����, ���� �� ������ ������, � ���� ��������� ��������� ������� ���������. ����� ���� ��� ���, � ��� �������� ������� ���������.",\n      "solution": '
+^^^ 150 chars ^^^
+vvv ERROR AT THIS POINT vvv
+'"���������� ��������������� ����, ������� �������� � ������, � ���� � ������. �� �������, ����������� ������ � ����������� ������ ������ ������� �����'
+--- End context ---

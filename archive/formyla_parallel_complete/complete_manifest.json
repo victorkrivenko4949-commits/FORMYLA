@@ -1,0 +1,6 @@
+{
+  "contains_scripts": true,
+  "contains_worker_queues": 20,
+  "contains_main_queue": true,
+  "contains_dataset": true
+}

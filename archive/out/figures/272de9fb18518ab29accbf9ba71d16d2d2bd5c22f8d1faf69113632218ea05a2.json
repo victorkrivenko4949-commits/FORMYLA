@@ -1,0 +1,66 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AC"
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "BK"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "B"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "w",
+   "line": "BA",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "N",
+   "circle": "w",
+   "line": "BC",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BK",
+   "style": "dashed"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "MN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

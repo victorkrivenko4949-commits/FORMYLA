@@ -1,0 +1,91 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AC",
+   "ratio": 0.25
+  },
+  {
+   "type": "circle",
+   "id": "Gamma1",
+   "center": "A",
+   "through": "D"
+  },
+  {
+   "type": "circle",
+   "id": "Gamma2",
+   "center": "C",
+   "through": "D"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "Gamma2",
+   "line": "BC",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "Gamma3",
+   "center": "B",
+   "through": "E"
+  },
+  {
+   "type": "circle_circle",
+   "id": "F",
+   "circle1": "Gamma1",
+   "circle2": "Gamma3",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "Gamma1"
+  },
+  {
+   "circle": "Gamma2"
+  },
+  {
+   "circle": "Gamma3"
+  },
+  {
+   "segment": "AF",
+   "style": "accent"
+  },
+  {
+   "segment": "BF",
+   "style": "accent"
+  },
+  {
+   "segment": "BE",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "A",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "F",
+    "B"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

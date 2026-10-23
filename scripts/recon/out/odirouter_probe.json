@@ -1,0 +1,37 @@
+{
+  "url": "https://api.odirouter.ai/v1/chat/completions",
+  "model": "gemini-3.7-flash",
+  "status": 200,
+  "body": {
+    "choices": [
+      {
+        "index": 0,
+        "finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\"ok\": true}",
+          "reasoning_details": [
+            {
+              "index": 0,
+              "type": "reasoning.encrypted",
+              "signature": "Eo4ECosEARFNMg/wxcd9ciy+B4SGYSm+tMh0ecXWCdU6FHeqQ0RcadpumOj6kJSofXY3bSuXge1NcUeNaXZ1F20Nw46nYkAFic4FNl1jW0vN+YuLPji9yZd4dsdL8TIMLl4UPwYiKLukASKxW9CMkDVvA7r5Hrx9DPfd+JVfTwK8Q/jmQHSBmUZmCawr3WyCw88DnXSatHGGsUv4Gy/6uTF7d3ZYZVAOEla8MA4K/iuGgpQkgeaAN5atBM5v012eOKBCLKkTCLR3F5n4WZPhaazqGPpXOw1N+YN+GlrXzXz/FkY9i5CsjIMKz9D7eTyFNzEkBuUwZRdVKWCtJW8cc8j1NrkH8umTYZAWKZVawz5169yBikB4Y5WueW5Ueoi+497jLNmn+vKLbFQQWD0UrkhmlDXk7ay/49vXMccbCXxNAyhb0Ey3u5QwhTQEL88MhyhadtV27jKoO1uWqKz/+KKOHPJIQmYFobCeUEMK0Y93Giv+RvhTggR2lXdCx0mCAg73q5QvYH6s8r3mggFGz+GvO+2vuM4RAzko8vpGzfYVX/9w9180BCYjLp92gfuZHcnYm6dxdtIRN1mnutqgTRPmuoCPmhjqwbapb0fQP1e/1LMFX6nwgau+ZTtY7maks1/yIs86U2Jif8Kpa7XfNSxldGZeH2fCiHDiuzhyekSCi9vxl83+SNl43uh6U/5Rpg=="
+            }
+          ]
+        }
+      }
+    ],
+    "created": 1788120940,
+    "id": "a4-UaoyoM8Sfz7IPieDyyA4",
+    "model": "gemini-3.7-flash",
+    "object": "chat.completion",
+    "system_fingerprint": "",
+    "usage": {
+      "prompt_tokens": 16,
+      "completion_tokens": 124,
+      "completion_tokens_details": {
+        "reasoning_tokens": 119
+      },
+      "total_tokens": 140
+    }
+  }
+}

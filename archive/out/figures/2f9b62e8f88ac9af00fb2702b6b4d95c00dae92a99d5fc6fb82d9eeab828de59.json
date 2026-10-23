@@ -1,0 +1,156 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O1",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "O2",
+   "x": 5,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "R1",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "R2",
+   "x": 6,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "O1",
+   "through": "R1"
+  },
+  {
+   "type": "circle",
+   "id": "c2",
+   "center": "O2",
+   "through": "R2"
+  },
+  {
+   "type": "point",
+   "id": "P",
+   "x": -1,
+   "y": 3
+  },
+  {
+   "type": "tangent_point",
+   "id": "T1",
+   "circle": "c1",
+   "from": "P",
+   "pick": 0
+  },
+  {
+   "type": "tangent_point",
+   "id": "T2",
+   "circle": "c2",
+   "from": "P",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "circle": "c1"
+  },
+  {
+   "circle": "c2"
+  },
+  {
+   "line": "PT1"
+  },
+  {
+   "line": "PT2"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O1",
+    "T1",
+    "P"
+   ]
+  },
+  {
+   "right_angle": [
+    "O2",
+    "T2",
+    "P"
+   ]
+  },
+  {
+   "equal": [
+    "O1T1",
+    "O2T2"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "point",
+   "id": "A1",
+   "x": -5.59,
+   "y": 7.45,
+   "reason": "Точка пересечения прямых через O1 и O2, параллельных соответственно серой и чёрной сторонам"
+  },
+  {
+   "type": "triangle",
+   "id": "O1A1O2",
+   "kind": "any",
+   "reason": "Вспомогательный треугольник для построения окружности Ω"
+  },
+  {
+   "type": "circumcircle",
+   "id": "Omega",
+   "of": "O1A1O2",
+   "reason": "Окружность Ω фиксирована, так как угол O1A1O2 сохраняется при движении треугольника"
+  },
+  {
+   "type": "line_circle",
+   "id": "K",
+   "circle": "Omega",
+   "line": "A1P",
+   "pick": 1,
+   "reason": "K — вторая точка пересечения биссектрисы с Ω, середина дуги O1O2"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "O1O2",
+   "style": "soft"
+  },
+  {
+   "segment": "O1A1",
+   "style": "dashed"
+  },
+  {
+   "segment": "O2A1",
+   "style": "dashed"
+  },
+  {
+   "circle": "Omega",
+   "style": "dashed"
+  },
+  {
+   "line": "A1K",
+   "style": "accent"
+  },
+  {
+   "segment": "O1T1",
+   "style": "dashed"
+  },
+  {
+   "segment": "O2T2",
+   "style": "dashed"
+  }
+ ]
+}

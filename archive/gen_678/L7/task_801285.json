@@ -1,0 +1,20 @@
+{
+  "id": 801285,
+  "task_text": "В треугольнике $ABC$ через внутреннюю точку $P$ проведены прямые $AD$, $BE$, $CF$, пересекающие стороны $BC$, $CA$, $AB$ в точках $D$, $E$, $F$ соответственно. Оказалось, что площади треугольников $PEF$, $PDF$ и $PDE$ равны. Докажите, что $P$ — точка пересечения медиан треугольника $ABC$.",
+  "solution": "Введём барицентрические координаты точки $P$ относительно треугольника $ABC$: пусть $x = \\frac{[PBC]}{[ABC]}$, $y = \\frac{[PCA]}{[ABC]}$, $z = \\frac{[PAB]}{[ABC]}$. Тогда $x+y+z=1$ и $x,y,z>0$. Точки пересечения чевиан со сторонами имеют координаты:\n- $D = AP \\cap BC$: $D = (0:y:z) = \\left(0,\\frac{y}{y+z},\\frac{z}{y+z}\\right)$,\n- $E = BP \\cap CA$: $E = (x:0:z) = \\left(\\frac{x}{x+z},0,\\frac{z}{x+z}\\right)$,\n- $F = CP \\cap AB$: $F = (x:y:0) = \\left(\\frac{x}{x+y},\\frac{y}{x+y},0\\right)$.\n\nПлощадь треугольника с вершинами в точках, заданных абсолютными барицентрическими координатами $(\\alpha_1,\\beta_1,\\gamma_1)$, $(\\alpha_2,\\beta_2,\\gamma_2)$, $(\\alpha_3,\\beta_3,\\gamma_3)$, равна модулю определителя матрицы, составленной из этих координат, умноженному на $[ABC]$. Вычислим площади треугольников $PEF$, $PDF$, $PDE$.\n\n1) $PEF$:\n$$\n\\det\\begin{pmatrix}\nx & y & z\\\\\n\\frac{x}{x+z} & 0 & \\frac{z}{x+z}\\\\\n\\frac{x}{x+y} & \\frac{y}{x+y} & 0\n\\end{pmatrix} = \\frac{xyz}{(x+z)(x+y)}.\n$$\nСледовательно, $[PEF] = \\frac{xyz}{(x+z)(x+y)}[ABC]$.\n\n2) $PDF$:\n$$\n\\det\\begin{pmatrix}\nx & y & z\\\\\n0 & \\frac{y}{y+z} & \\frac{z}{y+z}\\\\\n\\frac{x}{x+y} & \\frac{y}{x+y} & 0\n\\end{pmatrix} = -\\frac{xyz}{(y+z)(x+y)}.\n$$\nАбсолютная величина даёт $[PDF] = \\frac{xyz}{(y+z)(x+y)}[ABC]$.\n\n3) $PDE$:\n$$\n\\det\\begin{pmatrix}\nx & y & z\\\\\n0 & \\frac{y}{y+z} & \\frac{z}{y+z}\\\\\n\\frac{x}{x+z} & 0 & \\frac{z}{x+z}\n\\end{pmatrix} = \\frac{xyz}{(y+z)(x+z)}.\n$$\nИтак, $[PDE] = \\frac{xyz}{(y+z)(x+z)}[ABC]$.\n\nПо условию $[PEF]=[PDF]=[PDE]$. Сокращая на $xyz>0$, получаем:\n$$\n\\frac{1}{(x+z)(x+y)} = \\frac{1}{(y+z)(x+y)} = \\frac{1}{(y+z)(x+z)}.\n$$\nИз равенства первой и второй дробей: $(x+z)(x+y)=(y+z)(x+y) \\Rightarrow x+z=y+z \\Rightarrow x=y$.\nИз равенства первой и третьей: $(x+z)(x+y)=(y+z)(x+z) \\Rightarrow x+y=y+z \\Rightarrow x=z$.\nТаким образом, $x=y=z$. Так как $x+y+z=1$, имеем $x=y=z=\\frac13$. Это означает, что $P$ — центроид треугольника $ABC$, точка пересечения его медиан.",
+  "correct_answer": "P — точка пересечения медиан треугольника ABC (центроид).",
+  "class_level": 10,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Барицентрические координаты и площади через определители",
+  "idea_count": 3,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T12:24:28.958316+00:00"
+}

@@ -1,0 +1,81 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X",
+   "of": "AB",
+   "ratio": 0.3905
+  },
+  {
+   "type": "foot",
+   "id": "Y",
+   "from": "X",
+   "line": "CD"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "XCD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "XY",
+   "style": "accent"
+  },
+  {
+   "circle": "w",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "A",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "X",
+    "Y",
+    "C"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "Z",
+   "line1": "AB",
+   "line2": "CD"
+  }
+ ],
+ "draw_aux": [
+  {
+   "line": "AB",
+   "style": "dashed"
+  },
+  {
+   "line": "CD",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Продолжим боковые стороны AB и CD до пересечения в точке Z; это используется в доказательстве через подобие треугольников."
+}

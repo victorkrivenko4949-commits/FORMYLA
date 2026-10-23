@@ -1,0 +1,118 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 30
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 90
+  },
+  {
+   "type": "point_on_circle",
+   "id": "M",
+   "circle": "w",
+   "angle": 60
+  },
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "AM",
+   "line2": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "C",
+    "A",
+    "D"
+   ],
+   "text": "15°"
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "15°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "D"
+   ],
+   "text": "15°"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "135°"
+  },
+  {
+   "equal": [
+    "AD",
+    "DC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_line",
+   "id": "C1",
+   "of": "C",
+   "over": "AD",
+   "reason": "Отражение C относительно AD: C1 лежит на AB, DC1=DC, AD=DC1=DC"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "C1D",
+   "style": "dashed"
+  }
+ ]
+}

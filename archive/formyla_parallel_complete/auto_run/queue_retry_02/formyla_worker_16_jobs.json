@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0492-9-E4-12",
+      "mode": "replace_bad",
+      "id": "9-E4-12",
+      "grade": 9,
+      "difficulty": 7,
+      "theme": "Комбинаторика и графы",
+      "subtopic": "Экстремальные задачи",
+      "method_code": "F3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

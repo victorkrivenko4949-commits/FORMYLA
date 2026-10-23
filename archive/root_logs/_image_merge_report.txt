@@ -1,0 +1,15 @@
+=== IMAGE MERGE REPORT ===
+
+Total combos in JSONL: 1389
+Total problems with images: 1603
+Total images in JSONL: 3013
+IMAGE_MAP entries: 1588
+Images copied to static/: 1588
+Copy errors: 0
+Skipped (file not found): 10
+
+Image kind distribution:
+  solution: 1418
+  statement: 1197
+  statement_page_crop: 394
+  solution_page_crop: 4

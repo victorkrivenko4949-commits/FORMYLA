@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json; text=open('_last_response_11.txt','r',encoding='utf-8').read(); start=text.find('['); end=text.rfind(']'); data=json.loads(text[start:end+1]); open('_grade11_day2.json','w',encoding='utf-8').write(json.dumps(data,ensure_ascii=False,indent=2)); print('OK: '+str(len(data))+' problems')
+                                                                                                                                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)

@@ -1,0 +1,104 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 10,
+   "y": 0
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "AB",
+   "ratio": 0.4
+  },
+  {
+   "type": "point",
+   "id": "K",
+   "x": 1,
+   "y": 7.937254
+  },
+  {
+   "type": "triangle",
+   "id": "AKB",
+   "kind": "any"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "AKB"
+  },
+  {
+   "type": "point",
+   "id": "S",
+   "x": 4,
+   "y": 4.535574
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "S",
+   "through": "L"
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w"
+  },
+  {
+   "circle": "w1"
+  },
+  {
+   "segment": "AB"
+  },
+  {
+   "segment": "AK",
+   "style": "accent"
+  },
+  {
+   "segment": "BK",
+   "style": "soft"
+  },
+  {
+   "segment": "KL",
+   "style": "soft"
+  },
+  {
+   "segment": "SL",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "S",
+    "L",
+    "A"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "K",
+    "L"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "L",
+    "K",
+    "B"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

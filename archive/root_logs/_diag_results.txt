@@ -1,0 +1,31 @@
+=== Searching for 'Дан многочлен' in olympiads.py ===
+Found 39 occurrences
+
+--- Occurrence 1 at pos 737215 ---
+" 'text': 'Дан многочлен\\n$*x^n + *x^{n-1} + \\\\dots + *x + *,$\\nвместо каждого из $n + 1$ его коэффициентов записана звёздочка. Играют двое, ходят по очереди, за ход выбирают любую звёздочку и заменяют её на любое целое нену"
+
+--- Occurrence 2 at pos 756901 ---
+" 'text': 'Дан многочлен\\n$*x^n + *x^{n-1} + \\\\dots + *x + *,$\\nвместо каждого из $n + 1$ его коэффициентов записана звёздочка. Играют двое, ходят по очереди, за ход выбирают любую звёздочку и заменяют её на любое целое нену"
+
+--- Occurrence 3 at pos 789786 ---
+" 'text': 'Дан многочлен\\n$*x^n + *x^{n-1} + \\\\dots + *x + *,$\\nвместо каждого из $n + 1$ его коэффициентов записана звёздочка. Играют двое, ходят по очереди, за ход выбирают любую звёздочку и заменяют её на любое целое нену"
+
+
+=== Searching for 'Найдите все вещественные решения' ===
+Found 5 occurrences
+
+--- Occurrence 1 at pos 1004554 ---
+" 'text': 'Найдите все вещественные решения системы уравнений \\uf8f1 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 '\n                        '\\uf8f4 \\uf8f4 \\uf8f4 \\uf8f2 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f3 1 '\n                 "
+
+--- Occurrence 2 at pos 1016870 ---
+" 'text': 'Найдите все вещественные решения системы уравнений \\uf8f1 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 '\n                        '\\uf8f4 \\uf8f4 \\uf8f4 \\uf8f2 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f4 \\uf8f3 1 '\n                 "
+
+--- Occurrence 3 at pos 1034587 ---
+Traceback (most recent call last):
+  File "c:\Users\Victor\Desktop\Новая папка (2)\_diag_escape.py", line 73, in <module>
+    print(repr(snippet))
+    ~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1251.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2212' in position 144: character maps to <undefined>

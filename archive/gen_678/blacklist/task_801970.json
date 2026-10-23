@@ -1,0 +1,20 @@
+{
+  "id": 801970,
+  "task_text": "В треугольнике $ABC$ проведены медианы $AD$, $BE$, $CF$. Точки $P$, $Q$, $R$ лежат на отрезках $AD$, $BE$, $CF$ соответственно, причём $AP:PD = BQ:QE = CR:RF = k$, где $k$ — положительное число. Докажите, что треугольник $PQR$ подобен треугольнику $ABC$. Найдите коэффициент подобия.",
+  "solution": "Введем векторы с началом в произвольной точке $O$. Обозначим $\\vec{OA}=\\mathbf{a}$, $\\vec{OB}=\\mathbf{b}$, $\\vec{OC}=\\mathbf{c}$. Тогда $D$ — середина $BC$, поэтому $\\vec{OD} = \\frac{\\mathbf{b}+\\mathbf{c}}{2}$. Так как $AP:PD = k:1$, точка $P$ делит отрезок $AD$ в этом отношении, считая от вершины $A$. По формуле деления отрезка: $\\vec{OP} = \\frac{1\\cdot\\mathbf{a} + k\\cdot\\vec{OD}}{k+1} = \\frac{\\mathbf{a} + k\\cdot\\frac{\\mathbf{b}+\\mathbf{c}}{2}}{k+1} = \\frac{2\\mathbf{a} + k(\\mathbf{b}+\\mathbf{c})}{2(k+1)}$. Аналогично: $\\vec{OQ} = \\frac{2\\mathbf{b} + k(\\mathbf{c}+\\mathbf{a})}{2(k+1)}$, $\\vec{OR} = \\frac{2\\mathbf{c} + k(\\mathbf{a}+\\mathbf{b})}{2(k+1)}$.\n\nВычислим разности:\n$\\vec{QP} = \\vec{OP} - \\vec{OQ} = \\frac{2\\mathbf{a}+k(\\mathbf{b}+\\mathbf{c}) - 2\\mathbf{b} - k(\\mathbf{c}+\\mathbf{a})}{2(k+1)} = \\frac{2(\\mathbf{a}-\\mathbf{b}) + k(\\mathbf{b}+\\mathbf{c}-\\mathbf{c}-\\mathbf{a})}{2(k+1)} = \\frac{2(\\mathbf{a}-\\mathbf{b}) + k(\\mathbf{b}-\\mathbf{a})}{2(k+1)} = \\frac{(2-k)(\\mathbf{a}-\\mathbf{b})}{2(k+1)}$.\n\nАналогично:\n$\\vec{RQ} = \\frac{(2-k)(\\mathbf{b}-\\mathbf{c})}{2(k+1)}$, $\\vec{PR} = \\frac{(2-k)(\\mathbf{c}-\\mathbf{a})}{2(k+1)}$.\n\nВидим, что каждый вектор стороны треугольника $PQR$ коллинеарен соответствующему вектору стороны треугольника $ABC$ (например, $\\vec{QP}$ параллелен $\\vec{AB} = \\mathbf{b}-\\mathbf{a}$). Длины сторон:\n$|\\vec{QP}| = \\frac{|2-k|}{2(k+1)}|\\mathbf{b}-\\mathbf{a}| = \\frac{|2-k|}{2(k+1)} AB$,\n$|\\vec{RQ}| = \\frac{|2-k|}{2(k+1)} BC$,\n$|\\vec{PR}| = \\frac{|2-k|}{2(k+1)} CA$.\n\nСледовательно, треугольник $PQR$ подобен треугольнику $ABC$ с коэффициентом подобия $\\frac{|2-k|}{2(k+1)}$.",
+  "correct_answer": "Коэффициент подобия равен $\\frac{|2-k|}{2(k+1)}$.",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 4,
+  "key_method": "Векторный метод",
+  "idea_count": 3,
+  "is_clone": true,
+  "clone_similarity": 0.902,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:37:59.389570+00:00"
+}

@@ -1,0 +1,1 @@
+{'total_cells': 258, 'full_cells': 217, 'total_tasks_added': 1101, 'classified_count': 655, 'duplicates_removed': 411, 'unclassified': 870, 'uncertain': 622, 'overflow': 1366, 'remaining_unclassified': 437, 'completion_pct': 84.1}

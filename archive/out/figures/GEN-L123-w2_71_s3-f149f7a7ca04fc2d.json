@@ -1,0 +1,119 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "BM"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "B"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "M",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "M",
+   "line": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BM",
+   "style": "soft"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "MD",
+   "style": "soft"
+  },
+  {
+   "segment": "ME",
+   "style": "soft"
+  },
+  {
+   "line": "AD",
+   "style": "accent"
+  },
+  {
+   "line": "CE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "right_angle": [
+    "M",
+    "D",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "M",
+    "E",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "AM",
+    "MC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "B'",
+   "of": "B",
+   "over": "M",
+   "reason": "Поворот на 180° вокруг M переводит A в C, C в A, B в B'; поэтому прямые AD (AB) и CE (CB) переходят в CB' и AB', угол между которыми равен ∠AB'C = ∠ABC = 60°."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BB'",
+   "style": "dashed"
+  },
+  {
+   "segment": "AB'",
+   "style": "dashed"
+  },
+  {
+   "segment": "B'C",
+   "style": "dashed"
+  }
+ ]
+}

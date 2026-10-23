@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-07-18T10:26:40.116314+00:00",
+  "snapshot_file": "canonical_taxonomy_snapshot.json",
+  "snapshot_checksum_sha256": "07894ff78ebd6cb8d3fd8e9a1686392af263b3acf0b668cef3694991885fac38",
+  "source_files": [
+    {
+      "path": "VICTOR2.0",
+      "description": "Main generation script containing 43 themes and grade distribution",
+      "status": "found"
+    },
+    {
+      "path": "_build_grade_taxonomy.py",
+      "description": "Canonical taxonomy builder with 41 themes and comprehensive grade distribution",
+      "status": "found (cross-reference)"
+    },
+    {
+      "path": "_taxonomy_editor.txt",
+      "description": "Taxonomy editor with full theme/subtopic listing",
+      "status": "found (cross-reference)"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "total_themes": 43,
+    "total_subtopics": 129,
+    "expected_themes": 43,
+    "expected_subtopics": 129,
+    "expected_range": "T001-T043",
+    "grade_count": 7,
+    "expected_grades": "5-11",
+    "issues": null,
+    "checks": {
+      "sequential_ids": true,
+      "all_have_3_subtopics": true,
+      "no_empty_subtopic_names": true,
+      "no_duplicate_topic_ids": true,
+      "all_themes_assigned_to_grades": true
+    }
+  },
+  "generation_plan": {
+    "target_cells": 387,
+    "target_tasks": 1935,
+    "tasks_per_cell": 5,
+    "levels": [
+      "L1",
+      "L2",
+      "L3"
+    ],
+    "grade_summary": {
+      "5": {
+        "themes": 6,
+        "cells": 54,
+        "tasks": 270
+      },
+      "6": {
+        "themes": 6,
+        "cells": 54,
+        "tasks": 270
+      },
+      "7": {
+        "themes": 6,
+        "cells": 54,
+        "tasks": 270
+      },
+      "8": {
+        "themes": 6,
+        "cells": 54,
+        "tasks": 270
+      },
+      "9": {
+        "themes": 6,
+        "cells": 54,
+        "tasks": 270
+      },
+      "10": {
+        "themes": 6,
+        "cells": 54,
+        "tasks": 270
+      },
+      "11": {
+        "themes": 7,
+        "cells": 63,
+        "tasks": 315
+      }
+    }
+  }
+}

@@ -1,0 +1,81 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "D",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "AD",
+   "line2": "BE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "segment": "BE",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "M",
+    "B"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AB"
+  },
+  {
+   "type": "reflect_point",
+   "id": "F",
+   "of": "C",
+   "over": "K"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "K",
+   "through": "A"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CF",
+   "style": "soft"
+  },
+  {
+   "polygon": "ACBF",
+   "style": "soft"
+  },
+  {
+   "circle": "w",
+   "style": "dashed"
+  }
+ ]
+}

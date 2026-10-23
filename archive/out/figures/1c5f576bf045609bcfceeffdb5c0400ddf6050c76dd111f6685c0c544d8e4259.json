@@ -1,0 +1,95 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "BCD",
+   "kind": "isosceles"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "BC",
+   "ratio": 0.35
+  },
+  {
+   "type": "reflect_point",
+   "id": "A",
+   "of": "P",
+   "over": "B"
+  },
+  {
+   "type": "reflect_line",
+   "id": "F",
+   "of": "C",
+   "over": "BD"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABD"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "w",
+   "line": "BF",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ACDE"
+  },
+  {
+   "polygon": "BCD",
+   "style": "soft"
+  },
+  {
+   "segment": "BE",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "D",
+    "C"
+   ],
+   "text": "80°"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "E"
+   ],
+   "text": "80°"
+  },
+  {
+   "angle": [
+    "A",
+    "D",
+    "E"
+   ],
+   "text": "80°"
+  },
+  {
+   "angle": [
+    "E",
+    "A",
+    "D"
+   ],
+   "text": "50°"
+  },
+  {
+   "equal": [
+    "BD",
+    "CD"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

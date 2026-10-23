@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "canvas": {"width": 600, "height": 500, "margin": 40},
+  "constructions": [
+    {"type": "free_point", "id": "B", "x": 120, "y": 440},
+    {"type": "free_point", "id": "C", "x": 480, "y": 440},
+    {"type": "free_point", "id": "A", "x": 172.7, "y": 312.7},
+    {"type": "angle_at_vertex", "vertex": "A", "ray1": "B", "ray2": "C", "value_deg": 90},
+    {"type": "midpoint", "id": "M", "p1": "B", "p2": "C"},
+    {"type": "segment", "id": "AB", "p1": "A", "p2": "B"},
+    {"type": "segment", "id": "BC", "p1": "B", "p2": "C"},
+    {"type": "segment", "id": "CA", "p1": "C", "p2": "A"},
+    {"type": "segment", "id": "AM", "p1": "A", "p2": "M"},
+    {"type": "midpoint_mark", "id": "mm_M", "point": "M", "p1": "B", "p2": "C"},
+    {"type": "angle_label", "id": "ang_A", "vertex": "A", "ray1": "B", "ray2": "C", "text": "?", "visual_role": "key_point"}
+  ],
+  "given_marks": [
+    {"type": "midpoint_mark", "point": "M", "p1": "B", "p2": "C"}
+  ],
+  "assumptions": [
+    "Условие «AM = BC/2» задано численно через ограничение angle_at_vertex(A,B,C,90): в треугольнике медиана к стороне равна её половине тогда и только тогда, когда угол при вершине, из которой она проведена, прямой (по теореме об окружности Фалеса и обратной ей). Это способ реализовать данное отношение отрезков координатами, а не решение задачи — доказательство прямого угла остаётся задачей ученика.",
+    "Искомый угол A помечен дугой с текстом \"?\" (visual_role=key_point), сама дуга прямого угла (right_angle_mark) не поставлена, так как это уже было бы частью решения/ответа."
+  ],
+  "aux": {"has_aux": false, "reason": "", "constructions": []}
+}

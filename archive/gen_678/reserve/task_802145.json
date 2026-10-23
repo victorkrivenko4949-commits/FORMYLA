@@ -1,0 +1,20 @@
+{
+  "id": 802145,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $D$, $E$, $F$ соответственно так, что $BD = DC$, $CE = 2EA$, $AF = 3FB$. Отрезки $AD$, $BE$, $CF$ пересекаются попарно в точках $P = AD \\cap BE$, $Q = BE \\cap CF$, $R = CF \\cap AD$. Найдите отношение площади треугольника $PQR$ к площади треугольника $ABC$.",
+  "solution": "Введём барицентрические координаты относительно треугольника $ABC$. Пусть $A(1,0,0)$, $B(0,1,0)$, $C(0,0,1)$. Тогда:\n\n* $D$ на $BC$ с $BD = DC$, поэтому $D = \\left(0, \\frac12, \\frac12\\right)$.\n* $E$ на $CA$ с $CE = 2EA$, значит, $AE:EC = 1:2$, откуда $E = \\left(\\frac13, 0, \\frac23\\right)$.\n* $F$ на $AB$ с $AF = 3FB$, откуда $AF:FB = 3:1$, поэтому $F = \\left(\\frac14, \\frac34, 0\\right)$.\n\nПараметрические уравнения прямых:\n\n* $AD$: $A + t(D-A) = (1-t,\\ \\frac{t}{2},\\ \\frac{t}{2})$.\n* $BE$: $B + s(E-B) = \\left(\\frac{s}{3},\\ 1-s,\\ \\frac{2s}{3}\\right)$.\n* $CF$: $C + u(F-C) = \\left(\\frac{u}{4},\\ \\frac{3u}{4},\\ 1-u\\right)$.\n\nНаходим точки пересечения:\n\n* $P = AD \\cap BE$: из равенства координат получаем $s = \\frac35$, $t = \\frac45$, тогда $P = \\left(\\frac15,\\frac25,\\frac25\\right)$.\n* $Q = BE \\cap CF$: $u = \\frac23$, $s = \\frac12$, тогда $Q = \\left(\\frac16,\\frac12,\\frac13\\right)$.\n* $R = CF \\cap AD$: $u = \\frac47$, $t = \\frac67$, тогда $R = \\left(\\frac17,\\frac37,\\frac37\\right)$.\n\nПлощадь треугольника $PQR$ в барицентрических координатах равна $S_{ABC} \\cdot |\\det M|$, где $M$ — матрица $3\\times3$ из координат $P,Q,R$. Вычислим определитель:\n\n$$\n\\det M = \\begin{vmatrix}\n\\frac15 & \\frac25 & \\frac25 \\\\\n\\frac16 & \\frac12 & \\frac13 \\\\\n\\frac17 & \\frac37 & \\frac37\n\\end{vmatrix}\n$$\n\nРазложим по первой строке:\n\n$$\n\\det M = \\frac15\\left(\\frac12\\cdot\\frac37 - \\frac13\\cdot\\frac37\\right) - \\frac25\\left(\\frac16\\cdot\\frac37 - \\frac13\\cdot\\frac17\\right) + \\frac25\\left(\\frac16\\cdot\\frac37 - \\frac12\\cdot\\frac17\\right).\n$$\n\nУпростим:\n\n$$\n\\frac15\\left(\\frac{3}{14} - \\frac{1}{7}\\right) - \\frac25\\left(\\frac{1}{14} - \\frac{1}{21}\\right) + \\frac25\\left(\\frac{1}{14} - \\frac{1}{14}\\right) = \\frac15\\cdot\\frac{1}{14} - \\frac25\\cdot\\frac{1}{42} + 0 = \\frac{1}{70} - \\frac{1}{105} = \\frac{1}{210}.\n$$\n\nТаким образом, $S_{PQR} = \\dfrac{1}{210} S_{ABC}$.\n\nОтвет: $\\dfrac{1}{210}$.",
+  "correct_answer": "$$\\frac{1}{210}$$",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Барицентрические координаты и вычисление определителя",
+  "idea_count": 5,
+  "is_clone": true,
+  "clone_similarity": 0.874,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T15:07:50.693374+00:00"
+}

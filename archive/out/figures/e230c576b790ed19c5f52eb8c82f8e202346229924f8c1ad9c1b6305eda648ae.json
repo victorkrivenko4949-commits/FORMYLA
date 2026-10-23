@@ -1,0 +1,97 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AC"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "w",
+   "line": "NO",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "omega",
+   "center": "M",
+   "through": "D"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "omega",
+   "line": "AD",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "F",
+   "circle": "omega",
+   "line": "CD",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "ME",
+   "style": "soft"
+  },
+  {
+   "segment": "MD",
+   "style": "soft"
+  },
+  {
+   "segment": "MF",
+   "style": "soft"
+  },
+  {
+   "circle": "omega",
+   "style": "dashed"
+  },
+  {
+   "line": "NO",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "ME",
+    "MD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "MD",
+    "MF"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

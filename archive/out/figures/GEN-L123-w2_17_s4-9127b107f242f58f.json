@@ -1,0 +1,89 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "D",
+   "circle1": "w1",
+   "circle2": "w2",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "w3",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "w4",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "E",
+   "circle1": "w3",
+   "circle2": "w4",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AE",
+   "line2": "CD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABD"
+  },
+  {
+   "polygon": "BCE"
+  },
+  {
+   "segment": "AE"
+  },
+  {
+   "segment": "CD"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "120°"
+  },
+  {
+   "angle": [
+    "A",
+    "P",
+    "C"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

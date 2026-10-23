@@ -1,0 +1,100 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "incenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "wOBC",
+   "of": "OBC"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "wOBC",
+   "line": "AO",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AO",
+   "style": "soft"
+  },
+  {
+   "segment": "BO",
+   "style": "soft"
+  },
+  {
+   "segment": "CO",
+   "style": "soft"
+  },
+  {
+   "circle": "wOBC"
+  },
+  {
+   "segment": "OM",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "length": [
+    "BC"
+   ],
+   "text": "6"
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcircle",
+   "id": "wABC",
+   "of": "ABC",
+   "reason": "Описанная окружность треугольника ABC, нужная для точки S — середины дуги BC."
+  },
+  {
+   "type": "line_circle",
+   "id": "S",
+   "circle": "wABC",
+   "line": "AO",
+   "pick": 1,
+   "reason": "S — вторая точка пересечения биссектрисы AO с описанной окружностью ABC; по лемме о трезубце S — центр окружности OBC."
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "wABC",
+   "style": "dashed"
+  },
+  {
+   "segment": "SB",
+   "style": "dashed"
+  },
+  {
+   "segment": "SC",
+   "style": "dashed"
+  },
+  {
+   "segment": "SO",
+   "style": "dashed"
+  }
+ ]
+}

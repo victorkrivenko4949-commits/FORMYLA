@@ -1,0 +1,116 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AB"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "X",
+   "circle1": "w1",
+   "circle2": "w2",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "w3",
+   "center": "K",
+   "through": "A"
+  },
+  {
+   "type": "line_circle",
+   "id": "O1",
+   "circle": "w3",
+   "line": "KX",
+   "pick": 1
+  },
+  {
+   "type": "midpoint",
+   "id": "L",
+   "of": "AC"
+  },
+  {
+   "type": "circle",
+   "id": "w4",
+   "center": "A",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "w5",
+   "center": "C",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "Y",
+   "circle1": "w4",
+   "circle2": "w5",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "w6",
+   "center": "L",
+   "through": "A"
+  },
+  {
+   "type": "line_circle",
+   "id": "O2",
+   "circle": "w6",
+   "line": "LY",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "O1M",
+   "style": "soft"
+  },
+  {
+   "segment": "O2M",
+   "style": "soft"
+  },
+  {
+   "segment": "O1O2",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O1",
+    "M",
+    "O2"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

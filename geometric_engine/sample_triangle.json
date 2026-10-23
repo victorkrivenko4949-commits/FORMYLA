@@ -1,0 +1,32 @@
+{
+  "canvas": {
+    "width": 800,
+    "height": 600,
+    "margin": 40
+  },
+  "constructions": [
+    {"type": "free_point", "id": "A", "x": 200, "y": 500},
+    {"type": "free_point", "id": "B", "x": 600, "y": 500},
+    {"type": "free_point", "id": "C", "x": 350, "y": 120},
+
+    {"type": "segment", "id": "AB", "p1": "A", "p2": "B"},
+    {"type": "segment", "id": "BC", "p1": "B", "p2": "C"},
+    {"type": "segment", "id": "CA", "p1": "C", "p2": "A"},
+
+    {"type": "triangle_arbitrary", "id": "tri_ABC", "p1": "A", "p2": "B", "p3": "C"},
+
+    {"type": "circumcenter", "id": "O", "p1": "A", "p2": "B", "p3": "C"},
+    {"type": "circumcircle", "id": "circ_O", "p1": "A", "p2": "B", "p3": "C", "dashed": true},
+
+    {"type": "incenter", "id": "I", "p1": "A", "p2": "B", "p3": "C"},
+    {"type": "incircle", "id": "inc", "p1": "A", "p2": "B", "p3": "C"},
+
+    {"type": "centroid", "id": "G", "p1": "A", "p2": "B", "p3": "C"},
+    {"type": "orthocenter", "id": "H", "p1": "A", "p2": "B", "p3": "C"},
+
+    {"type": "altitude", "id": "h_A", "p1": "A", "p2": "B", "p3": "C", "dashed": true},
+    {"type": "median", "id": "m_A", "p1": "A", "p2": "B", "p3": "C", "dashed": true},
+
+    {"type": "midpoint", "id": "M_BC", "p1": "B", "p2": "C"}
+  ]
+}

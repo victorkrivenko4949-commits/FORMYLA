@@ -1,0 +1,162 @@
+/* method_week.js — блоки «Куратор» и «Метод недели» на странице задач дня.
+   Вставляется автоматически (method_week/ui_inject.py) только для тестовых аккаунтов.
+   LaTeX рендерится через KaTeX, если на странице есть renderMathInElement. */
+(function () {
+  'use strict';
+  var root = document.getElementById('mw-root');
+  if (!root) return;
+
+  var css = document.createElement('style');
+  css.textContent = [
+    '.mw-card{max-width:960px;margin:14px auto;padding:16px 18px;border-radius:14px;background:#1c1d22;color:#e8e8ea;border:1px solid #2e3038;line-height:1.5;font-size:15px}',
+    '.mw-card h3{margin:0 0 8px;font-size:17px;color:#fff}',
+    '.mw-card p{margin:6px 0;color:#e8e8ea}',
+    '.mw-card ol,.mw-card ul{margin:6px 0 6px 20px;padding:0;color:#e8e8ea}',
+    '.mw-card li{margin:3px 0}',
+    '.mw-card a{color:#a5b4fc}',
+    '.mw-badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#312e81;color:#c7d2fe;font-size:12px;margin-left:8px;vertical-align:middle}',
+    '.mw-muted{color:#9ca3af;font-size:13px}',
+    '.mw-lesson{background:#15161a;border-radius:10px;padding:10px 14px;margin:8px 0;border:1px solid #2e3038}',
+    '.mw-lesson summary{cursor:pointer;color:#fff}',
+    '.mw-lesson h3{font-size:15px;margin:10px 0 4px}',
+    '.mw-task{border:1px solid #2e3038;border-radius:10px;padding:12px;margin:10px 0;background:#15161a}',
+    '.mw-task textarea,.mw-task input{width:100%;box-sizing:border-box;margin-top:6px;padding:8px;border:1px solid #3f4149;border-radius:8px;font:inherit;background:#0f1013;color:#e8e8ea}',
+    '.mw-btn{margin-top:8px;padding:8px 14px;border:0;border-radius:8px;background:#6366f1;color:#fff;cursor:pointer;font:inherit}',
+    '.mw-btn:disabled{opacity:.6;cursor:default}',
+    '.mw-btn.sec{background:#2e3038;color:#e8e8ea;margin-left:6px}',
+    '.mw-ok{color:#4ade80}.mw-bad{color:#f87171}',
+    '.mw-progress{height:6px;background:#2e3038;border-radius:999px;overflow:hidden;margin:8px 0}',
+    '.mw-progress>div{height:100%;background:#6366f1;transition:width .4s}',
+    '.mw-task details summary{cursor:pointer;color:#a5b4fc}'
+  ].join('\n');
+  document.head.appendChild(css);
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'})[c]; }); }
+  function md(s) {
+    var lines = esc(s).split('\n'), out = [], inList = false;
+    lines.forEach(function (ln) {
+      var m;
+      if ((m = ln.match(/^###\s+(.*)/))) { if (inList) { out.push('</ul>'); inList = false; } out.push('<h3>' + m[1] + '</h3>'); return; }
+      if ((m = ln.match(/^\s*(?:[-*]|\d+\.)\s+(.*)/))) { if (!inList) { out.push('<ul>'); inList = true; } out.push('<li>' + m[1] + '</li>'); return; }
+      if (inList) { out.push('</ul>'); inList = false; }
+      if (ln.trim()) out.push('<p>' + ln + '</p>');
+    });
+    if (inList) out.push('</ul>');
+    return out.join('').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  }
+  function katex(el) {
+    try {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(el, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});
+      }
+    } catch (e) {}
+  }
+  function getJSON(url, opts) {
+    return fetch(url, Object.assign({credentials: 'same-origin', headers: {'Accept': 'application/json', 'Content-Type': 'application/json'}}, opts || {}))
+      .then(function (r) { return r.json().then(function (j) { j.__status = r.status; return j; }); });
+  }
+
+  var anchor = document.querySelector('[data-mw-anchor]') || document.querySelector('main') || document.body;
+  var wrap = document.createElement('div');
+  wrap.id = 'mw-wrap';
+  anchor.insertBefore(wrap, anchor.firstChild);
+
+  var curatorCard = document.createElement('div'); curatorCard.className = 'mw-card';
+  var methodCard = document.createElement('div'); methodCard.className = 'mw-card';
+  wrap.appendChild(curatorCard); wrap.appendChild(methodCard);
+
+  function paywallHtml(title, d) {
+    return '<h3>' + title + '</h3><p class="mw-muted">Доступно по подписке Premium. <a href="' + esc(d.upgrade_url || '/subscribe') + '">Оформить</a></p>';
+  }
+
+  /* ── Куратор ─────────────────────────────────────────── */
+  getJSON('/method_week/api/curator_plan').then(function (d) {
+    if (d.__status === 404) { curatorCard.style.display = 'none'; return; }
+    if (d.__status === 402) { curatorCard.innerHTML = paywallHtml('Куратор', d); return; }
+    var daily = d.daily || {}, month = d.month || {};
+    var html = '<h3>Куратор</h3>';
+    html += '<p>' + (daily.status_lines || []).map(esc).join(' ') + '</p>';
+    (daily.plan_lines || []).forEach(function (ln, i) { html += '<p>' + (i === 0 ? '<b>' + esc(ln) + '</b>' : esc(ln)) + '</p>'; });
+    if ((month.methods || []).length) {
+      html += '<p class="mw-muted">Методы на месяц:</p><ol class="mw-plan">';
+      month.methods.forEach(function (m, i) {
+        var cur = (i === month.current_week);
+        html += '<li>' + (cur ? '<b>' : '') + esc(m.code) + ' «' + esc(m.name) + '»' + (cur ? '</b> — эта неделя' : '') +
+          (m.reason ? ' <span class="mw-muted">(' + esc(m.reason) + ')</span>' : '') + '</li>';
+      });
+      html += '</ol>';
+    }
+    curatorCard.innerHTML = html;
+  }).catch(function () { curatorCard.style.display = 'none'; });
+
+  /* ── Метод недели ────────────────────────────────────── */
+  var pollTimer = null;
+  function renderMethod(d) {
+    if (d.__status === 404) { methodCard.style.display = 'none'; return; }
+    if (d.__status === 402) { methodCard.innerHTML = paywallHtml('Метод недели', d); return; }
+    if (d.status === 'no_plan') { methodCard.innerHTML = '<h3>Метод недели</h3><p class="mw-muted">' + esc(d.message) + '</p>'; return; }
+    if (d.status === 'generating') {
+      methodCard.innerHTML = '<h3>Метод недели: ' + esc(d.method_code) + ' «' + esc(d.method_name) + '»<span class="mw-badge">готовим</span></h3>' +
+        '<div class="mw-progress"><div style="width:' + (d.progress_pct || 3) + '%"></div></div>' +
+        '<p class="mw-muted">Готовим разбор и 3 задачи, обычно 2–6 минут. Страница обновится сама.</p>';
+      clearTimeout(pollTimer);
+      pollTimer = setTimeout(function () { getJSON('/method_week/api/today').then(renderMethod); }, 7000);
+      return;
+    }
+    if (d.status === 'failed') {
+      methodCard.innerHTML = '<h3>Метод недели: ' + esc(d.method_code || '') + ' «' + esc(d.method_name || '') + '»</h3><p class="mw-bad">Не удалось подготовить задачи.</p><button class="mw-btn mw-retry">Попробовать снова</button>';
+      methodCard.querySelector('.mw-retry').addEventListener('click', function () {
+        methodCard.innerHTML = '<h3>Метод недели</h3><p class="mw-muted">Запускаем…</p>';
+        getJSON('/method_week/api/regenerate', {method: 'POST', body: '{}'}).then(renderMethod);
+      });
+      return;
+    }
+    if (d.status !== 'ready') { methodCard.innerHTML = '<h3>Метод недели</h3><p class="mw-muted">' + esc(d.message || 'временно недоступен') + '</p>'; return; }
+
+    var html = '<h3>Метод недели: ' + esc(d.method_code) + ' «' + esc(d.method_name) + '»<span class="mw-badge">' + d.progress.completed + '/' + d.progress.total + '</span></h3>';
+    html += '<details open class="mw-lesson"><summary><b>Разбор метода</b></summary>' + md(d.lesson_md || '') + '</details>';
+    (d.tasks || []).forEach(function (t) {
+      html += '<div class="mw-task" data-pos="' + t.position + '"><b>Задача ' + t.position + '</b>' +
+        (t.difficulty ? '<span class="mw-badge">сложность ' + esc(t.difficulty) + '</span>' : '') +
+        '<div class="mw-stmt">' + md(t.statement) + '</div>';
+      if (t.is_answered) {
+        html += '<p class="' + (t.is_correct ? 'mw-ok' : 'mw-bad') + '">' + (t.is_correct ? 'Верно' : 'Неверно') + '. Твой ответ: ' + esc(t.user_answer) + '</p>' +
+          (t.ai_feedback ? '<div>' + md(t.ai_feedback) + '</div>' : '') +
+          '<details><summary>Решение</summary><div>' + md(t.solution || '') + '</div><p><b>Ответ:</b> ' + esc(t.correct_answer) + '</p></details>';
+      } else {
+        html += '<input class="mw-ans" placeholder="Ответ"><textarea class="mw-sol" rows="3" placeholder="Кратко опиши решение (обязательно)"></textarea>' +
+          '<button class="mw-btn mw-submit">Проверить</button><button class="mw-btn sec mw-hint" data-n="1">Подсказка</button><div class="mw-res"></div>';
+      }
+      html += '</div>';
+    });
+    methodCard.innerHTML = html;
+    katex(methodCard);
+
+    methodCard.querySelectorAll('.mw-task').forEach(function (box) {
+      var pos = box.getAttribute('data-pos');
+      var btn = box.querySelector('.mw-submit'), hint = box.querySelector('.mw-hint');
+      if (hint) hint.addEventListener('click', function () {
+        var n = parseInt(hint.getAttribute('data-n'), 10) || 1;
+        getJSON('/method_week/api/' + pos + '/hint?n=' + n).then(function (h) {
+          var res = box.querySelector('.mw-res');
+          res.innerHTML = '<p class="mw-muted">Подсказка ' + n + ': ' + esc(h.hint || h.message) + '</p>';
+          katex(res);
+          if (h.total && n < h.total) hint.setAttribute('data-n', String(n + 1));
+        });
+      });
+      if (btn) btn.addEventListener('click', function () {
+        var ans = box.querySelector('.mw-ans').value.trim(), sol = box.querySelector('.mw-sol').value.trim();
+        var res = box.querySelector('.mw-res');
+        if (!ans) { res.innerHTML = '<p class="mw-bad">Введи ответ.</p>'; return; }
+        if (!sol) { res.innerHTML = '<p class="mw-bad">Опиши решение — проверяется ход, а не только ответ.</p>'; return; }
+        btn.disabled = true; btn.textContent = 'Проверяем…';
+        getJSON('/method_week/api/' + pos + '/submit', {method: 'POST', body: JSON.stringify({user_answer: ans, user_solution: sol})}).then(function (r) {
+          btn.disabled = false; btn.textContent = 'Проверить';
+          if (r.status === 'error') { res.innerHTML = '<p class="mw-bad">' + esc(r.message || r.error) + '</p>'; return; }
+          getJSON('/method_week/api/today').then(renderMethod);
+        }).catch(function () { btn.disabled = false; btn.textContent = 'Проверить'; res.innerHTML = '<p class="mw-bad">Ошибка сети.</p>'; });
+      });
+    });
+  }
+  getJSON('/method_week/api/today').then(renderMethod).catch(function () { methodCard.style.display = 'none'; });
+})();

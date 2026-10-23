@@ -1,0 +1,137 @@
+databases:
+  - name: formyla-db
+    # ВАЖНО: должно совпадать с реальным планом в Render Dashboard.
+    # Текущий план — Pro-8gb (8 GB RAM, 2 CPU, 100 GB). Если поставить меньше,
+    # Blueprint sync попытается даунгрейднуть БД → "Updating Instance" → простой.
+    plan: pro-8gb
+    databaseName: formyla
+    user: formyla
+
+services:
+  - type: web
+    name: formyla-com
+    env: python
+    plan: starter
+    # ПРИМЕЧАНИЕ: фактический Instance Type в Render Dashboard — Pro Plus
+    # (8 GB RAM / 4 CPU). Значение `plan: starter` в этом YAML — историческое
+    # и НЕ переопределяет Dashboard (Render берёт live setting).
+    buildCommand: pip install -r requirements.txt
+    # КРИТИЧНО: --workers 1 (НЕ 2!) + БЕЗ --preload.
+    #
+    # Почему НЕ повышаем --workers, даже на Pro Plus 8 GB:
+    #   1. APScheduler (app.py:1483) запускается при импорте; 2 worker'а →
+    #      cron-таски daily_streak_reset / daily_quest_deadline_reminder
+    #      выполнятся ДВАЖДЫ.
+    #   2. ADAPTIVE_FORCE_IMPORT / VSOSH9_2027_FORCE_IMPORT / OLYMPIAD_AUTOSEED
+    #      сидеры стартуют на boot; гонка двух одновременных wipe+insert.
+    #   3. In-memory _ROOMS в routes/wb_call.py, wb_meet.py, room_state.py —
+    #      пользователи попадут в разные комнаты на разных воркерах,
+    #      звонок развалится (см. TODO «Move to Redis Pub/Sub»).
+    #
+    # Параллелизм HTTP-запросов решён через --threads 4 в одном воркере
+    # (Gunicorn gthread worker class). Это даёт:
+    #   - 4 одновременных HTTP-запроса (нет очереди на /daily_tasks/regenerate,
+    #     /api/check_adaptive_answer, /job_status и т.п.).
+    #   - APScheduler / _ROOMS / сидеры работают как и прежде в одном процессе.
+    #   - Pipeline-генерация задач дня идёт в threading.Thread(daemon=True),
+    #     потоки не блокируют HTTP-обработку.
+    # Безопасно: Python threading и Flask-SQLAlchemy совместимы (scoped_session
+    # per-thread). GIL отпускается на сетевых вызовах (OpenRouter/Gemini).
+    #
+    # Историю не повторять: f96cb1c (fix) → 26fa7c5 (revert) → 502.
+    # --timeout 120 — стандарт для psycopg wait на медленные запросы Postgres.
+    # Flask-Migrate: выполняем неприменённые миграции перед стартом сервера.
+    # Команда идемпотентна — безопасно запускать при каждом деплое/рестарте.
+    startCommand: >-
+      flask db upgrade --directory alembic_migrations &&
+      gunicorn app:app --workers 1 --threads 4 --worker-class gthread --timeout 120 --graceful-timeout 30 --bind 0.0.0.0:$PORT
+    # КРИТИЧНО: Health Check Path = /healthz (НЕ /, НЕ /profile!).
+    # /healthz отдаёт 200 без обращения к БД. /profile требует Postgres +
+    # Flask-Login → при тормозах БД health-check виснет → Render думает что
+    # сервис мёртв → SIGKILL worker → crash-loop → 500 для всех.
+    # См. инцидент 2026-05-25: health-checker дёргал /profile,
+    # ensure_guest_user в before_request висел в psycopg.wait_c() → SystemExit.
+    healthCheckPath: /healthz
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: formyla-db
+          property: connectionString
+      - key: FLASK_APP
+        value: app.py
+      - key: FLASK_ENV
+        value: production
+      # Включаем автозагрузку 89 методов олимпиадного каталога при пустых
+      # или неполных таблицах (см. services/olympiad_autoseed.py).
+      - key: OLYMPIAD_AUTOSEED
+        value: "1"
+      # ВсОШ-2027 production-сидер: на старте Flask грузит данные 9/10/11 кл
+      # из data/olympiads/vsosh9_full.json + vsosh_10_11_full.json.
+      # Идемпотентно: если в БД уже 50 пробников × 20 задач — пропуск.
+      # См. services/vsosh_full_seed.py.
+      - key: VSOSH9_2027_FORCE_IMPORT
+        value: "1"
+      # Адаптивный тест: production-сидер 9135 калиброванных задач (L1..L8,
+      # fixed-версия — убраны клоны, добавлены разнотипные).
+      # На старте Flask грузит adaptive_data/adaptive_full_9120_fixed.json в
+      # adaptive_tasks. Идемпотентно: если уже >= 9000 строк с
+      # source='calibrated_2026_06_04_v4_fixed' — пропуск.
+      # См. services/adaptive_full_seed.py.
+      - key: ADAPTIVE_FORCE_IMPORT
+        value: "1"
+      - key: SECRET_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: ODIROUTER_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_API_BASE
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_SERVER
+        sync: false
+      - key: MAIL_PORT
+        sync: false
+      - key: MAIL_USE_SSL
+        sync: false
+      - key: MAIL_USE_TLS
+        sync: false
+      - key: DOMAIN_URL
+        sync: false
+      - key: DB_UPLOAD_TOKEN
+        sync: false
+      - key: LIVEKIT_URL
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      # --- Infrastructure batch (Sentry / Brevo / Telegram / Plausible) ---
+      - key: SENTRY_DSN
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false
+      - key: BREVO_SENDER_NAME
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_BOT_USERNAME
+        sync: false
+      - key: PLAUSIBLE_DOMAIN
+        sync: false
+      # Web Push Notifications (VAPID keys)
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_CLAIM_EMAIL
+        sync: false

@@ -1,0 +1,95 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AM",
+   "ratio": 0.3
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "CM",
+   "ratio": 0.7
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "ABQ"
+  },
+  {
+   "type": "line_circle",
+   "id": "X",
+   "circle": "w1",
+   "line": "BC",
+   "pick": 1
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "BCP"
+  },
+  {
+   "type": "line_circle",
+   "id": "Y",
+   "circle": "w2",
+   "line": "AB",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w1",
+   "style": "dashed"
+  },
+  {
+   "circle": "w2",
+   "style": "dashed"
+  },
+  {
+   "polygon": "BXMY",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "MC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "point_on_segment",
+   "id": "Z",
+   "of": "QP",
+   "ratio": 0.7,
+   "reason": "Z на QP выбрана так, что QZ=CQ, тогда PZ=AP; используется в решении через степени."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "PZ",
+   "style": "dashed"
+  },
+  {
+   "segment": "QZ",
+   "style": "dashed"
+  }
+ ]
+}

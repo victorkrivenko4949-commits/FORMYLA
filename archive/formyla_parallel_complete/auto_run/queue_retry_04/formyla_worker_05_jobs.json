@@ -1,0 +1,32 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0953",
+      "mode": "replace_bad",
+      "id": "11-E1-1-L8-g911",
+      "grade": 11,
+      "difficulty": 8,
+      "theme": "Стереометрия, координаты и векторы",
+      "subtopic": "Векторы и координаты",
+      "method_code": "E1",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 13
+    },
+    {
+      "job_id": "audit-0300-11-E3-L5-fill-0371",
+      "mode": "replace_bad",
+      "id": "11-E3-L5-fill-0371",
+      "grade": 11,
+      "difficulty": 5,
+      "theme": "Стереометрия, координаты и векторы",
+      "subtopic": "Расстояния и углы",
+      "method_code": "E3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+36: exports.activate = activate;
+37: exports.deactivate = deactivate;
+88: // ITER-2: handle heartbeat watchdog'а §1.6.2. Очищается в deactivate().
+93: // ITER-2: ms heartbeat / orphan-grace — кэшируется при activate из конфига.
+97: // Extension Host'а. Каждый activate()/startServer() = новая генерация.
+102: // каждый reload возвращал generation=1, и registerHostFresh не мог отличить
+114: // Резолвится один раз при activate через тот же resolveRooStorageRoot().
+219:  * Сбрасывается на каждый новый activate()/startServer.
+339: // Survives Extension Host reload so registerHostFresh can distinguish a reload
+531:  *     but startServer explicit null + event-driven defense-in-depth at publication
+536:  *   - generation isolation: each activate() is a new generation
+823:         // after reload activate() resets terminalIdleProven=false and the stale
+1437: async function activate(context) {
+1441:     // and activate() reset it to false — so after reload, Roo re-emitted
+1455:         console.log(`[R8PC_EXT_POST_COMPLETION_STALE_UUID_DIAG_FIX] activate: terminalIdleProven RESTORED from globalState=true (${terminalIdleObservedAt || "unknown"})`);
+1472:     console.log(`[R8PC_EXT_PROVEN_IDLE] activate: generation reset — terminalIdleProven=${terminalIdleProven} (restored from globalState), lastPersistedCompletedUuid=${lastPersistedCompletedUuid || "n
+1491:     // EVERY activate(). The value is persisted in globalState so it survives
+1492:     // Extension Host reload. Each reload = a new generation; registerHostFresh
+1503:     console.log(`[PMA_EXTENSION_OWNER_REBIND_I16] activate: hostGeneration=${hostGeneration} (persisted=${storedGen})`);
+1505:     //   Новый activate()/reload = НОВЫЙ owner. Сбрасываем close-in-progress
+1512:     console.log(`[PMA_EXTENSION_NATIVE_LIFECYCLE_I25] activate: close-in-progress RESET, ` +
+1523:         const currentWorkspace = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "";
+1527:             console.error("[roo-bridge.activate] Roo Code extension not found!");
+1532:             console.log("[roo-bridge.activate] Activating Roo Code extension...");
+1533:             await rooExt.activate();
+1537:             console.error("[roo-bridge.activate] Roo Code API export is null/undefined");
+1549:         console.log(`[roo-bridge.activate] registryPath=${registryPath}`);
+1557:         // ITER-2 §1.6.3 orphan-reaper bootstrap: при activate сначала чистим
+1565:         // Защитная проверка: запускаем close-window-on-activate ТОЛЬКО если в
+1566:         // registry нашлась stale-owned запись с теми же current_workspace,
+1567:         // что планирует открыть данный VS Code (workspaceFolders[0]).
+1570:             const myWorkspace = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+1579:                         entry.current_workspace === myWorkspace) {
+1580:                         console.log(`[roo-bridge.activate] found existing owned entry on same ` +
+1589:             console.warn(`[roo-bridge.activate] orphan-reaper bootstrap failed: ${err}`);
+1596:             const myWorkspaceForHandoff = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+1602:                 (0, telemetry_logger_1.telemetryInfo)("roo_ext_switch_handoff_activate", `Switch handoff proof verified at activate: same window confirmed`, {
+1610:                 console.log(`[R8PC_EXT_LC_EXT_SWITCH] no switch handoff detected at activate ` +
+1617:         context.subscriptions.push(vscode.commands.registerCommand("rooBridge.start", () => startServer(context)), vscode.commands.registerCommand("rooBridge.stop", stopServer));
+1619:         console.log(`[roo-bridge.activate] autoStart=${autoStartEnabled}`);
+1621:             console.log("[roo-bridge.activate] Starting WebSocket server...");
+1622:             await startServer(context);
+1623:             console.log(`[roo-bridge.activate] Server startup complete. currentPort=${currentPort}`);
+1626:         // Ставится ПОСЛЕ startServer, т.к. currentPort резолвится только там.
+1632:                     patch: { roo_webview_ready: true },
+1634:                 console.log(`[roo-bridge] BRIDGE-P2A: signaled roo_webview_ready=true (port=${currentPort})`);
+1637:                 console.warn("[roo-bridge] BRIDGE-P2A: failed to signal roo_webview_ready:", e);
+1642:         console.error(`[roo-bridge.activate] FATAL: activation failed: ${err}`);
+1643:         console.error(`[roo-bridge.activate] Stack: ${err instanceof Error ? err.stack : ""}`);
+1657: async function startServer(context) {
+1659:         console.log("[roo-bridge.startServer] Server already running on port " + currentPort);
+1666:     console.log(`[roo-bridge.startServer] Starting auto-port loop: [${basePort}, ${basePort + portRange}]`);
+1669:             console.log(`[roo-bridge.startServer] Attempting port ${port}...`);
+1674:             console.log(`[roo-bridge.startServer] WebSocketServer listening on port ${port}`);
+1676:             const initialWorkspaceForCtx = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+1692:                 const initialWorkspace = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+1693:                 console.log(`[roo-bridge.startServer] Writing to registry: port=${port}, workspace=${initialWorkspace}`);
+1694:                 const fresh = (0, registry_1.registerHostFresh)(port, {
+1704:                     console.error(`[roo-bridge.startServer] CRITICAL: host registration DENIED (${fresh.errorCode}): ${fresh.reason}`);
+1708:                     console.log(`[roo-bridge.startServer] Registry write successful (decision=${fresh.decision}, generation=${fresh.generation})`);
+1720:                 console.error(`[roo-bridge.startServer] CRITICAL: registry write failed: ${err}`);
+1721:                 console.error(`[roo-bridge.startServer] Stack: ${err instanceof Error ? err.stack : ""}`);
+1726:                 console.log(`[roo-bridge.startServer] Starting heartbeat watchdog...`);
+1736:                 console.log(`[roo-bridge.startServer] Heartbeat watchdog started`);
+1745:                 console.error(`[roo-bridge.startServer] CRITICAL: heartbeat start failed: ${err}`);
+1746:                 console.error(`[roo-bridge.startServer] Stack: ${err instanceof Error ? err.stack : ""}`);
+1765:                 console.log(`[roo-bridge.startServer] Port ${port} already in use, trying next...`);
+1769:             console.error(`[roo-bridge.startServer] FATAL: unexpected error on port=${port}: ` +
+1771:             console.error(`[roo-bridge.startServer] Stack: ${err instanceof Error ? err.stack : ""}`);
+1776:     console.error(`[roo-bridge.startServer] CRITICAL: no free port in ` +
+1779:     console.warn(`[roo-bridge.startServer] Diagnostic: check ~/.roo-bridge/instances.json for orphan entries`);
+1780:     console.warn(`[roo-bridge.startServer] Try killing stale VS Code processes: tasklist /FI "IMAGENAME eq code.exe" /V`);
+1801:         // listeners, поэтому Promise НИКОГДА не reject'ится, startServer зависает
+1934:                     const ws = (0, workspacePath_1.normalizeWorkspaceToPosixOrEmpty)(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "");
+2283:     const currentWs = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+2333:     const currentWs = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+2445:     const currentWs = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+2471:     //   после dispatch-time resolve проверял workspaceFolders. Same-window
+2480:     //   workspaceFolders после dispatch — она невозможна на живом окне.
+2503:             targetWorkspace: normHttpWs(targetWs),
+2523:                 patch: { state: "switching", current_workspace: targetWs },
+2568:     // { forceReuseWindow: true } object. No workspaceFolders acceptance check
+2750:  * случай, если команда ещё не зарегистрирована (early activate).
+2754:         `port=${entry.port} workspace=${entry.current_workspace} ` +
+2784:             workspace: entry.current_workspace ?? "",
+2894: // for cleanup on deactivate/re-attach. Without this, each WS connect and each
+3017:         // cleanup on deactivate or re-attach.
+3049:             const workspace = (0, workspacePath_1.normalizeWorkspaceToPosixOrEmpty)(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "");
+3070:  * NEVER called on reload/deactivate/window close/ambiguous RUNNING/WAITING.
+3084:         const workspace = (0, workspacePath_1.normalizeWorkspaceToPosixOrEmpty)(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "");
+3550:             const oldPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+3552:             // Pre-flight: workspaceFolders[0] уже совпадает → no-op success.
+3582:                         patch: { state: "switching", current_workspace: normalizedPath },
+3593:             // "vscode.openFolder" тихо проваливается — workspaceFolders
+3600:             // Roo Code extension уже активен (rooApi обнаружен в activate),
+3615:                 const newPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+3620:                         error: `updateWorkspaceFolders applied but workspaceFolders[0]=` +
+3638:                 // ITER-2 §1.5: registry state="ready" + new current_workspace
+3646:                                 current_workspace: newPath,
+3672:                     await rooExt.activate();
+3681:                         patch: { roo_webview_ready: true },
+3683:                     console.log(`[roo-bridge] BRIDGE-P2A: signaled roo_webview_ready=true after re-attach (port=${currentPort})`);
+3710:             // ITER-2 §1.5: registry state="ready" + new current_workspace
+3720:                             current_workspace: msg.path,
+3732:         case "get_current_workspace": {
+3737:             const ws = (0, workspacePath_1.normalizeWorkspaceToPosix)(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null);
+4251:                                 error_message: `Task ${targetTaskId} was not activated; ` +
+4292:                                 error_message: `Task ${targetTaskId} was not activated within ` +
+4617:                     error: "Roo globalStorage path not resolved (extension may not be fully activated)",
+4659:                             current_workspace: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null,
+4737:                 const ws = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+4823:                     error_message: "Roo session UUID not available (extension not fully activated)",
+4826:             const workspace = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "";
+4861:             const workspace = (0, workspacePath_1.normalizeWorkspaceToPosixOrEmpty)(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "");
+4970:             const currentWorkspace = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+4980:                     current_workspace: null,
+4991:                     current_workspace: currentWorkspace,
+5057:             if (targetEntry.current_workspace) {
+5058:                 if (normWs(targetEntry.current_workspace) !== normWs(expectedWorkspace)) {
+5062:                         error_message: `Registry workspace mismatch: registry has "${targetEntry.current_workspace}", expected "${expectedWorkspace}"`,
+5115:             // - currentOwner is set at taskStarted and cleared on deactivate only
+5315:             const currentWorkspace = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+5325:                     current_workspace: null,
+5338:                     current_workspace: currentWorkspace,
+5529:         //   - window_token (UUID) generated at first activate, stored in globalState
+5532:         //   - After restart: new activate reads window_token from globalState,
+5609:                 const currentWorkspace = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+5617:                         current_workspace: null,
+5627:                         current_workspace: currentWorkspace,
+5684:                         if (!entry || !entry.current_workspace)
+5695:                         if (normWs(entry.current_workspace) === normTarget) {
+5792:                 // Read window_token from globalState (set at activate)
+5800:                         targetWorkspace: normTarget,
+5826:                             patch: { state: "switching", current_workspace: targetWs },
+5975:              *     activate() returns new B7e(outputChannel, sidebarProvider, ipcPath, ipcEnabled)
+6362:             const currentWs = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null;
+6670:                 await sleep(300); // Allow Roo to activate the task
+7187:                             workspace: (0, workspacePath_1.normalizeWorkspaceToPosix)(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? null),
+7294:             target_workspace: opts.targetWorkspace,
+7358:  * Called during activate() to confirm target appeared in the same window.
+7365:         console.log(`[R8PC_EXT_LC_EXT_SWITCH] handoff: no window_token in globalState — first activate`);
+7426: function deactivate() {
+7431:         const result = (0, owner_lifecycle_1.deactivateOwnerLifecycle)();
+7432:         console.log(`[M4A_lifecycle] deactivate: stopped ${result.timersStopped} timer(s), ` +
+7436:         console.warn(`[M4A_lifecycle] deactivateOwnerLifecycle error: ${err}`);
+7439:     // listeners to prevent zombie event handlers after deactivate. Without
+7440:     // this, listeners survive Extension Host deactivate and accumulate
+7441:     // across activate/deactivate cycles.
+7457:     // deactivate. reload already re-creates the module, but a deactivate →
+7458:     // activate cycle in the same host (or a future re-bind path) must NOT reuse
+7467:         (0, diagnostic_canary_1.deactivateDiagnosticCanary)();
+7470:         console.warn(`[diagnostic_canary] deactivate error: ${err}`);

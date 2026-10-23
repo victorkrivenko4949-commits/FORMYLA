@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500">
+<rect x="0" y="0" width="600" height="500" fill="#0F1729"/>
+<defs>
+<style>
+.grid{stroke:#D9E5F5;stroke-width:1.8;stroke-linecap:round;fill:none}
+.dom{stroke:#73B6E6;stroke-width:1.2;fill:#73B6E6;fill-opacity:.16}
+.lbl{font-family:Arial,Helvetica,sans-serif;font-size:14px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2;stroke-linejoin:round}
+.num{font-family:Arial,Helvetica,sans-serif;font-size:12px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2;stroke-linejoin:round}
+</style>
+</defs>
+<text x="285" y="25" class="lbl">Покрытие оставшейся доски доминошками</text>
+<text x="285" y="50" class="num">столбцы</text>
+<text x="50" y="242" class="num" transform="rotate(-90 50 242)">строки</text>
+<!-- полупрозрачные области доминошек -->
+<g class="dom">
+<rect x="147.5" y="187.5" width="55" height="110" rx="5"/><rect x="422.5" y="297.5" width="55" height="110" rx="5"/>
+<rect x="92.5" y="352.5" width="110" height="55" rx="5"/><rect x="202.5" y="77.5" width="55" height="110" rx="5"/>
+<rect x="202.5" y="187.5" width="55" height="110" rx="5"/><rect x="257.5" y="132.5" width="55" height="110" rx="5"/>
+<rect x="147.5" y="297.5" width="110" height="55" rx="5"/><rect x="257.5" y="242.5" width="55" height="110" rx="5"/>
+<rect x="202.5" y="352.5" width="110" height="55" rx="5"/><rect x="312.5" y="132.5" width="55" height="110" rx="5"/>
+<rect x="312.5" y="77.5" width="110" height="55" rx="5"/><rect x="367.5" y="132.5" width="55" height="110" rx="5"/>
+<rect x="367.5" y="242.5" width="55" height="110" rx="5"/><rect x="312.5" y="242.5" width="55" height="110" rx="5"/>
+<rect x="312.5" y="352.5" width="110" height="55" rx="5"/><rect x="92.5" y="77.5" width="55" height="110" rx="5"/>
+<rect x="147.5" y="77.5" width="55" height="110" rx="5"/><rect x="92.5" y="187.5" width="55" height="110" rx="5"/>
+<rect x="422.5" y="77.5" width="55" height="110" rx="5"/><rect x="422.5" y="187.5" width="55" height="110" rx="5"/>
+</g>
+<!-- сетка 7 на 6 -->
+<rect x="92.5" y="77.5" width="385" height="330" class="grid"/>
+<g class="grid">
+<path d="M147.5 77.5V407.5M202.5 77.5V407.5M257.5 77.5V407.5M312.5 77.5V407.5M367.5 77.5V407.5M422.5 77.5V407.5"/>
+<path d="M92.5 132.5H477.5M92.5 187.5H477.5M92.5 242.5H477.5M92.5 297.5H477.5M92.5 352.5H477.5"/>
+</g>
+<!-- контуры доминошек поверх сетки -->
+<g class="dom" fill-opacity="0" fill="#73B6E6">
+<rect x="147.5" y="187.5" width="55" height="110" rx="5"/><rect x="422.5" y="297.5" width="55" height="110" rx="5"/>
+<rect x="92.5" y="352.5" width="110" height="55" rx="5"/><rect x="202.5" y="77.5" width="55" height="110" rx="5"/>
+<rect x="202.5" y="187.5" width="55" height="110" rx="5"/><rect x="257.5" y="132.5" width="55" height="110" rx="5"/>
+<rect x="147.5" y="297.5" width="110" height="55" rx="5"/><rect x="257.5" y="242.5" width="55" height="110" rx="5"/>
+<rect x="202.5" y="352.5" width="110" height="55" rx="5"/><rect x="312.5" y="132.5" width="55" height="110" rx="5"/>
+<rect x="312.5" y="77.5" width="110" height="55" rx="5"/><rect x="367.5" y="132.5" width="55" height="110" rx="5"/>
+<rect x="367.5" y="242.5" width="55" height="110" rx="5"/><rect x="312.5" y="242.5" width="55" height="110" rx="5"/>
+<rect x="312.5" y="352.5" width="110" height="55" rx="5"/><rect x="92.5" y="77.5" width="55" height="110" rx="5"/>
+<rect x="147.5" y="77.5" width="55" height="110" rx="5"/><rect x="92.5" y="187.5" width="55" height="110" rx="5"/>
+<rect x="422.5" y="77.5" width="55" height="110" rx="5"/><rect x="422.5" y="187.5" width="55" height="110" rx="5"/>
+</g>
+<!-- вырезанные клетки -->
+<g>
+<rect x="257.5" y="77.5" width="55" height="55" fill="#26334A"/>
+<path d="M266 86L304 124M304 86L266 124" stroke="#FFD166" stroke-width="2" stroke-linecap="round"/>
+<rect x="92.5" y="297.5" width="55" height="55" fill="#26334A"/>
+<path d="M101 306L139 344M139 306L101 344" stroke="#FFD166" stroke-width="2" stroke-linecap="round"/>
+</g>
+<!-- координатные подписи -->
+<g class="num">
+<text x="120" y="53">1</text><text x="175" y="53">2</text><text x="230" y="53">3</text><text x="285" y="53">4</text><text x="340" y="53">5</text><text x="395" y="53">6</text><text x="450" y="53">7</text>
+<text x="70" y="105">1</text><text x="70" y="160">2</text><text x="70" y="215">3</text><text x="70" y="270">4</text><text x="70" y="325">5</text><text x="70" y="380">6</text>
+</g>
+<text x="285" y="445" class="lbl">20 доминошек покрывают все 40 оставшихся клеток</text>
+</svg>

@@ -1,0 +1,90 @@
+{
+  "c01": {
+    "condition_name": "c01",
+    "total": 115,
+    "failed": 115,
+    "pass_rate_pct": 0.0,
+    "fail_rate_pct": 100.0
+  },
+  "c02": {
+    "condition_name": "c02",
+    "total": 115,
+    "failed": 115,
+    "pass_rate_pct": 0.0,
+    "fail_rate_pct": 100.0
+  },
+  "c03": {
+    "condition_name": "c03",
+    "total": 115,
+    "failed": 115,
+    "pass_rate_pct": 0.0,
+    "fail_rate_pct": 100.0
+  },
+  "c04": {
+    "condition_name": "c04",
+    "total": 115,
+    "failed": 115,
+    "pass_rate_pct": 0.0,
+    "fail_rate_pct": 100.0
+  },
+  "c05": {
+    "condition_name": "c05",
+    "total": 115,
+    "failed": 115,
+    "pass_rate_pct": 0.0,
+    "fail_rate_pct": 100.0
+  },
+  "c06": {
+    "condition_name": "c06",
+    "total": 115,
+    "failed": 115,
+    "pass_rate_pct": 0.0,
+    "fail_rate_pct": 100.0
+  },
+  "c07": {
+    "condition_name": "c07",
+    "total": 115,
+    "failed": 115,
+    "pass_rate_pct": 0.0,
+    "fail_rate_pct": 100.0
+  },
+  "c08": {
+    "condition_name": "c08",
+    "total": 115,
+    "failed": 115,
+    "pass_rate_pct": 0.0,
+    "fail_rate_pct": 100.0
+  },
+  "c09": {
+    "condition_name": "c09",
+    "total": 115,
+    "failed": 115,
+    "pass_rate_pct": 0.0,
+    "fail_rate_pct": 100.0
+  },
+  "c10": {
+    "condition_name": "c10",
+    "total": 115,
+    "failed": 115,
+    "pass_rate_pct": 0.0,
+    "fail_rate_pct": 100.0
+  },
+  "c11": {
+    "condition_name": "c11",
+    "total": 115,
+    "failed": 115,
+    "pass_rate_pct": 0.0,
+    "fail_rate_pct": 100.0
+  },
+  "c12": {
+    "condition_name": "c12",
+    "total": 115,
+    "failed": 115,
+    "pass_rate_pct": 0.0,
+    "fail_rate_pct": 100.0
+  },
+  "_meta": {
+    "total_candidates": 115,
+    "total_conditions": 1380
+  }
+}

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" role="img" aria-label="Высоты пересекаются в ортоцентре H">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="480" height="360" rx="14"/>
+  <polygon class="edge" points="207.92,25.68 80.00,300.00 400.00,300.00"/>
+  <line class="aux-dash" x1="80.00" y1="300.00" x2="294.72" y2="149.65"/>
+  <line class="aux-dash" x1="400.00" y1="300.00" x2="137.15" y2="177.43"/>
+  <polyline class="edge" fill="none" points="287.35,154.81 292.51,162.18 299.89,157.02"/>
+  <polyline class="edge" fill="none" points="145.31,181.24 141.51,189.39 133.35,185.59"/>
+  <circle class="dot" cx="207.92" cy="25.68" r="4.00"/>
+  <text class="label" x="207.92" y="9.68" text-anchor="middle" dominant-baseline="middle">A</text>
+  <circle class="dot" cx="80.00" cy="300.00" r="4.00"/>
+  <text class="label" x="64.00" y="314.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dot" cx="400.00" cy="300.00" r="4.00"/>
+  <text class="label" x="416.00" y="314.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <circle class="dot" cx="207.92" cy="210.43" r="4.00"/>
+  <text class="label" x="219.92" y="200.43" text-anchor="middle" dominant-baseline="middle">H</text>
+  <circle class="dot" cx="207.92" cy="210.43" r="4.00"/>
+</svg>

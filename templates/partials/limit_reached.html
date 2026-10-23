@@ -1,0 +1,24 @@
+{# LIMITS_V1 — мягкий лимит Free (partial).
+   Показывается внутри страницы (без редиректа): текущая задача не теряется,
+   история и серия не сбрасываются. Рендерится при data.limit_reached.
+   Контекст: data.limit_ctx = services.limits.daily_context(user). #}
+<div id="dt-limit-state" class="dt-empty-card"
+     style="border-color: rgba(99,102,241,0.35); text-align: center;">
+  <div class="dt-empty-title" style="color:#8c9abc;">Дневной лимит бесплатного плана</div>
+  <div class="dt-empty-sub">
+    На бесплатном плане — <strong>3 задачи и 1 ИИ-разбор в день</strong>.
+    {% if data.limit_ctx and data.limit_ctx.resets_at %}
+    Доступ восстановится в <strong>{{ data.limit_ctx.resets_at[:16] }} по Москве</strong>.
+    {% else %}
+    Доступ восстановится в 00:00 по Москве.
+    {% endif %}
+    <br>Начатая задача никуда не исчезнет — реши её, а новые будут завтра.
+  </div>
+  <div style="margin-top: 18px;">
+    <a href="{{ (data.limit_ctx and data.limit_ctx.upgrade_url) or '/subscribe?from=daily_limit' }}"
+       class="btn-primary"
+       style="display:inline-block;padding:12px 24px;border-radius:12px;text-decoration:none;">
+      Открыть все задачи — Premium
+    </a>
+  </div>
+</div>

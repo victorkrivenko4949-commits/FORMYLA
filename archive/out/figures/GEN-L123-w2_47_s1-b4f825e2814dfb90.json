@@ -1,0 +1,118 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circle",
+   "id": "w_AB_A",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "w_AB_B",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "D",
+   "circle1": "w_AB_A",
+   "circle2": "w_AB_B",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "w_BC_C",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "w_BC_B",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "circle_circle",
+   "id": "E",
+   "circle1": "w_BC_C",
+   "circle2": "w_BC_B",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "CD",
+   "line2": "AE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABD"
+  },
+  {
+   "polygon": "CBE"
+  },
+  {
+   "segment": "CD"
+  },
+  {
+   "segment": "AE"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "equal": [
+    "AB",
+    "BD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BD",
+    "AD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "BE"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "BE",
+    "CE"
+   ],
+   "ticks": 2
+  },
+  {
+   "angle": [
+    "A",
+    "X",
+    "C"
+   ],
+   "text": "120°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

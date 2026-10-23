@@ -1,0 +1,92 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "reflect_point",
+   "id": "B",
+   "of": "A",
+   "over": "O"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "w",
+   "angle": 78
+  },
+  {
+   "type": "reflect_line",
+   "id": "C",
+   "of": "D",
+   "over": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "AB",
+   "line2": "CD"
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "AB"
+  },
+  {
+   "segment": "CD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "C",
+    "M",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "CM",
+    "MD"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "O",
+    "D"
+   ],
+   "text": "78°"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "D"
+   ],
+   "text": "51°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1251.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u0301' in position 88: character maps to <undefined>
+TOTAL: 19600
+SIZE MB: 44.274699211120605
+KEYS: ['grade', 'topic', 'level', 'position', 'task_text', 'correct_answer', 'failed', 'generated_at', 'solution', 'verified']
+grade 5 topic Взвешивания и переливания level 1 pos 1 verified True failed False
+TEXT: У продавца есть чашечные весы и две гири: одна 2 кг, другая 3 кг. Покупатель просит взвесить ровно 1 кг сахара. Как это сделать?
+ANS: Положить гирю 3 кг на одну чашу, гирю 2 кг и сахар — на другую
+SOL: 

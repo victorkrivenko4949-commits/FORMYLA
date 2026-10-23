@@ -1,0 +1,88 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "H",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "Q",
+   "from": "H",
+   "line": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AH",
+   "style": "dashed"
+  },
+  {
+   "segment": "HP",
+   "style": "soft"
+  },
+  {
+   "segment": "HQ",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "H",
+    "P",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "H",
+    "Q",
+    "A"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AH",
+   "reason": "Центр окружности с диаметром AH"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "M",
+   "through": "A",
+   "reason": "Окружность с диаметром AH: P и Q лежат на ней, так как углы APH и AQH прямые."
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
+   "style": "dashed"
+  }
+ ]
+}

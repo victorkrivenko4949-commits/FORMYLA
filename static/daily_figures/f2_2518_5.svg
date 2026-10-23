@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500">
+<rect x="0" y="0" width="600" height="500" fill="#0F1729"/>
+<text x="300" y="28" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#EAF1FA" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2">Покрытие доски доминошками</text>
+<!-- мягкая заливка доминошек -->
+<g fill="#73B6E6" fill-opacity="0.18" stroke="#73B6E6" stroke-width="1.2">
+<rect x="340" y="70" width="120" height="60" rx="8"/><rect x="220" y="130" width="120" height="60" rx="8"/>
+<rect x="340" y="130" width="120" height="60" rx="8"/><rect x="100" y="190" width="120" height="60" rx="8"/>
+<rect x="220" y="190" width="120" height="60" rx="8"/><rect x="400" y="190" width="120" height="60" rx="8"/>
+<rect x="100" y="250" width="120" height="60" rx="8"/><rect x="220" y="250" width="120" height="60" rx="8"/>
+<rect x="400" y="250" width="120" height="60" rx="8"/><rect x="160" y="310" width="120" height="60" rx="8"/>
+<rect x="100" y="310" width="60" height="120" rx="8"/><rect x="160" y="370" width="120" height="60" rx="8"/>
+<rect x="400" y="310" width="120" height="60" rx="8"/><rect x="280" y="310" width="60" height="120" rx="8"/>
+<rect x="340" y="250" width="60" height="120" rx="8"/><rect x="100" y="70" width="120" height="60" rx="8"/>
+<rect x="100" y="130" width="120" height="60" rx="8"/><rect x="460" y="70" width="60" height="120" rx="8"/>
+<rect x="340" y="370" width="120" height="60" rx="8"/><rect x="220" y="70" width="120" height="60" rx="8"/>
+</g>
+<!-- вырезанные клетки -->
+<rect x="340" y="190" width="60" height="60" fill="#0F1729" stroke="#D9E5F5" stroke-width="1.8"/>
+<rect x="460" y="370" width="60" height="60" fill="#0F1729" stroke="#D9E5F5" stroke-width="1.8"/>
+<g stroke="#FFD166" stroke-width="2" stroke-linecap="round">
+<path d="M348 198 L392 242 M392 198 L348 242"/><path d="M468 378 L512 422 M512 378 L468 422"/>
+</g>
+<!-- сетка -->
+<g stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" fill="none">
+<rect x="100" y="70" width="420" height="360"/>
+<path d="M160 70V430 M220 70V430 M280 70V430 M340 70V430 M400 70V430 M460 70V430"/>
+<path d="M100 130H520 M100 190H520 M100 250H520 M100 310H520 M100 370H520"/>
+</g>
+<!-- номера столбцов и строк -->
+<g font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#EAF1FA" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">
+<text x="130" y="52">1</text><text x="190" y="52">2</text><text x="250" y="52">3</text><text x="310" y="52">4</text><text x="370" y="52">5</text><text x="430" y="52">6</text><text x="490" y="52">7</text>
+<text x="78" y="100">1</text><text x="78" y="160">2</text><text x="78" y="220">3</text><text x="78" y="280">4</text><text x="78" y="340">5</text><text x="78" y="400">6</text>
+</g>
+<g font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#EAF1FA" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">
+<text x="370" y="220">(5;3)</text><text x="490" y="400">(7;6)</text>
+</g>
+<g font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#A6B7CC" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">
+<text x="300" y="462">20 доминошек покрывают все 40 оставшихся клеток</text>
+<text x="300" y="482">Нумерация: (столбец; строка)</text>
+</g>
+</svg>

@@ -1,0 +1,154 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "AB",
+   "ratio": 0.35
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "CK",
+   "ratio": 0.4
+  },
+  {
+   "type": "incenter",
+   "id": "I1",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "I2",
+   "of": "ACP"
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "AI1",
+   "line2": "CI2"
+  },
+  {
+   "type": "incenter",
+   "id": "I3",
+   "of": "ABP"
+  },
+  {
+   "type": "incenter",
+   "id": "I4",
+   "of": "BPC"
+  },
+  {
+   "type": "intersection",
+   "id": "N",
+   "line1": "BI3",
+   "line2": "PI4"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CK",
+   "style": "dashed"
+  },
+  {
+   "segment": "BP",
+   "style": "soft"
+  },
+  {
+   "segment": "AI1",
+   "style": "dashed"
+  },
+  {
+   "segment": "CI2",
+   "style": "dashed"
+  },
+  {
+   "segment": "BI3",
+   "style": "dashed"
+  },
+  {
+   "segment": "PI4",
+   "style": "dashed"
+  },
+  {
+   "line": "MN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "I1"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "I1",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "I2"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "I2",
+    "C",
+    "P"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "P",
+    "B",
+    "I3"
+   ],
+   "text": "γ"
+  },
+  {
+   "angle": [
+    "I3",
+    "B",
+    "A"
+   ],
+   "text": "γ"
+  },
+  {
+   "angle": [
+    "B",
+    "P",
+    "I4"
+   ],
+   "text": "δ"
+  },
+  {
+   "angle": [
+    "I4",
+    "P",
+    "C"
+   ],
+   "text": "δ"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

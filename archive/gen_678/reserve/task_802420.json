@@ -1,0 +1,20 @@
+{
+  "id": 802420,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $D$, $E$, $F$ соответственно так, что $BD:DC = CE:EA = AF:FB = 2:1$. Отрезки $AD$, $BE$, $CF$ пересекаются в точках $X = BE \\cap CF$, $Y = CF \\cap AD$, $Z = AD \\cap BE$. Найдите отношение площади треугольника $XYZ$ к площади треугольника $ABC$.",
+  "solution": "Поместим треугольник $ABC$ в систему координат: $A(0,0)$, $B(1,0)$, $C(0,1)$. Площадь $S_{ABC} = \\frac12$.  \n\nТочки $D$, $E$, $F$ делят стороны в отношении $2:1$ (считая от вершин $B$, $C$, $A$ соответственно). Получаем:\n- $D$ на $BC$: $D = B + \\frac{2}{3}(C-B) = \\left(\\frac13,\\frac23\\right)$.\n- $E$ на $CA$: $E = C + \\frac{2}{3}(A-C) = \\left(0,\\frac13\\right)$.\n- $F$ на $AB$: $F = A + \\frac{2}{3}(B-A) = \\left(\\frac23,0\\right)$.\n\nУравнения прямых:\n- $AD$: $y = 2x$.\n- $BE$: через $B(1,0)$ и $E(0,\\frac13)$: $y = -\\frac13 x + \\frac13$.\n- $CF$: через $C(0,1)$ и $F(\\frac23,0)$: $y = -\\frac32 x + 1$.\n\nНаходим точки пересечения:\n- $X = BE \\cap CF$: $-\\frac13 x + \\frac13 = -\\frac32 x + 1 \\Rightarrow \\frac76 x = \\frac23 \\Rightarrow x = \\frac47$, $y = -\\frac13\\cdot\\frac47+\\frac13 = \\frac17$.  \n- $Y = CF \\cap AD$: $-\\frac32 x + 1 = 2x \\Rightarrow \\frac72 x = 1 \\Rightarrow x = \\frac27$, $y = \\frac47$.\n- $Z = AD \\cap BE$: $2x = -\\frac13 x + \\frac13 \\Rightarrow \\frac73 x = \\frac13 \\Rightarrow x = \\frac17$, $y = \\frac27$.\n\nПлощадь треугольника $XYZ$ вычислим по формуле через координаты вершин:\n$$\nS_{XYZ} = \\frac12 \\left| x_X(y_Y-y_Z) + x_Y(y_Z-y_X) + x_Z(y_X-y_Y) \\right| = \\frac12 \\left| \\frac47\\left(\\frac47-\\frac27\\right) + \\frac27\\left(\\frac27-\\frac17\\right) + \\frac17\\left(\\frac17-\\frac47\\right) \\right| = \\frac12 \\left| \\frac47\\cdot\\frac27 + \\frac27\\cdot\\frac17 + \\frac17\\cdot\\left(-\\frac37\\right) \\right| = \\frac12 \\left| \\frac{8}{49} + \\frac{2}{49} - \\frac{3}{49} \\right| = \\frac12 \\cdot \\frac{7}{49} = \\frac{1}{14}.\n$$\n\nОтношение площадей:\n$$\n\\frac{S_{XYZ}}{S_{ABC}} = \\frac{1/14}{1/2} = \\frac{1}{7}.\n$$\n\n**Ответ:** $\\dfrac{1}{7}$.",
+  "correct_answer": "$$\\frac{1}{7}$$",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 5,
+  "key_method": "Координатный метод и вычисление площади треугольника по координатам",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.831,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T16:06:46.926932+00:00"
+}

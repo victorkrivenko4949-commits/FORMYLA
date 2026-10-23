@@ -1,0 +1,1018 @@
+{% extends "base.html" %}
+{% block title %}Задача №{{ task.number }} — {{ probnik.title }}{% endblock %}
+
+{% block extra_css %}{% include 'olympiad/_base_assets.html' %}{% endblock %}
+
+{% block content %}
+<div class="oly-wrap"
+     x-data="olympiadTask({
+        taskId: {{ task.id }},
+        csrf: '',
+        initialStatus: {{ (attempt.status if attempt else 'viewed') | tojson }},
+        initialSelfScore: {{ (attempt.self_score if attempt and attempt.self_score is not none else 'null') | safe }},
+        initialNote: {{ (attempt.note if attempt and attempt.note else '') | tojson }},
+        authenticated: {{ 'true' if current_user.is_authenticated else 'false' }},
+        attemptUrl: '{{ url_for('olympiad.task_attempt', task_id=task.id) }}',
+        submitUrl: '{{ url_for('olympiad.task_submit', task_id=task.id) }}'
+     })"
+     x-init="markViewed()">
+
+    <p style="margin-bottom: 12px;">
+        <a href="{{ url_for('olympiad.probnik', code=probnik.code) }}"
+           class="oly-btn-ghost oly-btn oly-btn-sm"><- к пробнику «{{ probnik.title }}»</a>
+    </p>
+
+    <header style="margin-bottom: 18px;">
+        <h1 style="display:flex; gap:10px; align-items:center; margin: 0 0 6px;">
+            <span>Задача №{{ task.number }}</span>
+            {% if task.difficulty %}
+            <span class="oly-badge oly-badge-{{ task.difficulty }}">{{ task.difficulty }}</span>
+            {% endif %}
+            <span class="oly-badge oly-badge-topic">{{ task.method_primary }}</span>
+            {% if task.method_secondary %}
+            <span class="oly-badge oly-badge-topic" style="opacity:.7;">{{ task.method_secondary }}</span>
+            {% endif %}
+        </h1>
+        {% if task.source_prototype %}
+        {# Render markdown so that links like [text](url) become clickable.
+           Using <div> (not <p>) because md_render emits a block-level <p>. #}
+        <div class="oly-card-sub oly-md oly-md-inline">
+            <span class="oly-prototype-label">Прототип:</span>
+            {{ task.source_prototype | md_render }}
+        </div>
+        {% endif %}
+    </header>
+
+    <!-- Условие -->
+    <section class="oly-card">
+        <h2 style="margin-top:0;"> Условие</h2>
+        <div class="oly-md">{{ task.condition_md | md_render }}</div>
+    </section>
+
+    {% if condition_figures %}
+    <section style="margin-top: 24px;">
+        <h2 style="margin-top:0;"> Рисунки к условию</h2>
+        <div class="task-figures-block">
+            {% for fig in condition_figures %}
+            {% set fname = fig.file | replace('figures/', '') %}
+            <figure class="task-figure" data-file="{{ fname }}">
+                <img
+                    src="/static/figures/{{ fname }}"
+                    alt="Рисунок к условию"
+                    loading="lazy"
+                    class="task-figure__img"
+                    onclick="openOnBoard('/static/figures/{{ fname }}')"
+                    onerror="this.closest('figure').remove()"
+                />
+                <figcaption class="task-figure__cap">
+                    <a class="task-figure__download"
+                       href="/static/figures/{{ fname }}"
+                       download="{{ fname }}">⬇ Скачать</a>
+                    <button class="task-figure__board-btn"
+                            onclick="openOnBoard('/static/figures/{{ fname }}')"> На доску</button>
+                </figcaption>
+            </figure>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {# ─── Блок ввода ответа ─────────────────────────────────────── #}
+    {% if task.answer %}
+    <section class="oly-answer-block" id="answerBlock"
+             data-task-id="{{ task.id }}"
+             data-submit-url="{{ url_for('olympiad.task_submit', task_id=task.id) }}"
+             data-attempt-url="{{ url_for('olympiad.task_attempt', task_id=task.id) }}"
+             data-initial-status="{{ attempt.status if attempt else 'viewed' }}"
+             data-authenticated="{{ 'true' if current_user.is_authenticated else 'false' }}" data-correct-answer="{{ task.answer | e }}">
+        <h2 style="margin-top:0;">️ Ваш ответ</h2>
+        <p class="oly-answer-hint">Введи ответ, чтобы открыть идею и полное решение.</p>
+        <input type="text"
+               id="olyAnswerInput"
+               class="answer-input oly-answer-input"
+               placeholder="Например: 5050 или 1/2"
+               autocomplete="off">
+        <button type="button" id="olyAnswerSubmit"
+                class="submit-button oly-answer-submit"
+                disabled>
+            Проверить ответ
+        </button>
+
+        <div class="oly-reveal-without-check">
+            <button type="button" id="olyAnswerReveal"
+                    class="oly-link-btn oly-link-btn--dim">
+                Я не знаю ответ — открыть подсказку и решение
+            </button>
+        </div>
+
+        <div class="feedback-section" id="feedbackSection" style="display:none;">
+            <div id="feedbackContent"></div>
+        </div>
+    </section>
+    {% endif %}
+
+    {# ─── Обёртка с блокировкой Идеи/Решения до ответа ──────────── #}
+    {# solutionsUnlocked = true, если: ответ был дан И задача solved/attempted/revealed
+       ИЛИ пользователь явно нажал «открыть без проверки». #}
+    <div class="oly-solutions-wrap oly-solutions-locked" id="olySolutionsWrap">
+
+        {% if task.answer %}
+        <div class="oly-solutions-locked-msg" id="olySolutionsLockedMsg">
+             Введи свой ответ выше, и откроется идея + полное решение.
+        </div>
+        {% endif %}
+
+    <!-- Идея решения (свёрнута по умолчанию, раскрывается по клику) -->
+    <section class="oly-reveal" data-open="false">
+        <header class="oly-reveal-head">
+            <span> Идея решения</span>
+            <span class="oly-reveal-arrow">▾</span>
+        </header>
+        <div class="oly-reveal-body">
+            <div class="oly-md">{{ task.idea_md | md_render }}</div>
+        </div>
+    </section>
+
+    <!-- Полное решение (свёрнуто по умолчанию, раскрывается по клику) -->
+    <section class="oly-reveal" data-open="false">
+        <header class="oly-reveal-head">
+            <span>[OK] Полное решение</span>
+            <span class="oly-reveal-arrow">▾</span>
+        </header>
+        <div class="oly-reveal-body">
+            <div class="oly-md">{{ task.solution_md | md_render }}</div>
+            {% if solution_figures %}
+            <div class="task-figures-block" style="margin-top: 16px;">
+                {% for fig in solution_figures %}
+                {% set fname = fig.file | replace('figures/', '') %}
+                <figure class="task-figure" data-file="{{ fname }}">
+                    <img
+                        src="/static/figures/{{ fname }}"
+                        alt="Рисунок к решению"
+                        loading="lazy"
+                        class="task-figure__img"
+                        onclick="openOnBoard('/static/figures/{{ fname }}')"
+                        onerror="this.closest('figure').remove()"
+                    />
+                    <figcaption class="task-figure__cap">
+                        <a class="task-figure__download"
+                           href="/static/figures/{{ fname }}"
+                           download="{{ fname }}">⬇ Скачать</a>
+                        <button class="task-figure__board-btn"
+                                onclick="openOnBoard('/static/figures/{{ fname }}')"> На доску</button>
+                    </figcaption>
+                </figure>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {# По запросу пользователя: ответ внутри блока «Полное решение»
+               больше НЕ показываем — он раскрывается только через форму
+               проверки ответа выше. #}
+        </div>
+    </section>
+    </div> {# /.oly-solutions-wrap #}
+</div>
+
+{# ── Board overlay ── #}
+<div id="board-overlay" class="board" hidden>
+    <button class="board__close" onclick="closeBoard()" aria-label="Close"></button>
+    <div class="board__controls">
+        <button onclick="boardZoom(1.2)">+</button>
+        <button onclick="boardZoom(1/1.2)">−</button>
+        <button onclick="boardReset()">Reset</button>
+        <a id="board-download" href="#" download>⬇ Download</a>
+    </div>
+    <div class="board__canvas" id="board-canvas">
+        <img id="board-img" src="" alt="" draggable="false"/>
+    </div>
+</div>
+
+<style>
+[x-cloak] { display: none !important; }
+
+/* «Прототип: <markdown>» в одну строку: md_render выдаёт <p>, делаем его inline. */
+.oly-md-inline > p { display: inline; margin: 0; }
+.oly-md-inline .oly-prototype-label { margin-right: 6px; opacity: .85; }
+.oly-md-inline a { text-decoration: underline; }
+
+/* ── Стили для answer-section / feedback (портированы из daily_task.html) ── */
+.answer-section {
+    margin-top: 24px;
+}
+.answer-label {
+    display: block;
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+.answer-input {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+.answer-input:focus {
+    outline: none;
+    border-color: #38ef7d;
+    box-shadow: 0 0 20px rgba(56, 239, 125, 0.3);
+}
+.submit-button {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+}
+.submit-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(56, 239, 125, 0.4);
+}
+.submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.feedback-section {
+    margin-top: 2rem;
+    animation: olySlideIn 0.5s ease;
+}
+@keyframes olySlideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.feedback-correct,
+.feedback-incorrect {
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+}
+.feedback-correct {
+    background: rgba(56, 239, 125, 0.1);
+    border: 2px solid rgba(56, 239, 125, 0.5);
+}
+.feedback-incorrect {
+    background: rgba(239, 68, 68, 0.1);
+    border: 2px solid rgba(239, 68, 68, 0.5);
+}
+.feedback-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+.feedback-correct .feedback-icon { color: #38ef7d; }
+.feedback-incorrect .feedback-icon { color: #ef4444; }
+.feedback-correct h3 {
+    color: #38ef7d;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+.feedback-incorrect h3 {
+    color: #ef4444;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+.xp-earned {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #38ef7d;
+    margin-bottom: 1rem;
+}
+.ai-feedback {
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    text-align: left;
+}
+.try-again-button {
+    margin-top: 1rem;
+    padding: 0.8rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.try-again-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.correct-answer-block {
+    margin: 16px 0;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    text-align: left;
+}
+.correct-answer-label {
+    font-weight: 700;
+    color: #fff;
+    margin-right: 8px;
+}
+.correct-answer-math {
+    display: inline-block;
+    color: #fff;
+}
+/* ── Board overlay styles ── */
+.task-figures-block { display:flex; flex-wrap:wrap; gap:16px; margin:8px 0 16px; }
+.task-figure { margin:0; display:inline-flex; flex-direction:column; align-items:flex-start; }
+.task-figure__img { max-width:100%; height:auto; border:1px solid #334155; border-radius:8px; cursor:zoom-in; background:#fff; display:block; }
+.task-figure__cap { margin-top:6px; font-size:13px; display:flex; gap:10px; align-items:center; }
+.task-figure__download { color:#7dd3fc; text-decoration:underline; cursor:pointer; }
+.task-figure__board-btn { background:rgba(56,189,248,.12); color:#7dd3fc; border:1px solid rgba(56,189,248,.3); border-radius:6px; padding:3px 10px; font-size:12px; cursor:pointer; }
+.board { position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.88); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.board[hidden] { display:none; }
+.board__close { position:absolute; top:16px; right:16px; font-size:22px; background:#fff; border:none; width:40px; height:40px; border-radius:50%; cursor:pointer; z-index:10001; }
+.board__controls { position:absolute; top:16px; left:16px; display:flex; gap:8px; align-items:center; z-index:10001; }
+.board__controls button, .board__controls a { background:#fff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; font-size:14px; text-decoration:none; color:#111; }
+.board__canvas { width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+#board-img { max-width:92vw; max-height:90vh; transform-origin:center center; user-select:none; -webkit-user-drag:none; background:#fff; border-radius:8px; }
+
+/* ── Answer block + lock overlay ── */
+.oly-answer-block {
+    background: linear-gradient(145deg, rgba(56,189,248,0.08), rgba(56,189,248,0.02));
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-top: 24px;
+}
+.oly-answer-hint {
+    color: var(--text-muted, #94a3b8);
+    font-size: 0.95em;
+    margin: 0 0 14px;
+}
+.oly-answer-input {
+    margin-bottom: 12px;
+}
+.oly-reveal-without-check {
+    margin-top: 14px;
+    text-align: center;
+}
+.oly-link-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted, #94a3b8);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.92em;
+    padding: 4px 8px;
+}
+.oly-link-btn:hover {
+    color: var(--accent, #38bdf8);
+}
+.oly-solutions-wrap {
+    position: relative;
+}
+.oly-solutions-locked .oly-reveal {
+    pointer-events: none;
+    opacity: 0.45;
+    filter: blur(1.5px) grayscale(0.4);
+    user-select: none;
+}
+.oly-solutions-locked-msg {
+    text-align: center;
+    padding: 14px 20px;
+    margin: 16px 0;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px dashed rgba(245, 158, 11, 0.4);
+    color: #fbbf24;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+
+/* Изначально dim, без подчёркивания: пользователь должен СНАЧАЛА попытаться. */
+.oly-link-btn.oly-link-btn--dim {
+    color: var(--text-muted, #64748b);
+    opacity: 0.55;
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(148,163,184,0.35);
+    transition: color 0.2s ease, opacity 0.2s ease, text-shadow 0.2s ease, border-color 0.2s ease;
+}
+.oly-link-btn.oly-link-btn--dim:hover {
+    opacity: 0.85;
+    color: var(--text-soft, #cbd5e1);
+}
+/* Когда решения открыты — ссылка «загорается». */
+.oly-link-btn.oly-link-btn--active {
+    color: #38bdf8;
+    opacity: 1;
+    text-decoration: underline;
+    text-shadow: 0 0 12px rgba(56,189,248,0.55);
+    border-bottom-color: transparent;
+}
+/* Сабмит-кнопка с явными текст/состоянием. */
+.oly-answer-submit {
+    margin-top: 4px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+.oly-answer-submit:disabled {
+    background: rgba(56, 239, 125, 0.25);
+    color: rgba(255,255,255,0.75);
+    box-shadow: none;
+    transform: none;
+    cursor: not-allowed;
+}
+\n</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Board overlay functions ──
+var bScale=1,bX=0,bY=0,bDrag=false,bSX=0,bSY=0;
+function applyBoard(){document.getElementById('board-img').style.transform='translate('+bX+'px,'+bY+'px) scale('+bScale+')';}
+function openOnBoard(src){var ov=document.getElementById('board-overlay');document.getElementById('board-img').src=src;var dl=document.getElementById('board-download');dl.href=src;dl.download=src.split('/').pop();bScale=1;bX=0;bY=0;applyBoard();ov.hidden=false;document.body.style.overflow='hidden';}
+function closeBoard(){document.getElementById('board-overlay').hidden=true;document.body.style.overflow='';}
+function boardZoom(f){bScale=Math.min(8,Math.max(0.2,bScale*f));applyBoard();}
+function boardReset(){bScale=1;bX=0;bY=0;applyBoard();}
+(function(){var canvas=document.getElementById('board-canvas');var ov=document.getElementById('board-overlay');canvas.addEventListener('wheel',function(e){e.preventDefault();boardZoom(e.deltaY<0?1.1:1/1.1);},{passive:false});canvas.addEventListener('mousedown',function(e){bDrag=true;bSX=e.clientX-bX;bSY=e.clientY-bY;});window.addEventListener('mousemove',function(e){if(!bDrag)return;bX=e.clientX-bSX;bY=e.clientY-bSY;applyBoard();});window.addEventListener('mouseup',function(){bDrag=false;});ov.addEventListener('click',function(e){if(e.target===ov)closeBoard();});document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!ov.hidden)closeBoard();});})();
+
+// Универсальный обработчик раскрытия блоков «Идея решения» / «Полное решение».
+// Универсальный обработчик раскрытия блоков «Идея решения» / «Полное решение».
+// Работает И с Alpine, И без него: переключает data-open на section, а CSS-правило
+// .oly-reveal[data-open="false"] .oly-reveal-body { display: none } прячет содержимое.
+// При наличии Alpine он сам ставит data-open через :data-open, но если Alpine
+// не загрузился — этот скрипт всё равно даёт пользователю рабочий toggle.
+(function () {
+    function setupReveal() {
+        document.querySelectorAll('.oly-reveal').forEach(function (rev) {
+            if (rev.dataset.revealBound === '1') return;
+            rev.dataset.revealBound = '1';
+            // Свёрнуто по умолчанию.
+            if (!rev.hasAttribute('data-open')) {
+                rev.setAttribute('data-open', 'false');
+            }
+            var head = rev.querySelector('.oly-reveal-head');
+            if (!head) return;
+            head.addEventListener('click', function () {
+                var open = rev.getAttribute('data-open') === 'true';
+                rev.setAttribute('data-open', open ? 'false' : 'true');
+                if (!open) {
+                    var body = rev.querySelector('.oly-reveal-body');
+                    if (body && window.renderMathInElement) {
+                        try {
+                            window.renderMathInElement(body, {
+                                delimiters: [
+                                    {left: '$$', right: '$$', display: true},
+                                    {left: '$',  right: '$',  display: false},
+                                    {left: '\\(', right: '\\)', display: false},
+                                    {left: '\\[', right: '\\]', display: true}
+                                ],
+                                throwOnError: false
+                            });
+                        } catch (e) {}
+                    }
+                }
+            });
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupReveal);
+    } else {
+        setupReveal();
+    }
+})();
+</script>
+<script>
+function olympiadTask(cfg) {
+    return {
+        taskId: cfg.taskId,
+        attemptUrl: cfg.attemptUrl,
+        submitUrl: cfg.submitUrl,
+        authenticated: cfg.authenticated,
+
+        // Аккордеоны «Идея решения» и «Полное решение» свёрнуты по умолчанию;
+        // раскрываются по клику пользователя.
+        showIdea: false,
+        showSolution: false,
+
+        status: cfg.initialStatus || 'viewed',
+        selfScore: cfg.initialSelfScore,
+        note: cfg.initialNote || '',
+        saveHint: '',
+
+        // ── Поля для ввода ответа (Daily-Quest-style) ──────────────
+        userAnswer: '',
+        userSolution: '',
+        submitting: false,
+        feedbackVisible: false,
+
+        _viewSent: false,
+        _noteTimer: null,
+
+        async _send(payload) {
+            if (!this.authenticated) return null;
+            try {
+                const r = await fetch(this.attemptUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+                    body: JSON.stringify(payload),
+                });
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                const data = await r.json();
+                if (data && data.attempt) {
+                    this.status = data.attempt.status;
+                    if (data.attempt.self_score !== undefined) this.selfScore = data.attempt.self_score;
+                }
+                this.saveHint = '[OK] сохранено';
+                setTimeout(()=>{ this.saveHint=''; }, 1500);
+                return data;
+            } catch (e) {
+                console.error('attempt save failed', e);
+                this.saveHint = '[!] не удалось сохранить';
+                return null;
+            }
+        },
+
+        async markViewed() {
+            if (this._viewSent) return;
+            this._viewSent = true;
+            if (['solved','revealed','attempted'].includes(this.status)) return;
+            await this._send({status: 'viewed'});
+        },
+        async markAttempted() {
+            if (this.status === 'solved') return;
+            await this._send({status: 'attempted'});
+        },
+        async markSolved() {
+            await this._send({status: 'solved', self_score: this.selfScore});
+        },
+        async markRevealed() {
+            this.showSolution = true;
+            await this._send({status: 'revealed'});
+        },
+        async setSelfScore(s) {
+            this.selfScore = s;
+            const nextStatus = ['solved','revealed'].includes(this.status) ? this.status : 'attempted';
+            await this._send({status: nextStatus, self_score: s});
+        },
+        async saveNote() {
+            clearTimeout(this._noteTimer);
+            await this._send({status: this.status, note: this.note});
+        },
+
+        toggleIdea() {
+            this.showIdea = !this.showIdea;
+            if (this.showIdea) this.markAttempted();
+            this._rerenderMath();
+        },
+        toggleSolution() {
+            this.showSolution = !this.showSolution;
+            if (this.showSolution) this.markRevealed();
+            this._rerenderMath();
+        },
+
+        _rerenderMath(scope) {
+            this.$nextTick(() => {
+                try {
+                    if (window.renderMathInElement) {
+                        renderMathInElement(scope || document.body, {
+                            delimiters: [
+                                {left: '$$', right: '$$', display: true},
+                                {left: '$',  right: '$',  display: false},
+                                {left: '\\(', right: '\\)', display: false},
+                                {left: '\\[', right: '\\]', display: true},
+                            ],
+                            throwOnError: false,
+                        });
+                    }
+                } catch (e) {}
+            });
+        },
+
+        // ────────────────────────────────────────────────────────────
+        // ВВОД ОТВЕТА / ПРОВЕРКА (1-в-1 как в daily_task.html)
+        // ────────────────────────────────────────────────────────────
+
+        async submitAnswer() {
+            const answer = (this.userAnswer || '').trim();
+            const solution = (this.userSolution || '').trim();
+
+            if (!answer) {
+                alert('Пожалуйста, введите ответ');
+                return;
+            }
+            if (!this.authenticated) {
+                alert('Войдите, чтобы отправить ответ.');
+                return;
+            }
+
+            this.submitting = true;
+            try {
+                const response = await fetch(this.submitUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({ answer: answer, solution: solution }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this._renderFeedback(data);
+                    // ЛЮБОЙ ответ (правильный или нет) снимает блокировку идеи/решения
+                    this.solutionsUnlocked = true;
+                    if (data.is_correct) {
+                        this.status = 'solved';
+                        if (this.selfScore == null) this.selfScore = 7;
+                    } else {
+                        if (this.status === 'viewed' || !this.status) {
+                            this.status = 'attempted';
+                        }
+                    }
+                } else {
+                    alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            } catch (err) {
+                console.error('Error submitting answer:', err);
+                alert('Ошибка отправки ответа');
+            } finally {
+                this.submitting = false;
+            }
+        },
+
+        // Нормализация ASCII-«сахара» в TeX внутри одной math-строки.
+        _normalizeMathPiece(s) {
+            if (!s) return s;
+            let out = s;
+            for (let i = 0; i < 4; i++) {
+                const before = out;
+                out = out.replace(/\bsqrt\s*\(([^()]*)\)/g, '\\sqrt{$1}');
+                if (out === before) break;
+            }
+            out = out.replace(/\bcbrt\s*\(([^()]*)\)/g, '\\sqrt[3]{$1}');
+            out = out.replace(/=>/g, '\\Rightarrow ')
+                     .replace(/<=/g, '\\le ')
+                     .replace(/>=/g, '\\ge ')
+                     .replace(/!=/g, '\\ne ')
+                     .replace(/<->/g, '\\leftrightarrow ')
+                     .replace(/->/g, '\\to ');
+            out = out.replace(/\+-/g, '\\pm ').replace(/(?<!\\)\*/g, '\\cdot ');
+            return out;
+        },
+
+        // Готовит correct_answer к показу.
+        _prepareCorrectAnswer(s) {
+            if (s == null) return '';
+            let str = String(s).trim();
+            if (!str) return '';
+            const hasDelims = /\$|\\\(|\\\[/.test(str);
+            const hasCyrillic = /[А-Яа-яЁё]/.test(str);
+            if (!hasDelims && !hasCyrillic &&
+                /[=^_+\-*\/()\[\]]|sqrt|frac|\\\w/.test(str)) {
+                return '\\(' + this._normalizeMathPiece(str) + '\\)';
+            }
+            return this._renderAIMarkdown(str);
+        },
+
+        _renderAIMarkdown(text) {
+            if (text == null) return '';
+            let raw = String(text);
+
+            // 0) Чиним частую ошибку моделей: \cdot \cdot ... \cdot \cdot -> **...**
+            raw = raw.replace(/\\cdot\s*\\cdot\s*([^\n]+?)\s*\\cdot\s*\\cdot/g, '**$1**');
+            raw = raw.replace(/(^|\n)\\cdot\s+([^\n]+?)\s+\\cdot(\s|$|:)/g, '$1**$2**$3');
+
+            // 1) Вырезаем все math-блоки и нормализуем их содержимое.
+            const placeholders = [];
+            const self = this;
+            const protect = (re, openLen, closeLen) => {
+                raw = raw.replace(re, (m) => {
+                    const inner = m.slice(openLen, m.length - closeLen);
+                    const fixed = m.slice(0, openLen) + self._normalizeMathPiece(inner) + m.slice(m.length - closeLen);
+                    placeholders.push(fixed);
+                    return `@@MATH${placeholders.length - 1}@@`;
+                });
+            };
+            protect(/\$\$[\s\S]+?\$\$/g, 2, 2);
+            protect(/\\\[[\s\S]+?\\\]/g, 2, 2);
+            protect(/\\\([\s\S]+?\\\)/g, 2, 2);
+            protect(/\$[^\n$]+?\$/g, 1, 1);
+
+            // 1.5) Голая математика в оставшемся тексте.
+            raw = raw.replace(/\bsqrt\(/g, '\\sqrt(')
+                     .replace(/\+-/g, '±')
+                     .replace(/=>/g, '')
+                     .replace(/<=>/g, '')
+                     .replace(/->/g, '->');
+
+            // 2) Косметика «вне формул».
+            raw = raw.replace(/\s*(Случай\s*\d+\s*:)/g, '\n\n$1')
+                     .replace(/\s*(Ответ\s*:)/g, '\n\n$1')
+                     .replace(/\s*(Проверка\s*:)/g, '\n$1');
+
+            let html;
+            if (window.marked) {
+                try {
+                    html = window.marked.parse(raw, { breaks: true, gfm: true });
+                } catch (e) {
+                    html = raw.replace(/\n/g, '<br>');
+                }
+            } else {
+                html = raw.replace(/\n/g, '<br>');
+            }
+            html = html.replace(/@@MATH(\d+)@@/g, (_, i) => placeholders[Number(i)] || '');
+            return html;
+        },
+
+        _renderFeedback(data) {
+            const feedbackSection = document.getElementById('feedbackSection');
+            const feedbackContent = document.getElementById('feedbackContent');
+            if (!feedbackSection || !feedbackContent) return;
+
+            const aiHtml = this._renderAIMarkdown(data.ai_feedback || '');
+            const correctAnswer = this._prepareCorrectAnswer(data.correct_answer);
+
+            let html = '';
+            if (data.is_correct) {
+                html = `
+                    <div class="feedback-correct">
+                        <div class="feedback-icon">[OK]</div>
+                        <h3>Правильно!</h3>
+                        <p class="xp-earned">+${data.xp_earned} XP</p>
+                        <div class="ai-feedback">${aiHtml}</div>
+                    </div>
+                `;
+            } else {
+                html = `
+                    <div class="feedback-incorrect">
+                        <div class="feedback-icon"></div>
+                        <h3>Неправильно</h3>
+                        <div class="correct-answer-block">
+                            <span class="correct-answer-label">Правильный ответ:</span>
+                            <div class="correct-answer-math">${correctAnswer}</div>
+                        </div>
+                        <div class="ai-feedback">${aiHtml}</div>
+                        <button onclick="(window.__olyTryAgain && window.__olyTryAgain())" class="try-again-button">Попробовать ещё раз</button>
+                    </div>
+                `;
+            }
+
+            feedbackContent.innerHTML = html;
+            this.feedbackVisible = true;
+            feedbackSection.style.display = 'block';
+
+            // Глобальный хук для кнопки "Попробовать ещё раз"
+            window.__olyTryAgain = () => this._tryAgain();
+
+            // Re-render KaTeX внутри только что вставленного фидбека
+            this._rerenderMath(feedbackSection);
+
+            // Прокручиваем к фидбеку
+            this.$nextTick(() => {
+                feedbackSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        },
+
+        _tryAgain() {
+            this.feedbackVisible = false;
+            const fs = document.getElementById('feedbackSection');
+            if (fs) fs.style.display = 'none';
+            this.userAnswer = '';
+            const inp = document.querySelector('.oly-answer-input');
+            if (inp) inp.focus();
+        },
+    };
+}
+</script>
+
+<script>
+// ── PLAIN-JS обработчик блока «Ваш ответ» (без Alpine) ──
+(function () {
+    function ready(fn) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fn);
+        } else {
+            fn();
+        }
+    }
+    ready(function () {
+        var block = document.getElementById('answerBlock');
+        if (!block) return;
+        var input = document.getElementById('olyAnswerInput');
+        var btn = document.getElementById('olyAnswerSubmit');
+        var revealBtn = document.getElementById('olyAnswerReveal');
+        var wrap = document.getElementById('olySolutionsWrap');
+        var lockedMsg = document.getElementById('olySolutionsLockedMsg');
+        var feedbackSection = document.getElementById('feedbackSection');
+        var feedbackContent = document.getElementById('feedbackContent');
+
+        var submitUrl = block.getAttribute('data-submit-url');
+        var attemptUrl = block.getAttribute('data-attempt-url');
+        var authenticated = block.getAttribute('data-authenticated') === 'true';
+        var initialStatus = block.getAttribute('data-initial-status') || 'viewed';
+
+        var revealedStatuses = ['solved','attempted','revealed','submitted','done'];
+        if (revealedStatuses.indexOf(initialStatus) !== -1) {
+            unlockSolutions();
+        }
+
+        function syncBtn() {
+            var v = (input.value || '').trim();
+            btn.disabled = !v;
+        }
+        input.addEventListener('input', syncBtn);
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (!btn.disabled) doSubmit();
+            }
+        });
+        syncBtn();
+
+        btn.addEventListener('click', function () {
+            if (!btn.disabled) doSubmit();
+        });
+
+        revealBtn.addEventListener('click', function () { unlockSolutions(); lockAnswerInput();
+            if (authenticated) {
+                fetch(attemptUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+                    body: JSON.stringify({status:'revealed'})
+                }).catch(function(){});
+            }
+        });
+
+        function lockAnswerInput() { try { var tid = block.getAttribute('data-task-id') || ''; if (input) { input.disabled = true; input.value=''; input.placeholder = 'Ответ заблокирован — решение открыто'; } if (btn) { btn.disabled = true; btn.textContent = 'Ответ заблокирован'; } localStorage.setItem('oly_locked_' + tid, '1'); } catch (e) {} } function unlockSolutions() {
+            if (wrap) wrap.classList.remove('oly-solutions-locked');
+            if (lockedMsg) lockedMsg.style.display = 'none';
+            if (revealBtn) {
+                revealBtn.classList.remove('oly-link-btn--dim');
+                revealBtn.classList.add('oly-link-btn--active');
+            }
+        }
+
+        // Клиентская нормализация — копия серверной (на случай fallback)
+        function normalizeAnswer(s) {
+            if (s == null) return '';
+            s = String(s).trim().toLowerCase();
+            s = s.replace(/\$/g, '').replace(/\\\(/g, '').replace(/\\\)/g, '');
+            s = s.replace(/\\\[/g, '').replace(/\\\]/g, '');
+            s = s.replace(/,/g, '.');
+            s = s.replace(/\s+/g, '');
+            s = s.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '$1/$2');
+            s = s.replace(/\\cdot/g, '*').replace(/\\times/g, '*');
+            s = s.replace(/\.$/, '');
+            return s;
+        }
+
+        function clientCheck(answer) {
+            var correct = block.getAttribute('data-correct-answer') || '';
+            var ok = correct && normalizeAnswer(answer) === normalizeAnswer(correct);
+            return {
+                success: true,
+                is_correct: !!ok,
+                correct_answer: correct,
+                xp_earned: ok ? 10 : 0,
+                ai_feedback: ok
+                    ? 'Молодец! Ответ совпал с эталоном.'
+                    : 'Ответ не совпал с эталоном. Загляни в « Идея решения» — она теперь открыта.',
+                _client: true
+            };
+        }
+
+        function doSubmit() {
+            var answer = (input.value || '').trim();
+            if (!answer) return;
+            btn.disabled = true;
+            var prevText = btn.textContent;
+            btn.textContent = 'Проверяем…';
+
+            // Параллельно сразу готовим клиентский результат — он не зависит от сети.
+            var clientResult = clientCheck(answer);
+
+            if (!authenticated) {
+                // Гость — сразу клиентская проверка без сети.
+                renderFeedback(clientResult);
+                unlockSolutions();
+                btn.textContent = prevText;
+                syncBtn();
+                return;
+            }
+
+            fetch(submitUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type':'application/json',
+                    'X-Requested-With':'XMLHttpRequest',
+                    'Accept':'application/json'
+                },
+                body: JSON.stringify({answer: answer})
+            })
+            .then(function (r) {
+                if (!r.ok) {
+                    // 401/403/302/500 — отдаём клиентский результат.
+                    return r.text().then(function (txt) {
+                        console.warn('submit HTTP ' + r.status, txt.slice(0, 300));
+                        return clientResult;
+                    });
+                }
+                // Если редирект или HTML — fallback на клиент.
+                var ct = (r.headers.get('Content-Type') || '').toLowerCase();
+                if (ct.indexOf('application/json') === -1) {
+                    console.warn('submit non-JSON response');
+                    return clientResult;
+                }
+                return r.json().catch(function () { return clientResult; });
+            })
+            .then(function (data) {
+                if (!data) data = clientResult;
+                renderFeedback(data);
+                unlockSolutions();
+            })
+            .catch(function (e) {
+                console.error('submit error, fallback to client check', e);
+                renderFeedback(clientResult);
+                unlockSolutions();
+            })
+            .finally(function () {
+                btn.textContent = prevText;
+                syncBtn();
+            });
+        }
+
+        function escapeHtml(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function renderFeedback(data) {
+            var html;
+            var aiHtml = escapeHtml(data.ai_feedback || '').replace(/\n/g,'<br>');
+            if (data.is_correct) {
+                html = '<div class="feedback-correct">' +
+                       '  <div class="feedback-icon">[OK]</div>' +
+                       '  <h3>Правильно!</h3>' +
+                       '  <p class="xp-earned">+' + (data.xp_earned||0) + ' XP</p>' +
+                       '  <div class="ai-feedback">' + aiHtml + '</div>' +
+                       '</div>';
+            } else {
+                html = '<div class="feedback-incorrect">' +
+                       '  <div class="feedback-icon"></div>' +
+                       '  <h3>Неправильно</h3>' +
+                       '  <div class="correct-answer-block">' +
+                       '    <span class="correct-answer-label">Правильный ответ:</span>' +
+                       '    <span class="correct-answer-math">' + escapeHtml(data.correct_answer || '') + '</span>' +
+                       '  </div>' +
+                       '  <div class="ai-feedback">' + aiHtml + '</div>' +
+                       '  <button type="button" class="try-again-button" id="olyTryAgain">Попробовать ещё раз</button>' +
+                       '</div>';
+            }
+            feedbackContent.innerHTML = html;
+            feedbackSection.style.display = 'block';
+
+            var ta = document.getElementById('olyTryAgain');
+            if (ta) {
+                ta.addEventListener('click', function () {
+                    feedbackSection.style.display = 'none';
+                    input.value = '';
+                    syncBtn();
+                    input.focus();
+                });
+            }
+
+            try {
+                if (window.renderMathInElement) {
+                    window.renderMathInElement(feedbackSection, {
+                        delimiters: [
+                            {left:'$$', right:'$$', display:true},
+                            {left:'$',  right:'$',  display:false},
+                            {left:'\\(', right:'\\)', display:false},
+                            {left:'\\[', right:'\\]', display:true}
+                        ],
+                        throwOnError: false
+                    });
+                }
+            } catch (e) {}
+
+            feedbackSection.scrollIntoView({behavior:'smooth', block:'center'});
+        }
+    });
+})();
+</script>
+
+{% endblock %}

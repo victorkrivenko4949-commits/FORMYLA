@@ -1,0 +1,89 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point",
+   "id": "T",
+   "x": 0.45,
+   "y": 0.35
+  },
+  {
+   "type": "centroid",
+   "id": "M",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "gamma",
+   "of": "ATC"
+  },
+  {
+   "type": "line_circle",
+   "id": "K",
+   "circle": "gamma",
+   "line": "TM",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AT"
+  },
+  {
+   "segment": "BT"
+  },
+  {
+   "segment": "CT"
+  },
+  {
+   "line": "TM",
+   "style": "accent"
+  },
+  {
+   "circle": "gamma"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "A",
+    "T",
+    "B"
+   ],
+   "text": "120°"
+  },
+  {
+   "angle": [
+    "B",
+    "T",
+    "C"
+   ],
+   "text": "120°"
+  },
+  {
+   "angle": [
+    "A",
+    "T",
+    "C"
+   ],
+   "text": "120°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

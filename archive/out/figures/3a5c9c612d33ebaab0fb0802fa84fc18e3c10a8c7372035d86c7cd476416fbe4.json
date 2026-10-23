@@ -1,0 +1,128 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "B",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 2,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0.5,
+   "y": 0.8660254037844386
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "A",
+   "over": "B"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ACD"
+  },
+  {
+   "type": "circle",
+   "id": "omega",
+   "center": "O",
+   "through": "A"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD"
+  },
+  {
+   "segment": "DM"
+  },
+  {
+   "segment": "BO"
+  },
+  {
+   "segment": "OC"
+  },
+  {
+   "circle": "omega",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "D",
+    "M"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "M"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "B",
+    "O",
+    "C"
+   ],
+   "text": "120°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "circle",
+   "id": "cB",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "P",
+   "circle": "cB",
+   "angle": 300
+  }
+ ],
+ "reason": "Строим равносторонний треугольник BCP с точкой P по другую сторону от BC; он используется в решении.",
+ "draw_aux": [
+  {
+   "segment": "BP",
+   "style": "soft"
+  },
+  {
+   "segment": "CP",
+   "style": "soft"
+  },
+  {
+   "segment": "PM",
+   "style": "soft"
+  },
+  {
+   "segment": "DP",
+   "style": "soft"
+  },
+  {
+   "segment": "AP",
+   "style": "soft"
+  }
+ ]
+}

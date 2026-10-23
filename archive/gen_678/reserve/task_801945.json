@@ -1,0 +1,20 @@
+{
+  "id": 801945,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $D$, $E$, $F$ соответственно так, что $$\\frac{BD}{DC} = \\frac{CE}{EA} = \\frac{AF}{FB} = \\lambda,$$ где $\\lambda \\neq 1$. Прямые $AD$, $BE$, $CF$ попарно пересекаются, образуя треугольник $PQR$ ($P=AD\\cap BE$, $Q=BE\\cap CF$, $R=CF\\cap AD$). Докажите, что площадь треугольника $PQR$ составляет $$\\frac{(\\lambda-1)^2}{\\lambda^2+\\lambda+1}$$ от площади треугольника $ABC$.",
+  "solution": "Введём барицентрические координаты относительно $\\triangle ABC$: $A(1,0,0)$, $B(0,1,0)$, $C(0,0,1)$. Точка $D$ делит $BC$ в отношении $\\lambda:1$ от $B$ к $C$, поэтому $D(0,\\frac1{\\lambda+1},\\frac{\\lambda}{\\lambda+1})$. Аналогично $E(\\frac{\\lambda}{\\lambda+1},0,\\frac1{\\lambda+1})$, $F(\\frac1{\\lambda+1},\\frac{\\lambda}{\\lambda+1},0)$. Найдём координаты точки $P=AD\\cap BE$. Уравнение $AD$: $\\begin{vmatrix}x&y&z\\\\1&0&0\\\\0&\\frac1{\\lambda+1}&\\frac{\\lambda}{\\lambda+1}\\end{vmatrix}=0 \\Rightarrow \\frac{\\lambda}{\\lambda+1}y=\\frac1{\\lambda+1}z \\Rightarrow \\lambda y=z$. Уравнение $BE$: $\\begin{vmatrix}x&y&z\\\\0&1&0\\\\\\frac{\\lambda}{\\lambda+1}&0&\\frac1{\\lambda+1}\\end{vmatrix}=0 \\Rightarrow \\frac1{\\lambda+1}x=\\frac{\\lambda}{\\lambda+1}z \\Rightarrow x=\\lambda z$. Из $x+y+z=1$ получаем $\\lambda z+\\frac1\\lambda z+z=1$, то есть $z=\\frac{\\lambda}{\\lambda^2+\\lambda+1}$. Тогда $x=\\frac{\\lambda^2}{\\lambda^2+\\lambda+1}$, $y=\\frac1{\\lambda^2+\\lambda+1}$. Значит, $P\\left(\\frac{\\lambda^2}{L},\\frac1{L},\\frac{\\lambda}{L}\\right)$, где $L=\\lambda^2+\\lambda+1$. Циклической симметрией получаем $Q\\left(\\frac{\\lambda}{L},\\frac{\\lambda^2}{L},\\frac1{L}\\right)$, $R\\left(\\frac1{L},\\frac{\\lambda}{L},\\frac{\\lambda^2}{L}\\right)$. Отношение площади $\\triangle PQR$ к $S_{ABC}$ равно абсолютному значению определителя матрицы, составленной из барицентрических координат точек $P,Q,R$: $$\\frac{S_{PQR}}{S_{ABC}}=\\left|\\begin{matrix}\\frac{\\lambda^2}{L}&\\frac1{L}&\\frac{\\lambda}{L}\\\\\\frac{\\lambda}{L}&\\frac{\\lambda^2}{L}&\\frac1{L}\\\\\\frac1{L}&\\frac{\\lambda}{L}&\\frac{\\lambda^2}{L}\\end{matrix}\\right|=\\frac1{L^3}\\left|\\begin{matrix}\\lambda^2&1&\\lambda\\\\\\lambda&\\lambda^2&1\\\\1&\\lambda&\\lambda^2\\end{matrix}\\right|.$$ Вычислим определитель: $$\\begin{vmatrix}\\lambda^2&1&\\lambda\\\\\\lambda&\\lambda^2&1\\\\1&\\lambda&\\lambda^2\\end{vmatrix}= \\lambda^2(\\lambda^4-\\lambda)-1(\\lambda^3-1)+\\lambda(\\lambda^2-\\lambda^2)=\\lambda^6-\\lambda^3-\\lambda^3+1=(\\lambda^3-1)^2.$$ Так как $\\lambda\\neq1$, $$\\frac{S_{PQR}}{S_{ABC}}=\\frac{(\\lambda^3-1)^2}{L^3}=\\frac{(\\lambda-1)^2(\\lambda^2+\\lambda+1)^2}{(\\lambda^2+\\lambda+1)^3}=\\frac{(\\lambda-1)^2}{\\lambda^2+\\lambda+1}.$$ Утверждение доказано.",
+  "correct_answer": "$\\dfrac{(\\lambda-1)^2}{\\lambda^2+\\lambda+1}$ от площади треугольника $ABC$.",
+  "class_level": 10,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Барицентрические координаты (или теорема Менелая и отношение площадей)",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.739,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:32:22.133278+00:00"
+}

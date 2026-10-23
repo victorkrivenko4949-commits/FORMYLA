@@ -1,0 +1,96 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "C1",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "B1C1"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "M",
+   "through": "B1"
+  },
+  {
+   "type": "line_circle",
+   "id": "P",
+   "circle": "w",
+   "line": "AB",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "Q",
+   "circle": "w",
+   "line": "AC",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "B1C1",
+   "style": "soft"
+  },
+  {
+   "segment": "BB1",
+   "style": "soft"
+  },
+  {
+   "segment": "CC1",
+   "style": "soft"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "B1",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "C1",
+    "B"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "45°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,91 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AB",
+   "ratio": 0.423
+  },
+  {
+   "type": "point_on_segment",
+   "id": "F",
+   "of": "AD",
+   "ratio": 0.423
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "B",
+   "line": "CE"
+  },
+  {
+   "type": "foot",
+   "id": "Q",
+   "from": "D",
+   "line": "CF"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "CE"
+  },
+  {
+   "segment": "CF"
+  },
+  {
+   "segment": "BP",
+   "style": "soft"
+  },
+  {
+   "segment": "DQ",
+   "style": "soft"
+  },
+  {
+   "polygon": "BPQD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "P",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "D",
+    "Q",
+    "C"
+   ]
+  },
+  {
+   "angle": [
+    "E",
+    "C",
+    "F"
+   ],
+   "text": "30°"
+  },
+  {
+   "equal": [
+    "AB",
+    "BC",
+    "CD",
+    "DA"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

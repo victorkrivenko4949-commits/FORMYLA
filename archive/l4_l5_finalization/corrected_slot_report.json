@@ -1,0 +1,2082 @@
+{
+  "task_counts": {
+    "KEEP": 13,
+    "FIXED": 4,
+    "REPLACE": 46,
+    "total": 63
+  },
+  "total_replacement_slots": 46,
+  "per_cell_slots": {
+    "G10|L4|T013|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T013|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T013|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T014|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T014|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T014|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T028|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T028|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T028|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T029|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T029|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T029|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T030|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T030|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T030|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T039|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T039|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L4|T039|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T013|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T013|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T013|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T014|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T014|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T014|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T028|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T028|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T028|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T029|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T029|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T029|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T030|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T030|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T030|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T039|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T039|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G10|L5|T039|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T001|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T001|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T001|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T021|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T021|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T021|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T031|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T031|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T031|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T034|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T034|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T034|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T040|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T040|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T040|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T041|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T041|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T041|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T043|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T043|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L4|T043|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T001|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T001|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G11|L5|T001|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 4,
+      "fixed_in_bank": 0,
+      "valid_existing": 1,
+      "needed_slots": 4,
+      "replacement_slots": 4
+    },
+    "G11|L5|T021|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T021|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G11|L5|T021|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T031|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T031|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T031|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T034|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G11|L5|T034|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T034|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T040|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T040|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T040|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T041|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T041|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T041|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T043|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G11|L5|T043|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G11|L5|T043|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T002|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T002|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T002|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T004|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T004|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T004|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T005|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 2,
+      "fixed_in_bank": 1,
+      "valid_existing": 3,
+      "needed_slots": 2,
+      "replacement_slots": 2
+    },
+    "G5|L4|T005|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T005|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T008|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T008|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G5|L4|T008|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T022|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T022|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T022|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G5|L4|T024|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T024|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L4|T024|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L5|T002|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L5|T002|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 2,
+      "fixed_in_bank": 0,
+      "valid_existing": 3,
+      "needed_slots": 2,
+      "replacement_slots": 2
+    },
+    "G5|L5|T002|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 3,
+      "fixed_in_bank": 0,
+      "valid_existing": 2,
+      "needed_slots": 3,
+      "replacement_slots": 3
+    },
+    "G5|L5|T004|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L5|T004|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L5|T004|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 4,
+      "fixed_in_bank": 0,
+      "valid_existing": 1,
+      "needed_slots": 4,
+      "replacement_slots": 4
+    },
+    "G5|L5|T005|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G5|L5|T005|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L5|T005|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G5|L5|T008|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G5|L5|T008|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G5|L5|T008|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L5|T022|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 4,
+      "fixed_in_bank": 0,
+      "valid_existing": 1,
+      "needed_slots": 4,
+      "replacement_slots": 4
+    },
+    "G5|L5|T022|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 4,
+      "fixed_in_bank": 0,
+      "valid_existing": 1,
+      "needed_slots": 4,
+      "replacement_slots": 4
+    },
+    "G5|L5|T022|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G5|L5|T024|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G5|L5|T024|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 3,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G5|L5|T024|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G6|L4|T006|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T006|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T006|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T007|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T007|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T007|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T016|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T016|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T016|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T018|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T018|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T018|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T032|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T032|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T032|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T033|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T033|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L4|T033|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T006|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T006|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T006|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G6|L5|T007|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T007|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T007|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T016|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T016|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 1,
+      "fixed_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    "G6|L5|T016|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T018|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T018|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T018|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T032|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T032|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 2,
+      "fixed_in_bank": 0,
+      "valid_existing": 3,
+      "needed_slots": 2,
+      "replacement_slots": 2
+    },
+    "G6|L5|T032|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T033|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T033|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G6|L5|T033|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T003|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T003|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T003|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T019|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T019|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T019|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T023|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T023|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T023|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T025|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T025|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T025|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T026|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T026|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T026|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T027|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T027|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L4|T027|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T003|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T003|S1": {
+      "bank_count": 4,
+      "replace_in_bank": 2,
+      "fixed_in_bank": 0,
+      "valid_existing": 2,
+      "needed_slots": 3,
+      "replacement_slots": 2
+    },
+    "G7|L5|T003|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 2,
+      "fixed_in_bank": 0,
+      "valid_existing": 3,
+      "needed_slots": 2,
+      "replacement_slots": 2
+    },
+    "G7|L5|T019|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T019|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T019|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T023|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T023|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 2,
+      "fixed_in_bank": 0,
+      "valid_existing": 3,
+      "needed_slots": 2,
+      "replacement_slots": 2
+    },
+    "G7|L5|T023|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T025|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T025|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T025|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T026|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T026|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T026|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T027|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T027|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G7|L5|T027|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T009|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T009|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T009|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T011|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T011|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T011|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T012|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T012|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T012|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T017|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T017|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T017|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T037|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T037|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T037|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T042|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T042|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L4|T042|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T009|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T009|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T009|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T011|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T011|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T011|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T012|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T012|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T012|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T017|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T017|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T017|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T037|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T037|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T037|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T042|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T042|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G8|L5|T042|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T010|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T010|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T010|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T015|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T015|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T015|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T020|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T020|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T020|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T035|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T035|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T035|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T036|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T036|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T036|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T038|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T038|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L4|T038|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T010|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T010|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T010|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T015|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T015|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T015|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T020|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T020|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T020|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T035|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T035|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T035|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T036|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T036|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T036|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T038|S0": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T038|S1": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    "G9|L5|T038|S2": {
+      "bank_count": 5,
+      "replace_in_bank": 0,
+      "fixed_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    }
+  },
+  "underfilled_cells": [
+    [
+      "G7|L5|T003|S1",
+      4
+    ]
+  ],
+  "total_underfilled": 1
+}

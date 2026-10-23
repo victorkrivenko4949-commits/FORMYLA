@@ -1,0 +1,93 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "A",
+   "over": "O"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 116
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "O",
+   "line": "AC"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 58
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "AD"
+  },
+  {
+   "segment": "AC"
+  },
+  {
+   "segment": "OH"
+  },
+  {
+   "segment": "HB",
+   "style": "dashed"
+  },
+  {
+   "segment": "BC"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O",
+    "H",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "AH",
+    "HC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "C",
+    "A",
+    "D"
+   ],
+   "text": "32°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

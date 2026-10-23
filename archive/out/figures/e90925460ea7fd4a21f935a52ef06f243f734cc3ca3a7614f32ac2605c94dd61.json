@@ -1,0 +1,168 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point",
+   "id": "E",
+   "x": 0,
+   "y": 0.3
+  },
+  {
+   "type": "point",
+   "id": "L",
+   "x": 0.25,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "F",
+   "x": 0.25,
+   "y": 0.3
+  },
+  {
+   "type": "point",
+   "id": "G",
+   "x": 0.25,
+   "y": 0.5
+  },
+  {
+   "type": "point",
+   "id": "W",
+   "x": 0.25,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "M",
+   "x": 0.5,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "H",
+   "x": 0.5,
+   "y": 0.5
+  },
+  {
+   "type": "point",
+   "id": "I",
+   "x": 0.5,
+   "y": 0.7
+  },
+  {
+   "type": "point",
+   "id": "X",
+   "x": 0.5,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "N",
+   "x": 0.75,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "J",
+   "x": 0.75,
+   "y": 0.7
+  },
+  {
+   "type": "point",
+   "id": "K",
+   "x": 0.75,
+   "y": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "LG"
+  },
+  {
+   "segment": "GW"
+  },
+  {
+   "segment": "MI"
+  },
+  {
+   "segment": "IX"
+  },
+  {
+   "segment": "NK"
+  },
+  {
+   "segment": "EF"
+  },
+  {
+   "segment": "GH"
+  },
+  {
+   "segment": "IJ"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "AD"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "point",
+   "id": "P",
+   "x": 0.125,
+   "y": 0.15
+  },
+  {
+   "type": "point",
+   "id": "Q",
+   "x": 0.375,
+   "y": 0.25
+  },
+  {
+   "type": "point",
+   "id": "R",
+   "x": 0.625,
+   "y": 0.35
+  },
+  {
+   "type": "point",
+   "id": "S",
+   "x": 0.875,
+   "y": 0.5
+  },
+  {
+   "type": "point",
+   "id": "T",
+   "x": 0.625,
+   "y": 0.85
+  },
+  {
+   "type": "point",
+   "id": "U",
+   "x": 0.375,
+   "y": 0.75
+  },
+  {
+   "type": "point",
+   "id": "V",
+   "x": 0.125,
+   "y": 0.65
+  }
+ ],
+ "draw_aux": [
+  {
+   "polygon": "PQRSTUV"
+  }
+ ]
+}

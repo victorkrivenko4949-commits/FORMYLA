@@ -1,0 +1,45 @@
+2026-09-01 22:33:19,218 [INFO] h2 | __main__ | hostname.verified configured=DESKTOP-OLJ4LRK actual=desktop-olj4lrk
+2026-09-01 22:33:19,878 [INFO] h2 | __main__ | nats.connected url=ParseResult(scheme='nats', netloc='192.168.99.11:4222', path='', params='', query='', fragment='') client_id=263575
+2026-09-01 22:33:19,880 [INFO] h2 | __main__ | evt.publisher ready node_id=victor dual_publish=False
+2026-09-01 22:33:20,275 [INFO] h2 | owui_roo_bridge.core.ownership_kv | ownership.kv.open validated bucket=owui_roo_bridge_victor_ownership history=1 server_ttl=60.0s floor=30.0s
+2026-09-01 22:33:20,461 [INFO] h2 | owui_roo_bridge.core.ownership_lease | ownership.claimed owner_id=b746763e65a24aa3b1571e3677532079 node=victor rev=0
+2026-09-01 22:33:20,462 [INFO] h2 | __main__ | ownership.claimed owner_id=b746763e65a24aa3b1571e3677532079 rev=0 group=q.node.victor
+2026-09-01 22:33:20,462 [INFO] h2 | __main__ | routing.ready node_id=victor
+2026-09-01 22:33:20,462 [INFO] h2 | __main__ | Subscribed: h2.roo_bridge.node.victor.cmd.> queue=q.node.victor
+2026-09-01 22:33:20,462 [INFO] h2 | __main__ | subscribed cmd subject=h2.roo_bridge.node.victor.cmd.> node_id=victor queue=q.node.victor
+2026-09-01 22:33:20,674 [INFO] h2 | __main__ | [B2-health] startup health=OK component=None reason=None
+2026-09-01 22:33:20,674 [INFO] h2 | __main__ | [B2-health] periodic health-check started (interval=30s)
+2026-09-01 22:33:20,677 [INFO] h2 | owui_roo_bridge.roo.live_registry | [LIVE_REG] Reconcile: 0 entries loaded (all filtered by recency gate)
+2026-09-01 22:33:20,677 [INFO] h2 | __main__ | [L026-startup] LiveRegistry reconciled: 0 entries from disk
+2026-09-01 22:33:20,733 [INFO] h2 | owui_roo_bridge.artifact_api.http_server | [artifact-http] server startup complete
+2026-09-01 22:33:20,733 [INFO] h2 | owui_roo_bridge.artifact_api.http_server | [artifact-http] listening on 127.0.0.1:51274 (max_body=52428800, connect_to=10.0s, read_to=60.0s, total_to=120.0s)
+2026-09-01 22:33:20,733 [INFO] h2 | __main__ | [A22-http] Artifact HTTP server started on http://127.0.0.1:51274
+2026-09-01 22:33:20,733 [INFO] h2 | owui_roo_bridge.artifact_api.credential | [credential] cleanup task started (interval=30s)
+2026-09-01 22:33:20,733 [INFO] h2 | owui_roo_bridge.artifact_api.capability | [capability] cleanup task started (interval=30s)
+2026-09-01 22:33:20,736 [INFO] h2 | owui_roo_bridge.roo.orphan_flush_watchdog | [TD-BR-026] orphan-flush watchdog started (interval=30s grace=120s)
+2026-09-01 22:33:20,736 [INFO] h2 | __main__ | [TD-BR-026] orphan-flush watchdog started (interval=30s grace=120s)
+2026-09-01 22:33:20,737 [INFO] h2 | __main__ | v0.5.10 L054-CROSS-WORKSPACE-ISOLATION: fail-closed identity tuple + E_ROO_TASK_NOT_FOUND + E_CROSS_WORKSPACE_MISROUTE; reconciliation workspace-scoped; A22-http loopback artifact download; R6 E_SESSION_ACTIVE gate active; TD-BR-026 orphan-flush watchdog active
+2026-09-01 22:33:20,737 [INFO] h2 | owui_roo_bridge.roo.roo_recv_loop | recv_loop v0.4.33 L047-RECONCILE multi-port started
+2026-09-01 22:33:20,737 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:33:30,674 [ERROR] h2 | owui_roo_bridge.core.ownership_lease | ownership.lost owner_id=b746763e65a24aa3b1571e3677532079 node=victor reason=lease renewal failed (kv.update last=0): nats: wrong last sequence: 4
+2026-09-01 22:33:30,674 [ERROR] h2 | owui_roo_bridge.core.ownership_lease | ownership.renew FATAL (no retry while serving): nats: wrong last sequence: 4
+2026-09-01 22:33:30,674 [ERROR] h2 | __main__ | routing.terminated (no retry while serving): lease renewal failed (kv.update last=0): nats: wrong last sequence: 4
+2026-09-01 22:33:30,753 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:33:40,765 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:33:50,785 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:34:00,811 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:34:10,833 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:34:20,846 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:34:30,868 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:34:40,873 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:34:50,892 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:35:00,895 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:35:10,910 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:35:20,929 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:35:30,940 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:35:40,949 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:35:50,966 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:36:00,980 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:36:10,990 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:36:20,998 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry
+2026-09-01 22:36:31,018 [DEBUG] h2 | owui_roo_bridge.roo.roo_recv_loop | [L049-DIAG] reconcile skip: no entries in live_registry

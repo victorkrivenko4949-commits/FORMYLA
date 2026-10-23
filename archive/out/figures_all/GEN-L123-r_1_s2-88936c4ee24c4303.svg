@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<rect width="620" height="620" fill="#070C18"/>
+<polygon points="560.0,192.3 266.8,127.3 60.0,492.7" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<path d="M 292.1 132.9 A 26 26 0 0 1 254.0 149.9" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="283.4" y="169.7" fill="#8C9ABC" font-size="15" text-anchor="middle">150°</text>
+<circle cx="560.0" cy="192.3" r="3.4" fill="#E6EBF7"/>
+<text x="579.3" y="193.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="266.8" cy="127.3" r="3.4" fill="#E6EBF7"/>
+<text x="261.6" y="114.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="60.0" cy="492.7" r="3.4" fill="#E6EBF7"/>
+<text x="45.9" y="512.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+</svg>

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "olymp_catalog/_task.html" import render_task %}
+{% block title %}{{ meta.name if meta else slug }} — задачи | FORMYLA.net{% endblock %}
+{% block extra_css %}{% include "olymp_catalog/_style.html" %}{% endblock %}
+{% block content %}
+<div class="oc-wrap">
+  <div class="oc-crumbs"><a href="{{ url_for('olymp_catalog.index') }}">Олимпиады</a><span class="sep">/</span><span>{{ meta.name if meta else slug }}</span></div>
+  <h1>{{ meta.name if meta else slug }}</h1>
+  <div class="oc-sub">{% if picked %}Показано задач: <b style="color:#fff">{{ count }}</b> из {{ total }}{% else %}Всего задач: <b style="color:#fff">{{ total }}</b>{% endif %}{% if meta %} · с рисунками: {{ meta.with_figs }}{% endif %} · {{ years_all|length }} лет</div>
+
+  {# Баг Лаврика #27: после выбора олимпиады — только выбор класса и этапа; задачи показываем после выбора #}
+  <div class="oc-toolbar" id="oc-filter">
+    <form class="oc-search" method="get">
+      <select class="oc-select" name="grade"><option value="">Класс: все</option>{% for g in grades %}<option value="{{ g }}" {% if g == grade %}selected{% endif %}>{{ g }} класс</option>{% endfor %}</select>
+      <select class="oc-select" name="round"><option value="">Этап: все</option>{% for r in rounds %}<option value="{{ r }}" {% if r == round %}selected{% endif %}>{{ r }}</option>{% endfor %}</select>
+      {% if picked %}
+      <select class="oc-select" name="year"><option value="">Все годы</option>{% for y in years_all %}<option value="{{ y }}" {% if y|string == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select>
+      <input type="search" name="q" value="{{ q }}" placeholder="Поиск по условию, решению, ответу…">
+      {% endif %}
+      <button class="oc-btn pri" type="submit">Показать задачи</button>
+      {% if picked %}<a class="oc-btn" href="{{ url_for('olymp_catalog.olympiad', slug=slug) }}">Сброс</a>{% endif %}
+    </form>
+    {% if picked %}
+    <select class="oc-select" id="oc-year-jump"><option value="">Перейти к году…</option>{% for y in years %}{% for s in y.sections %}<option value="{{ s.anchor }}">{{ y.year }} — {{ s.round }}{% if s.day %} — день {{ s.day }}{% endif %}</option>{% endfor %}{% endfor %}</select>
+    <button class="oc-btn" type="button" data-toggle-sol="open">Раскрыть все решения</button>
+    <span class="oc-dd"><a class="oc-btn" href="#" data-dd>⤓ Скачать ▾</a>
+      <div class="oc-dd-menu">
+        <a href="{{ url_for('olymp_catalog.export_olympiad', slug=slug, fmt='md', q=q or None, year=year or None, grade=grade or None, round=round or None) }}">Markdown (.md) — {{ count }} задач<small>с ответами и решениями, текущий фильтр</small></a>
+        <a href="{{ url_for('olymp_catalog.export_olympiad', slug=slug, fmt='md', sol=0, q=q or None, year=year or None, grade=grade or None, round=round or None) }}">Markdown без решений<small>только условия и ответы</small></a>
+        <a href="{{ url_for('olymp_catalog.export_olympiad', slug=slug, fmt='json', q=q or None, year=year or None, grade=grade or None, round=round or None) }}">JSON<small>структурированные данные</small></a>
+      </div></span>
+    {% endif %}
+  </div>
+
+  {% if not picked %}
+    <div class="oc-empty">Выберите класс и этап, затем нажмите «Показать задачи».</div>
+  {% else %}
+    {% if count == 0 %}
+      <div class="oc-empty">Ничего не найдено. Попробуйте другой класс или этап.</div>
+    {% endif %}
+    {% for y in years %}
+      <div class="oc-year"><span>{{ y.year }} год</span><small>{{ y.count }} задач</small></div>
+      {% for s in y.sections %}
+        <div class="oc-sec" id="{{ s.anchor }}">{{ s.round }}{% if s.day %} — День {{ s.day }}{% endif %} <span style="color:#7f8ca3;font-weight:600">· {{ s.count }}</span></div>
+        {% for grade_, tasks in s.grades %}
+          <div class="oc-grade">{{ grade_ }} класс</div>
+          {% for t in tasks %}{{ render_task(t, slug, labels) }}{% endfor %}
+        {% endfor %}
+      {% endfor %}
+    {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}

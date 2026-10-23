@@ -1,0 +1,96 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "H",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "Q",
+   "from": "H",
+   "line": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AH",
+   "style": "soft"
+  },
+  {
+   "segment": "HP",
+   "style": "soft"
+  },
+  {
+   "segment": "HQ",
+   "style": "soft"
+  },
+  {
+   "segment": "BQ",
+   "style": "accent"
+  },
+  {
+   "segment": "CP",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "P",
+    "H"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "Q",
+    "H"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "C"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "AH",
+   "reason": "центр окружности с диаметром AH"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A",
+   "reason": "окружность с диаметром AH; на ней лежат P и Q"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
+   "style": "dashed"
+  }
+ ]
+}

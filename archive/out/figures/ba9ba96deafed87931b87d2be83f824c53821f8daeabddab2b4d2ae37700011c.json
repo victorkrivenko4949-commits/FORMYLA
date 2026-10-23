@@ -1,0 +1,161 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "circle",
+   "id": "cB",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "cC",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "P1",
+   "circle1": "cB",
+   "circle2": "cC",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "P2",
+   "circle1": "cB",
+   "circle2": "cC",
+   "pick": 1
+  },
+  {
+   "type": "circle",
+   "id": "cA",
+   "center": "A",
+   "through": "M"
+  },
+  {
+   "type": "circle",
+   "id": "cM",
+   "center": "M",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "Q1",
+   "circle1": "cA",
+   "circle2": "cM",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "Q2",
+   "circle1": "cA",
+   "circle2": "cM",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "P1P2",
+   "line2": "Q1Q2"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "w",
+   "line": "AB",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "w",
+   "line": "AC",
+   "pick": 1
+  },
+  {
+   "type": "midpoint",
+   "id": "X",
+   "of": "BE"
+  },
+  {
+   "type": "midpoint",
+   "id": "Y",
+   "of": "CD"
+  },
+  {
+   "type": "circumcircle",
+   "id": "cMXY",
+   "of": "MXY"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "line": "BC",
+   "style": "soft"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "circle": "cMXY",
+   "style": "accent"
+  },
+  {
+   "segment": "BE",
+   "style": "soft"
+  },
+  {
+   "segment": "CD",
+   "style": "soft"
+  },
+  {
+   "segment": "MX",
+   "style": "soft"
+  },
+  {
+   "segment": "MY",
+   "style": "soft"
+  },
+  {
+   "segment": "OM",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O",
+    "M",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

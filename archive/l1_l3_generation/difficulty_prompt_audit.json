@@ -1,0 +1,41 @@
+{
+  "audit_timestamp": "2026-07-18T14:25:00+00:00",
+  "source": "_run_generation_pipeline.py :: LEVEL_DESCRIPTIONS",
+  "status": "DIFFICULTY_PROMPT_OK",
+
+  "level_definitions": {
+    "L1": {
+      "label": "Обычная школа (ordinary school level)",
+      "description": "Задача не требует специальной олимпиадной подготовки, достаточно знаний школьной программы. Время решения — 5-10 минут. Подходит для начинающих олимпиадников.",
+      "vseros_equivalent": "Ниже или соответствует базовому уровню школьного этапа",
+      "verification": {
+        "matches_requirement": true,
+        "requirement_from_user": "L1 = обычный школьный уровень (ordinary school)",
+        "notes": "Описание корректно: не требует олимпиадной подготовки, 5-10 минут, для начинающих."
+      }
+    },
+    "L2": {
+      "label": "Школьный этап ВсОШ (school stage of All-Russian Olympiad)",
+      "description": "Задача требует олимпиадной смекалки и нестандартного мышления, опирается на школьную программу. Время решения — 10-20 минут. Соответствует задачам школьного этапа Всероссийской олимпиады.",
+      "vseros_equivalent": "Школьный этап ВсОШ",
+      "verification": {
+        "matches_requirement": true,
+        "requirement_from_user": "L2 = школьный этап ВсОШ (school stage Vseros)",
+        "notes": "Описание корректно: требует олимпиадной смекалки, 10-20 минут, школьный этап."
+      }
+    },
+    "L3": {
+      "label": "Муниципальный этап ВсОШ (municipal stage of All-Russian Olympiad)",
+      "description": "Задача повышенной сложности, требует комбинации нескольких идей и глубокого понимания темы. Время решения — 20-40 минут. Соответствует задачам муниципального этапа Всероссийской олимпиады.",
+      "vseros_equivalent": "Муниципальный этап ВсОШ",
+      "verification": {
+        "matches_requirement": true,
+        "requirement_from_user": "L3 = муниципальный этап ВсОШ (municipal stage Vseros)",
+        "notes": "Описание корректно: повышенная сложность, комбинация идей, 20-40 минут, муниципальный этап."
+      }
+    }
+  },
+
+  "all_descriptions_correct": true,
+  "verdict": "DIFFICULTY_PROMPT_OK — all three level descriptions match the user's specification exactly."
+}

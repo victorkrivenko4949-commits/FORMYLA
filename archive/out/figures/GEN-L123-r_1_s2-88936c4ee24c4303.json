@@ -1,0 +1,58 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "B"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "150°"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "H"
+   ],
+   "text": "30°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "A",
+   "line": "BC",
+   "reason": "Опускаем перпендикуляр из A на прямую BC — это высота треугольника."
+  }
+ ],
+ "draw_aux": [
+  {
+   "line": "BC",
+   "style": "soft"
+  },
+  {
+   "segment": "AH",
+   "style": "dashed"
+  }
+ ]
+}

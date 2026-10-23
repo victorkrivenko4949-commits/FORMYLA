@@ -1,0 +1,148 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "incircle",
+   "id": "inc",
+   "of": "ABC"
+  },
+  {
+   "type": "reflect_line",
+   "id": "B1",
+   "of": "B",
+   "over": "OI"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "circle": "inc",
+   "style": "soft"
+  },
+  {
+   "line": "OI",
+   "style": "dashed"
+  },
+  {
+   "line": "AC",
+   "style": "dashed"
+  },
+  {
+   "line": "BI",
+   "style": "soft"
+  },
+  {
+   "segment": "BB1",
+   "style": "soft"
+  },
+  {
+   "segment": "B1I",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "IB1",
+    "IB"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "line_circle",
+   "id": "S",
+   "circle": "w",
+   "line": "BI",
+   "pick": 1,
+   "reason": "вторая точка пересечения прямой BI с описанной окружностью ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "T",
+   "line1": "SB1",
+   "line2": "CA",
+   "reason": "пересечение прямой SB1 с прямой AC"
+  },
+  {
+   "type": "triangle",
+   "id": "TIB1",
+   "kind": "any",
+   "reason": "вспомогательный треугольник для окружности omega"
+  },
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "TIB1",
+   "reason": "окружность, описанная около треугольника TIB1"
+  },
+  {
+   "type": "line_circle",
+   "id": "K",
+   "circle": "omega",
+   "line": "AC",
+   "pick": 1,
+   "reason": "вторая точка пересечения omega с прямой AC"
+  },
+  {
+   "type": "triangle",
+   "id": "BB1I",
+   "kind": "any",
+   "reason": "треугольник, около которого описана искомая окружность"
+  },
+  {
+   "type": "circumcircle",
+   "id": "wBB",
+   "of": "BB1I",
+   "reason": "окружность, описанная около BB1I"
+  }
+ ],
+ "draw_aux": [
+  {
+   "line": "SB1",
+   "style": "dashed"
+  },
+  {
+   "circle": "omega",
+   "style": "soft"
+  },
+  {
+   "circle": "wBB",
+   "style": "dashed"
+  },
+  {
+   "line": "KI",
+   "style": "accent"
+  },
+  {
+   "line": "KB1",
+   "style": "accent"
+  }
+ ]
+}

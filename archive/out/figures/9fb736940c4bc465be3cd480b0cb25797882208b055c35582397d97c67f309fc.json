@@ -1,0 +1,99 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "BI",
+   "line2": "AC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "O",
+   "of": "I",
+   "over": "L"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "O",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "O",
+   "line": "BC"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "D"
+  },
+  {
+   "type": "line_circle",
+   "id": "K",
+   "circle": "w",
+   "line": "AC",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "w",
+   "line": "AC",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "OD",
+   "style": "soft"
+  },
+  {
+   "segment": "OE",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "D",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "E",
+    "C"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

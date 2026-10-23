@@ -1,0 +1,20 @@
+{
+  "id": 801815,
+  "task_text": "В треугольнике $ABC$ на сторонах $AB$ и $AC$ взяты точки $D$ и $E$ соответственно такие, что $BD = CE$. Пусть $M$ — середина $BC$, $N$ — середина $DE$. Докажите, что прямая $MN$ параллельна биссектрисе угла $A$.",
+  "solution": "Введем прямоугольную систему координат с началом в точке $A$ и направим ось $x$ вдоль стороны $AB$. Пусть $A(0,0)$, $B(b,0)$, $C(c\\cos \\alpha, c\\sin \\alpha)$, где $\\alpha = \\angle A$. Тогда точки $D$ и $E$ имеют координаты $D(tb,0)$, $E(s c\\cos\\alpha, s c\\sin\\alpha)$ для некоторых $t,s\\in (0,1)$. Условие $BD = CE$ дает $b(1-t)=c(1-s)$; обозначим $k=b(1-t)=c(1-s)$. Тогда $1-t = k/b$, $1-s = k/c$. Найдем координаты середин: $M\\left(\\frac{b+c\\cos\\alpha}{2},\\frac{c\\sin\\alpha}{2}\\right)$, $N\\left(\\frac{tb+s c\\cos\\alpha}{2},\\frac{s c\\sin\\alpha}{2}\\right)$. Вектор $\\overrightarrow{MN} = \\left(\\frac{tb+s c\\cos\\alpha - b - c\\cos\\alpha}{2},\\frac{s c\\sin\\alpha - c\\sin\\alpha}{2}\\right) = \\frac{1}{2}\\left((t-1)b+(s-1)c\\cos\\alpha,\\,(s-1)c\\sin\\alpha\\right) = \\frac{1}{2}\\left(-k - k\\cos\\alpha,\\, -k\\sin\\alpha\\right) = -\\frac{k}{2}\\left(1+\\cos\\alpha,\\,\\sin\\alpha\\right)$. Таким образом, $\\overrightarrow{MN}$ коллинеарен вектору $(1+\\cos\\alpha,\\,\\sin\\alpha)$, который является суммой единичных векторов сторон $AB$ и $AC$, то есть направлен вдоль биссектрисы угла $A$. Следовательно, прямая $MN$ параллельна биссектрисе угла $A$.",
+  "correct_answer": "Прямая MN параллельна биссектрисе угла A.",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Координатный метод или векторный метод",
+  "idea_count": 3,
+  "is_clone": true,
+  "clone_similarity": 0.713,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:09:58.114233+00:00"
+}

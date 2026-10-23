@@ -1,0 +1,20 @@
+{
+  "id": 802415,
+  "task_text": "В равнобедренном треугольнике $ABC$ ($AB = AC$) внутри треугольника выбрана точка $D$. Известно, что $\\angle BAD = \\angle CBD$ и $AD = BC$. Найдите угол $BAC$.",
+  "solution": "Обозначим $\\angle BAD = \\angle CBD = \\alpha$. Пусть $\\angle ABC = \\angle ACB = \\beta$ (так как $AB = AC$). Тогда $\\angle BAC = 180^\\circ - 2\\beta$. Из треугольника $ABD$: $\\angle ABD = \\beta - \\alpha$, $\\angle ADB = 180^\\circ - \\alpha - (\\beta - \\alpha) = 180^\\circ - \\beta$.\n\nПрименим теорему синусов в $\\triangle ABD$:\n\\[\n\\frac{AD}{\\sin(\\beta-\\alpha)} = \\frac{AB}{\\sin(180^\\circ-\\beta)} = \\frac{AB}{\\sin\\beta}.\n\\]\nУчитывая $AD = BC$ и $BC = 2AB\\sin(\\theta/2) = 2AB\\cos\\beta$ (где $\\theta = \\angle BAC$), получаем:\n\\[\n2AB\\cos\\beta \\cdot \\sin\\beta = AB\\sin(\\beta-\\alpha) \\quad\\Rightarrow\\quad \\sin2\\beta = \\sin(\\beta-\\alpha). \\tag{1}\n\\]\n\nВ $\\triangle BCD$: $\\angle BCD = \\beta$, $\\angle BDC = 180^\\circ - \\alpha - \\beta$. Применим теорему синусов:\n\\[\n\\frac{BC}{\\sin(\\alpha+\\beta)} = \\frac{BD}{\\sin\\beta}.\n\\]\nИз $\\triangle ABD$: $BD = \\frac{AB\\sin\\alpha}{\\sin\\beta}$. Подставляем $BC = 2AB\\cos\\beta$ и $BD$:\n\\[\n\\frac{2AB\\cos\\beta}{\\sin(\\alpha+\\beta)} = \\frac{AB\\sin\\alpha}{\\sin\\beta \\cdot \\sin\\beta} \\quad\\Rightarrow\\quad \\sin\\alpha\\sin(\\alpha+\\beta) = 2\\cos\\beta\\sin^2\\beta. \\tag{2}\n\\]\n\nИз (1) получаем $\\beta = 60^\\circ + \\frac{\\alpha}{3}$ (другие ветви дают невозможные значения). Подставляем в (2). Пусть $t = \\alpha/3$, тогда $\\beta = 60^\\circ + t$, $\\alpha+\\beta = 60^\\circ + 4t$. Уравнение (2) принимает вид:\n\\[\n\\sin3t \\cdot \\sin(60^\\circ+4t) = 2\\cos(60^\\circ+t)\\sin^2(60^\\circ+t).\n\\]\nПравая часть преобразуется: $2\\cos(60^\\circ+t)\\sin^2(60^\\circ+t) = \\sin(60^\\circ+t)\\sin(120^\\circ+2t)$. Получаем:\n\\[\n\\sin3t\\sin(60^\\circ+4t) = \\sin(60^\\circ+t)\\sin(120^\\circ+2t).\n\\]\nИспользуя формулу произведения синусов, после упрощений приходим к:\n\\[\n\\cos(30^\\circ+5t)\\cos(30^\\circ+2t)=0.\n\\]\nПри $0<t<30^\\circ$ подходит только $t=12^\\circ$ (из $\\cos(30^\\circ+5t)=0$). Тогда $\\alpha=36^\\circ$, $\\beta=72^\\circ$, $\\angle BAC=180^\\circ-2\\cdot72^\\circ=36^\\circ$.\n\nОтвет: $36^\\circ$.",
+  "correct_answer": "36°",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 8,
+  "real_level": 8,
+  "key_method": "Тригонометрический метод (теорема синусов + замена переменной + формулы произведения синусов)",
+  "idea_count": 7,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T16:21:51.464041+00:00"
+}

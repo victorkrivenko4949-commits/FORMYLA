@@ -1,0 +1,68 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AB",
+   "ratio": 0.1666666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AC",
+   "ratio": 0.1666666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "F",
+   "of": "AB",
+   "ratio": 0.6666666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "G",
+   "of": "BC",
+   "ratio": 0.3333333333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "H",
+   "of": "AC",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "I",
+   "of": "BC",
+   "ratio": 0.5
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "DE",
+   "line2": "FG"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "DE"
+  },
+  {
+   "segment": "FG"
+  },
+  {
+   "segment": "HI"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

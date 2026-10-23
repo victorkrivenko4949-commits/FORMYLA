@@ -1,0 +1,155 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "O_AC",
+   "of": "AC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "B",
+   "over": "O_AC"
+  },
+  {
+   "type": "circle",
+   "id": "w_AB_A",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "w_AB_B",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "K",
+   "circle1": "w_AB_A",
+   "circle2": "w_AB_B",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "w_AC_A",
+   "center": "A",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "w_AC_C",
+   "center": "C",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "N",
+   "circle1": "w_AC_A",
+   "circle2": "w_AC_C",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "KM",
+   "line2": "AD"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "MN",
+   "line2": "AD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABK",
+   "style": "soft"
+  },
+  {
+   "polygon": "ACN",
+   "style": "soft"
+  },
+  {
+   "segment": "KM",
+   "style": "soft"
+  },
+  {
+   "segment": "MN",
+   "style": "soft"
+  },
+  {
+   "line": "AD",
+   "style": "dashed"
+  },
+  {
+   "segment": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AB",
+    "AK"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "AK",
+    "BK"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "AC",
+    "AN"
+   ],
+   "ticks": 3
+  },
+  {
+   "equal": [
+    "AN",
+    "CN"
+   ],
+   "ticks": 3
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "A'",
+   "of": "AD",
+   "reason": "A' — образ точки A при параллельном переносе на вектор BM; середина AD, так как AD∥BC и AD=BC."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AA'",
+   "style": "dashed"
+  }
+ ]
+}

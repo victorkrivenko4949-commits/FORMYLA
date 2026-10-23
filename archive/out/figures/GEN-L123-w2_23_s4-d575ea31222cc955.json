@@ -1,0 +1,116 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w1",
+   "angle": 60
+  },
+  {
+   "type": "point_on_circle",
+   "id": "M",
+   "circle": "w1",
+   "angle": 20
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "OA",
+   "ratio": 0.395
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "OB",
+   "ratio": 0.742
+  }
+ ],
+ "draw": [
+  {
+   "segment": "OA"
+  },
+  {
+   "segment": "OB"
+  },
+  {
+   "segment": "MK",
+   "style": "accent"
+  },
+  {
+   "segment": "ML",
+   "style": "accent"
+  },
+  {
+   "segment": "KL",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "O",
+    "B"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "A",
+    "O",
+    "M"
+   ],
+   "text": "20°"
+  },
+  {
+   "angle": [
+    "B",
+    "O",
+    "M"
+   ],
+   "text": "40°"
+  },
+  {
+   "angle": [
+    "A",
+    "K",
+    "M"
+   ],
+   "text": "?"
+  },
+  {
+   "equal": [
+    "MK",
+    "ML"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "ML",
+    "KL"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

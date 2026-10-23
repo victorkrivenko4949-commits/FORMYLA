@@ -1,0 +1,118 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "E",
+   "x": 6,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "A",
+   "through": "E"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "F",
+   "circle": "c1",
+   "angle": 90
+  },
+  {
+   "type": "circle",
+   "id": "c2",
+   "center": "E",
+   "through": "A"
+  },
+  {
+   "type": "circle",
+   "id": "c3",
+   "center": "F",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "G",
+   "circle1": "c2",
+   "circle2": "c3",
+   "pick": 1
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AE"
+  },
+  {
+   "type": "circle",
+   "id": "c4",
+   "center": "E",
+   "through": "M"
+  },
+  {
+   "type": "line_circle",
+   "id": "B",
+   "circle": "c4",
+   "line": "AE",
+   "pick": 1
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AF",
+   "ratio": 0.6666666666666666
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "BD"
+  },
+  {
+   "type": "reflect_point",
+   "id": "C",
+   "of": "A",
+   "over": "N"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD",
+   "style": "accent"
+  },
+  {
+   "polygon": "AEFG",
+   "style": "dashed"
+  },
+  {
+   "segment": "EB",
+   "style": "soft"
+  },
+  {
+   "segment": "DF",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "E",
+    "A",
+    "F"
+   ]
+  },
+  {
+   "equal": [
+    "AE",
+    "AF"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

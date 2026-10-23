@@ -1,0 +1,158 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": -1,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": -0.3,
+   "y": 1.2
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  },
+  {
+   "type": "circumcircle",
+   "id": "Omega",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "C'",
+   "of": "C",
+   "over": "O"
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "AC'",
+   "line2": "CM"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "BC'",
+   "line2": "CM"
+  },
+  {
+   "type": "point",
+   "id": "P",
+   "x": 0.929065,
+   "y": 0.617072
+  },
+  {
+   "type": "point",
+   "id": "Q",
+   "x": 0.971449,
+   "y": -1.552464
+  },
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "KP",
+   "line2": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "LQ",
+   "line2": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "F",
+   "line1": "KP",
+   "line2": "LQ"
+  },
+  {
+   "type": "triangle",
+   "id": "DEF",
+   "kind": "any"
+  },
+  {
+   "type": "circumcircle",
+   "id": "Delta",
+   "of": "DEF"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "DEF",
+   "style": "accent"
+  },
+  {
+   "circle": "Omega"
+  },
+  {
+   "circle": "Delta",
+   "style": "accent"
+  },
+  {
+   "segment": "CC'",
+   "style": "soft"
+  },
+  {
+   "line": "CM",
+   "style": "dashed"
+  },
+  {
+   "line": "AC'",
+   "style": "dashed"
+  },
+  {
+   "line": "BC'",
+   "style": "dashed"
+  },
+  {
+   "line": "KP",
+   "style": "accent"
+  },
+  {
+   "line": "LQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "P",
+    "K",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "Q",
+    "L",
+    "B"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

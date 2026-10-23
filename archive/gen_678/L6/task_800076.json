@@ -1,0 +1,20 @@
+{
+  "id": 800076,
+  "task_text": "Многочлен $P(x)$ с целыми коэффициентами таков, что $P(0)=0$, $P(1)=2$, $P(2)=4$. Найдите остаток от деления $P(5)$ на $60$.",
+  "solution": "Так как $P(x)$ имеет целые коэффициенты, то для любых целых $a,b$ выполняется $P(a) \\equiv P(b) \\pmod{a-b}$.  \nИспользуем это:\n- $5 \\equiv 0 \\pmod{5} \\Rightarrow P(5) \\equiv P(0) = 0 \\pmod{5}$.\n- $5 \\equiv 1 \\pmod{4} \\Rightarrow P(5) \\equiv P(1) = 2 \\pmod{4}$.\n- $5 \\equiv 2 \\pmod{3} \\Rightarrow P(5) \\equiv P(2) = 4 \\equiv 1 \\pmod{3}$.\n\nПолучаем систему сравнений:\n$$\\begin{cases} x \\equiv 0 \\pmod{5} \\\\ x \\equiv 2 \\pmod{4} \\\\ x \\equiv 1 \\pmod{3} \\end{cases}$$\n\nИз первого $x=5k$. Подставляем во второе: $5k \\equiv 2 \\pmod{4} \\Rightarrow k \\equiv 2 \\pmod{4}$ (так как $5 \\equiv 1 \\pmod{4}$). Значит $k=4m+2$, $x=5(4m+2)=20m+10$.\n\nПодставляем в третье: $20m+10 \\equiv 1 \\pmod{3} \\Rightarrow 20m \\equiv -9 \\equiv 0 \\pmod{3}$. Поскольку $20 \\equiv 2 \\pmod{3}$, получаем $2m \\equiv 0 \\pmod{3} \\Rightarrow m \\equiv 0 \\pmod{3}$. Пусть $m=3t$, тогда $x=20\\cdot3t+10=60t+10$.\n\nСледовательно, $P(5) \\equiv 10 \\pmod{60}$. Несмотря на то, что сам $P(5)$ может быть разным (например, $10$, $70$, $130$ и т.д.), остаток при делении на $60$ всегда равен $10$.",
+  "correct_answer": "10",
+  "class_level": 7,
+  "topic": "Алгебра",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Свойство многочленов с целыми коэффициентами: P(a) ≡ P(b) (mod a-b) и китайская теорема об остатках",
+  "idea_count": 2,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T01:27:55.424548+00:00"
+}

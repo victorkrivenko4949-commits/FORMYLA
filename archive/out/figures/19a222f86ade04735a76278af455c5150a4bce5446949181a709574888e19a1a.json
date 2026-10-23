@@ -1,0 +1,93 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "L",
+   "of": "BC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X",
+   "of": "AC",
+   "ratio": 0.4146341463414634
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "KL"
+  },
+  {
+   "segment": "KX"
+  },
+  {
+   "segment": "LX"
+  },
+  {
+   "segment": "AC",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AX",
+    "AK"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CX",
+    "CL"
+   ],
+   "ticks": 2
+  },
+  {
+   "angle": [
+    "A",
+    "K",
+    "X"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "X",
+    "K",
+    "L"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "C",
+    "L",
+    "X"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "X",
+    "L",
+    "K"
+   ],
+   "text": "β"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

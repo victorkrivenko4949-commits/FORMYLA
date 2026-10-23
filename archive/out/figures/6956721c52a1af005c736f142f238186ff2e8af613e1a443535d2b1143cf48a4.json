@@ -1,0 +1,95 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "square"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AC",
+   "ratio": 0.35
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AD"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "CD"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "APD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "polygon": "APD",
+   "style": "soft"
+  },
+  {
+   "segment": "AH",
+   "style": "soft"
+  },
+  {
+   "segment": "DH",
+   "style": "soft"
+  },
+  {
+   "segment": "PH",
+   "style": "soft"
+  },
+  {
+   "line": "PN",
+   "style": "accent"
+  },
+  {
+   "line": "MH",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "MD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "DN",
+    "NC"
+   ],
+   "ticks": 1
+  },
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "AC",
+   "reason": "центр квадрата — центр поворота на 90°"
+  }
+ ],
+ "draw_aux": []
+}

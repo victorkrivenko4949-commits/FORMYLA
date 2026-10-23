@@ -1,0 +1,27 @@
+=== PATH A (user 10023, /prep/onboarding tree) ===
+onboarding_done = True
+prep_state keys: ['onboarding', 'test_queue']
+onboarding subkeys (17): ['anchor_fallback_reasons', 'anchors', 'answers', 'completed_at', 'conflict', 'daily_tasks', 'days_left', 'deadline_bucket', 'deadline_date', 'grade', 'olymp_reach', 'prior_mu', 'prior_sigma', 'route_ceiling', 'start_level', 'target_level', 'test_length']
+  daily_tasks = 5
+  route_ceiling = 4
+  test_length = 15
+  grade = 9
+  target_level = 3
+  prior_mu = 1.6
+  prior_sigma = 1.35
+  start_level = 1
+  conflict = False
+  completed_at = 2026-07-29T21:23:37.569317
+
+=== PATH B: created user 10024 (p3b_2e645784@test.formyla) ===
+  step0: done=None reply=Привет! 👋 Похоже, ты только начинаешь — у тебя ещё нет решённых задач и не пройдена анкета. Чтобы я мог подобрать для те
+  step1: done=None reply=👋 Привет! Твоя анкета ещё не заполнена (целевой уровень не указан, задач не решено).  
+Чтобы я мог составить план и подо
+  step2: done=None reply=Сейчас не могу связаться с ИИ-куратором. Стоит подтянуть: нет данных.
+  step3: done=None reply=Понял, но количество задач в день у тебя уже установлено — **5**. Ты хочешь сократить до 3? 😊
+
+Если ты готов начать, вот
+  step4: done=None reply=Пройди анкету на /prep/onboarding.
+  step5: done=None reply=Привет! 👋 Вижу, ты только начинаешь. У тебя пока нет данных о классе и цели — значит, анкета ещё не пройдена.  
+
+➡️ Сдел

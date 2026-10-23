@@ -1,0 +1,20 @@
+[
+  {
+    "worker": 3,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 2,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 1,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

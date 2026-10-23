@@ -1,0 +1,20 @@
+{
+  "id": 801565,
+  "task_text": "В треугольнике $ABC$ на стороне $BC$ взята точка $D$ такая, что $BD:DC=1:2$, на стороне $CA$ взята точка $E$ такая, что $CE:EA=1:2$, на стороне $AB$ взята точка $F$ такая, что $AF:FB=2:1$. Отрезки $AD$, $BE$ и $CF$ образуют треугольник $PQR$ ($P=AD\\cap BE$, $Q=BE\\cap CF$, $R=CF\\cap AD$). Найдите отношение площади треугольника $PQR$ к площади треугольника $ABC$.",
+  "solution": "Введём барицентрические координаты относительно треугольника $ABC$. Пусть $A=(1,0,0)$, $B=(0,1,0)$, $C=(0,0,1)$. Тогда по правилу деления отрезка (веса обратно пропорциональны длинам):\n\n* $D$ на $BC$ с $BD:DC=1:2$: $D=\\left(0,\\frac{DC}{BC},\\frac{BD}{BC}\\right)=\\left(0,\\frac{2}{3},\\frac{1}{3}\\right)$.\n* $E$ на $CA$ с $CE:EA=1:2$: $E=\\left(\\frac{EA}{CA},0,\\frac{CE}{CA}\\right)=\\left(\\frac{2}{3},0,\\frac{1}{3}\\right)$.\n* $F$ на $AB$ с $AF:FB=2:1$: $F=\\left(\\frac{FB}{AB},\\frac{AF}{AB},0\\right)=\\left(\\frac{1}{3},\\frac{2}{3},0\\right)$.\n\nТеперь найдём точки пересечения прямых. Параметризуем прямые:\n\n* Прямая $AD$: точки вида $A+t(D-A)=(1-t,\\frac{2t}{3},\\frac{t}{3})$.\n* Прямая $BE$: точки вида $B+s(E-B)=\\left(\\frac{2s}{3},1-s,\\frac{s}{3}\\right)$.\n* Прямая $CF$: точки вида $C+u(F-C)=\\left(\\frac{u}{3},\\frac{2u}{3},1-u\\right)$.\n\nНаходим $P=AD\\cap BE$: из равенства координат получаем $t=s$ и $1-s=\\frac{2s}{3}$, откуда $s=\\frac{3}{5}$, $t=\\frac{3}{5}$. Тогда $P=\\left(\\frac{2}{5},\\frac{2}{5},\\frac{1}{5}\\right)$.\n\n$Q=BE\\cap CF$: приравниваем координаты $BE$ и $CF$: $\\frac{2s}{3}=\\frac{u}{3}$, $1-s=\\frac{2u}{3}$, $\\frac{s}{3}=1-u$. Из первого $u=2s$, подставляем во второе: $1-s=\\frac{4s}{3}$, откуда $s=\\frac{3}{7}$, $u=\\frac{6}{7}$. Тогда $Q=\\left(\\frac{2}{7},\\frac{4}{7},\\frac{1}{7}\\right)$.\n\n$R=CF\\cap AD$: приравниваем $AD$ и $CF$: $\\frac{u}{3}=1-t$, $\\frac{2u}{3}=\\frac{2t}{3}$, $1-u=\\frac{t}{3}$. Из второго $u=t$, из третьего $1-t=\\frac{t}{3}$, откуда $t=\\frac{3}{4}$, $u=\\frac{3}{4}$. Тогда $R=\\left(\\frac{1}{4},\\frac{1}{2},\\frac{1}{4}\\right)$.\n\nПлощадь треугольника $PQR$ в барицентрических координатах вычисляется как $S_{PQR}=|\\det M|\\cdot S_{ABC}$, где $M$ — матрица из координат точек-строк:\n\n$$\nM=\\begin{pmatrix}\n\\frac{2}{5} & \\frac{2}{5} & \\frac{1}{5} \\\\\n\\frac{2}{7} & \\frac{4}{7} & \\frac{1}{7} \\\\\n\\frac{1}{4} & \\frac{1}{2} & \\frac{1}{4}\n\\end{pmatrix}.\n$$\n\nВычисляем определитель:\n\n$$\n\\det M = \\frac{2}{5}\\cdot\\frac{4}{7}\\cdot\\frac{1}{4} + \\frac{2}{5}\\cdot\\frac{1}{7}\\cdot\\frac{1}{4} + \\frac{1}{5}\\cdot\\frac{2}{7}\\cdot\\frac{1}{2} - \\left(\\frac{1}{5}\\cdot\\frac{4}{7}\\cdot\\frac{1}{4} + \\frac{2}{5}\\cdot\\frac{1}{7}\\cdot\\frac{1}{2} + \\frac{2}{5}\\cdot\\frac{2}{7}\\cdot\\frac{1}{4}\\right).\n$$\n\nПоследовательно:\n\n$$\n\\frac{2}{5}\\cdot\\frac{4}{7}\\cdot\\frac{1}{4}=\\frac{8}{140}=\\frac{2}{35},\\quad\n\\frac{2}{5}\\cdot\\frac{1}{7}\\cdot\\frac{1}{4}=\\frac{2}{140}=\\frac{1}{70},\n$$\n$$\n\\frac{1}{5}\\cdot\\frac{2}{7}\\cdot\\frac{1}{2}=\\frac{2}{70}=\\frac{1}{35},\n$$\nсумма первых трёх: $\\frac{2}{35}+\\frac{1}{70}+\\frac{1}{35}=\\frac{4}{70}+\\frac{1}{70}+\\frac{2}{70}=\\frac{7}{70}=\\frac{1}{10}$.\n\nОставшиеся:\n\n$$\n\\frac{1}{5}\\cdot\\frac{4}{7}\\cdot\\frac{1}{4}=\\frac{4}{140}=\\frac{1}{35},\\quad\n\\frac{2}{5}\\cdot\\frac{1}{7}\\cdot\\frac{1}{2}=\\frac{2}{70}=\\frac{1}{35},\\quad\n\\frac{2}{5}\\cdot\\frac{2}{7}\\cdot\\frac{1}{4}=\\frac{4}{140}=\\frac{1}{35},\n$$\nсумма: $\\frac{3}{35}$.\n\nИтак, $\\det M = \\frac{1}{10} - \\frac{3}{35} = \\frac{7}{70}-\\frac{6}{70}=\\frac{1}{70}$.\n\nСледовательно, $S_{PQR}=\\frac{1}{70}\\cdot S_{ABC}$.\n\nОтвет: $\\frac{1}{70}$.",
+  "correct_answer": "1/70",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Барицентрические координаты и вычисление определителя",
+  "idea_count": 5,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T13:51:40.742300+00:00"
+}

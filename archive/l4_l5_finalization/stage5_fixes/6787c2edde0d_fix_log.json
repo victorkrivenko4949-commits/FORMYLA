@@ -1,0 +1,26 @@
+{
+  "task_id": "6787c2edde0d",
+  "cell_key": "G7|L5|T003|S1",
+  "quality_score": 53.8,
+  "statement": "В мешке лежат 5 белых и 7 черных шаров. Из мешка последовательно извлекают 4 шара без возвращения. К",
+  "reference_answer": "\\(\\frac{1}{33}\\)",
+  "outcome": "replace",
+  "final_solution": null,
+  "cycles": [
+    {
+      "cycle": 1,
+      "fix_status": "failed",
+      "solver_status": "skipped"
+    },
+    {
+      "cycle": 2,
+      "fix_status": "failed",
+      "solver_status": "skipped"
+    },
+    {
+      "cycle": 3,
+      "fix_status": "failed",
+      "solver_status": "skipped"
+    }
+  ]
+}

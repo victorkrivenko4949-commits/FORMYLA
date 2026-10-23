@@ -1,0 +1,79 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AC",
+   "line2": "BD"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AB",
+   "ratio": 0.75
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "CD",
+   "ratio": 0.25
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "segment": "MN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "CD"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AD",
+   "ratio": 0.6666666666666666,
+   "reason": "Через B проводим прямую, параллельную CD; её пересечение с AD — точка E."
+  },
+  {
+   "type": "point_on_segment",
+   "id": "F",
+   "of": "AD",
+   "ratio": 0.3333333333333333,
+   "reason": "Через C проводим прямую, параллельную AB; её пересечение с AD — точка F."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BE",
+   "style": "dashed"
+  },
+  {
+   "segment": "CF",
+   "style": "dashed"
+  }
+ ]
+}

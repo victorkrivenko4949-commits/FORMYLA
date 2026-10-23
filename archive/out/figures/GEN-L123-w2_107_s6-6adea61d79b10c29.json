@@ -1,0 +1,115 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "A",
+   "through": "H"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "w",
+   "line": "AB",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "w",
+   "line": "AC",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "segment": "AE",
+   "style": "soft"
+  },
+  {
+   "segment": "DE",
+   "style": "accent"
+  },
+  {
+   "segment": "BC",
+   "style": "accent"
+  },
+  {
+   "circle": "w",
+   "style": "dashed"
+  },
+  {
+   "segment": "AH",
+   "style": "dashed"
+  },
+  {
+   "segment": "BH",
+   "style": "dashed"
+  },
+  {
+   "segment": "CH",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "75°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "45°"
+  },
+  {
+   "equal": [
+    "AD",
+    "AE",
+    "AH"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "D",
+    "E"
+   ],
+   "text": "60°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

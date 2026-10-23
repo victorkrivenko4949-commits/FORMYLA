@@ -1,0 +1,137 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "C",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 5,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 3
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "point",
+   "id": "O1",
+   "x": 0.79,
+   "y": 1.6
+  },
+  {
+   "type": "point",
+   "id": "O2",
+   "x": 2.15,
+   "y": 0.79
+  },
+  {
+   "type": "foot",
+   "id": "M",
+   "from": "O1",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "N",
+   "from": "O2",
+   "line": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "MN"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "O1",
+   "through": "M"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "O2",
+   "through": "N"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w1",
+   "style": "accent"
+  },
+  {
+   "circle": "w2",
+   "style": "accent"
+  },
+  {
+   "segment": "MN",
+   "style": "soft"
+  },
+  {
+   "segment": "O1M",
+   "style": "soft"
+  },
+  {
+   "segment": "O2N",
+   "style": "soft"
+  },
+  {
+   "segment": "CI",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "O1M",
+    "O2N"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "point",
+   "id": "L",
+   "x": 0.79,
+   "y": 0.79
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "O1L",
+   "style": "soft"
+  },
+  {
+   "segment": "O2L",
+   "style": "soft"
+  }
+ ],
+ "reason": "Проводим через центры окружностей прямые, параллельные катетам, до пересечения в L; четырёхугольник O1LO2K используется во втором способе доказательства."
+}

@@ -1,0 +1,64 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "BC",
+   "ratio": 0.6666666666666666
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AK",
+   "line2": "BM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AK"
+  },
+  {
+   "segment": "BM"
+  },
+  {
+   "polygon": "CMOK",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "MC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "CK",
+   "reason": "Через M проводим прямую, параллельную AK; она пересекает BC в середине CK"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "MN",
+   "style": "soft"
+  }
+ ]
+}

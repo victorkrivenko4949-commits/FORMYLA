@@ -1,0 +1,42 @@
+{
+  "pipeline": "TAXONOMY_RECONSTRUCTION",
+  "started_at": "2026-07-18T12:57:33.897588",
+  "steps_completed": [
+    "14.1 Archive dependent results",
+    "14.2 Taxonomy Source Inventory",
+    "14.3 Canonical Taxonomy",
+    "14.4 Task Lineage",
+    "14.5 Bank Taxonomy Crosswalk",
+    "14.6 Mapping Conflicts",
+    "14.7 Bank by Cell"
+  ],
+  "key_metrics": {
+    "authoritative_sources_found": 15,
+    "canonical_cells_defined": 558,
+    "task_lineage_entries": 366,
+    "crosswalk_entries": 665,
+    "mapped_tasks": 48,
+    "unresolved_tasks": 617,
+    "cells_with_tasks": 24,
+    "mapping_conflicts_found": 0,
+    "grade_mismatches": 0
+  },
+  "next_steps": [
+    "14.8: Audit Stage 6 contamination (257 candidates)",
+    "14.9: Re-audit Stage 7 C10/C12 with correct mapping",
+    "14.10: Unit tests (10) + retest (10+20)",
+    "14.11: quality_not_weakened_report.json",
+    "ШАГ 15: Resume pipeline"
+  ],
+  "output_files": [
+    "taxonomy_source_inventory.json",
+    "canonical_taxonomy.json",
+    "canonical_taxonomy_audit.json",
+    "task_lineage.jsonl",
+    "bank_taxonomy_crosswalk.jsonl",
+    "bank_taxonomy_crosswalk_summary.json",
+    "taxonomy_mapping_conflicts.jsonl",
+    "taxonomy_mapping_conflicts.json",
+    "bank_by_cell.json"
+  ]
+}

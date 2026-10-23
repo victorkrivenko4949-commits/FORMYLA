@@ -1,0 +1,135 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "X",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "P",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "X",
+   "through": "P"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A",
+   "circle": "w1",
+   "angle": 50
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w1",
+   "angle": -40
+  },
+  {
+   "type": "reflect_line",
+   "id": "E",
+   "of": "A",
+   "over": "XP"
+  },
+  {
+   "type": "reflect_line",
+   "id": "F",
+   "of": "B",
+   "over": "XP"
+  },
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "XA",
+   "line2": "PE"
+  },
+  {
+   "type": "intersection",
+   "id": "C",
+   "line1": "XB",
+   "line2": "PF"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y",
+   "of": "AB",
+   "ratio": 0.553
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Z",
+   "of": "DC",
+   "ratio": 0.697
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "line": "AD",
+   "style": "dashed"
+  },
+  {
+   "line": "BC",
+   "style": "dashed"
+  },
+  {
+   "segment": "XP",
+   "style": "soft"
+  },
+  {
+   "segment": "PA",
+   "style": "soft"
+  },
+  {
+   "segment": "PB",
+   "style": "soft"
+  },
+  {
+   "segment": "PC",
+   "style": "soft"
+  },
+  {
+   "segment": "PD",
+   "style": "soft"
+  },
+  {
+   "segment": "PY",
+   "style": "accent"
+  },
+  {
+   "segment": "PZ",
+   "style": "accent"
+  },
+  {
+   "line": "XY",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "R",
+   "line1": "XY",
+   "line2": "AC",
+   "reason": "Точка R — пересечение прямой XY с диагональю AC; она нужна для применения теоремы Менелая к треугольникам ABC и ACD."
+  }
+ ],
+ "draw_aux": [
+  {
+   "line": "AC",
+   "style": "dashed"
+  },
+  {
+   "segment": "RZ",
+   "style": "dashed"
+  }
+ ]
+}

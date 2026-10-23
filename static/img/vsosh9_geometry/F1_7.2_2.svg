@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" role="img" aria-label="Доп. построение: высота AH ⟂ BC, H — середина BC">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="480" height="360" rx="14"/>
+  <polygon class="edge" points="240.00,80.00 100.00,300.00 380.00,300.00"/>
+  <line class="aux-dash" x1="240.00" y1="80.00" x2="282.00" y2="300.00"/>
+  <line class="aux" x1="240.00" y1="80.00" x2="240.00" y2="300.00"/>
+  <polyline class="edge" fill="none" points="240.00,290.00 250.00,290.00 250.00,300.00"/>
+  <line class="tick" x1="166.63" y1="187.85" x2="173.37" y2="192.15"/>
+  <line class="tick" x1="306.63" y1="192.15" x2="313.37" y2="187.85"/>
+  <line class="tick" x1="167.50" y1="304.00" x2="167.50" y2="296.00"/>
+  <line class="tick" x1="172.50" y1="304.00" x2="172.50" y2="296.00"/>
+  <line class="tick" x1="307.50" y1="304.00" x2="307.50" y2="296.00"/>
+  <line class="tick" x1="312.50" y1="304.00" x2="312.50" y2="296.00"/>
+  <circle class="dot" cx="240.00" cy="80.00" r="4.00"/>
+  <text class="label" x="240.00" y="64.00" text-anchor="middle" dominant-baseline="middle">A</text>
+  <circle class="dot" cx="100.00" cy="300.00" r="4.00"/>
+  <text class="label" x="84.00" y="314.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dot" cx="380.00" cy="300.00" r="4.00"/>
+  <text class="label" x="396.00" y="314.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <circle class="dot" cx="282.00" cy="300.00" r="4.00"/>
+  <text class="label" x="282.00" y="320.00" text-anchor="middle" dominant-baseline="middle">D</text>
+  <circle class="dot" cx="240.00" cy="300.00" r="4.00"/>
+  <text class="label" x="240.00" y="320.00" text-anchor="middle" dominant-baseline="middle">H</text>
+  <circle class="dot" cx="282.00" cy="300.00" r="4.00"/>
+  <text class="num-aux" x="240.00" y="30.00" text-anchor="middle" dominant-baseline="middle">AH ⟂ BC,  BH = HC — ось симметрии</text>
+</svg>

@@ -1,0 +1,66 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "C1",
+   "of": "AB",
+   "ratio": 0.6667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "A1",
+   "of": "BC",
+   "ratio": 0.6667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "B1",
+   "of": "CA",
+   "ratio": 0.6667
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AA1",
+   "line2": "BB1"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "BB1",
+   "line2": "CC1"
+  },
+  {
+   "type": "intersection",
+   "id": "R",
+   "line1": "CC1",
+   "line2": "AA1"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AA1"
+  },
+  {
+   "segment": "BB1"
+  },
+  {
+   "segment": "CC1"
+  },
+  {
+   "polygon": "PQR",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0201-11-F1-3-L8-gh3",
+      "mode": "replace_bad",
+      "id": "11-F1-3-L8-gh3",
+      "grade": 11,
+      "difficulty": 8,
+      "theme": "Теория чисел и диофантовы задачи",
+      "subtopic": "Сравнения",
+      "method_code": "F1",
+      "reasons": "L8_solution_too_short",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "A1",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "C1",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AH",
+   "ratio": 0.6667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "BH",
+   "ratio": 0.6667
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "MN",
+   "line2": "A1B1"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AA1",
+   "style": "soft"
+  },
+  {
+   "segment": "BB1",
+   "style": "soft"
+  },
+  {
+   "segment": "CC1",
+   "style": "soft"
+  },
+  {
+   "line": "A1B1",
+   "style": "soft"
+  },
+  {
+   "line": "MN"
+  },
+  {
+   "segment": "CP",
+   "style": "accent"
+  },
+  {
+   "segment": "CH",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "P",
+    "C",
+    "H"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "45°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

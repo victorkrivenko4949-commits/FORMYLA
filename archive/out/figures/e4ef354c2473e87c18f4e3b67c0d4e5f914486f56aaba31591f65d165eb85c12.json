@@ -1,0 +1,131 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "incenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "foot",
+   "id": "K",
+   "from": "O",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "L",
+   "from": "O",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "M",
+   "from": "O",
+   "line": "AB"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "KLM"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "C",
+   "line": "AB"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "polygon": "KLM",
+   "style": "accent"
+  },
+  {
+   "segment": "CD",
+   "style": "dashed"
+  },
+  {
+   "segment": "CH",
+   "style": "accent"
+  },
+  {
+   "segment": "OK",
+   "style": "soft"
+  },
+  {
+   "segment": "OL",
+   "style": "soft"
+  },
+  {
+   "segment": "OM",
+   "style": "soft"
+  },
+  {
+   "segment": "KH",
+   "style": "soft"
+  },
+  {
+   "segment": "LH",
+   "style": "soft"
+  },
+  {
+   "segment": "MH",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "D",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "K",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "L",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "M",
+    "A"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<rect width="620" height="620" fill="#070C18"/>
+<polygon points="60.0,467.9 560.0,467.9 560.0,152.1 60.0,152.1" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="101.7" y1="467.9" x2="101.7" y2="152.1" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="143.3" y1="467.9" x2="143.3" y2="152.1" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="185.0" y1="467.9" x2="185.0" y2="152.1" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="226.7" y1="467.9" x2="226.7" y2="152.1" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="268.3" y1="467.9" x2="268.3" y2="152.1" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="310.0" y1="467.9" x2="310.0" y2="152.1" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="351.7" y1="467.9" x2="351.7" y2="152.1" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="393.3" y1="467.9" x2="393.3" y2="152.1" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="435.0" y1="467.9" x2="435.0" y2="152.1" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="476.7" y1="467.9" x2="476.7" y2="152.1" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="518.3" y1="467.9" x2="518.3" y2="152.1" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="60.0" y1="422.8" x2="560.0" y2="422.8" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="60.0" y1="377.7" x2="560.0" y2="377.7" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="60.0" y1="332.6" x2="560.0" y2="332.6" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="60.0" y1="287.4" x2="560.0" y2="287.4" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="60.0" y1="242.3" x2="560.0" y2="242.3" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="60.0" y1="197.2" x2="560.0" y2="197.2" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="60.0" y1="467.9" x2="560.0" y2="152.1" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<polyline points="60.0,454.9 73.0,454.9 73.0,467.9" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<circle cx="60.0" cy="467.9" r="3.4" fill="#E6EBF7"/>
+<text x="42.7" y="483.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="560.0" cy="467.9" r="3.4" fill="#E6EBF7"/>
+<text x="577.3" y="483.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="560.0" cy="152.1" r="3.4" fill="#E6EBF7"/>
+<text x="577.3" y="148.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="60.0" cy="152.1" r="3.4" fill="#E6EBF7"/>
+<text x="42.7" y="148.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="101.7" cy="467.9" r="3.4" fill="#E6EBF7"/>
+<text x="101.7" y="493.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P1</text>
+<circle cx="143.3" cy="467.9" r="3.4" fill="#E6EBF7"/>
+<text x="143.3" y="493.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P2</text>
+<circle cx="185.0" cy="467.9" r="3.4" fill="#E6EBF7"/>
+<text x="185.0" y="493.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P3</text>
+<circle cx="226.7" cy="467.9" r="3.4" fill="#E6EBF7"/>
+<text x="226.7" y="493.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P4</text>
+<circle cx="268.3" cy="467.9" r="3.4" fill="#E6EBF7"/>
+<text x="268.3" y="493.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P5</text>
+<circle cx="310.0" cy="467.9" r="3.4" fill="#E6EBF7"/>
+<text x="310.0" y="493.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P6</text>
+<circle cx="351.7" cy="467.9" r="3.4" fill="#E6EBF7"/>
+<text x="351.7" y="493.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P7</text>
+<circle cx="393.3" cy="467.9" r="3.4" fill="#E6EBF7"/>
+<text x="393.3" y="493.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P8</text>
+<circle cx="435.0" cy="467.9" r="3.4" fill="#E6EBF7"/>
+<text x="435.0" y="493.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P9</text>
+<circle cx="476.7" cy="467.9" r="3.4" fill="#E6EBF7"/>
+<text x="476.7" y="493.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P10</text>
+<circle cx="518.3" cy="467.9" r="3.4" fill="#E6EBF7"/>
+<text x="518.3" y="493.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P11</text>
+<circle cx="101.7" cy="152.1" r="3.4" fill="#E6EBF7"/>
+<text x="101.7" y="138.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">Q1</text>
+<circle cx="143.3" cy="152.1" r="3.4" fill="#E6EBF7"/>
+<text x="143.3" y="138.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">Q2</text>
+<circle cx="185.0" cy="152.1" r="3.4" fill="#E6EBF7"/>
+<text x="185.0" y="138.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">Q3</text>
+<circle cx="226.7" cy="152.1" r="3.4" fill="#E6EBF7"/>
+<text x="226.7" y="138.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">Q4</text>
+<circle cx="268.3" cy="152.1" r="3.4" fill="#E6EBF7"/>
+<text x="268.3" y="138.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">Q5</text>
+<circle cx="310.0" cy="152.1" r="3.4" fill="#E6EBF7"/>
+<text x="310.0" y="138.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">Q6</text>
+<circle cx="351.7" cy="152.1" r="3.4" fill="#E6EBF7"/>
+<text x="351.7" y="138.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">Q7</text>
+<circle cx="393.3" cy="152.1" r="3.4" fill="#E6EBF7"/>
+<text x="393.3" y="138.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">Q8</text>
+<circle cx="435.0" cy="152.1" r="3.4" fill="#E6EBF7"/>
+<text x="435.0" y="138.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">Q9</text>
+<circle cx="476.7" cy="152.1" r="3.4" fill="#E6EBF7"/>
+<text x="476.7" y="138.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">Q10</text>
+<circle cx="518.3" cy="152.1" r="3.4" fill="#E6EBF7"/>
+<text x="518.3" y="138.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">Q11</text>
+<circle cx="60.0" cy="422.8" r="3.4" fill="#E6EBF7"/>
+<text x="40.0" y="428.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">R1</text>
+<circle cx="60.0" cy="377.7" r="3.4" fill="#E6EBF7"/>
+<text x="40.0" y="383.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">R2</text>
+<circle cx="60.0" cy="332.6" r="3.4" fill="#E6EBF7"/>
+<text x="40.0" y="338.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">R3</text>
+<circle cx="60.0" cy="287.4" r="3.4" fill="#E6EBF7"/>
+<text x="40.0" y="293.4" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">R4</text>
+<circle cx="60.0" cy="242.3" r="3.4" fill="#E6EBF7"/>
+<text x="40.0" y="248.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">R5</text>
+<circle cx="60.0" cy="197.2" r="3.4" fill="#E6EBF7"/>
+<text x="40.0" y="203.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">R6</text>
+<circle cx="560.0" cy="422.8" r="3.4" fill="#E6EBF7"/>
+<text x="580.0" y="428.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">S1</text>
+<circle cx="560.0" cy="377.7" r="3.4" fill="#E6EBF7"/>
+<text x="580.0" y="383.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">S2</text>
+<circle cx="560.0" cy="332.6" r="3.4" fill="#E6EBF7"/>
+<text x="580.0" y="338.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">S3</text>
+<circle cx="560.0" cy="287.4" r="3.4" fill="#E6EBF7"/>
+<text x="580.0" y="293.4" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">S4</text>
+<circle cx="560.0" cy="242.3" r="3.4" fill="#E6EBF7"/>
+<text x="580.0" y="248.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">S5</text>
+<circle cx="560.0" cy="197.2" r="3.4" fill="#E6EBF7"/>
+<text x="580.0" y="203.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">S6</text>
+</svg>

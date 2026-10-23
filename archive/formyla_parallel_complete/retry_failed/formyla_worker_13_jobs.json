@@ -1,0 +1,26 @@
+{
+  "jobs": [
+    {
+      "job_id": "fill-0290",
+      "mode": "fill_missing",
+      "grade": 10,
+      "difficulty": 7,
+      "theme": "Системы, параметры и неравенства",
+      "subtopic": "Системы и параметры",
+      "method_code": "C1",
+      "quality_target": "L6=регион; L7=сложный регион; L8=финал/перечневые, не одношаговая техника",
+      "worker": 10
+    },
+    {
+      "job_id": "fill-0239",
+      "mode": "fill_missing",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Комбинаторика и графы",
+      "subtopic": "Графы",
+      "method_code": "F2",
+      "quality_target": "L6=регион; L7=сложный регион; L8=финал/перечневые, не одношаговая техника",
+      "worker": 19
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "pipeline_step": "smoke_test",
+    "target": "https://api.deepseek.com",
+    "model": "deepseek-reasoner",
+    "api_key_masked": "sk-54c1f...f262",
+    "timestamp": "2026-07-18T14:38:06.374281+00:00",
+    "duration_ms": 2846.4
+  },
+  "tests": [
+    {
+      "test_name": "dns_resolution",
+      "passed": true,
+      "detail": "Resolved api.deepseek.com -> 3.173.21.63",
+      "duration_ms": 19.7,
+      "timestamp": "2026-07-18T14:38:03.543001+00:00"
+    },
+    {
+      "test_name": "tcp_connectivity",
+      "passed": true,
+      "detail": "TCP handshake to api.deepseek.com:443 succeeded",
+      "duration_ms": 24.0,
+      "timestamp": "2026-07-18T14:38:03.567076+00:00"
+    },
+    {
+      "test_name": "tls_handshake",
+      "passed": true,
+      "detail": "TLS TLSv1.3, cipher=TLS_AES_128_GCM_SHA256",
+      "duration_ms": 242.1,
+      "timestamp": "2026-07-18T14:38:03.809202+00:00"
+    },
+    {
+      "test_name": "models_endpoint",
+      "passed": true,
+      "detail": "HTTP 200, 2 models returned",
+      "duration_ms": 555.0,
+      "timestamp": "2026-07-18T14:38:04.368105+00:00"
+    },
+    {
+      "test_name": "model_availability",
+      "passed": true,
+      "detail": "deepseek-reasoner not in listing (listed: ['deepseek-v4-flash', 'deepseek-v4-pro']) but API call succeeded (373ms) — alias confirmed",
+      "duration_ms": 740.1,
+      "timestamp": "2026-07-18T14:38:05.108257+00:00"
+    },
+    {
+      "test_name": "chat_completion",
+      "passed": true,
+      "detail": "HTTP 200; finish_reason=stop; content_len=14; prompt_tokens=14; completion_tokens=36; reasoning_tokens=29",
+      "duration_ms": 1265.5,
+      "timestamp": "2026-07-18T14:38:06.374204+00:00"
+    }
+  ],
+  "verdict": "PASS"
+}

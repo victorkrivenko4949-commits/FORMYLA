@@ -1,0 +1,59 @@
+{
+  "run_id": "20260723_172537",
+  "finished_at": "2026-07-23T14:27:59.503930+00:00",
+  "taxonomy": {
+    "total_themes": 128,
+    "total_cells": 384,
+    "target_tasks": 1920
+  },
+  "models": {
+    "primary": "qwen/qwen3.5-plus-20260420"
+  },
+  "cost": {
+    "total_cost": 0.0,
+    "requests": 3,
+    "prompt_tokens": 788,
+    "completion_tokens": 7422,
+    "cache_hits": 0
+  },
+  "results": {
+    "total": 625,
+    "approved": 0,
+    "recheck": 625,
+    "rejected": 0,
+    "ready_cells": 0,
+    "shortage": 1920,
+    "quality_status": "FAIL",
+    "coverage_status": "INCOMPLETE"
+  },
+  "output_files": {
+    "FORMYLA_L1_L3_ALL_CANDIDATES.jsonl": {
+      "size": 2079102,
+      "sha256": "a820480fbe5026f85be60a809746589ec543c37b69cefe5d03c823e0b2955658"
+    },
+    "FORMYLA_L1_L3_FINAL.jsonl": {
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "FORMYLA_L1_L3_RECHECK.jsonl": {
+      "size": 2079102,
+      "sha256": "a820480fbe5026f85be60a809746589ec543c37b69cefe5d03c823e0b2955658"
+    },
+    "FORMYLA_L1_L3_REJECTED.jsonl": {
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "l1_l3_cost_report.csv": {
+      "size": 117,
+      "sha256": "c4178e80033af2d9818a00ce91c85523f61ef7dff4989c5a74d8ec8ab98a2767"
+    },
+    "l1_l3_grid_report.csv": {
+      "size": 79567,
+      "sha256": "6204ec95a94a79e243767e53bebf745c549355c927de80de069a5ac973c04c2a"
+    },
+    "l1_l3_task_audit.csv": {
+      "size": 21479,
+      "sha256": "8134f4beb48adccdbc6d97f59763229fc3556609e27ca4e4b7505f36e12d13d8"
+    }
+  }
+}

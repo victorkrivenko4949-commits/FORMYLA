@@ -1,0 +1,84 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "C0",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "B0",
+   "of": "AC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "BH",
+   "line2": "OC0"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "CH",
+   "line2": "OB0"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "line": "BH",
+   "style": "soft"
+  },
+  {
+   "line": "CH",
+   "style": "soft"
+  },
+  {
+   "line": "OC0",
+   "style": "soft"
+  },
+  {
+   "line": "OB0",
+   "style": "soft"
+  },
+  {
+   "polygon": "OPHQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AC0",
+    "C0B"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AB0",
+    "B0C"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

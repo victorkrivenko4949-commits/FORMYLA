@@ -1,0 +1,168 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "A1",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "CA"
+  },
+  {
+   "type": "foot",
+   "id": "C1",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P1",
+   "of": "AB",
+   "ratio": 0.4
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "A",
+   "through": "P1"
+  },
+  {
+   "type": "line_circle",
+   "id": "Q1",
+   "circle": "c1",
+   "line": "AA1",
+   "pick": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "M1",
+   "of": "P1Q1"
+  },
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "AM1",
+   "line2": "B1A1"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P2",
+   "of": "AC",
+   "ratio": 0.4
+  },
+  {
+   "type": "circle",
+   "id": "c2",
+   "center": "A",
+   "through": "P2"
+  },
+  {
+   "type": "line_circle",
+   "id": "Q2",
+   "circle": "c2",
+   "line": "AA1",
+   "pick": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "M2",
+   "of": "P2Q2"
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "AM2",
+   "line2": "C1A1"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AA1",
+   "style": "dashed"
+  },
+  {
+   "segment": "BB1",
+   "style": "dashed"
+  },
+  {
+   "segment": "CC1",
+   "style": "dashed"
+  },
+  {
+   "line": "B1A1",
+   "style": "soft"
+  },
+  {
+   "line": "C1A1",
+   "style": "soft"
+  },
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "segment": "AE",
+   "style": "soft"
+  },
+  {
+   "line": "BD",
+   "style": "accent"
+  },
+  {
+   "line": "CE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "45°"
+  },
+  {
+   "right_angle": [
+    "A",
+    "A1",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "B1",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "C1",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "B1",
+    "A1",
+    "C1"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

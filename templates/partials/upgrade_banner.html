@@ -1,0 +1,31 @@
+{#
+  Информационная плашка о бесплатном доступе.
+  Включается в profile.html через:
+    {% include 'partials/upgrade_banner.html' %}
+#}
+{% if current_user.is_authenticated %}
+<div style="
+    background: linear-gradient(135deg, rgba(56,239,125,0.08) 0%, rgba(56,189,248,0.08) 100%);
+    border: 1px solid rgba(56,239,125,0.25);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 1.6em;">🎉</span>
+        <div>
+            <div style="font-weight: 700; color: #f1f5f9; font-size: 0.95em;">
+                Всё бесплатно
+            </div>
+            <div style="color: #94a3b8; font-size: 0.82em; margin-top: 2px;">
+                Все разделы, задачи, ИИ-агенты, доска и AI-чертежи — без подписок и оплат
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

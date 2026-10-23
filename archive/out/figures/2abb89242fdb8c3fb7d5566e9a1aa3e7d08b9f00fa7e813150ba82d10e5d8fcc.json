@@ -1,0 +1,152 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "N",
+   "line1": "BI",
+   "line2": "AC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "AIN"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O1",
+   "of": "AIN"
+  },
+  {
+   "type": "reflect_point",
+   "id": "O1p",
+   "of": "O1",
+   "over": "A"
+  },
+  {
+   "type": "circle",
+   "id": "cA1",
+   "center": "O1",
+   "through": "O1p"
+  },
+  {
+   "type": "circle",
+   "id": "cA2",
+   "center": "O1p",
+   "through": "O1"
+  },
+  {
+   "type": "circle_circle",
+   "id": "P",
+   "circle1": "cA1",
+   "circle2": "cA2",
+   "pick": 0
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "CIN"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O2",
+   "of": "CIN"
+  },
+  {
+   "type": "reflect_point",
+   "id": "O2p",
+   "of": "O2",
+   "over": "C"
+  },
+  {
+   "type": "circle",
+   "id": "cC1",
+   "center": "O2",
+   "through": "O2p"
+  },
+  {
+   "type": "circle",
+   "id": "cC2",
+   "center": "O2p",
+   "through": "O2"
+  },
+  {
+   "type": "circle_circle",
+   "id": "Q",
+   "circle1": "cC1",
+   "circle2": "cC2",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "AP",
+   "line2": "CQ"
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "AC",
+   "line2": "DI"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BI"
+  },
+  {
+   "circle": "w1"
+  },
+  {
+   "circle": "w2"
+  },
+  {
+   "line": "AP",
+   "style": "soft"
+  },
+  {
+   "line": "CQ",
+   "style": "soft"
+  },
+  {
+   "segment": "DI",
+   "style": "accent"
+  },
+  {
+   "point": "D"
+  },
+  {
+   "point": "I"
+  },
+  {
+   "point": "N"
+  },
+  {
+   "point": "E",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "E",
+    "I"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

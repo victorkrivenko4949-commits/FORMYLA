@@ -1,0 +1,186 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "BC"
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "c2",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "E1",
+   "circle1": "c1",
+   "circle2": "c2",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "c3",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "c4",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "E2",
+   "circle1": "c3",
+   "circle2": "c4",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "ME1",
+   "line2": "CD"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "NE2",
+   "line2": "DA"
+  },
+  {
+   "type": "midpoint",
+   "id": "M1",
+   "of": "BQ"
+  },
+  {
+   "type": "reflect_point",
+   "id": "R",
+   "of": "A",
+   "over": "M1"
+  },
+  {
+   "type": "midpoint",
+   "id": "M2",
+   "of": "CP"
+  },
+  {
+   "type": "reflect_point",
+   "id": "S",
+   "of": "B",
+   "over": "M2"
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "QR",
+   "line2": "PS"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "line": "MP",
+   "style": "soft"
+  },
+  {
+   "line": "NQ",
+   "style": "soft"
+  },
+  {
+   "segment": "QX",
+   "style": "soft"
+  },
+  {
+   "segment": "PX",
+   "style": "soft"
+  },
+  {
+   "line": "BX",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "M",
+    "P"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "N",
+    "Q"
+   ]
+  },
+  {
+   "equal": [
+    "PA",
+    "PB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "QB",
+    "QC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "P",
+    "B"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "B",
+    "Q",
+    "C"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "AC",
+   "reason": "Середина AC для иллюстрации утверждения."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BO",
+   "style": "dashed"
+  }
+ ]
+}

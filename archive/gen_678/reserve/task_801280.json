@@ -1,0 +1,20 @@
+{
+  "id": 801280,
+  "task_text": "В треугольнике $ABC$ на сторонах $AB$, $BC$, $CA$ взяты точки $K$, $L$, $M$ соответственно так, что $AK:KB = BL:LC = CM:MA = 1:2$. Пусть $X$, $Y$, $Z$ — середины отрезков $KL$, $LM$, $MK$. Найдите отношение площади треугольника $XYZ$ к площади треугольника $ABC$.",
+  "solution": "Введём систему координат. Пусть вершины треугольника имеют координаты $A$, $B$, $C$ (векторы). Тогда $$K = \\frac{2A+B}{3},\\quad L = \\frac{2B+C}{3},\\quad M = \\frac{2C+A}{3}.$$ Середины отрезков: $$X = \\frac{K+L}{2} = \\frac{2A+3B+C}{6},\\quad Y = \\frac{L+M}{2} = \\frac{2B+3C+A}{6},\\quad Z = \\frac{M+K}{2} = \\frac{2C+3A+B}{6}.$$ Вычислим разности: $$\\vec{XY} = Y-X = \\frac{2B+3C+A - (2A+3B+C)}{6} = \\frac{2C - A - B}{6},$$ $$\\vec{XZ} = Z-X = \\frac{2C+3A+B - (2A+3B+C)}{6} = \\frac{A+C-2B}{6}.$$ Векторное произведение (площадь): $$\\vec{XY}\\times\\vec{XZ} = \\frac{1}{36}\\bigl((2C-A-B)\\times(A+C-2B)\\bigr).$$ Раскрывая скобки и учитывая, что $A\\times B = -B\\times A$ и $A\\times A = 0$, получим $$(2C-A-B)\\times(A+C-2B) = 3(A\\times B + B\\times C + C\\times A).$$ Таким образом, $$\\vec{XY}\\times\\vec{XZ} = \\frac{3}{36}(A\\times B + B\\times C + C\\times A) = \\frac{1}{12}(A\\times B + B\\times C + C\\times A).$$ Площадь треугольника $ABC$ равна $$S_{ABC} = \\frac{1}{2}\\bigl| (B-A)\\times(C-A) \\bigr| = \\frac{1}{2}\\bigl| A\\times B + B\\times C + C\\times A \\bigr|.$$ Следовательно, $$S_{XYZ} = \\frac{1}{2}\\bigl|\\vec{XY}\\times\\vec{XZ}\\bigr| = \\frac{1}{2}\\cdot\\frac{1}{12}\\bigl|A\\times B + B\\times C + C\\times A\\bigr| = \\frac{1}{12}S_{ABC}.$$ Ответ: $\\dfrac{1}{12}$.",
+  "correct_answer": "$$\\frac{1}{12}$$",
+  "class_level": 10,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 5,
+  "key_method": "Векторный метод и векторное произведение",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.79,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T12:13:49.066243+00:00"
+}

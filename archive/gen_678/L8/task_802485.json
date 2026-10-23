@@ -1,0 +1,20 @@
+{
+  "id": 802485,
+  "task_text": "В выпуклом четырехугольнике $ABCD$ диагонали $AC$ и $BD$ перпендикулярны и равны. На сторонах $AB$, $BC$, $CD$, $DA$ выбраны соответственно точки $E$, $F$, $G$, $H$ так, что\n$$\n\\frac{AE}{EB} = \\frac{BF}{FC} = \\frac{CG}{GD} = \\frac{DH}{HA}.\n$$\nДокажите, что отрезки $EG$ и $FH$ перпендикулярны.",
+  "solution": "Введём прямоугольную систему координат с началом в точке пересечения диагоналей $O = AC \\cap BD$. Оси направим по диагоналям: ось $Ox$ вдоль $AC$, ось $Oy$ вдоль $BD$. Тогда координаты вершин можно записать так: $A(a,0)$, $C(c,0)$, $B(0,b)$, $D(0,d)$. Из условия перпендикулярности диагоналей это представление уже обеспечивает $AC \\perp BD$. Равенство диагоналей даёт $|AC| = |BD|$, то есть $|a-c| = |b-d|$.\n\nОбозначим $k = \\frac{AE}{EB} = \\frac{BF}{FC} = \\frac{CG}{GD} = \\frac{DH}{HA}$. Положим $\\lambda = \\frac{1}{1+k}$ (тогда $0<\\lambda<1$). Используя формулу деления отрезка в данном отношении, получаем координаты точек:\n\\begin{align*}\nE &= \\bigl( a\\lambda,\\; b(1-\\lambda) \\bigr), \\\\\nF &= \\bigl( c(1-\\lambda),\\; b\\lambda \\bigr), \\\\\nG &= \\bigl( c\\lambda,\\; d(1-\\lambda) \\bigr), \\\\\nH &= \\bigl( a(1-\\lambda),\\; d\\lambda \\bigr).\n\\end{align*}\n\nВычислим векторы $EG$ и $FH$:\n\\begin{align*}\nEG &= \\bigl( c\\lambda - a\\lambda,\\; d(1-\\lambda) - b(1-\\lambda) \\bigr) = \\bigl( \\lambda(c-a),\\; (1-\\lambda)(d-b) \\bigr), \\\\\nFH &= \\bigl( a(1-\\lambda) - c(1-\\lambda),\\; d\\lambda - b\\lambda \\bigr) = \\bigl( (1-\\lambda)(a-c),\\; \\lambda(d-b) \\bigr).\n\\end{align*}\n\nНайдём их скалярное произведение:\n$$\nEG \\cdot FH = \\lambda(1-\\lambda)(c-a)(a-c) + \\lambda(1-\\lambda)(d-b)(d-b) = -\\lambda(1-\\lambda)(a-c)^2 + \\lambda(1-\\lambda)(d-b)^2.\n$$\nВынесем общий множитель:\n$$\nEG \\cdot FH = \\lambda(1-\\lambda)\\bigl((d-b)^2 - (a-c)^2\\bigr).\n$$\nТак как $|a-c| = |b-d|$, то $(d-b)^2 = (a-c)^2$, следовательно, $EG \\cdot FH = 0$. Это означает, что $EG \\perp FH$. Что и требовалось доказать.",
+  "correct_answer": "$EG \\perp FH$",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 8,
+  "real_level": 8,
+  "key_method": "Координатный метод с параметризацией отношения деления",
+  "idea_count": 3,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T16:27:18.480140+00:00"
+}

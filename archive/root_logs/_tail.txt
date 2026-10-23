@@ -1,0 +1,125 @@
+216: $existingTask = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+217: if ($existing.Count -gt 1) {
+218:     Stop-Block "BLOCK_MULTIPLE_BRIDGE_PROCESSES" "count=$($existing.Count)"
+219: }
+220: if ($existing.Count -eq 1 -and -not $existingTask) {
+221:     Stop-Block "BLOCK_UNMANAGED_BRIDGE_PROCESS" "A bridge process already runs without the canonical task."
+222: }
+223: 
+224: if (-not (Test-Path -LiteralPath $PythonExe -PathType Leaf)) {
+225:     & $BootstrapPython -m venv "C:\ProgramData\H2\bridge_venv"
+226:     if ($LASTEXITCODE -ne 0) { Stop-Block "BLOCK_VENV_CREATE" "exit=$LASTEXITCODE" }
+227: }
+228: 
+229: & $PythonExe -m pip install --no-index --find-links $WheelDir "owui_roo_bridge==0.5.10" "h2_shared==0.56.70" "psutil==7.2.2"
+230: if ($LASTEXITCODE -ne 0) { Stop-Block "BLOCK_OFFLINE_INSTALL" "exit=$LASTEXITCODE" }
+231: & $PythonExe -m pip check
+232: if ($LASTEXITCODE -ne 0) { Stop-Block "BLOCK_PIP_CHECK" "exit=$LASTEXITCODE" }
+233: & $PythonExe -c "import owui_roo_bridge,h2_shared,keyring,win32ctypes,nats,psutil; print('PASS_IMPORTS')"
+234: if ($LASTEXITCODE -ne 0) { Stop-Block "BLOCK_IMPORT_CHECK" "exit=$LASTEXITCODE" }
+235: & $PythonExe (Join-Path $PSScriptRoot "bridge_compat_runner.py") --self-test
+236: if ($LASTEXITCODE -ne 0) { Stop-Block "BLOCK_NATS_BUCKET_STATUS_COMPAT" "compatibility self-test failed" }
+237: 
+238: $CredentialCheck = @'
+239: import keyring
+240: import os
+241: value = keyring.get_password("H2_DEEPSEEK_API_KEY", "default")
+242: if not value:
+243:     value = (os.environ.get("H2_DEEPSEEK_API_KEY") or os.environ.get("DEEPSEEK_API_KEY") or "").strip()
+244:     if value:
+245:         keyring.set_password("H2_DEEPSEEK_API_KEY", "default", value)
+246: print("DEEPSEEK_CREDENTIAL=" + ("PRESENT" if keyring.get_password("H2_DEEPSEEK_API_KEY", "default") else "OPTIONAL_ABSENT_STRICT_JSON_ONLY"))
+247: '@
+248: $CredentialCheck | & $PythonExe -
+249: 
+250: $Node = [ordered]@{
+251:     schema_version = 1
+252:     node_id = $NodeId
+253:     hostname = $ExpectedHostname
+254:     wheel_version = "0.5.10"
+255:     workspaces_root = "C:/H2"
+256:     log_dir = "C:/ProgramData/H2/logs"
+257:     workspaces = @("C:/H2/victor_bridge_canary")
+258:     roo = [ordered]@{
+259:         tasks_root = $RooTasks.Replace('\','/')
+260:         instances_registry = $InstancesRegistry.Replace('\','/')
+261:         storage_root = $RooStorage.Replace('\','/')
+262:     }
+263:     nats = [ordered]@{
+264:         url = $NatsUrl
+265:         ownership_kv = $OwnershipBucket
+266:     }
+267: }
+268: $Json = $Node | ConvertTo-Json -Depth 8
+269: [IO.File]::WriteAllText($NodePath, $Json, (New-Object Text.UTF8Encoding($false)))
+270: Get-Content -LiteralPath $NodePath -Raw | ConvertFrom-Json | Out-Null
+271: Write-Host "PASS_NODE_JSON"
+272: 
+273: Copy-Item -LiteralPath (Join-Path $PSScriptRoot "run_victor_bridge.ps1") -Destination $InstalledRunner -Force
+274: Copy-Item -LiteralPath (Join-Path $PSScriptRoot "bridge_compat_runner.py") -Destination (Join-Path $ScriptDir "bridge_compat_runner.py") -Force
+275: 
+276: $env:NATS_URL = $NatsUrl
+277: & $PythonExe (Join-Path $PSScriptRoot "provision_ownership_kv.py") --url $NatsUrl --bucket $OwnershipBucket --ttl-seconds 60
+278: if ($LASTEXITCODE -ne 0) {
+279:     Stop-Block "BLOCK_OWNERSHIP_KV_NOT_PROVISIONED" "Provision/validation failed."
+280: }
+281: 
+282: $taskAction = New-ScheduledTaskAction `
+283:     -Execute "powershell.exe" `
+284:     -Argument "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File `"$InstalledRunner`"" `
+285:     -WorkingDirectory $ConfigDir
+286: $taskTrigger = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
+287: $taskPrincipal = New-ScheduledTaskPrincipal `
+288:     -UserId "$env:USERDOMAIN\$env:USERNAME" `
+289:     -LogonType Interactive `
+290:     -RunLevel Highest
+291: $taskSettings = New-ScheduledTaskSettingsSet `
+292:     -AllowStartIfOnBatteries `
+293:     -DontStopIfGoingOnBatteries `
+294:     -ExecutionTimeLimit ([TimeSpan]::Zero) `
+295:     -MultipleInstances IgnoreNew `
+296:     -RestartCount 3 `
+297:     -RestartInterval (New-TimeSpan -Minutes 1)
+298: 
+299: if ($existingTask) {
+300:     $actions = @($existingTask.Actions)
+301:     $canonical = $actions.Count -eq 1 -and
+302:         $actions[0].Execute -ieq "powershell.exe" -and
+303:         $actions[0].Arguments -like "*$InstalledRunner*" -and
+304:         $actions[0].WorkingDirectory -ieq $ConfigDir
+305:     if (-not $canonical -and (Get-BridgeProcesses).Count -gt 0) {
+306:         Stop-Block "BLOCK_AUTOSTART_DRIFT_RUNNING_PROCESS" "Task differs while Bridge is running."
+307:     }
+308:     if (-not $canonical) {
+309:         Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
+310:         $existingTask = $null
+311:     }
+312: }
+313: 
+314: if (-not $existingTask) {
+315:     Register-ScheduledTask `
+316:         -TaskName $TaskName `
+317:         -Action $taskAction `
+318:         -Trigger $taskTrigger `
+319:         -Principal $taskPrincipal `
+320:         -Settings $taskSettings `
+321:         -Description "H2 OWUI-Roo Bridge for node victor" | Out-Null
+322:     Write-Host "TASK=APPLIED"
+323: } else {
+324:     Write-Host "TASK=KEEP"
+325: }
+326: 
+327: if ((Get-BridgeProcesses).Count -eq 0) {
+328:     Start-ScheduledTask -TaskName $TaskName
+329:     Start-Sleep -Seconds 12
+330: }
+331: 
+332: $after = Get-BridgeProcesses
+333: if ($after.Count -ne 1) {
+334:     Stop-Block "BLOCK_BRIDGE_PROCESS_CARDINALITY" "expected=1 actual=$($after.Count)"
+335: }
+336: 
+337: $taskState = (Get-ScheduledTask -TaskName $TaskName).State
+338: Write-Host "PASS_BRIDGE_PROCESS_CARDINALITY=1"
+339: Write-Host "TASK_STATE=$taskState"
+340: Write-Host "VERDICT=INSTALL_APPLIED_PENDING_LIVE_E2E"

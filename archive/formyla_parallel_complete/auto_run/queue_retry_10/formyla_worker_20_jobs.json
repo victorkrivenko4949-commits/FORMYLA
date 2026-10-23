@@ -1,0 +1,28 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0408-9-G1-3-L8-gstub",
+      "mode": "replace_bad",
+      "id": "9-G1-3-L8-gstub",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Логика, инварианты, стратегии",
+      "subtopic": "Инварианты и раскраски",
+      "method_code": "G1",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0232-11-D2-10-L8-gf",
+      "mode": "replace_bad",
+      "id": "11-D2-10-L8-gf",
+      "grade": 11,
+      "difficulty": 8,
+      "theme": "Функции, графики и параметры",
+      "subtopic": "Задачи с параметром",
+      "method_code": "D2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

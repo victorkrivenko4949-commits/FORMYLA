@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://formyla.ai/geometric-drawing.schema.json",
+  "title": "Геометрический чертёж — описание построений",
+  "description": "JSON-схема описания геометрического чертежа для движка geometric_engine. Никакого кода — только декларативные построения.",
+
+  "type": "object",
+  "required": ["canvas", "constructions"],
+  "properties": {
+
+    "canvas": {
+      "description": "Размер холста и поля",
+      "type": "object",
+      "required": ["width", "height", "margin"],
+      "properties": {
+        "width": {
+          "type": "integer", "minimum": 100, "maximum": 4000,
+          "description": "Ширина SVG в пикселях"
+        },
+        "height": {
+          "type": "integer", "minimum": 100, "maximum": 4000,
+          "description": "Высота SVG в пикселях"
+        },
+        "margin": {
+          "type": "integer", "minimum": 0, "maximum": 500,
+          "description": "Отступ от краёв холста, пиксели"
+        }
+      }
+    },
+
+    "constructions": {
+      "description": "Упорядоченный список построений. Каждое опирается на ранее определённые объекты.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type", "id"],
+        "properties": {
+          "type": {
+            "description": "Вид построения",
+            "enum": [
+              "free_point",
+              "midpoint",
+              "point_on_segment",
+              "foot_perpendicular",
+              "intersect_lines",
+              "intersect_line_circle",
+              "intersect_circles",
+              "reflect_point_over_point",
+              "reflect_point_over_line",
+              "circumcenter",
+              "incenter",
+              "centroid",
+              "orthocenter",
+              "incircle_touch",
+              "segment",
+              "ray",
+              "line",
+              "line_extension",
+              "altitude",
+              "median",
+              "angle_bisector",
+              "perpendicular_bisector",
+              "tangent_from_point",
+              "tangent_at_point",
+              "triangle_arbitrary",
+              "triangle_acute",
+              "triangle_right",
+              "triangle_isosceles",
+              "triangle_equilateral",
+              "triangle_by_two_angles",
+              "angle_at_vertex",
+              "segment_length",
+              "equal_segments",
+              "quadrilateral_arbitrary",
+              "quadrilateral_parallelogram",
+              "quadrilateral_rectangle",
+              "quadrilateral_square",
+              "quadrilateral_rhombus",
+              "quadrilateral_trapezoid",
+              "quadrilateral_isosceles_trapezoid",
+              "regular_polygon",
+              "circle_center_radius",
+              "circumcircle",
+              "incircle",
+              "circle_three_points",
+              "arc",
+              "equal_segments_mark",
+              "equal_angles_mark",
+              "right_angle_mark",
+              "angle_label",
+              "length_label",
+              "hatch_region",
+              "dashed_style",
+              "point_label",
+              "line_label"
+            ]
+          },
+          "id": {
+            "type": "string", "minLength": 1, "maxLength": 64,
+            "description": "Уникальный идентификатор объекта в рамках чертежа"
+          },
+          "label": {
+            "type": "string", "maxLength": 32,
+            "description": "Отображаемая подпись (если отличается от id)"
+          },
+
+          "x": {"type": "number", "description": "Координата X (для free_point)"},
+          "y": {"type": "number", "description": "Координата Y (для free_point)"},
+
+          "p1": {"type": "string", "description": "Ссылка на id первой опорной точки"},
+          "p2": {"type": "string", "description": "Ссылка на id второй опорной точки"},
+          "p3": {"type": "string", "description": "Ссылка на id третьей опорной точки"},
+          "p4": {"type": "string", "description": "Ссылка на id четвёртой опорной точки"},
+
+          "line1": {"type": "string", "description": "Ссылка на id первой прямой (для пересечений)"},
+          "line2": {"type": "string", "description": "Ссылка на id второй прямой"},
+          "circle": {"type": "string", "description": "Ссылка на id окружности"},
+          "circle1": {"type": "string", "description": "Ссылка на id первой окружности"},
+          "circle2": {"type": "string", "description": "Ссылка на id второй окружности"},
+
+          "ratio": {
+            "type": "number", "minimum": 0.0, "maximum": 1.0,
+            "description": "Отношение для point_on_segment (0=A, 1=B)"
+          },
+
+          "center": {"type": "string", "description": "Ссылка на id центра окружности/многоугольника"},
+          "radius": {"type": "number", "exclusiveMinimum": 0.0, "description": "Радиус"},
+
+          "n": {
+            "type": "integer", "minimum": 3, "maximum": 36,
+            "description": "Число вершин правильного многоугольника"
+          },
+          "start_angle": {
+            "type": "number",
+            "description": "Начальный угол правильного многоугольника в градусах (по умолчанию 0)"
+          },
+
+          "side": {
+            "description": "Сторона подписи точки относительно самой точки",
+            "enum": ["top", "bottom", "left", "right", "top_left", "top_right", "bottom_left", "bottom_right", "auto"],
+            "default": "auto"
+          },
+
+          "angle_index": {
+            "type": "integer",
+            "description": "Номер выбора из двух решений (0 или 1) для пересечений"
+          },
+
+          "triangle_type": {
+            "description": "Уточнение вида треугольника",
+            "enum": ["arbitrary", "acute", "right", "isosceles", "equilateral"]
+          },
+
+          "quadrilateral_type": {
+            "description": "Уточнение вида четырёхугольника",
+            "enum": ["arbitrary", "parallelogram", "rectangle", "square", "rhombus", "trapezoid", "isosceles_trapezoid"]
+          },
+
+          "dashed": {
+            "type": "boolean",
+            "description": "Рисовать ли пунктиром",
+            "default": false
+          },
+
+          "origin": {"type": "string", "description": "Ссылка на id луча/прямой для line_extension"},
+          "direction": {
+            "description": "Направление продолжения",
+            "enum": ["forward", "backward", "both"]
+          },
+          "extend_by": {
+            "type": "number", "exclusiveMinimum": 0.0,
+            "description": "Длина продолжения в пикселях (относительных единицах)"
+          }
+        }
+      }
+    }
+  }
+}

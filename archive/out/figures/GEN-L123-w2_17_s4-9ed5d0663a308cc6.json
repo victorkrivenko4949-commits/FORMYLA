@@ -1,0 +1,100 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "general"
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "F",
+   "of": "CD"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "G",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "H",
+   "of": "AD"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "of": [
+    "AF",
+    "DE"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "of": [
+    "BF",
+    "CE"
+   ]
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AF"
+  },
+  {
+   "segment": "BF"
+  },
+  {
+   "segment": "CE"
+  },
+  {
+   "segment": "DE"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "segment": "EG",
+   "style": "soft"
+  },
+  {
+   "segment": "FH",
+   "style": "soft"
+  },
+  {
+   "polygon": "EQFP",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AE",
+    "EB"
+   ]
+  },
+  {
+   "equal": [
+    "CF",
+    "FD"
+   ]
+  }
+ ]
+}

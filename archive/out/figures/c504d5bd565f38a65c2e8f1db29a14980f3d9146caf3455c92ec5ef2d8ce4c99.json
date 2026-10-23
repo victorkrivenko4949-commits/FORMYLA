@@ -1,0 +1,63 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "B1",
+   "line1": "BI",
+   "line2": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "C1",
+   "line1": "CI",
+   "line2": "AB"
+  },
+  {
+   "type": "reflect_line",
+   "id": "A'",
+   "of": "A",
+   "over": "B1C1"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BB1"
+  },
+  {
+   "segment": "CC1"
+  },
+  {
+   "segment": "B1C1",
+   "style": "soft"
+  },
+  {
+   "segment": "AA'",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "60°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

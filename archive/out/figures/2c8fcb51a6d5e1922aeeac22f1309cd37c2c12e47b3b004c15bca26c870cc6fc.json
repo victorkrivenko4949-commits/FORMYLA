@@ -1,0 +1,128 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0.0,
+   "y": 0.0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 1.0,
+   "y": 1.4825609685127403
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 2.0,
+   "y": 0.0
+  },
+  {
+   "type": "circle",
+   "id": "wA",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "line_circle",
+   "id": "N",
+   "circle": "wA",
+   "line": "AC",
+   "pick": 1
+  },
+  {
+   "type": "circle",
+   "id": "wC",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "wC",
+   "line": "AC",
+   "pick": 0
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "ABM"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "CBN"
+  },
+  {
+   "type": "circle_circle",
+   "id": "K",
+   "circle1": "w1",
+   "circle2": "w2",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  },
+  {
+   "segment": "BM",
+   "style": "soft"
+  },
+  {
+   "segment": "BN",
+   "style": "soft"
+  },
+  {
+   "segment": "KA",
+   "style": "accent"
+  },
+  {
+   "segment": "KC",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "AN"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "MC"
+   ],
+   "ticks": 2
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "68°"
+  },
+  {
+   "angle": [
+    "A",
+    "K",
+    "C"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

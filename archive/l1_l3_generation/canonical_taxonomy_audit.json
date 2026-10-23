@@ -1,0 +1,19 @@
+{
+  "audit_timestamp": "2026-07-18T10:34:09.208800+00:00",
+  "file": "canonical_taxonomy.json",
+  "sha256": "115f4f7d811acb31894e1d638a4715abbe142e85cf4ab776f75057808953300f",
+  "invariants": {
+    "topics_count": 43,
+    "subtopics_count": 129,
+    "each_topic_has_exactly_3_subtopics": true,
+    "topic_ids_are_T001_through_T043": true,
+    "each_topic_has_S0_S1_S2": true,
+    "empty_topic_names": 0,
+    "empty_subtopic_names": 0,
+    "duplicate_topic_names": 0,
+    "duplicate_topic_ids": 0,
+    "duplicate_topic_subtopic_pairs": 0
+  },
+  "all_invariants_pass": true,
+  "status": "TAXONOMY_OK"
+}

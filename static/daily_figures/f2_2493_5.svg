@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500">
+<rect x="0" y="0" width="600" height="500" fill="#0F1729"/>
+<defs>
+  <style>
+    .label{font-family:Arial, Helvetica, sans-serif;font-size:14px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2px;stroke-linejoin:round}
+    .small{font-family:Arial, Helvetica, sans-serif;font-size:12px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2px;stroke-linejoin:round}
+  </style>
+</defs>
+<text x="280" y="24" class="label" font-size="18">Доска 6×6: 17 доминошек</text>
+<text x="280" y="43" class="small">каждая пара соседних клеток объединена одним домино</text>
+<rect x="100" y="60" width="360" height="360" fill="#18283F" stroke="#D9E5F5" stroke-width="1.8" rx="1"/>
+<g stroke="#73B6E6" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.8">
+  <path d="M160 60V420 M220 60V420 M280 60V420 M340 60V420 M400 60V420"/>
+  <path d="M100 120H460 M100 180H460 M100 240H460 M100 300H460 M100 360H460"/>
+</g>
+<g class="small">
+  <text x="130" y="48">1</text><text x="190" y="48">2</text><text x="250" y="48">3</text><text x="310" y="48">4</text><text x="370" y="48">5</text><text x="430" y="48">6</text>
+  <text x="82" y="90">1</text><text x="82" y="150">2</text><text x="82" y="210">3</text><text x="82" y="270">4</text><text x="82" y="330">5</text><text x="82" y="390">6</text>
+</g>
+<g fill="#294966" stroke="#D9E5F5" stroke-width="2" stroke-linejoin="round">
+  <rect x="100" y="300" width="60" height="120" rx="10"/>
+  <rect x="160" y="180" width="60" height="120" rx="10" fill="#315A77"/>
+  <rect x="160" y="300" width="60" height="120" rx="10"/>
+  <rect x="220" y="60" width="60" height="120" rx="10" fill="#315A77"/>
+  <rect x="220" y="180" width="60" height="120" rx="10"/>
+  <rect x="280" y="60" width="60" height="120" rx="10" fill="#315A77"/>
+  <rect x="220" y="300" width="60" height="120" rx="10" fill="#315A77"/>
+  <rect x="280" y="180" width="60" height="120" rx="10" fill="#315A77"/>
+  <rect x="280" y="300" width="60" height="120" rx="10"/>
+  <rect x="340" y="120" width="60" height="120" rx="10" fill="#315A77"/>
+  <rect x="400" y="60" width="60" height="120" rx="10"/>
+  <rect x="400" y="180" width="60" height="120" rx="10" fill="#315A77"/>
+  <rect x="340" y="180" width="60" height="120" rx="10"/>
+  <rect x="340" y="360" width="120" height="60" rx="10" fill="#315A77"/>
+  <rect x="100" y="60" width="60" height="120" rx="10" fill="#315A77"/>
+  <rect x="160" y="60" width="60" height="120" rx="10"/>
+  <rect x="100" y="180" width="60" height="120" rx="10" fill="#315A77"/>
+</g>
+<g fill="#5A2635" stroke="#FF6B6B" stroke-width="1.8">
+  <rect x="340" y="60" width="60" height="60"/>
+  <rect x="400" y="300" width="60" height="60"/>
+  <path d="M350 70L390 110 M390 70L350 110 M410 310L450 350 M450 310L410 350"/>
+</g>
+<g class="small">
+  <text x="370" y="90" fill="#FFD166">вырезана</text>
+  <text x="430" y="330" fill="#FFD166">вырезана</text>
+</g>
+<g fill="#EAF1FA">
+  <circle cx="130" cy="360" r="3.5"/><circle cx="190" cy="240" r="3.5"/><circle cx="190" cy="360" r="3.5"/><circle cx="250" cy="120" r="3.5"/><circle cx="250" cy="240" r="3.5"/><circle cx="310" cy="120" r="3.5"/><circle cx="250" cy="360" r="3.5"/><circle cx="310" cy="240" r="3.5"/><circle cx="310" cy="360" r="3.5"/><circle cx="370" cy="180" r="3.5"/><circle cx="430" cy="120" r="3.5"/><circle cx="430" cy="240" r="3.5"/><circle cx="370" cy="240" r="3.5"/><circle cx="400" cy="390" r="3.5"/><circle cx="130" cy="120" r="3.5"/><circle cx="190" cy="120" r="3.5"/><circle cx="130" cy="240" r="3.5"/>
+</g>
+<g transform="translate(485 125)">
+  <rect x="0" y="0" width="82" height="32" rx="8" fill="#294966" stroke="#D9E5F5" stroke-width="1.8"/>
+  <text x="41" y="16" class="small">домино</text>
+  <rect x="0" y="54" width="82" height="32" rx="8" fill="#5A2635" stroke="#FF6B6B" stroke-width="1.8"/>
+  <path d="M10 62L24 78 M24 62L10 78" stroke="#FF6B6B" stroke-width="1.5"/>
+  <text x="53" y="70" class="small">клетка</text>
+  <text x="41" y="112" class="label" font-size="18">17</text>
+  <text x="41" y="134" class="small">доминошек</text>
+</g>
+<text x="280" y="455" class="small">34 оставшиеся клетки полностью покрыты</text>
+</svg>

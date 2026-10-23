@@ -1,0 +1,86 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "reflect_point",
+   "id": "B",
+   "of": "A",
+   "over": "O"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 112
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "OC",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "34°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "T"
+   ],
+   "text": "56°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "point",
+   "id": "T",
+   "x": 0.5526,
+   "y": 1.3018,
+   "reason": "Точка T лежит на касательной к окружности в точке C (CT⊥OC); выбрана так, чтобы ∠ACT показывал искомый угол между AC и касательной."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CT",
+   "style": "accent"
+  }
+ ]
+}

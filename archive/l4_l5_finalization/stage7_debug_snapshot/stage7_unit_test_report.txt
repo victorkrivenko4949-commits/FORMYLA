@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Auto-generated unit tests for Stage 7 verification pipeline."""
+import json, sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+
+
+# === GOLDEN FIXTURE: known rejected candidate ===
+FIXTURE_CHECKPOINT = r)
+    # Use first rejected entry as fixture
+    if rejected:
+        first_key = list(rejected.keys())[0]
+        test_lines.append(json.dumps({first_key: rejected[first_key]}, indent=2, ensure_ascii=False))
+    test_lines.append(
+
+def test_checkpoint_loads():
+    data = json.loads(FIXTURE_CHECKPOINT)
+    assert len(data) > 0, "Fixture should have at least one entry"
+
+def test_all_conditions_present():
+    data = json.loads(FIXTURE_CHECKPOINT)
+    for slot_key, entry in data.items():
+        conditions = entry.get('conditions', {})
+        for cid in ["c01", "c02", "c03", "c04", "c05", "c06", "c07", "c08", "c09", "c10", "c11", "c12"]:
+            assert cid in conditions, f'{slot_key} missing condition {cid}'
+
+def test_condition_schema():
+    data = json.loads(FIXTURE_CHECKPOINT)
+    expected_keys = {"condition_id", "condition_name", "passed", "details", "confidence", "data"}
+    for slot_key, entry in data.items():
+        for cid, cond in entry.get('conditions', {}).items():
+            assert isinstance(cond, dict), f'{slot_key}/{cid} not a dict'
+            cond_keys = set(cond.keys())
+            missing = expected_keys - cond_keys
+            assert not missing, f'{slot_key}/{cid} missing keys: {missing}'
+
+def test_solver_b_not_called_no_arbiter_fallback():
+    data = json.loads(FIXTURE_CHECKPOINT)
+    for slot_key, entry in data.items():
+        conditions = entry.get('conditions', {})
+        c05 = conditions.get('c05_solver_b_answer')
+        c07 = conditions.get('c07_arbiter_answer')
+        if c05 is None and c07 is not None:
+            c07_data = c07.get('data', {})
+            data_str = json.dumps(c07_data)
+            sa_count = data_str.count('solver_a_answer')
+            sb_count = data_str.count('solver_b_answer')
+            if sa_count >= 2 and sb_count == 0:
+                print(f'WARN: {slot_key}: ARBITER data uses SOLVER_A when SOLVER_B not called')
+
+if __name__ == '__main__':
+    test_checkpoint_loads()
+    test_all_conditions_present()
+    test_condition_schema()
+    test_solver_b_not_called_no_arbiter_fallback()
+    print("All tests passed.")

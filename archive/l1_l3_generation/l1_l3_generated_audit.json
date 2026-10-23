@@ -1,0 +1,30 @@
+{
+  "pipeline_step": "generation_audit",
+  "timestamp": "2026-07-18T12:00:07.686433+00:00",
+  "started_at": "2026-07-18T10:49:01.805931+00:00",
+  "model": "deepseek-reasoner",
+  "tasks_per_slot": 5,
+  "total_slots": 384,
+  "completed_slots": 4,
+  "partial_slots": 0,
+  "failed_slots": 9,
+  "total_tasks_generated": 24,
+  "level_breakdown": {
+    "L1": 21,
+    "L2": 3,
+    "L3": 0
+  },
+  "grade_breakdown": {
+    "5": 24
+  },
+  "total_api_calls": 81,
+  "total_api_failures": 45,
+  "invariants": {
+    "smoke_test_passed": true,
+    "grid_loaded": true,
+    "all_slots_processed": false,
+    "no_circuit_breaker_trips": false,
+    "tasks_per_slot_achieved": false
+  },
+  "status": "GENERATION_FAIL"
+}

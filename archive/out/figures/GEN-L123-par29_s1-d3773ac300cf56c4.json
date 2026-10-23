@@ -1,0 +1,83 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AB",
+   "ratio": 0.36
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "BC",
+   "ratio": 0.9
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CD"
+  },
+  {
+   "segment": "DE"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "75°"
+  },
+  {
+   "angle": [
+    "B",
+    "D",
+    "E"
+   ],
+   "text": "30°"
+  },
+  {
+   "equal": [
+    "AD",
+    "BC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CD",
+    "DE"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "F",
+   "of": "A",
+   "over": "D",
+   "reason": "F — образ A при центральной симметрии относительно D, поэтому DF=AD=BC; дополнительные равные отрезки помогают в решении."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "DF",
+   "style": "dashed"
+  },
+  {
+   "segment": "AF",
+   "style": "dashed"
+  }
+ ]
+}

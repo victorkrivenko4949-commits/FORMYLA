@@ -1,0 +1,20 @@
+{
+  "id": 801985,
+  "task_text": "В треугольнике $ABC$ точки $D$, $E$, $F$ лежат на сторонах $BC$, $CA$, $AB$ соответственно. Отрезки $AD$, $BE$, $CF$ пересекаются в одной точке $O$. Известно, что площади треугольников $OAB$, $OBC$, $OCA$ равны $1$, $2$ и $3$ соответственно. Найдите площадь треугольника $DEF$.",
+  "solution": "Пусть $S_{ABC}=S$. Сумма площадей треугольников $OAB$, $OBC$, $OCA$ равна $1+2+3=6$, поэтому $S=6$.\n\nОбозначим $x=\\frac{S_{OBC}}{S}=\\frac{2}{6}=\\frac13$, $y=\\frac{S_{OCA}}{S}=\\frac{3}{6}=\\frac12$, $z=\\frac{S_{OAB}}{S}=\\frac16$.\n\nИз известного свойства (теорема Чевы в форме площадей) получаем отношения деления сторон:\n\\[\\frac{BD}{DC}=\\frac{z}{y}=\\frac{1/6}{1/2}=\\frac13,\\qquad \\frac{CE}{EA}=\\frac{x}{z}=\\frac{1/3}{1/6}=2,\\qquad \\frac{AF}{FB}=\\frac{y}{x}=\\frac{1/2}{1/3}=\\frac32.\\]\n\nВведём барицентрические координаты относительно треугольника $ABC$. Точка $D$ на $BC$ имеет координаты $\\bigl(0,\\frac{DC}{BC},\\frac{BD}{BC}\\bigr)=\\bigl(0,\\frac34,\\frac14\\bigr)$. Аналогично $E$ на $CA$: $\\bigl(\\frac{EA}{CA},0,\\frac{CE}{CA}\\bigr)=\\bigl(\\frac13,0,\\frac23\\bigr)$. $F$ на $AB$: $\\bigl(\\frac{FB}{AB},\\frac{AF}{AB},0\\bigr)=\\bigl(\\frac25,\\frac35,0\\bigr)$.\n\nПлощадь треугольника $DEF$ в барицентрических координатах равна $S\\cdot|\\det M|$, где $M$ — матрица, составленная из координат точек $D,E,F$:\n\\[M=\\begin{pmatrix}0 & \\frac34 & \\frac14\\\\ \\frac13 & 0 & \\frac23\\\\ \\frac25 & \\frac35 & 0\\end{pmatrix}.\\]\nВычислим определитель:\n\\[\\det M = 0\\cdot\\left(0\\cdot0-\\frac23\\cdot\\frac35\\right)-\\frac34\\left(\\frac13\\cdot0-\\frac23\\cdot\\frac25\\right)+\\frac14\\left(\\frac13\\cdot\\frac35-0\\cdot\\frac25\\right)=\\frac34\\cdot\\frac{4}{15}+\\frac14\\cdot\\frac15=\\frac{1}{5}+\\frac{1}{20}=\\frac14.\\]\nСледовательно, $S_{DEF}=S\\cdot\\frac14=6\\cdot\\frac14=\\frac32=1.5$.",
+  "correct_answer": "$1.5$ (или $\\frac32$)",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Барицентрические координаты и теорема Чевы в форме площадей",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.754,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:40:05.831058+00:00"
+}

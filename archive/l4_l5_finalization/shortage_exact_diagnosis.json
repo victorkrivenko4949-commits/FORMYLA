@@ -1,0 +1,51 @@
+{
+  "diagnosis_timestamp": "2026-07-18T22:42:00+03:00",
+  "pipeline_run": "selection_1080_20260718_175442",
+  "shortage_cell": {
+    "class_level": 8,
+    "target_level": "L3",
+    "canonical_cell_key": "(8, 'L3')",
+    "quota": 21,
+    "actual_selected": 20,
+    "shortage": 1
+  },
+  "shortage_cause": "The APPROVE candidate pool for cell (8, L3) had only 20 candidates total (fewer than quota of 21). The pipeline selected all 20 by ranking score; rank 21+ does not exist.",
+  "reserve_check": {
+    "class_8_L3_reserve_candidates": 0,
+    "all_L3_reserve_candidates_by_class": {
+      "7": 2,
+      "9": 2,
+      "10": 3,
+      "11": 4
+    },
+    "conclusion": "No reserve candidate available to fill shortage"
+  },
+  "recheck_check": {
+    "total_recheck": 3,
+    "recheck_ids": ["SEL1080-0963", "SEL1080-0976", "SEL1080-1011"],
+    "recheck_target_levels": ["L5", "L5", "L5"],
+    "recheck_in_shortage_cell": 0,
+    "conclusion": "No recheck task can fill the L3 shortage without violating level integrity"
+  },
+  "selected_cell_tasks_summary": {
+    "count": 20,
+    "topics_covered": [
+      {"topic": "Теория чисел", "count": 1},
+      {"topic": "Квадратные уравнения и Виет", "count": 3},
+      {"topic": "Неравенства и преобразования", "count": 2},
+      {"topic": "Системы и текстовые задачи", "count": 3},
+      {"topic": "Функции и графики", "count": 3},
+      {"topic": "Подобие и окружность", "count": 3},
+      {"topic": "Остатки и диофантовы задачи", "count": 2},
+      {"topic": "Комбинаторика и инварианты", "count": 3}
+    ],
+    "task_ids": [
+      "SEL1080-0336", "SEL1080-0457", "SEL1080-0458", "SEL1080-0459",
+      "SEL1080-0460", "SEL1080-0461", "SEL1080-0463", "SEL1080-0464",
+      "SEL1080-0465", "SEL1080-0466", "SEL1080-0467", "SEL1080-0468",
+      "SEL1080-0469", "SEL1080-0470", "SEL1080-0471", "SEL1080-0472",
+      "SEL1080-0473", "SEL1080-0475", "SEL1080-0476", "SEL1080-0477"
+    ]
+  },
+  "next_steps": "STEP 4 required: generate 1 missing task via DeepSeek Reasoner for cell (8, L3). Follow 12-point validation on generated candidate."
+}

@@ -1,0 +1,20 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0817",
+      "mode": "replace_bad",
+      "id": "10-D3-1-L7-g911",
+      "grade": 10,
+      "difficulty": 7,
+      "theme": "Стереометрия и векторы",
+      "subtopic": "Сечения",
+      "method_code": "D3",
+      "reasons": [
+        "simple_mod",
+        "short_solution_L7L8"
+      ],
+      "priority": 47,
+      "worker": 12
+    }
+  ]
+}

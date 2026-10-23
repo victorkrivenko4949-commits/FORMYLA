@@ -1,0 +1,78 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "reflect_line",
+   "id": "P",
+   "of": "A",
+   "over": "BC"
+  },
+  {
+   "type": "reflect_line",
+   "id": "Q",
+   "of": "A",
+   "over": "CD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AP",
+   "style": "soft"
+  },
+  {
+   "segment": "AQ",
+   "style": "soft"
+  },
+  {
+   "segment": "BP"
+  },
+  {
+   "segment": "PD"
+  },
+  {
+   "segment": "DQ"
+  },
+  {
+   "segment": "QB"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "D"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "BPD",
+   "reason": "Окружность через B, P и D; нужно показать, что Q также лежит на ней."
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "omega",
+   "style": "accent"
+  }
+ ]
+}

@@ -1,0 +1,162 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 10,
+   "y": 0
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "AB",
+   "ratio": 0.7
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "AB",
+   "ratio": 0.3
+  },
+  {
+   "type": "circle",
+   "id": "alpha",
+   "center": "A",
+   "through": "K"
+  },
+  {
+   "type": "circle",
+   "id": "beta",
+   "center": "B",
+   "through": "L"
+  },
+  {
+   "type": "circle_circle",
+   "id": "C",
+   "circle1": "alpha",
+   "circle2": "beta",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "D",
+   "circle1": "alpha",
+   "circle2": "beta",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "N",
+   "circle": "beta",
+   "line": "DK",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "alpha",
+   "line": "DL",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "circle": "alpha"
+  },
+  {
+   "circle": "beta"
+  },
+  {
+   "segment": "AB"
+  },
+  {
+   "polygon": "KLMN",
+   "style": "accent"
+  },
+  {
+   "segment": "DN",
+   "style": "soft"
+  },
+  {
+   "segment": "DM",
+   "style": "soft"
+  },
+  {
+   "segment": "KM",
+   "style": "dashed"
+  },
+  {
+   "segment": "LN",
+   "style": "dashed"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BC",
+   "style": "soft"
+  },
+  {
+   "segment": "CD",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AK",
+    "AC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BL",
+    "BC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC",
+   "reason": "Центр вписанной окружности треугольника ABC"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "ABC",
+   "reason": "Вписанная окружность для наглядности"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "KM",
+   "line2": "LN",
+   "reason": "Точка пересечения диагоналей KLMN"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
+   "style": "dashed"
+  },
+  {
+   "point": "I",
+   "style": "accent"
+  },
+  {
+   "point": "P",
+   "style": "accent"
+  }
+ ]
+}

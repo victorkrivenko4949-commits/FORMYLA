@@ -1,0 +1,511 @@
+{% extends "base.html" %}
+{% block title %}Тест — FORMYLA.net{% endblock %}
+
+{% block extra_css %}
+<style>
+.probe-wrap { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
+.probe-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; padding: 24px; }
+.probe-header { margin-bottom: 20px; }
+.probe-header h1 { margin: 0 0 6px; font-size: 20px; color: #e6ebf7; }
+.probe-header .sub { color: rgba(255,255,255,0.55); font-size: 14px; }
+.probe-progress { margin-bottom: 20px; font-size: 14px; color: rgba(255,255,255,0.65); }
+.progress-bar { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, #3ecf8e, #3ecf8e); border-radius: 3px; transition: width 0.3s; }
+
+.task-text { font-size: 16px; line-height: 1.6; margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); }
+.task-text .katex { font-size: 1.1em; }
+
+.answer-section { margin-bottom: 16px; }
+.answer-label { display: block; font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 6px; }
+.answer-input { width: 100%; padding: 10px 14px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; font-size: 15px; background: rgba(0,0,0,0.25); color: #E6EBF7; box-sizing: border-box; }
+.answer-input:focus { outline: none; border-color: rgba(99,102,241,0.6); box-shadow: 0 0 0 2px rgba(99,102,241,0.15); }
+textarea.answer-input { resize: vertical; min-height: 100px; font-family: inherit; }
+
+/* D9: Как решал toggle */
+.solution-method-tabs { display: flex; gap: 0; margin-bottom: 12px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.12); }
+.solution-method-tab { flex: 1; padding: 10px 16px; text-align: center; cursor: pointer; background: rgba(0,0,0,0.2); color: rgba(255,255,255,0.5); font-size: 14px; font-weight: 600; transition: all 0.2s; border: none; }
+.solution-method-tab.active { background: rgba(99,102,241,0.2); color: #8c9abc; border-bottom: 2px solid #4c7dff; }
+.solution-method-tab:hover { background: rgba(99,102,241,0.1); }
+.solution-method-body { min-height: 120px; }
+.solution-method-body textarea.solution-textarea { width: 100%; min-height: 140px; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; font-size: 15px; background: rgba(0,0,0,0.25); color: #E6EBF7; box-sizing: border-box; resize: vertical; font-family: inherit; line-height: 1.6; }
+.solution-method-body textarea.solution-textarea:focus { outline: none; border-color: rgba(99,102,241,0.6); box-shadow: 0 0 0 2px rgba(99,102,241,0.15); }
+.photo-upload-area { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; border: 2px dashed rgba(255,255,255,0.15); border-radius: 10px; cursor: pointer; transition: border-color 0.2s; background: rgba(0,0,0,0.15); }
+.photo-upload-area:hover { border-color: rgba(99,102,241,0.5); }
+.photo-upload-area.has-photo { border-style: solid; border-color: rgba(56,239,125,0.3); background: rgba(56,239,125,0.05); }
+.photo-upload-icon { font-size: 32px; margin-bottom: 8px; }
+.photo-upload-text { font-size: 14px; color: rgba(255,255,255,0.5); }
+.photo-preview { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 8px; }
+.photo-remove-btn { margin-top: 8px; padding: 4px 12px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; color: #e86a62; font-size: 12px; cursor: pointer; }
+
+.submit-btn { display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #4c7dff, #6b95ff); color: #E6EBF7; font-weight: 700; font-size: 15px; border: none; border-radius: 12px; cursor: pointer; transition: all 0.25s ease; }
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(99,102,241,0.3); }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.next-btn { display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #3ecf8e, #3ecf8e); color: #070c18; font-weight: 700; font-size: 15px; border: none; border-radius: 12px; cursor: pointer; transition: all 0.25s ease; text-decoration: none; }
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(56,239,125,0.3); }
+
+.verdict-section { margin: 16px 0; padding: 16px; border-radius: 10px; }
+.verdict-correct { background: rgba(56,239,125,0.10); border: 1px solid rgba(56,239,125,0.25); }
+.verdict-partial { background: rgba(245,158,11,0.10); border: 1px solid rgba(245,158,11,0.25); }
+.verdict-wrong { background: rgba(239,68,68,0.10); border: 1px solid rgba(239,68,68,0.25); }
+
+.verdict-text { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.verdict-correct .verdict-text { color: #3ecf8e; }
+.verdict-partial .verdict-text { color: #e5ac3a; }
+.verdict-wrong .verdict-text { color: #e86a62; }
+
+.verdict-explain { font-size: 14px; color: rgba(255,255,255,0.7); }
+
+.final-card { text-align: center; padding: 32px; }
+.final-card .big-number { font-size: 48px; font-weight: 800; color: #3ecf8e; }
+.final-card .comparison { margin: 12px 0; font-size: 14px; color: rgba(255,255,255,0.55); }
+.final-card .action-row { margin-top: 24px; }
+
+.error-msg { padding: 16px; background: rgba(239,68,68,0.10); border: 1px solid rgba(239,68,68,0.25); border-radius: 10px; color: #e86a62; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="probe-wrap">
+{% if error %}
+  <div class="probe-card">
+    <div class="error-msg">{{ error }}</div>
+    <div style="margin-top:16px; text-align:center;">
+      <a href="/daily_tasks" class="next-btn">Перейти к задачам дня</a>
+    </div>
+  </div>
+
+{% elif done %}
+  <!-- ── Итог среза ── -->
+  <div class="probe-card final-card">
+    <h1>✅ Тест завершён</h1>
+    <p style="color:rgba(255,255,255,0.65);">{{ theme_title }} &middot; {{ section }}</p>
+    <div class="big-number">{{ "%.1f"|format(final_mu) }}</div>
+    <p style="color:rgba(255,255,255,0.55);">уровень подтемы</p>
+    {% if previous_mu is not none %}
+    <div class="comparison">
+      {% set diff = final_mu - previous_mu %}
+      {% if diff > 0.1 %}
+        Повышение с {{ "%.1f"|format(previous_mu) }} -> {{ "%.1f"|format(final_mu) }}
+        <span style="color:#3ecf8e;">▲ +{{ "%.1f"|format(diff) }}</span>
+      {% elif diff < -0.1 %}
+        Снижение с {{ "%.1f"|format(previous_mu) }} -> {{ "%.1f"|format(final_mu) }}
+        <span style="color:#e86a62;">▼ {{ "%.1f"|format(diff) }}</span>
+      {% else %}
+        Без изменений: было {{ "%.1f"|format(previous_mu) }}
+      {% endif %}
+    </div>
+    {% endif %}
+    <div class="action-row">
+      <a href="/daily_tasks" class="next-btn">Перейти к задачам дня</a>
+    </div>
+  </div>
+
+{% else %}
+  <!-- ── Активная задача ── -->
+  <div class="probe-card">
+    <div class="probe-header">
+      <h1>🌅 Тест</h1>
+      <div class="sub">{{ theme_title }} &middot; {{ section }}</div>
+    </div>
+    <div class="probe-progress">
+      Задача {{ current_index + 1 }} из {{ total }}
+      {% set shown_level = task.difficulty_level if task and task.difficulty_level is defined and task.difficulty_level else current_level %}
+      <span class="level-badge" id="levelBadge" style="margin-left:8px;">уровень {{ shown_level }}</span>
+      <div class="progress-bar">
+        <div class="progress-bar-fill" style="width: {{ (current_index / total * 100)|int }}%;"></div>
+      </div>
+    </div>
+
+    <div class="task-text" id="taskText">
+      {{ task.task_text|safe if task else '' }}
+    </div>
+
+    <div id="auxFigureBlock" style="display:none; margin: 16px 0; padding: 16px; background: rgba(76,125,255,0.05); border: 1px solid rgba(76,125,255,0.15); border-radius: 10px;">
+      <div style="font-size:13px; color:rgba(255,255,255,0.55); margin-bottom:8px;">Чертёж с построением:</div>
+      <div id="auxFigureSvg" style="background:#E6EBF7; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; min-height:100px;"></div>
+    </div>
+
+    <div id="verdictBlock" style="display:none;">
+      <div class="verdict-section" id="verdictEl">
+        <div class="verdict-text" id="verdictText"></div>
+        <!-- Чертёж к задаче (НАД решением) -->
+        <div id="solutionFigureBlock" style="display:none; margin: 16px 0; padding: 16px; background: rgba(76,125,255,0.05); border: 1px solid rgba(76,125,255,0.15); border-radius: 10px;">
+          <div style="font-size:13px; color:rgba(255,255,255,0.55); margin-bottom:8px;">Чертёж к задаче:</div>
+          <div id="solutionFigureSvg" style="background:#E6EBF7; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; min-height:100px;"></div>
+        </div>
+        <div class="verdict-explain" id="verdictExplain"></div>
+      </div>
+      <!-- Дополнительный разбор решения (без указания модели ИИ) -->
+      <div id="kimiReviewBlock" style="display:none; margin: 16px 0; padding: 14px; background: rgba(76,125,255,0.05); border: 1px solid rgba(76,125,255,0.15); border-radius: 10px;">
+        <div style="font-size:13px; color:rgba(255,255,255,0.55); margin-bottom:6px;">Дополнительный разбор:</div>
+        <div id="kimiReviewLabel" style="font-size:15px; font-weight:600; color:#8c9abc; margin-bottom:6px;"></div>
+        <div id="kimiReviewText" style="font-size:14px; color:rgba(255,255,255,0.7); line-height:1.5;"></div>
+      </div>
+      <div style="text-align:center; margin-top:16px;">
+        <button class="next-btn" id="nextBtn" onclick="goNext()">Дальше -></button>
+      </div>
+    </div>
+
+    <div id="inputBlock">
+      <div class="answer-section" id="answerSection">
+        <label class="answer-label" for="userAnswer">Ваш ответ:</label>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="text" id="userAnswer" class="answer-input" data-kb data-kb-label="Ответ"
+                 placeholder="Введите краткий ответ (число, выражение)"
+                 autocomplete="off" style="flex:1;">
+          <button type="button" class="kb-field-btn" data-kb-target="userAnswer" onclick="openKbFor('userAnswer')" title="Открыть клавиатуру">⌨️</button>
+        </div>
+      </div>
+
+      <!-- D9: Как решал — обязательный блок -->
+      <div class="answer-section">
+        <label class="answer-label" style="display:flex; align-items:center; gap:8px;">
+          <span>Как решал:</span>
+          <button type="button" class="kb-field-btn" data-kb-target="solutionText" onclick="openKbFor('solutionText')" title="Открыть клавиатуру" style="font-size:13px;min-width:32px;height:30px;">⌨️</button>
+        </label>
+        <div class="solution-method-tabs">
+          <button class="solution-method-tab active" type="button" onclick="switchSolutionMethod('text')" id="tabText">
+             Текстом
+          </button>
+          <button class="solution-method-tab" type="button" onclick="switchSolutionMethod('photo')" id="tabPhoto">
+             Фотографией
+          </button>
+        </div>
+        <div class="solution-method-body" id="methodBodyText">
+          <textarea id="solutionText" class="solution-textarea" data-kb data-kb-label="Решение"
+                    placeholder="Опишите ход решения по шагам (минимум 30 символов)..."
+                    rows="5"></textarea>
+          <div id="solutionTextCounter" style="text-align:right;font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px;">0 / 30 символов</div>
+        </div>
+        <div class="solution-method-body" id="methodBodyPhoto" style="display:none;">
+          <label class="photo-upload-area" id="photoDropArea" for="photoInput" style="cursor:pointer;">
+            <div class="photo-upload-icon"></div>
+            <div class="photo-upload-text">Можете прикрепить фото из тетрадки — ИИ-тьютор его распознает<br><small>Нажмите, перетащите или вставьте из буфера (Ctrl+V) · jpg, png, heic — до 12 МБ</small></div>
+            <img id="photoPreviewImg" class="photo-preview" style="display:none;" alt="preview">
+            <button type="button" class="photo-remove-btn" id="photoRemoveBtn" style="display:none;" onclick="event.preventDefault();event.stopPropagation();removePhoto()"> Удалить фото</button>
+          </label>
+          <input type="file" id="photoInput" accept="image/*,.heic,.heif" style="display:none;" onchange="handlePhotoSelect(this)">
+        </div>
+      </div>
+
+      <button class="submit-btn" id="submitBtn" onclick="submitAnswer()" style="width:100%;">
+        Отправить решение
+      </button>
+    </div>
+  </div>
+{% endif %}
+</div>
+
+<script>
+let taskId = {{ task.id if task else 0 }};
+let taskIndex = {{ current_index if current_index is defined else 0 }};
+let totalTasks = {{ total if total is defined else 5 }};
+let taskText = {{ (task.task_text if task else '')|tojson }};
+let currentMethod = 'text';
+let selectedPhotoFile = null;
+
+function switchSolutionMethod(method) {
+  currentMethod = method;
+  document.getElementById('tabText').classList.toggle('active', method === 'text');
+  document.getElementById('tabPhoto').classList.toggle('active', method === 'photo');
+  document.getElementById('methodBodyText').style.display = method === 'text' ? 'block' : 'none';
+  document.getElementById('methodBodyPhoto').style.display = method === 'photo' ? 'block' : 'none';
+}
+
+// Drag & drop + предотвращение открытия файла в новой вкладке браузера.
+(function () {
+  const drop = document.getElementById('photoDropArea');
+  if (!drop) return;
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      drop.classList.add('has-photo');
+    });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      drop.classList.remove('has-photo');
+    });
+  });
+  drop.addEventListener('drop', function (e) {
+    const files = e.dataTransfer && e.dataTransfer.files;
+    if (files && files.length) {
+      const input = document.getElementById('photoInput');
+      // Передаём файл напрямую в обработчик, минуя input.
+      handlePhotoFile(files[0]);
+    }
+  });
+})();
+
+function handlePhotoSelect(input) {
+  const file = input.files[0];
+  handlePhotoFile(file);
+}
+
+function _photoExt(file) {
+  // Расширение из имени файла, а если имени нет (вставка из буфера обмена
+  // даёт File с пустым name) — определяем по MIME-типу.
+  if (file.name) {
+    const e = (file.name.split('.').pop() || '').toLowerCase();
+    if (e) return e;
+  }
+  const type = (file.type || '').toLowerCase();
+  if (type.includes('png')) return 'png';
+  if (type.includes('jpg') || type.includes('jpeg')) return 'jpg';
+  if (type.includes('heic') || type.includes('heif')) return 'heic';
+  return '';
+}
+
+function handlePhotoFile(file) {
+  if (!file) return;
+  if (file.size > 12 * 1024 * 1024) {
+    alert('Размер фотографии превышает 12 МБ.');
+    return;
+  }
+  const ext = _photoExt(file);
+  if (!['jpg','jpeg','png','heic','heif'].includes(ext)) {
+    alert('Неподдерживаемый формат. Принимаются jpg, png, heic.');
+    return;
+  }
+  selectedPhotoFile = file;
+  // Show preview
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = document.getElementById('photoPreviewImg');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('photoDropArea').classList.add('has-photo');
+    document.getElementById('photoRemoveBtn').style.display = 'inline-block';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Вставка фото из буфера обмена (Ctrl+V) ──────────────────────────────
+document.addEventListener('paste', function (e) {
+  // Работает всегда, даже если вкладка «Фотографией» не активна:
+  // при вставке картинки автоматически переключаемся на фото-режим.
+  const items = (e.clipboardData && e.clipboardData.items) || [];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.kind === 'file' && item.type && item.type.indexOf('image/') === 0) {
+      const file = item.getAsFile();
+      if (file) {
+        e.preventDefault();
+        switchSolutionMethod('photo');
+        handlePhotoFile(file);
+        return;
+      }
+    }
+  }
+});
+
+function removePhoto() {
+  selectedPhotoFile = null;
+  document.getElementById('photoInput').value = '';
+  document.getElementById('photoPreviewImg').style.display = 'none';
+  document.getElementById('photoDropArea').classList.remove('has-photo');
+  document.getElementById('photoRemoveBtn').style.display = 'none';
+}
+
+function isProofTask() {
+  const t = (taskText || '').toLowerCase();
+  return (
+    t.indexOf('докажите') !== -1 ||
+    t.indexOf('доказать') !== -1 ||
+    t.indexOf('покажите, что') !== -1 ||
+    t.indexOf('покажите что') !== -1 ||
+    t.indexOf('обоснуйте') !== -1
+  );
+}
+
+function initProofUi() {
+  if (!isProofTask()) return;
+  // В задачах на доказательство краткий ответ не требуется.
+  const sec = document.getElementById('answerSection');
+  if (sec) sec.style.display = 'none';
+  const ansInput = document.getElementById('userAnswer');
+  if (ansInput) ansInput.value = '';
+}
+
+async function submitAnswer() {
+  const answerInput = document.getElementById('userAnswer');
+  const answer = answerInput ? answerInput.value.trim() : '';
+
+  if (!isProofTask() && !answer) {
+    alert('Введи ответ.');
+    return;
+  }
+
+  // Validate solution
+  if (currentMethod === 'text') {
+    const solutionText = document.getElementById('solutionText').value.trim();
+    if (solutionText.length < 30) {
+      alert('Текстовое решение должно содержать минимум 30 символов. Опишите ход решения подробнее.');
+      return;
+    }
+  } else if (currentMethod === 'photo') {
+    if (!selectedPhotoFile) {
+      alert('Прикрепите фотографию решения.');
+      return;
+    }
+  }
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Проверяем...';
+
+  try {
+    let resp;
+    if (currentMethod === 'text') {
+      const solutionText = document.getElementById('solutionText').value.trim();
+      resp = await fetch('{{ url_for("prep.prep_answer") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          task_id: taskId,
+          answer: answer,
+          solution_method: 'text',
+          solution_text: solutionText
+        })
+      });
+    } else {
+      const formData = new FormData();
+      formData.append('task_id', taskId);
+      formData.append('answer', answer);
+      formData.append('solution_method', 'photo');
+      formData.append('solution_photo', selectedPhotoFile);
+      resp = await fetch('{{ url_for("prep.prep_answer") }}', {
+        method: 'POST',
+        body: formData
+      });
+    }
+
+    if (resp.status === 400) {
+      const errData = await resp.json();
+      alert(errData.error || 'Ошибка: заполните решение.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Отправить решение';
+      return;
+    }
+
+    const data = await resp.json();
+
+    // Сервер ответил ошибкой — показываем её, а не молчаливое «Неверно»
+    if (!resp.ok || data.error) {
+      alert(data.error || 'Ошибка проверки. Попробуй ещё раз.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Отправить решение';
+      return;
+    }
+
+    // Show verdict from AI
+    const verdictBlock = document.getElementById('verdictBlock');
+    const inputBlock = document.getElementById('inputBlock');
+    const verdictText = document.getElementById('verdictText');
+    const verdictExplain = document.getElementById('verdictExplain');
+    const verdictEl = document.getElementById('verdictEl');
+
+    const ai = data.ai_feedback || {};
+    const verdict = ai.verdict || 'wrong';
+
+    verdictEl.className = 'verdict-section verdict-' + verdict;
+    if (verdict === 'correct') {
+      verdictText.textContent = ' Верно!';
+    } else if (verdict === 'partial') {
+      verdictText.textContent = '≈ Частично верно';
+    } else {
+      verdictText.textContent = ' Неверно';
+    }
+
+    let explainHtml = ai.message || '';
+    if (ai.checking_model) {
+      explainHtml += '<br><br> <strong>Модель проверки:</strong> ' + ai.checking_model;
+    }
+    if (ai.correct_answer) {
+      explainHtml += '<br><br> <strong>Правильный ответ:</strong> ' + ai.correct_answer;
+    }
+    if (ai.solution) {
+      explainHtml += '<br><br> <strong>Решение:</strong><br>' + ai.solution;
+    }
+    if (ai.hint && verdict !== 'correct') {
+      explainHtml += '<br><br> <strong>Подсказка:</strong> ' + ai.hint;
+    }
+    verdictExplain.innerHTML = explainHtml;
+
+    // Рендерим LaTeX (корни, дроби, степени) через KaTeX в разборе решения.
+    if (typeof reRenderMath === 'function') {
+      try { reRenderMath(verdictExplain); } catch(e) { console.warn('reRenderMath error', e); }
+    }
+
+    inputBlock.style.display = 'none';
+    verdictBlock.style.display = 'block';
+
+    // CH8: show aux figure if available after answer
+    if (data.has_aux && data.aux_svg_path) {
+      const auxDiv = document.getElementById('auxFigureBlock');
+      const auxSvg = document.getElementById('auxFigureSvg');
+      if (auxDiv && auxSvg) {
+        auxSvg.innerHTML = data.aux_svg_path;
+        auxDiv.style.display = 'block';
+      }
+    }
+
+    // Чертёж к задаче — показываем ПОСЛЕ отправки решения (в разборе).
+    if (data.figure_svg) {
+      const figDiv = document.getElementById('solutionFigureBlock');
+      const figSvg = document.getElementById('solutionFigureSvg');
+      if (figDiv && figSvg) {
+        figSvg.innerHTML = data.figure_svg;
+        figDiv.style.display = 'block';
+      }
+    }
+
+    // CH10: show Kimi review if available
+    if (data.kimi_review) {
+      const krBlock = document.getElementById('kimiReviewBlock');
+      const krLabel = document.getElementById('kimiReviewLabel');
+      const krText = document.getElementById('kimiReviewText');
+      if (krBlock && krLabel && krText) {
+        if (data.kimi_review.label) {
+          krLabel.textContent = 'Метка: ' + data.kimi_review.label;
+        } else {
+          krLabel.textContent = '';
+        }
+        if (data.kimi_review.raw_response) {
+          krText.textContent = data.kimi_review.raw_response;
+        }
+        krBlock.style.display = 'block';
+      }
+    }
+
+    // Показать новый текущий уровень после ответа (если пришёл от сервера).
+    if (data.current_level != null) {
+      const lb = document.getElementById('levelBadge');
+      if (lb) lb.textContent = 'уровень ' + data.current_level;
+    }
+
+    if (data.done) {
+      document.getElementById('nextBtn').textContent = 'Смотреть итог ->';
+    }
+
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Отправить решение';
+  }
+}
+
+function goNext() {
+  // Reload page — backend will handle next task or final screen
+  window.location.reload();
+}
+
+// Скрыть поле ответа для задач на доказательство.
+initProofUi();
+</script>
+{% include 'partials/math_keyboard.html' %}
+{% endblock %}

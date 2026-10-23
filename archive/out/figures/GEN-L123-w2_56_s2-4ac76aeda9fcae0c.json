@@ -1,0 +1,114 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 20
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 50
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "w",
+   "angle": 90
+  }
+ ],
+ "draw": [
+  {
+   "segment": "OA"
+  },
+  {
+   "segment": "OB"
+  },
+  {
+   "segment": "OC"
+  },
+  {
+   "segment": "OD"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "O",
+    "B"
+   ],
+   "text": "20°"
+  },
+  {
+   "angle": [
+    "B",
+    "O",
+    "C"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "C",
+    "O",
+    "D"
+   ],
+   "text": "40°"
+  },
+  {
+   "angle": [
+    "M",
+    "O",
+    "N"
+   ],
+   "text": "60°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "point_on_circle",
+   "id": "M",
+   "circle": "w",
+   "angle": 10,
+   "reason": "биссектриса угла AOB"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "N",
+   "circle": "w",
+   "angle": 70,
+   "reason": "биссектриса угла COD"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "OM",
+   "style": "accent"
+  },
+  {
+   "segment": "ON",
+   "style": "accent"
+  }
+ ]
+}

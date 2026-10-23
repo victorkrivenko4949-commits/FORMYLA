@@ -1,0 +1,9 @@
+=== PATH A: routes/prep.py:2566 (chat curator) ===
+Fields (9): ['daily_tasks', 'days_left', 'deadline_bucket', 'deadline_date', 'grade', 'olymp_reach', 'prior_mu', 'prior_sigma', 'target_level']
+
+=== PATH B: services/onboarding.py:885 (tree) ===
+Fields (14): ['anchors', 'conflict', 'daily_tasks', 'days_left', 'deadline_bucket', 'deadline_date', 'grade', 'olymp_reach', 'prior_mu', 'prior_sigma', 'route_ceiling', 'start_level', 'target_level', 'test_length']
+
+IDENTICAL: False
+Count A=9, Count B=14
+Both have 17 fields: False

@@ -1,0 +1,309 @@
+/* Daily Quest — FORMYLA.net Design System v3 */
+
+:root {
+    --daily-neon: #38ef7d;
+    --daily-teal: #11998e;
+    --daily-flame: #f97316;
+}
+
+.daily-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ── Hero ── */
+.daily-hero {
+    background: linear-gradient(135deg,
+                rgba(17,153,142,0.15),
+                rgba(56,239,125,0.15));
+    border: 1px solid rgba(56,239,125,0.3);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(56,239,125,0.1);
+}
+
+.streak-flame {
+    font-size: 64px;
+    display: block;
+    animation: flame-flicker 2s ease-in-out infinite alternate;
+}
+
+@keyframes flame-flicker {
+    0%   { filter: drop-shadow(0 0 10px #f97316); transform: scale(1); }
+    100% { filter: drop-shadow(0 0 25px #fbbf24); transform: scale(1.05); }
+}
+
+.streak-number {
+    font-size: 72px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--daily-teal), var(--daily-neon));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: 1;
+    margin: 8px 0;
+    display: block;
+}
+
+.streak-label {
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    display: block;
+}
+
+.streak-meta {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.freeze-badge,
+.longest-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(20,30,45,0.6);
+    border: 1px solid rgba(56,239,125,0.2);
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+}
+
+/* ── AI-интро ── */
+.ai-intro-card {
+    display: flex;
+    gap: 16px;
+    background: rgba(20,30,45,0.7);
+    border-left: 4px solid var(--daily-neon);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.ai-avatar {
+    font-size: 40px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.ai-text h3 {
+    color: var(--daily-neon);
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 14px;
+}
+
+.ai-body {
+    margin: 0;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.85);
+    font-size: 15px;
+}
+
+.ai-body strong { color: var(--daily-neon); }
+.ai-body p { margin: 0 0 8px 0; }
+.ai-body p:last-child { margin-bottom: 0; }
+
+/* ── Прогресс ── */
+.progress-section {
+    padding: 4px 0;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+}
+
+.progress-bar {
+    height: 8px;
+    background: rgba(20,30,45,0.8);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--daily-teal), var(--daily-neon));
+    box-shadow: 0 0 12px rgba(56,239,125,0.5);
+    transition: width 0.6s ease;
+    border-radius: 4px;
+}
+
+/* ── Сетка задач ── */
+.tasks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.task-card {
+    background: rgba(20,30,45,0.7);
+    border: 1px solid rgba(56,239,125,0.15);
+    border-radius: 14px;
+    padding: 20px 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    transition: all 0.25s ease;
+}
+
+.task-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(56,239,125,0.15);
+    border-color: rgba(56,239,125,0.4);
+}
+
+.task-card.current {
+    border-color: var(--daily-neon);
+    box-shadow: 0 0 20px rgba(56,239,125,0.3);
+    animation: pulse-current 2s ease-in-out infinite;
+}
+
+@keyframes pulse-current {
+    0%, 100% { box-shadow: 0 0 20px rgba(56,239,125,0.3); }
+    50%       { box-shadow: 0 0 35px rgba(56,239,125,0.5); }
+}
+
+.task-card.done {
+    opacity: 0.7;
+    border-color: var(--daily-teal);
+}
+
+.task-card.locked {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.task-number {
+    position: absolute;
+    top: -14px;
+    left: 20px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--daily-teal), var(--daily-neon));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 15px;
+    color: #000;
+    box-shadow: 0 0 12px rgba(56,239,125,0.4);
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.task-topic {
+    color: var(--daily-neon);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.task-level {
+    color: #fbbf24;
+    letter-spacing: -1px;
+    font-size: 13px;
+}
+
+.task-preview {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.75);
+    min-height: 56px;
+    flex: 1;
+}
+
+.task-action {
+    margin-top: auto;
+}
+
+.btn-start {
+    display: inline-block;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, var(--daily-teal), var(--daily-neon));
+    color: #000;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(56,239,125,0.4);
+    color: #000;
+    text-decoration: none;
+}
+
+.status-done {
+    color: var(--daily-teal);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.status-locked {
+    color: rgba(255,255,255,0.4);
+    font-size: 14px;
+}
+
+/* ── Награды ── */
+.rewards-card {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    align-items: center;
+    background: rgba(20,30,45,0.5);
+    border: 1px solid rgba(56,239,125,0.1);
+    border-radius: 12px;
+    padding: 16px 24px;
+    flex-wrap: wrap;
+}
+
+.reward-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255,255,255,0.85);
+    font-size: 15px;
+}
+
+.reward-item strong {
+    color: var(--daily-neon);
+}
+
+.reward-icon {
+    font-size: 22px;
+}
+
+/* ── Мобильный ── */
+@media (max-width: 768px) {
+    .daily-container { padding: 16px; gap: 16px; }
+    .streak-number   { font-size: 56px; }
+    .streak-flame    { font-size: 48px; }
+    .tasks-grid      { grid-template-columns: 1fr; }
+    .rewards-card    { flex-direction: column; gap: 12px; }
+    .ai-intro-card   { flex-direction: column; gap: 12px; }
+}

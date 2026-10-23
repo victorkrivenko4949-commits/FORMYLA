@@ -1,0 +1,82 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "intersection",
+   "id": "S",
+   "line1": "AC",
+   "line2": "BD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "C",
+    "A",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "C",
+    "S"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "D",
+    "B"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "C",
+    "D",
+    "B"
+   ],
+   "text": "2α"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BS",
+   "reason": "M — середина BS; в прямоугольном треугольнике BCS медиана CM равна половине гипотенузы BS, то есть CM=CD."
+  }
+ ],
+ "draw_aux": [
+  {
+   "polygon": "BCS",
+   "style": "soft"
+  },
+  {
+   "segment": "BS",
+   "style": "dashed"
+  },
+  {
+   "segment": "CM",
+   "style": "accent"
+  }
+ ]
+}

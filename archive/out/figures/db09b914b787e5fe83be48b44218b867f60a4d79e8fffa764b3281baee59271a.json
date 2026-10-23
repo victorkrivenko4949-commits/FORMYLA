@@ -1,0 +1,94 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "A1",
+   "of": "BC",
+   "ratio": 0.5556
+  },
+  {
+   "type": "point_on_segment",
+   "id": "C1",
+   "of": "AC",
+   "ratio": 0.5556
+  },
+  {
+   "type": "point_on_segment",
+   "id": "A2",
+   "of": "A1C",
+   "ratio": 0.5556
+  },
+  {
+   "type": "point_on_segment",
+   "id": "C2",
+   "of": "C1C",
+   "ratio": 0.5556
+  },
+  {
+   "type": "point_on_segment",
+   "id": "A3",
+   "of": "A2C",
+   "ratio": 0.5556
+  },
+  {
+   "type": "point_on_segment",
+   "id": "C3",
+   "of": "C2C",
+   "ratio": 0.5556
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AA1",
+   "style": "soft"
+  },
+  {
+   "segment": "A1C1",
+   "style": "soft"
+  },
+  {
+   "segment": "C1A2",
+   "style": "soft"
+  },
+  {
+   "segment": "A2C2",
+   "style": "soft"
+  },
+  {
+   "segment": "C2A3",
+   "style": "soft"
+  },
+  {
+   "segment": "A3C3",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "A1"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "C",
+    "A",
+    "A1"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

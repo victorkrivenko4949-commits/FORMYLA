@@ -1,0 +1,1646 @@
+{
+  "meta": {
+    "description": "Stage 7 C10/C12 re-audit against canonical taxonomy",
+    "total_rejected": 30
+  },
+  "category_summary": {
+    "c10_false_rejection": 30
+  },
+  "c10_false_rejection_details": [
+    {
+      "slot_key": "G10|L5|T028|S0",
+      "expected": "Тригонометрия",
+      "canonical": "Стереометрия: аксиомы и прямые",
+      "classifier": "геометрия"
+    },
+    {
+      "slot_key": "G10|L4|T013|S1",
+      "expected": "Теория чисел",
+      "canonical": "Неравенства: показательные и логарифмические",
+      "classifier": "неравенства"
+    },
+    {
+      "slot_key": "G10|L5|T028|S1",
+      "expected": "Тригонометрия",
+      "canonical": "Стереометрия: аксиомы и прямые",
+      "classifier": "стереометрия"
+    },
+    {
+      "slot_key": "G10|L4|T013|S2",
+      "expected": "Теория чисел",
+      "canonical": "Неравенства: показательные и логарифмические",
+      "classifier": "логарифмические неравенства"
+    },
+    {
+      "slot_key": "G10|L4|T013|S0",
+      "expected": "Теория чисел",
+      "canonical": "Неравенства: показательные и логарифмические",
+      "classifier": "логарифмические неравенства"
+    },
+    {
+      "slot_key": "G10|L4|T039|S1",
+      "expected": "Теория чисел",
+      "canonical": "Уравнения: показательные и логарифмические",
+      "classifier": "логарифмические уравнения"
+    },
+    {
+      "slot_key": "G10|L4|T039|S0",
+      "expected": "Теория чисел",
+      "canonical": "Уравнения: показательные и логарифмические",
+      "classifier": "логарифмические уравнения"
+    },
+    {
+      "slot_key": "G10|L4|T039|S2",
+      "expected": "Теория чисел",
+      "canonical": "Уравнения: показательные и логарифмические",
+      "classifier": "логарифмы"
+    },
+    {
+      "slot_key": "G10|L5|T028|S2",
+      "expected": "Тригонометрия",
+      "canonical": "Стереометрия: аксиомы и прямые",
+      "classifier": "геометрия"
+    },
+    {
+      "slot_key": "G10|L4|T028|S0",
+      "expected": "Теория чисел",
+      "canonical": "Стереометрия: аксиомы и прямые",
+      "classifier": "геометрия"
+    },
+    {
+      "slot_key": "G10|L4|T028|S2",
+      "expected": "Теория чисел",
+      "canonical": "Стереометрия: аксиомы и прямые",
+      "classifier": "геометрия"
+    },
+    {
+      "slot_key": "G10|L4|T028|S1",
+      "expected": "Теория чисел",
+      "canonical": "Стереометрия: аксиомы и прямые",
+      "classifier": "геометрия"
+    },
+    {
+      "slot_key": "G10|L4|T014|S0",
+      "expected": "Теория чисел",
+      "canonical": "Неравенства: тригонометрические",
+      "classifier": "обратные тригонометрические функции"
+    },
+    {
+      "slot_key": "G10|L4|T014|S2",
+      "expected": "Теория чисел",
+      "canonical": "Неравенства: тригонометрические",
+      "classifier": "обратные тригонометрические функции"
+    },
+    {
+      "slot_key": "G10|L4|T014|S1",
+      "expected": "Теория чисел",
+      "canonical": "Неравенства: тригонометрические",
+      "classifier": "обратные тригонометрические функции"
+    },
+    {
+      "slot_key": "G10|L5|T029|S2",
+      "expected": "Тригонометрия",
+      "canonical": "Стереометрия: многогранники",
+      "classifier": "стереометрия"
+    },
+    {
+      "slot_key": "G10|L5|T029|S0",
+      "expected": "Тригонометрия",
+      "canonical": "Стереометрия: многогранники",
+      "classifier": "стереометрия"
+    },
+    {
+      "slot_key": "G10|L5|T013|S1",
+      "expected": "Тригонометрия",
+      "canonical": "Неравенства: показательные и логарифмические",
+      "classifier": "алгебра"
+    },
+    {
+      "slot_key": "G10|L5|T013|S0",
+      "expected": "Тригонометрия",
+      "canonical": "Неравенства: показательные и логарифмические",
+      "classifier": "логарифмические неравенства"
+    },
+    {
+      "slot_key": "G10|L5|T029|S1",
+      "expected": "Тригонометрия",
+      "canonical": "Стереометрия: многогранники",
+      "classifier": "стереометрия"
+    },
+    {
+      "slot_key": "G10|L4|T030|S0",
+      "expected": "Теория чисел",
+      "canonical": "Стереометрия: тела вращения",
+      "classifier": "экстремум"
+    },
+    {
+      "slot_key": "G10|L5|T013|S2",
+      "expected": "Тригонометрия",
+      "canonical": "Неравенства: показательные и логарифмические",
+      "classifier": "логарифмические неравенства"
+    },
+    {
+      "slot_key": "G10|L5|T014|S2",
+      "expected": "Тригонометрия",
+      "canonical": "Неравенства: тригонометрические",
+      "classifier": "неравенства с обратными тригонометрическими функциями"
+    },
+    {
+      "slot_key": "G10|L5|T014|S0",
+      "expected": "Тригонометрия",
+      "canonical": "Неравенства: тригонометрические",
+      "classifier": "тригонометрические неравенства"
+    },
+    {
+      "slot_key": "G10|L5|T014|S1",
+      "expected": "Тригонометрия",
+      "canonical": "Неравенства: тригонометрические",
+      "classifier": "неравенства с обратными тригонометрическими функциями"
+    },
+    {
+      "slot_key": "G10|L4|T029|S2",
+      "expected": "Теория чисел",
+      "canonical": "Стереометрия: многогранники",
+      "classifier": "стереометрия"
+    },
+    {
+      "slot_key": "G10|L4|T029|S0",
+      "expected": "Теория чисел",
+      "canonical": "Стереометрия: многогранники",
+      "classifier": "стереометрия"
+    },
+    {
+      "slot_key": "G10|L4|T029|S1",
+      "expected": "Теория чисел",
+      "canonical": "Стереометрия: многогранники",
+      "classifier": "стереометрия"
+    },
+    {
+      "slot_key": "G10|L4|T030|S2",
+      "expected": "Теория чисел",
+      "canonical": "Стереометрия: тела вращения",
+      "classifier": "математический анализ"
+    },
+    {
+      "slot_key": "G10|L4|T030|S1",
+      "expected": "Теория чисел",
+      "canonical": "Стереометрия: тела вращения",
+      "classifier": "геометрия"
+    }
+  ],
+  "c12_false_positive_details": [],
+  "topic_mismatch_breakdown": {
+    "Тригонометрия -> Стереометрия: аксиомы и прямые": {
+      "count": 3,
+      "slot_keys": [
+        "G10|L5|T028|S0",
+        "G10|L5|T028|S1",
+        "G10|L5|T028|S2"
+      ]
+    },
+    "Теория чисел -> Неравенства: показательные и логарифмические": {
+      "count": 3,
+      "slot_keys": [
+        "G10|L4|T013|S1",
+        "G10|L4|T013|S2",
+        "G10|L4|T013|S0"
+      ]
+    },
+    "Теория чисел -> Уравнения: показательные и логарифмические": {
+      "count": 3,
+      "slot_keys": [
+        "G10|L4|T039|S1",
+        "G10|L4|T039|S0",
+        "G10|L4|T039|S2"
+      ]
+    },
+    "Теория чисел -> Стереометрия: аксиомы и прямые": {
+      "count": 3,
+      "slot_keys": [
+        "G10|L4|T028|S0",
+        "G10|L4|T028|S2",
+        "G10|L4|T028|S1"
+      ]
+    },
+    "Теория чисел -> Неравенства: тригонометрические": {
+      "count": 3,
+      "slot_keys": [
+        "G10|L4|T014|S0",
+        "G10|L4|T014|S2",
+        "G10|L4|T014|S1"
+      ]
+    },
+    "Тригонометрия -> Стереометрия: многогранники": {
+      "count": 3,
+      "slot_keys": [
+        "G10|L5|T029|S2",
+        "G10|L5|T029|S0",
+        "G10|L5|T029|S1"
+      ]
+    },
+    "Тригонометрия -> Неравенства: показательные и логарифмические": {
+      "count": 3,
+      "slot_keys": [
+        "G10|L5|T013|S1",
+        "G10|L5|T013|S0",
+        "G10|L5|T013|S2"
+      ]
+    },
+    "Теория чисел -> Стереометрия: тела вращения": {
+      "count": 3,
+      "slot_keys": [
+        "G10|L4|T030|S0",
+        "G10|L4|T030|S2",
+        "G10|L4|T030|S1"
+      ]
+    },
+    "Тригонометрия -> Неравенства: тригонометрические": {
+      "count": 3,
+      "slot_keys": [
+        "G10|L5|T014|S2",
+        "G10|L5|T014|S0",
+        "G10|L5|T014|S1"
+      ]
+    },
+    "Теория чисел -> Стереометрия: многогранники": {
+      "count": 3,
+      "slot_keys": [
+        "G10|L4|T029|S2",
+        "G10|L4|T029|S0",
+        "G10|L4|T029|S1"
+      ]
+    }
+  },
+  "entries": [
+    {
+      "slot_key": "G10|L5|T028|S0",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c03_solver_a_leads",
+        "c05_solver_b_answer",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c02_solver_a_solution",
+        "c04_solver_a_confidence",
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Стереометрия: аксиомы и прямые",
+        "classifier_topic": "геометрия",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='геометрия' vs expected='Тригонометрия', subtopic='стереометрия (свойства тетраэдра)' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T028",
+        "topic_name": "Стереометрия: аксиомы и прямые",
+        "subtopic_name": "Аксиомы стереометрии",
+        "theme_name": "Стереометрия: аксиомы и прямые"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T013|S1",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c03_solver_a_leads",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Неравенства: показательные и логарифмические",
+        "classifier_topic": "неравенства",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='неравенства' vs expected='Теория чисел', subtopic='логарифмические неравенства' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T013",
+        "topic_name": "Неравенства: показательные и логарифмические",
+        "subtopic_name": "Показательные неравенства",
+        "theme_name": "Неравенства: показательные и логарифмические"
+      }
+    },
+    {
+      "slot_key": "G10|L5|T028|S1",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c03_solver_a_leads",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c02_solver_a_solution",
+        "c04_solver_a_confidence",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Стереометрия: аксиомы и прямые",
+        "classifier_topic": "стереометрия",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='стереометрия' vs expected='Тригонометрия', subtopic='взаимное расположение прямых в пространстве' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T028",
+        "topic_name": "Стереометрия: аксиомы и прямые",
+        "subtopic_name": "Взаимное расположение прямых в пространстве",
+        "theme_name": "Стереометрия: аксиомы и прямые"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T013|S2",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Неравенства: показательные и логарифмические",
+        "classifier_topic": "логарифмические неравенства",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='логарифмические неравенства' vs expected='Теория чисел', subtopic='неравенства с переменным основанием логарифма' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T013",
+        "topic_name": "Неравенства: показательные и логарифмические",
+        "subtopic_name": "Системы показательных и логарифмических неравенств",
+        "theme_name": "Неравенства: показательные и логарифмические"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T013|S0",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Неравенства: показательные и логарифмические",
+        "classifier_topic": "логарифмические неравенства",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='логарифмические неравенства' vs expected='Теория чисел', subtopic='неравенства с переменным основанием логарифма' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.045454545454545456,
+        "duplicate_of": "",
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.045 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T013",
+        "topic_name": "Неравенства: показательные и логарифмические",
+        "subtopic_name": "Логарифмические неравенства",
+        "theme_name": "Неравенства: показательные и логарифмические"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T039|S1",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Уравнения: показательные и логарифмические",
+        "classifier_topic": "логарифмические уравнения",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='логарифмические уравнения' vs expected='Теория чисел', subtopic='логарифмические уравнения с разными основаниями' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T039",
+        "topic_name": "Уравнения: показательные и логарифмические",
+        "subtopic_name": "Показательные уравнения",
+        "theme_name": "Уравнения: показательные и логарифмические"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T039|S0",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Уравнения: показательные и логарифмические",
+        "classifier_topic": "логарифмические уравнения",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='логарифмические уравнения' vs expected='Теория чисел', subtopic='уравнения с переменным основанием' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.09523809523809523,
+        "duplicate_of": "",
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.095 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T039",
+        "topic_name": "Уравнения: показательные и логарифмические",
+        "subtopic_name": "Логарифмические уравнения",
+        "theme_name": "Уравнения: показательные и логарифмические"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T039|S2",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c03_solver_a_leads",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c02_solver_a_solution",
+        "c04_solver_a_confidence",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Уравнения: показательные и логарифмические",
+        "classifier_topic": "логарифмы",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='логарифмы' vs expected='Теория чисел', subtopic='логарифмические уравнения' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.047619047619047616,
+        "duplicate_of": "",
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.048 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T039",
+        "topic_name": "Уравнения: показательные и логарифмические",
+        "subtopic_name": "Системы показательных и логарифмических уравнений",
+        "theme_name": "Уравнения: показательные и логарифмические"
+      }
+    },
+    {
+      "slot_key": "G10|L5|T028|S2",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c03_solver_a_leads",
+        "c05_solver_b_answer",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c02_solver_a_solution",
+        "c04_solver_a_confidence",
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Стереометрия: аксиомы и прямые",
+        "classifier_topic": "геометрия",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='геометрия' vs expected='Тригонометрия', subtopic='прямые и плоскости в пространстве' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T028",
+        "topic_name": "Стереометрия: аксиомы и прямые",
+        "subtopic_name": "Скрещивающиеся прямые",
+        "theme_name": "Стереометрия: аксиомы и прямые"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T028|S0",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c03_solver_a_leads",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c02_solver_a_solution",
+        "c04_solver_a_confidence",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: аксиомы и прямые",
+        "classifier_topic": "геометрия",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='геометрия' vs expected='Теория чисел', subtopic='прямые и плоскости в пространстве' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T028",
+        "topic_name": "Стереометрия: аксиомы и прямые",
+        "subtopic_name": "Аксиомы стереометрии",
+        "theme_name": "Стереометрия: аксиомы и прямые"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T028|S2",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c03_solver_a_leads",
+        "c05_solver_b_answer",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c02_solver_a_solution",
+        "c04_solver_a_confidence",
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: аксиомы и прямые",
+        "classifier_topic": "геометрия",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='геометрия' vs expected='Теория чисел', subtopic='стереометрия' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T028",
+        "topic_name": "Стереометрия: аксиомы и прямые",
+        "subtopic_name": "Скрещивающиеся прямые",
+        "theme_name": "Стереометрия: аксиомы и прямые"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T028|S1",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c03_solver_a_leads",
+        "c05_solver_b_answer",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c02_solver_a_solution",
+        "c04_solver_a_confidence",
+        "c06_solver_b_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: аксиомы и прямые",
+        "classifier_topic": "геометрия",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='геометрия' vs expected='Теория чисел', subtopic='взаимное расположение прямых в пространстве' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T028",
+        "topic_name": "Стереометрия: аксиомы и прямые",
+        "subtopic_name": "Взаимное расположение прямых в пространстве",
+        "theme_name": "Стереометрия: аксиомы и прямые"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T014|S0",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Неравенства: тригонометрические",
+        "classifier_topic": "обратные тригонометрические функции",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='обратные тригонометрические функции' vs expected='Теория чисел', subtopic='решение неравенств с arcsin и arccos' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T014",
+        "topic_name": "Неравенства: тригонометрические",
+        "subtopic_name": "Неравенства с обратными тригонометрическими функциями",
+        "theme_name": "Неравенства: тригонометрические"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T014|S2",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Неравенства: тригонометрические",
+        "classifier_topic": "обратные тригонометрические функции",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='обратные тригонометрические функции' vs expected='Теория чисел', subtopic='неравенства с обратными тригонометрическими функциями' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T014",
+        "topic_name": "Неравенства: тригонометрические",
+        "subtopic_name": "Простейшие тригонометрические неравенства с tg, ctg",
+        "theme_name": "Неравенства: тригонометрические"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T014|S1",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Неравенства: тригонометрические",
+        "classifier_topic": "обратные тригонометрические функции",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='обратные тригонометрические функции' vs expected='Теория чисел', subtopic='неравенства с арктангенсами' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T014",
+        "topic_name": "Неравенства: тригонометрические",
+        "subtopic_name": "Простейшие тригонометрические неравенства с sin, cos",
+        "theme_name": "Неравенства: тригонометрические"
+      }
+    },
+    {
+      "slot_key": "G10|L5|T029|S2",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Стереометрия: многогранники",
+        "classifier_topic": "стереометрия",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='стереометрия' vs expected='Тригонометрия', subtopic='прямоугольный параллелепипед' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T029",
+        "topic_name": "Стереометрия: многогранники",
+        "subtopic_name": "Правильные многогранники",
+        "theme_name": "Стереометрия: многогранники"
+      }
+    },
+    {
+      "slot_key": "G10|L5|T029|S0",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Стереометрия: многогранники",
+        "classifier_topic": "стереометрия",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='стереометрия' vs expected='Тригонометрия', subtopic='сечение многогранников плоскостью' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T029",
+        "topic_name": "Стереометрия: многогранники",
+        "subtopic_name": "Параллелепипеды, призмы",
+        "theme_name": "Стереометрия: многогранники"
+      }
+    },
+    {
+      "slot_key": "G10|L5|T013|S1",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Неравенства: показательные и логарифмические",
+        "classifier_topic": "алгебра",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='алгебра' vs expected='Тригонометрия', subtopic='логарифмические неравенства с переменным основанием' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T013",
+        "topic_name": "Неравенства: показательные и логарифмические",
+        "subtopic_name": "Показательные неравенства",
+        "theme_name": "Неравенства: показательные и логарифмические"
+      }
+    },
+    {
+      "slot_key": "G10|L5|T013|S0",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Неравенства: показательные и логарифмические",
+        "classifier_topic": "логарифмические неравенства",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='логарифмические неравенства' vs expected='Тригонометрия', subtopic='неравенства с переменным основанием логарифма' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T013",
+        "topic_name": "Неравенства: показательные и логарифмические",
+        "subtopic_name": "Логарифмические неравенства",
+        "theme_name": "Неравенства: показательные и логарифмические"
+      }
+    },
+    {
+      "slot_key": "G10|L5|T029|S1",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Стереометрия: многогранники",
+        "classifier_topic": "стереометрия",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='стереометрия' vs expected='Тригонометрия', subtopic='объемы частей многогранников при сечении плоскостью' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T029",
+        "topic_name": "Стереометрия: многогранники",
+        "subtopic_name": "Пирамиды",
+        "theme_name": "Стереометрия: многогранники"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T030|S0",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c09_arbiter_proof",
+        "c10_topic_match"
+      ],
+      "passed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c11_level_match",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: тела вращения",
+        "classifier_topic": "экстремум",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='экстремум' vs expected='Теория чисел', subtopic='геометрические экстремальные задачи (вписанные фигуры)' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T030",
+        "topic_name": "Стереометрия: тела вращения",
+        "subtopic_name": "Конус, цилиндр",
+        "theme_name": "Стереометрия: тела вращения"
+      }
+    },
+    {
+      "slot_key": "G10|L5|T013|S2",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c03_solver_a_leads",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Неравенства: показательные и логарифмические",
+        "classifier_topic": "логарифмические неравенства",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='логарифмические неравенства' vs expected='Тригонометрия', subtopic='логарифмические неравенства с переменным основанием' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T013",
+        "topic_name": "Неравенства: показательные и логарифмические",
+        "subtopic_name": "Системы показательных и логарифмических неравенств",
+        "theme_name": "Неравенства: показательные и логарифмические"
+      }
+    },
+    {
+      "slot_key": "G10|L5|T014|S2",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Неравенства: тригонометрические",
+        "classifier_topic": "неравенства с обратными тригонометрическими функциями",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='неравенства с обратными тригонометрическими функциями' vs expected='Тригонометрия', subtopic='сложение арктангенсов' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T014",
+        "topic_name": "Неравенства: тригонометрические",
+        "subtopic_name": "Простейшие тригонометрические неравенства с tg, ctg",
+        "theme_name": "Неравенства: тригонометрические"
+      }
+    },
+    {
+      "slot_key": "G10|L5|T014|S0",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Неравенства: тригонометрические",
+        "classifier_topic": "тригонометрические неравенства",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='тригонометрические неравенства' vs expected='Тригонометрия', subtopic='неравенства с обратными тригонометрическими функциями' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T014",
+        "topic_name": "Неравенства: тригонометрические",
+        "subtopic_name": "Неравенства с обратными тригонометрическими функциями",
+        "theme_name": "Неравенства: тригонометрические"
+      }
+    },
+    {
+      "slot_key": "G10|L5|T014|S1",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Тригонометрия",
+        "canonical_topic_name": "Неравенства: тригонометрические",
+        "classifier_topic": "неравенства с обратными тригонометрическими функциями",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='неравенства с обратными тригонометрическими функциями' vs expected='Тригонометрия', subtopic='решение неравенств, содержащих arccos и arctan' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T014",
+        "topic_name": "Неравенства: тригонометрические",
+        "subtopic_name": "Простейшие тригонометрические неравенства с sin, cos",
+        "theme_name": "Неравенства: тригонометрические"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T029|S2",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c03_solver_a_leads",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: многогранники",
+        "classifier_topic": "стереометрия",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='стереометрия' vs expected='Теория чисел', subtopic='прямоугольный параллелепипед' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T029",
+        "topic_name": "Стереометрия: многогранники",
+        "subtopic_name": "Правильные многогранники",
+        "theme_name": "Стереометрия: многогранники"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T029|S0",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: многогранники",
+        "classifier_topic": "стереометрия",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='стереометрия' vs expected='Теория чисел', subtopic='расстояние между скрещивающимися прямыми' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.03125,
+        "duplicate_of": "",
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.031 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T029",
+        "topic_name": "Стереометрия: многогранники",
+        "subtopic_name": "Параллелепипеды, призмы",
+        "theme_name": "Стереометрия: многогранники"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T029|S1",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c03_solver_a_leads",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: многогранники",
+        "classifier_topic": "стереометрия",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='стереометрия' vs expected='Теория чисел', subtopic='объем наклонного параллелепипеда' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T029",
+        "topic_name": "Стереометрия: многогранники",
+        "subtopic_name": "Пирамиды",
+        "theme_name": "Стереометрия: многогранники"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T030|S2",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c10_topic_match"
+      ],
+      "passed_conditions": [
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c11_level_match",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: тела вращения",
+        "classifier_topic": "математический анализ",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='математический анализ' vs expected='Теория чисел', subtopic='оптимизация (экстремум функции)' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T030",
+        "topic_name": "Стереометрия: тела вращения",
+        "subtopic_name": "Тела вращения: сечения, комбинации",
+        "theme_name": "Стереометрия: тела вращения"
+      }
+    },
+    {
+      "slot_key": "G10|L4|T030|S1",
+      "category": "c10_false_rejection",
+      "canonical_cell_found": true,
+      "failed_conditions": [
+        "c01_solver_a_answer",
+        "c02_solver_a_solution",
+        "c03_solver_a_leads",
+        "c04_solver_a_confidence",
+        "c05_solver_b_answer",
+        "c06_solver_b_solution",
+        "c10_topic_match",
+        "c11_level_match"
+      ],
+      "passed_conditions": [
+        "c07_arbiter_answer",
+        "c08_arbiter_solution",
+        "c09_arbiter_proof",
+        "c12_duplicate_check"
+      ],
+      "c10": {
+        "passed": false,
+        "expected_topic": "Теория чисел",
+        "canonical_topic_name": "Стереометрия: тела вращения",
+        "classifier_topic": "геометрия",
+        "expected_matches_canonical": false,
+        "topic_match": false,
+        "details": "Classifier topic='геометрия' vs expected='Теория чисел', subtopic='объем пересекающихся тел' vs '', confidence=0.95, topic_match=False, subtopic_match=True"
+      },
+      "c12": {
+        "passed": true,
+        "max_similarity": 0.0,
+        "duplicate_of": null,
+        "threshold": 0.6,
+        "false_positive": false,
+        "details": "No duplicates: max_similarity=0.000 (threshold=0.6)"
+      },
+      "canonical_cell": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T030",
+        "topic_name": "Стереометрия: тела вращения",
+        "subtopic_name": "Сфера, шар",
+        "theme_name": "Стереометрия: тела вращения"
+      }
+    }
+  ]
+}

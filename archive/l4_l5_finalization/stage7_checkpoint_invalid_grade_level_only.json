@@ -1,0 +1,4300 @@
+{
+  "verified": {},
+  "rejected": {
+    "G10|L5|T028|S0": {
+      "slot_key": "G10|L5|T028|S0",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:25:59.837679",
+      "completed_at": "2026-07-17T23:27:46.558440",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver answer: 'Отрезки MN, PQ и RS пересекаются в одной точке, которая является серединой каждо' vs Generator: 'The three segments intersect at the centroid of the tetrahedron, which is the po'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "Отрезки MN, PQ и RS пересекаются в одной точке, которая является серединой каждого из них.",
+            "solver_solution": "Пусть \\(\\vec{a}, \\vec{b}, \\vec{c}, \\vec{d}\\) — радиус-векторы вершин \\(A, B, C, D\\) относительно произвольного начала. Тогда середины ребер:\n\\[ M = \\frac{\\vec{a}+\\vec{b}}{2},\\quad N = \\frac{\\vec{c}+\\vec{d}}{2},\\]\n\\[ P = \\frac{\\vec{a}+\\vec{c}}{2},\\quad Q = \\frac{\\vec{b}+\\vec{d}}{2},\\]\n\\[ R = \\frac{\\vec{a}+\\vec{d}}{2},\\quad S = \\frac{\\vec{b}+\\vec{c}}{2}.\\]\nРассмотрим точку \\(O = \\frac{\\vec{a}+\\vec{b}+\\vec{c}+\\vec{d}}{4}\\). Покажем, что \\(O\\) — середина каждого из отрезков \\(MN, PQ, RS\\). Действительно,\n\\[ O - M = \\frac{\\vec{a}+\\vec{b}+\\vec{c}+\\vec{d}}{4} - \\frac{\\vec{a}+\\vec{b}}{2} = \\frac{\\vec{c}+\\vec{d}-\\vec{a}-\\vec{b}}{4} = \\frac{1}{2}\\left(\\frac{\\vec{c}+\\vec{d}}{2} - \\frac{\\vec{a}+\\vec{b}}{2}\\right) = \\frac{1}{2}(N-M).\\]\nСледовательно, \\(O = M + \\frac{1}{2}(N-M)\\), т.е. \\(O\\) — середина \\(MN\\). Аналогично,\n\\[ O - P = \\frac{\\vec{a}+\\vec{b}+\\vec{c}+\\vec{d}}{4} - \\frac{\\vec{a}+\\vec{c}}{2} = \\frac{\\vec{b}+\\vec{d}-\\vec{a}-\\vec{c}}{4} = \\frac{1}{2}(Q-P),\\]\n\\[ O - R = \\frac{\\vec{a}+\\vec{b}+\\vec{c}+\\vec{d}}{4} - \\frac{\\vec{a}+\\vec{d}}{2} = \\frac{\\vec{b}+\\vec{c}-\\vec{a}-\\vec{d}}{4} = \\frac{1}{2}(S-R).\\]\nТаким образом, точка \\(O\\) является общей серединой всех трех отрезков, следовательно, они пересекаются в ней. Это и требовалось доказать.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1252 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1252,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Answer in solution: False, answer match: False",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": false
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "Solver B answer: 'Отрезки MN, PQ и RS пересекаются в центроиде тетраэдра (точке пересечения медиан' vs Generator: 'The three segments intersect at the centroid of the tetrahedron, which is the po'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "Отрезки MN, PQ и RS пересекаются в центроиде тетраэдра (точке пересечения медиан).",
+            "solver_solution": "Пусть O — произвольная точка пространства. Введём векторы: \\(\\overrightarrow{OA} = \\mathbf{a}\\), \\(\\overrightarrow{OB} = \\mathbf{b}\\), \\(\\overrightarrow{OC} = \\mathbf{c}\\), \\(\\overrightarrow{OD} = \\mathbf{d}\\). Тогда середины рёбер:\n\n- M — середина AB: \\(\\overrightarrow{OM} = \\frac{\\mathbf{a}+\\mathbf{b}}{2}\\).\n- N — середина CD: \\(\\overrightarrow{ON} = \\frac{\\mathbf{c}+\\mathbf{d}}{2}\\).\n- P — середина AC: \\(\\overrightarrow{OP} = \\frac{\\mathbf{a}+\\mathbf{c}}{2}\\).\n- Q — середина BD: \\(\\overrightarrow{OQ} = \\frac{\\mathbf{b}+\\mathbf{d}}{2}\\).\n- R — середина AD: \\(\\overrightarrow{OR} = \\frac{\\mathbf{a}+\\mathbf{d}}{2}\\).\n- S — середина BC: \\(\\overrightarrow{OS} = \\frac{\\mathbf{b}+\\mathbf{c}}{2}\\).\n\nРассмотрим точку G — центроид тетраэдра: \\(\\overrightarrow{OG} = \\frac{\\mathbf{a}+\\mathbf{b}+\\mathbf{c}+\\mathbf{d}}{4}\\). Покажем, что G принадлежит каждому из отрезков MN, PQ, RS.\n\n1. Для отрезка MN: параметрическое уравнение \\(\\overrightarrow{OX} = (1-t)\\overrightarrow{OM} + t\\overrightarrow{ON}\\), \\(t \\in [0,1]\\). Подставим: \\(\\overrightarrow{OX} = (1-t)\\cdot\\frac{\\mathbf{a}+\\mathbf{b}}{2} + t\\cdot\\frac{\\mathbf{c}+\\mathbf{d}}{2} = \\frac{(1-t)\\mathbf{a}+(1-t)\\mathbf{b}+t\\mathbf{c}+t\\mathbf{d}}{2}\\). При \\(t=\\frac12\\) получаем \\(\\overrightarrow{OX} = \\frac{\\frac12\\mathbf{a}+\\frac12\\mathbf{b}+\\frac12\\mathbf{c}+\\frac12\\mathbf{d}}{2} = \\frac{\\mathbf{a}+\\mathbf{b}+\\mathbf{c}+\\mathbf{d}}{4} = \\overrightarrow{OG}\\). Следовательно, G лежит на отрезке MN (и делит его пополам).\n\n2. Для отрезка PQ: \\(\\overrightarrow{OX} = (1-t)\\cdot\\frac{\\mathbf{a}+\\mathbf{c}}{2} + t\\cdot\\frac{\\mathbf{b}+\\mathbf{d}}{2} = \\frac{(1-t)\\mathbf{a}+t\\mathbf{b}+(1-t)\\mathbf{c}+t\\mathbf{d}}{2}\\). При \\(t=\\frac12\\) получаем \\(\\overrightarrow{OG}\\). Значит, G лежит на PQ.\n\n3. Для отрезка RS: \\(\\overrightarrow{OX} = (1-t)\\cdot\\frac{\\mathbf{a}+\\mathbf{d}}{2} + t\\cdot\\frac{\\mathbf{b}+\\mathbf{c}}{2} = \\frac{(1-t)\\mathbf{a}+t\\mathbf{b}+t\\mathbf{c}+(1-t)\\mathbf{d}}{2}\\). При \\(t=\\frac12\\) получаем \\(\\overrightarrow{OG}\\). Значит, G лежит на RS.\n\nТаким образом, все три отрезка MN, PQ и RS проходят через точку G, следовательно, они пересекаются в одной точке — центроиде тетраэдра.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": true,
+          "details": "Solution length: 2164 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 2164,
+            "notes": ""
+          }
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: 'The three segments intersect at the centroid of the tetrahedron, which is the po'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "The three segments intersect at the centroid of the tetrahedron, which is the point (A+B+C+D)/4 in vector representation.",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "All transitions are justified: vector definitions of midpoints, calculation of midpoints of segments, and demonstration that all three segments share the same midpoint. No gaps or jumps in reasoning."
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "The three segments intersect at the centroid of the tetrahedron, which is the point (A+B+C+D)/4 in vector representation.",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "All transitions are justified: vector definitions of midpoints, calculation of midpoints of segments, and demonstration that all three segments share the same midpoint. No gaps or jumps in reasoning."
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='геометрия' vs expected='Тригонометрия', subtopic='стереометрия (свойства тетраэдра)' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "геометрия",
+            "classifier_subtopic": "стереометрия (свойства тетраэдра)",
+            "expected_topic": "Тригонометрия",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L3, target: L5, confidence: 0.90, match: False",
+          "confidence": 0.9,
+          "data": {
+            "estimated_level": "L3",
+            "target_level": "L5",
+            "confidence": 0.9,
+            "probabilities": {
+              "L3": 0.9,
+              "L4": 0.1,
+              "L5": 0.0,
+              "L6": 0.0
+            },
+            "level_match": false
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T013|S1": {
+      "slot_key": "G10|L4|T013|S1",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:25:59.836006",
+      "completed_at": "2026-07-17T23:28:40.279095",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '(√2, 3)'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "(√2, 3)",
+            "solver_solution": "Решаем неравенство \\(\\log_{x^2-1}(x+2) > \\log_{x^2-1}(3x-4)\\).\n\n1. Найдём область допустимых значений (ОДЗ):\n   - Основание логарифма положительно и не равно 1: \\(x^2-1 > 0\\) и \\(x^2-1 \\neq 1\\).\n     \\(x^2 > 1 \\Rightarrow x < -1\\) или \\(x > 1\\).\n     \\(x^2 \\neq 2 \\Rightarrow x \\neq \\pm\\sqrt{2}\\).\n   - Аргументы положительны: \\(x+2 > 0 \\Rightarrow x > -2\\), \\(3x-4 > 0 \\Rightarrow x > \\frac{4}{3}\\).\n   Пересечение: \\(x > \\frac{4}{3}\\) (так как \\(\\frac{4}{3} \\approx 1.33 > 1\\), а \\(x < -1\\) не подходит из-за \\(3x-4 > 0\\)). Исключаем \\(x = \\sqrt{2}\\). Итого ОДЗ: \\(x \\in \\left(\\frac{4}{3}, \\sqrt{2}\\right) \\cup \\left(\\sqrt{2}, \\infty\\right)\\).\n\n2. Рассмотрим монотонность логарифма в зависимости от основания \\(a = x^2-1\\).\n   - Если \\(a > 1\\) (т.е. \\(x^2 > 2 \\Rightarrow |x| > \\sqrt{2}\\)), функция возрастает, неравенство равносильно \\(x+2 > 3x-4\\).\n   - Если \\(0 < a < 1\\) (т.е. \\(1 < x^2 < 2 \\Rightarrow 1 < |x| < \\sqrt{2}\\)), функция убывает, неравенство равносильно \\(x+2 < 3x-4\\).\n\n3. Решаем с учётом ОДЗ:\n   - Случай 1: \\(x > \\sqrt{2}\\) (из ОДЗ \\(x > \\frac{4}{3}\\) и \\(x > \\sqrt{2}\\)).\n     \\(x+2 > 3x-4 \\Rightarrow 6 > 2x \\Rightarrow x < 3\\).\n     Получаем \\(x \\in (\\sqrt{2}, 3)\\).\n   - Случай 2: \\(\\frac{4}{3} < x < \\sqrt{2}\\) (здесь \\(0 < x^2-1 < 1\\)).\n     \\(x+2 < 3x-4 \\Rightarrow 6 < 2x \\Rightarrow x > 3\\).\n     Но \\(x > 3\\) не пересекается с \\(\\frac{4}{3} < x < \\sqrt{2}\\), решений нет.\n\n4. Объединяем: решение неравенства — \\(x \\in (\\sqrt{2}, 3)\\).\n\nПроверка границ: \\(x = \\sqrt{2}\\) не входит (основание равно 1), \\(x = 3\\) не входит (логарифмы равны).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1571 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1571,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Answer in solution: False, answer match: True",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": false
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '\\((\\sqrt{2}; 3)\\)'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "\\((\\sqrt{2}; 3)\\)",
+            "solver_solution": "Для неравенства \\( \\log_{x^2-1}(x+2) > \\log_{x^2-1}(3x-4) \\) найдем ОДЗ: основание \\( x^2-1>0 \\), \\( x^2-1 \\neq 1 \\), аргументы \\( x+2>0 \\), \\( 3x-4>0 \\). Получаем \\( x> \\frac{4}{3} \\), \\( x \\neq \\sqrt{2} \\). Рассмотрим два случая: \n1) \\( x^2-1 >1 \\) (т.е. \\( x>\\sqrt{2} \\)): функция возрастает, поэтому \\( x+2 > 3x-4 \\Rightarrow x<3 \\). С учетом условия \\( x>\\sqrt{2} \\) получаем \\( \\sqrt{2}<x<3 \\).\n2) \\( 0 < x^2-1 <1 \\) (т.е. \\( \\frac{4}{3}<x<\\sqrt{2} \\)): функция убывает, поэтому \\( x+2 < 3x-4 \\Rightarrow x>3 \\), что противоречит условию. Решений нет.\nИтак, ответ: \\( (\\sqrt{2}; 3) \\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": true,
+          "details": "Solution length: 591 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 591,
+            "notes": ""
+          }
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: 'x ∈ (√2, 3)'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "x ∈ (√2, 3)",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "x ∈ (√2, 3)",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='неравенства' vs expected='Теория чисел', subtopic='логарифмические неравенства' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "неравенства",
+            "classifier_subtopic": "логарифмические неравенства",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L3, target: L4, confidence: 0.70, match: False",
+          "confidence": 0.7,
+          "data": {
+            "estimated_level": "L3",
+            "target_level": "L4",
+            "confidence": 0.7,
+            "probabilities": {
+              "L3": 0.6,
+              "L4": 0.3,
+              "L5": 0.1,
+              "L6": 0.0
+            },
+            "level_match": false
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L5|T028|S1": {
+      "slot_key": "G10|L5|T028|S1",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:25:59.838216",
+      "completed_at": "2026-07-17T23:28:55.170894",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver answer: 'Да, возможно.' vs Generator: 'No, it is impossible. The three lines must lie in a common plane.'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "Да, возможно.",
+            "solver_solution": "Да, возможно. Рассмотрим три прямые, лежащие в одной плоскости и являющиеся сторонами треугольника. Каждая пара прямых пересекается в вершине треугольника, и три точки пересечения различны. Обоснование с использованием аксиом стереометрии: пусть прямые \\(l_1, l_2, l_3\\) попарно пересекаются в точках \\(A = l_1 \\cap l_2\\), \\(B = l_1 \\cap l_3\\), \\(C = l_2 \\cap l_3\\), и эти точки различны. Тогда точки \\(A, B, C\\) не коллинеарны (иначе прямые совпадали бы или проходили через одну точку). По аксиоме стереометрии через три неколлинеарные точки проходит единственная плоскость. Прямая \\(l_1\\) содержит точки \\(A\\) и \\(B\\), следовательно, лежит в этой плоскости. Аналогично, \\(l_2\\) содержит \\(A\\) и \\(C\\), \\(l_3\\) содержит \\(B\\) и \\(C\\), поэтому все три прямые компланарны. Таким образом, конфигурация возможна и реализуется, например, сторонами треугольника на плоскости.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 870 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 870,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Answer in solution: True, answer match: False",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": true
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": false,
+          "details": "Verdict: disputed, answer_correct: True, arbiter_answer: 'Yes, it is possible. Such three lines can be the sides of a triangle, lying in a'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "disputed",
+            "arbiter_answer": "Yes, it is possible. Such three lines can be the sides of a triangle, lying in a common plane.",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "All transitions are logically valid. The reasoning correctly uses the axioms of stereometry to show coplanarity, and correctly concludes that such lines exist."
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": false,
+          "details": "Verdict: disputed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "disputed",
+            "arbiter_answer": "Yes, it is possible. Such three lines can be the sides of a triangle, lying in a common plane.",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "All transitions are logically valid. The reasoning correctly uses the axioms of stereometry to show coplanarity, and correctly concludes that such lines exist."
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='стереометрия' vs expected='Тригонометрия', subtopic='взаимное расположение прямых в пространстве' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "стереометрия",
+            "classifier_subtopic": "взаимное расположение прямых в пространстве",
+            "expected_topic": "Тригонометрия",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Level calibrator failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T013|S2": {
+      "slot_key": "G10|L4|T013|S2",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:25:59.836920",
+      "completed_at": "2026-07-17T23:29:19.189036",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: 'x ≤ -1-√5 or 1 < x ≤ -1+√5 or x > √2'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "x ≤ -1-√5 or 1 < x ≤ -1+√5 or x > √2",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "x ≤ -1-√5 or 1 < x ≤ -1+√5 or x > √2",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='логарифмические неравенства' vs expected='Теория чисел', subtopic='неравенства с переменным основанием логарифма' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "логарифмические неравенства",
+            "classifier_subtopic": "неравенства с переменным основанием логарифма",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L4, target: L4, confidence: 0.70, match: True",
+          "confidence": 0.7,
+          "data": {
+            "estimated_level": "L4",
+            "target_level": "L4",
+            "confidence": 0.7,
+            "probabilities": {
+              "L3": 0.05,
+              "L4": 0.6,
+              "L5": 0.3,
+              "L6": 0.05
+            },
+            "level_match": true
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T013|S0": {
+      "slot_key": "G10|L4|T013|S0",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:25:59.838640",
+      "completed_at": "2026-07-17T23:29:43.941249",
+      "task_type": "proof",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: 'x ∈ (-2, -√2) ∪ { (1-√13)/2 } ∪ (1, √2) ∪ { (1+√13)/2 }'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "x ∈ (-2, -√2) ∪ { (1-√13)/2 } ∪ (1, √2) ∪ { (1+√13)/2 }",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "x ∈ (-2, -√2) ∪ { (1-√13)/2 } ∪ (1, √2) ∪ { (1+√13)/2 }",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "Proof transitions valid: True, notes: N/A (computable)",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "x ∈ (-2, -√2) ∪ { (1-√13)/2 } ∪ (1, √2) ∪ { (1+√13)/2 }",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='логарифмические неравенства' vs expected='Теория чисел', subtopic='неравенства с переменным основанием логарифма' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "логарифмические неравенства",
+            "classifier_subtopic": "неравенства с переменным основанием логарифма",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L4, target: L4, confidence: 0.70, match: True",
+          "confidence": 0.7,
+          "data": {
+            "estimated_level": "L4",
+            "target_level": "L4",
+            "confidence": 0.7,
+            "probabilities": {
+              "L3": 0.1,
+              "L4": 0.7,
+              "L5": 0.2,
+              "L6": 0.0
+            },
+            "level_match": true
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.045 (threshold=0.6)",
+          "confidence": 0.9545454545454546,
+          "data": {
+            "max_similarity": 0.045454545454545456,
+            "duplicate_of": "",
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T039|S1": {
+      "slot_key": "G10|L4|T039|S1",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:29:46.948744",
+      "completed_at": "2026-07-17T23:30:13.750247",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '3'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "3",
+            "solver_solution": "ОДЗ: x>2. Перейдем к основанию 2: \\(\\log_4(x+1) = \\frac{1}{2}\\log_2(x+1)\\). Уравнение: \\(\\frac{1}{2}\\log_2(x+1) + \\log_2(x-2) = 1\\). Умножим на 2: \\(\\log_2(x+1) + 2\\log_2(x-2) = 2\\). Используем свойство: \\(2\\log_2(x-2) = \\log_2((x-2)^2)\\). Получаем \\(\\log_2[(x+1)(x-2)^2] = 2\\). Отсюда \\((x+1)(x-2)^2 = 4\\). Раскрываем скобки: \\(x^3 - 3x^2 + 4 = 4\\), \\(x^3 - 3x^2 = 0\\), \\(x^2(x-3)=0\\). Корни: \\(x=0\\) (не подходит по ОДЗ) и \\(x=3\\). Ответ: \\(x=3\\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 449 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 449,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": true,
+          "details": "Answer in solution: True, answer match: True",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": true
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '3'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "3",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "3",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='логарифмические уравнения' vs expected='Теория чисел', subtopic='логарифмические уравнения с разными основаниями' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "логарифмические уравнения",
+            "classifier_subtopic": "логарифмические уравнения с разными основаниями",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L3, target: L4, confidence: 0.80, match: False",
+          "confidence": 0.8,
+          "data": {
+            "estimated_level": "L3",
+            "target_level": "L4",
+            "confidence": 0.8,
+            "probabilities": {
+              "L3": 0.8,
+              "L4": 0.2,
+              "L5": 0.0,
+              "L6": 0.0
+            },
+            "level_match": false
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T039|S0": {
+      "slot_key": "G10|L4|T039|S0",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:29:46.947747",
+      "completed_at": "2026-07-17T23:30:17.526534",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '\\(\\frac{1 + \\sqrt{5}}{2}\\)'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "\\(\\frac{1 + \\sqrt{5}}{2}\\)",
+            "solver_solution": "Дано уравнение: \\(\\log_x(x+1) + \\log_{x+1}(x) = \\frac{5}{2}\\). Область определения: \\(x>0\\), \\(x \\neq 1\\), \\(x+1>0\\) (выполняется). Положим \\(a = \\log_x(x+1)\\). Тогда \\(\\log_{x+1}(x) = \\frac{1}{a}\\). Уравнение принимает вид \\(a + \\frac{1}{a} = \\frac{5}{2}\\). Умножая на \\(2a\\): \\(2a^2 + 2 = 5a\\), откуда \\(2a^2 - 5a + 2 = 0\\). Корни: \\(a = \\frac{1}{2}\\) или \\(a = 2\\). Возвращаемся к переменной \\(x\\).\n\n1) \\(\\log_x(x+1) = 2\\): \\(x^2 = x+1 \\Rightarrow x^2 - x - 1 = 0 \\Rightarrow x = \\frac{1 \\pm \\sqrt{5}}{2}\\). Положительный корень: \\(x = \\frac{1 + \\sqrt{5}}{2}\\) (второй корень отрицателен, не входит в ОДЗ).\n\n2) \\(\\log_x(x+1) = \\frac{1}{2}\\): \\(\\sqrt{x} = x+1\\). Квадрат: \\(x = (x+1)^2 = x^2 + 2x + 1 \\Rightarrow x^2 + x + 1 = 0\\). Дискриминант \\(1 - 4 = -3 < 0\\), действительных корней нет.\n\nТаким образом, единственное решение: \\(x = \\frac{1 + \\sqrt{5}}{2}\\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 863 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 863,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": true,
+          "details": "Answer in solution: True, answer match: True",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": true
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: 'x = \\frac{1+\\sqrt{5}}{2}'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "x = \\frac{1+\\sqrt{5}}{2}",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "x = \\frac{1+\\sqrt{5}}{2}",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='логарифмические уравнения' vs expected='Теория чисел', subtopic='уравнения с переменным основанием' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "логарифмические уравнения",
+            "classifier_subtopic": "уравнения с переменным основанием",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L3, target: L4, confidence: 0.90, match: False",
+          "confidence": 0.9,
+          "data": {
+            "estimated_level": "L3",
+            "target_level": "L4",
+            "confidence": 0.9,
+            "probabilities": {
+              "L3": 0.8,
+              "L4": 0.2,
+              "L5": 0.0,
+              "L6": 0.0
+            },
+            "level_match": false
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.095 (threshold=0.6)",
+          "confidence": 0.9047619047619048,
+          "data": {
+            "max_similarity": 0.09523809523809523,
+            "duplicate_of": "",
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T039|S2": {
+      "slot_key": "G10|L4|T039|S2",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:29:46.949906",
+      "completed_at": "2026-07-17T23:30:32.681676",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver answer: 'x = 9, x = √3' vs Generator: '\\(x = \\sqrt{3}\\) or \\(x = 9\\).'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "x = 9, x = √3",
+            "solver_solution": "Область определения: \\( x > 0, x \\neq 1 \\). Пусть \\( t = \\log_3 x \\), тогда \\( \\log_x 3 = \\frac{1}{\\log_3 x} = \\frac{1}{t} \\). Уравнение принимает вид: \\( t + \\frac{1}{t} = \\frac{5}{2} \\). Умножаем на \\( t \\): \\( t^2 + 1 = \\frac{5}{2} t \\), или \\( 2t^2 - 5t + 2 = 0 \\). Дискриминант: \\( D = 25 - 16 = 9 \\), корни: \\( t = \\frac{5 \\pm 3}{4} \\), то есть \\( t = 2 \\) или \\( t = \\frac{1}{2} \\). Возвращаясь к \\( x \\): \\( \\log_3 x = 2 \\Rightarrow x = 3^2 = 9 \\); \\( \\log_3 x = \\frac{1}{2} \\Rightarrow x = 3^{1/2} = \\sqrt{3} \\). Оба корня удовлетворяют области определения. Ответ: \\( x = 9, x = \\sqrt{3} \\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 600 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 600,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Answer in solution: False, answer match: False",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": false
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: 'x = √3 or x = 9'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "x = √3 or x = 9",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "x = √3 or x = 9",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='логарифмы' vs expected='Теория чисел', subtopic='логарифмические уравнения' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "логарифмы",
+            "classifier_subtopic": "логарифмические уравнения",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L3, target: L4, confidence: 0.80, match: False",
+          "confidence": 0.8,
+          "data": {
+            "estimated_level": "L3",
+            "target_level": "L4",
+            "confidence": 0.8,
+            "probabilities": {
+              "L3": 0.8,
+              "L4": 0.2,
+              "L5": 0.0,
+              "L6": 0.0
+            },
+            "level_match": false
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.048 (threshold=0.6)",
+          "confidence": 0.9523809523809523,
+          "data": {
+            "max_similarity": 0.047619047619047616,
+            "duplicate_of": "",
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L5|T028|S2": {
+      "slot_key": "G10|L5|T028|S2",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:29:46.946556",
+      "completed_at": "2026-07-17T23:31:14.052564",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver answer: 'Все три прямые либо лежат в одной плоскости, либо проходят через одну точку.' vs Generator: 'The three lines are either coplanar or concurrent.'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "Все три прямые либо лежат в одной плоскости, либо проходят через одну точку.",
+            "solver_solution": "Рассмотрим три различные прямые \\(l_1, l_2, l_3\\) в пространстве, такие что каждая пара пересекается: \\(l_1 \\cap l_2 \\neq \\emptyset\\), \\(l_2 \\cap l_3 \\neq \\emptyset\\), \\(l_3 \\cap l_1 \\neq \\emptyset\\). Обозначим точки пересечения: \\(A = l_1 \\cap l_2\\), \\(B = l_1 \\cap l_3\\), \\(C = l_2 \\cap l_3\\).\n\nЕсли точки \\(A, B, C\\) различны, то они не коллинеарны (иначе все три прямые лежали бы в одной прямой, что невозможно, так как они различны). Прямая \\(l_1\\) проходит через \\(A\\) и \\(B\\), значит, лежит в плоскости, содержащей эти две точки. Аналогично, \\(l_2\\) проходит через \\(A\\) и \\(C\\), а \\(l_3\\) — через \\(B\\) и \\(C\\). Все три прямые содержатся в плоскости, определяемой точками \\(A, B, C\\) (плоскость треугольника). Таким образом, они лежат в одной плоскости.\n\nЕсли же точки \\(A, B, C\\) не все различны, то хотя бы две из них совпадают. Пусть, например, \\(A = B\\). Тогда \\(l_1 \\cap l_2 = A\\) и \\(l_1 \\cap l_3 = A\\), то есть \\(l_1\\) пересекает \\(l_2\\) и \\(l_3\\) в одной и той же точке \\(A\\). Рассмотрим \\(C = l_2 \\cap l_3\\). Если \\(C \\neq A\\), то \\(l_2\\) проходит через \\(A\\) и \\(C\\), и \\(l_3\\) также проходит через \\(A\\) и \\(C\\), что означает совпадение \\(l_2\\) и \\(l_3\\), противоречие с различностью прямых. Следовательно, \\(C = A\\). Аналогично для других совпадений. Таким образом, все три прямые проходят через одну общую точку \\(A\\).\n\nИтак, в любом случае либо все три прямые лежат в одной плоскости, либо все проходят через одну точку.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1442 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1442,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Answer in solution: False, answer match: False",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": false
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "Solver B answer: 'Доказано' vs Generator: 'The three lines are either coplanar or concurrent.'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "Доказано",
+            "solver_solution": "Пусть \\(l_1\\) и \\(l_2\\) пересекаются в точке \\(A\\). Через две пересекающиеся прямые проходит единственная плоскость, назовем её \\(\\alpha\\). Так как \\(l_1\\) и \\(l_2\\) лежат в \\(\\alpha\\), то \\(\\alpha\\) содержит \\(l_1\\) и \\(l_2\\). Теперь рассмотрим \\(l_3\\). По условию, \\(l_3\\) пересекает \\(l_1\\) и \\(l_2\\). Пусть \\(l_3 \\cap l_1 = B\\), \\(l_3 \\cap l_2 = C\\). Возможны два случая:\n\n1) Если \\(B = A\\) или \\(C = A\\), то \\(l_3\\) проходит через \\(A\\). Тогда все три прямые проходят через точку \\(A\\).\n\n2) Если \\(B \\neq A\\) и \\(C \\neq A\\), то точки \\(B\\) и \\(C\\) различны и лежат на \\(l_1\\) и \\(l_2\\) соответственно, следовательно, \\(B\\) и \\(C\\) лежат в плоскости \\(\\alpha\\). Прямая \\(l_3\\) содержит \\(B\\) и \\(C\\), поэтому она лежит в плоскости \\(\\alpha\\) (так как через две точки проходит единственная прямая, и она лежит в плоскости, содержащей эти точки). Таким образом, все три прямые лежат в одной плоскости \\(\\alpha\\).\n\nВ обоих случаях утверждение доказано.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": true,
+          "details": "Solution length: 953 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 953,
+            "notes": ""
+          }
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: 'The three lines are either coplanar or concurrent.'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "The three lines are either coplanar or concurrent.",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "The three lines are either coplanar or concurrent.",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='геометрия' vs expected='Тригонометрия', subtopic='прямые и плоскости в пространстве' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "геометрия",
+            "classifier_subtopic": "прямые и плоскости в пространстве",
+            "expected_topic": "Тригонометрия",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L3, target: L5, confidence: 0.80, match: False",
+          "confidence": 0.8,
+          "data": {
+            "estimated_level": "L3",
+            "target_level": "L5",
+            "confidence": 0.8,
+            "probabilities": {
+              "L3": 0.7,
+              "L4": 0.25,
+              "L5": 0.05,
+              "L6": 0.0
+            },
+            "level_match": false
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T028|S0": {
+      "slot_key": "G10|L4|T028|S0",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:29:46.950930",
+      "completed_at": "2026-07-17T23:31:47.791161",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver answer: '2 плоскости: плоскость, содержащая a и b, и плоскость, содержащая b и c.' vs Generator: 'The three lines cannot lie in one plane. They determine exactly two distinct pla'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "2 плоскости: плоскость, содержащая a и b, и плоскость, содержащая b и c.",
+            "solver_solution": "Пусть прямые a, b, c удовлетворяют условиям: a и b пересекаются в точке P, b и c пересекаются в точке Q (P ≠ Q), a и c скрещиваются. Докажем, что эти три прямые не могут лежать в одной плоскости. Предположим, что они лежат в одной плоскости. Тогда прямые a и c также лежат в этой плоскости. Но если две прямые лежат в одной плоскости, то они либо пересекаются, либо параллельны. Однако по условию a и c скрещиваются, то есть не лежат в одной плоскости. Противоречие. Следовательно, все три прямые не могут быть компланарными.\n\nТеперь определим, сколько различных плоскостей определяется этими прямыми. Плоскость считается определённой прямыми, если она содержит хотя бы две из них. Рассмотрим пары прямых:\n- Пара (a, b): они пересекаются в точке P, поэтому существует единственная плоскость, содержащая их. Обозначим её α.\n- Пара (b, c): они пересекаются в точке Q, поэтому существует единственная плоскость, содержащая их. Обозначим её β.\n- Пара (a, c): они скрещиваются, поэтому не существует плоскости, содержащей обе эти прямые.\n\nОсталось проверить, могут ли плоскости α и β совпадать. Если бы α = β, то эта плоскость содержала бы a, b и c, что противоречит доказанному выше. Следовательно, α и β различны. Таким образом, имеются две различные плоскости: одна содержит прямые a и b, другая — b и c.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1302 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1302,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Answer in solution: False, answer match: False",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": false
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: 'Две плоскости: плоскость, содержащая a и b, и плоскость, содержащая b и c.'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "Две плоскости: плоскость, содержащая a и b, и плоскость, содержащая b и c.",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "Доказательство корректно: 1) предположение о компланарности трех прямых приводит к тому, что a и c лежат в одной плоскости, что противоречит их скрещиваемости. 2) Плоскости, определяемые пересекающимися парами, единственны и различны. Логических пробелов нет."
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "Две плоскости: плоскость, содержащая a и b, и плоскость, содержащая b и c.",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "Доказательство корректно: 1) предположение о компланарности трех прямых приводит к тому, что a и c лежат в одной плоскости, что противоречит их скрещиваемости. 2) Плоскости, определяемые пересекающимися парами, единственны и различны. Логических пробелов нет."
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='геометрия' vs expected='Теория чисел', subtopic='прямые и плоскости в пространстве' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "геометрия",
+            "classifier_subtopic": "прямые и плоскости в пространстве",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Level calibrator failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T028|S2": {
+      "slot_key": "G10|L4|T028|S2",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:31:50.797603",
+      "completed_at": "2026-07-17T23:32:30.033106",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver answer: 'Прямая l параллельна линии пересечения α ∩ β.' vs Generator: 'The line α ∩ β is parallel to l.'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "Прямая l параллельна линии пересечения α ∩ β.",
+            "solver_solution": "Пусть даны плоскость \\(\\alpha\\) и прямая \\(l\\), причём \\(l \\parallel \\alpha\\) (то есть \\(l\\) не пересекает \\(\\alpha\\) и не лежит в \\(\\alpha\\)). Рассмотрим произвольную плоскость \\(\\beta\\), содержащую \\(l\\). Обозначим \\(m = \\alpha \\cap \\beta\\) – линию пересечения плоскостей \\(\\alpha\\) и \\(\\beta\\). Докажем, что \\(l \\parallel m\\).\n\n1. Так как \\(\\beta\\) содержит \\(l\\), то \\(l \\subset \\beta\\). По определению пересечения, \\(m \\subset \\beta\\). Следовательно, \\(l\\) и \\(m\\) лежат в одной плоскости \\(\\beta\\).\n\n2. Предположим, что прямые \\(l\\) и \\(m\\) пересекаются. Пусть \\(P\\) – точка их пересечения. Тогда \\(P \\in l\\) и \\(P \\in m\\). Поскольку \\(m \\subset \\alpha\\), то \\(P \\in \\alpha\\). Таким образом, \\(P\\) – общая точка прямой \\(l\\) и плоскости \\(\\alpha\\), то есть \\(l\\) пересекает \\(\\alpha\\). Это противоречит условию \\(l \\parallel \\alpha\\) (по определению параллельности прямой и плоскости, прямая не должна пересекать плоскость).\n\n3. Значит, \\(l\\) и \\(m\\) не пересекаются. Будучи различными прямыми, лежащими в одной плоскости \\(\\beta\\), они не имеют общих точек, а следовательно, параллельны (по определению параллельных прямых на плоскости).\n\n4. Таким образом, для любой плоскости \\(\\beta\\), содержащей \\(l\\), прямая \\(l\\) параллельна линии пересечения \\(\\alpha \\cap \\beta\\). Утверждение доказано.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1300 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1300,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Answer in solution: False, answer match: False",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": false
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "Solver B answer: 'Прямая пересечения α ∩ β параллельна l.' vs Generator: 'The line α ∩ β is parallel to l.'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "Прямая пересечения α ∩ β параллельна l.",
+            "solver_solution": "Дано: плоскость α и прямая l, l ∥ α (не пересекает и не лежит в α). Пусть β — произвольная плоскость, содержащая l. Рассмотрим прямую m = α ∩ β. Докажем, что m ∥ l. Допустим противное: l и m не параллельны. Так как обе прямые лежат в плоскости β, то они пересекаются в некоторой точке P. Тогда P ∈ l и P ∈ m. Поскольку m ⊂ α, то P ∈ α. Таким образом, P — общая точка l и α, то есть l пересекает α, что противоречит условию l ∥ α. Следовательно, l и m не могут пересекаться, а значит, они параллельны. Что и требовалось доказать.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": true,
+          "details": "Solution length: 528 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 528,
+            "notes": ""
+          }
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: 'The line α ∩ β is parallel to l.'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "The line α ∩ β is parallel to l.",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "All steps are valid: definition of parallel line and plane, construction of intersection line, assumption of non-parallel lines leading to intersection point, contradiction with given parallelism, conclusion of parallelism, and note that l is not contained in α so lines are distinct."
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "The line α ∩ β is parallel to l.",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "All steps are valid: definition of parallel line and plane, construction of intersection line, assumption of non-parallel lines leading to intersection point, contradiction with given parallelism, conclusion of parallelism, and note that l is not contained in α so lines are distinct."
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='геометрия' vs expected='Теория чисел', subtopic='стереометрия' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "геометрия",
+            "classifier_subtopic": "стереометрия",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L3, target: L4, confidence: 0.95, match: False",
+          "confidence": 0.95,
+          "data": {
+            "estimated_level": "L3",
+            "target_level": "L4",
+            "confidence": 0.95,
+            "probabilities": {
+              "L3": 0.9,
+              "L4": 0.1,
+              "L5": 0.0,
+              "L6": 0.0
+            },
+            "level_match": false
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T028|S1": {
+      "slot_key": "G10|L4|T028|S1",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:31:50.796887",
+      "completed_at": "2026-07-17T23:34:14.484468",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver answer: 'Доказано, что либо все три прямые компланарны, либо проходят через одну точку.' vs Generator: 'Proof: The lines are either all coplanar or all concurrent.'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "Доказано, что либо все три прямые компланарны, либо проходят через одну точку.",
+            "solver_solution": "Рассмотрим три различные прямые \\(a, b, c\\) в пространстве, такие что каждая пара пересекается. Обозначим точки пересечения: \\(A = b \\cap c\\), \\(B = a \\cap c\\), \\(C = a \\cap b\\). Возможны два случая.\n\n1) Все три точки различны. Тогда они не могут лежать на одной прямой, так как иначе каждая из прямых \\(a, b, c\\) содержала бы две из этих точек и совпала бы с этой прямой, что противоречит различности прямых. Следовательно, точки \\(A, B, C\\) образуют невырожденный треугольник. Через эти три точки проходит единственная плоскость. Прямая \\(a\\) содержит точки \\(B\\) и \\(C\\), поэтому лежит в этой плоскости. Аналогично, \\(b\\) содержит \\(A\\) и \\(C\\), \\(c\\) содержит \\(A\\) и \\(B\\), значит все три прямые лежат в одной плоскости, то есть компланарны.\n\n2) Среди точек \\(A, B, C\\) есть совпадающие. Пусть, например, \\(A = B\\), то есть \\(b \\cap c = a \\cap c = P\\). Тогда \\(P\\) принадлежит \\(a\\), \\(b\\) и \\(c\\), следовательно все три прямые проходят через точку \\(P\\). Аналогично для других совпадений. Если все три точки совпадают, то имеем общую точку.\n\nТаким образом, в любом случае либо все три прямые компланарны, либо все три проходят через одну общую точку.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1156 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1156,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Answer in solution: False, answer match: False",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": false
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "Solver B answer: 'Доказано: либо все три прямые компланарны, либо все проходят через одну общую то' vs Generator: 'Proof: The lines are either all coplanar or all concurrent.'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "Доказано: либо все три прямые компланарны, либо все проходят через одну общую точку.",
+            "solver_solution": "Пусть a, b, c — три различные прямые в пространстве, и каждая пара пересекается: a ∩ b ≠ ∅, b ∩ c ≠ ∅, a ∩ c ≠ ∅. Обозначим точки пересечения: A = a ∩ b, B = b ∩ c, C = a ∩ c. Возможны два случая.\n\n1. Если A = B = C (все три точки совпадают), то все три прямые проходят через одну общую точку. Утверждение доказано.\n\n2. Если не все точки совпадают, то хотя бы две из них различны. Покажем, что в этом случае все три прямые лежат в одной плоскости.\n   - Поскольку A и B принадлежат прямой b, а прямая b содержит две различные точки (если A и B различны, то они задают b; если A = B, то они совпадают, но тогда A = C или B = C, что рассмотрено в случае 1). Итак, без ограничения общности, пусть A ≠ B (иначе аналогично с другими парами). Тогда точки A и B определяют прямую b.\n   - Точки A и C принадлежат прямой a, а точки B и C — прямой c. Рассмотрим плоскость, проходящую через точки A, B, C. Эти три точки не коллинеарны, иначе прямые a, b, c совпали бы (если A, B, C лежат на одной прямой, то a = AC, b = AB, c = BC — все три прямые совпадают с этой прямой, что противоречит условию различности прямых). Следовательно, точки A, B, C образуют невырожденный треугольник, и существует единственная плоскость, их содержащая.\n   - Так как a содержит точки A и C, она лежит в этой плоскости. Аналогично, b содержит A и B, а c содержит B и C, поэтому все три прямые лежат в данной плоскости. Таким образом, прямые компланарны.\n\nИтак, доказано, что либо все три прямые проходят через одну точку, либо все они лежат в одной плоскости.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1528 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1528,
+            "notes": ""
+          }
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": false,
+          "details": "ARBITER failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": false,
+          "details": "ARBITER failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "ARBITER failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='геометрия' vs expected='Теория чисел', subtopic='взаимное расположение прямых в пространстве' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "геометрия",
+            "classifier_subtopic": "взаимное расположение прямых в пространстве",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L3, target: L4, confidence: 0.90, match: False",
+          "confidence": 0.9,
+          "data": {
+            "estimated_level": "L3",
+            "target_level": "L4",
+            "confidence": 0.9,
+            "probabilities": {
+              "L3": 0.9,
+              "L4": 0.1,
+              "L5": 0.0,
+              "L6": 0.0
+            },
+            "level_match": false
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T014|S0": {
+      "slot_key": "G10|L4|T014|S0",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:31:50.799132",
+      "completed_at": "2026-07-17T23:34:41.720999",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "Solver B answer: '[-1/3, 1/√13)' vs Generator: '\\(x \\in \\left[ -\\frac{1}{3}, \\frac{1}{\\sqrt{13}} \\right)\\).'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "[-1/3, 1/√13)",
+            "solver_solution": "Дано неравенство: \\(\\arcsin(2x) < \\arccos(3x)\\).\n\n1. Найдём область определения:\n   - \\(\\arcsin(2x)\\) определён при \\(|2x| \\leq 1\\), т.е. \\(-\\frac{1}{2} \\leq x \\leq \\frac{1}{2}\\).\n   - \\(\\arccos(3x)\\) определён при \\(|3x| \\leq 1\\), т.е. \\(-\\frac{1}{3} \\leq x \\leq \\frac{1}{3}\\).\n   Пересечение: \\(x \\in \\left[-\\frac{1}{3}, \\frac{1}{3}\\right]\\).\n\n2. Рассмотрим \\(x < 0\\). На этом интервале \\(\\arcsin(2x) < 0\\), а \\(\\arccos(3x) \\geq \\arccos(0) = \\frac{\\pi}{2} > 0\\), следовательно неравенство выполняется для всех \\(x \\in \\left[-\\frac{1}{3}, 0\\right)\\). При \\(x = 0\\): \\(\\arcsin(0)=0 < \\arccos(0)=\\frac{\\pi}{2}\\), верно.\n\n3. Рассмотрим \\(x \\geq 0\\). Функция \\(\\arcsin(2x)\\) возрастает от 0 до \\(\\arcsin\\left(\\frac{2}{3}\\right) \\approx 0.7297\\), а \\(\\arccos(3x)\\) убывает от \\(\\frac{\\pi}{2}\\) до 0. Неравенство будет выполняться до точки равенства. Найдём её:\n   \\(\\arcsin(2x) = \\arccos(3x)\\).\n   Возьмём синус от обеих частей: \\(\\sin(\\arcsin(2x)) = \\sin(\\arccos(3x))\\).\n   \\(2x = \\sqrt{1 - (3x)^2}\\) (синус неотрицателен, так как \\(\\arccos(3x) \\in [0, \\pi/2]\\) для \\(x\\geq0\\)).\n   Возводим в квадрат: \\(4x^2 = 1 - 9x^2 \\Rightarrow 13x^2 = 1 \\Rightarrow x = \\frac{1}{\\sqrt{13}}\\) (положительный корень).\n   Проверка: \\(\\arcsin\\left(\\frac{2}{\\sqrt{13}}\\right) = \\arccos\\left(\\frac{3}{\\sqrt{13}}\\right)\\).\n\n4. На \\([0, \\frac{1}{\\sqrt{13}})\\) имеем \\(\\arcsin(2x) < \\arccos(3x)\\), на \\((\\frac{1}{\\sqrt{13}}, \\frac{1}{3}]\\) — обратное неравенство. Точка \\(x = \\frac{1}{\\sqrt{13}}\\) даёт равенство, поэтому в решение не входит.\n\n5. Объединяя с отрицательной частью, получаем окончательное решение: \\(x \\in \\left[-\\frac{1}{3}, \\frac{1}{\\sqrt{13}}\\right)\\).\n\nОтвет: \\(\\left[-\\frac{1}{3}, \\frac{1}{\\sqrt{13}}\\right)\\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1706 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1706,
+            "notes": ""
+          }
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '[-1/3, 1/√13)'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "[-1/3, 1/√13)",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "[-1/3, 1/√13)",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='обратные тригонометрические функции' vs expected='Теория чисел', subtopic='решение неравенств с arcsin и arccos' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "обратные тригонометрические функции",
+            "classifier_subtopic": "решение неравенств с arcsin и arccos",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Level calibrator failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T014|S2": {
+      "slot_key": "G10|L4|T014|S2",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:31:50.801398",
+      "completed_at": "2026-07-17T23:35:34.762352",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '\\(\\left(\\frac{1}{\\sqrt{5}},\\frac{1}{2}\\right]\\)'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "\\(\\left(\\frac{1}{\\sqrt{5}},\\frac{1}{2}\\right]\\)",
+            "solver_solution": "Область определения: \\(\\arcsin x\\) определён при \\(|x|\\le 1\\), \\(\\arccos(2x)\\) определён при \\(|2x|\\le 1\\), то есть \\(|x|\\le \\frac{1}{2}\\). Пересечение: \\(x\\in\\left[-\\frac{1}{2},\\frac{1}{2}\\right]\\).\n\nРассмотрим функцию \\(f(x)=\\arcsin x-\\arccos(2x)\\). Она строго возрастает на области определения, так как \\(f'(x)=\\frac{1}{\\sqrt{1-x^2}}+\\frac{2}{\\sqrt{1-4x^2}}>0\\).\n\nНайдём корень уравнения \\(\\arcsin x=\\arccos(2x)\\). Используем тождество \\(\\arccos(2x)=\\frac{\\pi}{2}-\\arcsin(2x)\\). Тогда уравнение принимает вид \\(\\arcsin x+\\arcsin(2x)=\\frac{\\pi}{2}\\). Возьмём синус от обеих частей: \\(\\sin(\\arcsin x+\\arcsin(2x))=1\\). Раскрываем: \\(x\\sqrt{1-4x^2}+2x\\sqrt{1-x^2}=1\\). Проверка показывает, что \\(x=\\frac{1}{\\sqrt{5}}\\) удовлетворяет (подстановка даёт \\(\\frac{1}{5}+\\frac{4}{5}=1\\)). Значение \\(x=-\\frac{1}{\\sqrt{5}}\\) не подходит, так как даёт \\(-1\\). Таким образом, единственное решение уравнения: \\(x_0=\\frac{1}{\\sqrt{5}}\\).\n\nТак как \\(f(x)\\) возрастает, то \\(f(x)>0\\) при \\(x>x_0\\), и \\(f(x)<0\\) при \\(x<x_0\\). С учётом области определения \\(x\\in\\left[-\\frac{1}{2},\\frac{1}{2}\\right]\\), неравенство \\(\\arcsin x>\\arccos(2x)\\) выполняется для \\(x\\in\\left(\\frac{1}{\\sqrt{5}},\\frac{1}{2}\\right]\\). Правая граница включается, так как при \\(x=\\frac{1}{2}\\): \\(\\arcsin\\frac{1}{2}=\\frac{\\pi}{6}>0=\\arccos 1\\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1303 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1303,
+            "notes": ""
+          }
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: 'x ∈ (1/√5, 1/2]'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "x ∈ (1/√5, 1/2]",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "x ∈ (1/√5, 1/2]",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='обратные тригонометрические функции' vs expected='Теория чисел', subtopic='неравенства с обратными тригонометрическими функциями' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "обратные тригонометрические функции",
+            "classifier_subtopic": "неравенства с обратными тригонометрическими функциями",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Level calibrator failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T014|S1": {
+      "slot_key": "G10|L4|T014|S1",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:31:50.800584",
+      "completed_at": "2026-07-17T23:35:47.180006",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '\\(x < \\frac{\\sqrt{17} - 3}{4}\\)'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "\\(x < \\frac{\\sqrt{17} - 3}{4}\\)",
+            "solver_solution": "Рассмотрим функцию \\(f(x)=\\arctan x+\\arctan(2x)\\). Она определена и непрерывна на \\(\\mathbb{R}\\). Производная \\(f'(x)=\\frac{1}{1+x^2}+\\frac{2}{1+4x^2}>0\\), поэтому \\(f(x)\\) строго возрастает. При \\(x=0\\): \\(f(0)=0<\\frac{\\pi}{4}\\). При \\(x\\to+\\infty\\): \\(f(x)\\to\\pi>\\frac{\\pi}{4}\\). Значит, существует единственное \\(x_0>0\\) такое, что \\(f(x_0)=\\frac{\\pi}{4}\\). Для \\(x<0\\) \\(f(x)<0<\\frac{\\pi}{4}\\), поэтому все отрицательные \\(x\\) удовлетворяют неравенству. Таким образом, решение неравенства — \\(x<x_0\\). Найдём \\(x_0\\), решив уравнение \\(\\arctan x+\\arctan(2x)=\\frac{\\pi}{4}\\). Возьмём тангенс от обеих частей: \\(\\tan(\\arctan x+\\arctan(2x))=\\tan\\frac{\\pi}{4}=1\\). Используя формулу тангенса суммы, получим \\(\\frac{x+2x}{1-x\\cdot2x}=1\\) или \\(\\frac{3x}{1-2x^2}=1\\). Отсюда \\(3x=1-2x^2\\), \\(2x^2+3x-1=0\\). Корни: \\(x=\\frac{-3\\pm\\sqrt{17}}{4}\\). Положительный корень \\(x_0=\\frac{-3+\\sqrt{17}}{4}\\) (отрицательный не подходит, так как при нём сумма арктангенсов равна \\(-\\frac{3\\pi}{4}\\), а не \\(\\frac{\\pi}{4}\\)). Следовательно, неравенство выполняется при \\(x<\\frac{\\sqrt{17}-3}{4}\\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1082 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1082,
+            "notes": ""
+          }
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '(-∞, (√17 - 3)/4)'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "(-∞, (√17 - 3)/4)",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "(-∞, (√17 - 3)/4)",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='обратные тригонометрические функции' vs expected='Теория чисел', subtopic='неравенства с арктангенсами' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "обратные тригонометрические функции",
+            "classifier_subtopic": "неравенства с арктангенсами",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Level calibrator failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L5|T029|S2": {
+      "slot_key": "G10|L5|T029|S2",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:35:50.189840",
+      "completed_at": "2026-07-17T23:37:29.303580",
+      "task_type": "proof",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '24'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "24",
+            "solver_solution": "Пусть длины рёбер прямоугольного параллелепипеда равны \\(a, b, c\\), а вершина \\(A\\) находится в начале координат \\((0,0,0)\\). Тогда центры трёх граней, не содержащих \\(A\\), имеют координаты: для грани, перпендикулярной оси \\(x\\), — \\((a, b/2, c/2)\\); для грани, перпендикулярной оси \\(y\\), — \\((a/2, b, c/2)\\); для грани, перпендикулярной оси \\(z\\), — \\((a/2, b/2, c)\\). Расстояния от \\(A\\) до этих центров заданы:\n\\[\\sqrt{a^2 + \\frac{b^2}{4} + \\frac{c^2}{4}} = \\frac{\\sqrt{77}}{2},\\quad \\sqrt{\\frac{a^2}{4} + b^2 + \\frac{c^2}{4}} = \\frac{\\sqrt{41}}{2},\\quad \\sqrt{\\frac{a^2}{4} + \\frac{b^2}{4} + c^2} = \\sqrt{14}.\\]\nВозводя в квадрат и умножая на 4, получаем систему:\n\\[\n\\begin{cases}\n4a^2 + b^2 + c^2 = 77,\\\\\na^2 + 4b^2 + c^2 = 41,\\\\\na^2 + b^2 + 4c^2 = 56.\n\\end{cases}\n\\]\nОбозначим \\(x = a^2, y = b^2, z = c^2\\). Тогда:\n\\[\n\\begin{cases}\n4x + y + z = 77,\\\\\nx + 4y + z = 41,\\\\\nx + y + 4z = 56.\n\\end{cases}\n\\]\nВычитая второе уравнение из первого, получим \\(3x - 3y = 36\\), откуда \\(x - y = 12\\). Вычитая третье из первого, получим \\(3x - 3z = 21\\), откуда \\(x - z = 7\\). Выражаем \\(y = x - 12\\), \\(z = x - 7\\). Подставляем во второе уравнение:\n\\[(x) + 4(x-12) + (x-7) = 41 \\implies x + 4x - 48 + x - 7 = 41 \\implies 6x - 55 = 41 \\implies 6x = 96 \\implies x = 16.\\]\nТогда \\(y = 4\\), \\(z = 9\\). Следовательно, \\(a = \\sqrt{16} = 4\\), \\(b = \\sqrt{4} = 2\\), \\(c = \\sqrt{9} = 3\\). Объём \\(V = a \\cdot b \\cdot c = 4 \\cdot 2 \\cdot 3 = 24\\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1431 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1431,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": true,
+          "details": "Answer in solution: True, answer match: True",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": true
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '24'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "24",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "24",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "Proof transitions valid: True, notes: N/A (computable)",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "24",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='стереометрия' vs expected='Тригонометрия', subtopic='прямоугольный параллелепипед' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "стереометрия",
+            "classifier_subtopic": "прямоугольный параллелепипед",
+            "expected_topic": "Тригонометрия",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Level calibrator failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L5|T029|S0": {
+      "slot_key": "G10|L5|T029|S0",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:35:50.188285",
+      "completed_at": "2026-07-17T23:38:48.607264",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: 'The plane divides DD1 in the ratio 1:1 (i.e., it bisects DD1).'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "The plane divides DD1 in the ratio 1:1 (i.e., it bisects DD1).",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": false,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "The plane divides DD1 in the ratio 1:1 (i.e., it bisects DD1).",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": false,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='стереометрия' vs expected='Тригонометрия', subtopic='сечение многогранников плоскостью' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "стереометрия",
+            "classifier_subtopic": "сечение многогранников плоскостью",
+            "expected_topic": "Тригонометрия",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L4, target: L5, confidence: 0.70, match: False",
+          "confidence": 0.7,
+          "data": {
+            "estimated_level": "L4",
+            "target_level": "L5",
+            "confidence": 0.7,
+            "probabilities": {
+              "L3": 0.2,
+              "L4": 0.6,
+              "L5": 0.2,
+              "L6": 0.0
+            },
+            "level_match": false
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L5|T013|S1": {
+      "slot_key": "G10|L5|T013|S1",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:35:50.192117",
+      "completed_at": "2026-07-17T23:39:15.865661",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '(\\sqrt{2}-1, 1)'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "(\\sqrt{2}-1, 1)",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "(\\sqrt{2}-1, 1)",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='алгебра' vs expected='Тригонометрия', subtopic='логарифмические неравенства с переменным основанием' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "алгебра",
+            "classifier_subtopic": "логарифмические неравенства с переменным основанием",
+            "expected_topic": "Тригонометрия",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Level calibrator failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L5|T013|S0": {
+      "slot_key": "G10|L5|T013|S0",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:35:50.190921",
+      "completed_at": "2026-07-17T23:39:26.801900",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": false,
+          "details": "ARBITER failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": false,
+          "details": "ARBITER failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "ARBITER failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='логарифмические неравенства' vs expected='Тригонометрия', subtopic='неравенства с переменным основанием логарифма' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "логарифмические неравенства",
+            "classifier_subtopic": "неравенства с переменным основанием логарифма",
+            "expected_topic": "Тригонометрия",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L3, target: L5, confidence: 0.80, match: False",
+          "confidence": 0.8,
+          "data": {
+            "estimated_level": "L3",
+            "target_level": "L5",
+            "confidence": 0.8,
+            "probabilities": {
+              "L3": 0.7,
+              "L4": 0.2,
+              "L5": 0.05,
+              "L6": 0.05
+            },
+            "level_match": false
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L5|T029|S1": {
+      "slot_key": "G10|L5|T029|S1",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:35:50.188816",
+      "completed_at": "2026-07-17T23:39:27.520261",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '1:47'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "1:47",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "1:47",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='стереометрия' vs expected='Тригонометрия', subtopic='объемы частей многогранников при сечении плоскостью' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "стереометрия",
+            "classifier_subtopic": "объемы частей многогранников при сечении плоскостью",
+            "expected_topic": "Тригонометрия",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Level calibrator failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T030|S0": {
+      "slot_key": "G10|L4|T030|S0",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:39:30.532271",
+      "completed_at": "2026-07-17T23:40:37.302225",
+      "task_type": "proof",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '4/9'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "4/9",
+            "solver_solution": "Пусть высота цилиндра h, радиус r. Из подобия: r = R(1 - h/H). Объем цилиндра V_ц = π r^2 h = π R^2 h (1 - h/H)^2. Введем x = h/H, тогда V_ц = π R^2 H x (1-x)^2. Функция f(x)=x(1-x)^2. Производная f'(x)=(1-x)^2 - 2x(1-x) = (1-x)(1-3x). f'(x)=0 при x=1/3 (максимум). Тогда h = H/3, r = 2R/3. V_ц = π R^2 H * (1/3)*(4/9) = (4/27)π R^2 H. Объем конуса V_к = (1/3)π R^2 H. Отношение: V_ц / V_к = (4/27) / (1/3) = 4/9.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 413 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 413,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": true,
+          "details": "Answer in solution: True, answer match: True",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": true
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '4/9'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "4/9",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": false,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "4/9",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": false,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": false,
+          "details": "Proof transitions valid: False, notes: N/A (computable)",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "4/9",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": false,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='экстремум' vs expected='Теория чисел', subtopic='геометрические экстремальные задачи (вписанные фигуры)' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "экстремум",
+            "classifier_subtopic": "геометрические экстремальные задачи (вписанные фигуры)",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": true,
+          "details": "Estimated: L4, target: L4, confidence: 0.85, match: True",
+          "confidence": 0.85,
+          "data": {
+            "estimated_level": "L4",
+            "target_level": "L4",
+            "confidence": 0.85,
+            "probabilities": {
+              "L3": 0.15,
+              "L4": 0.7,
+              "L5": 0.1,
+              "L6": 0.05
+            },
+            "level_match": true
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L5|T013|S2": {
+      "slot_key": "G10|L5|T013|S2",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:39:30.528254",
+      "completed_at": "2026-07-17T23:40:52.514489",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '[2-√2, 1)'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "[2-√2, 1)",
+            "solver_solution": "Рассмотрим неравенство \\(\\log_{3-2x}(x^2-2x+1) \\leq \\log_{3-2x}(2x-1)\\). Найдем ОДЗ: основание логарифма должно быть положительным и не равным 1: \\(3-2x>0\\) и \\(3-2x \\neq 1\\), откуда \\(x<\\frac{3}{2}\\) и \\(x\\neq 1\\). Аргументы логарифмов должны быть положительны: \\(x^2-2x+1=(x-1)^2>0 \\Rightarrow x\\neq 1\\), и \\(2x-1>0 \\Rightarrow x>\\frac{1}{2}\\). Итого ОДЗ: \\(x\\in\\left(\\frac{1}{2},\\frac{3}{2}\\right)\\setminus\\{1\\}\\).\n\nНеравенство с логарифмом зависит от основания. Рассмотрим два случая.\n\nСлучай 1: \\(3-2x>1\\), то есть \\(x<1\\). С учетом ОДЗ: \\(x\\in\\left(\\frac{1}{2},1\\right)\\). При \\(a>1\\) неравенство \\(\\log_a f(x) \\leq \\log_a g(x)\\) равносильно \\(f(x) \\leq g(x)\\). Получаем:\n\\[(x-1)^2 \\leq 2x-1 \\Rightarrow x^2-2x+1 \\leq 2x-1 \\Rightarrow x^2-4x+2 \\leq 0.\\]\nКорни квадратного уравнения: \\(x=2\\pm\\sqrt{2}\\). Решение неравенства: \\(x\\in[2-\\sqrt{2}, 2+\\sqrt{2}]\\). Пересекая с \\(x\\in\\left(\\frac{1}{2},1\\right)\\), находим \\(x\\in[2-\\sqrt{2},1)\\).\n\nСлучай 2: \\(0<3-2x<1\\), то есть \\(x>1\\). С учетом ОДЗ: \\(x\\in\\left(1,\\frac{3}{2}\\right)\\). При \\(0<a<1\\) неравенство \\(\\log_a f(x) \\leq \\log_a g(x)\\) равносильно \\(f(x) \\geq g(x)\\). Получаем:\n\\[(x-1)^2 \\geq 2x-1 \\Rightarrow x^2-4x+2 \\geq 0.\\]\nРешение: \\(x\\leq 2-\\sqrt{2}\\) или \\(x\\geq 2+\\sqrt{2}\\). Ни один из этих промежутков не пересекается с \\((1,1.5)\\) (так как \\(2-\\sqrt{2}\\approx0.586<1\\), \\(2+\\sqrt{2}\\approx3.414>1.5\\)). Следовательно, в этом случае решений нет.\n\nОбъединяя результаты, получаем окончательный ответ: \\(x\\in\\left[2-\\sqrt{2},1\\right)\\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1503 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1503,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Answer in solution: False, answer match: True",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": false
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '[2-√2, 1)'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "[2-√2, 1)",
+            "solver_solution": "Найдем ОДЗ: основание \\(3-2x>0\\) и \\(3-2x \\neq 1\\), аргументы положительны: \\(x^2-2x+1=(x-1)^2>0\\), \\(2x-1>0\\). Отсюда \\(x<1.5\\), \\(x\\neq1\\), \\(x>0.5\\). Итого: \\(0.5<x<1.5\\), \\(x\\neq1\\).\n\nРассмотрим два случая в зависимости от основания.\n\nСлучай 1: \\(3-2x>1\\), т.е. \\(x<1\\). С учетом ОДЗ: \\(0.5<x<1\\). Тогда логарифмическая функция возрастает, и неравенство эквивалентно \\(x^2-2x+1 \\leq 2x-1\\). Преобразуем: \\(x^2-4x+2 \\leq 0\\). Корни \\(x=2\\pm\\sqrt{2}\\). Решение: \\([2-\\sqrt{2}, 2+\\sqrt{2}]\\). Пересечение с \\((0.5,1)\\) дает \\([2-\\sqrt{2}, 1)\\).\n\nСлучай 2: \\(0<3-2x<1\\), т.е. \\(x>1\\). С учетом ОДЗ: \\(1<x<1.5\\). Функция убывает, поэтому \\(x^2-2x+1 \\geq 2x-1\\), т.е. \\(x^2-4x+2 \\geq 0\\). Решение: \\((-\\infty, 2-\\sqrt{2}] \\cup [2+\\sqrt{2}, +\\infty)\\). На интервале \\((1,1.5)\\) решений нет, так как \\(2-\\sqrt{2}<1\\), а \\(2+\\sqrt{2}>1.5\\).\n\nОбъединяя, получаем ответ: \\(x \\in [2-\\sqrt{2}, 1)\\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": true,
+          "details": "Solution length: 890 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 890,
+            "notes": ""
+          }
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '[2-√2, 1)'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "[2-√2, 1)",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "[2-√2, 1)",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='логарифмические неравенства' vs expected='Тригонометрия', subtopic='логарифмические неравенства с переменным основанием' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "логарифмические неравенства",
+            "classifier_subtopic": "логарифмические неравенства с переменным основанием",
+            "expected_topic": "Тригонометрия",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Level calibrator failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L5|T014|S2": {
+      "slot_key": "G10|L5|T014|S2",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:39:30.531359",
+      "completed_at": "2026-07-17T23:43:11.023904",
+      "task_type": "proof",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '0 < x < 2'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "0 < x < 2",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "0 < x < 2",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "Proof transitions valid: True, notes: N/A (computable)",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "0 < x < 2",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='неравенства с обратными тригонометрическими функциями' vs expected='Тригонометрия', subtopic='сложение арктангенсов' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "неравенства с обратными тригонометрическими функциями",
+            "classifier_subtopic": "сложение арктангенсов",
+            "expected_topic": "Тригонометрия",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Level calibrator failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L5|T014|S0": {
+      "slot_key": "G10|L5|T014|S0",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:39:30.528738",
+      "completed_at": "2026-07-17T23:43:18.433277",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": false,
+          "details": "ARBITER failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": false,
+          "details": "ARBITER failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "ARBITER failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='тригонометрические неравенства' vs expected='Тригонометрия', subtopic='неравенства с обратными тригонометрическими функциями' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "тригонометрические неравенства",
+            "classifier_subtopic": "неравенства с обратными тригонометрическими функциями",
+            "expected_topic": "Тригонометрия",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L4, target: L5, confidence: 0.80, match: False",
+          "confidence": 0.8,
+          "data": {
+            "estimated_level": "L4",
+            "target_level": "L5",
+            "confidence": 0.8,
+            "probabilities": {
+              "L3": 0.1,
+              "L4": 0.7,
+              "L5": 0.15,
+              "L6": 0.05
+            },
+            "level_match": false
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L5|T014|S1": {
+      "slot_key": "G10|L5|T014|S1",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:39:30.529644",
+      "completed_at": "2026-07-17T23:43:38.947814",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": false,
+          "details": "ARBITER failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": false,
+          "details": "ARBITER failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "ARBITER failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='неравенства с обратными тригонометрическими функциями' vs expected='Тригонометрия', subtopic='решение неравенств, содержащих arccos и arctan' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "неравенства с обратными тригонометрическими функциями",
+            "classifier_subtopic": "решение неравенств, содержащих arccos и arctan",
+            "expected_topic": "Тригонометрия",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Level calibrator failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T029|S2": {
+      "slot_key": "G10|L4|T029|S2",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:43:41.971645",
+      "completed_at": "2026-07-17T23:44:10.761392",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '48√11'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "48√11",
+            "solver_solution": "Пусть \\(a, b, c\\) — длины ребер прямоугольного параллелепипеда, исходящих из общей вершины. Диагонали трех граней, имеющих эту вершину, равны: \\(\\sqrt{a^2+b^2}=7\\), \\(\\sqrt{a^2+c^2}=8\\), \\(\\sqrt{b^2+c^2}=9\\). Возводя в квадрат, получаем систему:\n\\[\na^2+b^2=49,\\quad a^2+c^2=64,\\quad b^2+c^2=81.\n\\]\nСложим все три уравнения: \\(2(a^2+b^2+c^2)=49+64+81=194\\), откуда \\(a^2+b^2+c^2=97\\). Вычитая первое уравнение, находим \\(c^2=97-49=48\\), следовательно \\(c=\\sqrt{48}=4\\sqrt{3}\\). Вычитая второе, получаем \\(b^2=97-64=33\\), \\(b=\\sqrt{33}\\). Вычитая третье, имеем \\(a^2=97-81=16\\), \\(a=4\\). Объем параллелепипеда равен \\(V=abc=4\\cdot\\sqrt{33}\\cdot4\\sqrt{3}=16\\sqrt{99}=16\\cdot3\\sqrt{11}=48\\sqrt{11}\\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 696 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 696,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Answer in solution: False, answer match: True",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": false
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '48√11'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "48√11",
+            "solver_solution": "Пусть ребра прямоугольного параллелепипеда, выходящие из общей вершины, равны \\(a, b, c\\). Тогда диагонали граней, содержащих эту вершину, выражаются по теореме Пифагора: \\(\\sqrt{a^2+b^2} = 7\\), \\(\\sqrt{a^2+c^2} = 8\\), \\(\\sqrt{b^2+c^2} = 9\\). Возводим в квадрат: \\(a^2+b^2 = 49\\), \\(a^2+c^2 = 64\\), \\(b^2+c^2 = 81\\). Сложим все три равенства: \\(2(a^2+b^2+c^2) = 49+64+81 = 194\\), откуда \\(a^2+b^2+c^2 = 97\\). Теперь поочередно вычитаем: \\(a^2 = (a^2+b^2+c^2) - (b^2+c^2) = 97-81 = 16\\), \\(a = 4\\); \\(b^2 = 97 - 64 = 33\\), \\(b = \\sqrt{33}\\); \\(c^2 = 97 - 49 = 48\\), \\(c = \\sqrt{48} = 4\\sqrt{3}\\). Объем параллелепипеда: \\(V = abc = 4 \\cdot \\sqrt{33} \\cdot \\sqrt{48} = 4 \\sqrt{33 \\cdot 48} = 4 \\sqrt{1584} = 4 \\sqrt{16 \\cdot 99} = 4 \\cdot 4 \\sqrt{99} = 16 \\sqrt{99} = 16 \\cdot 3 \\sqrt{11} = 48 \\sqrt{11}\\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": true,
+          "details": "Solution length: 804 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 804,
+            "notes": ""
+          }
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '48√11'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "48√11",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": false,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "48√11",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": false,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='стереометрия' vs expected='Теория чисел', subtopic='прямоугольный параллелепипед' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "стереометрия",
+            "classifier_subtopic": "прямоугольный параллелепипед",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L3, target: L4, confidence: 0.90, match: False",
+          "confidence": 0.9,
+          "data": {
+            "estimated_level": "L3",
+            "target_level": "L4",
+            "confidence": 0.9,
+            "probabilities": {
+              "L3": 0.9,
+              "L4": 0.1,
+              "L5": 0.0,
+              "L6": 0.0
+            },
+            "level_match": false
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T029|S0": {
+      "slot_key": "G10|L4|T029|S0",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:43:41.959612",
+      "completed_at": "2026-07-17T23:44:40.887659",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '8'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "8",
+            "solver_solution": "Введем систему координат: A(0,0,0), B(6,0,0), D(0,8,0), A1(0,0,10), C(6,8,0), C1(6,8,10). Тогда K — середина BB1: B(6,0,0), B1(6,0,10) → K(6,0,5). L на CC1 с CL:LC1=1:2: L = C + (1/3)(C1-C) = (6,8,0) + (1/3)(0,0,10) = (6,8,10/3). Направляющий вектор AK: \\(\\vec{a} = (6,0,5)\\). Направляющий вектор DL: \\(\\vec{d} = (6,0,10/3)\\). Вектор между точками A и D: \\(\\vec{AD} = (0,8,0)\\). Найдем векторное произведение: \\(\\vec{a} \\times \\vec{d} = (0,10,0)\\), его длина \\(|\\vec{a} \\times \\vec{d}| = 10\\). Смешанное произведение: \\(\\vec{AD} \\cdot (\\vec{a} \\times \\vec{d}) = 0\\cdot0 + 8\\cdot10 + 0\\cdot0 = 80\\). Расстояние между прямыми: \\(\\frac{|\\vec{AD} \\cdot (\\vec{a} \\times \\vec{d})|}{|\\vec{a} \\times \\vec{d}|} = \\frac{80}{10} = 8\\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 724 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 724,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": true,
+          "details": "Answer in solution: True, answer match: True",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": true
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '8'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "8",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "8",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='стереометрия' vs expected='Теория чисел', subtopic='расстояние между скрещивающимися прямыми' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "стереометрия",
+            "classifier_subtopic": "расстояние между скрещивающимися прямыми",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Estimated: L4, target: L4, confidence: 0.70, match: True",
+          "confidence": 0.7,
+          "data": {
+            "estimated_level": "L4",
+            "target_level": "L4",
+            "confidence": 0.7,
+            "probabilities": {
+              "L3": 0.1,
+              "L4": 0.7,
+              "L5": 0.2,
+              "L6": 0.0
+            },
+            "level_match": true
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.031 (threshold=0.6)",
+          "confidence": 0.96875,
+          "data": {
+            "max_similarity": 0.03125,
+            "duplicate_of": "",
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T029|S1": {
+      "slot_key": "G10|L4|T029|S1",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:43:41.960506",
+      "completed_at": "2026-07-17T23:44:54.983620",
+      "task_type": "proof",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '12√2'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "12√2",
+            "solver_solution": "Введем систему координат с началом в точке A. Ось X направим вдоль AB, ось Y в плоскости основания перпендикулярно AB так, чтобы AD лежал в плоскости XY. Тогда координаты векторов: AB = (2;0;0). AD = (3 \\cos 60^\\circ; 3 \\sin 60^\\circ; 0) = (1.5; \\frac{3\\sqrt{3}}{2}; 0). Пусть AA1 = (x; y; z). Из условия: |AA1| = 4; ∠A1AB = 90^\\circ ⇒ AA1 · AB = 0 ⇒ 2x = 0 ⇒ x = 0. ∠A1AD = 60^\\circ ⇒ AA1 · AD = |AA1||AD| \\cos 60^\\circ = 4 \\cdot 3 \\cdot 0.5 = 6. Вычисляем скалярное произведение: (0; y; z) · (1.5; \\frac{3\\sqrt{3}}{2}; 0) = \\frac{3\\sqrt{3}}{2} y = 6 ⇒ y = \\frac{4}{\\sqrt{3}} = \\frac{4\\sqrt{3}}{3}. Из |AA1|^2 = 0^2 + y^2 + z^2 = 16 ⇒ z^2 = 16 - y^2 = 16 - \\frac{16}{3} = \\frac{32}{3} ⇒ |z| = \\frac{4\\sqrt{6}}{3}. Объем параллелепипеда равен модулю смешанного произведения векторов AB, AD, AA1: V = |(AB × AD) · AA1|. Вычислим векторное произведение: AB × AD = (0;0;2·\\frac{3\\sqrt{3}}{2}) = (0;0;3\\sqrt{3}). Смешанное произведение: (0;0;3\\sqrt{3})·(0;y;z) = 3\\sqrt{3}·z. Объем: V = 3\\sqrt{3}·|z| = 3\\sqrt{3}·\\frac{4\\sqrt{6}}{3} = 4\\sqrt{18} = 4·3\\sqrt{2} = 12\\sqrt{2}.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1069 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1069,
+            "notes": ""
+          }
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Answer in solution: False, answer match: True",
+          "confidence": 1.0,
+          "data": {
+            "answer_in_solution": false
+          }
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": true,
+          "details": "Solver confidence: 1.00 (threshold: 0.7)",
+          "confidence": 1.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": true,
+          "details": "Match OK: '12√2'",
+          "confidence": 1.0,
+          "data": {
+            "solver_answer": "12√2",
+            "solver_solution": "Обозначим векторы: \\( \\vec{a} = \\overrightarrow{AB} \\), \\( \\vec{b} = \\overrightarrow{AD} \\), \\( \\vec{c} = \\overrightarrow{AA_1} \\). Даны длины: \\( |\\vec{a}| = 2 \\), \\( |\\vec{b}| = 3 \\), \\( |\\vec{c}| = 4 \\). Углы: \\( \\angle(\\vec{a},\\vec{b}) = 60^\\circ \\), \\( \\angle(\\vec{a},\\vec{c}) = 90^\\circ \\), \\( \\angle(\\vec{b},\\vec{c}) = 60^\\circ \\). Вычислим скалярные произведения:\n\\( \\vec{a} \\cdot \\vec{b} = |\\vec{a}||\\vec{b}|\\cos 60^\\circ = 2 \\cdot 3 \\cdot \\frac{1}{2} = 3 \\),\n\\( \\vec{a} \\cdot \\vec{c} = 2 \\cdot 4 \\cdot \\cos 90^\\circ = 0 \\),\n\\( \\vec{b} \\cdot \\vec{c} = 3 \\cdot 4 \\cdot \\cos 60^\\circ = 6 \\).\nОбъем параллелепипеда равен модулю смешанного произведения: \\( V = |(\\vec{a} \\times \\vec{b}) \\cdot \\vec{c}| \\). Квадрат объема равен определителю матрицы Грама:\n\\[ V^2 = \\det\\begin{pmatrix}\n\\vec{a}\\cdot\\vec{a} & \\vec{a}\\cdot\\vec{b} & \\vec{a}\\cdot\\vec{c} \\\\\n\\vec{b}\\cdot\\vec{a} & \\vec{b}\\cdot\\vec{b} & \\vec{b}\\cdot\\vec{c} \\\\\n\\vec{c}\\cdot\\vec{a} & \\vec{c}\\cdot\\vec{b} & \\vec{c}\\cdot\\vec{c}\n\\end{pmatrix} = \\det\\begin{pmatrix}\n4 & 3 & 0 \\\\\n3 & 9 & 6 \\\\\n0 & 6 & 16\n\\end{pmatrix}. \\]\nВычислим определитель:\n\\[ \\det = 4 \\cdot \\det\\begin{pmatrix} 9 & 6 \\\\ 6 & 16 \\end{pmatrix} - 3 \\cdot \\det\\begin{pmatrix} 3 & 6 \\\\ 0 & 16 \\end{pmatrix} = 4 \\cdot (9\\cdot16 - 6\\cdot6) - 3 \\cdot (3\\cdot16 - 6\\cdot0) \\]\n\\[ = 4 \\cdot (144 - 36) - 3 \\cdot 48 = 4 \\cdot 108 - 144 = 432 - 144 = 288. \\]\nОтсюда \\( V = \\sqrt{288} = \\sqrt{144 \\cdot 2} = 12\\sqrt{2} \\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          }
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": true,
+          "details": "Solution length: 1435 chars, notes: ''",
+          "confidence": 1.0,
+          "data": {
+            "solution_length": 1435,
+            "notes": ""
+          }
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '12√2'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "12√2",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "12√2",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "Proof transitions valid: True, notes: N/A (computable)",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "12√2",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='стереометрия' vs expected='Теория чисел', subtopic='объем наклонного параллелепипеда' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "стереометрия",
+            "classifier_subtopic": "объем наклонного параллелепипеда",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Level calibrator failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T030|S2": {
+      "slot_key": "G10|L4|T030|S2",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:43:41.958954",
+      "completed_at": "2026-07-17T23:46:52.963975",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '128π/3'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "128π/3",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "128π/3",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='математический анализ' vs expected='Теория чисел', subtopic='оптимизация (экстремум функции)' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "математический анализ",
+            "classifier_subtopic": "оптимизация (экстремум функции)",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": true,
+          "details": "Estimated: L4, target: L4, confidence: 0.75, match: True",
+          "confidence": 0.75,
+          "data": {
+            "estimated_level": "L4",
+            "target_level": "L4",
+            "confidence": 0.75,
+            "probabilities": {
+              "L3": 0.15,
+              "L4": 0.7,
+              "L5": 0.1,
+              "L6": 0.05
+            },
+            "level_match": true
+          }
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    },
+    "G10|L4|T030|S1": {
+      "slot_key": "G10|L4|T030|S1",
+      "candidate_id": "unknown",
+      "overall_accepted": false,
+      "started_at": "2026-07-17T23:43:41.957819",
+      "completed_at": "2026-07-17T23:46:54.993490",
+      "task_type": "computable",
+      "conditions": {
+        "c01_solver_a_answer": {
+          "condition_id": "c01_solver_a_answer",
+          "condition_name": "SOLVER_A: answer matches generator",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c02_solver_a_solution": {
+          "condition_id": "c02_solver_a_solution",
+          "condition_name": "SOLVER_A: solution is valid",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c03_solver_a_leads": {
+          "condition_id": "c03_solver_a_leads",
+          "condition_name": "SOLVER_A: solution leads to answer",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c04_solver_a_confidence": {
+          "condition_id": "c04_solver_a_confidence",
+          "condition_name": "SOLVER_A: confidence >= 0.7",
+          "passed": false,
+          "details": "Solver A failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c05_solver_b_answer": {
+          "condition_id": "c05_solver_b_answer",
+          "condition_name": "SOLVER_B: answer matches generator",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c06_solver_b_solution": {
+          "condition_id": "c06_solver_b_solution",
+          "condition_name": "SOLVER_B: solution is valid",
+          "passed": false,
+          "details": "SOLVER_B failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c07_arbiter_answer": {
+          "condition_id": "c07_arbiter_answer",
+          "condition_name": "ARBITER: answer correct",
+          "passed": true,
+          "details": "Verdict: confirmed, answer_correct: True, arbiter_answer: '\\(\\frac{2}{3}\\pi R^2 H\\)'",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "\\(\\frac{2}{3}\\pi R^2 H\\)",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c08_arbiter_solution": {
+          "condition_id": "c08_arbiter_solution",
+          "condition_name": "ARBITER: solution complete",
+          "passed": true,
+          "details": "Verdict: confirmed, solution_complete: True",
+          "confidence": 0.0,
+          "data": {
+            "verdict": "confirmed",
+            "arbiter_answer": "\\(\\frac{2}{3}\\pi R^2 H\\)",
+            "solution_complete": true,
+            "answer_correct": true,
+            "proof_transitions_valid": true,
+            "proof_notes": "N/A (computable)"
+          }
+        },
+        "c09_arbiter_proof": {
+          "condition_id": "c09_arbiter_proof",
+          "condition_name": "ARBITER: proof transitions valid",
+          "passed": true,
+          "details": "N/A (computable problem)",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c10_topic_match": {
+          "condition_id": "c10_topic_match",
+          "condition_name": "TOPIC: matches cell theme",
+          "passed": false,
+          "details": "Classifier topic='геометрия' vs expected='Теория чисел', subtopic='объем пересекающихся тел' vs '', confidence=0.95, topic_match=False, subtopic_match=True",
+          "confidence": 0.95,
+          "data": {
+            "classifier_topic": "геометрия",
+            "classifier_subtopic": "объем пересекающихся тел",
+            "expected_topic": "Теория чисел",
+            "expected_subtopic": "",
+            "topic_match": false,
+            "subtopic_match": true,
+            "confidence": 0.95
+          }
+        },
+        "c11_level_match": {
+          "condition_id": "c11_level_match",
+          "condition_name": "LEVEL: matches cell grade",
+          "passed": false,
+          "details": "Level calibrator failed: parse_failed",
+          "confidence": 0.0,
+          "data": {}
+        },
+        "c12_duplicate_check": {
+          "condition_id": "c12_duplicate_check",
+          "condition_name": "DUPLICATE: no duplicates in cell",
+          "passed": true,
+          "details": "No duplicates: max_similarity=0.000 (threshold=0.6)",
+          "confidence": 1.0,
+          "data": {
+            "max_similarity": 0.0,
+            "duplicate_of": null,
+            "threshold": 0.6
+          }
+        }
+      }
+    }
+  },
+  "conflicts": []
+}

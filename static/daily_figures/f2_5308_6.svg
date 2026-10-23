@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500">
+<rect width="600" height="500" fill="#0F1729"/>
+<g font-family="Arial, Helvetica, sans-serif" fill="#EAF1FA" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">
+<text x="300" y="25" font-size="16">Доска 7×6: покрытие 20 доминошками</text>
+<g font-size="12">
+<text x="120" y="52">1</text><text x="180" y="52">2</text><text x="240" y="52">3</text><text x="300" y="52">4</text><text x="360" y="52">5</text><text x="420" y="52">6</text><text x="480" y="52">7</text>
+<text x="68" y="100">1</text><text x="68" y="160">2</text><text x="68" y="220">3</text><text x="68" y="280">4</text><text x="68" y="340">5</text><text x="68" y="400">6</text>
+</g></g>
+<g fill="none" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round">
+<rect x="90" y="70" width="420" height="360"/>
+<path d="M150 70V430 M210 70V430 M270 70V430 M330 70V430 M390 70V430 M450 70V430 M90 130H510 M90 190H510 M90 250H510 M90 310H510 M90 370H510"/>
+</g>
+<g fill="#24445F" stroke="#73B6E6" stroke-width="1.8">
+<rect x="333" y="73" width="114" height="54" rx="8"/>
+<rect x="213" y="133" width="114" height="54" rx="8"/>
+<rect x="333" y="133" width="114" height="54" rx="8"/>
+<rect x="93" y="193" width="114" height="54" rx="8"/>
+<rect x="213" y="193" width="54" height="114" rx="8"/>
+<rect x="93" y="253" width="114" height="54" rx="8"/>
+<rect x="393" y="193" width="114" height="54" rx="8"/>
+<rect x="333" y="193" width="54" height="114" rx="8"/>
+<rect x="273" y="253" width="54" height="114" rx="8"/>
+<rect x="393" y="253" width="114" height="54" rx="8"/>
+<rect x="153" y="313" width="114" height="54" rx="8"/>
+<rect x="93" y="313" width="54" height="114" rx="8"/>
+<rect x="153" y="373" width="114" height="54" rx="8"/>
+<rect x="453" y="313" width="54" height="114" rx="8"/>
+<rect x="273" y="373" width="114" height="54" rx="8"/>
+<rect x="93" y="73" width="114" height="54" rx="8"/>
+<rect x="93" y="133" width="114" height="54" rx="8"/>
+<rect x="453" y="73" width="54" height="114" rx="8"/>
+<rect x="333" y="313" width="114" height="54" rx="8"/>
+<rect x="213" y="73" width="114" height="54" rx="8"/>
+</g>
+<g fill="#0F1729" stroke="#FFD166" stroke-width="1.8">
+<rect x="393" y="373" width="54" height="54"/>
+<path d="M398 378L442 422 M442 378L398 422"/>
+<rect x="273" y="193" width="54" height="54"/>
+<path d="M278 198L322 242 M322 198L278 242"/>
+</g>
+<g font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#EAF1FA" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">
+<text x="420" y="450">вырезана (6;6)</text>
+<text x="300" y="180">вырезана (4;3)</text>
+</g>
+</svg>

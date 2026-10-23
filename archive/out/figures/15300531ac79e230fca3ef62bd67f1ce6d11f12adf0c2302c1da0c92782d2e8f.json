@@ -1,0 +1,82 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "C",
+   "through": "D"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "E",
+   "circle": "w",
+   "angle": 40
+  },
+  {
+   "type": "midpoint",
+   "id": "F",
+   "of": "AE"
+  },
+  {
+   "type": "midpoint",
+   "id": "H",
+   "of": "ED"
+  },
+  {
+   "type": "midpoint",
+   "id": "G",
+   "of": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "CE"
+  },
+  {
+   "line": "DE",
+   "style": "accent"
+  },
+  {
+   "line": "FG",
+   "style": "accent"
+  },
+  {
+   "segment": "CH",
+   "style": "soft"
+  },
+  {
+   "segment": "FH",
+   "style": "soft"
+  },
+  {
+   "segment": "GC",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "CD",
+    "CE"
+   ],
+   "ticks": 1
+  },
+  {
+   "right_angle": [
+    "C",
+    "H",
+    "D"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,259 @@
+2026-07-15 23:33:18,978 - __main__ - INFO - Loaded 11640 total tasks (L2: 4492)
+2026-07-15 23:33:18,985 - __main__ - INFO - Found 8 L2 cells with holes, need 16 tasks total
+2026-07-15 23:33:18,986 - __main__ - INFO -   L2|g6|Теория чисел, делимость — 4/5 (need 1)
+2026-07-15 23:33:18,986 - __main__ - INFO -   L2|g8|Алгебра. Уравнения с параметрами и модулем — 3/5 (need 2)
+2026-07-15 23:33:18,986 - __main__ - INFO -   L2|g8|Геометрия: подобие — 4/5 (need 1)
+2026-07-15 23:33:18,986 - __main__ - INFO -   L2|g9|Алгебра. Уравнения и неравенства — 3/5 (need 2)
+2026-07-15 23:33:18,987 - __main__ - INFO -   L2|g9|Логика. Рыцари, лжецы, хитрецы — 1/5 (need 4)
+2026-07-15 23:33:18,987 - __main__ - INFO -   L2|g9|Метод интервалов — 3/5 (need 2)
+2026-07-15 23:33:18,987 - __main__ - INFO -   L2|g10|Теория чисел. Китайская теорема об остатках — 4/5 (need 1)
+2026-07-15 23:33:18,987 - __main__ - INFO -   L2|g11|Теория чисел. Диофантовы задачи — 2/5 (need 3)
+2026-07-15 23:33:18,987 - ai.deepseek_client - INFO - 🔄 Using official DeepSeek API (direct)
+2026-07-15 23:33:18,987 - __main__ - INFO - 
+[1/8] L2|g6|Теория чисел, делимость — need 1 task(s)
+2026-07-15 23:33:18,988 - __main__ - INFO -   Task 1/1 for L2|g6|Теория чисел, делимость
+2026-07-15 23:33:18,988 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:33:27,976 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:33:27,979 - __main__ - INFO -     ✓ Generated task 1 (attempt 1)
+2026-07-15 23:33:27,979 - __main__ - INFO - 
+[2/8] L2|g8|Алгебра. Уравнения с параметрами и модулем — need 2 task(s)
+2026-07-15 23:33:27,979 - __main__ - INFO -   Task 1/2 for L2|g8|Алгебра. Уравнения с параметрами и модулем
+2026-07-15 23:33:27,979 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:33:31,968 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:33:31,969 - __main__ - WARNING -     Attempt 1: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x-2| + |x+3| = a$$ имеет ровно два различных решения.",\n  "answer": "$$a > 5$$",\n  "solution": "Функция $$f(x)=|x-2|+|x+3|$$ имеет минимум в точке $$x=-3$$? Нет, минимум достигается на отрезке $$[-3,2]$$, где $$f(x)=5$$...
+2026-07-15 23:33:31,969 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:33:35,799 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:33:35,801 - __main__ - WARNING -     Attempt 2: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x-2| + |x+3| = a$$ имеет ровно два различных решения.",\n  "answer": "$$a > 5$$",\n  "solution": "Функция $$f(x)=|x-2|+|x+3|$$ кусочно-линейная. На промежутке $$(-\\infty, -3]$$: $$f(x)=-(x-2)-(x+3)=-2x-1$$ (убывает от $$...
+2026-07-15 23:33:35,801 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:33:43,765 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:33:43,767 - __main__ - WARNING -     Attempt 3: JSON parse failed. Raw preview: {\n  "statement": "Найдите все целые значения параметра $a$, при которых уравнение $|x-2| + |x+3| = a$ имеет ровно два различных решения.",\n  "answer": "$a = 5$",\n  "solution": "Функция $f(x)=|x-2|+|x+3|$ имеет минимум $5$ при $x\\in[-3,2]$, и возрастает до бесконечности при $x\\to\\pm\\infty$. Уравн...
+2026-07-15 23:33:43,767 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:33:53,344 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:33:53,347 - __main__ - WARNING -     Attempt 4: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x - 2| + |x + 1| = a$$ имеет ровно два различных целых решения.",\n  "answer": "$$a = 3, 4$$",\n  "solution": "Функция $$f(x) = |x-2| + |x+1|$$ имеет минимум при $$x \\in [-1, 2]$$, где её значение равно 3. При $$a < 3$$ ...
+2026-07-15 23:33:53,347 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:33:57,016 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:33:57,018 - __main__ - WARNING -     Attempt 5: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x-2| - |x+3| = a$$ имеет ровно два различных корня.",\n  "answer": "$$a \\in (-5, 5)$$",\n  "solution": "Функция $$f(x) = |x-2| - |x+3|$$ кусочно-линейна. Найдем её значения на интервалах: при $$x \\le -3$$: $$f(x) = (2-x...
+2026-07-15 23:33:57,018 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:33:59,755 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:33:59,756 - __main__ - WARNING -     Attempt 6: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x-2| + |x+3| = a$$ имеет ровно одно решение.",\n  "answer": "$$a = 5$$",\n  "solution": "Функция $$f(x) = |x-2| + |x+3|$$ принимает минимальное значение $$5$$ при $$x \\in [-3, 2]$$. Уравнение $$f(x) = a$$ имеет ровно одн...
+2026-07-15 23:33:59,757 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:34:03,943 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:34:03,944 - __main__ - WARNING -     Attempt 7: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x-2| - |x+3| = a$$ имеет ровно два различных решения.",\n  "answer": "$$a \\in (-5, 5)$$",\n  "solution": "Рассмотрим функцию $$f(x)=|x-2|-|x+3|$$. Для $$x<-3$$: $$f(x)=-(x-2)-(-(x+3))=-x+2+x+3=5$$. Для $$-3 \\le x < 2$$:...
+2026-07-15 23:34:03,945 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:34:07,995 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:34:07,997 - __main__ - WARNING -     Attempt 8: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x-2| - |x+3| = a$$ имеет ровно два различных корня.",\n  "answer": "$$a \\in (-5, 5)$$",\n  "solution": "Функция $$f(x) = |x-2| - |x+3|$$ кусочно-линейна. Точки перелома: $$x=-3$$ и $$x=2$$. При $$x \\le -3$$: $$f(x) = (2...
+2026-07-15 23:34:07,998 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:34:12,337 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:34:12,338 - __main__ - WARNING -     Attempt 9: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x-2| - |x+3| = a$$ имеет ровно два различных решения.",\n  "answer": "$$a \\in (-5, 5)$$",\n  "solution": "Функция $$f(x) = |x-2| - |x+3|$$ кусочно-линейна. Найдем ее значения на интервалах: при $$x < -3$$: $$f(x) = (2-x)...
+2026-07-15 23:34:12,338 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:34:16,102 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:34:16,105 - __main__ - WARNING -     Attempt 10: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x-2| - |x+3| = a$$ имеет ровно одно решение.",\n  "answer": "$$a = 5$$ или $$a = -5$$",\n  "solution": "Функция $$f(x) = |x-2| - |x+3|$$ кусочно-линейна. Найдем ее значения на интервалах: при $$x<-3$$: $$f(x) = (2-x) - (-...
+2026-07-15 23:34:16,105 - __main__ - ERROR -     ✗ Failed to generate task 1 after 10 attempts
+2026-07-15 23:34:16,105 - __main__ - INFO -   Task 2/2 for L2|g8|Алгебра. Уравнения с параметрами и модулем
+2026-07-15 23:34:16,105 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:34:26,393 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:34:26,396 - __main__ - WARNING -     Attempt 1: JSON parse failed. Raw preview: {\n  "statement": "Найдите все целые значения параметра $$a$$, при которых уравнение $$|x-1|+|x+2|=a$$ имеет ровно два различных решения.",\n  "answer": "$$a=3$$",\n  "solution": "Функция $$f(x)=|x-1|+|x+2|$$ является кусочно-линейной. На промежутке $$(-\\infty;-2]$$: $$f(x)=-(x-1)-(x+2)=-2x-1$$, убыва...
+2026-07-15 23:34:26,396 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:34:29,620 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:34:29,622 - __main__ - WARNING -     Attempt 2: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x-2| + |x+3| = a$$ имеет ровно два различных решения.",\n  "answer": "$$a > 5$$",\n  "solution": "Функция $$f(x)=|x-2|+|x+3|$$ принимает минимальное значение 5 при $$x \\in [-3,2]$$. При $$a=5$$ решений бесконечно много (...
+2026-07-15 23:34:29,622 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:34:33,784 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:34:33,785 - __main__ - WARNING -     Attempt 3: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x-2| + |x+1| = a$$ имеет ровно два различных решения.",\n  "answer": "$$a = 3$$",\n  "solution": "Функция $$f(x)=|x-2|+|x+1|$$ имеет минимум в точке $$x\\in[-1,2]$$, где $$f(x)=3$$. При $$a<3$$ решений нет, при $$a=3$$ бе...
+2026-07-15 23:34:33,785 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:34:37,367 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:34:37,370 - __main__ - WARNING -     Attempt 4: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x-2| + |x+3| = a$$ имеет ровно два различных решения.",\n  "answer": "$$a > 5$$",\n  "solution": "Функция $$f(x)=|x-2|+|x+3|$$ является кусочно-линейной. Её минимум достигается при $$x \\in [-3,2]$$ и равен $$5$$. Для $$x...
+2026-07-15 23:34:37,370 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:34:48,016 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:34:48,018 - __main__ - WARNING -     Attempt 5: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x-2| + |x+1| = a$$ имеет ровно два различных решения.",\n  "answer": "$$a = 3$$",\n  "solution": "Функция $$f(x) = |x-2| + |x+1|$$ имеет минимум в точке $$x \\in [-1, 2]$$, где $$f(x) = 3$$. Для $$x < -1$$, $$f(x) = -2x+1...
+2026-07-15 23:34:48,019 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:35:16,842 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:35:16,847 - __main__ - WARNING -     Attempt 6: JSON parse failed. Raw preview: {\n  "statement": "Найдите все значения параметра $$a$$, при которых уравнение $$|x+1| - |x-2| = a$$ имеет ровно два различных целых решения.",\n  "answer": "$$a = -3, -1, 1, 3$$",\n  "solution": "Функция $$f(x)=|x+1|-|x-2|$$ кусочно-линейна. Найдём её значения на интервалах: при $$x \\le -1$$: $$f(x)=...
+2026-07-15 23:35:16,847 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:35:20,081 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:35:20,083 - __main__ - INFO -     ✓ Generated task 2 (attempt 7)
+2026-07-15 23:35:20,083 - __main__ - INFO - 
+[3/8] L2|g8|Геометрия: подобие — need 1 task(s)
+2026-07-15 23:35:20,083 - __main__ - INFO -   Task 1/1 for L2|g8|Геометрия: подобие
+2026-07-15 23:35:20,083 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:35:34,951 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:35:34,954 - __main__ - WARNING -     Attempt 1: JSON parse failed. Raw preview: {\n  "statement": "В треугольнике $$ABC$$ точка $$M$$ — середина стороны $$BC$$. На стороне $$AB$$ взята точка $$K$$ так, что $$AK:KB=1:2$$. Отрезки $$CK$$ и $$AM$$ пересекаются в точке $$O$$. Найдите отношение $$AO:OM$$.",\n  "answer": "$$3:1$$",\n  "solution": "Проведём через точку $$M$$ прямую, пара...
+2026-07-15 23:35:34,954 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:35:53,501 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:35:53,503 - __main__ - INFO -     ✓ Generated task 1 (attempt 2)
+2026-07-15 23:35:53,503 - __main__ - INFO - 
+[4/8] L2|g9|Алгебра. Уравнения и неравенства — need 2 task(s)
+2026-07-15 23:35:53,503 - __main__ - INFO -   Task 1/2 for L2|g9|Алгебра. Уравнения и неравенства
+2026-07-15 23:35:53,503 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:36:05,115 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:36:05,116 - __main__ - WARNING -     Attempt 1: JSON parse failed. Raw preview: {\n  "statement": "Найдите все целые значения параметра $a$, при которых уравнение $\\sqrt{x^2 - 4x + 4} + \\sqrt{x^2 + 6x + 9} = a$ имеет ровно два различных решения.",\n  "answer": "$$a = 5$$",\n  "solution": "Упростим: $\\sqrt{(x-2)^2} + \\sqrt{(x+3)^2} = |x-2| + |x+3| = a$. Функция $f(x) = |x-2| + ...
+2026-07-15 23:36:05,117 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:36:10,252 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:36:10,253 - __main__ - INFO -     ✓ Generated task 1 (attempt 2)
+2026-07-15 23:36:10,253 - __main__ - INFO -   Task 2/2 for L2|g9|Алгебра. Уравнения и неравенства
+2026-07-15 23:36:10,253 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:36:44,505 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:36:44,508 - __main__ - WARNING -     Attempt 1: JSON parse failed. Raw preview: {\n  "statement": "Найдите все целые значения параметра $$a$$, при которых уравнение $$\\sqrt{x^2 + 2ax + a^2} + \\sqrt{x^2 - 6x + 9} = 5$$ имеет ровно одно решение.",\n  "answer": "$$a = -2$$ или $$a = 4$$",\n  "solution": "Упростим: $$\\sqrt{(x+a)^2} + \\sqrt{(x-3)^2} = |x+a| + |x-3| = 5$$. График ле...
+2026-07-15 23:36:44,509 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:36:50,931 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:36:50,933 - __main__ - WARNING -     Attempt 2: JSON parse failed. Raw preview: {\n  "statement": "Найдите все целые значения параметра $$a$$, при которых уравнение $$\\sqrt{x^2 - 2x + 1} + \\sqrt{x^2 + 4x + 4} = a$$ имеет ровно два различных решения.",\n  "answer": "$$a = 3$$",\n  "solution": "Заметим, что $$\\sqrt{x^2 - 2x + 1} = |x-1|$$, $$\\sqrt{x^2 + 4x + 4} = |x+2|$$. Уравне...
+2026-07-15 23:36:50,933 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:36:55,231 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:36:55,232 - __main__ - INFO -     ✓ Generated task 2 (attempt 3)
+2026-07-15 23:36:55,232 - __main__ - INFO - 
+[5/8] L2|g9|Логика. Рыцари, лжецы, хитрецы — need 4 task(s)
+2026-07-15 23:36:55,233 - __main__ - INFO -   Task 1/4 for L2|g9|Логика. Рыцари, лжецы, хитрецы
+2026-07-15 23:36:55,233 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:37:27,713 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:37:27,717 - __main__ - WARNING -     Attempt 1: JSON parse failed. Raw preview: {\n  "statement": "На острове живут рыцари (всегда говорят правду), лжецы (всегда лгут) и хитрецы (чередуют правду и ложь, начиная с любого высказывания). Один житель сказал: «Я хитрец». Второй житель сказал: «Я лжец». Третий житель сказал: «Я рыцарь». Четвертый житель сказал: «Я не рыцарь и не лжец»...
+2026-07-15 23:37:27,717 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:37:35,816 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:37:35,820 - __main__ - INFO -     ✓ Generated task 1 (attempt 2)
+2026-07-15 23:37:35,821 - __main__ - INFO -   Task 2/4 for L2|g9|Логика. Рыцари, лжецы, хитрецы
+2026-07-15 23:37:35,821 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:37:48,059 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:37:48,060 - __main__ - INFO -     ✓ Generated task 2 (attempt 1)
+2026-07-15 23:37:48,061 - __main__ - INFO -   Task 3/4 for L2|g9|Логика. Рыцари, лжецы, хитрецы
+2026-07-15 23:37:48,061 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:38:07,929 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:38:07,933 - __main__ - INFO -     ✓ Generated task 3 (attempt 1)
+2026-07-15 23:38:07,933 - __main__ - INFO -   Task 4/4 for L2|g9|Логика. Рыцари, лжецы, хитрецы
+2026-07-15 23:38:07,933 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:38:50,347 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:38:50,350 - __main__ - WARNING -     Attempt 1: JSON parse failed. Raw preview: {\n  "statement": "В некотором городе живут рыцари (всегда говорят правду), лжецы (всегда лгут) и хитрецы (могут говорить как правду, так и ложь, но не могут дважды подряд говорить одно и то же). Однажды встретились три жителя: А, В и С. А сказал: «В – рыцарь». В сказал: «С – лжец». С сказал: «А – хи...
+2026-07-15 23:38:50,350 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:38:58,216 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:38:58,217 - __main__ - INFO -     ✓ Generated task 4 (attempt 2)
+2026-07-15 23:38:58,217 - __main__ - INFO - 
+[6/8] L2|g9|Метод интервалов — need 2 task(s)
+2026-07-15 23:38:58,217 - __main__ - INFO -   Task 1/2 for L2|g9|Метод интервалов
+2026-07-15 23:38:58,217 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:39:03,434 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:39:03,436 - __main__ - WARNING -     Attempt 1: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{x^2 - 5x + 6}{x^2 - 4x + 3} \\leq 0$$ методом интервалов.",\n  "answer": "$$x \\in (1, 2] \\cup (3, +\\infty)$$",\n  "solution": "Разложим числитель и знаменатель на множители: $$x^2 - 5x + 6 = (x-2)(x-3)$$, $$x^2 - 4x + 3 = (x-1)(x-3)$$. Тогда неравенство...
+2026-07-15 23:39:03,436 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:39:07,740 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:39:07,743 - __main__ - WARNING -     Attempt 2: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство: $$\\frac{x^2 - 5x + 6}{x^2 - 4x + 3} \\geq 0$$",\n  "answer": "$$x \\in (-\\infty, 1) \\cup [2, 3] \\cup (3, +\\infty)$$",\n  "solution": "Разложим числитель и знаменатель: $$x^2-5x+6 = (x-2)(x-3)$$, $$x^2-4x+3 = (x-1)(x-3)$$. Неравенство примет вид: $$\\frac{(x-2...
+2026-07-15 23:39:07,743 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:39:15,010 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:39:15,013 - __main__ - WARNING -     Attempt 3: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{x^2 - 5x + 6}{x^2 - 4x + 3} \\leq 0$$.",\n  "answer": "$$x \\in (1, 2] \\cup (3, +\\infty)$$",\n  "solution": "Разложим числитель и знаменатель на множители: $$\\frac{(x-2)(x-3)}{(x-1)(x-3)} \\leq 0$$. При $$x=3$$ выражение не определено, поэтому сокращаем...
+2026-07-15 23:39:15,013 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:39:19,101 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:39:19,103 - __main__ - WARNING -     Attempt 4: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство: $$\\frac{(x^2 - 4)(x + 3)}{(x - 1)(x + 5)} \\leq 0$$.",\n  "answer": "(-5; -3] ∪ (-1; 1) ∪ [2; ∞)",\n  "solution": "Найдем нули числителя: x = -3, x = -2, x = 2. Нули знаменателя: x = -5, x = 1. Отметим на числовой прямой точки -5, -3, -2, 1, 2, учитывая, что в то...
+2026-07-15 23:39:19,103 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:39:26,580 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:39:26,582 - __main__ - WARNING -     Attempt 5: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{(x^2-5x+6)(x+2)}{x^2-4x-5} \\leq 0$$.",\n  "answer": "$$x \\in (-\\infty, -2] \\cup (2, 3] \\cup (5, +\\infty)$$",\n  "solution": "Разложим на множители: числитель: $$x^2-5x+6=(x-2)(x-3)$$, знаменатель: $$x^2-4x-5=(x-5)(x+1)$$. Неравенство: $$\\frac{(x-2)(...
+2026-07-15 23:39:26,582 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:39:32,009 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:39:32,012 - __main__ - WARNING -     Attempt 6: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{x^2 - 5x + 6}{x^2 - 4x + 3} \\geq 0$$.",\n  "answer": "$$(-\\infty, 1) \\cup [2, 3) \\cup (3, +\\infty)$$",\n  "solution": "Разложим числитель и знаменатель: $$x^2 - 5x + 6 = (x-2)(x-3)$$, $$x^2 - 4x + 3 = (x-1)(x-3)$$. Неравенство принимает вид $$\\frac{(...
+2026-07-15 23:39:32,012 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:39:36,307 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:39:36,310 - __main__ - WARNING -     Attempt 7: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{(x^2 - 4)(x + 3)}{(x - 1)(x + 2)} \\leq 0$$.",\n  "answer": "$$(-\\infty; -3] \\cup (-2; 1) \\cup [2; +\\infty)$$",\n  "solution": "Разложим числитель: $$(x-2)(x+2)(x+3)$$. Нули числителя: $$x=-3, x=-2, x=2$$. Нули знаменателя: $$x=-2, x=1$$ (исключаем из ...
+2026-07-15 23:39:36,310 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:39:41,199 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:39:41,201 - __main__ - WARNING -     Attempt 8: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{(x^2-4)(x+3)}{(x-1)(x+2)} \\leq 0$$.",\n  "answer": "$$x \\in (-\\infty, -3] \\cup (-2, 1) \\cup [2, +\\infty)$$",\n  "solution": "Найдем нули числителя: x^2-4=0 => x=±2, x+3=0 => x=-3. Нули знаменателя: x-1=0 => x=1, x+2=0 => x=-2. Отметим точки на числов...
+2026-07-15 23:39:41,201 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:40:11,945 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:40:11,947 - __main__ - WARNING -     Attempt 9: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{x^2 - 4x + 3}{x^2 - 9} \\geq 0$$ и найдите сумму всех целых решений.",\n  "answer": "4",\n  "solution": "Разложим числитель и знаменатель на множители: $$\\frac{(x-1)(x-3)}{(x-3)(x+3)} \\geq 0$$. Сократим на $$x-3$$, но учтем, что $$x \\neq 3$$. Получаем $...
+2026-07-15 23:40:11,947 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:40:52,272 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:40:52,276 - __main__ - WARNING -     Attempt 10: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{(x^2 - 5x + 6)(x + 2)}{x^2 - 4x + 3} \\leq 0$$. В ответе укажите сумму всех целых решений.",\n  "answer": "7",\n  "solution": "Разложим на множители: числитель: $$(x-2)(x-3)(x+2)$$, знаменатель: $$(x-1)(x-3)$$. ОДЗ: $$x \\neq 1, 3$$. Отмечаем точки на числ...
+2026-07-15 23:40:52,276 - __main__ - ERROR -     ✗ Failed to generate task 1 after 10 attempts
+2026-07-15 23:40:52,276 - __main__ - INFO -   Task 2/2 for L2|g9|Метод интервалов
+2026-07-15 23:40:52,276 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:40:56,289 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:40:56,291 - __main__ - WARNING -     Attempt 1: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{x^2 - 4x + 3}{x^2 - 6x + 8} \\geq 0$$.",\n  "answer": "$$x \\in (-\\infty; 1] \\cup [3; 4) \\cup (4; +\\infty)$$",\n  "solution": "Разложим числитель и знаменатель на множители: $$\\frac{(x-1)(x-3)}{(x-2)(x-4)} \\geq 0$$. Найдем нули числителя: x=1, x=3; н...
+2026-07-15 23:40:56,291 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:41:05,084 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:41:05,088 - __main__ - WARNING -     Attempt 2: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{(x^2 - 4x + 3)(x+5)}{x^2 - 2x - 8} \\leq 0$$.",\n  "answer": "$$x \\in (-\\infty, -5] \\cup ( -2, 1] \\cup [3, 4)$$",\n  "solution": "Разложим на множители: числитель: $$x^2 - 4x + 3 = (x-1)(x-3)$$, знаменатель: $$x^2 - 2x - 8 = (x-4)(x+2)$$. Имеем $$\\fra...
+2026-07-15 23:41:05,088 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:41:18,964 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:41:18,965 - __main__ - WARNING -     Attempt 3: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{x^2 - 5x + 6}{x^2 - 4x + 3} \\leq 0$$.",\n  "answer": "$$x \\in (1, 2] \\cup (3, +\\infty)$$",\n  "solution": "Разложим числитель и знаменатель на множители: $$x^2 - 5x + 6 = (x-2)(x-3)$$, $$x^2 - 4x + 3 = (x-1)(x-3)$$. Неравенство принимает вид $$\\frac{(...
+2026-07-15 23:41:18,965 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:41:24,225 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:41:24,227 - __main__ - WARNING -     Attempt 4: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{x^2 - 5x + 6}{x^2 - 4x - 5} \\leq 0$$. В ответе укажите сумму целых решений.",\n  "answer": "7",\n  "solution": "Разложим числитель: $$x^2-5x+6=(x-2)(x-3)$$, знаменатель: $$x^2-4x-5=(x+1)(x-5)$$. Нули числителя: $$x=2,3$$, нули знаменателя (точки разрыва):...
+2026-07-15 23:41:24,227 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:41:30,707 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:41:30,709 - __main__ - WARNING -     Attempt 5: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство: $$\\frac{x^2 - 5x + 6}{x^2 - 4} \\geq 0$$",\n  "answer": "$$(-\\infty; -2) \\cup [2; 3] \\cup (2; 3]$$ (или $$x < -2$$, $$2 \\leq x \\leq 3$$, $$x > 2$$; фактически объединение $$(-\\infty; -2) \\cup [2; 3]$$)",\n  "solution": "Разложим числитель и знаменатель: $$...
+2026-07-15 23:41:30,709 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:41:37,489 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:41:37,491 - __main__ - WARNING -     Attempt 6: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{(x-1)(x+2)^2}{(x-3)(x^2+1)} \\leq 0$$.",\n  "answer": "$$x \\in [-2, 1] \\cup (3, +\\infty)$$, но с учетом, что $$x \\neq 3$$, и $$x=-2$$ включается, так как числитель обращается в ноль. Уточнение: решение: $$x \\in \\{-2\\} \\cup [1, 3)$$? Проверим: при ...
+2026-07-15 23:41:37,491 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:41:42,369 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:41:42,372 - __main__ - WARNING -     Attempt 7: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство: $$\\frac{(x^2 - 5x + 6)(x^2 - 1)}{x^2 - 4} \\geq 0$$",\n  "answer": "$$x \\in (-\\infty; -2) \\cup [-1; 1] \\cup (2; 3] \\cup [3; +\\infty)$$",\n  "solution": "Разложим на множители: $$(x-2)(x-3)(x-1)(x+1) / ((x-2)(x+2)) \\geq 0$$. Сокращаем на $$(x-2)$$, но учиты...
+2026-07-15 23:41:42,373 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:41:48,339 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:41:48,341 - __main__ - WARNING -     Attempt 8: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство: $$\\frac{(x^2 - 5x + 6)(x + 1)}{x^2 - 4} \\leq 0$$",\n  "answer": "$$x \\in (-\\infty, -2) \\cup [-1, 2) \\cup (2, 3]$$",\n  "solution": "1. Разложим на множители: $$x^2 - 5x + 6 = (x-2)(x-3)$$, $$x^2 - 4 = (x-2)(x+2)$$. Неравенство принимает вид: $$\\frac{(x-2)(x...
+2026-07-15 23:41:48,341 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:41:53,868 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:41:53,870 - __main__ - WARNING -     Attempt 9: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{(x-1)(x+2)^2}{x^2 - 4x + 3} \\leq 0$$ и укажите количество целых решений.",\n  "answer": "4",\n  "solution": "Разложим знаменатель: $$x^2-4x+3 = (x-1)(x-3)$$. Тогда неравенство принимает вид: $$\\frac{(x-1)(x+2)^2}{(x-1)(x-3)} \\leq 0$$. При $$x \\neq 1$$ ...
+2026-07-15 23:41:53,870 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:41:57,514 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:41:57,515 - __main__ - WARNING -     Attempt 10: JSON parse failed. Raw preview: {\n  "statement": "Решите неравенство $$\\frac{x^2 - 2x - 3}{x^2 - 4x + 3} \\geq 0$$.",\n  "answer": "$$x \\in (-\\infty, -1] \\cup (1, 3) \\cup (3, +\\infty)$$",\n  "solution": "Разложим числитель и знаменатель на множители: $$x^2 - 2x - 3 = (x-3)(x+1)$$, $$x^2 - 4x + 3 = (x-1)(x-3)$$. Неравенство при...
+2026-07-15 23:41:57,516 - __main__ - ERROR -     ✗ Failed to generate task 2 after 10 attempts
+2026-07-15 23:41:57,516 - __main__ - INFO - 
+[7/8] L2|g10|Теория чисел. Китайская теорема об остатках — need 1 task(s)
+2026-07-15 23:41:57,516 - __main__ - INFO -   Task 1/1 for L2|g10|Теория чисел. Китайская теорема об остатках
+2026-07-15 23:41:57,516 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:42:04,032 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:42:04,034 - __main__ - WARNING -     Attempt 1: JSON parse failed. Raw preview: {\n  "statement": "Найдите наименьшее натуральное число $$n$$, которое при делении на 7 даёт остаток 5, при делении на 11 даёт остаток 3, а при делении на 13 даёт остаток 2.",\n  "answer": "n = 887",\n  "solution": "Решаем систему сравнений: $$n \\equiv 5 \\pmod{7}$$, $$n \\equiv 3 \\pmod{11}$$, $$n \\...
+2026-07-15 23:42:04,035 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:42:09,854 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:42:09,856 - __main__ - WARNING -     Attempt 2: JSON parse failed. Raw preview: {\n  "statement": "Найдите наименьшее натуральное число $$n$$, которое при делении на 5 дает остаток 3, при делении на 7 — остаток 2, а при делении на 11 — остаток 8.",\n  "answer": "163",\n  "solution": "Решаем систему сравнений: $$\\begin{cases} n \\equiv 3 \\pmod{5} \\\\ n \\equiv 2 \\pmod{7} \\\\ n...
+2026-07-15 23:42:09,856 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:42:19,259 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:42:19,262 - __main__ - WARNING -     Attempt 3: JSON parse failed. Raw preview: {\n  "statement": "Найдите наименьшее натуральное число $$x$$, которое при делении на 5 дает остаток 3, при делении на 7 дает остаток 2, а при делении на 11 дает остаток 8.",\n  "answer": "173",\n  "solution": "Решаем систему сравнений: $$x \\equiv 3 \\pmod{5}$$, $$x \\equiv 2 \\pmod{7}$$, $$x \\equiv ...
+2026-07-15 23:42:19,262 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:42:24,656 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:42:24,658 - __main__ - WARNING -     Attempt 4: JSON parse failed. Raw preview: {\n  "statement": "Найдите наименьшее натуральное число $$x$$, которое при делении на 5 дает остаток 2, при делении на 7 — остаток 3, а при делении на 11 — остаток 4.",\n  "answer": "157",\n  "solution": "Система сравнений: $$x \\equiv 2 \\pmod{5}$$, $$x \\equiv 3 \\pmod{7}$$, $$x \\equiv 4 \\pmod{11}$...
+2026-07-15 23:42:24,658 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:42:30,493 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:42:30,495 - __main__ - WARNING -     Attempt 5: JSON parse failed. Raw preview: {\n  "statement": "Найдите наименьшее натуральное число $$x$$, которое при делении на 7 дает остаток 3, при делении на 11 — остаток 5, а при делении на 13 — остаток 7.",\n  "answer": "$$x = 381$$",\n  "solution": "Система: $$x \\equiv 3 \\pmod{7}$$, $$x \\equiv 5 \\pmod{11}$$, $$x \\equiv 7 \\pmod{13}$...
+2026-07-15 23:42:30,496 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:42:35,510 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:42:35,512 - __main__ - WARNING -     Attempt 6: JSON parse failed. Raw preview: {\n  "statement": "Найдите наименьшее натуральное число $$x$$, которое удовлетворяет системе сравнений: $$x \\equiv 2 \\pmod{3}$$, $$x \\equiv 3 \\pmod{5}$$, $$x \\equiv 2 \\pmod{7}$$.",\n  "answer": "23",\n  "solution": "Решим систему методом Китайской теоремы об остатках. Вычислим произведение модуле...
+2026-07-15 23:42:35,513 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:42:43,936 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:42:43,938 - __main__ - WARNING -     Attempt 7: JSON parse failed. Raw preview: {"statement": "Найдите все натуральные числа $$n$$, не превосходящие 1000, которые при делении на 5 дают остаток 3, при делении на 7 дают остаток 2, а при делении на 11 дают остаток 8.", "answer": "$$n = 173, 558, 943$$", "solution": "Система сравнений: $$n \\equiv 3 \\pmod{5}$$, $$n \\equiv 2 \\pmo...
+2026-07-15 23:42:43,938 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:42:47,275 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:42:47,277 - __main__ - WARNING -     Attempt 8: JSON parse failed. Raw preview: {\n  "statement": "Найдите наименьшее натуральное число $$n$$, которое при делении на 5 дает остаток 3, при делении на 6 дает остаток 4, а при делении на 7 дает остаток 5.",\n  "answer": "208",\n  "solution": "Система сравнений: $$n \\equiv 3 \\pmod{5}$$, $$n \\equiv 4 \\pmod{6}$$, $$n \\equiv 5 \\pmod...
+2026-07-15 23:42:47,277 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:42:56,288 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:42:56,291 - __main__ - WARNING -     Attempt 9: JSON parse failed. Raw preview: {\n  "statement": "Найдите наименьшее натуральное число $$n$$, которое удовлетворяет системе сравнений: $$n \\equiv 3 \\pmod{5}$$, $$n \\equiv 5 \\pmod{7}$$, $$n \\equiv 2 \\pmod{11}$$.",\n  "answer": "173",\n  "solution": "Используем Китайскую теорему об остатках. Модули 5, 7, 11 попарно взаимно прост...
+2026-07-15 23:42:56,291 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:43:01,626 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:43:01,628 - __main__ - WARNING -     Attempt 10: JSON parse failed. Raw preview: {\n  "statement": "Найдите наименьшее натуральное число $$n$$, которое при делении на 5 дает остаток 3, при делении на 7 — остаток 4, а при делении на 11 — остаток 6.",\n  "answer": "368",\n  "solution": "Решаем систему сравнений: $$n \\equiv 3 \\pmod{5}$$, $$n \\equiv 4 \\pmod{7}$$, $$n \\equiv 6 \\pm...
+2026-07-15 23:43:01,628 - __main__ - ERROR -     ✗ Failed to generate task 1 after 10 attempts
+2026-07-15 23:43:01,628 - __main__ - INFO - 
+[8/8] L2|g11|Теория чисел. Диофантовы задачи — need 3 task(s)
+2026-07-15 23:43:01,628 - __main__ - INFO -   Task 1/3 for L2|g11|Теория чисел. Диофантовы задачи
+2026-07-15 23:43:01,628 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:43:07,255 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:43:07,256 - __main__ - INFO -     ✓ Generated task 1 (attempt 1)
+2026-07-15 23:43:07,257 - __main__ - INFO -   Task 2/3 for L2|g11|Теория чисел. Диофантовы задачи
+2026-07-15 23:43:07,257 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:43:18,555 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:43:18,557 - __main__ - INFO -     ✓ Generated task 2 (attempt 1)
+2026-07-15 23:43:18,557 - __main__ - INFO -   Task 3/3 for L2|g11|Теория чисел. Диофантовы задачи
+2026-07-15 23:43:18,557 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:43:23,065 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:43:23,067 - __main__ - WARNING -     Attempt 1: JSON parse failed. Raw preview: {\n  "statement": "Найдите все целые решения уравнения $$x^2 - 4xy + 5y^2 = 169$$.",\n  "answer": "$$(x, y) = (\\pm 13, 0), (\\pm 5, \\pm 6), (\\pm 17, \\pm 6)$$",\n  "solution": "Уравнение можно переписать как $$(x-2y)^2 + y^2 = 169$$. Обозначим $$u = x-2y$$, тогда $$u^2 + y^2 = 169$$. Целые решения э...
+2026-07-15 23:43:23,067 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:43:28,499 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:43:28,502 - __main__ - WARNING -     Attempt 2: JSON parse failed. Raw preview: {\n  "statement": "Найдите все тройки целых чисел $$(a, b, c)$$, удовлетворяющие уравнению $$a^2 + b^2 + c^2 = 3abc$$.",\n  "answer": "$$(0,0,0)$$, $$(1,1,1)$$, $$(1,1,2)$$ и все перестановки.",\n  "solution": "Если одно из чисел равно 0, то из уравнения следует, что все равны 0. Пусть все ненулевые. И...
+2026-07-15 23:43:28,502 - ai.deepseek_client - INFO - Attempt 1/2: Sending request to DeepSeek API
+2026-07-15 23:43:37,456 - ai.deepseek_client - INFO - ✓ Request successful
+2026-07-15 23:43:37,459 - __main__ - INFO -     ✓ Generated task 3 (attempt 3)
+2026-07-15 23:43:37,460 - __main__ - INFO - 
+============================================================
+2026-07-15 23:43:37,460 - __main__ - INFO - Generation complete!
+2026-07-15 23:43:37,460 - __main__ - INFO -   Generated 12 new tasks
+2026-07-15 23:43:37,464 - __main__ - INFO - Saved to adaptive_data/_stubborn_fill_tasks.json
+2026-07-15 23:43:38,521 - __main__ - INFO - Merged: +8 new tasks, skipped 4 duplicates
+2026-07-15 23:43:38,521 - __main__ - INFO - DB total: 11648 tasks
+2026-07-15 23:43:38,526 - __main__ - INFO - 
+⚠️  5 L2 cells STILL with holes:
+2026-07-15 23:43:38,526 - __main__ - INFO -   L2|g6|Теория чисел, делимость — 4/5 (need 1)
+2026-07-15 23:43:38,526 - __main__ - INFO -   L2|g8|Алгебра. Уравнения с параметрами и модулем — 4/5 (need 1)
+2026-07-15 23:43:38,527 - __main__ - INFO -   L2|g9|Логика. Рыцари, лжецы, хитрецы — 2/5 (need 3)
+2026-07-15 23:43:38,527 - __main__ - INFO -   L2|g9|Метод интервалов — 3/5 (need 2)
+2026-07-15 23:43:38,527 - __main__ - INFO -   L2|g10|Теория чисел. Китайская теорема об остатках — 4/5 (need 1)

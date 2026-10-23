@@ -1,0 +1,130 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 7,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 2.714285714285714,
+   "y": 4.199125273371163
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "CI",
+   "line2": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "CL",
+   "line2": "OM"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "AKL"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CL"
+  },
+  {
+   "line": "OM",
+   "style": "dashed"
+  },
+  {
+   "polygon": "AKL",
+   "style": "soft"
+  },
+  {
+   "circle": "w1",
+   "style": "accent"
+  },
+  {
+   "circle": "w2",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "M",
+    "O"
+   ]
+  },
+  {
+   "equal": [
+    "KA",
+    "KC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "L"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "L",
+    "C",
+    "B"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "A",
+    "K",
+    "L"
+   ],
+   "text": "2α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

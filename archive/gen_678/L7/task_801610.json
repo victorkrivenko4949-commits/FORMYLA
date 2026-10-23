@@ -1,0 +1,20 @@
+{
+  "id": 801610,
+  "task_text": "В остроугольном треугольнике $ABC$ проведены высоты $AA_1$, $BB_1$, $CC_1$ ( $A_1\\in BC$, $B_1\\in CA$, $C_1\\in AB$ ). Известно, что $BA_1 = CB_1 = AC_1$. Докажите, что треугольник $ABC$ правильный.",
+  "solution": "Обозначим стороны треугольника: BC = a, CA = b, AB = c. Высоты AA1, BB1, CC1 опущены из вершин A, B, C соответственно на противоположные стороны. Поскольку треугольник остроугольный, основания высот лежат на сторонах. В прямоугольных треугольниках находим: BA1 = AB·cos B = c cos B, CB1 = BC·cos C = a cos C, AC1 = AC·cos A = b cos A. Из условия BA1 = CB1 = AC1 получаем систему равенств:\n\nc cos B = a cos C = b cos A.\n\nИспользуем теорему синусов: a = 2R sin A, b = 2R sin B, c = 2R sin C. Подставляем:\n\n2R sin C cos B = 2R sin A cos C  →  sin C cos B = sin A cos C. (1)\n2R sin A cos C = 2R sin B cos A  →  sin A cos C = sin B cos A. (2)\n2R sin C cos B = 2R sin B cos A  →  sin C cos B = sin B cos A. (3)\n\nИз (3) получаем sin C cos B = sin B cos A. Разделим на cos B cos A (все косинусы положительны, так как углы острые): tg C = tg B. Поскольку B и C — острые углы, tg монотонен, следовательно B = C.\n\nПодставим B = C в (2): sin A cos C = sin C cos A → sin A cos C - sin C cos A = 0 → sin(A - C) = 0. Так как |A - C| < π/2 (углы острые), то A - C = 0, откуда A = C.\n\nТаким образом, A = B = C = 60°, треугольник ABC равносторонний (правильный).",
+  "correct_answer": "Треугольник ABC правильный",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Тригонометрический метод с использованием теоремы синусов",
+  "idea_count": 3,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T13:46:56.636190+00:00"
+}

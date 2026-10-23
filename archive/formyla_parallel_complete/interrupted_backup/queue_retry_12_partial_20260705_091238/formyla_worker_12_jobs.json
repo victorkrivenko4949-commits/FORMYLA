@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0012-8-D3-5-L8-g678",
+      "mode": "replace_bad",
+      "id": "8-D3-5-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Функции и графики",
+      "subtopic": "Пересечения",
+      "method_code": "D3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

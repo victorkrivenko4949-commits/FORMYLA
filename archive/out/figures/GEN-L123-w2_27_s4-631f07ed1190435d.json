@@ -1,0 +1,120 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "H",
+   "line1": "AD",
+   "line2": "BE"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "DE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD",
+   "style": "dashed"
+  },
+  {
+   "segment": "BE",
+   "style": "dashed"
+  },
+  {
+   "segment": "DE",
+   "style": "soft"
+  },
+  {
+   "segment": "CM",
+   "style": "accent"
+  },
+  {
+   "segment": "CH",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "D",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "E",
+    "A"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "45°"
+  },
+  {
+   "equal": [
+    "DM",
+    "ME"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "M",
+    "C",
+    "H"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC",
+   "reason": "Центр O описанной окружности нужен для перехода к треугольнику OCH."
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC",
+   "reason": "Описанная окружность показывает центральный угол AOB=90°."
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "CO",
+   "style": "dashed"
+  }
+ ]
+}

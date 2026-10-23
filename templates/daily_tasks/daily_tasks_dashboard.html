@@ -1,0 +1,2165 @@
+{% extends "base.html" %}
+
+{% block title %}FORMYLA.net — Задачи дня{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/daily_tasks.css') }}?v={{ asset_version }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/daily_tasks_modal.css') }}?v={{ asset_version }}">
+<style>
+  /* скрываем названия моделей/подписи в пайплайне */
+  .dt-ps-model { display: none !important; }
+
+  /* fallback LaTeX */
+  #dt-modal, #dt-modal *, .dt-modal-body, #dt-modal-statement, .dt-day-history, .dt-dh-item { visibility: visible !important; }
+  #dt-modal-statement { background: transparent !important; }
+  .dt-modal-box{height:auto !important;min-height:0 !important;max-height:calc(100vh - 80px) !important;overflow-y:auto !important;}
+  .dt-modal-body,#dt-modal-statement{min-height:0 !important;height:auto !important;margin-bottom:12px !important;}
+  #dt-modal-result{min-height:0 !important;height:auto !important;}
+  #dt-modal-result:empty{display:none !important;margin:0 !important;}
+
+  /* ── Окно задачи: сбиваем ограничения класса .dt-modal из daily_tasks.css
+     (класс вешается на сам оверлей #dt-modal и резал его до 700px слева) ── */
+  #dt-modal {
+    max-width: none;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    animation: none;
+    background: rgba(7, 12, 24, 0.55);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+  }
+  #dt-modal > .dt-modal-box {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: dt-modal-in 0.25s ease;
+  }
+
+  /* Мобильная/Telegram-версия: окно задачи открывается на весь экран.
+     Оверлей без отступов, карточка на всю ширину и высоту, скролл — внутри.
+     Порог 1024px — чтобы и планшет, и телефон с «широким» viewport
+     получали полноэкранное окно. */
+  @media (max-width: 1024px) {
+    #dt-modal { padding: 0 !important; align-items: stretch !important; }
+    #dt-modal > .dt-modal-box {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-height: 100vh !important;
+      min-height: 100dvh !important;
+      height: auto !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+      border: none !important;
+      padding: 60px 16px calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    #dt-modal #dt-modal-close {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Правила для футера карточки, CTA и долга — перенесены в конец
+       style-блока (после базовых правил .dt-card-cta), иначе базовый
+       каскад перебивал шрифт и паддинги. */
+  }
+
+  /* TG_FIX_V2: тот же полноэкранный режим, но включается JS-классом
+     .dt-modal-fs (openTask вешает при узком экране). Дублируем медиа-запрос —
+     в встроенном браузере Telegram кварки viewport иногда ломают
+     @media, а класс сработает всегда. */
+  #dt-modal.dt-modal-fs { padding: 0 !important; align-items: stretch !important; }
+  #dt-modal.dt-modal-fs > .dt-modal-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+    padding: 60px 16px calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  #dt-modal.dt-modal-fs #dt-modal-close {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dt-latex-fallback {
+    font-style: italic;
+    color: var(--text);
+    background: var(--accent-dim);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'Times New Roman', serif;
+  }
+  .dt-latex-display {
+    display: block;
+    margin: 8px 0;
+    padding: 8px 12px;
+    background: var(--accent-dim);
+    border-left: 3px solid var(--accent);
+  }
+
+  /* ── Hidden class ──────────────────────────────────── */
+  .dt-hidden { display: none !important; }
+
+  /* ── Empty / Generating / Failed cards ────────────── */
+  .dt-empty-card,
+  .dt-generating-card,
+  .dt-ready-header {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r);
+    padding: 32px;
+    text-align: center;
+  }
+  .dt-empty-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .dt-empty-sub {
+    color: var(--muted);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .dt-btn-primary {
+    display: inline-block;
+    padding: 12px 32px;
+    background: var(--accent);
+    color: #E6EBF7;
+    font-weight: 700;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-decoration: none;
+  }
+  .dt-btn-primary:hover {
+    background: var(--accent-hi);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(76,125,255,0.3);
+  }
+  .dt-btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* ── P4 DEBT block ─────────────────────────────── */
+  .dt-debt-block {
+    margin-bottom: 20px;
+    border: 1px solid rgba(229, 172, 58, 0.35);
+    border-radius: 12px;
+    background: rgba(229, 172, 58, 0.06);
+    padding: 16px 20px;
+  }
+  .dt-debt-toggle-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    gap: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    color: #E5AC3A;
+    text-align: left;
+  }
+  .dt-debt-toggle-arrow {
+    flex-shrink: 0;
+    font-size: 12px;
+    transition: transform 0.2s ease;
+  }
+  .dt-debt-body { margin-top: 12px; }
+  .dt-debt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(229, 172, 58, 0.15);
+  }
+  .dt-debt-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: #E5AC3A;
+  }
+  .dt-debt-hint {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .dt-debt-group {
+    margin-bottom: 10px;
+  }
+  .dt-debt-group-date {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .dt-debt-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    margin-bottom: 4px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .dt-debt-item-figure {
+    width: 56px;
+    height: 44px;
+    object-fit: contain;
+    border-radius: 6px;
+    background: #fff;
+    padding: 2px;
+    flex: none;
+    box-sizing: border-box;
+  }
+  .dt-debt-item-topic {
+    color: var(--text);
+    flex: 1;
+  }
+  .dt-debt-item-level {
+    color: var(--muted);
+    margin: 0 16px;
+  }
+  .dt-debt-item-days {
+    color: #E5AC3A;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .dt-debt-item-open {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #4C7DFF 0%, #6E8BFF 100%);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(76, 125, 255, 0.28);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+  .dt-debt-item-open:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(76, 125, 255, 0.38);
+  }
+  .dt-debt-item-open:active { transform: scale(0.97); }
+
+  /* Generating state */
+  .dt-generating-card { padding: 40px 32px; }
+  .dt-gen-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+  .dt-gen-sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .dt-progress-bar {
+    width: 100%; max-width: 400px; height: 8px;
+    background: rgba(255,255,255,0.08); border-radius: 4px;
+    overflow: hidden; margin: 0 auto 12px;
+  }
+  .dt-progress-fill {
+    height: 100%; width: 0%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+  .dt-progress-text { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .dt-step-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .dt-eta { font-size: 13px; color: var(--faint); }
+
+  /* Ready header */
+  .dt-ready-header {
+    text-align: left; padding: 20px 24px; margin-bottom: 20px;
+    display: flex; flex-wrap: wrap; align-items: center;
+    justify-content: space-between; gap: 12px;
+  }
+  .dt-ready-title { font-size: 18px; font-weight: 600; color: var(--text); }
+  .dt-ready-meta { font-size: 14px; color: var(--muted); }
+  .dt-ready-actions { display: flex; gap: 10px; }
+  .dt-btn-secondary {
+    display: inline-block; padding: 8px 20px;
+    background: transparent; color: var(--text);
+    font-weight: 600; font-size: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px; cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .dt-btn-secondary:hover {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+  }
+
+  .dt-summary-card {
+    background: var(--accent-dim);
+    border: 1px solid rgba(76,125,255,0.15);
+    border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
+    font-size: 14px; line-height: 1.5; color: var(--text);
+  }
+  .dt-summary-card strong { color: var(--accent-hi); }
+
+  .dt-partial-notice {
+    background: rgba(229,172,58,0.1);
+    border: 1px solid rgba(229,172,58,0.2);
+    border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;
+    font-size: 14px; color: var(--warn);
+  }
+
+  /* ── Task Grid ────────────────────────────────────── */
+  #dt-task-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+  }
+  @media (max-width: 768px) {
+    #dt-task-grid { grid-template-columns: 1fr; }
+  }
+  .dt-card {
+    background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r);
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .dt-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(76,125,255,0.12);
+  }
+  .dt-card:active {
+    transform: translateY(0) scale(0.985);
+    box-shadow: 0 4px 12px rgba(76,125,255,0.10);
+  }
+  .dt-card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  /* Явная аффорданс-кнопка «Решить →» в футере карточки */
+  .dt-card-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: var(--accent);
+    color: #E6EBF7;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    transition: background 0.2s ease;
+  }
+  .dt-card:hover .dt-card-cta { background: var(--accent-hi); }
+  .dt-card.dt-done .dt-card-cta,
+  .dt-card.dt-flagged .dt-card-cta {
+    background: transparent;
+    color: var(--accent-hi);
+    border: 1px solid var(--border);
+    padding: 6px 13px;
+  }
+  .dt-card.dt-flagged { border-color: rgba(229,172,58,0.3); }
+  .dt-card.dt-done { border-color: rgba(62,207,142,0.2); }
+
+  /* Subtopic badge at top */
+  .dt-card-subtopic {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--accent-hi);
+    margin-bottom: 8px;
+  }
+
+  /* Card header with task number */
+  .dt-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .dt-card-number {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .dt-topic-badge {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent-hi);
+    background: var(--accent-dim);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .dt-difficulty {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .dt-card-preview {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .dt-card-figure {
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .dt-card-figure img {
+    max-width: 100%;
+    max-height: 140px;
+    border-radius: 10px;
+    background: #fff;
+    padding: 4px;
+    border: 1px solid var(--border-soft);
+    box-sizing: border-box;
+  }
+
+  /* Card footer with status — separated by shadow line */
+  .dt-card-footer {
+    margin-top: auto;
+    padding-top: 12px;
+    box-shadow: 0 -1px 0 var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .dt-card-status {
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .dt-card-status.dt-correct { color: var(--ok); }
+  .dt-card-status.dt-incorrect { color: var(--bad); }
+  .dt-card-status.dt-pending { color: var(--faint); }
+  .dt-flag-badge {
+    font-size: 11px;
+    color: var(--warn);
+    background: rgba(229,172,58,0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  /* ── Calibration banner ───────────────────────────── */
+  .dt-calibration-banner {
+    display: flex; align-items: flex-start; gap: 14px;
+    background: rgba(229,172,58,0.08);
+    border: 1px solid rgba(229,172,58,0.25);
+    border-radius: var(--r); padding: 14px 16px;
+    margin: 14px 0 18px; color: var(--text);
+  }
+  .dt-cal-banner-icon { font-size: 24px; line-height: 1; flex-shrink: 0; }
+  .dt-cal-banner-body { flex: 1; min-width: 0; }
+  .dt-cal-banner-title { font-weight: 600; margin-bottom: 4px; color: var(--warn); }
+  .dt-cal-banner-text { font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+  .dt-cal-banner-btn {
+    display: inline-flex; align-items: center; align-self: center;
+    padding: 8px 14px; background: var(--warn); color: #070c18;
+    border-radius: 8px; font-size: 13px; font-weight: 600;
+    text-decoration: none; white-space: nowrap;
+    transition: transform .15s ease, background .15s ease;
+  }
+  .dt-cal-banner-btn:hover { background: #e5ac3a; transform: translateY(-1px); }
+  @media (max-width: 600px) {
+    .dt-calibration-banner { flex-direction: column; align-items: stretch; }
+    .dt-cal-banner-btn { align-self: flex-start; }
+  }
+
+  /* Calibration badge on card */
+  .dt-calibration-badge {
+    display: inline-block; margin-left: 6px; padding: 2px 8px;
+    background: rgba(229,172,58,0.16);
+    border: 1px solid rgba(229,172,58,0.4);
+    color: var(--warn); border-radius: 999px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.2px; line-height: 1.5;
+  }
+  .dt-card.dt-calibration { border-color: rgba(229,172,58,0.28); }
+
+  /* ── Timer (24h countdown) ────────────────────────── */
+  .dt-countdown {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(76,125,255,0.18);
+    border-radius: var(--r); padding: 12px 18px; margin-bottom: 18px;
+    color: var(--text); font-size: 14px;
+  }
+  .dt-countdown-icon { font-size: 22px; line-height: 1; }
+  .dt-countdown-text { flex: 1; line-height: 1.4; }
+  .dt-countdown-time {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--accent-hi);
+    font-variant-numeric: tabular-nums;
+    min-width: 110px;
+    text-align: right;
+  }
+  .dt-countdown.dt-expiring .dt-countdown-time { color: var(--warn); }
+  .dt-countdown.dt-expired .dt-countdown-time { color: var(--bad); }
+
+  /* ── Calendar sidebar ─────────────────────────────── */
+  .dt-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 1080px) {
+    .dt-layout { grid-template-columns: 1fr; }
+    .dt-sidebar { order: 2; position: static !important; }
+  }
+
+  .dt-sidebar {
+    position: sticky; top: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r);
+    padding: 18px 18px 16px;
+  }
+  .dt-cal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; gap: 10px;
+  }
+  .dt-cal-title {
+    font-size: 17px; font-weight: 700;
+    color: var(--text); text-align: center; flex: 1; letter-spacing: 0.2px;
+  }
+  .dt-cal-nav-btn {
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--muted); width: 36px; height: 36px;
+    border-radius: 10px; cursor: pointer; font-size: 18px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.15s ease; flex: 0 0 36px;
+  }
+  .dt-cal-nav-btn:hover { background: var(--accent-dim); color: var(--text); border-color: var(--accent); }
+  .dt-cal-nav-btn:active { transform: scale(0.95); }
+  .dt-cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 6px; min-height: 240px;
+  }
+  .dt-cal-dow {
+    font-size: 11px; color: var(--faint); text-align: center;
+    padding: 4px 0 6px; text-transform: uppercase;
+    letter-spacing: 0.6px; font-weight: 600;
+  }
+  .dt-cal-day {
+    aspect-ratio: 1 / 1; min-height: 44px; border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 2px;
+    font-size: 14px; font-weight: 600; position: relative;
+    cursor: pointer; border: 1px solid transparent;
+    transition: all 0.15s ease;
+    color: var(--faint);
+    background: rgba(255,255,255,0.03);
+    user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .dt-cal-daynum { font-size: 11px; line-height: 1; opacity: 0.6; }
+  .dt-cal-solved {
+    font-size: 13px; line-height: 1; font-weight: 800;
+    letter-spacing: 0.2px; padding: 2px 5px; border-radius: 6px;
+    background: rgba(0,0,0,0.32); color: inherit;
+  }
+  .dt-cal-day.dt-cal-empty {
+    cursor: default; background: transparent; border: none;
+  }
+  .dt-cal-day.dt-cal-future { opacity: 0.3; cursor: not-allowed; }
+  .dt-cal-day:hover:not(.dt-cal-empty):not(.dt-cal-future) {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+
+  /* Calendar day tiers (days with sets) */
+  .dt-cal-day.dt-tier-empty { background: rgba(255,255,255,0.02); color: var(--faint); }
+  .dt-cal-day.dt-tier-gray  { background: rgba(76,125,255,0.05); color: var(--muted); }
+  .dt-cal-day.dt-tier-pale  { background: rgba(76,125,255,0.08); color: var(--muted); }
+  .dt-cal-day.dt-tier-green { background: rgba(76,125,255,0.14); color: var(--text); }
+  .dt-cal-day.dt-tier-bright{ background: rgba(76,125,255,0.25); color: var(--text); }
+  .dt-cal-day.dt-tier-gold  {
+    background: var(--accent); color: #E6EBF7;
+    box-shadow: 0 0 14px rgba(76,125,255,0.45);
+  }
+
+  /* Today — accent background, white text */
+  .dt-cal-day.dt-cal-today {
+    background: var(--accent);
+    color: #E6EBF7;
+    outline: none;
+    border-color: var(--accent-hi);
+  }
+  .dt-cal-day.dt-cal-today .dt-cal-daynum { opacity: 1; color: #E6EBF7; }
+  .dt-cal-day.dt-cal-today .dt-cal-solved { background: rgba(0,0,0,0.25); color: #E6EBF7; }
+
+  .dt-cal-crown {
+    position: absolute; top: -8px; right: -2px; font-size: 12px;
+    line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
+    pointer-events: none;
+  }
+  .dt-cal-legend {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 11.5px; color: var(--faint); line-height: 1.5;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px;
+  }
+  .dt-cal-legend-row { display: flex; align-items: center; gap: 8px; }
+  .dt-cal-legend-sw {
+    display: inline-block; width: 14px; height: 14px;
+    border-radius: 4px; flex-shrink: 0;
+  }
+
+  /* Mobile: календарь скрыт */
+  @media (max-width: 1080px) {
+    .dt-sidebar { display: none; }
+    .dt-cal-day { font-size: 15px; min-height: 44px; }
+    .dt-cal-nav-btn { width: 40px; height: 40px; font-size: 20px; flex: 0 0 40px; }
+    .dt-cal-title { font-size: 18px; }
+    .dt-cal-grid { gap: 5px; min-height: 280px; }
+  }
+  @media (max-width: 480px) {
+    .dt-sidebar { padding: 14px 12px; border-radius: var(--r); }
+    .dt-cal-day { font-size: 14px; min-height: 40px; border-radius: 8px; }
+    .dt-cal-grid { gap: 4px; }
+    .dt-cal-legend { grid-template-columns: 1fr; }
+  }
+
+  /* Day-history panel */
+  .dt-day-history {
+    margin-top: 14px; padding-top: 14px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .dt-day-history-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .dt-day-history-sub { font-size: 11px; color: var(--faint); margin-bottom: 8px; }
+  .dt-day-history-list {
+    display: flex; flex-direction: column; gap: 6px;
+    max-height: 320px; overflow-y: auto; padding-right: 4px;
+  }
+  .dt-dh-item {
+    background: var(--surface-2); border: 1px solid var(--border-soft);
+    border-radius: 8px; padding: 8px 10px; font-size: 12px;
+    line-height: 1.4; color: var(--text);
+  }
+  .dt-dh-item-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .dt-dh-pos { font-weight: 700; color: var(--faint); }
+  .dt-dh-topic {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px;
+    color: var(--accent-hi);
+  }
+  .dt-dh-status-correct { color: var(--ok); }
+  .dt-dh-status-incorrect { color: var(--bad); }
+  .dt-dh-status-pending { color: var(--faint); }
+
+  /* Task grid centering */
+  .dt-layout { max-width: 1180px; margin: 0 auto; }
+  #dt-task-grid { justify-content: center; }
+  .dt-card.is-flagged, .dt-card[data-flagged="true"] { opacity: 1 !important; display: flex !important; }
+  .dt-card { opacity: 1 !important; }
+
+  /* ── Subtopic strip ──────────────────────────────── */
+  .dt-subtopic-strip {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r);
+    padding: 20px 24px; margin-bottom: 24px;
+  }
+  .dt-subtopic-strip-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+  }
+  .dt-subtopic-strip-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .dt-subtopic-strip-grade {
+    font-size: 12px; color: var(--accent-hi);
+    background: var(--accent-dim); padding: 3px 10px; border-radius: 20px;
+  }
+  .dt-subtopic-strip-items { display: flex; flex-wrap: wrap; gap: 10px; }
+  .dt-subtopic-strip-item {
+    display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+    background: var(--surface-2); border: 1px solid var(--border-soft);
+    border-radius: 10px; transition: all 0.2s ease;
+    flex: 1; min-width: 130px; max-width: 200px;
+  }
+  .dt-subtopic-strip-item.is-today {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(76,125,255,0.08);
+  }
+  .dt-subtopic-strip-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(255,255,255,0.06); font-size: 11px;
+    font-weight: 700; color: var(--faint); flex-shrink: 0;
+  }
+  .dt-subtopic-strip-item.is-today .dt-subtopic-strip-badge {
+    background: var(--accent-dim); color: var(--accent-hi);
+  }
+  .dt-subtopic-strip-name { font-size: 13px; color: var(--text); line-height: 1.3; word-break: break-word; }
+  .dt-subtopic-strip-item.is-today .dt-subtopic-strip-name { color: var(--accent-hi); font-weight: 600; }
+  .dt-subtopic-strip-today-badge {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--accent-hi); background: var(--accent-dim);
+    padding: 1px 6px; border-radius: 4px; margin-left: auto; white-space: nowrap;
+  }
+
+  /* ── Yearly calendar ─────────────────────────────── */
+  .dt-yearly-calendar {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r); margin-bottom: 24px; overflow: hidden;
+  }
+  .dt-yearly-cal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; cursor: pointer; user-select: none;
+    transition: background 0.2s ease;
+  }
+  .dt-yearly-cal-header:hover { background: var(--surface-2); }
+  .dt-yearly-cal-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .dt-yearly-cal-toggle { font-size: 18px; color: var(--faint); transition: transform 0.3s ease; }
+  .dt-yearly-cal-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+  .dt-yearly-cal-body.is-open { max-height: 5000px; }
+  .dt-yearly-cal-inner { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .dt-yearly-month {
+    background: var(--surface-2); border: 1px solid var(--border-soft);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .dt-yearly-month.is-current { border-color: rgba(76,125,255,0.25); background: var(--accent-dim); }
+  .dt-yearly-month-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .dt-yearly-month-label { font-size: 14px; font-weight: 600; color: var(--text); }
+  .dt-yearly-month.is-current .dt-yearly-month-label { color: var(--accent-hi); }
+  .dt-yearly-month-badge {
+    font-size: 11px; color: var(--faint); background: rgba(255,255,255,0.04);
+    padding: 2px 8px; border-radius: 10px;
+  }
+  .dt-yearly-month.is-current .dt-yearly-month-badge { color: var(--accent-hi); background: var(--accent-dim); }
+  .dt-yearly-month-subs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .dt-yearly-sub {
+    display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border-soft);
+    border-radius: 8px; font-size: 12px; color: var(--muted);
+  }
+  .dt-yearly-sub.is-today-sub {
+    background: var(--accent-dim); border-color: rgba(76,125,255,0.25); color: var(--accent-hi);
+  }
+  .dt-yearly-sub-num { font-size: 10px; font-weight: 700; color: var(--faint); width: 16px; text-align: center; }
+  .dt-yearly-sub.is-today-sub .dt-yearly-sub-num { color: var(--accent-hi); }
+  /* TG_FIX_V2 (мобильные правила карточек и долга) — в конце style-блока,
+     чтобы перебивать базовые .dt-card-cta/.dt-debt-item-open выше.
+     Футер карточки: легаси-CSS (daily_tasks.css) переводит его в колонку
+     с отступом 42px, и кнопка «Решить →» сжималась до размера текста.
+     Возвращаем строку с переносом: статус сверху, кнопка — крупная,
+     во всю ширину карточки. */
+  @media (max-width: 1024px) {
+    .dt-card-footer {
+      flex-wrap: wrap;
+      flex-direction: row;
+      align-items: center;
+      padding-left: 0;
+    }
+    .dt-card-cta {
+      flex: 1 1 100%;
+      justify-content: center;
+      padding: 12px 16px;
+      font-size: 14.5px;
+    }
+    /* Долг: строка переносится, кнопка — обычной ширины (не растянута) */
+    .dt-debt-item { flex-wrap: wrap; row-gap: 6px; }
+    .dt-debt-item-open { margin-left: auto; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-daily-tasks" style="max-width:1200px;margin:0 auto;padding:24px 16px 60px;">
+
+  <!-- Page header -->
+  <div style="font-size:20px;font-weight:800;margin:0 0 6px;display:inline-block;background:linear-gradient(90deg,#8ea2ff,#5eead4,#ffc36b);-webkit-background-clip:text;background-clip:text;color:transparent;">Главное — возвращаться каждый день</div>
+  <h2 style="font-size:26px;font-weight:700;margin-bottom:12px;color:var(--text);">Задачи дня</h2>
+  <label class="dt-pledge" style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;margin-bottom:16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:14px;line-height:1.45;cursor:pointer;">
+    <input type="checkbox" id="dt-pledge" style="width:18px;height:18px;margin-top:2px;flex:none;accent-color:#4f6cff;cursor:pointer;">
+    <span>Согласен: постараюсь заходить как можно чаще, ведь успех — в стабильности.</span>
+  </label>
+  <script>(function(){var c=document.getElementById('dt-pledge'),k='dt_pledge';try{c.checked=localStorage.getItem(k)==='1';c.addEventListener('change',function(){localStorage.setItem(k,c.checked?'1':'0');if(c.checked){try{fetch('/daily_tasks/pledge',{method:'POST',credentials:'include'}).catch(function(){});}catch(e){}}});}catch(e){}})();</script>
+
+  <!-- Two-column layout -->
+  <div class="dt-layout">
+    <div class="dt-main">
+
+      <!-- 24-hour countdown -->
+      <div id="dt-countdown" class="dt-countdown dt-hidden">
+        <span class="dt-countdown-icon">&#9201;</span>
+        {% set _dt_progress = (data.progress if data and data.progress is mapping else {}) %}
+        {% set _dt_items = (data.items if data and data.items is iterable and data.items is not string else []) %}
+        {% set _dt_total = (_dt_progress.get('total') or (_dt_items|length) or 0) %}
+        {% set _dt_n10 = _dt_total % 10 %}
+        {% set _dt_n100 = _dt_total % 100 %}
+        {% if _dt_total == 0 %}
+          {% set _dt_word = "задач" %}
+        {% elif _dt_n10 == 1 and _dt_n100 != 11 %}
+          {% set _dt_word = "задача" %}
+        {% elif _dt_n10 in [2,3,4] and _dt_n100 not in [12,13,14] %}
+          {% set _dt_word = "задачи" %}
+        {% else %}
+          {% set _dt_word = "задач" %}
+        {% endif %}
+        <span class="dt-countdown-text">
+          До истечения 24 часов:
+          <span style="display:block;font-size:11px;color:var(--muted);margin-top:2px;">
+            После {{ _dt_total }} {{ _dt_word }} удалятся и можно будет сгенерировать новые
+          </span>
+        </span>
+        <span class="dt-countdown-time" id="dt-countdown-time">--:--:--</span>
+      </div>
+
+      <!-- Weekly subtopic strip -->
+      {% if data and data.plan_data and data.plan_data.months %}
+      {% set _pd = data.plan_data %}
+      {% set _cur_month_idx = _pd.current_month %}
+      {% set _cur_month = _pd.months | selectattr('index', 'equalto', _cur_month_idx) | first %}
+      <div class="dt-subtopic-strip">
+        <div class="dt-subtopic-strip-header">
+          <span class="dt-subtopic-strip-title">Месяц {{ _cur_month_idx }}: подтемы</span>
+          <span class="dt-subtopic-strip-grade">класс {{ _pd.grade }}</span>
+        </div>
+        <div class="dt-subtopic-strip-items">
+          {% if _cur_month and _cur_month.subtopics %}
+          {% for _sub in _cur_month.subtopics %}
+          {% set _is_today = (_sub.slug == _pd.today_subtopic_slug) %}
+          <div class="dt-subtopic-strip-item{% if _is_today %} is-today{% endif %}">
+            <span class="dt-subtopic-strip-badge">{{ loop.index }}</span>
+            <span class="dt-subtopic-strip-name">{{ _sub.title }}</span>
+            {% if _is_today %}<span class="dt-subtopic-strip-today-badge">Сегодня</span>{% endif %}
+          </div>
+          {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Yearly calendar -->
+      {% if data and data.plan_data and data.plan_data.months %}
+      {% set _pd = data.plan_data %}
+      {% set _cur_month_idx = _pd.current_month %}
+      <div class="dt-yearly-calendar" id="dt-yearly-calendar">
+        <div class="dt-yearly-cal-header" onclick="toggleYearlyCal()">
+          <span class="dt-yearly-cal-title">Годовой план подтем</span>
+          <span class="dt-yearly-cal-toggle" id="dt-yearly-cal-toggle">&#9654;</span>
+        </div>
+        <div class="dt-yearly-cal-body" id="dt-yearly-cal-body">
+          <div class="dt-yearly-cal-inner">
+            {% for _m in _pd.months %}
+            {% set _is_cur = (_m.index == _cur_month_idx) %}
+            <div class="dt-yearly-month{% if _is_cur %} is-current{% endif %}">
+              <div class="dt-yearly-month-header">
+                <span class="dt-yearly-month-label">Месяц {{ _m.index }}</span>
+                {% if _is_cur %}<span class="dt-yearly-month-badge">Текущий</span>{% endif %}
+              </div>
+              <div class="dt-yearly-month-subs">
+                {% for _sub in _m.subtopics %}
+                {% set _is_today_sub = (_sub.slug == _pd.today_subtopic_slug and _is_cur) %}
+                <span class="dt-yearly-sub{% if _is_today_sub %} is-today-sub{% endif %}">
+                  <span class="dt-yearly-sub-num">{{ loop.index }}</span>
+                  {{ _sub.title }}
+                </span>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+  <!-- Blocked state: сначала тест по теме дня, потом задачи дня -->
+  <div id="dt-blocked-state" class="{{ 'dt-hidden' if not (data and data.status == 'blocked') }}">
+    <div class="dt-empty-card" style="border-color: rgba(99,102,241,0.35);">
+      <div class="dt-empty-title" style="color: #8c9abc;">Сначала — тест</div>
+      <div class="dt-empty-sub" id="dt-blocked-message">
+        {{ (data.message if data and data.message else 'Пройди тест по теме дня: 5 задач, примерно 15 минут. После него откроются задачи дня.') }}
+      </div>
+      <a href="/prep/probe" class="dt-btn-primary" style="display:inline-block;margin-top:14px;padding:10px 22px;border-radius:10px;background:rgba(90,174,255,0.22);color:#eaf3ff;font-weight:600;text-decoration:none;">Пройти тест</a>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div id="dt-empty-state" class="dt-hidden">
+    <div class="dt-empty-card">
+      <div class="dt-empty-title">Задач пока нет</div>
+      <div class="dt-empty-sub">
+        Задачи дня выдаются автоматически по плану месяца.<br>
+        Если ты видишь это сообщение — обнови страницу или подожди пару минут.
+      </div>
+    </div>
+  </div>
+
+  <!-- LIMITS_V1: мягкий лимит Free (partial, без редиректа) -->
+  {% if data and data.limit_reached %}
+  {% include 'partials/limit_reached.html' %}
+  {% endif %}
+
+  <!-- Generating state -->
+  <div id="dt-generating-state" class="dt-hidden">
+    <div class="dt-generating-card">
+      <div class="dt-gen-title">Генерируем задачи…</div>
+      <div class="dt-gen-sub" id="dt-elapsed">прошло 0:00</div>
+      <div class="dt-progress-bar">
+        <div class="dt-progress-fill" id="dt-progress-fill"></div>
+      </div>
+      <div class="dt-progress-text" id="dt-progress-text">0%</div>
+      <div class="dt-step-name" id="dt-step-name">Запуск…</div>
+      <div class="dt-eta" id="dt-eta" style="display:none !important;"></div>
+    </div>
+  </div>
+
+  <!-- Failed state -->
+  <div id="dt-failed-state" class="dt-hidden">
+    <div class="dt-empty-card" style="border-color:rgba(232,106,98,0.35);">
+      <div class="dt-empty-title" style="color:var(--bad);">Не удалось сгенерировать задачи</div>
+      <div class="dt-empty-sub">
+        <div id="dt-failed-message"
+             style="color:var(--bad);margin-bottom:14px;line-height:1.45;
+                    word-break:break-word;"></div>
+        <div style="color:var(--muted);font-size:14px;">
+          Это не отняло твою дневную попытку — можно попробовать снова.
+        </div>
+      </div>
+      <button class="dt-btn-primary" id="dt-btn-retry" onclick="startGeneration()">
+        Попробовать снова
+      </button>
+    </div>
+  </div>
+
+  <!-- Ready state -->
+  <div id="dt-ready-state" class="dt-hidden">
+    <div class="dt-ready-header">
+      <div>
+        <div class="dt-ready-title">Твои задачи на <span id="dt-date"></span></div>
+        <div class="dt-ready-meta">
+          Выполнено <span id="dt-progress-summary">0/0</span>
+        </div>
+      </div>
+      <div class="dt-ready-actions"></div>
+    </div>
+
+    <!-- План подготовки -->
+    <div class="dt-plan-note" style="padding:12px 16px;margin-bottom:14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:14px;line-height:1.6;">
+      <strong style="color:var(--text);">План подготовки:</strong> решай все задачи дня, изучи все методы нужного класса, решай пробники реальных олимпиад.
+    </div>
+
+    <!-- Summary card -->
+    <div id="dt-summary-card" class="dt-summary-card dt-hidden">
+      <span id="dt-summary-text"></span>
+    </div>
+
+    <!-- Partial notice -->
+    <div id="dt-partial-notice" class="dt-partial-notice dt-hidden">
+      Некоторые задачи не удалось сгенерировать. Они отмечены флагом.
+    </div>
+
+    {% if data and data.has_calibration %}
+    <div class="dt-calibration-banner" role="status">
+      <div class="dt-cal-banner-icon">&#9888;</div>
+      <div class="dt-cal-banner-body">
+        <div class="dt-cal-banner-title">Профиль ещё в калибровке</div>
+        <div class="dt-cal-banner-text">
+          {{ data.calibration_items_count }} из {{ data.progress.total }}
+          задач — по темам, по которым ты пока не проходил диагностику.
+          Они помечены бейджем «Калибровка» и подобраны на среднем
+          уровне.
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if data and data.streak %}
+    <div class="dt-streak-block" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:12px 16px;margin-bottom:14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);">
+      <div style="display:flex;align-items:center;">
+        <div style="white-space:nowrap;">
+          <span style="color:var(--muted);font-size:14px;">Серия:</span>
+          <strong style="font-size:18px;margin-left:6px;">{{ data.streak.current_streak }} дней</strong>
+          {% if data.streak.max_streak %}
+          <span style="color:var(--muted);font-size:13px;margin-left:8px;">(макс: {{ data.streak.max_streak }})</span>
+          {% endif %}
+        </div>
+        <button type="button" data-streak-how title="Как работает серия"
+                style="margin-left:10px;padding:3px 12px;border-radius:16px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;"
+                aria-label="Как работает серия">Как работает</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        {% if data.streak.days_off_available > 0 %}
+        <button class="dt-btn-secondary" onclick="takeDayOff()" style="font-size:13px;">
+          Взять выходной ({{ data.streak.days_off_available }})
+        </button>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- P4 DEBT block -->
+    {% if data and data.debt and data.debt.total %}
+    <div class="dt-debt-block">
+      <button type="button" class="dt-debt-toggle-btn" id="dt-debt-toggle" onclick="toggleDebt()">
+        <span>&#9203; Открыть долг: {{ data.debt.total }} задач</span>
+        <span class="dt-debt-toggle-arrow" id="dt-debt-toggle-arrow">&#9660;</span>
+      </button>
+      <div class="dt-debt-body dt-hidden" id="dt-debt-body">
+        <div class="dt-debt-header">
+          <span class="dt-debt-title">Долг: {{ data.debt.total }} задач</span>
+          <span class="dt-debt-hint">Нерешённые задачи прошлых дней — реши, пока не сгорели</span>
+        </div>
+        {% for _grp in data.debt.by_date %}
+        <div class="dt-debt-group">
+          <div class="dt-debt-group-date">{{ _grp.date }}</div>
+          {% for _dt in _grp.tasks %}
+          <div class="dt-debt-item" data-debt-item-id="{{ _dt.id }}">
+            {% if _dt.figure_url %}<img class="dt-debt-item-figure" src="{{ _dt.figure_url }}" alt="Чертёж" loading="lazy">{% endif %}
+            <span class="dt-debt-item-topic">#{{ _dt.position }} {{ _dt.topic or '' }}</span>
+            {% if _dt.difficulty_level %}<span class="dt-debt-item-level">уровень {{ _dt.difficulty_level }}</span>{% endif %}
+            {% if _dt.days_left is not none %}<span class="dt-debt-item-days">{% if _dt.days_left >= 0 %}{{ _dt.days_left }} дн.{% else %}сгорел{% endif %}</span>{% endif %}
+            <button type="button" class="dt-debt-item-open" onclick="openDebtTask({{ _dt.id }})">Открыть задачу <span aria-hidden="true">&rarr;</span></button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Task grid -->
+    <div id="dt-task-grid"></div>
+  </div>
+
+    </div>{# /.dt-main #}
+
+    <!-- Calendar sidebar -->
+    <aside class="dt-sidebar" id="dt-sidebar">
+      <div class="dt-cal-header">
+        <button class="dt-cal-nav-btn" id="dt-cal-prev" title="Предыдущий месяц">&#8249;</button>
+        <div class="dt-cal-title" id="dt-cal-title">—</div>
+        <button class="dt-cal-nav-btn" id="dt-cal-next" title="Следующий месяц">&#8250;</button>
+      </div>
+      <div class="dt-cal-grid" id="dt-cal-grid">
+        {# JS renders days #}
+      </div>
+      <div class="dt-day-history dt-hidden" id="dt-day-history">
+        <div class="dt-day-history-title" id="dt-day-history-title">—</div>
+        <div class="dt-day-history-sub" id="dt-day-history-sub"></div>
+        <div class="dt-day-history-list" id="dt-day-history-list"></div>
+      </div>
+    </aside>
+
+  </div>{# /.dt-layout #}
+
+</div>
+
+<!-- Modal (легаси-окно из daily_tasks.js / daily_tasks_modal.js; ID переименованы
+     в *-legacy-*, чтобы не конфликтовать с динамической модалкой из ensureModal():
+     дубли ID ломали getElementById — заголовок задачи попадал в скрытое окно) -->
+<div id="dt-modal-overlay" class="dt-hidden">
+  <div class="dt-modal">
+    <button class="dt-modal-close" id="dt-legacy-modal-close">&times;</button>
+    <div class="dt-modal-header">
+      <span class="dt-modal-title" id="dt-legacy-modal-title">Задача</span>
+      <span class="dt-modal-difficulty" id="dt-legacy-modal-difficulty"></span>
+    </div>
+    <div class="dt-modal-body" id="dt-legacy-modal-body"></div>
+  </div>
+</div>
+
+<script id="dt-init-data" type="application/json">{{ data | tojson | safe }}</script>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/daily_tasks.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='js/daily_tasks_modal.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='js/streak_how.js') }}?v={{ asset_version }}"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  function $(id) { return document.getElementById(id); }
+
+  function parseInitData() {
+    try {
+      var raw = document.getElementById('dt-init-data');
+      if (!raw) return null;
+      return JSON.parse(raw.textContent || raw.innerText || '{}');
+    } catch (e) {
+      console.warn('[dt] cannot parse init data', e);
+      return null;
+    }
+  }
+
+  function pad2(n) { n = String(Math.max(0, Math.floor(n))); return n.length < 2 ? '0' + n : n; }
+
+  // ── 24h countdown ──────────────────────────────────────
+  var countdownTimer = null;
+
+  function initCountdown() {
+    var data = parseInitData();
+    if (!data || !data.expires_at) return;
+    if (data.status !== 'ready' && data.status !== 'partial') return;
+
+    var box = $('dt-countdown');
+    var timeEl = $('dt-countdown-time');
+    if (!box || !timeEl) return;
+
+    var expiresAt = new Date(data.expires_at).getTime();
+    if (!isFinite(expiresAt)) return;
+
+    box.classList.remove('dt-hidden');
+
+    function tick() {
+      var now = Date.now();
+      var ms = expiresAt - now;
+      if (ms <= 0) {
+        timeEl.textContent = '00:00:00';
+        box.classList.remove('dt-expiring');
+        box.classList.add('dt-expired');
+        if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+        setTimeout(function() { window.location.reload(); }, 1200);
+        return;
+      }
+      var totalSec = Math.floor(ms / 1000);
+      var hh = Math.floor(totalSec / 3600);
+      var mm = Math.floor((totalSec % 3600) / 60);
+      var ss = totalSec % 60;
+      timeEl.textContent = pad2(hh) + ':' + pad2(mm) + ':' + pad2(ss);
+      if (ms < 60 * 60 * 1000) {
+        box.classList.add('dt-expiring');
+      } else {
+        box.classList.remove('dt-expiring');
+      }
+    }
+
+    tick();
+    countdownTimer = setInterval(tick, 1000);
+  }
+
+  // ── Calendar ────────────────────────────────────────────
+  var currentYear = null;
+  var currentMonth = null;
+  var todayIso = null;
+  var selectedDate = null;
+  var calCache = {};
+
+  var MONTH_NAMES_RU = [
+    'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+  ];
+  var DOW_RU = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+  function buildSkeletonPayload(year, month) {
+    var lastDay = new Date(year, month, 0).getDate();
+    var today = new Date();
+    var todayIsoLocal = today.getFullYear() + '-' +
+      pad2(today.getMonth() + 1) + '-' + pad2(today.getDate());
+    var days = [];
+    for (var d = 1; d <= lastDay; d++) {
+      var iso = year + '-' + pad2(month) + '-' + pad2(d);
+      var dDate = new Date(year, month - 1, d);
+      var isToday = (iso === todayIsoLocal);
+      var isFuture = dDate > today && !isToday;
+      days.push({
+        date: iso, day: d, solved: 0, total: 0,
+        status: null, tier: 'empty',
+        is_today: isToday, is_future: isFuture
+      });
+    }
+    return { success: true, year: year, month: month, today: todayIsoLocal, days: days };
+  }
+
+  function renderCalendarSkeleton(year, month) {
+    var titleEl = $('dt-cal-title');
+    if (titleEl) titleEl.textContent = MONTH_NAMES_RU[month - 1] + ' ' + year;
+    renderCalendar(buildSkeletonPayload(year, month));
+  }
+
+  function loadCalendar(year, month) {
+    currentYear = year;
+    currentMonth = month;
+    renderCalendarSkeleton(year, month);
+
+    var cacheKey = year + '-' + month;
+    if (calCache[cacheKey]) {
+      renderCalendar(calCache[cacheKey]);
+      return;
+    }
+
+    var url = '/daily_tasks/calendar?year=' + year + '&month=' + month;
+    fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+      .then(function(r) {
+        if (!r.ok) { throw new Error('HTTP ' + r.status); }
+        var ct = r.headers.get('Content-Type') || '';
+        if (ct.indexOf('json') === -1) { throw new Error('not json: ' + ct); }
+        return r.json();
+      })
+      .then(function(payload) {
+        if (!payload || !payload.success) {
+          console.warn('[dt-cal] bad payload', payload);
+          return;
+        }
+        calCache[cacheKey] = payload;
+        todayIso = payload.today;
+        renderCalendar(payload);
+      })
+      .catch(function(err) {
+        console.warn('[dt-cal] fetch error - skeleton', err);
+      });
+  }
+
+  function renderCalendar(payload) {
+    var grid = $('dt-cal-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    DOW_RU.forEach(function(d) {
+      var el = document.createElement('div');
+      el.className = 'dt-cal-dow';
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+
+    var first = new Date(Date.UTC(payload.year, payload.month - 1, 1));
+    var leadIdx = (first.getUTCDay() + 6) % 7;
+    for (var i = 0; i < leadIdx; i++) {
+      var blank = document.createElement('div');
+      blank.className = 'dt-cal-day dt-cal-empty';
+      grid.appendChild(blank);
+    }
+
+    payload.days.forEach(function(d) {
+      var el = document.createElement('div');
+      var cls = ['dt-cal-day', 'dt-tier-' + d.tier];
+      if (d.is_today) cls.push('dt-cal-today');
+      if (d.is_future) cls.push('dt-cal-future');
+      el.className = cls.join(' ');
+      el.setAttribute('data-date', d.date);
+      el.setAttribute('title',
+        d.total > 0
+          ? (d.day + ' число — решено ' + d.solved + ' / ' + d.total)
+          : (d.is_future ? 'Ещё не наступило' : (d.day + ' число — без задач')));
+
+      var num = document.createElement('span');
+      num.className = 'dt-cal-daynum';
+      num.textContent = d.day;
+      el.appendChild(num);
+
+      if (!d.is_future && d.total > 0) {
+        var solvedBadge = document.createElement('span');
+        solvedBadge.className = 'dt-cal-solved';
+        solvedBadge.textContent = d.solved + '/' + d.total;
+        el.appendChild(solvedBadge);
+      }
+
+      if (d.tier === 'gold') {
+        var crown = document.createElement('span');
+        crown.className = 'dt-cal-crown';
+        crown.textContent = '\uD83D\uDC51';
+        el.appendChild(crown);
+      }
+
+      if (!d.is_future) {
+        el.style.cursor = 'pointer';
+        (function(dateIso) {
+          el.addEventListener('click', function() { openDayHistory(dateIso); });
+        })(d.date);
+      } else {
+        el.style.cursor = 'not-allowed';
+      }
+      grid.appendChild(el);
+    });
+  }
+
+  // ── Day history panel ───────────────────────────────────
+  function openDayHistory(dateIso) {
+    selectedDate = dateIso;
+    var panel = $('dt-day-history');
+    var titleEl = $('dt-day-history-title');
+    var subEl = $('dt-day-history-sub');
+    var listEl = $('dt-day-history-list');
+    if (!panel || !listEl) return;
+
+    panel.classList.remove('dt-hidden');
+    titleEl.textContent = formatDateRu(dateIso);
+    subEl.textContent = 'Загружаю…';
+    listEl.innerHTML = '';
+
+    fetch('/daily_tasks/day_history/' + dateIso, { credentials: 'same-origin' })
+      .then(function(r) { return r.json(); })
+      .then(function(payload) {
+        if (!payload || !payload.success) {
+          subEl.textContent = 'Не удалось загрузить.';
+          return;
+        }
+        if (!payload.has_set || !payload.items || payload.items.length === 0) {
+          subEl.textContent = 'В этот день задач не было.';
+          return;
+        }
+        subEl.textContent = 'Решено ' + payload.solved + ' из ' + payload.total
+          + (payload.status === 'expired' ? ' · сет завершён' : '');
+        payload.items.forEach(function(it) {
+          listEl.appendChild(buildDhItem(it));
+        });
+      })
+      .catch(function(err) {
+        console.warn('[dt-dh] fetch error', err);
+        subEl.textContent = 'Не удалось загрузить.';
+      });
+  }
+
+  function buildDhItem(it) {
+    var wrap = document.createElement('div');
+    wrap.className = 'dt-dh-item';
+
+    var head = document.createElement('div');
+    head.className = 'dt-dh-item-head';
+
+    var pos = document.createElement('span');
+    pos.className = 'dt-dh-pos';
+    pos.textContent = '#' + (it.position || '?');
+    head.appendChild(pos);
+
+    if (it.topic) {
+      var topic = document.createElement('span');
+      topic.className = 'dt-dh-topic';
+      topic.textContent = it.topic;
+      head.appendChild(topic);
+    }
+
+    var status = document.createElement('span');
+    if (it.is_correct === true) {
+      status.className = 'dt-dh-status-correct';
+      status.textContent = '\u2713 верно';
+    } else if (it.is_answered) {
+      status.className = 'dt-dh-status-incorrect';
+      status.textContent = '\u2717 неверно';
+    } else {
+      status.className = 'dt-dh-status-pending';
+      status.textContent = '— не решено';
+    }
+    head.appendChild(status);
+    wrap.appendChild(head);
+
+    if (it.preview) {
+      var body = document.createElement('div');
+      body.textContent = it.preview;
+      try{ if(typeof reRenderMath==='function') reRenderMath(body); }catch(e){}
+      wrap.appendChild(body);
+    }
+    return wrap;
+  }
+
+  function formatDateRu(iso) {
+    var parts = iso.split('-');
+    if (parts.length !== 3) return iso;
+    var d = parseInt(parts[2], 10);
+    var m = parseInt(parts[1], 10);
+    var y = parts[0];
+    return d + ' ' + (MONTH_NAMES_RU[m - 1] || '').toLowerCase() + ' ' + y;
+  }
+
+  function bindNav() {
+    var prev = $('dt-cal-prev');
+    var next = $('dt-cal-next');
+    if (prev) prev.addEventListener('click', function() {
+      var m = currentMonth - 1, y = currentYear;
+      if (m < 1) { m = 12; y -= 1; }
+      loadCalendar(y, m);
+    });
+    if (next) next.addEventListener('click', function() {
+      var m = currentMonth + 1, y = currentYear;
+      if (m > 12) { m = 1; y += 1; }
+      loadCalendar(y, m);
+    });
+  }
+
+  // ── Init ────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    initCountdown();
+    bindNav();
+    var now = new Date();
+    loadCalendar(now.getFullYear(), now.getMonth() + 1);
+    renderTasks();
+    bindActionButtons();
+  });
+
+  // ── Task cards rendering ────────────────────────────────
+  function escapeHtml(s) {
+    s = (s == null ? '' : String(s));
+    return s.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+  }
+
+  // ── TECHNIQUES_V1: анализ техник решения ────────────────────────────
+  function dtAnalyzeTechniques(itemId) {
+    if (typeof itemId === 'undefined' || itemId === null) return;
+    var resultEl = document.getElementById('dt-techniques-result');
+    if (!resultEl) return;
+    var btn = event && event.target;
+    if (btn) { btn.disabled = true; btn.textContent = 'Определяю методы…'; }
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = '<div style="color:var(--muted);font-size:13px;">Анализирую решение…</div>';
+    fetch('/daily_tasks/' + itemId + '/analyze_techniques', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: '{}'
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(a) {
+      if (btn) { btn.disabled = false; btn.textContent = '🔬 Изучить техники решения'; }
+      if (a.status !== 'success') {
+        resultEl.innerHTML = '<div style="color:#E86A62;font-size:13.5px;padding:10px;background:rgba(232,106,98,0.10);border-left:3px solid rgba(232,106,98,0.4);border-radius:6px;">' +
+          escapeHtml(a.message || 'Не удалось определить техники') + '</div>';
+        return;
+      }
+      var methods = a.methods || [];
+      if (!methods.length) {
+        resultEl.innerHTML = '<div style="color:var(--muted);font-size:13.5px;padding:10px;background:rgba(148,163,184,0.08);border-left:3px solid rgba(148,163,184,0.3);border-radius:6px;">' +
+          'В этом решении не используются специальные олимпиадные методы — чистая арифметика и логика.' +
+          '</div>';
+        return;
+      }
+      var html = '<div style="margin-bottom:8px;font-size:13px;color:var(--text);font-weight:600;">' +
+        '🔧 В этом решении использованы методы:' +
+        '</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">';
+      for (var i = 0; i < methods.length; i++) {
+        var m = methods[i];
+        html += '<a href="' + escapeHtml(m.url) + '" target="_blank" rel="noopener" ' +
+          'style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:rgba(76,125,255,0.12);border:1px solid rgba(76,125,255,0.35);border-radius:999px;color:#7BA7F0;text-decoration:none;font-size:13px;font-weight:500;transition:all 0.15s;" ' +
+          'onmouseover="this.style.background=\'rgba(76,125,255,0.22)\'" onmouseout="this.style.background=\'rgba(76,125,255,0.12)\'">' +
+          '<span style="font-family:monospace;font-size:11px;background:rgba(76,125,255,0.25);padding:1px 5px;border-radius:4px;">' + escapeHtml(m.code) + '</span>' +
+          '<span>' + escapeHtml(m.name) + '</span>' +
+          '</a>';
+      }
+      html += '</div>';
+      html += '<div style="margin-top:10px;font-size:12px;color:var(--muted);">' +
+        'Нажми на метод, чтобы перейти к его описанию и примерам.</div>';
+      resultEl.innerHTML = html;
+    })
+    .catch(function(err) {
+      if (btn) { btn.disabled = false; btn.textContent = '🔬 Изучить техники решения'; }
+      resultEl.innerHTML = '<div style="color:#E86A62;font-size:13.5px;padding:10px;background:rgba(232,106,98,0.10);border-left:3px solid rgba(232,106,98,0.4);border-radius:6px;">Не удалось загрузить. Попробуй позже.</div>';
+    });
+  }
+  window.dtAnalyzeTechniques = dtAnalyzeTechniques;
+
+  function renderTasks() {
+    var data = parseInitData(); if (!data) return;
+    var grid = $('dt-task-grid'); if (!grid) return;
+    var items = (data.items && data.items.length) ? data.items : [];
+    if (!items.length) { return; }
+    grid.innerHTML = '';
+    items.forEach(function(it, idx) {
+      var card = document.createElement('div');
+      card.className = 'dt-card' + (it.is_answered ? (it.is_correct ? ' dt-done' : ' dt-flagged') : '');
+      if (it.is_calibration) card.className += ' dt-calibration';
+      card.setAttribute('data-item-id', it.id);
+      // Понятная сквозная нумерация 1..N (вместо внутреннего position из БД).
+      it._display_number = idx + 1;
+
+      var subtopicHtml = '';
+      if (it.subtopic) {
+        subtopicHtml = '<div class="dt-card-subtopic">' + escapeHtml(it.subtopic) + '</div>';
+      }
+
+      var statusHtml;
+      if (it.is_answered && it.is_correct) {
+        statusHtml = '<span class="dt-card-status dt-correct">\u2713 Решено верно</span>';
+      } else if (it.is_answered) {
+        statusHtml = '<span class="dt-card-status dt-incorrect">\u2717 Неверно</span>';
+      } else {
+        statusHtml = '<span class="dt-card-status dt-pending">— Не решено</span>';
+      }
+
+      // Явная аффорданс-кнопка: карточка и так кликабельна целиком,
+      // но кнопка «Решить →» делает это очевидным.
+      var ctaHtml = '<span class="dt-card-cta" aria-hidden="true">' +
+        (it.is_answered ? 'Открыть <span>\u2192</span>' : 'Решить <span>\u2192</span>') + '</span>';
+
+      var calBadge = '';
+      if (it.is_calibration) {
+        calBadge = '<span class="dt-calibration-badge">Калибровка</span>';
+      }
+
+      card.innerHTML =
+        subtopicHtml +
+        '<div class="dt-card-header">' +
+          '<span class="dt-card-number">' + escapeHtml(it._display_number) + '</span>' +
+          '<span class="dt-topic-badge">' + escapeHtml(it.topic || '') + '</span>' +
+          '<span class="dt-difficulty">' + escapeHtml(it.difficulty_level || '') + '</span>' +
+          calBadge +
+        '</div>' +
+        '<div class="dt-card-preview">' + escapeHtml(it.preview || it.text || '') + '</div>' +
+        '<div class="dt-card-footer">' +
+          statusHtml +
+          ctaHtml +
+        '</div>';
+
+      // Доступ с клавиатуры + явная кликабельность всей карточки.
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-label', 'Задача ' + (idx + 1) + ': ' + (it.topic || '') + ' — открыть');
+      card.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openTask(it);
+        }
+      });
+      card.addEventListener('click', function() { openTask(it); });
+      grid.appendChild(card);
+      if (typeof renderMath === 'function') renderMath(card);
+    });
+  }
+
+  // ── Fraction / answer normalization ─────────────────────
+  function normalizeAnswer(raw) {
+    if (raw == null) return '';
+    var s = String(raw).trim().replace(',', '.');
+    var m = s.match(/^\s*(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)\s*$/);
+    if (m) {
+      var num = parseFloat(m[1]), den = parseFloat(m[2]);
+      if (den !== 0 && isFinite(num) && isFinite(den)) {
+        var v = num / den;
+        return String(Math.round(v * 1e9) / 1e9);
+      }
+    }
+    return s;
+  }
+
+  // ── Answer modal ────────────────────────────────────────
+  var dtModalEl = null;
+  var dtOpenStart = 0;
+
+  function ensureModal() {
+    if (dtModalEl) return dtModalEl;
+    var ov = document.createElement('div');
+    ov.className = 'dt-modal';
+    ov.id = 'dt-modal';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;display:none;align-items:flex-start;justify-content:center;background:rgba(7,12,24,0.35);overflow-y:auto;padding:40px 16px;';
+    ov.innerHTML =
+      '<div class="dt-modal-box" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);max-width:680px;width:100%;padding:24px 26px;color:var(--text);position:relative;">' +
+      '<button id="dt-modal-close" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:26px;cursor:pointer;line-height:1;">\u00d7</button>' +
+      '<div class="dt-modal-title" id="dt-modal-title" style="font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:var(--accent-hi);margin-bottom:10px;"></div>' +
+      '<div class="dt-modal-body" id="dt-modal-statement" style="font-size:16px;line-height:1.6;margin-bottom:18px;white-space:pre-wrap;"></div>' +
+      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">' +
+        '<input type="text" id="dt-answer-input" data-kb data-kb-label="\u041e\u0442\u0432\u0435\u0442" placeholder="\u0422\u0432\u043e\u0439 \u043e\u0442\u0432\u0435\u0442 (\u043d\u0430\u043f\u0440. 0.25 \u0438\u043b\u0438 1/4)" autocomplete="off" style="flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#070C18;color:var(--text);font-size:16px;">' +
+        '<button type="button" class="kb-field-btn" data-kb-target="dt-answer-input" onclick="openKbFor(\'dt-answer-input\')" title="\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0443">\u2328\ufe0f</button>' +
+      '</div>' +
+      '<div style="margin-bottom:14px;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">' +
+          '<div style="font-size:13px;color:var(--muted);">Решение (текст или фото из тетрадки — ИИ-тьютор распознает фото):</div>' +
+          '<button type="button" class="kb-field-btn" data-kb-target="dt-solution-input" onclick="openKbFor(\'dt-solution-input\')" title="\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0443" style="font-size:13px;min-width:32px;height:30px;">\u2328\ufe0f</button>' +
+        '</div>' +
+        '<textarea id="dt-solution-input" data-kb data-kb-label="\u0420\u0435\u0448\u0435\u043d\u0438\u0435" placeholder="Опиши ход решения..." autocomplete="off" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#070C18;color:var(--text);font-size:15px;min-height:70px;resize:vertical;box-sizing:border-box;"></textarea>' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-top:8px;">' +
+          '<input type="file" id="dt-solution-photo" accept="image/jpeg,image/png,image/heic,image/heif" style="display:none;">' +
+          '<button type="button" id="dt-photo-btn" class="dt-btn-secondary" style="font-size:13px;">\ud83d\udcf7 Прикрепить фото</button>' +
+          '<span id="dt-photo-name" style="font-size:12px;color:var(--muted);"></span>' +
+          '<button type="button" id="dt-photo-remove" class="dt-btn-secondary" style="display:none;font-size:12px;color:#e86a62;">\u2715</button>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;"><button id="dt-submit-btn" class="dt-btn-primary">\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c</button></div>' +
+      '<div id="dt-modal-result" style="margin-top:16px;"></div>' +
+      '</div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', function(e) { if (e.target === ov) closeModal(); });
+    ov.querySelector('#dt-modal-close').addEventListener('click', closeModal);
+    // Esc закрывает окно задачи.
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && dtModalEl && dtModalEl.style.display !== 'none') closeModal();
+    });
+
+    // ── Фото решения из тетрадки ──
+    var photoBtn = ov.querySelector('#dt-photo-btn');
+    var photoInput = ov.querySelector('#dt-solution-photo');
+    var photoName = ov.querySelector('#dt-photo-name');
+    var photoRemove = ov.querySelector('#dt-photo-remove');
+    dtSolutionPhotoFile = null;
+    if (photoBtn && photoInput) {
+      photoBtn.addEventListener('click', function() { photoInput.click(); });
+      photoInput.addEventListener('change', function() {
+        var f = photoInput.files[0];
+        if (!f) return;
+        if (f.size > 12 * 1024 * 1024) { alert('Фото больше 12 МБ'); photoInput.value = ''; return; }
+        dtSolutionPhotoFile = f;
+        photoName.textContent = f.name;
+        photoRemove.style.display = 'inline-block';
+      });
+      photoRemove.addEventListener('click', function() {
+        dtSolutionPhotoFile = null;
+        photoInput.value = '';
+        photoName.textContent = '';
+        photoRemove.style.display = 'none';
+      });
+    }
+
+    dtModalEl = ov;
+    return ov;
+  }
+
+  function dtLockScroll(lock) {
+    // Окно задачи открыто — фон не прокручивается (актуально на телефоне,
+    // где модалка теперь на весь экран).
+    try { document.body.style.overflow = lock ? 'hidden' : ''; } catch (e) {}
+  }
+
+  // TG_FIX_V2: полноэкранный режим окна задачи на узких экранах —
+  // классом, а не только @media: во встроенном браузере Telegram
+  // viewport иногда врёт, и медиа-запрос не срабатывает.
+  function dtSyncFullscreen() {
+    if (!dtModalEl) return;
+    var narrow = (window.innerWidth || 1024) <= 1024;
+    try {
+      if (!narrow && window.matchMedia && window.matchMedia('(max-width: 1024px)').matches) narrow = true;
+    } catch (e) {}
+    try {
+      // Телефон с «широким» layout viewport (кварк некоторых webview):
+      // окно всё равно делаем полноэкранным по физической ширине экрана.
+      if (!narrow && window.screen && (window.screen.width || 1024) <= 500) narrow = true;
+    } catch (e) {}
+    if (narrow) dtModalEl.classList.add('dt-modal-fs');
+    else dtModalEl.classList.remove('dt-modal-fs');
+  }
+  window.addEventListener('resize', function() {
+    if (dtModalEl && dtModalEl.style.display !== 'none') dtSyncFullscreen();
+  });
+
+  function closeModal() {
+    if (dtModalEl) dtModalEl.style.display = 'none';
+    dtLockScroll(false);
+  }
+
+  var dtCurrentItem = null;
+  var dtSolutionPhotoFile = null;   // фото решения из тетрадки (File)
+
+  // PHOTO_FIX_V1: сжатие/конвертация фото решения перед отправкой.
+  // HEIC с iPhone vision-модели не читают — конвертируем в JPEG через canvas
+  // (Safari на iPhone декодирует HEIC корректно), заодно ужимаем до 1600px
+  // с качеством 0.82: тяжёлые фото (5-12 МБ) уходили в base64 как есть и
+  // медленно проверялись. Если canvas недоступен или файл уже лёгкий JPEG —
+  // отдаём исходный файл без изменений.
+  function dtCompressPhoto(file) {
+    if (!file.type || file.type.indexOf('image/') !== 0) return Promise.resolve(file);
+    if (file.type === 'image/jpeg' && file.size < 400 * 1024) return Promise.resolve(file);
+    if (typeof createImageBitmap !== 'function') return Promise.resolve(file);
+    return createImageBitmap(file).then(function(bitmap) {
+      var maxDim = 1600, quality = 0.82;
+      var w = bitmap.width, h = bitmap.height;
+      if (Math.max(w, h) > maxDim) {
+        var k = maxDim / Math.max(w, h);
+        w = Math.round(w * k); h = Math.round(h * k);
+      }
+      var cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+      if (bitmap.close) bitmap.close();
+      return new Promise(function(resolve) {
+        cv.toBlob(function(blob) {
+          if (!blob) { resolve(file); return; }
+          var nm = (file.name || 'photo').replace(/\.[^.]+$/, '');
+          resolve(new File([blob], nm + '.jpg', { type: 'image/jpeg' }));
+        }, 'image/jpeg', quality);
+      });
+    }).catch(function() { return file; });
+  }
+
+  function dtDraftKey(itemId) { return 'dt_draft_' + itemId; }
+
+  function dtSaveDraft(itemId) {
+    if (!itemId) return;
+    try {
+      var inp = $('dt-answer-input');
+      var sol = $('dt-solution-input');
+      var draft = {
+        answer: inp ? inp.value : '',
+        solution: sol ? sol.value : ''
+      };
+      localStorage.setItem(dtDraftKey(itemId), JSON.stringify(draft));
+    } catch (e) { /* ignore */ }
+  }
+
+  function dtLoadDraft(itemId) {
+    try {
+      var raw = localStorage.getItem(dtDraftKey(itemId));
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (e) { return null; }
+  }
+
+  function dtClearDraft(itemId) {
+    try { localStorage.removeItem(dtDraftKey(itemId)); } catch (e) {}
+  }
+
+  function openTask(it) {
+    // Сохраняем черновик предыдущей задачи перед переключением.
+    if (dtCurrentItem && dtCurrentItem.id !== it.id) {
+      dtSaveDraft(dtCurrentItem.id);
+    }
+    // Подтягиваем свежие данные по id из dt-init-data — иначе при
+    // повторном открытии решённой задачи item.user_answer === null.
+    try {
+      var initDataEl = document.getElementById('dt-init-data');
+      if (initDataEl && it && it.id !== undefined) {
+        var d = JSON.parse(initDataEl.textContent || '{}');
+        if (d.items) {
+          for (var _fi = 0; _fi < d.items.length; _fi++) {
+            if (String(d.items[_fi].id) === String(it.id)) {
+              it = d.items[_fi];
+              break;
+            }
+          }
+        }
+      }
+    } catch (_e4) {}
+    ensureModal();
+    dtLockScroll(true);
+    dtSyncFullscreen();
+    dtCurrentItem = it;
+    dtOpenStart = Date.now();
+    // Заголовок ищем внутри активного окна: раньше из-за дубля ID (легаси-разметка
+    // в шаблоне) текст попадал в скрытое окно и в модалке не отображался.
+    var titleEl = dtModalEl.querySelector('#dt-modal-title');
+    if (titleEl) titleEl.textContent = (it.topic || '') + (it.difficulty_level ? (' \u00b7 ' + it.difficulty_level) : '');
+    $('dt-modal-statement').innerHTML = escapeHtmlPreserveLatex(it.text || it.preview || '');
+    // DT_LATEX_FIX_V1: функция называется reRenderMath (base.html), чтобы
+    // формулы \(...\), $...$, \begin{cases}... рендерились, а не показывались сырым \TeX.
+    if (typeof reRenderMath === 'function') reRenderMath($('dt-modal-statement'));
+    if (typeof renderMath === 'function') renderMath($('dt-modal-statement'));
+    var inp = $('dt-answer-input');
+    var sol = $('dt-solution-input');
+    inp.value = (it.user_answer || '');
+    if (sol) sol.value = '';
+    dtSolutionPhotoFile = null;
+    var photoName = $('dt-photo-name');
+    var photoRemove = $('dt-photo-remove');
+    if (photoName) photoName.textContent = '';
+    if (photoRemove) photoRemove.style.display = 'none';
+    var photoInput = $('dt-solution-photo');
+    if (photoInput) photoInput.value = '';
+    // Восстанавливаем сохранённый черновик (ответ + решение) для этой задачи.
+    var draft = dtLoadDraft(it.id);
+    if (draft && !it.is_answered) {
+      if (draft.answer) inp.value = draft.answer;
+      if (sol && draft.solution) sol.value = draft.solution;
+    }
+    var res = $('dt-modal-result');
+    res.innerHTML = '';
+    if (it.is_answered) {
+      var _sol = it.solution || '';
+      var _feedback = it.ai_feedback || '';
+      var _ansHtml = '';
+      if (it.user_answer) {
+        _ansHtml += '<div style="color:var(--muted);margin-top:8px;">Твой ответ: <b>' + escapeHtmlPreserveLatex(it.user_answer) + '</b></div>';
+      }
+      // 2026-09-15: показываем сохранённый в БД ИИ-разбор, чтобы при
+      // повторном открытии выглядело так же, как после ответа.
+      if (_feedback) {
+        _ansHtml += '<div style="margin-top:10px;">' +
+          '<div style="font-size:12px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:#7BA7F0;margin-bottom:6px;">💬 Комментарий ИИ-тьютора</div>' +
+          '<div style="color:var(--text);line-height:1.6;padding:12px;background:rgba(76,125,255,0.10);border-left:3px solid rgba(76,125,255,0.6);border-radius:8px;">' + renderRich(_feedback) + '</div></div>';
+      }
+      if (_sol) {
+        // TECHNIQUES_V2: кнопка «Изучить техники решения» — над блоком решения.
+        _ansHtml += '<div style="margin-top:14px;text-align:center;">' +
+          '<button onclick="dtAnalyzeTechniques(' + it.id + ')" style="padding:9px 18px;background:rgba(229,172,58,0.14);border:1px solid rgba(229,172,58,0.35);border-radius:8px;color:#E5AC3A;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background=\'rgba(229,172,58,0.25)\'" onmouseout="this.style.background=\'rgba(229,172,58,0.14)\'">🔬 Изучить техники решения</button>' +
+          '</div>' +
+          '<div id="dt-techniques-result" style="margin-top:10px;margin-bottom:10px;display:none;"></div>';
+        // Чертёж прикрепляем к решению (если есть).
+        _ansHtml += '<div>' +
+          '<div style="font-size:12px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:#3ECF8E;margin-bottom:6px;">📘 Правильное решение</div>' +
+          '<div style="color:var(--text);line-height:1.6;padding:12px;background:rgba(62,207,142,0.08);border:1px solid rgba(62,207,142,0.25);border-radius:10px;">' +
+          (it.figure_url ? '<img src="' + escapeHtml(it.figure_url) + '" alt="Чертёж" style="display:block;max-width:100%;max-height:300px;margin:0 auto 10px;border-radius:8px;background:#fff;padding:4px;box-sizing:border-box;">' : '') +
+          renderRich(_sol) + '</div></div>';
+      }
+      res.innerHTML = '<div style="color:' + (it.is_correct ? '#3ECF8E' : '#E86A62') + ';font-weight:600;">' +
+        (it.is_correct ? '\u2713 Ранее решено верно' : '\u2717 Ранее отвечено неверно') + '</div>' + _ansHtml;
+      // DT_LATEX_FIX_V1: рендерим формулы в истории ответов (решение, фидбек, твой ответ).
+      if (typeof reRenderMath === 'function') reRenderMath(res);
+      if (typeof renderMath === 'function') renderMath(res);
+      // 2026-09-15: повторный ответ запрещён — и поля, и кнопку блокируем.
+      inp.disabled = true;
+      var solInput = $('dt-solution-input');
+      if (solInput) solInput.disabled = true;
+      var photoLabel = document.querySelector('label[for="dt-solution-photo"]');
+      if (photoLabel) { photoLabel.style.opacity = '0.45'; photoLabel.style.pointerEvents = 'none'; }
+      var photoInp = $('dt-solution-photo');
+      if (photoInp) photoInp.disabled = true;
+      $('dt-submit-btn').disabled = true;
+      $('dt-submit-btn').textContent = 'Ответ уже отправлен';
+      $('dt-submit-btn').onclick = null;
+      inp.onkeydown = null;
+      inp.oninput = null;
+      if (sol) sol.oninput = null;
+      dtModalEl.style.display = 'flex';
+      return;
+    } else {
+      if (typeof renderMath === 'function') renderMath(res);
+      inp.disabled = false;
+      $('dt-submit-btn').disabled = false;
+      $('dt-submit-btn').textContent = 'Проверить';
+      $('dt-submit-btn').onclick = submitAnswer;
+      inp.onkeydown = function(e) { if (e.key === 'Enter') submitAnswer(); };
+      // Автосохранение черновика при вводе (ответ и решение).
+      inp.oninput = function() { if (dtCurrentItem) dtSaveDraft(dtCurrentItem.id); };
+      if (sol) {
+        sol.oninput = function() { if (dtCurrentItem) dtSaveDraft(dtCurrentItem.id); };
+      }
+    }
+    dtModalEl.style.display = 'flex';
+    inp.focus();
+  }
+
+  function submitAnswer() {
+    if (!dtCurrentItem || dtCurrentItem.is_answered) return;
+    var inp = $('dt-answer-input');
+    var solutionInp = $('dt-solution-input');
+    var res = $('dt-modal-result');
+    var btn = $('dt-submit-btn');
+    var raw = inp.value.trim();
+    if (!raw) { inp.focus(); return; }
+    var normalized = normalizeAnswer(raw);
+
+    // Решение: текст или фото из тетрадки
+    var solutionText = solutionInp ? solutionInp.value.trim() : '';
+    var photoFile = dtSolutionPhotoFile;
+    if (!solutionText && !photoFile) {
+      alert('Опиши решение текстом или прикрепи фото из тетрадки.');
+      if (solutionInp) solutionInp.focus();
+      return;
+    }
+
+    btn.disabled = true;
+    var oldTxt = btn.textContent;
+    btn.textContent = 'Проверяю…';
+    res.innerHTML = '<div style="color:var(--muted);">ИИ-тьютор проверяет ответ и решение…</div>';
+    var secs = Math.max(0, Math.round((Date.now() - dtOpenStart) / 1000));
+
+    // ── Собираем фото в base64 для submit_ai ──
+    function buildSubmitBody(imagesB64) {
+      return JSON.stringify({
+        user_answer: raw,
+        user_solution: solutionText,
+        solution_images_b64: imagesB64,
+        time_spent_seconds: secs
+      });
+    }
+
+    function doAiSubmit(imagesB64) {
+      fetch('/daily_tasks/' + dtCurrentItem.id + '/submit_ai', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: buildSubmitBody(imagesB64)
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(a) {
+        btn.disabled = false;
+        btn.textContent = oldTxt;
+        if (a && a.status === 'success') {
+          var ok = a.is_correct === true;
+          var html = '<div style="color:' + (ok ? '#3ECF8E' : '#E86A62') + ';font-weight:600;margin-bottom:8px;">' +
+            (ok ? '\u2713 Верно!' : '\u2717 Неверно') + '</div>';
+          if (!ok && a.correct_answer != null) {
+            html += '<div style="margin-bottom:6px;">Правильный ответ: <b>' + escapeHtmlPreserveLatex(a.correct_answer) + '</b></div>';
+          }
+          if (a.feedback) {
+            html += '<div style="margin-top:10px;">' +
+              '<div style="font-size:12px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:#7BA7F0;margin-bottom:6px;">💬 Комментарий ИИ-тьютора</div>' +
+              '<div style="color:var(--text);line-height:1.6;padding:12px;background:rgba(76,125,255,0.10);border-left:3px solid rgba(76,125,255,0.6);border-radius:8px;">' + renderRich(a.feedback) + '</div></div>';
+          }
+          if (a.solution) {
+            // TECHNIQUES_V2: кнопка «Изучить техники решения» — над блоком решения.
+            html += '<div style="margin-top:14px;text-align:center;">' +
+              '<button onclick="dtAnalyzeTechniques(' + dtCurrentItem.id + ')" style="padding:9px 18px;background:rgba(229,172,58,0.14);border:1px solid rgba(229,172,58,0.35);border-radius:8px;color:#E5AC3A;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background=\'rgba(229,172,58,0.25)\'" onmouseout="this.style.background=\'rgba(229,172,58,0.14)\'">🔬 Изучить техники решения</button>' +
+              '</div>' +
+              '<div id="dt-techniques-result" style="margin-top:10px;margin-bottom:10px;display:none;"></div>';
+            html += '<div>' +
+              '<div style="font-size:12px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:#3ECF8E;margin-bottom:6px;">📘 Правильное решение</div>' +
+              '<div style="color:var(--text);line-height:1.6;padding:12px;background:rgba(62,207,142,0.08);border:1px solid rgba(62,207,142,0.25);border-radius:10px;">' +
+              (dtCurrentItem.figure_url ? '<img src="' + escapeHtml(dtCurrentItem.figure_url) + '" alt="Чертёж" style="display:block;max-width:100%;max-height:300px;margin:0 auto 10px;border-radius:8px;background:#fff;padding:4px;box-sizing:border-box;">' : '') +
+              renderRich(a.solution) + '</div></div>';
+          }
+          res.innerHTML = html;
+          if (typeof renderMath === 'function') renderMath(res);
+          dtCurrentItem.is_answered = true;
+          dtCurrentItem.is_correct = ok;
+          dtCurrentItem.user_answer = raw;
+          dtCurrentItem.solution = a.solution || dtCurrentItem.solution || '';
+          dtClearDraft(dtCurrentItem.id);
+          // Обновляем dt-init-data, чтобы при повторном открытии этой задачи
+          // показывался ответ и решение, а не «только условие».
+          try {
+            var initDataEl = document.getElementById('dt-init-data');
+            if (initDataEl) {
+              var d = JSON.parse(initDataEl.textContent || '{}');
+              if (d.items) {
+                for (var _di = 0; _di < d.items.length; _di++) {
+                  if (String(d.items[_di].id) === String(dtCurrentItem.id)) {
+                    d.items[_di].user_answer = raw;
+                    d.items[_di].is_correct = !!ok;
+                    // БЕЗ ЭТОГО ПОЛЯ renderTasks() ниже рисовал карточку как
+                    // «— Не решено», а openTask() при повторном открытии
+                    // показывал пустую форму вместо сохранённого ответа —
+                    // состояние появлялось только после перезагрузки страницы.
+                    d.items[_di].is_answered = true;
+                    // Сохраняем ИИ-разбор, чтобы повторное открытие без
+                    // перезагрузки выглядело один-в-один как после ответа.
+                    d.items[_di].ai_feedback = a.feedback || '';
+                    if (a.solution) d.items[_di].solution = a.solution;
+                    break;
+                  }
+                }
+                initDataEl.textContent = JSON.stringify(d);
+                if (a.set_progress && typeof a.set_progress.completed === 'number') {
+                  d.progress = { completed: a.set_progress.completed, total: a.set_progress.total };
+                  try { initDataEl.textContent = JSON.stringify(d); } catch (_e5) {}
+                }
+              }
+            }
+          } catch (_e3) {}
+          // Счётчик «Выполнено X/Y» в шапке — сразу, без перезагрузки.
+          try {
+            var _pb = $('dt-progress-summary');
+            if (_pb && a.set_progress && typeof a.set_progress.completed === 'number') {
+              _pb.textContent = a.set_progress.completed + '/' + a.set_progress.total;
+            } else if (_pb) {
+              // set_progress не пришёл (старое API) — инкремент локально.
+              var _parts = (_pb.textContent || '0/0').split('/');
+              var _completed = parseInt(_parts[0] || '0', 10) + 1;
+              var _total = parseInt(_parts[1] || '0', 10) || _completed;
+              _pb.textContent = _completed + '/' + _total;
+            }
+          } catch (_e6) {}
+          renderTasks();
+        } else {
+          res.innerHTML = '<div style="color:var(--bad);">' + escapeHtmlPreserveLatex((a && (a.message || a.error)) || 'Ошибка проверки') + '</div>';
+        }
+      })
+      .catch(function(e) {
+        btn.disabled = false;
+        btn.textContent = oldTxt;
+        res.innerHTML = '<div style="color:var(--bad);">Сетевая ошибка</div>';
+        console.warn('[dt-submit-ai]', e);
+      });
+    }
+
+    if (photoFile) {
+      // PHOTO_FIX_V1: сначала сжимаем/конвертируем фото, потом в base64.
+      // Раньше сырой File уходил как есть: HEIC с iPhone vision-модели не
+      // читают («Не удалось разобрать, что написано на фото» на каждом
+      // фото), а тяжёлые JPEG 5-12 МБ медленно проверялись и раздували
+      // запрос. Теперь: HEIC/сырые фото → JPEG ≤1600px, ~0.82 качества.
+      dtCompressPhoto(photoFile).then(function(cf) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var b64 = (e.target.result || '').split(',')[1] || '';
+          doAiSubmit(b64 ? [b64] : []);
+        };
+        reader.onerror = function() {
+          btn.disabled = false;
+          btn.textContent = oldTxt;
+          res.innerHTML = '<div style="color:var(--bad);">Не удалось прочитать фото</div>';
+        };
+        reader.readAsDataURL(cf);
+      }).catch(function() {
+        btn.disabled = false;
+        btn.textContent = oldTxt;
+        res.innerHTML = '<div style="color:var(--bad);">Не удалось обработать фото</div>';
+      });
+    } else {
+      doAiSubmit([]);
+    }
+  }
+
+
+  function bindActionButtons() {
+    var buttons = document.querySelectorAll('.dt-btn-primary, .dt-btn-secondary');
+    buttons.forEach(function(b) {
+      var t = (b.textContent || '').toLowerCase();
+      if (t.indexOf('\u0441\u0433\u0435\u043d\u0435\u0440') >= 0 ||
+          t.indexOf('\u043f\u0435\u0440\u0435\u0433\u0435\u043d') >= 0 ||
+          t.indexOf('\u043f\u043e\u043f\u0440\u043e\u0431') >= 0) {
+        b.addEventListener('click', triggerGenerate);
+      }
+    });
+  }
+
+  function triggerGenerate() {
+    var topicEl = $('dt-topic-input');
+    var topic = topicEl ? topicEl.value.trim() : '';
+    fetch('/daily_tasks/regenerate', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ topic: topic })
+    })
+    .then(function(r) { return r.json().catch(function() { return {}; }); })
+    .then(function() { setTimeout(function() { window.location.reload(); }, 1500); })
+    .catch(function(err) { console.warn('[dt-gen]', err); });
+  }
+
+  window.takeDayOff = function() {
+    fetch('/daily_tasks/take-day-off', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+    })
+    .then(function(r) { return r.json().catch(function() { return {}; }); })
+    .then(function(data) {
+      if (data.success) {
+        window.location.reload();
+      } else {
+        alert(data.message || 'Не удалось взять выходной');
+      }
+    })
+    .catch(function(err) { console.warn('[t8-dayoff]', err); });
+  };
+
+  // ── Долг: раскрытие блока ──────────────────────────────
+  window.toggleDebt = function() {
+    var body = document.getElementById('dt-debt-body');
+    var arrow = document.getElementById('dt-debt-toggle-arrow');
+    if (!body) return;
+    var hidden = body.classList.contains('dt-hidden');
+    if (hidden) {
+      body.classList.remove('dt-hidden');
+      if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else {
+      body.classList.add('dt-hidden');
+      if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+  };
+
+  // ── Долг: открыть задачу в той же модалке (условие + решение + чертёж) ──
+  window.openDebtTask = function(itemId) {
+    try {
+      var initDataEl = document.getElementById('dt-init-data');
+      if (!initDataEl) return;
+      var d = JSON.parse(initDataEl.textContent || '{}');
+      var debt = d.debt;
+      if (!debt || !debt.by_date) return;
+      for (var g = 0; g < debt.by_date.length; g++) {
+        var tasks = debt.by_date[g].tasks || [];
+        for (var t = 0; t < tasks.length; t++) {
+          var it = tasks[t];
+          if (String(it.id) === String(itemId)) {
+            openTask({
+              id: it.id,
+              position: it.position,
+              topic: it.topic,
+              difficulty_level: it.difficulty_level,
+              text: it.task_text,
+              preview: it.task_text,
+              correct_answer: it.correct_answer,
+              solution: it.solution,
+              figure_url: it.figure_url,
+              is_answered: false,
+              user_answer: null,
+              is_correct: null
+            });
+            return;
+          }
+        }
+      }
+    } catch (e) { console.warn('[dt-debt-open]', e); }
+  };
+})();
+
+// Yearly calendar toggle
+function toggleYearlyCal() {
+  var body = document.getElementById('dt-yearly-cal-body');
+  var toggle = document.getElementById('dt-yearly-cal-toggle');
+  if (!body) return;
+  body.classList.toggle('is-open');
+  if (toggle) {
+    toggle.innerHTML = body.classList.contains('is-open') ? '&#9660;' : '&#9654;';
+  }
+}
+
+function escapeHtmlPreserveLatex(s) {
+  /* Простое экранирование для чистого текста (ответ пользователя и т.п.). */
+  s = (s == null ? '' : String(s));
+  s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return s;
+}
+
+/* RICH_TEXT_V1: умный форматтер для ИИ-разборов и эталонных решений.
+   В БД встречаются три формата:
+     1) чистый текст с LaTeX: "\\(a_i<a_j\\) — значит ..."
+     2) HTML от md_render: "<p>…<strong>Шаг 1</strong> \\(x_k\\)…</p>"
+     3) markdown-подобный: "**Оценка:** … \\(…\\)"
+   Правила:
+     - LaTeX-блоки (\\(\\), \\[\\], $$…$$, $…$) вытаскиваем в плейсхолдеры
+       ДО любых преобразований — '<' внутри формулы не считается тегом.
+     - Если есть HTML-разметка — оставляем разрешённые теги (p, strong, br,
+       ul, ol, li, em, code), остальное экранируем.
+     - Если нет — экранируем всё и markdown-выделения (**жирный**,
+       ## Заголовок) преобразуем в HTML.
+   KaTeX потом рендерит плейсхолдеры как обычный текст. */
+function renderRich(s) {
+  s = (s == null ? '' : String(s));
+  var stash = [];
+  function _keep(m) { stash.push(m); return '@@MTH' + (stash.length - 1) + '@@'; }
+  // Порядок важен: сначала самые длинные делимитеры.
+  s = s.replace(/\$\$([\s\S]+?)\$\$/g, _keep);
+  s = s.replace(/\\\[([\s\S]+?)\\\]/g, _keep);
+  s = s.replace(/\\\(([\s\S]+?)\\\)/g, _keep);
+  s = s.replace(/\$([^$\n]+?)\$/g, _keep);
+
+  var hasHtml = /<\/?(p|br|strong|em|ul|ol|li|code|span|div|b|i|h\d)[\s>]/i.test(s);
+  if (hasHtml) {
+    // Режем опасные теги, разрешённые оставляем
+    s = s.replace(/<(script|style|iframe|object|embed)[\s\S]*?<\/\1>/gi, '');
+    // '<' НЕ из разрешённого тега → текст (защита от всякого <junk>)
+    s = s.replace(/<(?![\s\/]*(p|br|strong|em|ul|ol|li|code|span|div|b|i|h[1-6])\b)/gi, '&lt;');
+  } else {
+    // Чистый текст: экранируем и поддерживаем базовый markdown
+    s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    // ## Заголовок
+    s = s.replace(/^#{1,3}\s+(.+)$/gm, '<div style="font-weight:700;margin:10px 0 6px;color:var(--text);">$1</div>');
+    // **жирный** и *курсив*
+    s = s.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/(^|[\s(])\*([^*\n]+?)\*(?=[\s),.:;!]|$)/g, '$1<em>$2</em>');
+  }
+
+  // Возвращаем LaTeX (содержимое уже экранировано/не тронуто)
+  s = s.replace(/@@MTH(\d+)@@/g, function(_, i) { return stash[+i]; });
+  return s;
+}
+</script>
+{% include 'partials/math_keyboard.html' %}
+{% endblock %}

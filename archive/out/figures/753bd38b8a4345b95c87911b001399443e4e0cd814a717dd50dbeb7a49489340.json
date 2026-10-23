@@ -1,0 +1,107 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ACBD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "R",
+   "of": "BH"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "CHR"
+  },
+  {
+   "type": "foot",
+   "id": "Q",
+   "from": "R",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "R",
+   "line": "CB"
+  },
+  {
+   "type": "intersection",
+   "id": "T",
+   "line1": "HP",
+   "line2": "CR"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "CPT",
+   "style": "accent"
+  },
+  {
+   "segment": "CH",
+   "style": "dashed"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "HP",
+   "style": "soft"
+  },
+  {
+   "segment": "CR",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "H",
+    "B"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "quad",
+   "id": "CPRQ",
+   "kind": "rectangle",
+   "reason": "PQ и CR — диаметры окружности (∠PCQ=∠CHR=90°), поэтому CPRQ — прямоугольник"
+  }
+ ],
+ "draw_aux": [
+  {
+   "polygon": "CPRQ",
+   "style": "dashed"
+  },
+  {
+   "segment": "PQ",
+   "style": "dashed"
+  }
+ ]
+}

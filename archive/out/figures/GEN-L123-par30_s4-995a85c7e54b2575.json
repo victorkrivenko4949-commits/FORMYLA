@@ -1,0 +1,90 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "BC",
+   "ratio": 0.6667
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "45°"
+  },
+  {
+   "angle": [
+    "A",
+    "D",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "right_angle": [
+    "B",
+    "K",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "D",
+    "H",
+    "A"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AC",
+   "ratio": 0.6667
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "D",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "K",
+   "from": "B",
+   "line": "DE"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "DE",
+   "style": "dashed"
+  },
+  {
+   "segment": "DH",
+   "style": "dashed"
+  },
+  {
+   "segment": "BK",
+   "style": "dashed"
+  }
+ ],
+ "reason": "DE ∥ AB, DH — высота треугольника ADC, BK ⟂ DE"
+}

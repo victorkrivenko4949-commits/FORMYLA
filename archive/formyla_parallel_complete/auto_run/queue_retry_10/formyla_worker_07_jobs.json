@@ -1,0 +1,31 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0013",
+      "mode": "replace_bad",
+      "id": "5-A2-3-L6-g5",
+      "grade": 5,
+      "difficulty": 6,
+      "theme": "Олимпиадная задача",
+      "subtopic": "Покори Воробьёвы горы, 2020, Отборочный этап",
+      "method_code": "OLY",
+      "reasons": [
+        "simple_mod"
+      ],
+      "priority": 31,
+      "worker": 18
+    },
+    {
+      "job_id": "audit-0219-8-B2-4-L8-g678",
+      "mode": "replace_bad",
+      "id": "8-B2-4-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Неравенства и преобразования",
+      "subtopic": "Тождественные преобразования",
+      "method_code": "B2",
+      "reasons": "mojibake, duplicate_task_text",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

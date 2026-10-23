@@ -1,0 +1,21 @@
+WAVE4 retry: total=334 done=292 failed=32 timeout=10 remaining=0
+
+GEOMETRY missing=15
+  REG-ed413efbd4810754c0bf1c81                            job=2139 status=failed svg=N
+  GEN-L123-par33_s2-263f1cc1ca86026f                      job=2140 status=failed svg=Y
+  db0715f78ccab1a01ce7cd009efe1086c3120c5b3cdac19fb349cc70a2a094c3 job=2141 status=failed svg=N
+  GEN-fill_0549                                           job=2143 status=failed svg=N
+  GEN-L123-w2_46_s5-9792b493667fe9f2                      job=2144 status=failed svg=N
+  GEN-L123-w2_16_s6-9f9aee6a7e1d60f6                      job=2145 status=failed svg=N
+  GEN-fill_0697                                           job=2146 status=base_thinking svg=N
+  5cfb4680abbc4c37292fb3862ec384d7497ae7299c81c3d2cd7b1d9bf4f8c3e4 job=2147 status=failed svg=N
+  bb45489aa58525b10c2f9f5ac9c392098899ec9145dd1e139eba47f3a0d1d23d job=2148 status=base_thinking svg=N
+  GEN-fill_0695                                           job=2149 status=queued svg=N
+  3498879ad7cbd61e011122021fd40d6b6df5a3902938c8845ebbba27ef56ff2d job=2150 status=queued svg=N
+  c07cf2e182c27d30b4e7482f1d7f9cda26372a61107e147c6c2132acb4aaf2fe job=2151 status=queued svg=N
+  7bcb88ddb5256e2c81e094d087e7c9f1cf80c64d7e23021ecb56ac2d37794bed job=2152 status=queued svg=N
+  GEN-fill_0438                                           job=2153 status=queued svg=N
+  GEN-fill_0440                                           job=2154 status=queued svg=N
+
+geometry svg exported now: 0
+geometry completeness: 347 / 362

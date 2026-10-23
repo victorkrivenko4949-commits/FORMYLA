@@ -1,0 +1,40 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0028-5-A3-40-L8-g",
+      "mode": "replace_bad",
+      "id": "5-A3-40-L8-g",
+      "grade": 5,
+      "difficulty": 8,
+      "theme": "Числа и делимость",
+      "subtopic": "Числовые ребусы и закономерности",
+      "method_code": "A3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0334-9-B2-4-L8-g911",
+      "mode": "replace_bad",
+      "id": "9-B2-4-L8-g911",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Системы, модули, радикалы, неравенства",
+      "subtopic": "Уравнения с модулем",
+      "method_code": "B2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0047-10-D2-5-L8-g911",
+      "mode": "replace_bad",
+      "id": "10-D2-5-L8-g911",
+      "grade": 10,
+      "difficulty": 8,
+      "theme": "Стереометрия и векторы",
+      "subtopic": "Объёмы",
+      "method_code": "D2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

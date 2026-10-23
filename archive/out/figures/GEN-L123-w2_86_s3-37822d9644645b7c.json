@@ -1,0 +1,57 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AB",
+   "ratio": 0.25
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "BC",
+   "ratio": 0.6666667
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AK",
+   "line2": "CM"
+  },
+  {
+   "type": "intersection",
+   "id": "T",
+   "line1": "BP",
+   "line2": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AK",
+   "style": "soft"
+  },
+  {
+   "segment": "CM",
+   "style": "soft"
+  },
+  {
+   "segment": "BT",
+   "style": "dashed"
+  },
+  {
+   "polygon": "APT",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

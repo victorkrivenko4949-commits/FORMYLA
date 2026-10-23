@@ -1,0 +1,109 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "CB"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "C"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "N",
+   "circle": "w",
+   "angle": 270
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "CI",
+   "line2": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AN",
+   "line2": "CL"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "CL"
+  },
+  {
+   "line": "AN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "N",
+    "B"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "L"
+   ],
+   "text": "45°"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "N"
+   ],
+   "text": "45°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "BN",
+   "line2": "AC"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CN",
+   "style": "soft"
+  },
+  {
+   "polygon": "BCK",
+   "style": "soft"
+  }
+ ],
+ "reason": "Продлим BN до пересечения с AC в точке K; в треугольнике BCK отрезок CN является высотой и биссектрисой, поэтому треугольник BCK равнобедренный (CB=CK)."
+}

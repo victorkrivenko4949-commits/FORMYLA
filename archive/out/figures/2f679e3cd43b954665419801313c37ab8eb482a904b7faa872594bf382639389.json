@@ -1,0 +1,89 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "AI",
+   "line2": "BC"
+  },
+  {
+   "type": "line_circle",
+   "id": "S",
+   "circle": "omega",
+   "line": "AL",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "omega",
+   "style": "soft"
+  },
+  {
+   "segment": "AS",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "L"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "L",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  },
+  {
+   "right_angle": [
+    "S",
+    "T",
+    "A"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "T",
+   "from": "S",
+   "line": "AB",
+   "reason": "Нужна точка T — основание проекции AS на AB, чтобы наглядно сравнить длину проекции AT с длиной AL."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "ST",
+   "style": "dashed"
+  },
+  {
+   "segment": "AT",
+   "style": "accent"
+  }
+ ]
+}

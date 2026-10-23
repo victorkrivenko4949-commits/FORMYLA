@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0223-10-F1-2-L8-g911",
+      "mode": "replace_bad",
+      "id": "10-F1-2-L8-g911",
+      "grade": 10,
+      "difficulty": 8,
+      "theme": "Комбинаторика, графы, вероятностный подсчёт",
+      "subtopic": "Подсчёт",
+      "method_code": "F1",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

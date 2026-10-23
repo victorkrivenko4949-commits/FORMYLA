@@ -1,0 +1,156 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T",
+   "of": "AO",
+   "ratio": 0.75
+  },
+  {
+   "type": "reflect_point",
+   "id": "O1",
+   "of": "A",
+   "over": "T"
+  },
+  {
+   "type": "circle",
+   "id": "Omega",
+   "center": "O1",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 120
+  },
+  {
+   "type": "reflect_point",
+   "id": "O2",
+   "of": "O",
+   "over": "B"
+  },
+  {
+   "type": "reflect_point",
+   "id": "X",
+   "of": "O",
+   "over": "A"
+  },
+  {
+   "type": "reflect_point",
+   "id": "X1",
+   "of": "X",
+   "over": "B"
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "O",
+   "through": "X"
+  },
+  {
+   "type": "circle",
+   "id": "c2",
+   "center": "O2",
+   "through": "X1"
+  },
+  {
+   "type": "circle_circle",
+   "id": "P",
+   "circle1": "c1",
+   "circle2": "c2",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "C",
+   "circle": "Omega",
+   "line": "BP",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "Omega",
+   "line": "BP",
+   "pick": 1
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  }
+ ],
+ "draw": [
+  {
+   "circle": "Omega"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "CD",
+   "style": "accent"
+  },
+  {
+   "segment": "AB",
+   "style": "soft"
+  },
+  {
+   "segment": "OB",
+   "style": "soft"
+  },
+  {
+   "segment": "OM",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "AM",
+    "MB"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcircle",
+   "id": "Gamma",
+   "of": "CMD",
+   "reason": "Описанная окружность треугольника CMD — нужно показать, что через точку O."
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "Gamma",
+   "style": "dashed"
+  }
+ ]
+}

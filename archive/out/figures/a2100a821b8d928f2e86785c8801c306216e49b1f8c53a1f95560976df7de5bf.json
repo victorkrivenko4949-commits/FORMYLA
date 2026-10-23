@@ -1,0 +1,114 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "isosceles"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AC",
+   "ratio": 0.4
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "BCD"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "K",
+   "circle": "w1",
+   "angle": 120
+  },
+  {
+   "type": "midpoint",
+   "id": "P",
+   "of": "BC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "A1",
+   "of": "A",
+   "over": "P"
+  },
+  {
+   "type": "intersection",
+   "id": "T",
+   "line1": "CK",
+   "line2": "AA1"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "DT"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "segment": "CK",
+   "style": "soft"
+  },
+  {
+   "segment": "KT",
+   "style": "soft"
+  },
+  {
+   "segment": "AT",
+   "style": "soft"
+  },
+  {
+   "segment": "DT",
+   "style": "soft"
+  },
+  {
+   "segment": "AM"
+  },
+  {
+   "segment": "AK"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "N",
+   "of": "A",
+   "over": "M"
+  },
+  {
+   "type": "intersection",
+   "id": "S",
+   "line1": "ND",
+   "line2": "AB"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "AST"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AN",
+   "style": "dashed"
+  },
+  {
+   "segment": "ND",
+   "style": "dashed"
+  },
+  {
+   "circle": "w2",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Построим N на продолжении AM так, что AM=MN (тогда ADNT — параллелограмм), и S = ND∩AB; окружность ω около AST используется в доказательстве."
+}

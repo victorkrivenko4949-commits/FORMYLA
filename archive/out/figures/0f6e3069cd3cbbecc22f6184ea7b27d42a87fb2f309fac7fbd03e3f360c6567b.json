@@ -1,0 +1,142 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "KBC",
+   "kind": "any"
+  },
+  {
+   "type": "reflect_point",
+   "id": "A",
+   "of": "K",
+   "over": "B"
+  },
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "K",
+   "over": "C"
+  },
+  {
+   "type": "circumcenter",
+   "id": "P",
+   "of": "ABD"
+  },
+  {
+   "type": "circumcenter",
+   "id": "Q",
+   "of": "BCD"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "P",
+   "through": "A"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "Q",
+   "through": "B"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "segment": "BK",
+   "style": "soft"
+  },
+  {
+   "segment": "CK",
+   "style": "soft"
+  },
+  {
+   "segment": "KP",
+   "style": "soft"
+  },
+  {
+   "segment": "KQ",
+   "style": "soft"
+  },
+  {
+   "segment": "AP",
+   "style": "soft"
+  },
+  {
+   "segment": "PB",
+   "style": "soft"
+  },
+  {
+   "segment": "DQ",
+   "style": "soft"
+  },
+  {
+   "segment": "QC",
+   "style": "soft"
+  },
+  {
+   "circle": "w1",
+   "style": "dashed"
+  },
+  {
+   "circle": "w2",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "D",
+    "B"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "D",
+    "B",
+    "C"
+   ],
+   "text": "β"
+  },
+  {
+   "equal": [
+    "AP",
+    "PB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "DQ",
+    "QC"
+   ],
+   "ticks": 2
+  },
+  {
+   "angle": [
+    "P",
+    "K",
+    "A"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "Q",
+    "K",
+    "D"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

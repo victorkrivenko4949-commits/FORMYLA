@@ -1,0 +1,70 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "BC",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "CD",
+   "ratio": 0.4
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AM",
+   "style": "accent"
+  },
+  {
+   "segment": "MN",
+   "style": "accent"
+  },
+  {
+   "segment": "AN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "C",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "D",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "D",
+    "A",
+    "B"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

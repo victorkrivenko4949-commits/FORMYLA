@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620" style="background-color: #0F1729;">
+<rect x="0" y="0" width="620" height="620" fill="#0F1729" />
+<line x1="35.00" y1="585.00" x2="585.00" y2="585.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<line x1="585.00" y1="585.00" x2="585.00" y2="35.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<line x1="585.00" y1="35.00" x2="35.00" y2="35.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<line x1="35.00" y1="35.00" x2="35.00" y2="585.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<polygon points="35.00,585.00 51.11,585.00 90.00,530.00 35.00,491.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,585.00 145.00,568.89 90.00,530.00 51.11,585.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,475.00 128.89,475.00 90.00,530.00 145.00,568.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="35.00,475.00 35.00,491.11 90.00,530.00 128.89,475.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="35.00,475.00 51.11,475.00 90.00,420.00 35.00,381.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,475.00 145.00,458.89 90.00,420.00 51.11,475.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,365.00 128.89,365.00 90.00,420.00 145.00,458.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="35.00,365.00 35.00,381.11 90.00,420.00 128.89,365.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="35.00,365.00 51.11,365.00 90.00,310.00 35.00,271.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,365.00 145.00,348.89 90.00,310.00 51.11,365.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,255.00 128.89,255.00 90.00,310.00 145.00,348.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="35.00,255.00 35.00,271.11 90.00,310.00 128.89,255.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="35.00,255.00 51.11,255.00 90.00,200.00 35.00,161.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,255.00 145.00,238.89 90.00,200.00 51.11,255.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,145.00 128.89,145.00 90.00,200.00 145.00,238.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="35.00,145.00 35.00,161.11 90.00,200.00 128.89,145.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="35.00,145.00 51.11,145.00 90.00,90.00 35.00,51.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,145.00 145.00,128.89 90.00,90.00 51.11,145.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,35.00 128.89,35.00 90.00,90.00 145.00,128.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="35.00,35.00 35.00,51.11 90.00,90.00 128.89,35.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,585.00 161.11,585.00 200.00,530.00 145.00,491.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,585.00 255.00,568.89 200.00,530.00 161.11,585.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,475.00 238.89,475.00 200.00,530.00 255.00,568.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,475.00 145.00,491.11 200.00,530.00 238.89,475.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,475.00 161.11,475.00 200.00,420.00 145.00,381.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,475.00 255.00,458.89 200.00,420.00 161.11,475.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,365.00 238.89,365.00 200.00,420.00 255.00,458.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,365.00 145.00,381.11 200.00,420.00 238.89,365.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,365.00 161.11,365.00 200.00,310.00 145.00,271.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,365.00 255.00,348.89 200.00,310.00 161.11,365.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,255.00 238.89,255.00 200.00,310.00 255.00,348.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,255.00 145.00,271.11 200.00,310.00 238.89,255.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,255.00 161.11,255.00 200.00,200.00 145.00,161.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,255.00 255.00,238.89 200.00,200.00 161.11,255.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,145.00 238.89,145.00 200.00,200.00 255.00,238.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,145.00 145.00,161.11 200.00,200.00 238.89,145.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,145.00 161.11,145.00 200.00,90.00 145.00,51.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,145.00 255.00,128.89 200.00,90.00 161.11,145.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,35.00 238.89,35.00 200.00,90.00 255.00,128.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="145.00,35.00 145.00,51.11 200.00,90.00 238.89,35.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,585.00 271.11,585.00 310.00,530.00 255.00,491.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,585.00 365.00,568.89 310.00,530.00 271.11,585.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,475.00 348.89,475.00 310.00,530.00 365.00,568.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,475.00 255.00,491.11 310.00,530.00 348.89,475.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,475.00 271.11,475.00 310.00,420.00 255.00,381.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,475.00 365.00,458.89 310.00,420.00 271.11,475.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,365.00 348.89,365.00 310.00,420.00 365.00,458.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,365.00 255.00,381.11 310.00,420.00 348.89,365.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,365.00 271.11,365.00 310.00,310.00 255.00,271.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,365.00 365.00,348.89 310.00,310.00 271.11,365.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,255.00 348.89,255.00 310.00,310.00 365.00,348.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,255.00 255.00,271.11 310.00,310.00 348.89,255.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,255.00 271.11,255.00 310.00,200.00 255.00,161.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,255.00 365.00,238.89 310.00,200.00 271.11,255.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,145.00 348.89,145.00 310.00,200.00 365.00,238.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,145.00 255.00,161.11 310.00,200.00 348.89,145.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,145.00 271.11,145.00 310.00,90.00 255.00,51.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,145.00 365.00,128.89 310.00,90.00 271.11,145.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,35.00 348.89,35.00 310.00,90.00 365.00,128.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,35.00 255.00,51.11 310.00,90.00 348.89,35.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,585.00 381.11,585.00 420.00,530.00 365.00,491.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,585.00 475.00,568.89 420.00,530.00 381.11,585.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,475.00 458.89,475.00 420.00,530.00 475.00,568.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,475.00 365.00,491.11 420.00,530.00 458.89,475.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,475.00 381.11,475.00 420.00,420.00 365.00,381.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,475.00 475.00,458.89 420.00,420.00 381.11,475.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,365.00 458.89,365.00 420.00,420.00 475.00,458.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,365.00 365.00,381.11 420.00,420.00 458.89,365.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,365.00 381.11,365.00 420.00,310.00 365.00,271.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,365.00 475.00,348.89 420.00,310.00 381.11,365.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,255.00 458.89,255.00 420.00,310.00 475.00,348.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,255.00 365.00,271.11 420.00,310.00 458.89,255.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,255.00 381.11,255.00 420.00,200.00 365.00,161.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,255.00 475.00,238.89 420.00,200.00 381.11,255.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,145.00 458.89,145.00 420.00,200.00 475.00,238.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,145.00 365.00,161.11 420.00,200.00 458.89,145.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,145.00 381.11,145.00 420.00,90.00 365.00,51.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,145.00 475.00,128.89 420.00,90.00 381.11,145.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,35.00 458.89,35.00 420.00,90.00 475.00,128.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="365.00,35.00 365.00,51.11 420.00,90.00 458.89,35.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,585.00 491.11,585.00 530.00,530.00 475.00,491.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="585.00,585.00 585.00,568.89 530.00,530.00 491.11,585.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="585.00,475.00 568.89,475.00 530.00,530.00 585.00,568.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,475.00 475.00,491.11 530.00,530.00 568.89,475.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,475.00 491.11,475.00 530.00,420.00 475.00,381.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="585.00,475.00 585.00,458.89 530.00,420.00 491.11,475.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="585.00,365.00 568.89,365.00 530.00,420.00 585.00,458.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,365.00 475.00,381.11 530.00,420.00 568.89,365.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,365.00 491.11,365.00 530.00,310.00 475.00,271.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="585.00,365.00 585.00,348.89 530.00,310.00 491.11,365.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="585.00,255.00 568.89,255.00 530.00,310.00 585.00,348.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,255.00 475.00,271.11 530.00,310.00 568.89,255.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,255.00 491.11,255.00 530.00,200.00 475.00,161.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="585.00,255.00 585.00,238.89 530.00,200.00 491.11,255.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="585.00,145.00 568.89,145.00 530.00,200.00 585.00,238.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,145.00 475.00,161.11 530.00,200.00 568.89,145.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,145.00 491.11,145.00 530.00,90.00 475.00,51.11" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="585.00,145.00 585.00,128.89 530.00,90.00 491.11,145.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="585.00,35.00 568.89,35.00 530.00,90.00 585.00,128.89" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="475.00,35.00 475.00,51.11 530.00,90.00 568.89,35.00" fill="none" stroke="#D9E5F5" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" />
+<polygon points="255.00,365.00 271.11,365.00 310.00,310.00 255.00,271.11" fill="none" stroke="#F6B44C" stroke-width="2.0" stroke-linejoin="round" stroke-linecap="round" />
+<circle cx="263.05" cy="318.05" r="47.63" fill="none" stroke="#F6B44C" stroke-width="1.6" stroke-dasharray="4 3" />
+<text x="310.00" y="607.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">Диаметр описанной окружности = √3</text>
+</svg>

@@ -1,0 +1,5 @@
+{% extends "admin/stats_base.html" %}
+{% block stats_content %}
+<div class="st-note">Это существующая страница, встроенная без изменения её расчётов. <a href="{{ target }}?embed=1" target="_blank" rel="noopener">Открыть отдельно ↗</a>. Если внутри показана ошибка или отказ в доступе, отчёт не загружен — это не нулевые данные.</div>
+<iframe class="st-iframe" title="Отчёт: {{ section.title }}" src="{{ target }}{% if '?' in target %}&amp;{% else %}?{% endif %}embed=1" loading="lazy"></iframe>
+{% endblock %}

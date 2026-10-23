@@ -1,0 +1,90 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AB",
+   "ratio": 0.3333333333333333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "BC",
+   "ratio": 0.75
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AN",
+   "line2": "CM"
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "BP",
+   "line2": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AN"
+  },
+  {
+   "segment": "CM"
+  },
+  {
+   "segment": "BK",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "U",
+   "of": "A",
+   "over": "N"
+  },
+  {
+   "type": "reflect_point",
+   "id": "X",
+   "of": "A",
+   "over": "U"
+  },
+  {
+   "type": "reflect_point",
+   "id": "V",
+   "of": "C",
+   "over": "M"
+  },
+  {
+   "type": "reflect_point",
+   "id": "Y",
+   "of": "M",
+   "over": "V"
+  }
+ ],
+ "draw_aux": [
+  {
+   "line": "XY",
+   "style": "soft"
+  },
+  {
+   "segment": "AX",
+   "style": "dashed"
+  },
+  {
+   "segment": "CY",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Прямая XY проходит через B параллельно AC; X и Y лежат на продолжениях AN и CM."
+}

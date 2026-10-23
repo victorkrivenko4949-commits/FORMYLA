@@ -1,0 +1,4 @@
+  File "c:\Users\Victor\Desktop\Новая папка (2)\l4_l5_finalization\_analyze_bank_schema.py", line 60
+    if{
+      ^
+SyntaxError: '{' was never closed

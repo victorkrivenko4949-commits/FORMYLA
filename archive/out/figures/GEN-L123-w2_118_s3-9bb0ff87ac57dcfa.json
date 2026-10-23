@@ -1,0 +1,58 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AB",
+   "ratio": 0.6667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "BC",
+   "ratio": 0.3333
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AE",
+   "line2": "CD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CD"
+  },
+  {
+   "segment": "AE"
+  },
+  {
+   "polygon": "BDPE",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "segment",
+   "id": "BP",
+   "from": "B",
+   "to": "P",
+   "reason": "Разбиение четырёхугольника BDPE на треугольники BDP и BEP"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BP",
+   "style": "dashed"
+  }
+ ]
+}

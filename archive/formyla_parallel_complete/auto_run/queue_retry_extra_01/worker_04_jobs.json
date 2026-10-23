@@ -1,0 +1,19 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0575",
+      "mode": "replace_bad",
+      "id": "8-E3-2-L7-g678",
+      "grade": 8,
+      "difficulty": 7,
+      "theme": "Геометрия: подобие и окружность",
+      "subtopic": "Касательные и хорды",
+      "method_code": "E3",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 15
+    }
+  ]
+}

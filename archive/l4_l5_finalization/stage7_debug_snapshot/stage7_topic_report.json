@@ -1,0 +1,17 @@
+{
+  "total_checked": 114,
+  "topic_mismatches": 1,
+  "subtopic_mismatches": 0,
+  "topic_mismatch_rate_pct": 0.88,
+  "subtopic_mismatch_rate_pct": 0,
+  "samples": [
+    {
+      "slot_key": "G11|L4|T041|S2",
+      "expected_topic": "?",
+      "detected_topic": "?",
+      "expected_subtopic": "?",
+      "detected_subtopic": "?",
+      "details": "Topic classifier failed: parse_failed"
+    }
+  ]
+}

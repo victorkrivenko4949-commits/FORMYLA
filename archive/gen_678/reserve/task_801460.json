@@ -1,0 +1,20 @@
+{
+  "id": 801460,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $D$, $E$, $F$ соответственно так, что $BD:DC = 2:1$, $CE:EA = 3:2$, $AF:FB = 4:3$. Отрезки $AD$, $BE$, $CF$ попарно пересекаются в точках $P = AD \\cap BE$, $Q = AD \\cap CF$, $R = BE \\cap CF$. Найдите отношение площади треугольника $PQR$ к площади треугольника $ABC$.",
+  "solution": "1. Введем систему координат: $A(0,0)$, $B(1,0)$, $C(0,1)$. Тогда площадь $S_{ABC} = \\frac12$.\n2. Найдем координаты точек деления:\n   - $D$ на $BC$: $BD:DC=2:1$ ⇒ $D = \\frac{1\\cdot B + 2\\cdot C}{3} = \\left(\\frac13,\\frac23\\right)$.\n   - $E$ на $CA$: $CE:EA=3:2$ ⇒ $E = \\frac{2\\cdot C + 3\\cdot A}{5} = \\left(0,\\frac25\\right)$.\n   - $F$ на $AB$: $AF:FB=4:3$ ⇒ $F = \\frac{3\\cdot A + 4\\cdot B}{7} = \\left(\\frac47,0\\right)$.\n3. Составим уравнения прямых:\n   - $AD$: $y = 2x$ (проходит через $A$ и $D$).\n   - $BE$: через $B(1,0)$ и $E(0,\\frac25)$ ⇒ $y = -\\frac25(x-1)$.\n   - $CF$: через $C(0,1)$ и $F(\\frac47,0)$ ⇒ $y = 1-\\frac74x$.\n4. Найдем точки пересечения:\n   - $P = AD \\cap BE$: $2x = -\\frac25x+\\frac25$ ⇒ $x=\\frac16$, $y=\\frac13$.\n   - $Q = AD \\cap CF$: $2x = 1-\\frac74x$ ⇒ $x=\\frac4{15}$, $y=\\frac8{15}$.\n   - $R = BE \\cap CF$: $-\\frac25x+\\frac25 = 1-\\frac74x$ ⇒ $x=\\frac49$, $y=\\frac29$.\n5. Вычислим площадь треугольника $PQR$ через определитель векторов:\n   $\\overrightarrow{PQ} = \\left(\\frac1{10},\\frac15\\right)$, $\\overrightarrow{PR} = \\left(\\frac5{18},-\\frac19\\right)$.\n   $\\det = \\frac1{10}\\cdot\\left(-\\frac19\\right) - \\frac15\\cdot\\frac5{18} = -\\frac1{90} - \\frac1{18} = -\\frac1{15}$.\n   $S_{PQR} = \\frac12|\\det| = \\frac12\\cdot\\frac1{15} = \\frac1{30}$.\n6. Отношение площадей: $\\frac{S_{PQR}}{S_{ABC}} = \\frac{1/30}{1/2} = \\frac1{15}$.",
+  "correct_answer": "\\frac{1}{15}",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Координатный метод или барицентрические координаты",
+  "idea_count": 5,
+  "is_clone": true,
+  "clone_similarity": 0.729,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T13:14:37.875141+00:00"
+}

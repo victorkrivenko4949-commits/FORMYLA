@@ -1,0 +1,88 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "B",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0.5,
+   "y": 0.41955
+  },
+  {
+   "type": "point",
+   "id": "K",
+   "x": 0.6736,
+   "y": 0.1188
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BK",
+   "style": "soft"
+  },
+  {
+   "segment": "CK",
+   "style": "soft"
+  },
+  {
+   "segment": "AK",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "AC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "100°"
+  },
+  {
+   "angle": [
+    "K",
+    "B",
+    "C"
+   ],
+   "text": "10°"
+  },
+  {
+   "angle": [
+    "K",
+    "C",
+    "B"
+   ],
+   "text": "20°"
+  },
+  {
+   "angle": [
+    "K",
+    "A",
+    "C"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

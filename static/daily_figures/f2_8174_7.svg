@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500">
+<rect x="0" y="0" width="600" height="500" fill="#0F1729"/>
+<defs>
+<style>
+.grid{stroke:#D9E5F5;stroke-width:1.8;stroke-linecap:round;fill:none}
+.num{font-family:Arial,Helvetica,sans-serif;font-size:12px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2;stroke-linejoin:round}
+.title{font-family:Arial,Helvetica,sans-serif;font-size:16px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2;stroke-linejoin:round}
+</style>
+</defs>
+<text x="300" y="34" class="title">Доска 8 × 8: 24 закрашенные клетки</text>
+<g fill="#73B6E6" opacity="0.9">
+<rect x="140" y="70" width="40" height="40"/><rect x="180" y="70" width="40" height="40"/><rect x="220" y="70" width="40" height="40"/>
+<rect x="180" y="110" width="40" height="40"/><rect x="220" y="110" width="40" height="40"/><rect x="260" y="110" width="40" height="40"/>
+<rect x="220" y="150" width="40" height="40"/><rect x="260" y="150" width="40" height="40"/><rect x="300" y="150" width="40" height="40"/>
+<rect x="260" y="190" width="40" height="40"/><rect x="300" y="190" width="40" height="40"/><rect x="340" y="190" width="40" height="40"/>
+<rect x="300" y="230" width="40" height="40"/><rect x="340" y="230" width="40" height="40"/><rect x="380" y="230" width="40" height="40"/>
+<rect x="340" y="270" width="40" height="40"/><rect x="380" y="270" width="40" height="40"/><rect x="420" y="270" width="40" height="40"/>
+<rect x="380" y="310" width="40" height="40"/><rect x="420" y="310" width="40" height="40"/><rect x="140" y="310" width="40" height="40"/>
+<rect x="420" y="350" width="40" height="40"/><rect x="140" y="350" width="40" height="40"/><rect x="180" y="350" width="40" height="40"/>
+</g>
+<g class="grid">
+<path d="M140 70H460M140 110H460M140 150H460M140 190H460M140 230H460M140 270H460M140 310H460M140 350H460M140 390H460"/>
+<path d="M140 70V390M180 70V390M220 70V390M260 70V390M300 70V390M340 70V390M380 70V390M420 70V390M460 70V390"/>
+</g>
+<g class="num">
+<text x="160" y="415">1</text><text x="200" y="415">2</text><text x="240" y="415">3</text><text x="280" y="415">4</text><text x="320" y="415">5</text><text x="360" y="415">6</text><text x="400" y="415">7</text><text x="440" y="415">8</text>
+<text x="120" y="90">1</text><text x="120" y="130">2</text><text x="120" y="170">3</text><text x="120" y="210">4</text><text x="120" y="250">5</text><text x="120" y="290">6</text><text x="120" y="330">7</text><text x="120" y="370">8</text>
+</g>
+<text x="300" y="450" class="num">В каждом столбце — 3 клетки</text>
+<text x="510" y="230" class="num" transform="rotate(90 510 230)">В каждой строке — 3 клетки</text>
+</svg>

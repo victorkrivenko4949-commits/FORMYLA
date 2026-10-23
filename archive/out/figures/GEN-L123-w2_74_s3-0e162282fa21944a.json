@@ -1,0 +1,73 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "CM",
+   "line2": "BN"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AO",
+   "line2": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CM",
+   "style": "soft"
+  },
+  {
+   "segment": "BN",
+   "style": "soft"
+  },
+  {
+   "segment": "AP",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "MB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AN",
+    "NC"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "BP",
+    "PC"
+   ],
+   "ticks": 3
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,209 @@
+Total tasks: 674
+Type: list
+
+=== FIRST 3 TASKS - ALL KEYS ===
+Task 0:
+  original_id: 'SEL1080-0001'
+  source_index: 0
+  class_level: 5
+  original_difficulty: 1
+  target_level: 'L1'
+  task_text: 'Найдите сумму чисел 48 и 37.'
+  image: ''
+  topic: 'Числа и делимость'
+  audit_mode: 'deterministic_pre_live'
+  evidence_source: 'deterministic_rules'
+  decision_status: 'candidate'
+  final_court_status: 'pending_live_audit'
+  confidence: 'high'
+  feature_score: 2
+  mechanical_mapping: 'L1'
+  quality_score: 90
+  rank_in_cell: 5
+  total_in_cell_pool: 27
+  issues: []
+  in_duplicate_cluster: False
+  duplicate_clusters: []
+  validation_warnings: 4
+  selection_notes: 'Deterministic pre-live candidate — NOT final. Awaiting LIVE V2 audit.'
+  statement: 'Из чисел 48 и 37 выберите простое число. Ответ обоснуйте.'
+  answer: '37'
+  solution: 'Число 37 имеет только два делителя: 1 и 37, поэтому оно простое. Число 48 имеет более двух делителе
+  level: 1
+  grade: 5
+  fixed_by_ai: True
+  fix_timestamp: '2026-07-15T19:03:10.409395+00:00'
+  changes_made: ['Изменил условие задачи: вместо сложения двух чисел требуется определить простое число среди 48 и 3
+
+Task 1:
+  original_id: 'SEL1080-0002'
+  source_index: 1
+  class_level: 5
+  original_difficulty: 1
+  target_level: 'L1'
+  task_text: 'Какую цифру нужно поставить вместо $A$ в числе $12A$, чтобы получилось число 125?'
+  image: ''
+  topic: 'Числа и делимость'
+  audit_mode: 'deterministic_pre_live'
+  evidence_source: 'deterministic_rules'
+  decision_status: 'candidate'
+  final_court_status: 'pending_live_audit'
+  confidence: 'high'
+  feature_score: 1
+  mechanical_mapping: 'L1'
+  quality_score: 90
+  rank_in_cell: 6
+  total_in_cell_pool: 27
+  issues: []
+  in_duplicate_cluster: False
+  duplicate_clusters: []
+  validation_warnings: 4
+  selection_notes: 'Deterministic pre-live candidate — NOT final. Awaiting LIVE V2 audit.'
+
+Task 2:
+  original_id: 'SEL1080-0003'
+  source_index: 2
+  class_level: 5
+  original_difficulty: 1
+  target_level: 'L1'
+  task_text: 'Делится ли число 84 на 2?'
+  image: ''
+  topic: 'Числа и делимость'
+  audit_mode: 'deterministic_pre_live'
+  evidence_source: 'deterministic_rules'
+  decision_status: 'candidate'
+  final_court_status: 'pending_live_audit'
+  confidence: 'high'
+  feature_score: 2
+  mechanical_mapping: 'L1'
+  quality_score: 90
+  rank_in_cell: 7
+  total_in_cell_pool: 27
+  issues: []
+  in_duplicate_cluster: False
+  duplicate_clusters: []
+  validation_warnings: 4
+  selection_notes: 'Deterministic pre-live candidate — NOT final. Awaiting LIVE V2 audit.'
+
+=== ALL UNIQUE FIELD NAMES (31) ===
+['answer', 'audit_mode', 'changes_made', 'class_level', 'confidence', 'decision_status', 'duplicate_clusters', 'evidence_source', 'feature_score', 'final_court_status', 'fix_timestamp', 'fixed_by_ai', 'grade', 'image', 'in_duplicate_cluster', 'issues', 'level', 'mechanical_mapping', 'original_difficulty', 'original_id', 'quality_score', 'rank_in_cell', 'selection_notes', 'solution', 'source_index', 'statement', 'target_level', 'task_text', 'topic', 'total_in_cell_pool', 'validation_warnings']
+
+=== SUBTOPIC/THEME RELATED FIELDS ===
+['topic']
+
+=== LEVEL VALUES ===
+  level = 1
+  level = 2
+  level = 3
+  level = 4
+  level = 5
+
+=== GRADE VALUES ===
+  grade = 10
+  grade = 11
+  grade = 2
+  grade = 5
+  grade = 6
+  grade = 7
+  grade = 8
+  grade = 9
+
+=== SUBJECT/TOPIC VALUES ===
+  topic = Алгебра
+  topic = Алгебра / арифметическая прогрессия
+  topic = Алгебра / суммы степеней
+  topic = Алгебра. Выражения и их значения
+  topic = Алгебра. Выражения и их преобразования
+  topic = Алгебра. Выражения и преобразования
+  topic = Алгебра. Выражения, степени, многочлены
+  topic = Алгебра. Дробно-рациональные неравенства
+  topic = Алгебра. Многочлены, последовательности, функциональные уравнения
+  topic = Алгебра. Неравенства и оценки
+  topic = Алгебра. Неравенства и преобразования
+  topic = Алгебра. Неравенства. Неравенство о средних
+  topic = Алгебра. Показательные и логарифмические выражения
+  topic = Алгебра. Показательные уравнения и системы
+  topic = Алгебра. Системы и текстовые задачи
+  topic = Алгебра. Системы, модули, радикалы, неравенства
+  topic = Алгебра. Системы, параметры и неравенства
+  topic = Алгебра. Тригонометрия
+  topic = Алгебра. Тригонометрия и смешанные уравнения
+  topic = Алгебра. Функции и графики
+  topic = Алгебра. Функции, графики и параметры
+  topic = Алгебра. Функции, последовательности и олимпиадные конструкции
+  topic = Алгебра. Функции. Композиция функций.
+  topic = Арифметика
+  topic = Арифметика. Задачи на стоимость
+  topic = Арифметическая прогрессия
+  topic = Арифметическая прогрессия и квадратные уравнения
+  topic = Арифметическая прогрессия: инвариант равноудалённых членов
+  topic = Векторы
+  topic = Векторы / Векторное произведение
+  topic = Вероятность
+  topic = Виет
+  topic = Выражения и многочлены
+  topic = Геометрическая прогрессия
+  topic = Геометрическая прогрессия: разбор случаев по знаку знаменателя
+  topic = Геометрический экстремум
+  topic = Геометрия
+  topic = Геометрия (Вписанные углы)
+  topic = Геометрия (свойства трапеции и подобие)
+  topic = Геометрия (свойство трапеции)
+  topic = Геометрия и измерения
+  topic = Геометрия и логика
+  topic = Геометрия прямоугольного треугольника: цепочка подобия для площади
+  topic = Геометрия треугольника и окружности
+  topic = Геометрия треугольника, вписанная и описанная окружности
+  topic = Геометрия углов и треугольников
+  topic = Геометрия, комбинаторика и логика
+  topic = Геометрия. Геометрия треугольника и окружности
+  topic = Геометрия. Геометрия треугольников и углов
+  topic = Геометрия. Стереометрия и векторы
+  topic = Геометрия. Стереометрия, координаты и векторы
+  topic = Геометрия. Стереометрия. Объёмы тел
+  topic = Геометрия: периметр и площадь прямоугольника
+  topic = Графы
+  topic = Графы: принцип Дирихле для числа рукопожатий
+  topic = Двойной подсчёт (оценка и точность оценки)
+  topic = Делимость
+  topic = Делимость (анализ пробелов в множестве значений числа нулей факториала)
+  topic = Делимость (факториалы и свойства простых чисел)
+  topic = Делимость (формула Лежандра)
+  topic = Делимость (формула Лежандра, две простые с балансировкой)
+  topic = Делимость и НОК
+  topic = Делимость и остатки
+  topic = Делимость натуральных чисел
+  topic = Делимость чисел
+  topic = Доли и проценты
+  topic = Дроби
+  topic = Дроби и доли
+  topic = Дроби, доли, проценты
+  topic = Дроби, отношения, проценты
+  topic = Замощение
+  topic = Игровые стратегии
+  topic = Игровые стратегии (игра Витхоффа, элементарное доказательство через последовательности Битти)
+  topic = Игровые стратегии (мизер-ним, доказательство от нуля)
+  topic = Игровые стратегии (ним, элементарное доказательство без ссылки на теорему Бутона)
+  topic = Игры и стратегии
+  topic = Инвариант
+  topic = Инвариант (чётность + явная конструкция)
+  topic = Инвариант (чётность суммы при операции взятия модуля разности)
+  topic = Инварианты
+  topic = Иррациональные уравнения: геометрический метод решения
+  topic = Касание графиков функций. Задачи с параметром
+  topic = Квадратичные функции
+  topic = Квадратные уравнения
+  topic = Квадратные уравнения и Виет
+  topic = Квадратные уравнения и параметры
+  topic = Квадратные уравнения и параметры: инвариантный дискриминант
+  topic = Квадратные уравнения и теорема Виета
+  topic = Комбинаторика
+  topic = Комбинаторика (биекция Эйлера — самосопряжённые разбиения)
+Traceback (most recent call last):
+  File "c:\Users\Victor\Desktop\Новая папка (2)\_check_curated_structure.py", line 72, in <module>
+    print(f'  {sf} = {sv}')
+    ~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1251.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\xd7' in position 43: character maps to <undefined>

@@ -1,0 +1,20 @@
+{
+  "id": 801915,
+  "task_text": "В треугольнике $ABC$, в котором $AB > BC$ и $AC > BC$, на сторонах $AB$ и $AC$ выбраны точки $D$ и $E$ соответственно такие, что $BD = CE = BC$. Докажите, что прямая, проходящая через середины отрезков $DE$ и $BC$, параллельна биссектрисе угла $A$.",
+  "solution": "Введём векторное обозначение: пусть $A$ — начало координат, $\\overrightarrow{AB} = \\vec{b}$, $\\overrightarrow{AC} = \\vec{c}$. Тогда $|\\vec{b}| = AB$, $|\\vec{c}| = AC$, $|\\vec{b} - \\vec{c}| = BC = a$.\n\nТак как $D$ лежит на стороне $AB$ и $BD = a$, причём по условию $a < AB$, то точка $D$ находится между $A$ и $B$. Отсюда $\\overrightarrow{BD} = -a\\cdot\\frac{\\vec{b}}{|\\vec{b}|}$. Следовательно, радиус-вектор точки $D$:\n$$\\vec{d} = \\vec{b} + \\overrightarrow{BD} = \\vec{b} - a\\frac{\\vec{b}}{b} = \\left(1-\\frac{a}{b}\\right)\\vec{b},$$ где $b = |\\vec{b}|$. Аналогично для точки $E$ на $AC$:\n$$\\vec{e} = \\left(1-\\frac{a}{c}\\right)\\vec{c},$$ где $c = |\\vec{c}|$.\n\nСередина $M$ отрезка $DE$ и середина $N$ отрезка $BC$:\n$$\\vec{m} = \\frac{\\vec{d}+\\vec{e}}{2} = \\frac12\\left[\\left(1-\\frac{a}{b}\\right)\\vec{b} + \\left(1-\\frac{a}{c}\\right)\\vec{c}\\right], \\quad \\vec{n} = \\frac{\\vec{b}+\\vec{c}}{2}.$$\n\nТогда вектор $\\overrightarrow{MN} = \\vec{m} - \\vec{n} = \\frac12\\left[\\left(1-\\frac{a}{b}\\right)\\vec{b} + \\left(1-\\frac{a}{c}\\right)\\vec{c} - \\vec{b} - \\vec{c}\\right] = \\frac12\\left(-\\frac{a}{b}\\vec{b} - \\frac{a}{c}\\vec{c}\\right) = -\\frac{a}{2}\\left(\\frac{\\vec{b}}{b} + \\frac{\\vec{c}}{c}\\right).$\n\nВыражение в скобках — сумма единичных векторов, направленных вдоль $AB$ и $AC$. Известно, что такая сумма коллинеарна биссектрисе угла $A$. Следовательно, $\\overrightarrow{MN}$ параллелен биссектрисе угла $A$, что и требовалось доказать. Если бы точки $D$ и $E$ лежали на продолжениях сторон (случай $a > AB$, $a > AC$), направление векторов изменилось бы на противоположное, но коллинеарность биссектрисе сохранилась бы.",
+  "correct_answer": "Прямая, проходящая через середины отрезков $DE$ и $BC$, параллельна биссектрисе угла $A$.",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Векторный метод, выражение точек через единичные векторы, свойство биссектрисы",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.72,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:28:08.875141+00:00"
+}

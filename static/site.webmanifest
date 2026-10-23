@@ -1,0 +1,36 @@
+{
+  "id": "/",
+  "name": "FORMYLA.net — Подготовка к олимпиадам по математике",
+  "short_name": "FORMYLA",
+  "description": "Интерактивная подготовка к олимпиадам по математике: задачи дня, ИИ-тьютор, теория и разборы",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "categories": ["education"],
+  "launch_handler": { "client_mode": "navigate-existing" },
+  "protocol_handlers": [
+    { "protocol": "web+formyla", "url": "/?source=pwa_open&launch=%s" }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [
+    { "platform": "webapp", "url": "https://formyla.net/site.webmanifest" }
+  ],
+  "icons": [
+    {"src": "/static/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/static/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}
+  ],
+  "shortcuts": [
+    {"name": "Задачи дня", "short_name": "Задачи", "url": "/daily_tasks?source=pwa_shortcut",
+     "icons": [{"src": "/static/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png"}]},
+    {"name": "Олимпиады", "url": "/olympiads?source=pwa_shortcut",
+     "icons": [{"src": "/static/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png"}]},
+    {"name": "Куратор подготовки", "short_name": "Куратор", "url": "/prep/coach?source=pwa_shortcut",
+     "icons": [{"src": "/static/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png"}]}
+  ]
+}

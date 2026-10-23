@@ -1,0 +1,92 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "Omega",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "P",
+   "circle": "Omega",
+   "line": "BI",
+   "pick": 1
+  },
+  {
+   "type": "reflect_point",
+   "id": "Q",
+   "of": "P",
+   "over": "O"
+  },
+  {
+   "type": "foot",
+   "id": "M",
+   "from": "Q",
+   "line": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "S",
+   "of": "BP"
+  },
+  {
+   "type": "circumcircle",
+   "id": "gamma",
+   "of": "BMC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "Omega"
+  },
+  {
+   "segment": "QM"
+  },
+  {
+   "segment": "MC"
+  },
+  {
+   "segment": "BP"
+  },
+  {
+   "circle": "gamma",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "Q",
+    "M",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "BS",
+    "SP"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

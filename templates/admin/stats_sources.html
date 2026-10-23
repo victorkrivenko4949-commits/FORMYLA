@@ -1,0 +1,28 @@
+{% extends "admin/stats_base.html" %}
+{% block stats_content %}
+<table class="st">
+  <thead><tr><th>Источник</th><th>Визиты</th><th>Регистрации</th><th>CR визит→рег.</th><th>Анкеты</th><th>Первые задачи</th><th>Оплаты</th><th>CR рег.→оплата</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td>{{ r.title }} <span class="st-muted">{{ r.source }}</span></td>
+      <td>{{ r.visit }}</td><td><b>{{ r.signup }}</b></td>
+      <td>{% if r.cr_signup is not none %}{{ r.cr_signup }}%{% else %}—{% endif %}</td>
+      <td>{{ r.intake_done }}</td><td>{{ r.first_task_solved }}</td><td><b>{{ r.payment_success }}</b></td>
+      <td>{% if r.cr_pay is not none %}{{ r.cr_pay }}%{% else %}—{% endif %}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="8" class="st-muted">Пока нет данных.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h3 style="margin:26px 0 10px;color:#e2e8f0;font-size:16px;">Метки ссылок (?ref=…)</h3>
+<table class="st">
+  <thead><tr><th>ref</th><th>Визитов</th></tr></thead>
+  <tbody>
+  {% for ref, n in refs %}<tr><td>{{ ref }}</td><td>{{ n }}</td></tr>
+  {% else %}<tr><td colspan="2" class="st-muted">Метки пока не использовались. Схема: tg, teacher_&lt;id&gt;, parent, u_&lt;user_id&gt;.</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endblock %}

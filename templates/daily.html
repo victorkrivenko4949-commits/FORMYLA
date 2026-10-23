@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Задачи дня — FORMYLA.net{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/daily.css') }}?v={{ asset_version }}">
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
+
+{% if need_grade_selection %}
+  <!-- ============ ВЫБОР КЛАССА ============ -->
+  <div id="grade-selection" style="text-align: center; padding: 60px 20px;">
+    <div style="font-size: 72px; margin-bottom: 16px;">📚</div>
+    <h2 style="font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 8px;">Выбери свой класс</h2>
+    <p style="color: rgba(255,255,255,0.6); font-size: 15px; margin-bottom: 36px;">Задачи дня будут подобраны под твой уровень</p>
+
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; max-width: 500px; margin: 0 auto 32px;">
+      {% for g in range(5, 12) %}
+      <button onclick="selectGrade({{ g }})" class="grade-btn" data-grade="{{ g }}"
+              style="width: 80px; height: 80px; border-radius: 16px; border: 2px solid var(--border-soft); background: var(--bg-card); backdrop-filter: blur(12px); color: #fff; font-size: 24px; font-weight: 800; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px;"
+              onmouseover="this.style.borderColor='#38ef7d'; this.style.boxShadow='0 0 20px rgba(56,239,125,0.3)'"
+              onmouseout="if(!this.classList.contains('selected')){this.style.borderColor='var(--border-soft)'; this.style.boxShadow='none'}">
+        <span>{{ g }}</span>
+        <span style="font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.5);">класс</span>
+      </button>
+      {% endfor %}
+    </div>
+
+    <button id="confirm-grade-btn" onclick="confirmGrade()" disabled
+            style="padding: 14px 40px; border-radius: 12px; border: none; background: linear-gradient(135deg, #11998e, #38ef7d); color: #000; font-size: 16px; font-weight: 700; cursor: pointer; opacity: 0.4; transition: all 0.3s ease; box-shadow: 0 4px 14px rgba(56,239,125,0.4);">
+       Начать
+    </button>
+  </div>
+
+  <script>
+  let selectedGrade = null;
+  function selectGrade(g) {
+    selectedGrade = g;
+    document.querySelectorAll('.grade-btn').forEach(btn => {
+      btn.classList.remove('selected');
+      btn.style.borderColor = 'var(--border-soft)';
+      btn.style.boxShadow = 'none';
+      btn.style.background = 'var(--bg-card)';
+    });
+    const btn = document.querySelector('.grade-btn[data-grade="' + g + '"]');
+    btn.classList.add('selected');
+    btn.style.borderColor = '#38ef7d';
+    btn.style.boxShadow = '0 0 20px rgba(56,239,125,0.3)';
+    btn.style.background = 'rgba(56,239,125,0.1)';
+    const confirmBtn = document.getElementById('confirm-grade-btn');
+    confirmBtn.disabled = false;
+    confirmBtn.style.opacity = '1';
+  }
+  function confirmGrade() {
+    if (!selectedGrade) return;
+    const btn = document.getElementById('confirm-grade-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Загрузка...';
+    fetch('/api/set_grade', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({grade: selectedGrade})
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        window.location.reload();
+      } else {
+        alert(data.error || 'Ошибка');
+        btn.disabled = false;
+        btn.textContent = ' Начать';
+      }
+    })
+    .catch(() => {
+      alert('Ошибка сети');
+      btn.disabled = false;
+      btn.textContent = ' Начать';
+    });
+  }
+  </script>
+
+{% else %}
+  <!-- ============ DAILY QUEST CONTENT ============ -->
+
+  <!-- Grade Badge + Change -->
+  <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+    <div style="position: relative;" id="grade-badge-wrapper">
+      <button onclick="toggleGradeDropdown()" style="padding: 6px 14px; border-radius: 20px; background: rgba(20,30,45,0.6); border: 1px solid rgba(56,239,125,0.3); font-size: 13px; color: rgba(255,255,255,0.85); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;"
+              onmouseover="this.style.borderColor='#38ef7d'" onmouseout="this.style.borderColor='rgba(56,239,125,0.3)'">
+         {{ preferred_grade }} класс <span style="font-size: 10px; opacity: 0.6;">▼</span>
+      </button>
+      <div id="grade-dropdown" style="display: none; position: absolute; right: 0; top: 110%; background: var(--bg-card); backdrop-filter: blur(16px); border: 1px solid var(--border-soft); border-radius: 12px; padding: 8px; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.4); min-width: 160px;">
+        <div style="font-size: 11px; color: rgba(255,255,255,0.5); padding: 4px 8px; margin-bottom: 4px;">Сменить класс</div>
+        {% for g in range(5, 12) %}
+        <button onclick="changeGrade({{ g }})" style="display: block; width: 100%; text-align: left; padding: 8px 12px; border: none; background: {% if g == preferred_grade %}rgba(56,239,125,0.15){% else %}transparent{% endif %}; color: {% if g == preferred_grade %}#38ef7d{% else %}rgba(255,255,255,0.8){% endif %}; font-size: 14px; font-weight: {% if g == preferred_grade %}700{% else %}500{% endif %}; cursor: pointer; border-radius: 8px; transition: background 0.15s;"
+                onmouseover="this.style.background='rgba(56,239,125,0.1)'" onmouseout="this.style.background='{% if g == preferred_grade %}rgba(56,239,125,0.15){% else %}transparent{% endif %}'">
+          {{ g }} класс {% if g == preferred_grade %}[OK]{% endif %}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Streak Hero -->
+  <div style="text-align: center; margin-bottom: 32px;">
+    <div style="font-size: 64px; filter: drop-shadow(0 0 20px rgba(249,115,22,0.8)); animation: flame-flicker 2s ease-in-out infinite alternate; display: inline-block;">🔥</div>
+    <div style="font-size: 72px; font-weight: 900; background: linear-gradient(135deg, #11998e, #38ef7d); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1; margin: 8px 0;">{{ streak_stats.current_streak }}</div>
+    <div style="font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.6);">дней подряд</div>
+    <div style="margin-top: 12px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+      {% if streak_stats.freeze_available %}
+      <span style="padding: 6px 14px; border-radius: 20px; background: rgba(20,30,45,0.6); border: 1px solid rgba(56,239,125,0.2); font-size: 13px; color: rgba(255,255,255,0.85);">❄️ Заморозка доступна</span>
+      {% endif %}
+      <span style="padding: 6px 14px; border-radius: 20px; background: rgba(20,30,45,0.6); border: 1px solid rgba(56,239,125,0.2); font-size: 13px; color: rgba(255,255,255,0.85);">🏆 Рекорд: {{ streak_stats.longest_streak }}</span>
+    </div>
+  </div>
+
+  <!-- AI Intro -->
+  <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); border-left: 4px solid #38ef7d; margin-bottom: 24px; display: flex; gap: 16px; align-items: flex-start;">
+    <div style="font-size: 36px; flex-shrink: 0; line-height: 1;">🤖</div>
+    <div>
+      <div style="color: #38ef7d; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 8px;">Твои задачи на сегодня</div>
+      <div style="color: var(--text-soft); line-height: 1.6;">{{ ai_comment_html if ai_comment_html else (quest.ai_comment | safe) }}</div>
+      <form action="/daily/regenerate" method="POST" style="margin-top: 12px;">
+        <button type="submit" style="padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); color: #f87171; font-size: 13px; cursor: pointer; transition: all 0.2s;">🔄 Перегенерировать задачи</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div style="margin-bottom: 32px;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.8);">
+      <span>Прогресс</span>
+      <span style="color: #38ef7d;">{{ quest.completed_count }} / {{ quest.total_count }} задач</span>
+    </div>
+    <div style="width: 100%; height: 8px; background: rgba(20,30,45,0.8); border-radius: 4px; overflow: hidden;">
+      {% if quest.total_count > 0 %}
+      <div style="width: {{ ((quest.completed_count / quest.total_count) * 100)|int }}%; height: 100%; background: linear-gradient(90deg, #11998e, #38ef7d); box-shadow: 0 0 12px rgba(56,239,125,0.5); transition: width 0.5s ease; border-radius: 4px;"></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Task Cards (exam.html pattern) -->
+  {% for task in tasks %}
+  {% set i = loop.index0 %}
+  {% set subject = task.get('subject', task.get('topic', 'math')) %}
+  {% set topic_ru = {
+    'algebra': 'Алгебра',
+    'geometry': 'Геометрия',
+    'combinatorics': 'Комбинаторика',
+    'number_theory': 'Теория чисел',
+    'logic': 'Логика',
+    'movement': 'Задачи на движение',
+    'kl_movement': 'Задачи на движение',
+    'arithmetic': 'Арифметика'
+  }.get(subject, subject) %}
+  {% set lvl = task.get('difficulty', 3) %}
+  {% set level_label = {
+    1: 'Базовый',
+    2: 'Школьный',
+    3: 'Олимпиада (школа)',
+    4: 'Муниципальный',
+    5: 'Региональный',
+    6: 'Всерос финал',
+    7: 'IMO / ELITE'
+  }.get(lvl, 'Уровень ' ~ lvl) %}
+  {% set level_color = {
+    1: '#22c55e', 2: '#22c55e',
+    3: '#fbbf24', 4: '#f97316',
+    5: '#f97316', 6: '#ef4444',
+    7: '#ec4899'
+  }.get(lvl, '#38ef7d') %}
+  {# is_done — задача правильно решена ранее. Все остальные доступны для решения. #}
+  {% set is_done = i in (solved_indices or []) %}
+
+  <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid {% if is_done %}rgba(56,239,125,0.4){% else %}var(--border-soft){% endif %}; margin-bottom: 24px;">
+
+    <!-- Task Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #11998e, #38ef7d); display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; font-size: 15px; flex-shrink: 0;">{{ loop.index }}</div>
+        <div>
+          <div style="color: #38ef7d; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">{{ topic_ru }}</div>
+          <span style="display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: {{ level_color }}22; color: {{ level_color }}; font-weight: 700; border: 1px solid {{ level_color }}44; margin-top: 4px;">{{ level_label }}</span>
+        </div>
+      </div>
+      {% if is_done %}
+      <span style="color: #38ef7d; font-weight: 600; font-size: 14px;">[OK] Решено</span>
+      {% else %}
+      <span style="color: #38ef7d; font-size: 13px; font-weight: 600;">● Доступна</span>
+      {% endif %}
+    </div>
+
+    <!-- Task Text (KaTeX renders \( \) automatically via base.html) -->
+    <div style="color: var(--text-soft); line-height: 1.8; margin-bottom: 20px; font-size: 15px;">
+      {{ task.get('text', '') }}
+    </div>
+
+    <!-- Action -->
+    {% if not is_done %}
+    <a href="{{ url_for('daily_quest_task', task_index=i) }}"
+       style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #11998e, #38ef7d); color: #000; font-weight: 700; border-radius: 10px; text-decoration: none; font-size: 15px; box-shadow: 0 4px 14px rgba(56,239,125,0.4); transition: all 0.25s ease;"
+       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 24px rgba(56,239,125,0.6)'"
+       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(56,239,125,0.4)'">
+       Решить задачу
+    </a>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <!-- Rewards -->
+  <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 20px 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px;">
+    <div style="display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.85); font-size: 15px;">
+      <span style="font-size: 22px;">⭐</span>
+      <span>Заработано: <strong style="color: #38ef7d;">{{ quest.xp_earned }} XP</strong></span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.85); font-size: 15px;">
+      <span style="font-size: 22px;">🎁</span>
+      <span>Бонус за все 5: <strong style="color: #38ef7d;">+100 XP</strong></span>
+    </div>
+    {% if quest.completed_count >= quest.total_count %}
+    <a href="{{ url_for('daily_quest_complete') }}"
+       style="display: inline-block; padding: 10px 24px; background: linear-gradient(135deg, #11998e, #38ef7d); color: #000; font-weight: 700; border-radius: 10px; text-decoration: none;">
+      🎯 Результаты
+    </a>
+    {% endif %}
+  </div>
+
+</div>
+
+<style>
+@keyframes flame-flicker {
+    0%   { filter: drop-shadow(0 0 10px #f97316); transform: scale(1); }
+    100% { filter: drop-shadow(0 0 25px #fbbf24); transform: scale(1.05); }
+}
+@keyframes pulse-badge {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.5; }
+}
+</style>
+
+<script>
+// Grade dropdown toggle
+function toggleGradeDropdown() {
+    var dd = document.getElementById('grade-dropdown');
+    dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+    var wrapper = document.getElementById('grade-badge-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('grade-dropdown').style.display = 'none';
+    }
+});
+// Change grade via API and reload
+function changeGrade(g) {
+    fetch('/api/set_grade', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({grade: g})
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.error || 'Ошибка');
+        }
+    })
+    .catch(function() { alert('Ошибка сети'); });
+}
+
+// Trigger KaTeX re-render for task texts
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof reRenderMath === 'function') {
+        reRenderMath(document.body);
+    }
+});
+</script>
+
+{% endif %}
+
+{% endblock %}

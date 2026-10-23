@@ -1,0 +1,127 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "H",
+   "line1": "BD",
+   "line2": "CE"
+  },
+  {
+   "type": "orthocenter",
+   "id": "F",
+   "of": "ADE"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ADE",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "segment": "CE",
+   "style": "soft"
+  },
+  {
+   "segment": "DF",
+   "style": "soft"
+  },
+  {
+   "segment": "EF",
+   "style": "soft"
+  },
+  {
+   "segment": "BH",
+   "style": "accent"
+  },
+  {
+   "segment": "CH",
+   "style": "accent"
+  },
+  {
+   "segment": "FM",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "D",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "E",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_line",
+   "id": "C'",
+   "of": "H",
+   "over": "AB",
+   "reason": "Отражение H относительно AB: C' лежит на CH, E — середина HC', BC'=BH."
+  },
+  {
+   "type": "reflect_line",
+   "id": "B'",
+   "of": "H",
+   "over": "AC",
+   "reason": "Отражение H относительно AC: B' лежит на BD, D — середина HB', CB'=CH."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "B'C'",
+   "style": "dashed"
+  },
+  {
+   "segment": "BC'",
+   "style": "dashed"
+  },
+  {
+   "segment": "CB'",
+   "style": "dashed"
+  }
+ ]
+}

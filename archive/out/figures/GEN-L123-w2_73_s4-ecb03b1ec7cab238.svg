@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<rect width="620" height="620" fill="#070C18"/>
+<polygon points="84.0,492.6 560.0,492.6 84.8,218.3" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="84.2" y1="400.9" x2="401.1" y2="400.9" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<circle cx="242.6" cy="310.0" r="182.6" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="242.6" y1="310.0" x2="242.5" y2="492.6" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<polyline points="242.5,479.6 255.5,479.6 255.5,492.6" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<path d="M 107.3 231.3 A 26 26 0 0 1 84.7 244.3" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="105.2" y="258.8" fill="#8C9ABC" font-size="15" text-anchor="middle">60°</text>
+<circle cx="84.0" cy="492.6" r="3.4" fill="#E6EBF7"/>
+<text x="66.6" y="508.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="560.0" cy="492.6" r="3.4" fill="#E6EBF7"/>
+<text x="579.3" y="503.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="84.8" cy="218.3" r="3.4" fill="#E6EBF7"/>
+<text x="70.6" y="210.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="242.5" cy="492.6" r="3.4" fill="#E6EBF7"/>
+<text x="242.5" y="518.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="242.6" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="252.6" y="298.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O</text>
+<circle cx="84.2" cy="400.9" r="3.4" fill="#E6EBF7"/>
+<text x="64.2" y="406.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">E</text>
+<circle cx="401.1" cy="400.9" r="3.4" fill="#E6EBF7"/>
+<text x="415.2" y="392.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">F</text>
+</svg>

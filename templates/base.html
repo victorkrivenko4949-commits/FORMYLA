@@ -1,0 +1,1052 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>{% block title %}FORMYLA.net — Подготовка к олимпиадам по математике{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}FORMYLA.net — онлайн-платформа для подготовки школьников 5–11 классов к олимпиадам по математике: ВсОШ, Ломоносов, Эйлер, Турнир городов. ИИ-тьютор, задачи дня, теория, разборы.{% endblock %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ asset_version }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.css') }}?v={{ asset_version }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}?v={{ asset_version }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile_features.css') }}?v={{ asset_version }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/errors.css') }}?v={{ asset_version }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/formyla_dark.css') }}?v={{ asset_version }}">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    {% block extra_css %}{% endblock %}
+    
+    <!-- KaTeX for math rendering — синхронная загрузка + скрытие до рендера,
+         чтобы не было «вспышки» сырого $LaTeX$ перед заменой на формулы. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+      /* Прячем содержимое до завершения рендера KaTeX. Применяется только
+         если есть потенциально математический контент (через JS-флаг).
+         Fail-safe: автоматически снимается через 1500ms, чтобы страница
+         НЕ зависла навсегда если KaTeX упал. */
+      html:not(.katex-ready) body.has-math .oly-md,
+      html:not(.katex-ready) body.has-math .task-text,
+      html:not(.katex-ready) body.has-math .problem-card,
+      html:not(.katex-ready) body.has-math .ai-feedback,
+      html:not(.katex-ready) body.has-math [data-katex] {
+        visibility: hidden;
+      }
+    </style>
+    <!-- preload — браузер начинает качать ещё до парсинга остального HTML -->
+    <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js">
+    <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js">
+    <!-- Синхронная загрузка: блокирует парсинг до загрузки KaTeX,
+         но даёт ГАРАНТИЮ что renderMathInElement доступна как только
+         DOM закончит парсить body. -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+      // Помечаем body как «возможно содержит math» — чтобы CSS-скрытие
+      // действовало только на странички с формулами, а не на всю морду.
+      (function(){
+        try {
+          document.documentElement.classList.add('katex-loading');
+          // Fail-safe: если KaTeX не справится за 1.5s — показываем как есть.
+          setTimeout(function(){
+            document.documentElement.classList.remove('katex-loading');
+            document.documentElement.classList.add('katex-ready');
+          }, 1500);
+        } catch(e){}
+      })();
+      // Рендер сразу при готовности DOM. Используем DOMContentLoaded —
+      // он срабатывает СРАЗУ как только тело распаршено, не дожидаясь
+      // картинок/iframe'ов, поэтому быстрее чем 'load'.
+      document.addEventListener('DOMContentLoaded', function(){
+        var t0 = performance.now();
+        try {
+          // Помечаем body — теперь CSS-скрытие активируется (если оно нужно)
+          document.body.classList.add('has-math');
+          if (typeof renderMathInElement === 'function') {
+            renderMathInElement(document.body, {
+              delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$',  right: '$',  display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+              ],
+              throwOnError: false,
+              // ignoredTags — НЕ трогать содержимое <script>, <style>, <code>,
+              // <pre> чтобы не ломать примеры кода / синтаксис.
+              ignoredTags: ['script','noscript','style','textarea','pre','code']
+            });
+          }
+        } catch(e) { console.warn('KaTeX render error', e); }
+        finally {
+          // Снимаем класс «загрузка» — содержимое становится видимым.
+          document.documentElement.classList.remove('katex-loading');
+          document.documentElement.classList.add('katex-ready');
+          if (window.console && console.log) {
+            console.log('[OK] KaTeX rendered in ' + Math.round(performance.now()-t0) + 'ms');
+          }
+        }
+      });
+    </script>
+
+    <!-- Global KaTeX re-render helper (defined early so child templates can use it) -->
+    <script>
+    function reRenderMath(element) {
+        if (typeof renderMathInElement === 'function') {
+            renderMathInElement(element || document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ],
+                throwOnError: false
+            });
+        } else {
+            console.warn('KaTeX auto-render not loaded yet — reRenderMath deferred');
+        }
+    }
+    // KATEX_ALIAS_V1: legacy-код вызывает renderMath(element) — заводим алиас,
+    // чтобы формулы в задачах дня, решениях и ответах рендерились, а не показывались сырым TeX.
+    if (typeof window.renderMath !== 'function') {
+        window.renderMath = reRenderMath;
+    }
+    </script>
+    
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    {% if config.PLAUSIBLE_DOMAIN %}
+    <!-- Plausible Analytics (cookieless, GDPR-friendly) -->
+    <script defer
+            data-domain="{{ config.PLAUSIBLE_DOMAIN }}"
+            src="https://plausible.io/js/script.tagged-events.outbound-links.js"></script>
+    <script>
+        window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) };
+    </script>
+    {% endif %}
+
+    {# Yandex.Metrika counter (ID 109394525) — webvisor + clickmap + accurateTrackBounce + trackLinks #}
+    {% if config.YANDEX_METRIKA_ID %}
+    <script type="text/javascript">
+       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+       m[i].l=1*new Date();
+       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+       (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+       ym({{ config.YANDEX_METRIKA_ID }}, "init", {
+            clickmap:true,
+            trackLinks:true,
+            accurateTrackBounce:true,
+            webvisor:true
+       });
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/{{ config.YANDEX_METRIKA_ID }}" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    {% endif %}
+
+    <script defer src="{{ url_for('static', filename='js/analytics.js') }}?v={{ asset_version }}"></script>
+    <!-- Mobile home swipe-pager (≤768px). На десктопе скрипт ничего не делает (init ищет #mHome, которого там нет). -->
+    <script defer src="{{ url_for('static', filename='js/mobile_home_slider.js') }}?v={{ asset_version }}"></script>
+</head>
+<body class="{% if request.path.startswith('/chat') %}page-chat{% endif %}{% if request.path.startswith('/daily_tasks') %} page-daily-tasks{% endif %}{% if request.path.startswith('/intake') %} page-intake{% endif %}{% if request.path == '/olympiads/methods' or request.path == '/olympiads/methods/' %} atlas-embed{% endif %}"{% if current_user.is_authenticated %} data-user-id="{{ current_user.id }}"{% endif %}>
+    {% if request.path.startswith('/intake') %}
+    <style>
+        /* На анкете скрываем всю навигацию — доступна только сама анкета. */
+        body.page-intake .header,
+        body.page-intake .mobile-drawer,
+        body.page-intake .mobile-drawer-overlay,
+        body.page-intake .mobile-bottom-nav,
+        body.page-intake #globalBackBtn,
+        body.page-intake #testResumeBanner {
+            display: none !important;
+        }
+    </style>
+    {% endif %}
+    <header class="header">
+        {# FULL_ACCESS_V1 (25.09.2026): учитель и родитель имеют всё, что у
+           ученика, поэтому логотип ведёт на главную, как у ученика. Их
+           собственный раздел («Мои ученики» / «Мои гении») — в навигации. #}
+        <a href="{{ url_for('index') }}" class="logo">
+            <!-- 2026-09-15 FIX: после ребренда «FORMYLA.net» длиннее «FORMYLA» —
+                 расширил viewBox до 400, иначе «.net» обрезалось справа. -->
+            <svg class="site-logo" width="200" height="60" viewBox="0 0 400 100" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="grad_logo" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#38ef7d"/>
+                        <stop offset="100%" stop-color="#11998e"/>
+                    </linearGradient>
+                </defs>
+                <text x="100" y="65" font-family="'Segoe UI', sans-serif" font-style="italic" font-weight="800" font-size="38" fill="#ffffff" letter-spacing="2">FORMYLA.net</text>
+                <polygon points="50,20 75,35 75,65 50,80 25,65 25,35" fill="none" stroke="url(#grad_logo)" stroke-width="4"/>
+                <polyline points="35,42 50,50 50,80" fill="none" stroke="url(#grad_logo)" stroke-width="4"/>
+                <line x1="50" y1="50" x2="65" y2="42" stroke="url(#grad_logo)" stroke-width="4"/>
+                <circle cx="50" cy="50" r="4" fill="#fff"/>
+            </svg>
+        </a>
+
+        <!-- Бургер-кнопка для мобильных -->
+        <button class="nav-burger" onclick="toggleMobileNav()"
+                aria-label="Меню" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <nav class="nav" id="navLinks">
+            {# FULL_ACCESS_V1 (25.09.2026): учитель И родитель видят все разделы
+               ученика (Олимпиады, Задачи дня, Куратор, Прочее, Профиль) плюс
+               свой собственный раздел — «Мои ученики» / «Мои гении (дети)». #}
+            {% if current_user.is_authenticated and current_user.role == 'teacher' %}
+            <a href="/teacher" class="nav-item">👨‍🏫 Мои ученики</a>
+            {% endif %}
+            {% if current_user.is_authenticated and current_user.role == 'parent' %}
+            <a href="/parent" class="nav-item">👨‍👩‍👧 Мои гении (дети)</a>
+            {% endif %}
+
+            <!-- 1. Олимпиады (dropdown) — виден всем ролям -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    🏆 Олимпиады <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="{{ url_for('olympiad.methods') }}">📚 Каталог методов (102)</a>
+                    <a href="{{ url_for('olympiad_prep.calendar') }}">📅 Календарь олимпиад</a>
+                </div>
+            </div>
+
+            <!-- 2. Задачи дня + Куратор (чат, пилотам). Статистика — в «Прочее». -->
+            <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="nav-item">📅 Задачи дня</a>
+            {% if is_pilot %}
+            <a href="/curator" class="nav-item" style="color:#f4b942;">💬 Куратор</a>
+            {% endif %}
+            <a href="/olympiad-start" class="nav-item">📖 С чего начать</a>
+            <a href="/articles" class="nav-item">📰 Статьи</a>
+
+            <!-- 3. Прочее — виден всем ролям -->
+            <a href="/misc" class="nav-item">📦 Прочее <span class="insights-badge"></span></a>
+
+            <!-- Закреплённые пункты (из «Прочее» 📌, заполняется nav.js) -->
+            <span class="nav-pinned" id="pinnedNavItems"></span>
+        </nav>
+        
+
+        <!-- Авторизация -->
+        <div style="display: flex; align-items: center; gap: 12px; margin-left: 16px;">
+            {% if current_user.is_authenticated and not current_user.is_guest %}
+                {% if (current_user.nickname or '')|lower == 'lavrik' %}
+                <!-- LAVRIK_FULL_USER_V2: Лаврик — полноценный пользователь + админ. Меню НЕ прячем.
+                     Кнопка «💬 Поддержка» ведёт на /my/support (чаты с командой).
+                     Админ-чат /admin/support доступен из профиля (блок «Админ-раздел»). -->
+                <a href="{{ url_for('admin_support.my_support_page') }}"
+                   id="navMySupportLink"
+                   title="Твоя поддержка — обращения и переписка с командой"
+                   style="position:relative; padding: 8px 14px; background: rgba(168, 85, 247, 0.12);
+                          color: #d8b4fe; text-decoration: none; border-radius: 8px;
+                          font-weight: 600; font-size: 14px;
+                          border: 1px solid rgba(168, 85, 247, 0.3); transition: all 0.2s;"
+                   onmouseover="this.style.background='rgba(168, 85, 247, 0.22)'"
+                   onmouseout="this.style.background='rgba(168, 85, 247, 0.12)'">
+                    💬 Поддержка
+                    <span id="navMySupportBadge"
+                          style="display:none; position:absolute; top:-6px; right:-6px;
+                                 min-width:18px; height:18px; padding:0 5px;
+                                 background:#ef4444; color:#fff; border-radius:9px;
+                                 font-size:11px; font-weight:700; line-height:18px;
+                                 text-align:center; box-shadow:0 0 0 2px #0f172a;">0</span>
+                </a>
+                {% endif %}
+
+                <!-- Авторизованный пользователь: «Профиль» авто-закреплён (всегда виден).
+                     FULL_ACCESS_V1: теперь и для родителя — у него полный профиль, как у ученика. -->
+                <span id="profileNavWrap" class="nav-pinned-item">
+                    <a href="{{ url_for('profile') }}"
+                       style="padding: 8px 16px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.2s;"
+                       onmouseover="this.style.background='rgba(56, 189, 248, 0.2)'"
+                       onmouseout="this.style.background='rgba(56, 189, 248, 0.1)'">
+                        👤 Профиль{% if current_user.has_diamond %} 💎{% endif %}
+                    </a>
+                    <button type="button" class="nav-unpin-btn"
+                            title="Открепить" aria-label="Открепить профиль"
+                            onclick="unpinProfile()">✕</button>
+                </span>
+                
+                <!-- Простая кнопка «Выйти» (с подтверждением). Удаление аккаунта — в конце профиля. -->
+                <a href="{{ url_for('logout') }}" onclick="return confirmLogout(event)"
+                   style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border-radius: 8px; font-size: 14px; border: 1px solid var(--border-soft); text-decoration: none; cursor: pointer;">
+                    🚪 Выйти
+                </a>
+            {% else %}
+                <!-- Неавторизованный пользователь -->
+                <a href="{{ url_for('login') }}"
+                   style="padding: 10px 24px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; transition: transform 0.2s; box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3);"
+                   onmouseover="this.style.transform='translateY(-2px)'"
+                   onmouseout="this.style.transform='translateY(0)'">
+                    🚀 Начать
+                </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Баннер «Вернуться в тест» (если есть незавершённый тест).
+         На самой странице теста (/prep/probe) не показываем — пользователь и так в нём. -->
+    {# 2026-10-23: тест снова включён — баннер активен. #}
+    {% if has_active_probe and request.path != '/prep/probe' %}
+    <div id="probeResumeBanner" style="display:flex;background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid #a78bfa;border-radius:8px;padding:12px 20px;margin:8px auto;max-width:900px;align-items:center;justify-content:space-between;gap:12px;">
+        <span style="color:#e2e8f0;font-size:0.95em;">У вас есть незавершённый тест. <span style="color:#a78bfa;font-weight:600;">Вернуться в тест?</span></span>
+        <div style="display:flex;gap:8px;flex-shrink:0;">
+            <a href="/prep/probe" style="padding:6px 16px;border:none;border-radius:6px;background:#a78bfa;color:#0f172a;font-weight:600;cursor:pointer;text-decoration:none;">Вернуться</a>
+            <button onclick="document.getElementById('probeResumeBanner').style.display='none'" style="padding:6px 10px;border:none;border-radius:6px;background:transparent;color:#64748b;cursor:pointer;font-size:1.1em;">x</button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Баннер восстановления адаптивного теста убран полностью:
+         адаптивный тест — старая версия, не используется. -->
+
+    <!-- ═══════════════════════════════════════════════
+         MOBILE DRAWER MENU (hidden on desktop via CSS)
+         ═══════════════════════════════════════════════ -->
+    <div class="mobile-drawer-overlay" id="drawerOverlay"></div>
+    <aside class="mobile-drawer" id="mobileDrawer">
+        <!-- Drawer header -->
+        <div class="drawer-header">
+            <span class="drawer-logo">FORMYLA.net</span>
+            <button class="drawer-close" onclick="closeDrawer()" aria-label="Закрыть"></button>
+        </div>
+
+        <!-- User info -->
+        {% if current_user.is_authenticated %}
+        <div class="drawer-user">
+            <div class="drawer-user-info">
+                <div class="drawer-avatar"></div>
+                <div>
+                    <div class="drawer-username">{{ current_user.username }}</div>
+                    <div class="drawer-user-sub">{% block drawer_user_email %}{{ current_user.email or '' }}{% endblock %}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+
+        <!-- Navigation links -->
+        <nav class="drawer-nav">
+            {# FULL_ACCESS_V1: учитель И родитель видят разделы ученика + свой раздел #}
+            {% if current_user.is_authenticated and current_user.role == 'teacher' %}
+            <a href="/teacher" class="drawer-link">
+                <span class="drawer-link-icon">👨‍🏫</span>
+                Мои ученики
+            </a>
+            <div class="drawer-divider"></div>
+            {% endif %}
+            {% if current_user.is_authenticated and current_user.role == 'parent' %}
+            <a href="/parent" class="drawer-link">
+                <span class="drawer-link-icon">👨‍👩‍👧</span>
+                Мои гении (дети)
+            </a>
+            <div class="drawer-divider"></div>
+            {% endif %}
+            <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="drawer-link">
+                <span class="drawer-link-icon">🔥</span>
+                Задачи дня
+                {% if current_user.is_authenticated %}
+                {% set dq = current_user.today_quest() %}
+                {% if dq and dq.completed_count >= dq.total_count %}
+                  <span class="drawer-daily-badge done">✓</span>
+                {% elif dq %}
+                  <span class="drawer-daily-badge progress">{{ dq.completed_count }}/{{ dq.total_count }}</span>
+                {% else %}
+                  <span class="drawer-daily-badge new">Новое</span>
+                {% endif %}
+                {% endif %}
+            </a>
+
+            <div class="drawer-divider"></div>
+
+            <a href="{{ url_for('olympiads') }}" class="drawer-link">
+                <span class="drawer-link-icon">🏆</span>
+                Олимпиады
+            </a>
+
+            <a href="/misc" class="drawer-link">
+                <span class="drawer-link-icon">📦</span>
+                Прочее <span class="insights-badge"></span>
+            </a>
+
+            <a href="/prep/coach" class="drawer-link">
+                <span class="drawer-link-icon">📊</span>
+                Статистика
+            </a>
+        </nav>
+
+        <!-- Footer: auth actions -->
+        <div class="drawer-footer">
+            {% if current_user.is_authenticated and not current_user.is_guest %}
+            <a href="{{ url_for('logout') }}" class="drawer-link" onclick="return confirmLogout(event)">
+                <span class="drawer-link-icon">🚪</span>
+                Выйти
+            </a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="drawer-link" style="color: #38bdf8;">
+                <span class="drawer-link-icon">🚀</span>
+                Войти / Регистрация
+            </a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <!-- ═══════════════════════════════════════════════
+         BOTTOM NAVIGATION BAR (hidden on desktop via CSS)
+         ═══════════════════════════════════════════════ -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        {# FULL_ACCESS_V1: учитель И родитель видят разделы ученика + свой раздел #}
+        {% if current_user.is_authenticated and current_user.role == 'teacher' %}
+        <a href="/teacher" class="bottom-nav-item" data-path="/teacher*,/student*">
+            <span class="bottom-nav-icon">👨‍🏫</span>
+            <span class="bottom-nav-label">Мои ученики</span>
+        </a>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.role == 'parent' %}
+        <a href="/parent" class="bottom-nav-item" data-path="/parent*,/student*">
+            <span class="bottom-nav-icon">👨‍👩‍👧</span>
+            <span class="bottom-nav-label">Мои гении</span>
+        </a>
+        {% endif %}
+        <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="bottom-nav-item" data-path="/daily*">
+            <span class="bottom-nav-icon">🔥</span>
+            <span class="bottom-nav-label">Задачи дня</span>
+            {% if current_user.is_authenticated %}
+            {% set dq_bottom = current_user.today_quest() %}
+            {% if dq_bottom and dq_bottom.completed_count >= dq_bottom.total_count %}
+              <span class="bottom-nav-badge done">[OK]</span>
+            {% elif dq_bottom and dq_bottom.completed_count > 0 %}
+              <span class="bottom-nav-badge">{{ dq_bottom.completed_count }}</span>
+            {% endif %}
+            {% endif %}
+        </a>
+        <a href="{{ url_for('olympiads') }}" class="bottom-nav-item" data-path="/olympiads*,/practice*,/olympiad*">
+            <span class="bottom-nav-icon">🏆</span>
+            <span class="bottom-nav-label">Олимпиады</span>
+        </a>
+        {% if is_pilot %}
+        <a href="/curator" class="bottom-nav-item" data-path="/curator*">
+            <span class="bottom-nav-icon">🎓</span>
+            <span class="bottom-nav-label">Куратор</span>
+        </a>
+        {% endif %}
+        <a href="/misc" class="bottom-nav-item" data-path="/misc*,/profile*,/friends*,/leaderboard*,/chat*,/about*,/probniks*,/secrets*,/problems*,/matstat*,/index*,/prep/coach*">
+            <span class="bottom-nav-icon">📦</span>
+            <span class="bottom-nav-label">Прочее</span>
+        </a>
+    </nav>
+
+    <main class="main">
+        {% if is_pilot and pilot_session and pilot_session.enabled %}
+        <style>
+          /* PILOT_BAR_V2: стеклянная плашка пилота с градиентной обводкой.
+             Наследует дизайн-систему: сланцевый фон, янтарный акцент пилота. */
+          .pilot-bar-wrap { max-width:1100px; margin:14px auto 0; padding:0 16px; }
+          .pilot-bar {
+            display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+            padding:10px 14px; border-radius:14px;
+            background:
+              linear-gradient(135deg, rgba(244,185,66,.07), rgba(56,189,248,.07)) padding-box,
+              linear-gradient(135deg, rgba(244,185,66,.45), rgba(56,189,248,.35)) border-box;
+            border:1px solid transparent;
+            backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+            box-shadow:0 4px 20px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.05);
+            font-size:13px; color:#e2e8f0;
+          }
+          .pilot-badge {
+            display:inline-flex; align-items:center; gap:6px;
+            padding:4px 11px; border-radius:999px;
+            background:rgba(244,185,66,.14);
+            border:1px solid rgba(244,185,66,.4);
+            color:#f4b942; font-weight:800; font-size:12px; letter-spacing:.02em;
+            text-shadow:0 0 12px rgba(244,185,66,.35); white-space:nowrap;
+          }
+          .pilot-week {
+            color:#94a3b8; font-weight:600; font-size:11.5px;
+            text-transform:uppercase; letter-spacing:.07em; white-space:nowrap;
+          }
+          .pilot-divider { width:1px; height:16px; background:rgba(255,255,255,.14); }
+          .pilot-session { color:#e2e8f0; line-height:1.35; min-width:0; }
+          .pilot-session strong { color:#fff; font-weight:700; }
+          .pilot-rest { color:#94a3b8; font-style:italic; }
+          .pilot-curator {
+            margin-left:auto; display:inline-flex; align-items:center; gap:7px;
+            padding:6px 14px; border-radius:999px;
+            background:rgba(244,185,66,.12);
+            border:1px solid rgba(244,185,66,.35);
+            color:#f4b942; font-weight:700; font-size:13px; text-decoration:none;
+            transition:background .18s ease, border-color .18s ease,
+                       transform .18s ease, box-shadow .18s ease;
+            white-space:nowrap;
+          }
+          .pilot-curator:hover {
+            background:rgba(244,185,66,.2); border-color:rgba(244,185,66,.6);
+            transform:translateY(-1px);
+            box-shadow:0 4px 14px rgba(244,185,66,.18);
+          }
+          @media (max-width:640px){
+            .pilot-bar-wrap { margin-top:10px; padding:0 10px; }
+            .pilot-bar { gap:8px; padding:9px 12px; font-size:12.5px; border-radius:12px; }
+            .pilot-curator { margin-left:0; }
+            .pilot-divider { display:none; }
+          }
+        </style>
+        <div class="pilot-bar-wrap">
+          <div class="pilot-bar">
+            <span class="pilot-badge">🔥 Premium-пилот</span>
+            <span class="pilot-week">Неделя {{ pilot_session.week }}</span>
+            <span class="pilot-divider" aria-hidden="true"></span>
+            {% if pilot_session.session_type == 'rest' %}
+            <span class="pilot-session pilot-rest">сегодня выходной — отдыхай</span>
+            {% elif pilot_session.session_type == 'diagnostic' %}
+            <span class="pilot-session"><strong>{{ pilot_session.session_label }}</strong></span>
+            {% else %}
+            <span class="pilot-session">занятие {{ pilot_session.session_index }} из {{ pilot_session.total }}: <strong>{{ pilot_session.session_label }}</strong></span>
+            {% endif %}
+            <a href="/curator" class="pilot-curator">💬 Куратор</a>
+          </div>
+        </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Глобальная кнопка «Вернуться назад» (видна на всех страницах) -->
+    <button type="button" id="globalBackBtn" aria-label="Вернуться назад"
+            style="position: fixed; left: 16px; bottom: 16px; z-index: 9998;
+                   display: inline-flex; align-items: center; gap: 6px;
+                   padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(56,189,248,0.35);
+                   background: rgba(15,23,42,0.85); color: var(--accent-2, #38bdf8);
+                   font-weight: 600; font-size: 14px; cursor: pointer;
+                   box-shadow: 0 4px 16px rgba(0,0,0,0.35); backdrop-filter: blur(6px);
+                   transition: transform 0.15s ease, background 0.15s ease;"
+            onmouseover="this.style.transform='translateY(-2px)'; this.style.background='rgba(30,41,59,0.95)'"
+            onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(15,23,42,0.85)'">
+        ← Назад
+    </button>
+    <script>
+    (function(){
+        var btn = document.getElementById('globalBackBtn');
+        if (!btn) return;
+        btn.addEventListener('click', function(){
+            // Если истории перехода нет (пользователь открыл страницу напрямую),
+            // уводим на главную, чтобы кнопка не «зацикливалась».
+            if (history.length > 1) {
+                history.back();
+            } else {
+                window.location.href = '/';
+            }
+        });
+    })();
+    </script>
+    <!-- Global KaTeX re-render helper placeholder — real definition is in <head> -->
+
+    {% if current_user.is_authenticated and not current_user.is_guest %}
+    <script>
+    /* Chat unread badge poller (mobile bottom nav) */
+    (function chatUnreadPoller(){
+        async function tick(){
+            const badge = document.getElementById('chatBottomBadge');
+            if (!badge) return;
+            try{
+                const r = await fetch('/api/chat/unread_total', {credentials:'same-origin'});
+                if (!r.ok) return;
+                const data = await r.json();
+                const n = (data && (data.total || data.unread_total)) || 0;
+                if (n > 0){
+                    badge.textContent = n > 99 ? '99+' : String(n);
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }catch(e){ /* ignore */ }
+        }
+        tick();
+        setInterval(tick, 30000);
+    })();
+
+    /* Support unread badge poller (top nav « Поддержка») */
+    (function supportUnreadPoller(){
+        async function tick(){
+            const badge = document.getElementById('navMySupportBadge');
+            if (!badge) return;
+            try{
+                const r = await fetch('/api/my/support/unread_count', {credentials:'same-origin'});
+                if (!r.ok) return;
+                const data = await r.json();
+                const n = (data && data.unread) || 0;
+                if (n > 0){
+                    badge.textContent = n > 9 ? '9+' : String(n);
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }catch(e){ /* ignore */ }
+        }
+        tick();
+        setInterval(tick, 30000);
+    })();
+    </script>
+    {% endif %}
+
+    <script>
+    async function checkAnswer(problemId) {
+        const inputEl = document.getElementById(`user-answer-${problemId}`);
+        const feedbackEl = document.getElementById(`feedback-${problemId}`);
+        const formEl = document.getElementById(`answer-form-${problemId}`);
+        const solutionEl = document.getElementById(`solution-container-${problemId}`);
+        
+        const userAnswer = inputEl.value.trim();
+        
+        // DEBUG: Логирование для отладки
+        console.log("=== ФРОНТЕНД ПРОВЕРКА ===");
+        console.log("Problem ID:", problemId);
+        console.log("Введенный ответ:", userAnswer);
+        
+        if (!userAnswer) {
+            feedbackEl.innerHTML = '<span style="color: #f59e0b;">[!]️ Введите ответ</span>';
+            return;
+        }
+        
+        feedbackEl.innerHTML = '<span style="color: #94a3b8;">Проверяем...</span>';
+        
+        try {
+            const response = await fetch('/api/check_answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    problem_id: problemId,
+                    user_answer: userAnswer
+                })
+            });
+            
+            const data = await response.json();
+            
+            // DEBUG: Логирование ответа сервера
+            console.log("Ответ сервера:", data);
+            console.log("Правильный ответ из БД:", data.correct_answer);
+            console.log("Результат проверки:", data.correct);
+            console.log("========================");
+            
+            if (data.correct) {
+                feedbackEl.innerHTML = '<span style="color: #10b981; font-weight: 600;">[OK] Верно! Отличная работа!</span>';
+                
+                // Показываем решение
+                if (solutionEl) {
+                    solutionEl.style.display = 'block';
+                }
+                
+                // Через 1 секунду перезагружаем страницу для обновления статуса
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                feedbackEl.innerHTML = `<span style="color: #ef4444; font-weight: 600;">[ERROR] Неверно. Попробуйте еще раз!</span>`;
+                inputEl.value = '';
+                inputEl.focus();
+            }
+        } catch (error) {
+            feedbackEl.innerHTML = '<span style="color: #ef4444;">Ошибка при проверке. Попробуйте еще раз.</span>';
+            console.error('Error:', error);
+        }
+    }
+    </script>
+    
+    {# Site Concierge (FAB-помощник по сайту) — НЕ подключаем глобально.
+       Inline-секция «Помощник FORMYLA.net» есть только на странице /about. #}
+
+    {% if current_user.is_authenticated %}
+    <!-- Слушатель приглашений на видеозвонок + PiP-оверлей межстраничного звонка. -->
+    <meta name="x-user-authenticated" content="1">
+    <style>
+    /* ── Floating PiP overlay for cross-page call persistence ───────── */
+    .wb-pip-overlay {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px 8px 10px;
+        background: rgba(15,23,42,.94);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(34,197,94,.5);
+        border-radius: 12px;
+        box-shadow: 0 8px 28px rgba(0,0,0,.5);
+        color: #e2e8f0;
+        font-family: inherit;
+        font-size: 13px;
+        cursor: pointer;
+        user-select: none;
+        animation: wbPipSlideIn .3s ease;
+        transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .wb-pip-overlay:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 32px rgba(34,197,94,.18);
+    }
+    @keyframes wbPipSlideIn {
+        from { transform: translateY(20px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+    .wb-pip-dot {
+        width: 9px; height: 9px;
+        border-radius: 50%;
+        background: #22c55e;
+        flex-shrink: 0;
+        animation: wbPipPulse 2s ease-in-out infinite;
+    }
+    @keyframes wbPipPulse {
+        0%,100% { opacity: 1; }
+        50%     { opacity: .35; }
+    }
+    .wb-pip-icon { font-size: 16px; line-height: 1; flex-shrink: 0; }
+    .wb-pip-label {
+        font-weight: 600;
+        color: #fff;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .wb-pip-code {
+        color: #94a3b8;
+        font-size: 12px;
+        font-family: monospace;
+        letter-spacing: .5px;
+        flex-shrink: 0;
+    }
+    .wb-pip-spacer { flex: 1; min-width: 4px; }
+    .wb-pip-btn {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        border: none;
+        background: rgba(255,255,255,.08);
+        color: #e2e8f0;
+        font-size: 14px;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: background .15s ease, transform .12s ease;
+    }
+    .wb-pip-btn:hover { background: rgba(255,255,255,.18); transform: scale(1.08); }
+    .wb-pip-btn-expand {
+        background: rgba(34,197,94,.18);
+        border: 1px solid rgba(34,197,94,.35);
+    }
+    .wb-pip-btn-expand:hover { background: rgba(34,197,94,.3); }
+    .wb-pip-btn-close {
+        background: rgba(239,68,68,.12);
+        border: 1px solid rgba(239,68,68,.25);
+    }
+    .wb-pip-btn-close:hover { background: rgba(239,68,68,.28); }
+    @media (max-width: 480px) {
+        .wb-pip-overlay {
+            right: 8px; bottom: 8px;
+            left: 8px;
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
+        .wb-pip-code { display: none; }
+    }
+    </style>
+    <script src="{{ url_for('static', filename='js/wb_call_listener.js') }}?v={{ asset_version|default('1') }}" defer></script>
+
+    <!-- Web Push Notifications: VAPID public key + client registration -->
+    <script>
+    window.__VAPID_PUBLIC_KEY = 'BCvLGOhBOHAdM-f6EOYyqh6vlhdEtp7kkqBP-iHe7072PddwbcqHFmQ9iMaWG8EKZiCXx4T8Pmuw63Og_Rr-lCU';
+    </script>
+    <script src="{{ url_for('static', filename='js/push_notifications.js') }}?v={{ asset_version }}" defer></script>
+    {% endif %}
+    
+    <!-- Глобальный Caps Lock для полей ввода -->
+    <script src="{{ url_for('static', filename='js/caps_lock.js') }}?v={{ asset_version }}"></script>
+    <!-- Mastery Radar Chart -->
+    <script src="{{ url_for('static', filename='js/mastery_radar.js') }}?v={{ asset_version }}"></script>
+    <!-- Мобильная навигация (drawer + bottom nav) -->
+    <script src="{{ url_for('static', filename='js/mobile_nav.js') }}?v={{ asset_version }}"></script>
+    <!-- Dropdown навигация -->
+    <script src="{{ url_for('static', filename='js/nav.js') }}?v={{ asset_version }}"></script>
+    <!-- Paywall модалка (должна быть до api.js) -->
+    <script src="{{ url_for('static', filename='js/paywall.js') }}?v={{ asset_version }}"></script>
+    <!-- API wrapper с автоматическим перехватом 403 -->
+    <script src="{{ url_for('static', filename='js/api.js') }}?v={{ asset_version }}"></script>
+    <script src="{{ url_for('static', filename='js/profile_sync.js') }}?v={{ asset_version }}"></script>
+    {% if current_user.is_authenticated and not current_user.is_guest %}
+    <!-- Глобальный виджет «Поделиться с другом» — биндится ко всем .share-friend-btn -->
+    <script src="{{ url_for('static', filename='js/share_with_friend.js') }}?v={{ asset_version }}"></script>
+    {% endif %}
+    <script>
+    // Восстановление адаптивного теста убрано (адаптивный тест не используется).
+    </script>
+
+    {# ─── Глобальный iframe для WebRTC (видеоконференция) ────────── #}
+    {# Скрытый iframe, загружающий call_engine.html.              #}
+    {# Держит WebSocket-соединение и RTCPeerConnection живыми     #}
+    {# при навигации между страницами MPA.                        #}
+    <iframe id="wbCallEngine"
+            src="/static/call_engine.html"
+            style="display:none; width:0; height:0; border:0;"
+            aria-hidden="true"
+            title="WebRTC Call Engine"></iframe>
+
+    {# ─── PiP (Picture-in-Picture) overlay ──────────────────────────── #}
+    {# Плавающее окно видеоконференции в правом нижнем углу.          #}
+    {# Показывается, когда пользователь покинул страницу конференции  #}
+    {# но остался в комнате (сохраняется в sessionStorage).           #}
+    <style>
+        #cf-pip-overlay {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 280px;
+            background: #1a1d29;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 999999;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #fff;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        #cf-pip-overlay.cf-pip-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #cf-pip-overlay .cf-pip-video-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background: #0d0f17;
+            overflow: hidden;
+        }
+        #cf-pip-overlay .cf-pip-video-wrap video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        #cf-pip-overlay .cf-pip-info {
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: #222639;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        #cf-pip-overlay .cf-pip-info-left {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+        }
+        #cf-pip-overlay .cf-pip-room {
+            font-size: 13px;
+            font-weight: 600;
+            color: #38bdf8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #cf-pip-overlay .cf-pip-room::before {
+            content: "● ";
+            color: #22c55e;
+        }
+        #cf-pip-overlay .cf-pip-status {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+        }
+        #cf-pip-overlay .cf-pip-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        #cf-pip-overlay .cf-pip-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+            padding: 0;
+            line-height: 1;
+        }
+        #cf-pip-overlay .cf-pip-btn:hover {
+            background: rgba(255,255,255,0.16);
+        }
+        #cf-pip-overlay .cf-pip-btn--expand {
+            background: #38bdf8;
+            color: #0f172a;
+        }
+        #cf-pip-overlay .cf-pip-btn--expand:hover {
+            background: #7dd3fc;
+        }
+        #cf-pip-overlay .cf-pip-btn--leave {
+            color: #ef4444;
+        }
+        #cf-pip-overlay .cf-pip-btn--leave:hover {
+            background: rgba(239,68,68,0.2);
+        }
+        #cf-pip-overlay .cf-pip-count {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            margin-left: 4px;
+        }
+    </style>
+
+    <div id="cf-pip-overlay">
+        <div class="cf-pip-video-wrap">
+            <video id="cf-pip-video" autoplay playsinline muted></video>
+        </div>
+        <div class="cf-pip-info">
+            <div class="cf-pip-info-left">
+                <div class="cf-pip-room" id="cf-pip-code">---</div>
+                <div>
+                    <span class="cf-pip-status" id="cf-pip-status">Ожидание...</span>
+                    <span class="cf-pip-count" id="cf-pip-count">1</span>
+                </div>
+            </div>
+            <div class="cf-pip-actions">
+                <button class="cf-pip-btn cf-pip-btn--expand" title="Развернуть" onclick="if(window.__pipManager)window.__pipManager.expand()"></button>
+                <button class="cf-pip-btn cf-pip-btn--leave" title="Покинуть" onclick="if(window.__pipManager)window.__pipManager.clear()"></button>
+            </div>
+        </div>
+    </div>
+
+    <script defer src="/static/js/wb_pip.js?v={{ asset_version }}"></script>
+    <script>
+    // Подтверждение выхода (единая функция для всех ссылок «Выйти»).
+    function confirmLogout(event) {
+        if (!confirm('Вы точно хотите выйти?')) {
+            if (event) event.preventDefault();
+            return false;
+        }
+        return true;
+    }
+    </script>
+
+    {% if current_user.is_authenticated and not current_user.is_guest %}
+    <script>
+    // ── SITE_TIME_V1: heartbeat времени на сайте ──
+    // Каждые 30 секунд активного времени шлём серверу "+30 сек".
+    // Активное = вкладка видна (document.visibilityState === 'visible').
+    // При закрытии/уходе со страницы добиваем остаток через sendBeacon.
+    (function () {
+        var PULSE_SEC = 30;
+        var acc = 0;
+        function send(sec, beacon) {
+            if (sec <= 0) return;
+            var body = JSON.stringify({ seconds: sec });
+            if (beacon && navigator.sendBeacon) {
+                try {
+                    navigator.sendBeacon('/api/track/site-time',
+                        new Blob([body], { type: 'application/json' }));
+                    return;
+                } catch (e) { /* упадёт в fetch ниже */ }
+            }
+            fetch('/api/track/site-time', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: body,
+                keepalive: true
+            }).catch(function () { /* тихий fail */ });
+        }
+        setInterval(function () {
+            if (document.visibilityState !== 'visible') return;
+            acc += PULSE_SEC;
+            send(acc, false);
+            acc = 0;
+        }, PULSE_SEC * 1000);
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'hidden') { send(acc, true); acc = 0; }
+        });
+        window.addEventListener('pagehide', function () { send(acc, true); acc = 0; });
+    })();
+    </script>
+    {% endif %}
+    {% block extra_js %}{% endblock %}
+    {# Подсказка для новичков: изящная стрелка на раздел «С чего начать».
+       Показывается при входе на сайт и уходит через 60 секунд. #}
+    <div id="ft-onboard-arrow" style="display:none;position:fixed;z-index:1500;cursor:pointer;">
+        <svg width="54" height="46" viewBox="0 0 54 46" fill="none" style="display:block;margin:0 auto;animation:ftArrowBounce 1.4s ease-in-out infinite;">
+            <path d="M27 42 C 20 30, 20 16, 27 6" stroke="#F4B942" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path d="M20 13 L27 4 L34 13" stroke="#F4B942" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div style="margin-top:2px;padding:8px 14px;border-radius:999px;
+                    background:rgba(13,18,32,0.95);border:1px solid rgba(244,185,66,0.55);
+                    color:#F4B942;font-size:13px;font-weight:600;white-space:nowrap;
+                    box-shadow:0 6px 20px rgba(0,0,0,0.4);">
+            📖 Обязательно прочитай
+        </div>
+    </div>
+    <style>
+        @keyframes ftArrowBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    </style>
+    <script>
+    (function () {
+        var tip = document.getElementById('ft-onboard-arrow');
+        var target = document.querySelector('a.nav-item[href="/olympiad-start"]');
+        if (!tip || !target) return;
+        // Подсказка показывается только один раз на устройство.
+        var SEEN_KEY = 'ft_onboard_arrow_seen';
+        try {
+            if (localStorage.getItem(SEEN_KEY)) return;
+            localStorage.setItem(SEEN_KEY, '1');
+        } catch (e) { /* localStorage недоступен — показываем как раньше */ }
+        var hideTimer = null;
+        function place() {
+            var r = target.getBoundingClientRect();
+            if (r.width === 0 || r.bottom === 0) { tip.style.display = 'none'; return; }
+            tip.style.display = 'block';
+            var w = tip.offsetWidth;
+            tip.style.left = Math.max(8, r.left + r.width / 2 - w / 2) + 'px';
+            tip.style.top = (r.bottom + 8) + 'px';
+        }
+        function hide() {
+            tip.style.transition = 'opacity 0.6s';
+            tip.style.opacity = '0';
+            setTimeout(function () { tip.style.display = 'none'; }, 650);
+            if (hideTimer) clearTimeout(hideTimer);
+        }
+        tip.addEventListener('click', function () { hide(); window.location.href = '/olympiad-start'; });
+        window.addEventListener('resize', place);
+        // Небольшая задержка, чтобы шапка успела отрисоваться.
+        setTimeout(place, 700);
+        // Через 60 секунд подсказка уходит сама.
+        hideTimer = setTimeout(hide, 60000);
+    })();
+    </script>
+    {% if current_user.is_authenticated and not current_user.is_guest %}
+        {% include 'partials/insight_modal.html' %}
+        {# USERS_STATS_V2: обязательный опрос «Как тебе сайт?» (25+ мин на сайте).
+           Показываем всем залогиненным, включая админов. #}
+        {% include 'partials/feedback_modal.html' %}
+    {% endif %}
+    <div style="text-align:center;padding:12px 0;font-size:11px;color:var(--muted);">build {{ build_commit_short }}</div>
+</body>
+</html>

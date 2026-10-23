@@ -1,0 +1,57 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "BC",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AB",
+   "ratio": 0.6
+  },
+  {
+   "type": "point_on_segment",
+   "id": "F",
+   "of": "AC",
+   "ratio": 0.4
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD"
+  },
+  {
+   "segment": "DE"
+  },
+  {
+   "segment": "DF"
+  }
+ ],
+ "marks": [
+  {
+   "parallel": [
+    "DE",
+    "AC"
+   ]
+  },
+  {
+   "parallel": [
+    "DF",
+    "AB"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" role="img" aria-label="Прямоугольный треугольник ABC, M — середина гипотенузы AB">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="480" height="360" rx="14"/>
+  <polygon class="edge" points="80.00,290.00 420.00,290.00 160.00,110.00"/>
+  <polyline class="edge" fill="none" points="154.31,122.79 165.82,130.76 171.51,117.97"/>
+  <text class="num" x="250.00" y="312.00" text-anchor="middle" dominant-baseline="middle">10</text>
+  <circle class="dot" cx="80.00" cy="290.00" r="4.00"/>
+  <text class="label" x="64.00" y="304.00" text-anchor="middle" dominant-baseline="middle">A</text>
+  <circle class="dot" cx="420.00" cy="290.00" r="4.00"/>
+  <text class="label" x="436.00" y="304.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dot" cx="160.00" cy="110.00" r="4.00"/>
+  <text class="label" x="160.00" y="94.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <circle class="dot" cx="250.00" cy="290.00" r="4.00"/>
+  <text class="label" x="250.00" y="274.00" text-anchor="middle" dominant-baseline="middle">M</text>
+  <circle class="dot" cx="250.00" cy="290.00" r="4.00"/>
+</svg>

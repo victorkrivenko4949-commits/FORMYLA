@@ -1,0 +1,118 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AB",
+   "ratio": 0.6666666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "CD",
+   "ratio": 0.6666666667
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "MN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "CD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AD",
+    "BC"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "MN",
+    "AD"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "MB",
+    "ND"
+   ],
+   "ticks": 3
+  },
+  {
+   "angle": [
+    "P",
+    "M",
+    "N"
+   ],
+   "text": "60°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "O1",
+   "of": "MD"
+  },
+  {
+   "type": "reflect_point",
+   "id": "P",
+   "of": "A",
+   "over": "O1"
+  },
+  {
+   "type": "midpoint",
+   "id": "O2",
+   "of": "NB"
+  },
+  {
+   "type": "reflect_point",
+   "id": "Q",
+   "of": "C",
+   "over": "O2"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "PM",
+   "style": "accent"
+  },
+  {
+   "segment": "PN",
+   "style": "accent"
+  },
+  {
+   "segment": "QN",
+   "style": "accent"
+  },
+  {
+   "segment": "MQ",
+   "style": "accent"
+  },
+  {
+   "segment": "DP",
+   "style": "soft"
+  },
+  {
+   "segment": "BQ",
+   "style": "soft"
+  }
+ ]
+}

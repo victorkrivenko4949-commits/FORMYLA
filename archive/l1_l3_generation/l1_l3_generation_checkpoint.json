@@ -1,0 +1,1429 @@
+{
+  "completed_cells": [
+    "G5_T002_S0_L1"
+  ],
+  "tasks": [
+    {
+      "task_id": "G5_T002_S0_L1_01",
+      "grade": 5,
+      "topic_id": "T002",
+      "topic_name": "Арифметика и теория чисел",
+      "subtopic_id": "S0",
+      "subtopic_name": "Делимость и остатки",
+      "level": "L1",
+      "position": 1,
+      "base_cell_key": "G5_T002_S0",
+      "level_cell_key": "G5_T002_S0_L1",
+      "statement": "Найдите наименьшее натуральное число, которое при делении на 5 даёт остаток 3, а при делении на 7 даёт остаток 5.",
+      "answer": "33",
+      "solution": "Числа, дающие при делении на 5 остаток 3, имеют вид 5k+3, где k — целое неотрицательное число. Перечислим их в порядке возрастания: 3, 8, 13, 18, 23, 28, 33, 38, ... Проверим каждое на деление на 7:\n- 3 : 7 = 0 (ост. 3)\n- 8 : 7 = 1 (ост. 1)\n- 13 : 7 = 1 (ост. 6)\n- 18 : 7 = 2 (ост. 4)\n- 23 : 7 = 3 (ост. 2)\n- 28 : 7 = 4 (ост. 0)\n- 33 : 7 = 4 (ост. 5) — подходит.\nТаким образом, наименьшее число, удовлетворяющее обоим условиям, — 33.",
+      "usage": {
+        "prompt_tokens": 462,
+        "completion_tokens": 2546,
+        "total_tokens": 3008,
+        "prompt_tokens_details": {
+          "cached_tokens": 384
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2270
+        },
+        "prompt_cache_hit_tokens": 384,
+        "prompt_cache_miss_tokens": 78
+      },
+      "generated_at": "2026-07-18T19:02:10.788035+00:00",
+      "model": "deepseek-reasoner",
+      "verification": "passed"
+    },
+    {
+      "task_id": "G5_T002_S0_L1_02",
+      "grade": 5,
+      "topic_id": "T002",
+      "topic_name": "Арифметика и теория чисел",
+      "subtopic_id": "S0",
+      "subtopic_name": "Делимость и остатки",
+      "level": "L1",
+      "position": 2,
+      "base_cell_key": "G5_T002_S0",
+      "level_cell_key": "G5_T002_S0_L1",
+      "statement": "При делении некоторого натурального числа n на 5 получается остаток 2, а при делении на 6 — остаток 4. Какой остаток получится при делении числа n на 30?",
+      "answer": "22",
+      "solution": "Переберём числа, которые при делении на 6 дают остаток 4: 4, 10, 16, 22, 28, … Найдём среди них то, которое при делении на 5 даёт остаток 2:\n- 4 : 4 ÷ 5 = 0 (ост. 4) — не подходит;\n- 10 : 10 ÷ 5 = 2 (ост. 0) — не подходит;\n- 16 : 16 ÷ 5 = 3 (ост. 1) — не подходит;\n- 22 : 22 ÷ 5 = 4 (ост. 2) — подходит.\nЗначит, наименьшее такое число n = 22. При делении 22 на 30 получаем неполное частное 0 и остаток 22. Любое другое число, удовлетворяющее условию, отличается от 22 на число, кратное НОК(5,6) = 30 (например, 22 + 30 = 52). Прибавление 30 не меняет остатка от деления на 30, поэтому все подходящие числа дают один и тот же остаток 22. Ответ: 22.",
+      "usage": {
+        "prompt_tokens": 548,
+        "completion_tokens": 4058,
+        "total_tokens": 4606,
+        "prompt_tokens_details": {
+          "cached_tokens": 512
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 3714
+        },
+        "prompt_cache_hit_tokens": 512,
+        "prompt_cache_miss_tokens": 36
+      },
+      "generated_at": "2026-07-18T19:04:59.680205+00:00",
+      "model": "deepseek-reasoner",
+      "verification": "passed"
+    },
+    {
+      "task_id": "G5_T002_S0_L1_04",
+      "grade": 5,
+      "topic_id": "T002",
+      "topic_name": "Арифметика и теория чисел",
+      "subtopic_id": "S0",
+      "subtopic_name": "Делимость и остатки",
+      "level": "L1",
+      "position": 4,
+      "base_cell_key": "G5_T002_S0",
+      "level_cell_key": "G5_T002_S0_L1",
+      "statement": "В классе учится меньше 80 учеников. Если учеников построить в колонны по 4 человека, то 1 ученик останется. Если построить по 5, то останется 2 ученика. Если построить по 6, то останется 3 ученика. Сколько учеников в классе?",
+      "answer": "57",
+      "solution": "Обозначим число учеников за n. Тогда n = 4k+1, n = 5m+2, n = 6p+3 для некоторых натуральных k, m, p. Заметим, что если к n прибавить 3, то получим n+3 = 4k+4 = 4(k+1) — делится на 4, n+3 = 5m+5 = 5(m+1) — делится на 5, n+3 = 6p+6 = 6(p+1) — делится на 6. Значит, n+3 делится на 4, 5 и 6. Наименьшее общее кратное чисел 4, 5 и 6 равно 60. Следовательно, n+3 может быть равно 60, 120, 180 и так далее. Так как n < 80, то n+3 < 83, подходит только 60. Тогда n = 60 - 3 = 57. Проверка: 57 : 4 = 14 (ост. 1), 57 : 5 = 11 (ост. 2), 57 : 6 = 9 (ост. 3). Ответ: 57 учеников.",
+      "usage": {
+        "prompt_tokens": 598,
+        "completion_tokens": 3520,
+        "total_tokens": 4118,
+        "prompt_tokens_details": {
+          "cached_tokens": 512
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 3150
+        },
+        "prompt_cache_hit_tokens": 512,
+        "prompt_cache_miss_tokens": 86
+      },
+      "generated_at": "2026-07-18T19:10:56.361197+00:00",
+      "model": "deepseek-reasoner",
+      "verification": "passed"
+    },
+    {
+      "task_id": "G5_T002_S0_L1_05",
+      "grade": 5,
+      "topic_id": "T002",
+      "topic_name": "Арифметика и теория чисел",
+      "subtopic_id": "S0",
+      "subtopic_name": "Делимость и остатки",
+      "level": "L1",
+      "position": 5,
+      "base_cell_key": "G5_T002_S0",
+      "level_cell_key": "G5_T002_S0_L1",
+      "statement": "Какое наименьшее натуральное число обладает тем свойством, что если к нему прибавить 17, то полученная сумма будет делиться на 9, а если из него вычесть 13, то полученная разность будет делиться на 11?",
+      "answer": "46",
+      "solution": "Пусть искомое число — N. По условию:\n1) N + 17 делится на 9, т.е. N + 17 = 9a, где a — натуральное число. Отсюда N = 9a – 17.\n2) N – 13 делится на 11, т.е. N – 13 = 11b, где b — натуральное число. Отсюда N = 11b + 13.\n\nПриравняем оба выражения: 9a – 17 = 11b + 13 ⇒ 9a – 11b = 30.\n\nБудем подбирать натуральные a такие, что N положительно и выполняется второе условие. Начнём с a = 2 (при a = 1 N = 9·1 – 17 = –8 — не натуральное).\n\na = 2: N = 9·2 – 17 = 1. Тогда N – 13 = –12, не делится на 11.\na = 3: N = 27 – 17 = 10, N – 13 = –3, не делится.\na = 4: N = 36 – 17 = 19, N – 13 = 6, не делится.\na = 5: N = 45 – 17 = 28, N – 13 = 15, не делится.\na = 6: N = 54 – 17 = 37, N – 13 = 24, не делится.\na = 7: N = 63 – 17 = 46, N – 13 = 33. 33 делится на 11 (33 : 11 = 3).\n\nПроверка: 46 + 17 = 63 (делится на 9), 46 – 13 = 33 (делится на 11).\n\nТаким образом, наименьшее натуральное число, удовлетворяющее условию, — 46.",
+      "usage": {
+        "prompt_tokens": 648,
+        "completion_tokens": 2726,
+        "total_tokens": 3374,
+        "prompt_tokens_details": {
+          "cached_tokens": 640
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2201
+        },
+        "prompt_cache_hit_tokens": 640,
+        "prompt_cache_miss_tokens": 8
+      },
+      "generated_at": "2026-07-18T19:13:40.932682+00:00",
+      "model": "deepseek-reasoner",
+      "verification": "passed"
+    }
+  ],
+  "cell_results": [],
+  "started_at": "2026-07-18T18:56:35.297624+00:00",
+  "last_updated": "2026-07-18T19:13:56.140200+00:00",
+  "verification_report": {
+    "G5_T002_S0_L1_01": {
+      "passed": true,
+      "reason": "ACCEPT",
+      "gates": [
+        {
+          "gate": "schema",
+          "passed": true,
+          "detail": "OK"
+        },
+        {
+          "gate": "uniqueness",
+          "passed": true,
+          "detail": "task_id G5_T002_S0_L1_01 is unique"
+        },
+        {
+          "gate": "solver_a",
+          "passed": true,
+          "detail": "Solver A produced answer (len=2)"
+        },
+        {
+          "gate": "solver_b",
+          "passed": true,
+          "detail": "Solver B produced answer (len=33)"
+        },
+        {
+          "gate": "answer_compare",
+          "passed": true,
+          "detail": "Answers agree (3/3 matches)"
+        },
+        {
+          "gate": "solution_verify",
+          "passed": true,
+          "detail": "Solutions verified (A: 279 chars, B: 109 chars)"
+        },
+        {
+          "gate": "topic_class",
+          "passed": true,
+          "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')"
+        },
+        {
+          "gate": "subtopic_class",
+          "passed": true,
+          "detail": "Subtopic classified as 'делимость и остатки'"
+        },
+        {
+          "gate": "level_class",
+          "passed": true,
+          "detail": "Level classified as 'L1'"
+        },
+        {
+          "gate": "level_arbiter",
+          "passed": true,
+          "detail": "Skipped — level_class already passed"
+        },
+        {
+          "gate": "exact_dup",
+          "passed": true,
+          "detail": "No exact duplicates found among 0 existing tasks"
+        },
+        {
+          "gate": "template_dup",
+          "passed": true,
+          "detail": "No template duplicates among 0 existing tasks"
+        },
+        {
+          "gate": "content_arbiter",
+          "passed": true,
+          "detail": "ALL 13 GATES PASSED → ACCEPT"
+        }
+      ],
+      "gate_details": {
+        "schema": {
+          "gate": "schema",
+          "passed": true,
+          "detail": "OK",
+          "timestamp": "2026-07-18T19:02:10.788064+00:00"
+        },
+        "uniqueness": {
+          "gate": "uniqueness",
+          "passed": true,
+          "detail": "task_id G5_T002_S0_L1_01 is unique",
+          "timestamp": "2026-07-18T19:02:10.788069+00:00",
+          "task_id": "G5_T002_S0_L1_01"
+        },
+        "solver_a": {
+          "gate": "solver_a",
+          "passed": true,
+          "detail": "Solver A produced answer (len=2)",
+          "timestamp": "2026-07-18T19:02:16.154381+00:00",
+          "solver_answer": "33",
+          "solver_solution": "Решение: Пусть n - искомое число. Тогда n = 5k + 3. Подставляем во второе условие: 5k+3 ≡ 5 (mod 7) => 5k ≡ 2 (mod 7). Умножаем на обратный элемент 3: k ≡ 6 (mod 7). Тогда k = 7m+6, n = 5(7m+6)+3 = 35m+33. Наименьшее натуральное при m=0: 33. Проверка: 33/5=6 ост.3, 33/7=4 ост.5.",
+          "usage": {
+            "prompt_tokens": 96,
+            "completion_tokens": 622,
+            "total_tokens": 718,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 469
+            },
+            "prompt_cache_hit_tokens": 0,
+            "prompt_cache_miss_tokens": 96
+          },
+          "elapsed_ms": 5366.3
+        },
+        "solver_b": {
+          "gate": "solver_b",
+          "passed": true,
+          "detail": "Solver B produced answer (len=33)",
+          "timestamp": "2026-07-18T19:02:22.311292+00:00",
+          "solver_answer": "33",
+          "solver_solution": "n=5k+3, подставляем во второе: 5k+3≡5 mod7 => 5k≡2 mod7, k≡6 mod7, n=5(7m+6)+3=35m+33, минимальное при m=0:33",
+          "usage": {
+            "prompt_tokens": 117,
+            "completion_tokens": 641,
+            "total_tokens": 758,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 549
+            },
+            "prompt_cache_hit_tokens": 0,
+            "prompt_cache_miss_tokens": 117
+          },
+          "elapsed_ms": 6156.9
+        },
+        "answer_compare": {
+          "gate": "answer_compare",
+          "passed": true,
+          "detail": "Answers agree (3/3 matches)",
+          "timestamp": "2026-07-18T19:02:22.311322+00:00",
+          "candidate_vs_solver_a": true,
+          "candidate_vs_solver_b": true,
+          "solver_a_vs_solver_b": true
+        },
+        "solution_verify": {
+          "gate": "solution_verify",
+          "passed": true,
+          "detail": "Solutions verified (A: 279 chars, B: 109 chars)",
+          "timestamp": "2026-07-18T19:02:22.311342+00:00",
+          "solver_a_solution_len": 279,
+          "solver_b_solution_len": 109
+        },
+        "topic_class": {
+          "gate": "topic_class",
+          "passed": true,
+          "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')",
+          "timestamp": "2026-07-18T19:02:24.209104+00:00",
+          "classified": "арифметика и теория чисел",
+          "expected": "Арифметика и теория чисел"
+        },
+        "subtopic_class": {
+          "gate": "subtopic_class",
+          "passed": true,
+          "detail": "Subtopic classified as 'делимость и остатки'",
+          "timestamp": "2026-07-18T19:02:26.481603+00:00",
+          "classified": "делимость и остатки",
+          "expected": "Делимость и остатки"
+        },
+        "level_class": {
+          "gate": "level_class",
+          "passed": true,
+          "detail": "Level classified as 'L1'",
+          "timestamp": "2026-07-18T19:02:29.190429+00:00",
+          "classified": "L1",
+          "expected": "L1"
+        },
+        "level_arbiter": {
+          "gate": "level_arbiter",
+          "passed": true,
+          "detail": "Skipped — level_class already passed",
+          "timestamp": "2026-07-18T19:02:29.190440+00:00",
+          "skipped": true
+        },
+        "exact_dup": {
+          "gate": "exact_dup",
+          "passed": true,
+          "detail": "No exact duplicates found among 0 existing tasks",
+          "timestamp": "2026-07-18T19:02:29.190474+00:00",
+          "checked_count": 0
+        },
+        "template_dup": {
+          "gate": "template_dup",
+          "passed": true,
+          "detail": "No template duplicates among 0 existing tasks",
+          "timestamp": "2026-07-18T19:02:29.190508+00:00",
+          "template_hash": "323d4412b4478083",
+          "checked_count": 0
+        },
+        "content_arbiter": {
+          "gate": "content_arbiter",
+          "passed": true,
+          "detail": "ALL 13 GATES PASSED → ACCEPT",
+          "timestamp": "2026-07-18T19:02:29.190518+00:00",
+          "gate_summary": {
+            "schema": {
+              "passed": true,
+              "detail": "OK"
+            },
+            "uniqueness": {
+              "passed": true,
+              "detail": "task_id G5_T002_S0_L1_01 is unique"
+            },
+            "solver_a": {
+              "passed": true,
+              "detail": "Solver A produced answer (len=2)"
+            },
+            "solver_b": {
+              "passed": true,
+              "detail": "Solver B produced answer (len=33)"
+            },
+            "answer_compare": {
+              "passed": true,
+              "detail": "Answers agree (3/3 matches)"
+            },
+            "solution_verify": {
+              "passed": true,
+              "detail": "Solutions verified (A: 279 chars, B: 109 chars)"
+            },
+            "topic_class": {
+              "passed": true,
+              "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')"
+            },
+            "subtopic_class": {
+              "passed": true,
+              "detail": "Subtopic classified as 'делимость и остатки'"
+            },
+            "level_class": {
+              "passed": true,
+              "detail": "Level classified as 'L1'"
+            },
+            "level_arbiter": {
+              "passed": true,
+              "detail": "Skipped — level_class already passed"
+            },
+            "exact_dup": {
+              "passed": true,
+              "detail": "No exact duplicates found among 0 existing tasks"
+            },
+            "template_dup": {
+              "passed": true,
+              "detail": "No template duplicates among 0 existing tasks"
+            }
+          },
+          "failed_gates": [],
+          "total_gates": 12,
+          "passed_count": 12
+        }
+      },
+      "pipeline_data": {
+        "gate_count": 13,
+        "passed_count": 13,
+        "failed_count": 0,
+        "timestamp": "2026-07-18T19:02:29.190529+00:00"
+      }
+    },
+    "G5_T002_S0_L1_02": {
+      "passed": true,
+      "reason": "ACCEPT",
+      "gates": [
+        {
+          "gate": "schema",
+          "passed": true,
+          "detail": "OK"
+        },
+        {
+          "gate": "uniqueness",
+          "passed": true,
+          "detail": "task_id G5_T002_S0_L1_02 is unique"
+        },
+        {
+          "gate": "solver_a",
+          "passed": true,
+          "detail": "Solver A produced answer (len=2)"
+        },
+        {
+          "gate": "solver_b",
+          "passed": true,
+          "detail": "Solver B produced answer (len=22)"
+        },
+        {
+          "gate": "answer_compare",
+          "passed": true,
+          "detail": "Answers agree (3/3 matches)"
+        },
+        {
+          "gate": "solution_verify",
+          "passed": true,
+          "detail": "Solutions verified (A: 255 chars, B: 259 chars)"
+        },
+        {
+          "gate": "topic_class",
+          "passed": true,
+          "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')"
+        },
+        {
+          "gate": "subtopic_class",
+          "passed": true,
+          "detail": "Subtopic classified as 'делимость и остатки'"
+        },
+        {
+          "gate": "level_class",
+          "passed": true,
+          "detail": "Level classified as 'L1'"
+        },
+        {
+          "gate": "level_arbiter",
+          "passed": true,
+          "detail": "Skipped — level_class already passed"
+        },
+        {
+          "gate": "exact_dup",
+          "passed": true,
+          "detail": "No exact duplicates found among 1 existing tasks"
+        },
+        {
+          "gate": "template_dup",
+          "passed": true,
+          "detail": "No template duplicates among 1 existing tasks"
+        },
+        {
+          "gate": "content_arbiter",
+          "passed": true,
+          "detail": "ALL 13 GATES PASSED → ACCEPT"
+        }
+      ],
+      "gate_details": {
+        "schema": {
+          "gate": "schema",
+          "passed": true,
+          "detail": "OK",
+          "timestamp": "2026-07-18T19:04:59.680230+00:00"
+        },
+        "uniqueness": {
+          "gate": "uniqueness",
+          "passed": true,
+          "detail": "task_id G5_T002_S0_L1_02 is unique",
+          "timestamp": "2026-07-18T19:04:59.680234+00:00",
+          "task_id": "G5_T002_S0_L1_02"
+        },
+        "solver_a": {
+          "gate": "solver_a",
+          "passed": true,
+          "detail": "Solver A produced answer (len=2)",
+          "timestamp": "2026-07-18T19:05:02.964251+00:00",
+          "solver_answer": "22",
+          "solver_solution": "Система сравнений: n ≡ 2 (mod 5), n ≡ 4 (mod 6). Так как 5 и 6 взаимно просты, существует единственное решение по модулю 30. Подбором находим n=22: 22 mod 5 = 2, 22 mod 6 = 4. Общее решение: n = 30k + 22, следовательно, остаток при делении на 30 равен 22.",
+          "usage": {
+            "prompt_tokens": 106,
+            "completion_tokens": 398,
+            "total_tokens": 504,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 282
+            },
+            "prompt_cache_hit_tokens": 0,
+            "prompt_cache_miss_tokens": 106
+          },
+          "elapsed_ms": 3284.0
+        },
+        "solver_b": {
+          "gate": "solver_b",
+          "passed": true,
+          "detail": "Solver B produced answer (len=22)",
+          "timestamp": "2026-07-18T19:05:09.048792+00:00",
+          "solver_answer": "22",
+          "solver_solution": "n ≡ 2 (mod 5), n ≡ 4 (mod 6). Из первого n = 5k+2, подставляем во второе: 5k+2 ≡ 4 (mod 6) => 5k ≡ 2 (mod 6) => k ≡ 4 (mod 6), значит k=6m+4, n=5(6m+4)+2=30m+22, остаток 22. Проверка перебором: числа 2,7,12,17,22,27; только 22 даёт остаток 4 при делении на 6.",
+          "usage": {
+            "prompt_tokens": 127,
+            "completion_tokens": 814,
+            "total_tokens": 941,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 606
+            },
+            "prompt_cache_hit_tokens": 0,
+            "prompt_cache_miss_tokens": 127
+          },
+          "elapsed_ms": 6084.5
+        },
+        "answer_compare": {
+          "gate": "answer_compare",
+          "passed": true,
+          "detail": "Answers agree (3/3 matches)",
+          "timestamp": "2026-07-18T19:05:09.048823+00:00",
+          "candidate_vs_solver_a": true,
+          "candidate_vs_solver_b": true,
+          "solver_a_vs_solver_b": true
+        },
+        "solution_verify": {
+          "gate": "solution_verify",
+          "passed": true,
+          "detail": "Solutions verified (A: 255 chars, B: 259 chars)",
+          "timestamp": "2026-07-18T19:05:09.048840+00:00",
+          "solver_a_solution_len": 255,
+          "solver_b_solution_len": 259
+        },
+        "topic_class": {
+          "gate": "topic_class",
+          "passed": true,
+          "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')",
+          "timestamp": "2026-07-18T19:05:10.803723+00:00",
+          "classified": "арифметика и теория чисел",
+          "expected": "Арифметика и теория чисел"
+        },
+        "subtopic_class": {
+          "gate": "subtopic_class",
+          "passed": true,
+          "detail": "Subtopic classified as 'делимость и остатки'",
+          "timestamp": "2026-07-18T19:05:12.264551+00:00",
+          "classified": "делимость и остатки",
+          "expected": "Делимость и остатки"
+        },
+        "level_class": {
+          "gate": "level_class",
+          "passed": true,
+          "detail": "Level classified as 'L1'",
+          "timestamp": "2026-07-18T19:05:14.749850+00:00",
+          "classified": "L1",
+          "expected": "L1"
+        },
+        "level_arbiter": {
+          "gate": "level_arbiter",
+          "passed": true,
+          "detail": "Skipped — level_class already passed",
+          "timestamp": "2026-07-18T19:05:14.749861+00:00",
+          "skipped": true
+        },
+        "exact_dup": {
+          "gate": "exact_dup",
+          "passed": true,
+          "detail": "No exact duplicates found among 1 existing tasks",
+          "timestamp": "2026-07-18T19:05:14.749901+00:00",
+          "checked_count": 1
+        },
+        "template_dup": {
+          "gate": "template_dup",
+          "passed": true,
+          "detail": "No template duplicates among 1 existing tasks",
+          "timestamp": "2026-07-18T19:05:14.750314+00:00",
+          "template_hash": "80ebb81fd0757f0b",
+          "checked_count": 1
+        },
+        "content_arbiter": {
+          "gate": "content_arbiter",
+          "passed": true,
+          "detail": "ALL 13 GATES PASSED → ACCEPT",
+          "timestamp": "2026-07-18T19:05:14.750332+00:00",
+          "gate_summary": {
+            "schema": {
+              "passed": true,
+              "detail": "OK"
+            },
+            "uniqueness": {
+              "passed": true,
+              "detail": "task_id G5_T002_S0_L1_02 is unique"
+            },
+            "solver_a": {
+              "passed": true,
+              "detail": "Solver A produced answer (len=2)"
+            },
+            "solver_b": {
+              "passed": true,
+              "detail": "Solver B produced answer (len=22)"
+            },
+            "answer_compare": {
+              "passed": true,
+              "detail": "Answers agree (3/3 matches)"
+            },
+            "solution_verify": {
+              "passed": true,
+              "detail": "Solutions verified (A: 255 chars, B: 259 chars)"
+            },
+            "topic_class": {
+              "passed": true,
+              "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')"
+            },
+            "subtopic_class": {
+              "passed": true,
+              "detail": "Subtopic classified as 'делимость и остатки'"
+            },
+            "level_class": {
+              "passed": true,
+              "detail": "Level classified as 'L1'"
+            },
+            "level_arbiter": {
+              "passed": true,
+              "detail": "Skipped — level_class already passed"
+            },
+            "exact_dup": {
+              "passed": true,
+              "detail": "No exact duplicates found among 1 existing tasks"
+            },
+            "template_dup": {
+              "passed": true,
+              "detail": "No template duplicates among 1 existing tasks"
+            }
+          },
+          "failed_gates": [],
+          "total_gates": 12,
+          "passed_count": 12
+        }
+      },
+      "pipeline_data": {
+        "gate_count": 13,
+        "passed_count": 13,
+        "failed_count": 0,
+        "timestamp": "2026-07-18T19:05:14.750350+00:00"
+      }
+    },
+    "G5_T002_S0_L1_03": {
+      "passed": false,
+      "reason": "REJECT",
+      "gates": [
+        {
+          "gate": "schema",
+          "passed": true,
+          "detail": "OK"
+        },
+        {
+          "gate": "uniqueness",
+          "passed": true,
+          "detail": "task_id G5_T002_S0_L1_03 is unique"
+        },
+        {
+          "gate": "solver_a",
+          "passed": true,
+          "detail": "Solver A produced answer (len=1)"
+        },
+        {
+          "gate": "solver_b",
+          "passed": true,
+          "detail": "Solver B produced answer (len=5)"
+        },
+        {
+          "gate": "answer_compare",
+          "passed": true,
+          "detail": "Answers agree (3/3 matches)"
+        },
+        {
+          "gate": "solution_verify",
+          "passed": true,
+          "detail": "Solutions verified (A: 381 chars, B: 72 chars)"
+        },
+        {
+          "gate": "topic_class",
+          "passed": true,
+          "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')"
+        },
+        {
+          "gate": "subtopic_class",
+          "passed": true,
+          "detail": "Subtopic classified as 'делимость и остатки'"
+        },
+        {
+          "gate": "level_class",
+          "passed": false,
+          "detail": "FAIL: Empty content, finish_reason=length"
+        },
+        {
+          "gate": "level_arbiter",
+          "passed": false,
+          "detail": "FAIL: Empty content, finish_reason=length"
+        },
+        {
+          "gate": "exact_dup",
+          "passed": true,
+          "detail": "No exact duplicates found among 2 existing tasks"
+        },
+        {
+          "gate": "template_dup",
+          "passed": true,
+          "detail": "No template duplicates among 2 existing tasks"
+        },
+        {
+          "gate": "content_arbiter",
+          "passed": false,
+          "detail": "REJECTED: gates [level_class, level_arbiter] failed"
+        }
+      ],
+      "gate_details": {
+        "schema": {
+          "gate": "schema",
+          "passed": true,
+          "detail": "OK",
+          "timestamp": "2026-07-18T19:08:05.414719+00:00"
+        },
+        "uniqueness": {
+          "gate": "uniqueness",
+          "passed": true,
+          "detail": "task_id G5_T002_S0_L1_03 is unique",
+          "timestamp": "2026-07-18T19:08:05.414724+00:00",
+          "task_id": "G5_T002_S0_L1_03"
+        },
+        "solver_a": {
+          "gate": "solver_a",
+          "passed": true,
+          "detail": "Solver A produced answer (len=1)",
+          "timestamp": "2026-07-18T19:08:12.322689+00:00",
+          "solver_answer": "5",
+          "solver_solution": "Решим систему сравнений: x ≡ 3 (mod 4), x ≡ 1 (mod 5). Из первого x = 4k + 3, подставляем во второе: 4k + 3 ≡ 1 (mod 5) ⇒ 4k ≡ -2 ≡ 3 (mod 5). Обратный к 4 по модулю 5 равен 4, поэтому k ≡ 4·3 = 12 ≡ 2 (mod 5), то есть k = 5m + 2. Тогда x = 4(5m + 2) + 3 = 20m + 11. Двузначные числа удовлетворяют 10 ≤ 20m + 11 ≤ 99, откуда m = 0, 1, 2, 3, 4. Получаем 5 чисел: 11, 31, 51, 71, 91.",
+          "usage": {
+            "prompt_tokens": 98,
+            "completion_tokens": 964,
+            "total_tokens": 1062,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 748
+            },
+            "prompt_cache_hit_tokens": 0,
+            "prompt_cache_miss_tokens": 98
+          },
+          "elapsed_ms": 6907.9
+        },
+        "solver_b": {
+          "gate": "solver_b",
+          "passed": true,
+          "detail": "Solver B produced answer (len=5)",
+          "timestamp": "2026-07-18T19:08:21.555177+00:00",
+          "solver_answer": "5",
+          "solver_solution": "Двузначные числа, удовлетворяющие условиям: 11, 31, 51, 71, 91. Всего 5.",
+          "usage": {
+            "prompt_tokens": 119,
+            "completion_tokens": 1246,
+            "total_tokens": 1365,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 1046
+            },
+            "prompt_cache_hit_tokens": 0,
+            "prompt_cache_miss_tokens": 119
+          },
+          "elapsed_ms": 9232.4
+        },
+        "answer_compare": {
+          "gate": "answer_compare",
+          "passed": true,
+          "detail": "Answers agree (3/3 matches)",
+          "timestamp": "2026-07-18T19:08:21.555206+00:00",
+          "candidate_vs_solver_a": true,
+          "candidate_vs_solver_b": true,
+          "solver_a_vs_solver_b": true
+        },
+        "solution_verify": {
+          "gate": "solution_verify",
+          "passed": true,
+          "detail": "Solutions verified (A: 381 chars, B: 72 chars)",
+          "timestamp": "2026-07-18T19:08:21.555229+00:00",
+          "solver_a_solution_len": 381,
+          "solver_b_solution_len": 72
+        },
+        "topic_class": {
+          "gate": "topic_class",
+          "passed": true,
+          "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')",
+          "timestamp": "2026-07-18T19:08:23.345324+00:00",
+          "classified": "арифметика и теория чисел",
+          "expected": "Арифметика и теория чисел"
+        },
+        "subtopic_class": {
+          "gate": "subtopic_class",
+          "passed": true,
+          "detail": "Subtopic classified as 'делимость и остатки'",
+          "timestamp": "2026-07-18T19:08:24.912096+00:00",
+          "classified": "делимость и остатки",
+          "expected": "Делимость и остатки"
+        },
+        "level_class": {
+          "gate": "level_class",
+          "passed": false,
+          "detail": "FAIL: Empty content, finish_reason=length",
+          "timestamp": "2026-07-18T19:08:28.213994+00:00",
+          "is_technical_error": false
+        },
+        "level_arbiter": {
+          "gate": "level_arbiter",
+          "passed": false,
+          "detail": "FAIL: Empty content, finish_reason=length",
+          "timestamp": "2026-07-18T19:08:30.997844+00:00",
+          "is_technical_error": false
+        },
+        "exact_dup": {
+          "gate": "exact_dup",
+          "passed": true,
+          "detail": "No exact duplicates found among 2 existing tasks",
+          "timestamp": "2026-07-18T19:08:30.997921+00:00",
+          "checked_count": 2
+        },
+        "template_dup": {
+          "gate": "template_dup",
+          "passed": true,
+          "detail": "No template duplicates among 2 existing tasks",
+          "timestamp": "2026-07-18T19:08:30.998010+00:00",
+          "template_hash": "fbce774662e584ab",
+          "checked_count": 2
+        },
+        "content_arbiter": {
+          "gate": "content_arbiter",
+          "passed": false,
+          "detail": "REJECTED: gates [level_class, level_arbiter] failed",
+          "timestamp": "2026-07-18T19:08:30.998039+00:00",
+          "gate_summary": {
+            "schema": {
+              "passed": true,
+              "detail": "OK"
+            },
+            "uniqueness": {
+              "passed": true,
+              "detail": "task_id G5_T002_S0_L1_03 is unique"
+            },
+            "solver_a": {
+              "passed": true,
+              "detail": "Solver A produced answer (len=1)"
+            },
+            "solver_b": {
+              "passed": true,
+              "detail": "Solver B produced answer (len=5)"
+            },
+            "answer_compare": {
+              "passed": true,
+              "detail": "Answers agree (3/3 matches)"
+            },
+            "solution_verify": {
+              "passed": true,
+              "detail": "Solutions verified (A: 381 chars, B: 72 chars)"
+            },
+            "topic_class": {
+              "passed": true,
+              "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')"
+            },
+            "subtopic_class": {
+              "passed": true,
+              "detail": "Subtopic classified as 'делимость и остатки'"
+            },
+            "level_class": {
+              "passed": false,
+              "detail": "FAIL: Empty content, finish_reason=length"
+            },
+            "level_arbiter": {
+              "passed": false,
+              "detail": "FAIL: Empty content, finish_reason=length"
+            },
+            "exact_dup": {
+              "passed": true,
+              "detail": "No exact duplicates found among 2 existing tasks"
+            },
+            "template_dup": {
+              "passed": true,
+              "detail": "No template duplicates among 2 existing tasks"
+            }
+          },
+          "failed_gates": [
+            "level_class",
+            "level_arbiter"
+          ],
+          "total_gates": 12,
+          "passed_count": 10
+        }
+      },
+      "pipeline_data": {
+        "gate_count": 13,
+        "passed_count": 10,
+        "failed_count": 3,
+        "timestamp": "2026-07-18T19:08:30.998049+00:00"
+      }
+    },
+    "G5_T002_S0_L1_04": {
+      "passed": true,
+      "reason": "ACCEPT",
+      "gates": [
+        {
+          "gate": "schema",
+          "passed": true,
+          "detail": "OK"
+        },
+        {
+          "gate": "uniqueness",
+          "passed": true,
+          "detail": "task_id G5_T002_S0_L1_04 is unique"
+        },
+        {
+          "gate": "solver_a",
+          "passed": true,
+          "detail": "Solver A produced answer (len=2)"
+        },
+        {
+          "gate": "solver_b",
+          "passed": true,
+          "detail": "Solver B produced answer (len=57)"
+        },
+        {
+          "gate": "answer_compare",
+          "passed": true,
+          "detail": "Answers agree (3/3 matches)"
+        },
+        {
+          "gate": "solution_verify",
+          "passed": true,
+          "detail": "Solutions verified (A: 343 chars, B: 178 chars)"
+        },
+        {
+          "gate": "topic_class",
+          "passed": true,
+          "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')"
+        },
+        {
+          "gate": "subtopic_class",
+          "passed": true,
+          "detail": "Subtopic classified as 'делимость и остатки'"
+        },
+        {
+          "gate": "level_class",
+          "passed": true,
+          "detail": "Level classified as 'L1'"
+        },
+        {
+          "gate": "level_arbiter",
+          "passed": true,
+          "detail": "Skipped — level_class already passed"
+        },
+        {
+          "gate": "exact_dup",
+          "passed": true,
+          "detail": "No exact duplicates found among 2 existing tasks"
+        },
+        {
+          "gate": "template_dup",
+          "passed": true,
+          "detail": "No template duplicates among 2 existing tasks"
+        },
+        {
+          "gate": "content_arbiter",
+          "passed": true,
+          "detail": "ALL 13 GATES PASSED → ACCEPT"
+        }
+      ],
+      "gate_details": {
+        "schema": {
+          "gate": "schema",
+          "passed": true,
+          "detail": "OK",
+          "timestamp": "2026-07-18T19:10:56.361234+00:00"
+        },
+        "uniqueness": {
+          "gate": "uniqueness",
+          "passed": true,
+          "detail": "task_id G5_T002_S0_L1_04 is unique",
+          "timestamp": "2026-07-18T19:10:56.361243+00:00",
+          "task_id": "G5_T002_S0_L1_04"
+        },
+        "solver_a": {
+          "gate": "solver_a",
+          "passed": true,
+          "detail": "Solver A produced answer (len=2)",
+          "timestamp": "2026-07-18T19:11:01.032857+00:00",
+          "solver_answer": "57",
+          "solver_solution": "Пусть N — количество учеников. По условию: N ≡ 1 (mod 4), N ≡ 2 (mod 5), N ≡ 3 (mod 6). Заметим, что N+3 делится на 4, 5 и 6, так как N+3 = (N-1)+4 = 4k+4, и аналогично для других. НОК(4,5,6)=60, значит N+3=60k. При k=1: N=57 (меньше 80). При k=2: N=117 (больше 80). Проверка: 57 при делении на 4 даёт остаток 1, на 5 — 2, на 6 — 3. Ответ: 57.",
+          "usage": {
+            "prompt_tokens": 132,
+            "completion_tokens": 562,
+            "total_tokens": 694,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 377
+            },
+            "prompt_cache_hit_tokens": 0,
+            "prompt_cache_miss_tokens": 132
+          },
+          "elapsed_ms": 4671.5
+        },
+        "solver_b": {
+          "gate": "solver_b",
+          "passed": true,
+          "detail": "Solver B produced answer (len=57)",
+          "timestamp": "2026-07-18T19:11:06.607984+00:00",
+          "solver_answer": "57",
+          "solver_solution": "Два подхода: 1) Заметить, что N+3 делится на НОК(4,5,6)=60, откуда N=60k-3, и при k=1 получаем 57. 2) Решить систему сравнений методом подстановки, получив N=60c+57, и взять c=0.",
+          "usage": {
+            "prompt_tokens": 153,
+            "completion_tokens": 634,
+            "total_tokens": 787,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 534
+            },
+            "prompt_cache_hit_tokens": 0,
+            "prompt_cache_miss_tokens": 153
+          },
+          "elapsed_ms": 5575.0
+        },
+        "answer_compare": {
+          "gate": "answer_compare",
+          "passed": true,
+          "detail": "Answers agree (3/3 matches)",
+          "timestamp": "2026-07-18T19:11:06.608019+00:00",
+          "candidate_vs_solver_a": true,
+          "candidate_vs_solver_b": true,
+          "solver_a_vs_solver_b": true
+        },
+        "solution_verify": {
+          "gate": "solution_verify",
+          "passed": true,
+          "detail": "Solutions verified (A: 343 chars, B: 178 chars)",
+          "timestamp": "2026-07-18T19:11:06.608044+00:00",
+          "solver_a_solution_len": 343,
+          "solver_b_solution_len": 178
+        },
+        "topic_class": {
+          "gate": "topic_class",
+          "passed": true,
+          "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')",
+          "timestamp": "2026-07-18T19:11:08.821581+00:00",
+          "classified": "арифметика и теория чисел",
+          "expected": "Арифметика и теория чисел"
+        },
+        "subtopic_class": {
+          "gate": "subtopic_class",
+          "passed": true,
+          "detail": "Subtopic classified as 'делимость и остатки'",
+          "timestamp": "2026-07-18T19:11:10.538410+00:00",
+          "classified": "делимость и остатки",
+          "expected": "Делимость и остатки"
+        },
+        "level_class": {
+          "gate": "level_class",
+          "passed": true,
+          "detail": "Level classified as 'L1'",
+          "timestamp": "2026-07-18T19:11:12.311603+00:00",
+          "classified": "L1",
+          "expected": "L1"
+        },
+        "level_arbiter": {
+          "gate": "level_arbiter",
+          "passed": true,
+          "detail": "Skipped — level_class already passed",
+          "timestamp": "2026-07-18T19:11:12.311618+00:00",
+          "skipped": true
+        },
+        "exact_dup": {
+          "gate": "exact_dup",
+          "passed": true,
+          "detail": "No exact duplicates found among 2 existing tasks",
+          "timestamp": "2026-07-18T19:11:12.311690+00:00",
+          "checked_count": 2
+        },
+        "template_dup": {
+          "gate": "template_dup",
+          "passed": true,
+          "detail": "No template duplicates among 2 existing tasks",
+          "timestamp": "2026-07-18T19:11:12.311789+00:00",
+          "template_hash": "3fe8248be6174bde",
+          "checked_count": 2
+        },
+        "content_arbiter": {
+          "gate": "content_arbiter",
+          "passed": true,
+          "detail": "ALL 13 GATES PASSED → ACCEPT",
+          "timestamp": "2026-07-18T19:11:12.311803+00:00",
+          "gate_summary": {
+            "schema": {
+              "passed": true,
+              "detail": "OK"
+            },
+            "uniqueness": {
+              "passed": true,
+              "detail": "task_id G5_T002_S0_L1_04 is unique"
+            },
+            "solver_a": {
+              "passed": true,
+              "detail": "Solver A produced answer (len=2)"
+            },
+            "solver_b": {
+              "passed": true,
+              "detail": "Solver B produced answer (len=57)"
+            },
+            "answer_compare": {
+              "passed": true,
+              "detail": "Answers agree (3/3 matches)"
+            },
+            "solution_verify": {
+              "passed": true,
+              "detail": "Solutions verified (A: 343 chars, B: 178 chars)"
+            },
+            "topic_class": {
+              "passed": true,
+              "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')"
+            },
+            "subtopic_class": {
+              "passed": true,
+              "detail": "Subtopic classified as 'делимость и остатки'"
+            },
+            "level_class": {
+              "passed": true,
+              "detail": "Level classified as 'L1'"
+            },
+            "level_arbiter": {
+              "passed": true,
+              "detail": "Skipped — level_class already passed"
+            },
+            "exact_dup": {
+              "passed": true,
+              "detail": "No exact duplicates found among 2 existing tasks"
+            },
+            "template_dup": {
+              "passed": true,
+              "detail": "No template duplicates among 2 existing tasks"
+            }
+          },
+          "failed_gates": [],
+          "total_gates": 12,
+          "passed_count": 12
+        }
+      },
+      "pipeline_data": {
+        "gate_count": 13,
+        "passed_count": 13,
+        "failed_count": 0,
+        "timestamp": "2026-07-18T19:11:12.311816+00:00"
+      }
+    },
+    "G5_T002_S0_L1_05": {
+      "passed": true,
+      "reason": "ACCEPT",
+      "gates": [
+        {
+          "gate": "schema",
+          "passed": true,
+          "detail": "OK"
+        },
+        {
+          "gate": "uniqueness",
+          "passed": true,
+          "detail": "task_id G5_T002_S0_L1_05 is unique"
+        },
+        {
+          "gate": "solver_a",
+          "passed": true,
+          "detail": "Solver A produced answer (len=2)"
+        },
+        {
+          "gate": "solver_b",
+          "passed": true,
+          "detail": "Solver B produced answer (len=46)"
+        },
+        {
+          "gate": "answer_compare",
+          "passed": true,
+          "detail": "Answers agree (3/3 matches)"
+        },
+        {
+          "gate": "solution_verify",
+          "passed": true,
+          "detail": "Solutions verified (A: 484 chars, B: 312 chars)"
+        },
+        {
+          "gate": "topic_class",
+          "passed": true,
+          "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')"
+        },
+        {
+          "gate": "subtopic_class",
+          "passed": true,
+          "detail": "Subtopic classified as 'делимость и остатки'"
+        },
+        {
+          "gate": "level_class",
+          "passed": true,
+          "detail": "Level classified as 'L1'"
+        },
+        {
+          "gate": "level_arbiter",
+          "passed": true,
+          "detail": "Skipped — level_class already passed"
+        },
+        {
+          "gate": "exact_dup",
+          "passed": true,
+          "detail": "No exact duplicates found among 3 existing tasks"
+        },
+        {
+          "gate": "template_dup",
+          "passed": true,
+          "detail": "No template duplicates among 3 existing tasks"
+        },
+        {
+          "gate": "content_arbiter",
+          "passed": true,
+          "detail": "ALL 13 GATES PASSED → ACCEPT"
+        }
+      ],
+      "gate_details": {
+        "schema": {
+          "gate": "schema",
+          "passed": true,
+          "detail": "OK",
+          "timestamp": "2026-07-18T19:13:40.932711+00:00"
+        },
+        "uniqueness": {
+          "gate": "uniqueness",
+          "passed": true,
+          "detail": "task_id G5_T002_S0_L1_05 is unique",
+          "timestamp": "2026-07-18T19:13:40.932717+00:00",
+          "task_id": "G5_T002_S0_L1_05"
+        },
+        "solver_a": {
+          "gate": "solver_a",
+          "passed": true,
+          "detail": "Solver A produced answer (len=2)",
+          "timestamp": "2026-07-18T19:13:45.809528+00:00",
+          "solver_answer": "46",
+          "solver_solution": "Пусть n — искомое число. По условию: n + 17 делится на 9, значит n ≡ -17 (mod 9) ≡ 1 (mod 9). n - 13 делится на 11, значит n ≡ 13 (mod 11) ≡ 2 (mod 11). Решаем систему сравнений: n = 9k + 1. Подставляем во второе: 9k + 1 ≡ 2 (mod 11) → 9k ≡ 1 (mod 11). Умножаем на обратный к 9 по модулю 11 (9⋅5 = 45 ≡ 1): k ≡ 5 (mod 11), т.е. k = 11m + 5. Тогда n = 9(11m+5)+1 = 99m + 46. Наименьшее натуральное при m=0 — n=46. Проверка: 46+17=63 (делится на 9), 46-13=33 (делится на 11). Ответ: 46.",
+          "usage": {
+            "prompt_tokens": 116,
+            "completion_tokens": 644,
+            "total_tokens": 760,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 393
+            },
+            "prompt_cache_hit_tokens": 0,
+            "prompt_cache_miss_tokens": 116
+          },
+          "elapsed_ms": 4876.8
+        },
+        "solver_b": {
+          "gate": "solver_b",
+          "passed": true,
+          "detail": "Solver B produced answer (len=46)",
+          "timestamp": "2026-07-18T19:13:51.736807+00:00",
+          "solver_answer": "46",
+          "solver_solution": "Система: n ≡ 1 (mod 9), n ≡ 2 (mod 11). Из первого n = 9k+1, подставляем во второе: 9k+1 ≡ 2 (mod 11) => 9k ≡ 1 (mod 11). Так как 9·5=45≡1 (mod 11), то k ≡ 5 (mod 11), то есть k = 11m+5. Тогда n = 9(11m+5)+1 = 99m+46. Наименьшее натуральное при m=0: n=46. Проверка: 46+17=63 делится на 9, 46-13=33 делится на 11.",
+          "usage": {
+            "prompt_tokens": 137,
+            "completion_tokens": 797,
+            "total_tokens": 934,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 559
+            },
+            "prompt_cache_hit_tokens": 0,
+            "prompt_cache_miss_tokens": 137
+          },
+          "elapsed_ms": 5927.2
+        },
+        "answer_compare": {
+          "gate": "answer_compare",
+          "passed": true,
+          "detail": "Answers agree (3/3 matches)",
+          "timestamp": "2026-07-18T19:13:51.736843+00:00",
+          "candidate_vs_solver_a": true,
+          "candidate_vs_solver_b": true,
+          "solver_a_vs_solver_b": true
+        },
+        "solution_verify": {
+          "gate": "solution_verify",
+          "passed": true,
+          "detail": "Solutions verified (A: 484 chars, B: 312 chars)",
+          "timestamp": "2026-07-18T19:13:51.736873+00:00",
+          "solver_a_solution_len": 484,
+          "solver_b_solution_len": 312
+        },
+        "topic_class": {
+          "gate": "topic_class",
+          "passed": true,
+          "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')",
+          "timestamp": "2026-07-18T19:13:53.305021+00:00",
+          "classified": "арифметика и теория чисел",
+          "expected": "Арифметика и теория чисел"
+        },
+        "subtopic_class": {
+          "gate": "subtopic_class",
+          "passed": true,
+          "detail": "Subtopic classified as 'делимость и остатки'",
+          "timestamp": "2026-07-18T19:13:54.853813+00:00",
+          "classified": "делимость и остатки",
+          "expected": "Делимость и остатки"
+        },
+        "level_class": {
+          "gate": "level_class",
+          "passed": true,
+          "detail": "Level classified as 'L1'",
+          "timestamp": "2026-07-18T19:13:56.139921+00:00",
+          "classified": "L1",
+          "expected": "L1"
+        },
+        "level_arbiter": {
+          "gate": "level_arbiter",
+          "passed": true,
+          "detail": "Skipped — level_class already passed",
+          "timestamp": "2026-07-18T19:13:56.139934+00:00",
+          "skipped": true
+        },
+        "exact_dup": {
+          "gate": "exact_dup",
+          "passed": true,
+          "detail": "No exact duplicates found among 3 existing tasks",
+          "timestamp": "2026-07-18T19:13:56.140029+00:00",
+          "checked_count": 3
+        },
+        "template_dup": {
+          "gate": "template_dup",
+          "passed": true,
+          "detail": "No template duplicates among 3 existing tasks",
+          "timestamp": "2026-07-18T19:13:56.140150+00:00",
+          "template_hash": "9ea856801ab8377b",
+          "checked_count": 3
+        },
+        "content_arbiter": {
+          "gate": "content_arbiter",
+          "passed": true,
+          "detail": "ALL 13 GATES PASSED → ACCEPT",
+          "timestamp": "2026-07-18T19:13:56.140162+00:00",
+          "gate_summary": {
+            "schema": {
+              "passed": true,
+              "detail": "OK"
+            },
+            "uniqueness": {
+              "passed": true,
+              "detail": "task_id G5_T002_S0_L1_05 is unique"
+            },
+            "solver_a": {
+              "passed": true,
+              "detail": "Solver A produced answer (len=2)"
+            },
+            "solver_b": {
+              "passed": true,
+              "detail": "Solver B produced answer (len=46)"
+            },
+            "answer_compare": {
+              "passed": true,
+              "detail": "Answers agree (3/3 matches)"
+            },
+            "solution_verify": {
+              "passed": true,
+              "detail": "Solutions verified (A: 484 chars, B: 312 chars)"
+            },
+            "topic_class": {
+              "passed": true,
+              "detail": "Topic classified as 'арифметика и теория чисел' (expected 'Арифметика и теория чисел')"
+            },
+            "subtopic_class": {
+              "passed": true,
+              "detail": "Subtopic classified as 'делимость и остатки'"
+            },
+            "level_class": {
+              "passed": true,
+              "detail": "Level classified as 'L1'"
+            },
+            "level_arbiter": {
+              "passed": true,
+              "detail": "Skipped — level_class already passed"
+            },
+            "exact_dup": {
+              "passed": true,
+              "detail": "No exact duplicates found among 3 existing tasks"
+            },
+            "template_dup": {
+              "passed": true,
+              "detail": "No template duplicates among 3 existing tasks"
+            }
+          },
+          "failed_gates": [],
+          "total_gates": 12,
+          "passed_count": 12
+        }
+      },
+      "pipeline_data": {
+        "gate_count": 13,
+        "passed_count": 13,
+        "failed_count": 0,
+        "timestamp": "2026-07-18T19:13:56.140176+00:00"
+      }
+    }
+  },
+  "total_cells": 384
+}

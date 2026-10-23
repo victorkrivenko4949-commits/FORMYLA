@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-07-18T13:18:11.241920",
+  "total_entries_checked": 665,
+  "multiple_cell_key_conflicts": {
+    "count": 0,
+    "conflicts": []
+  },
+  "grade_mismatch_conflicts": {
+    "count": 0,
+    "conflicts": []
+  },
+  "resolution_notes": "Conflicts resolved by source priority: stage3 > stage4 > stage45 > stage5 > stage6"
+}

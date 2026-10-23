@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="355" height="520" viewBox="0 0 355 520" style="background-color: #0F1729;">
+<rect x="0" y="0" width="355" height="520" fill="#0F1729" />
+<line x1="40.00" y1="40.00" x2="40.00" y2="480.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="95.00" y1="40.00" x2="95.00" y2="480.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="150.00" y1="40.00" x2="150.00" y2="480.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="205.00" y1="40.00" x2="205.00" y2="480.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="260.00" y1="40.00" x2="260.00" y2="480.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="315.00" y1="40.00" x2="315.00" y2="480.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="40.00" y1="40.00" x2="315.00" y2="40.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="40.00" y1="95.00" x2="315.00" y2="95.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="40.00" y1="150.00" x2="315.00" y2="150.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="40.00" y1="205.00" x2="315.00" y2="205.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="40.00" y1="260.00" x2="315.00" y2="260.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="40.00" y1="315.00" x2="315.00" y2="315.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="40.00" y1="370.00" x2="315.00" y2="370.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="40.00" y1="425.00" x2="315.00" y2="425.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="40.00" y1="480.00" x2="315.00" y2="480.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<polyline points="40.00,40.00 150.00,95.00 260.00,40.00 205.00,150.00 95.00,95.00 150.00,205.00 260.00,150.00 315.00,260.00 205.00,205.00 260.00,315.00 315.00,425.00 205.00,370.00 260.00,480.00 150.00,425.00 40.00,480.00 95.00,370.00 205.00,425.00 150.00,315.00 260.00,370.00 205.00,260.00 95.00,315.00 40.00,205.00 150.00,260.00 95.00,150.00 40.00,40.00" fill="none" stroke="#F6B44C" stroke-width="2.0" stroke-linejoin="round" stroke-linecap="round" />
+<circle cx="40.00" cy="40.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="150.00" cy="95.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="260.00" cy="40.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="205.00" cy="150.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="95.00" cy="95.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="150.00" cy="205.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="260.00" cy="150.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="315.00" cy="260.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="205.00" cy="205.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="260.00" cy="315.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="315.00" cy="425.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="205.00" cy="370.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="260.00" cy="480.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="150.00" cy="425.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="40.00" cy="480.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="95.00" cy="370.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="205.00" cy="425.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="150.00" cy="315.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="260.00" cy="370.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="205.00" cy="260.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="95.00" cy="315.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="40.00" cy="205.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="150.00" cy="260.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<circle cx="95.00" cy="150.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+</svg>

@@ -1,0 +1,294 @@
+Total tasks in bank: 545
+
+--- audit_mode ---
+  Has field: 545
+  Missing field: 0
+  Distribution:
+    'deterministic_pre_live': 545 (100.0%)
+
+--- decision_status ---
+  Has field: 545
+  Missing field: 0
+  Distribution:
+    'candidate': 545 (100.0%)
+
+--- final_court_status ---
+  Has field: 545
+  Missing field: 0
+  Distribution:
+    'pending_live_audit': 545 (100.0%)
+
+--- evidence_source ---
+  Has field: 545
+  Missing field: 0
+  Distribution:
+    'deterministic_rules': 545 (100.0%)
+
+--- confidence ---
+  Has field: 545
+  Missing field: 0
+  Distribution:
+    'high': 481 (88.3%)
+    'medium': 64 (11.7%)
+
+--- feature_score ---
+  Has field: 545
+  Missing field: 0
+  Distribution:
+    '<3>': 210 (38.5%)
+    '<2>': 130 (23.9%)
+    '<1>': 95 (17.4%)
+    '<4>': 87 (16.0%)
+    '<5>': 18 (3.3%)
+    '<None>': 4 (0.7%)
+    '<6>': 1 (0.2%)
+
+--- mechanical_mapping ---
+  Has field: 545
+  Missing field: 0
+  Distribution:
+    'L4': 151 (27.7%)
+    'L1': 141 (25.9%)
+    'L5': 115 (21.1%)
+    'L3': 78 (14.3%)
+    'L2': 56 (10.3%)
+    '<None>': 4 (0.7%)
+
+--- quality_score ---
+  Has field: 545
+  Missing field: 0
+  Distribution:
+    '<90>': 410 (75.2%)
+    '<100>': 135 (24.8%)
+
+--- pending_live_audit ---
+  Has field: 0
+  Missing field: 545
+
+--- in_duplicate_cluster ---
+  Has field: 545
+  Missing field: 0
+  Distribution:
+    '<False>': 443 (81.3%)
+    '<True>': 102 (18.7%)
+
+--- Level breakdown ---
+  L1-L3 tasks: 174
+  L4-L5 tasks: 371
+
+--- Grade distribution (L1-L3) ---
+  Grade 2: 5 tasks
+  Grade 5: 16 tasks
+  Grade 6: 22 tasks
+  Grade 7: 19 tasks
+  Grade 8: 16 tasks
+  Grade 9: 18 tasks
+  Grade 10: 23 tasks
+  Grade 11: 55 tasks
+
+--- Level distribution (L1-L3) ---
+  Level 1: 62 tasks
+  Level 2: 67 tasks
+  Level 3: 45 tasks
+
+--- Tasks potentially needing audit attention ---
+  None found - all tasks have complete audit fields
+
+--- Cell distribution after trim ---
+  G10|L1: 6 tasks
+    SEL1080-0562  qs=100  rank=1
+    SEL1080-0466  qs=90  rank=13
+    SEL1080-0470  qs=100  rank=2
+    SEL1080-0471  qs=100  rank=3
+    SEL1080-0479  qs=90  rank=7
+    SEL1080-0534  qs=100  rank=3
+  G11|L1: 20 tasks
+    SEL1080-0587  qs=100  rank=1
+    SEL1080-0570  qs=90  rank=10
+    SEL1080-0572  qs=90  rank=12
+    SEL1080-0573  qs=90  rank=13
+    SEL1080-0574  qs=100  rank=1
+    SEL1080-0575  qs=100  rank=2
+    SEL1080-0597  qs=90  rank=12
+    SEL1080-0598  qs=90  rank=13
+    SEL1080-0599  qs=90  rank=14
+    SEL1080-0600  qs=90  rank=15
+    SEL1080-0603  qs=90  rank=18
+    SEL1080-0604  qs=100  rank=1
+    SEL1080-0606  qs=100  rank=3
+    SEL1080-0611  qs=90  rank=8
+    SEL1080-0614  qs=90  rank=6
+    SEL1080-0615  qs=90  rank=7
+    SEL1080-0616  qs=90  rank=8
+    SEL1080-0258  qs=90  rank=21
+    SEL1080-0671  qs=90  rank=15
+    SEL1080-0665  qs=90  rank=7
+  G2|L1: 5 tasks
+    SEL1080-0263  qs=100  rank=1
+    SEL1080-1066  qs=90  rank=2
+    SEL1080-1067  qs=90  rank=3
+    SEL1080-1068  qs=90  rank=4
+    SEL1080-1069  qs=90  rank=5
+  G5|L1: 5 tasks
+    SEL1080-0001  qs=90  rank=5
+    SEL1080-0009  qs=100  rank=2
+    SEL1080-0041  qs=100  rank=2
+    SEL1080-0061  qs=90  rank=6
+    SEL1080-0073  qs=90  rank=7
+  G6|L1: 8 tasks
+    SEL1080-0551  qs=90  rank=14
+    SEL1080-0704  qs=90  rank=4
+    SEL1080-0094  qs=90  rank=6
+    SEL1080-0106  qs=90  rank=9
+    SEL1080-0098  qs=90  rank=9
+    SEL1080-0648  qs=90  rank=14
+    SEL1080-0115  qs=90  rank=6
+    SEL1080-0134  qs=90  rank=16
+  G7|L1: 6 tasks
+    SEL1080-0439  qs=90  rank=9
+    SEL1080-0852  qs=90  rank=16
+    SEL1080-0220  qs=90  rank=8
+    SEL1080-0483  qs=90  rank=11
+    SEL1080-0238  qs=100  rank=4
+    SEL1080-0250  qs=90  rank=18
+  G8|L1: 5 tasks
+    SEL1080-0278  qs=100  rank=4
+    SEL1080-0310  qs=100  rank=2
+    SEL1080-0312  qs=100  rank=4
+    SEL1080-0354  qs=100  rank=3
+    SEL1080-0262  qs=100  rank=4
+  G9|L1: 7 tasks
+    SEL1080-0835  qs=90  rank=13
+    SEL1080-0838  qs=100  rank=2
+    SEL1080-0459  qs=90  rank=7
+    SEL1080-0376  qs=100  rank=4
+    SEL1080-0377  qs=100  rank=5
+    SEL1080-0397  qs=100  rank=3
+    SEL1080-0399  qs=100  rank=5
+  G10|L2: 10 tasks
+    SEL1080-0552  qs=90  rank=15
+    SEL1080-0553  qs=90  rank=5
+    SEL1080-0559  qs=90  rank=11
+    SEL1080-0561  qs=90  rank=13
+    SEL1080-0565  qs=90  rank=5
+    SEL1080-0487  qs=100  rank=1
+    SEL1080-0488  qs=100  rank=2
+    SEL1080-0489  qs=100  rank=3
+    SEL1080-0499  qs=90  rank=7
+    SEL1080-0533  qs=100  rank=2
+  G11|L2: 25 tasks
+    SEL1080-0579  qs=90  rank=16
+    SEL1080-0581  qs=90  rank=18
+    SEL1080-0583  qs=90  rank=20
+    SEL1080-0584  qs=90  rank=21
+    SEL1080-0592  qs=90  rank=9
+    SEL1080-0593  qs=90  rank=10
+    SEL1080-0594  qs=90  rank=11
+    SEL1080-0601  qs=90  rank=16
+    SEL1080-0602  qs=90  rank=17
+    SEL1080-0605  qs=100  rank=2
+    SEL1080-0607  qs=90  rank=19
+    SEL1080-0608  qs=90  rank=20
+    SEL1080-0610  qs=90  rank=21
+    SEL1080-0595  qs=90  rank=5
+    SEL1080-0596  qs=90  rank=6
+    SEL1080-0609  qs=90  rank=7
+    SEL1080-0617  qs=90  rank=9
+    SEL1080-0620  qs=90  rank=12
+    SEL1080-0623  qs=100  rank=2
+    SEL1080-0625  qs=90  rank=14
+    SEL1080-0630  qs=90  rank=18
+    SEL1080-0631  qs=90  rank=19
+    SEL1080-0636  qs=90  rank=6
+    SEL1080-0672  qs=90  rank=16
+    SEL1080-0673  qs=90  rank=17
+  G5|L2: 6 tasks
+    SEL1080-0016  qs=90  rank=6
+    SEL1080-0017  qs=90  rank=7
+    SEL1080-0018  qs=90  rank=8
+    SEL1080-0029  qs=100  rank=1
+    SEL1080-0580  qs=90  rank=17
+    SEL1080-0066  qs=100  rank=3
+  G6|L2: 8 tasks
+    SEL1080-0143  qs=100  rank=3
+    SEL1080-0833  qs=90  rank=11
+    SEL1080-0834  qs=90  rank=12
+    SEL1080-0836  qs=90  rank=14
+    SEL1080-0100  qs=90  rank=7
+    SEL1080-0095  qs=90  rank=6
+    SEL1080-0117  qs=90  rank=6
+    SEL1080-0119  qs=90  rank=8
+  G7|L2: 8 tasks
+    SEL1080-0563  qs=100  rank=2
+    SEL1080-0829  qs=90  rank=8
+    SEL1080-0175  qs=100  rank=4
+    SEL1080-0176  qs=100  rank=5
+    SEL1080-0177  qs=100  rank=1
+    SEL1080-0576  qs=100  rank=3
+    SEL1080-0064  qs=100  rank=1
+    SEL1080-0240  qs=100  rank=1
+  G8|L2: 5 tasks
+    SEL1080-0138  qs=90  rank=5
+    SEL1080-0277  qs=100  rank=3
+    SEL1080-0288  qs=90  rank=5
+    SEL1080-0291  qs=90  rank=8
+    SEL1080-0333  qs=100  rank=2
+  G9|L2: 5 tasks
+    SEL1080-0412  qs=100  rank=1
+    SEL1080-0414  qs=100  rank=3
+    SEL1080-0434  qs=100  rank=2
+    SEL1080-0396  qs=100  rank=2
+    SEL1080-0398  qs=100  rank=4
+  G10|L3: 7 tasks
+    SEL1080-0142  qs=100  rank=2
+    SEL1080-0564  qs=100  rank=3
+    SEL1080-0508  qs=100  rank=1
+    SEL1080-0509  qs=100  rank=2
+    SEL1080-0510  qs=100  rank=3
+    SEL1080-0520  qs=90  rank=9
+    SEL1080-0527  qs=90  rank=3
+  G11|L3: 10 tasks
+    SEL1080-0613  qs=90  rank=5
+    SEL1080-0618  qs=90  rank=10
+    SEL1080-0619  qs=90  rank=11
+    SEL1080-0621  qs=90  rank=13
+    SEL1080-0622  qs=100  rank=1
+    SEL1080-0626  qs=90  rank=15
+    SEL1080-0627  qs=90  rank=16
+    SEL1080-0628  qs=90  rank=17
+    SEL1080-0632  qs=90  rank=20
+    SEL1080-0629  qs=90  rank=3
+  G5|L3: 5 tasks
+    SEL1080-0031  qs=90  rank=6
+    SEL1080-0032  qs=90  rank=7
+    SEL1080-0040  qs=100  rank=1
+    SEL1080-0042  qs=100  rank=3
+    SEL1080-0037  qs=90  rank=5
+  G6|L3: 6 tasks
+    SEL1080-0837  qs=90  rank=15
+    SEL1080-0107  qs=90  rank=10
+    SEL1080-0108  qs=90  rank=11
+    SEL1080-0116  qs=90  rank=7
+    SEL1080-0118  qs=90  rank=7
+    SEL1080-0120  qs=90  rank=9
+  G7|L3: 5 tasks
+    SEL1080-0200  qs=100  rank=4
+    SEL1080-0201  qs=100  rank=5
+    SEL1080-0196  qs=90  rank=9
+    SEL1080-0199  qs=100  rank=1
+    SEL1080-0208  qs=90  rank=6
+  G8|L3: 6 tasks
+    SEL1080-0299  qs=90  rank=15
+    SEL1080-0828  qs=90  rank=7
+    SEL1080-0303  qs=90  rank=10
+    SEL1080-0309  qs=90  rank=16
+    SEL1080-0311  qs=100  rank=3
+    SEL1080-0314  qs=90  rank=5
+  G9|L3: 6 tasks
+    SEL1080-0144  qs=100  rank=4
+    SEL1080-0406  qs=90  rank=5
+    SEL1080-0410  qs=90  rank=9
+    SEL1080-0419  qs=90  rank=5
+    SEL1080-0421  qs=90  rank=4
+    SEL1080-0065  qs=100  rank=2
+

@@ -1,0 +1,91 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "w1",
+   "line": "AC",
+   "pick": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "BD"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "AN",
+   "line2": "BC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "dashed"
+  },
+  {
+   "segment": "AL"
+  },
+  {
+   "line": "AO",
+   "style": "accent"
+  },
+  {
+   "line": "LD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "AD"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "L"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "L",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

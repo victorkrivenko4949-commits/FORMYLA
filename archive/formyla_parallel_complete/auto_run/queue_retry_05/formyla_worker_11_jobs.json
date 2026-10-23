@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0238-11-E3-L5-fill-0371",
+      "mode": "replace_bad",
+      "id": "11-E3-L5-fill-0371",
+      "grade": 11,
+      "difficulty": 5,
+      "theme": "Стереометрия, координаты и векторы",
+      "subtopic": "Расстояния и углы",
+      "method_code": "E3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

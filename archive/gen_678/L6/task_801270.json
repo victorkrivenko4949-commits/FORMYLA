@@ -1,0 +1,20 @@
+{
+  "id": 801270,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$ и $AB$ выбраны точки $D$, $E$ и $F$ соответственно. Известно, что отрезки $AD$, $BE$ и $CF$ пересекаются в одной точке, а площади треугольников $AEF$, $BFD$ и $CDE$ равны. Докажите, что точки $D$, $E$ и $F$ являются серединами сторон треугольника $ABC$.",
+  "solution": "Обозначим площадь треугольника $ABC$ через $S$. Введем отношения: $BD:DC = x:1$, $CE:EA = y:1$, $AF:FB = z:1$, где $x,y,z>0$. Тогда\n$$\n\\frac{BD}{BC}=\\frac{x}{x+1},\\quad \\frac{DC}{BC}=\\frac{1}{x+1},\\quad \\frac{CE}{CA}=\\frac{y}{y+1},\\quad \\frac{AE}{CA}=\\frac{1}{y+1},\\quad \\frac{AF}{AB}=\\frac{z}{z+1},\\quad \\frac{BF}{AB}=\\frac{1}{z+1}.\n$$\nПлощади треугольников выражаются через $S$:\n$$\nS_{AEF}=\\frac{AE}{AC}\\cdot\\frac{AF}{AB}\\cdot S = \\frac{1}{y+1}\\cdot\\frac{z}{z+1}\\cdot S = \\frac{z}{(y+1)(z+1)}S,\n$$\n$$\nS_{BFD}= \\frac{BD}{BC}\\cdot\\frac{BF}{BA}\\cdot S = \\frac{x}{x+1}\\cdot\\frac{1}{z+1}\\cdot S = \\frac{x}{(x+1)(z+1)}S,\n$$\n$$\nS_{CDE}= \\frac{CE}{CA}\\cdot\\frac{CD}{CB}\\cdot S = \\frac{y}{y+1}\\cdot\\frac{1}{x+1}\\cdot S = \\frac{y}{(x+1)(y+1)}S.\n$$\n\nПо условию $S_{AEF}=S_{BFD}=S_{CDE}$. Приравняем первые две площади:\n$$\n\\frac{z}{(y+1)(z+1)} = \\frac{x}{(x+1)(z+1)} \\quad\\Rightarrow\\quad \\frac{z}{y+1} = \\frac{x}{x+1} \\quad\\Rightarrow\\quad z(x+1)=x(y+1). \\qquad(1)\n$$\nПриравняем $S_{BFD}$ и $S_{CDE}$:\n$$\n\\frac{x}{(x+1)(z+1)} = \\frac{y}{(x+1)(y+1)} \\quad\\Rightarrow\\quad \\frac{x}{z+1}=\\frac{y}{y+1} \\quad\\Rightarrow\\quad x(y+1)=y(z+1). \\qquad(2)\n$$\n\nИз $(1)$ и $(2)$ получаем $z(x+1)=y(z+1)$. Преобразуем: $zx+z=yz+y$ или $z(x-y)=y-z$. Если $x=y$, то из $(2)$ сразу $y=z$, и тогда $x=y=z$. Если $x\\neq y$, то из $z(x-y)=y-z$ выражаем $z=\\frac{y-z}{x-y}$. Используем $(2)$, чтобы выразить $x$ через $y$ и $z$: $x = \\frac{y(z+1)}{y+1}$. Подставим в $z(x+1)=y(z+1)$:\n$$\nz\\left(\\frac{y(z+1)}{y+1}+1\\right) = y(z+1).\n$$\nУмножим на $y+1$:\n$$\nz\\big(y(z+1)+y+1\\big) = y(z+1)(y+1).\n$$\nРаскроем скобки:\n$$\nz(yz+y+y+1)=y(z+1)(y+1) \\quad\\Rightarrow\\quad yz^2+2yz+z = y^2z+yz+y^2+y.\n$$\nПеренесём всё влево:\n$$\nyz^2+2yz+z - y^2z - yz - y^2 - y =0 \\quad\\Rightarrow\\quad yz^2+yz - y^2z - y^2 - y + z =0.\n$$\nСгруппируем:\n$$\nyz(z+1) - y^2(z+1) - y + z =0 \\quad\\Rightarrow\\quad (z+1)(yz-y^2) + (z-y)=0 \\quad\\Rightarrow\\quad (z-y)\\big(y(z+1)+1\\big)=0.\n$$\nТак как $y(z+1)+1>0$, получаем $z=y$. Тогда из $(2)$ имеем $x=y$. Следовательно, $x=y=z$.\n\nПо теореме Чевы, $xyz=1$, поэтому $x^3=1$, откуда $x=1$. Таким образом, $x=y=z=1$, т.е. $BD:DC=1$, $CE:EA=1$, $AF:FB=1$. Значит, $D$, $E$, $F$ – середины сторон треугольника $ABC$.",
+  "correct_answer": "Точки D, E и F являются серединами сторон треугольника ABC (т.е. BD=DC, CE=EA, AF=FB).",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Использование отношений отрезков и формулы площади треугольника для составления системы уравнений, затем алгебраическое решение с применением теоремы Чевы.",
+  "idea_count": 4,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T12:21:58.407775+00:00"
+}

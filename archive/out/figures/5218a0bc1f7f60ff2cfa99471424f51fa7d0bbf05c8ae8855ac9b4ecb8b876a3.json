@@ -1,0 +1,85 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "AB",
+   "ratio": 0.35
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "BC",
+   "ratio": 0.65
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "CD",
+   "ratio": 0.35
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "DA",
+   "ratio": 0.65
+  },
+  {
+   "type": "midpoint",
+   "id": "P",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "Q",
+   "of": "CD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "KLMN",
+   "style": "accent"
+  },
+  {
+   "segment": "KP",
+   "style": "accent"
+  },
+  {
+   "segment": "MQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "CD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AP",
+    "PB"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "CQ",
+    "QD"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

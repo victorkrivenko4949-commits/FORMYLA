@@ -1,0 +1,31 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0602",
+      "mode": "replace_bad",
+      "id": "8-F3-1-L7-g678",
+      "grade": 8,
+      "difficulty": 7,
+      "theme": "Теория чисел: остатки и диофантовы",
+      "subtopic": "Делимость и разложение",
+      "method_code": "F3",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 8
+    },
+    {
+      "job_id": "audit-0458-10-C1-3-L8-gh5",
+      "mode": "replace_bad",
+      "id": "10-C1-3-L8-gh5",
+      "grade": 10,
+      "difficulty": 8,
+      "theme": "Системы, параметры и неравенства",
+      "subtopic": "Системы и параметры",
+      "method_code": "C1",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

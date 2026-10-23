@@ -1,0 +1,20 @@
+{
+  "id": 801342,
+  "task_text": "Даны попарно различные целые числа $a, b, c$. Докажите, что число\n$$(a-b)^5+(b-c)^5+(c-a)^5$$\nделится на $5(a-b)(b-c)(c-a)$. Найдите значение частного.",
+  "solution": "Обозначим $x=a-b$, $y=b-c$, $z=c-a$. Тогда $x+y+z=0$. Нужно доказать, что $x^5+y^5+z^5$ делится на $5xyz$. Воспользуемся тождеством для суммы пятых степеней при $x+y+z=0$: $$x^5+y^5+z^5 = -5xyz(xy+yz+zx).$$ Выведем его: $(x+y+z)^5 = x^5+y^5+z^5 + 5(x+y+z)^3(xy+yz+zx) -5(x+y+z)(xy+yz+zx)^2 + 5xyz(xy+yz+zx)$. При $x+y+z=0$ получаем $0 = x^5+y^5+z^5 + 5xyz(xy+yz+zx)$, откуда $x^5+y^5+z^5 = -5xyz(xy+yz+zx)$. Теперь найдём $xy+yz+zx$ через $a,b,c$:\n\\begin{align*}\nxy+yz+zx &= (a-b)(b-c)+(b-c)(c-a)+(c-a)(a-b) \\\\\n&= ab-ac-b^2+bc+bc-ab-c^2+ac+ac-bc-a^2+ab \\\\\n&= -(a^2+b^2+c^2-ab-bc-ca).\n\\end{align*}\nПодставляем: $$x^5+y^5+z^5 = -5xyz\\cdot\\bigl(-(a^2+b^2+c^2-ab-bc-ca)\\bigr) = 5xyz(a^2+b^2+c^2-ab-bc-ca).$$ Таким образом, $$(a-b)^5+(b-c)^5+(c-a)^5 = 5(a-b)(b-c)(c-a)(a^2+b^2+c^2-ab-bc-ca).$$ Следовательно, данное число делится на $5(a-b)(b-c)(c-a)$, а частное равно $a^2+b^2+c^2-ab-bc-ca$.",
+  "correct_answer": "$a^2+b^2+c^2-ab-bc-ca$",
+  "class_level": 9,
+  "topic": "Алгебра",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Симметрические многочлены, тождество для суммы степеней при нулевой сумме",
+  "idea_count": 2,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T12:36:22.901736+00:00"
+}

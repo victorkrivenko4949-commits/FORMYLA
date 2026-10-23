@@ -1,0 +1,100 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "L",
+   "circle": "omega",
+   "line": "BI",
+   "pick": 1
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "midpoint",
+   "id": "S",
+   "of": "ML"
+  },
+  {
+   "type": "reflect_point",
+   "id": "N",
+   "of": "B",
+   "over": "S"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "omega",
+   "line": "NM",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AB",
+   "line2": "EL"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "BC",
+   "line2": "EL"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "omega"
+  },
+  {
+   "segment": "BL",
+   "style": "soft"
+  },
+  {
+   "segment": "EM",
+   "style": "soft"
+  },
+  {
+   "line": "EL",
+   "style": "soft"
+  },
+  {
+   "segment": "PE",
+   "style": "accent"
+  },
+  {
+   "segment": "EQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "PE",
+    "EQ"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

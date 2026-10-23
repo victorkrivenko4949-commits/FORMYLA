@@ -1,0 +1,59 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AC",
+   "ratio": 0.25
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "BD",
+   "ratio": 0.75
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AN",
+   "line2": "DM"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "BN",
+   "line2": "CM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC"
+  },
+  {
+   "segment": "BD"
+  },
+  {
+   "line": "AN",
+   "style": "soft"
+  },
+  {
+   "line": "DM",
+   "style": "soft"
+  },
+  {
+   "line": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

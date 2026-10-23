@@ -1,0 +1,60 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AD",
+   "ratio": 0.25
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "AD",
+   "ratio": 0.75
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R",
+   "of": "BC",
+   "ratio": 0.25
+  },
+  {
+   "type": "point_on_segment",
+   "id": "S",
+   "of": "BC",
+   "ratio": 0.75
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "PRSQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AP",
+    "QD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BR",
+    "SC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

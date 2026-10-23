@@ -1,0 +1,93 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "A1",
+   "of": "AB",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "A2",
+   "of": "AC",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "B1",
+   "of": "BA",
+   "ratio": 0.7
+  },
+  {
+   "type": "point_on_segment",
+   "id": "B2",
+   "of": "BC",
+   "ratio": 0.7
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "A1A2",
+   "line2": "B1B2"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "C1",
+   "of": "CA",
+   "ratio": 0.9
+  },
+  {
+   "type": "point_on_segment",
+   "id": "C2",
+   "of": "CB",
+   "ratio": 0.9
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "A1A2"
+  },
+  {
+   "segment": "B1B2"
+  },
+  {
+   "segment": "C1C2"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A1",
+    "A",
+    "A2"
+   ],
+   "text": "4"
+  },
+  {
+   "angle": [
+    "B1",
+    "B",
+    "B2"
+   ],
+   "text": "9"
+  },
+  {
+   "angle": [
+    "C1",
+    "C",
+    "C2"
+   ],
+   "text": "16"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

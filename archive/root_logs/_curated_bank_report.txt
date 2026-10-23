@@ -1,0 +1,49 @@
+Total tasks: 674
+Total cells: 36
+
+=== ALL CELLS ===
+  #  1 | G_L__                                                        | 224 tasks [OVER]
+  #  2 | G10_L1__                                                     |   9 tasks [OVER]
+  #  3 | G11_L1__                                                     |  11 tasks [OVER]
+  #  4 | G2_L1__                                                      |   1 tasks [UNDER]
+  #  5 | G5_L1__                                                      |  11 tasks [OVER]
+  #  6 | G6_L1__                                                      |   4 tasks [UNDER]
+  #  7 | G7_L1__                                                      |   6 tasks [OVER]
+  #  8 | G8_L1__                                                      |   6 tasks [OVER]
+  #  9 | G9_L1__                                                      |   6 tasks [OVER]
+  # 10 | G10_L2__                                                     |  23 tasks [OVER]
+  # 11 | G11_L2__                                                     |  25 tasks [OVER]
+  # 12 | G5_L2__                                                      |   8 tasks [OVER]
+  # 13 | G6_L2__                                                      |  11 tasks [OVER]
+  # 14 | G7_L2__                                                      |  15 tasks [OVER]
+  # 15 | G8_L2__                                                      |  25 tasks [OVER]
+  # 16 | G9_L2__                                                      |  20 tasks [OVER]
+  # 17 | G10_L3__                                                     |  22 tasks [OVER]
+  # 18 | G11_L3__                                                     |  19 tasks [OVER]
+  # 19 | G5_L3__                                                      |  14 tasks [OVER]
+  # 20 | G6_L3__                                                      |  15 tasks [OVER]
+  # 21 | G7_L3__                                                      |  10 tasks [OVER]
+  # 22 | G8_L3__                                                      |  20 tasks [OVER]
+  # 23 | G9_L3__                                                      |  22 tasks [OVER]
+  # 24 | G10_L4__                                                     |  14 tasks [OVER]
+  # 25 | G11_L4__                                                     |  17 tasks [OVER]
+  # 26 | G5_L4__                                                      |  14 tasks [OVER]
+  # 27 | G6_L4__                                                      |  12 tasks [OVER]
+  # 28 | G7_L4__                                                      |  13 tasks [OVER]
+  # 29 | G8_L4__                                                      |   9 tasks [OVER]
+  # 30 | G9_L4__                                                      |  20 tasks [OVER]
+  # 31 | G10_L5__                                                     |   8 tasks [OVER]
+  # 32 | G11_L5__                                                     |  13 tasks [OVER]
+  # 33 | G5_L5__                                                      |   3 tasks [UNDER]
+  # 34 | G7_L5__                                                      |   5 tasks [OK]
+  # 35 | G8_L5__                                                      |   8 tasks [OVER]
+  # 36 | G9_L5__                                                      |  11 tasks [OVER]
+
+=== BY LEVEL ===
+Traceback (most recent call last):
+  File "c:\Users\Victor\Desktop\Новая папка (2)\_check_curated_bank_103.py", line 66, in <module>
+    for level in sorted(level_counts.keys(), key=level_sort):
+                 ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Victor\Desktop\Новая папка (2)\_check_curated_bank_103.py", line 63, in level_sort
+    return int(l[1:])
+ValueError: invalid literal for int() with base 10: ''

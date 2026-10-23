@@ -1,0 +1,2 @@
+﻿stage,provider,model,requests,input_tokens,output_tokens,cache_hits,estimated_cost
+generation,openrouter,deepseek/deepseek-chat-v3-0324,0,0,0,0,0.0

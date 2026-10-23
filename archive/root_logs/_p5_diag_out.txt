@@ -1,0 +1,207 @@
+2026-08-04 02:06:15,244 - app - INFO - [security] init_security applied (headers + csrf helpers)
+2026-08-04 02:06:15,396 - app - INFO - === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+2026-08-04 02:06:17,396 - routes.figures_generator - INFO - [figures_gen] reasoner prompt loaded (6847 chars)
+2026-08-04 02:06:17,844 - routes.wb_ws - INFO - [ws] SocketIO initialized on namespace /ws-call
+2026-08-04 02:06:17,871 - services.vsosh_10_11_additive_seed - INFO - [VSOSH10_11-ADD] DB already has 43 probniks (target 43) - skip
+2026-08-04 02:06:20,776 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Added job "daily_quest_deadline_reminder_job" to job store "default"
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Added job "curator_evening_notification_job" to job store "default"
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Added job "curator_morning_prep_reminder_job" to job store "default"
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Added job "curator_evening_prep_generate_job" to job store "default"
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Added job "process_pregen_queue_job" to job store "default"
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Added job "daily_midnight_assign_job" to job store "default"
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Added job "daily_buffer_fill_job" to job store "default"
+2026-08-04 02:06:20,810 - apscheduler.scheduler - INFO - Scheduler started
+2026-08-04 02:06:20,997 - daily_tasks.profile - INFO - build_profile: user=1 grade=9 completeness=0.00 measured=0/7 weak=7 (cal=7) strong=0 slots=(m=0,c=10)
+2026-08-04 02:06:21,006 - app - ERROR - Exception on /prep/coach [GET]
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+2026-08-04 02:06:21,013 - app - ERROR - [e245a580] 500: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+
+2026-08-04 02:06:21,082 - curator.routes - ERROR - [routes] prep/morning-test failed: cannot import name 'get_morning_test' from 'curator.monthly_cycle' (C:\Users\Redmi\Desktop\Новая папка (2)\curator\monthly_cycle.py)
+2026-08-04 02:06:21,085 - curator.routes - ERROR - [routes] prep/progress failed: cannot import name 'get_cycle_progress' from 'curator.monthly_cycle' (C:\Users\Redmi\Desktop\Новая папка (2)\curator\monthly_cycle.py)
+2026-08-04 02:06:21,100 - daily_tasks.profile - INFO - build_profile: user=1 grade=9 completeness=0.00 measured=0/7 weak=7 (cal=7) strong=0 slots=(m=0,c=10)
+2026-08-04 02:06:21,104 - app - ERROR - Exception on /prep/coach [GET]
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+2026-08-04 02:06:21,109 - app - ERROR - [60e5cac9] 500: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+
+2026-08-04 02:06:21,130 - daily_tasks.profile - INFO - build_profile: user=1 grade=9 completeness=0.00 measured=0/7 weak=7 (cal=7) strong=0 slots=(m=0,c=10)
+2026-08-04 02:06:21,139 - app - ERROR - Exception on /prep/coach [GET]
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+2026-08-04 02:06:21,139 - app - ERROR - [149a7780] 500: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 939, in finalize_request
+    response = self.make_response(rv)
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1212, in make_response
+    raise TypeError(
+TypeError: The view function for 'prep.coach' did not return a valid response. The function either returned None or ended without a return statement.
+
+2026-08-04 02:06:21,145 - app - ERROR - Exception on /topics [GET]
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\app.py", line 3402, in topics
+    return render_template("topics.html",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 150, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 66, in get_source
+    return self._get_source_fast(environment, template)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 100, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: topics.html
+2026-08-04 02:06:21,161 - app - ERROR - [4c16ffe1] 500: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\app.py", line 3402, in topics
+    return render_template("topics.html",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 150, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 66, in get_source
+    return self._get_source_fast(environment, template)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 100, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: topics.html
+
+Traceback (most recent call last):
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\_p5_diag.py", line 24, in <module>
+    r = c.get('/yandex_login', follow_redirects=True)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py", line 1162, in get
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\testing.py", line 235, in open
+    response = super().open(
+               ^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py", line 1150, in open
+    response = self.resolve_redirect(response, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py", line 1026, in resolve_redirect
+    raise RuntimeError("Following external redirects is not supported.")
+RuntimeError: Following external redirects is not supported.

@@ -1,0 +1,1 @@
+{"has_aux": true, "reason": "", "constructions": [{"type": "segment", "p1": "A", "p2": "C", "id": "aux_segment_A_C", "style": "aux", "dashed": true, "visual_role": "aux", "purpose": "Построен отрезок из решения", "solution_evidence": {"step_no": 1, "quote": "Проведём диагональ AC"}}]}

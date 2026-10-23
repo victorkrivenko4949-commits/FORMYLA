@@ -1,0 +1,99 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "G",
+   "line1": "AI",
+   "line2": "BC"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "C",
+   "through": "G"
+  },
+  {
+   "type": "line_circle",
+   "id": "K",
+   "circle": "w",
+   "line": "AC",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "KG",
+   "line2": "BI"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AG"
+  },
+  {
+   "line": "KG"
+  },
+  {
+   "segment": "BP"
+  },
+  {
+   "segment": "CK",
+   "style": "soft"
+  },
+  {
+   "segment": "CG",
+   "style": "soft"
+  },
+  {
+   "segment": "AP",
+   "style": "accent"
+  },
+  {
+   "segment": "PG",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "CG",
+    "CK"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AP",
+    "PG"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "ABG",
+   "reason": "Окружность, на которой лежат A, B, G, P (используется в доказательстве)"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "omega",
+   "style": "dashed"
+  }
+ ]
+}

@@ -1,0 +1,103 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "I",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": -1.428
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 1,
+   "y": 1.732
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": -1.737,
+   "y": 0.152
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": -0.508,
+   "y": -0.879
+  },
+  {
+   "type": "foot",
+   "id": "T",
+   "from": "I",
+   "line": "AB"
+  },
+  {
+   "type": "circle",
+   "id": "inc",
+   "center": "I",
+   "through": "T"
+  },
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "AIC"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "BA",
+   "line2": "CD"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "AD",
+   "line2": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "circle": "inc",
+   "style": "soft"
+  },
+  {
+   "circle": "omega",
+   "style": "accent"
+  },
+  {
+   "segment": "AP",
+   "style": "dashed"
+  },
+  {
+   "segment": "DP",
+   "style": "dashed"
+  },
+  {
+   "segment": "CQ",
+   "style": "dashed"
+  },
+  {
+   "segment": "DQ",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "I",
+    "T",
+    "A"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

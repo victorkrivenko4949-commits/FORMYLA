@@ -1,0 +1,20 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0094",
+      "mode": "replace_bad",
+      "id": "5-D1-4-L8-g5",
+      "grade": 5,
+      "difficulty": 8,
+      "theme": "Текстовые задачи",
+      "subtopic": "На движение",
+      "method_code": "D1",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 13
+    }
+  ]
+}

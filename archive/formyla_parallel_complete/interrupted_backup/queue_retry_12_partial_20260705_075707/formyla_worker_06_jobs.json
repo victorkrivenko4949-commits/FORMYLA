@@ -1,0 +1,32 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0721",
+      "mode": "replace_bad",
+      "id": "9-F1-3-L8-g911",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Комбинаторика и графы",
+      "subtopic": "Подсчёт и включение-исключение",
+      "method_code": "F1",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 15
+    },
+    {
+      "job_id": "audit-0300-11-E3-L5-fill-0371",
+      "mode": "replace_bad",
+      "id": "11-E3-L5-fill-0371",
+      "grade": 11,
+      "difficulty": 5,
+      "theme": "Стереометрия, координаты и векторы",
+      "subtopic": "Расстояния и углы",
+      "method_code": "E3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

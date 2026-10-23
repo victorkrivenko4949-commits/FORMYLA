@@ -1,0 +1,20 @@
+{
+  "id": 801827,
+  "task_text": "Действительные числа $a, b, c$ таковы, что $a+b+c=0$, $a^2+b^2+c^2=6$, $a^3+b^3+c^3=6$. Найдите значение выражения $a^5+b^5+c^5$.",
+  "solution": "Обозначим $p=a+b+c=0$, $q=ab+bc+ca$, $r=abc$. Известно, что\n$$a^2+b^2+c^2 = p^2 - 2q = 0 - 2q = 6 \\Rightarrow q = -3.$$\nДалее, \n$$a^3+b^3+c^3 = p^3 - 3pq + 3r = 0 - 0 + 3r = 3r = 6 \\Rightarrow r = 2.$$\nВведём $s_k = a^k+b^k+c^k$. Тогда $s_0=3$, $s_1=0$, $s_2=6$, $s_3=6$.\nПри $k \\ge 3$ справедлива рекуррентная формула Ньютона:\n$$s_k = p s_{k-1} - q s_{k-2} + r s_{k-3}.$$\nВычислим $s_4$ и $s_5$:\n$$s_4 = 0\\cdot s_3 - (-3)\\cdot s_2 + 2\\cdot s_1 = 3\\cdot 6 + 0 = 18,$$\n$$s_5 = 0\\cdot s_4 - (-3)\\cdot s_3 + 2\\cdot s_2 = 3\\cdot 6 + 2\\cdot 6 = 18 + 12 = 30.$$\nТаким образом, $a^5+b^5+c^5 = 30$.",
+  "correct_answer": "30",
+  "class_level": 8,
+  "topic": "Алгебра",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Симметрические многочлены и рекуррентные формулы Ньютона",
+  "idea_count": 3,
+  "is_clone": true,
+  "clone_similarity": 0.754,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:11:43.102273+00:00"
+}

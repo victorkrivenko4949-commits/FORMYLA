@@ -1,0 +1,65 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AB",
+   "ratio": 0.5773502691896258
+  },
+  {
+   "type": "point_on_segment",
+   "id": "F",
+   "of": "CD",
+   "ratio": 0.4226497308103742
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "EF",
+   "ratio": 0.2679491924311228
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "BC",
+   "ratio": 0.2679491924311228
+  },
+  {
+   "type": "point_on_segment",
+   "id": "S",
+   "of": "AB",
+   "ratio": 0.8452994616207486
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T",
+   "of": "PQ",
+   "ratio": 0.6339745962155613
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "AEFD"
+  },
+  {
+   "polygon": "PFCQ"
+  },
+  {
+   "polygon": "ESTP"
+  },
+  {
+   "polygon": "SBQT"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

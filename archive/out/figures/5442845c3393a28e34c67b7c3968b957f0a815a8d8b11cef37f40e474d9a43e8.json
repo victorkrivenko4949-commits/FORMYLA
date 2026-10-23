@@ -1,0 +1,85 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "AB"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "X",
+   "circle": "w",
+   "angle": 50
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "MX"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AO",
+    "OB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 2
+  },
+  {
+   "right_angle": [
+    "A",
+    "X",
+    "B"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "line_circle",
+   "id": "Y",
+   "circle": "w",
+   "line": "MO",
+   "pick": 0,
+   "reason": "Точка пересечения прямой MO с окружностью — ближайшая к M точка окружности"
+  }
+ ],
+ "draw_aux": [
+  {
+   "line": "MO",
+   "style": "dashed"
+  },
+  {
+   "segment": "MY",
+   "style": "accent"
+  }
+ ]
+}

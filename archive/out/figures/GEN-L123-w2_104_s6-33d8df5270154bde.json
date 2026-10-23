@@ -1,0 +1,117 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "A1",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "H",
+   "line1": "AA1",
+   "line2": "BB1"
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "CH"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "C"
+  },
+  {
+   "type": "intersection",
+   "id": "R",
+   "line1": "A1B1",
+   "line2": "AB"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AA1",
+   "style": "dashed"
+  },
+  {
+   "segment": "BB1",
+   "style": "dashed"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "line": "AB",
+   "style": "soft"
+  },
+  {
+   "line": "A1B1",
+   "style": "accent"
+  },
+  {
+   "line": "HR",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "A1",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "B1",
+    "A"
+   ]
+  },
+  {
+   "angle": [
+    "H",
+    "R",
+    "A1"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB",
+   "reason": "Окружность с диаметром AB проходит через A1 и B1."
+  },
+  {
+   "type": "circle",
+   "id": "c",
+   "center": "M",
+   "through": "A"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "c",
+   "style": "dashed"
+  }
+ ]
+}

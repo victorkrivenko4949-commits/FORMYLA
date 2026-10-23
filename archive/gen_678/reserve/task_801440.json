@@ -1,0 +1,20 @@
+{
+  "id": 801440,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $D$, $E$, $F$ соответственно таким образом, что $DE \\parallel AB$, $EF \\parallel BC$, $FD \\parallel CA$. Докажите, что треугольник $ABC$ является равносторонним.",
+  "solution": "Обозначим длины сторон $BC = a$, $CA = b$, $AB = c$. Пусть $BD = x$, $CE = y$, $AF = z$ (остальные отрезки сторон выражаются через них).\n\nИз $DE \\parallel AB$ следует подобие треугольников $\\triangle CDE \\sim \\triangle CBA$ (соответствие вершин: $C\\leftrightarrow C$, $D\\leftrightarrow B$, $E\\leftrightarrow A$). Тогда:\n\\[\n\\frac{CD}{CB} = \\frac{CE}{CA} = \\frac{DE}{AB} \\Rightarrow \\frac{a-x}{a} = \\frac{y}{b} = k,\n\\]\nгде $k$ — коэффициент подобия (равный $DE/AB$). Отсюда\n\\[\na-x = ka, \\quad y = kb. \\tag{1}\n\\]\n\nИз $EF \\parallel BC$ получаем $\\triangle AEF \\sim \\triangle ABC$ (соответствие $A\\leftrightarrow A$, $E\\leftrightarrow B$, $F\\leftrightarrow C$):\n\\[\n\\frac{AE}{AB} = \\frac{AF}{AC} = \\frac{EF}{BC} \\Rightarrow \\frac{b-y}{c} = \\frac{z}{b} = k.\n\\]\nСледовательно,\n\\[\nb-y = kc, \\quad z = kb. \\tag{2}\n\\]\n\nИз $FD \\parallel CA$ следует $\\triangle BFD \\sim \\triangle BAC$ (соответствие $B\\leftrightarrow B$, $F\\leftrightarrow C$, $D\\leftrightarrow A$):\n\\[\n\\frac{BF}{BC} = \\frac{BD}{BA} = \\frac{FD}{CA} \\Rightarrow \\frac{c-z}{a} = \\frac{x}{c} = k.\n\\]\nОтсюда\n\\[\nc-z = ka, \\quad x = kc. \\tag{3}\n\\]\n\nИспользуя (1)–(3), выразим $k$ через стороны. Из $x$: из (1) $x = a-ka = a(1-k)$, из (3) $x = kc$. Приравниваем:\n\\[\na(1-k) = kc \\quad\\Rightarrow\\quad a = k(a+c) \\quad\\Rightarrow\\quad k = \\frac{a}{a+c}. \\tag{4}\n\\]\nИз $y$: из (1) $y = kb$, из (2) $y = b-kc$. Приравниваем:\n\\[\nkb = b-kc \\quad\\Rightarrow\\quad k(b+c) = b \\quad\\Rightarrow\\quad k = \\frac{b}{b+c}. \\tag{5}\n\\]\nИз $z$: из (2) $z = kb$, из (3) $z = c-ka$. Приравниваем:\n\\[\nkb = c-ka \\quad\\Rightarrow\\quad k(a+b) = c \\quad\\Rightarrow\\quad k = \\frac{c}{a+b}. \\tag{6}\n\\]\n\nИз (4) и (5): $\\frac{a}{a+c} = \\frac{b}{b+c}$. Домножая крест-накрест: $a(b+c)=b(a+c) \\Rightarrow ab+ac=ab+bc \\Rightarrow ac=bc \\Rightarrow a=b$ (при $c>0$). Аналогично из (5) и (6): $\\frac{b}{b+c}=\\frac{c}{a+b}$. При $a=b$ получаем $\\frac{a}{a+c}=\\frac{c}{2a} \\Rightarrow 2a^2 = c(a+c) \\Rightarrow c^2+ac-2a^2=0 \\Rightarrow (c-a)(c+2a)=0$. Откуда $c=a$ (отрицательное значение $c=-2a$ не подходит). Таким образом, $a=b=c$, т.е. треугольник $ABC$ равносторонний.",
+  "correct_answer": "Треугольник ABC равносторонний.",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Подобие треугольников при параллельных прямых и решение системы уравнений",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.745,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T12:57:56.847799+00:00"
+}

@@ -1,0 +1,117 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "ABH"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "P",
+   "circle": "w1",
+   "angle": 120
+  },
+  {
+   "type": "foot",
+   "id": "A1",
+   "from": "P",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "P",
+   "line": "CA"
+  },
+  {
+   "type": "foot",
+   "id": "C1",
+   "from": "P",
+   "line": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "CP"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "segment": "CP",
+   "style": "soft"
+  },
+  {
+   "segment": "A1P",
+   "style": "dashed"
+  },
+  {
+   "segment": "B1P",
+   "style": "dashed"
+  },
+  {
+   "segment": "C1P",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "P",
+    "A1",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "P",
+    "B1",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "P",
+    "C1",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "CM",
+    "MP"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "A1B1C1",
+   "reason": "Целевая окружность A'B'C'; по доказанному она проходит через M."
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "omega",
+   "style": "accent"
+  }
+ ]
+}

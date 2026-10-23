@@ -1,0 +1,95 @@
+=== FORENSIC FINAL ANALYSIS ===
+Fixed total: 674
+Empty (no statement/answer/solution): 250
+Filled (has statement/answer/solution): 424
+
+=== REGENERATION (509 total results) ===
+  total_failed_audit: 509
+  successfully_regenerated: 501
+  still_failed: 8
+  total_regenerated: 509
+  total_failed: 0
+  pipeline_complete: True
+task_XXX format IDs: 85
+SEL1080-XXXX format IDs: 424
+task_XXX matched in pre_live: 0
+task_XXX NOT in pre_live: 85
+
+=== AUDIT SUMMARY ===
+  total: 674
+  passed: 62
+  minor: 102
+  failed_audit: 509
+  api_failures: 4
+  level_mismatches: 539
+  class_mismatches: 196
+  topic_mismatches: 168
+  condition_issues: 12
+
+=== EMPTY TASKS: AUDIT VERDICT DISTRIBUTION ===
+  None: 182
+  RECHECK: 61
+  QUARANTINE: 7
+
+=== FILLED TASKS: AUDIT VERDICT DISTRIBUTION ===
+  None: 340
+  RECHECK: 77
+  QUARANTINE: 7
+
+=== GAP ANALYSIS ===
+Audit -> passed+minor=164 (no regen needed)
+Audit -> failed_audit=509 (regenerated)
+Audit -> api_failures=4
+
+Expected empty breakdown:
+  passed+minor (never regen): 164
+  task_XXX unmatched (regen but no merge): 85
+  Total expected empty: 249
+  Actual empty: 250
+
+Empty tasks that passed+minor: 0
+Empty tasks that failed: 0
+Empty api_failure: 0
+Empty no_audit: 0
+Sum: 0
+
+=== ROOT CAUSE VERIFICATION ===
+164 (passed+minor) + 85 (unmatched task_XXX) + 1 = 250?
+164 + 85 + 1 = 250
+Out of 509 failed + 4 api_failures = 513
+509 regenerated - 424 merged = 85 unmatched
+4 api_failures had NO regeneration at all
+So: 164 (passed+minor, no regen) + 85 (regen but no merge) + 1 (api_failure?) = 250
+
+=== FIX PLAN ===
+To fill the 250 empty tasks, we need to:
+  1. For 164 passed+minor tasks: extract statement/answer/solution from task_text
+     OR regenerate them through AI too
+  2. For 85 task_XXX tasks: fix ID format to SEL1080-XXXX and re-run merge
+  3. For api_failures: regenerate them
+
+=== SAMPLE: EMPTY PASSED TASKS ===
+
+=== SAMPLE: EMPTY FAILED TASKS (task_XXX format) ===
+
+=== FIX: REMATCH task_XXX ===
+  task_25 -> source_task.original_id = task_25
+    task_index = 25
+  task_26 -> source_task.original_id = task_26
+    task_index = 26
+  task_136 -> source_task.original_id = task_136
+    task_index = 136
+  task_138 -> source_task.original_id = task_138
+    task_index = 138
+  task_139 -> source_task.original_id = task_139
+    task_index = 139
+  task_140 -> source_task.original_id = task_140
+    task_index = 140
+  task_144 -> source_task.original_id = task_144
+    task_index = 144
+  task_145 -> source_task.original_id = task_145
+    task_index = 145
+  task_146 -> source_task.original_id = task_146
+    task_index = 146
+  task_147 -> source_task.original_id = task_147
+    task_index = 147

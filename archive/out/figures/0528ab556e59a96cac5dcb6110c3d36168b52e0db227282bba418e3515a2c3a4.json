@@ -1,0 +1,173 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "BD"
+  },
+  {
+   "type": "reflect_point",
+   "id": "C1",
+   "of": "C",
+   "over": "E"
+  },
+  {
+   "type": "circle",
+   "id": "s1",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "s1",
+   "line": "C1B",
+   "pick": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "O1",
+   "of": "AM"
+  },
+  {
+   "type": "reflect_point",
+   "id": "N",
+   "of": "B",
+   "over": "O1"
+  },
+  {
+   "type": "foot",
+   "id": "F",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "E2",
+   "of": "BF"
+  },
+  {
+   "type": "reflect_point",
+   "id": "A2",
+   "of": "A",
+   "over": "E2"
+  },
+  {
+   "type": "circle",
+   "id": "s2",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "line_circle",
+   "id": "L",
+   "circle": "s2",
+   "line": "A2B",
+   "pick": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "O2",
+   "of": "LC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "K",
+   "of": "B",
+   "over": "O2"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABMN"
+  },
+  {
+   "polygon": "LBCK"
+  },
+  {
+   "line": "AL",
+   "style": "accent"
+  },
+  {
+   "line": "NK",
+   "style": "accent"
+  },
+  {
+   "line": "MC",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "M"
+   ]
+  },
+  {
+   "right_angle": [
+    "L",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "AB",
+    "KC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BM",
+    "BC"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "ABM"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "LBC"
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "AL",
+   "line2": "NK"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w1",
+   "style": "dashed"
+  },
+  {
+   "circle": "w2",
+   "style": "dashed"
+  }
+ ],
+ "reason": "X — точка пересечения прямых AL и NK; она же вторая точка пересечения окружностей прямоугольников и лежит на MC."
+}

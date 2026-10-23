@@ -1,0 +1,69 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ZAB",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "ZA",
+   "ratio": 0.8
+  },
+  {
+   "type": "point_on_segment",
+   "id": "C",
+   "of": "ZB",
+   "ratio": 0.6
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AC",
+   "ratio": 0.3333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "BD",
+   "ratio": 0.75
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "PQ",
+   "line2": "AD"
+  },
+  {
+   "type": "intersection",
+   "id": "Y",
+   "line1": "PQ",
+   "line2": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "segment": "PQ",
+   "style": "soft"
+  },
+  {
+   "polygon": "XYZ",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

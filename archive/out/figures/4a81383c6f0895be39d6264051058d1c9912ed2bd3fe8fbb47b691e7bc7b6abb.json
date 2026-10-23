@@ -1,0 +1,127 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "circle",
+   "id": "alpha",
+   "center": "A",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "beta",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "circle_circle",
+   "id": "D",
+   "circle1": "alpha",
+   "circle2": "beta",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "K",
+   "circle": "alpha",
+   "line": "AB",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "L",
+   "circle": "beta",
+   "line": "AB",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "N",
+   "circle": "beta",
+   "line": "DK",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "alpha",
+   "line": "DL",
+   "pick": 1
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC",
+   "style": "soft"
+  },
+  {
+   "circle": "alpha"
+  },
+  {
+   "circle": "beta"
+  },
+  {
+   "segment": "AB",
+   "style": "dashed"
+  },
+  {
+   "segment": "DN",
+   "style": "soft"
+  },
+  {
+   "segment": "DM",
+   "style": "soft"
+  },
+  {
+   "polygon": "KLMN",
+   "style": "accent"
+  },
+  {
+   "segment": "KM",
+   "style": "accent"
+  },
+  {
+   "segment": "LN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AC",
+    "AK"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "BL"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "CKL",
+   "reason": "Окружность, центр которой по решению совпадает с искомой точкой I"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "omega",
+   "style": "dashed"
+  }
+ ]
+}

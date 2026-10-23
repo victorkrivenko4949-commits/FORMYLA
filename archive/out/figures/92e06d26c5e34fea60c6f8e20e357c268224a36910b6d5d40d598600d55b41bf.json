@@ -1,0 +1,305 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "square"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X1",
+   "of": "AB",
+   "ratio": 0.1
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X2",
+   "of": "AB",
+   "ratio": 0.2
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X3",
+   "of": "AB",
+   "ratio": 0.3
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X4",
+   "of": "AB",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X5",
+   "of": "AB",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X6",
+   "of": "AB",
+   "ratio": 0.6
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X7",
+   "of": "AB",
+   "ratio": 0.7
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X8",
+   "of": "AB",
+   "ratio": 0.8
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X9",
+   "of": "AB",
+   "ratio": 0.9
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y1",
+   "of": "DC",
+   "ratio": 0.1
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y2",
+   "of": "DC",
+   "ratio": 0.2
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y3",
+   "of": "DC",
+   "ratio": 0.3
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y4",
+   "of": "DC",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y5",
+   "of": "DC",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y6",
+   "of": "DC",
+   "ratio": 0.6
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y7",
+   "of": "DC",
+   "ratio": 0.7
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y8",
+   "of": "DC",
+   "ratio": 0.8
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y9",
+   "of": "DC",
+   "ratio": 0.9
+  },
+  {
+   "type": "point_on_segment",
+   "id": "U1",
+   "of": "AD",
+   "ratio": 0.1
+  },
+  {
+   "type": "point_on_segment",
+   "id": "U2",
+   "of": "AD",
+   "ratio": 0.2
+  },
+  {
+   "type": "point_on_segment",
+   "id": "U3",
+   "of": "AD",
+   "ratio": 0.3
+  },
+  {
+   "type": "point_on_segment",
+   "id": "U4",
+   "of": "AD",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "U5",
+   "of": "AD",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "U6",
+   "of": "AD",
+   "ratio": 0.6
+  },
+  {
+   "type": "point_on_segment",
+   "id": "U7",
+   "of": "AD",
+   "ratio": 0.7
+  },
+  {
+   "type": "point_on_segment",
+   "id": "U8",
+   "of": "AD",
+   "ratio": 0.8
+  },
+  {
+   "type": "point_on_segment",
+   "id": "U9",
+   "of": "AD",
+   "ratio": 0.9
+  },
+  {
+   "type": "point_on_segment",
+   "id": "V1",
+   "of": "BC",
+   "ratio": 0.1
+  },
+  {
+   "type": "point_on_segment",
+   "id": "V2",
+   "of": "BC",
+   "ratio": 0.2
+  },
+  {
+   "type": "point_on_segment",
+   "id": "V3",
+   "of": "BC",
+   "ratio": 0.3
+  },
+  {
+   "type": "point_on_segment",
+   "id": "V4",
+   "of": "BC",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "V5",
+   "of": "BC",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "V6",
+   "of": "BC",
+   "ratio": 0.6
+  },
+  {
+   "type": "point_on_segment",
+   "id": "V7",
+   "of": "BC",
+   "ratio": 0.7
+  },
+  {
+   "type": "point_on_segment",
+   "id": "V8",
+   "of": "BC",
+   "ratio": 0.8
+  },
+  {
+   "type": "point_on_segment",
+   "id": "V9",
+   "of": "BC",
+   "ratio": 0.9
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "X1Y1",
+   "style": "soft"
+  },
+  {
+   "segment": "X2Y2",
+   "style": "soft"
+  },
+  {
+   "segment": "X3Y3",
+   "style": "soft"
+  },
+  {
+   "segment": "X4Y4",
+   "style": "soft"
+  },
+  {
+   "segment": "X5Y5",
+   "style": "soft"
+  },
+  {
+   "segment": "X6Y6",
+   "style": "soft"
+  },
+  {
+   "segment": "X7Y7",
+   "style": "soft"
+  },
+  {
+   "segment": "X8Y8",
+   "style": "soft"
+  },
+  {
+   "segment": "X9Y9",
+   "style": "soft"
+  },
+  {
+   "segment": "U1V1",
+   "style": "soft"
+  },
+  {
+   "segment": "U2V2",
+   "style": "soft"
+  },
+  {
+   "segment": "U3V3",
+   "style": "soft"
+  },
+  {
+   "segment": "U4V4",
+   "style": "soft"
+  },
+  {
+   "segment": "U5V5",
+   "style": "soft"
+  },
+  {
+   "segment": "U6V6",
+   "style": "soft"
+  },
+  {
+   "segment": "U7V7",
+   "style": "soft"
+  },
+  {
+   "segment": "U8V8",
+   "style": "soft"
+  },
+  {
+   "segment": "U9V9",
+   "style": "soft"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

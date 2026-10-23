@@ -1,0 +1,130 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 10,
+   "y": 0
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "AB",
+   "ratio": 0.6
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AB",
+   "ratio": 0.4
+  },
+  {
+   "type": "circle",
+   "id": "cA",
+   "center": "A",
+   "through": "Q"
+  },
+  {
+   "type": "circle",
+   "id": "cB",
+   "center": "B",
+   "through": "P"
+  },
+  {
+   "type": "circle_circle",
+   "id": "C",
+   "circle1": "cA",
+   "circle2": "cB",
+   "pick": 0
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "isosceles"
+  },
+  {
+   "type": "triangle",
+   "id": "CPQ",
+   "kind": "isosceles"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "J",
+   "of": "CPQ"
+  },
+  {
+   "type": "incircle",
+   "id": "wABC",
+   "of": "ABC"
+  },
+  {
+   "type": "incircle",
+   "id": "wCPQ",
+   "of": "CPQ"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "CPQ"
+  },
+  {
+   "circle": "wABC"
+  },
+  {
+   "circle": "wCPQ"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AQ",
+    "AC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BP",
+    "BC"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "circle",
+   "id": "circCPQ",
+   "center": "I",
+   "through": "C",
+   "reason": "I — центр описанной окружности CPQ (биссектрисы A и B — серединные перпендикуляры к CQ и CP)"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "circCPQ",
+   "style": "dashed"
+  },
+  {
+   "segment": "AI",
+   "style": "soft"
+  },
+  {
+   "segment": "BI",
+   "style": "soft"
+  }
+ ]
+}

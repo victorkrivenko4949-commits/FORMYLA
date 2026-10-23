@@ -1,0 +1,13 @@
+Total crosswalk entries: 665
+Total unresolved: 617
+Total resolved: 48
+
+--- Unresolved by bank_level ---
+Traceback (most recent call last):
+  File "c:\Users\Victor\Desktop\Новая папка (2)\l4_l5_finalization\taxonomy_reconstruction\_diag_unresolved.py", line 95, in <module>
+    main()
+    ~~~~^^
+  File "c:\Users\Victor\Desktop\Новая папка (2)\l4_l5_finalization\taxonomy_reconstruction\_diag_unresolved.py", line 30, in main
+    for level, count in sorted(level_counts.items()):
+                        ~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+TypeError: '<' not supported between instances of 'NoneType' and 'int'

@@ -1,0 +1,38 @@
+{
+  "analysis_timestamp": "2026-07-18T22:47:00+03:00",
+  "total_recheck": 3,
+  "resolved": 3,
+  "resolutions": [
+    {
+      "original_id": "SEL1080-0963",
+      "resolution": "APPROVE",
+      "rationale": "False positive by pattern detector. 'произвольный' is used correctly in the standard formulation of the classic 8x8 L-tromino tiling problem. Grade 6 is appropriate for this difficulty 8 problem.",
+      "issues_resolved": [
+        "ambiguous_pattern:произвольный - correctly used in context",
+        "potential_grade_mismatch - class 6 appropriate for this problem"
+      ]
+    },
+    {
+      "original_id": "SEL1080-0976",
+      "resolution": "APPROVE",
+      "rationale": "Not a true duplicate. SEL1080-0976 restricts only rows, columns, and 45° diagonals. SEL1080-1011 restricts ALL lines (any slope). Different constraints, different solutions, different class levels. False positive by duplicate detector.",
+      "issues_resolved": [
+        "duplicate_cluster - constraints differ (45° only vs any slope)"
+      ]
+    },
+    {
+      "original_id": "SEL1080-1011",
+      "resolution": "APPROVE",
+      "rationale": "Not a true duplicate. SEL1080-1011 restricts ALL lines (any slope) which is a harder combinatorial geometry problem than SEL1080-0976 (rows/columns/45° only). Different constraints, different class level. False positive by duplicate detector.",
+      "issues_resolved": [
+        "duplicate_cluster - constraints differ (any slope vs 45° only)"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "approved": 3,
+    "rejected": 0,
+    "note": "All 3 RECHECK tasks are false positives - ambiguity detector and duplicate detector flagged them incorrectly. All are valid, distinct tasks."
+  }
+}

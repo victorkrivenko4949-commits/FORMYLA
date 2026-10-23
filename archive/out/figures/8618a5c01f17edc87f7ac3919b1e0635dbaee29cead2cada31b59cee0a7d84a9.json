@@ -1,0 +1,52 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "AI",
+   "line2": "BC"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "BI",
+   "line2": "CA"
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "CI",
+   "line2": "AB"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AK",
+   "style": "accent"
+  },
+  {
+   "segment": "BL",
+   "style": "accent"
+  },
+  {
+   "segment": "CM",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

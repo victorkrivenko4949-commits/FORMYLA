@@ -1,0 +1,59 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AB",
+   "ratio": 0.375
+  },
+  {
+   "type": "foot",
+   "id": "F",
+   "from": "E",
+   "line": "DC"
+  }
+ ],
+ "draw": [
+  {
+   "segment": "AB",
+   "style": "accent"
+  },
+  {
+   "segment": "BC"
+  },
+  {
+   "segment": "CD"
+  },
+  {
+   "segment": "DA",
+   "style": "accent"
+  },
+  {
+   "segment": "EF",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "D",
+    "A",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "E",
+    "F"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

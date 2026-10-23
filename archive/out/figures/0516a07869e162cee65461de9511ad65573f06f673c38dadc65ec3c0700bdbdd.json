@@ -1,0 +1,118 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O1",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "O2",
+   "x": 5,
+   "y": 0
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "O1O2",
+   "ratio": 0.4
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "O1",
+   "through": "P"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "O2",
+   "through": "P"
+  },
+  {
+   "type": "tangent_point",
+   "id": "P2",
+   "circle": "w2",
+   "from": "O1",
+   "pick": 0
+  },
+  {
+   "type": "tangent_point",
+   "id": "P1",
+   "circle": "w1",
+   "from": "O2",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "O1P2",
+   "line2": "O2P1"
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w1"
+  },
+  {
+   "circle": "w2"
+  },
+  {
+   "segment": "O1O2",
+   "style": "dashed"
+  },
+  {
+   "line": "O1P2"
+  },
+  {
+   "line": "O2P1"
+  },
+  {
+   "segment": "O1P1",
+   "style": "dashed"
+  },
+  {
+   "segment": "O2P2",
+   "style": "dashed"
+  },
+  {
+   "segment": "KP",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O2",
+    "P1",
+    "O1"
+   ]
+  },
+  {
+   "right_angle": [
+    "O1",
+    "P2",
+    "O2"
+   ]
+  },
+  {
+   "angle": [
+    "O1",
+    "K",
+    "P"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "P",
+    "K",
+    "O2"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

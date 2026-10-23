@@ -1,0 +1,112 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AC",
+   "ratio": 0.65
+  },
+  {
+   "type": "triangle",
+   "id": "APD",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AD"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "CD"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "APD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC"
+  },
+  {
+   "polygon": "APD"
+  },
+  {
+   "segment": "AH",
+   "style": "dashed"
+  },
+  {
+   "segment": "DH",
+   "style": "dashed"
+  },
+  {
+   "segment": "PH",
+   "style": "dashed"
+  },
+  {
+   "line": "MH",
+   "style": "accent"
+  },
+  {
+   "line": "PN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "AD"
+   ],
+   "ticks": 3
+  },
+  {
+   "equal": [
+    "AM",
+    "MD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CN",
+    "ND"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AC",
+   "line2": "BD",
+   "reason": "Центр O квадрата нужен для поворота на 90°, переводящего M в N и H в P."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "segment": "OP",
+   "style": "dashed"
+  },
+  {
+   "segment": "OH",
+   "style": "dashed"
+  }
+ ]
+}

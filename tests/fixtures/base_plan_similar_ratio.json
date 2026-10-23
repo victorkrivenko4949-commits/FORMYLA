@@ -1,0 +1,113 @@
+{
+  "version": 2,
+  "canvas": {
+    "width": 600,
+    "height": 500,
+    "margin": 40
+  },
+  "constructions": [
+    {
+      "type": "free_point",
+      "id": "A",
+      "x": 300,
+      "y": 60
+    },
+    {
+      "type": "free_point",
+      "id": "B",
+      "x": 100,
+      "y": 420
+    },
+    {
+      "type": "free_point",
+      "id": "C",
+      "x": 520,
+      "y": 420
+    },
+    {
+      "type": "free_point",
+      "id": "D",
+      "x": 166.66666666666669,
+      "y": 300.0
+    },
+    {
+      "type": "free_point",
+      "id": "E",
+      "x": 446.66666666666663,
+      "y": 300.0
+    },
+    {
+      "type": "segment",
+      "id": "AB",
+      "p1": "A",
+      "p2": "B"
+    },
+    {
+      "type": "segment",
+      "id": "AC",
+      "p1": "A",
+      "p2": "C"
+    },
+    {
+      "type": "segment",
+      "id": "BC",
+      "p1": "B",
+      "p2": "C"
+    },
+    {
+      "type": "segment",
+      "id": "DE",
+      "p1": "D",
+      "p2": "E",
+      "visual_role": "key_point"
+    },
+    {
+      "type": "length_label",
+      "id": "len_AD",
+      "p1": "A",
+      "p2": "D",
+      "text": "2"
+    },
+    {
+      "type": "length_label",
+      "id": "len_DB",
+      "p1": "D",
+      "p2": "B",
+      "text": "1"
+    },
+    {
+      "type": "length_label",
+      "id": "len_AE",
+      "p1": "A",
+      "p2": "E",
+      "text": "2"
+    },
+    {
+      "type": "length_label",
+      "id": "len_EC",
+      "p1": "E",
+      "p2": "C",
+      "text": "1"
+    },
+    {
+      "type": "parallel_mark",
+      "id": "mark_DE_BC",
+      "p1": "D",
+      "p2": "E",
+      "p3": "B",
+      "p4": "C",
+      "visual_role": "given_mark"
+    }
+  ],
+  "given_marks": [],
+  "assumptions": [
+    "D задана точными координатами D = A + (2/3)*(B-A), чтобы численно обеспечить AD:DB = 2:1, так как point_on_segment с ratio=2/3 даёт эквивалентный результат, но здесь используются явные вычисленные координаты по требованию задачи.",
+    "E задана точными координатами E = A + (2/3)*(C-A), чтобы численно обеспечить AE:EC = 2:1.",
+    "Метка parallel_mark для DE||BC отражает цель доказательства (искомый факт), а не дано условия; она численно подтверждена вычислением векторного произведения DE и BC (равно 0)."
+  ],
+  "aux": {
+    "has_aux": false,
+    "reason": "",
+    "constructions": []
+  }
+}

@@ -1,0 +1,57 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "incircle",
+   "id": "w1",
+   "of": "ACH"
+  },
+  {
+   "type": "incircle",
+   "id": "w2",
+   "of": "CBH"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CH"
+  },
+  {
+   "circle": "w1"
+  },
+  {
+   "circle": "w2"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "C"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

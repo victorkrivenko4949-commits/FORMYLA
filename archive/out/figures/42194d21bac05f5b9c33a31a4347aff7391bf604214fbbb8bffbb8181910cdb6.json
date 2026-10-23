@@ -1,0 +1,138 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 6,
+   "y": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "AD"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "AO",
+   "ratio": 0.333333
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "O",
+   "through": "Q"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "P",
+   "circle": "w1",
+   "angle": 90
+  },
+  {
+   "type": "reflect_point",
+   "id": "X",
+   "of": "O",
+   "over": "P"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "B",
+   "of": "AX",
+   "ratio": 0.8
+  },
+  {
+   "type": "point_on_segment",
+   "id": "C",
+   "of": "DX",
+   "ratio": 0.8
+  },
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "AXD"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "AXD"
+  },
+  {
+   "type": "circumcircle",
+   "id": "gamma",
+   "of": "BIC"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "gamma",
+   "line": "AB",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "circle": "gamma",
+   "style": "dashed"
+  },
+  {
+   "line": "CE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "CD"
+   ],
+   "ticks": 1
+  },
+  {
+   "right_angle": [
+    "I",
+    "O",
+    "D"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "segment",
+   "id": "CI",
+   "reason": "CI — ось симметрии, относительно которой CE является образом CD"
+  },
+  {
+   "type": "segment",
+   "id": "IO",
+   "reason": "радиус к точке касания с AD"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CI",
+   "style": "soft"
+  },
+  {
+   "segment": "IO",
+   "style": "soft"
+  }
+ ]
+}

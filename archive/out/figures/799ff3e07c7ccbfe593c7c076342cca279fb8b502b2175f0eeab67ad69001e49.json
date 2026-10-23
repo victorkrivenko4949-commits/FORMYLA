@@ -1,0 +1,78 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AE",
+   "style": "accent"
+  },
+  {
+   "segment": "DE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "BE",
+    "EC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "E"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "E",
+    "A",
+    "D"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "line_circle",
+   "id": "F",
+   "circle": "w",
+   "line": "AD",
+   "pick": 1
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "EF",
+   "style": "soft"
+  }
+ ],
+ "reason": "Точка F на AD строится так, что AF=AB; тогда FD=CD, и из равенства треугольников AEB и AEF следует EF=BE=EC."
+}

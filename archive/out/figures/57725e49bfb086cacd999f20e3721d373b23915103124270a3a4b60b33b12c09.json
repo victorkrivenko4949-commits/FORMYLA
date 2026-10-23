@@ -1,0 +1,104 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "A",
+   "line": "CO"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "AH",
+   "style": "soft"
+  },
+  {
+   "line": "CO",
+   "style": "soft"
+  },
+  {
+   "segment": "AP",
+   "style": "soft"
+  },
+  {
+   "line": "HP",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "P",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "AM",
+    "MB"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AC"
+  },
+  {
+   "type": "circle",
+   "id": "omega",
+   "center": "N",
+   "through": "A"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "omega",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Окружность с диаметром AC содержит H и P (∠AHC=∠APC=90°), используется в доказательстве."
+}

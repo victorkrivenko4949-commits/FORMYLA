@@ -1,0 +1,114 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "F",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "G",
+   "of": "CD"
+  },
+  {
+   "type": "midpoint",
+   "id": "H",
+   "of": "DA"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "EG",
+   "line2": "FH"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "EG",
+   "style": "accent"
+  },
+  {
+   "segment": "FH",
+   "style": "accent"
+  },
+  {
+   "polygon": "AOH",
+   "style": "soft"
+  },
+  {
+   "polygon": "COG",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AE",
+    "EB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BF",
+    "FC"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "CG",
+    "GD"
+   ],
+   "ticks": 3
+  },
+  {
+   "equal": [
+    "DH",
+    "HA"
+   ],
+   "ticks": 4
+  },
+  {
+   "equal": [
+    "OE",
+    "OG"
+   ],
+   "ticks": 5
+  },
+  {
+   "equal": [
+    "OF",
+    "OH"
+   ],
+   "ticks": 6
+  }
+ ],
+ "aux": [
+  {
+   "type": "quad",
+   "id": "EFGH",
+   "kind": "parallelogram",
+   "reason": "Середины сторон образуют параллелограмм Вариньона; его диагонали EG и FH делят его на четыре равновеликих треугольника."
+  }
+ ],
+ "draw_aux": [
+  {
+   "polygon": "EFGH",
+   "style": "dashed"
+  }
+ ]
+}

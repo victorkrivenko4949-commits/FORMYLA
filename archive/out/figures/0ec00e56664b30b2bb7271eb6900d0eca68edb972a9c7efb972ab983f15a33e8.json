@@ -1,0 +1,76 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "midpoint",
+   "id": "Ma",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "Mb",
+   "of": "CA"
+  },
+  {
+   "type": "midpoint",
+   "id": "Mc",
+   "of": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "La",
+   "line1": "AI",
+   "line2": "BC"
+  },
+  {
+   "type": "intersection",
+   "id": "Lb",
+   "line1": "BI",
+   "line2": "CA"
+  },
+  {
+   "type": "intersection",
+   "id": "Lc",
+   "line1": "CI",
+   "line2": "AB"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "ALa"
+  },
+  {
+   "segment": "BLb"
+  },
+  {
+   "segment": "CLc"
+  },
+  {
+   "segment": "AMa",
+   "style": "dashed"
+  },
+  {
+   "segment": "BMb",
+   "style": "dashed"
+  },
+  {
+   "segment": "CMc",
+   "style": "dashed"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,38 @@
+
+========== /prep/probe STATUS 200 len=77706 ==========
+  unifiedKeyboard      count=4
+  openKbFor            count=2
+  kbInsert             count=100
+  math_keyboard        count=0
+  kb-field-btn         count=5
+  openKeyboard         count=3
+  kbBackdrop           count=3
+  dtToggleKeyboard     count=0
+  openTaskModal        count=0
+  renderTasks          count=0
+  openTask             count=0
+  def function openKeyboard        count=0
+  def function closeKeyboard       count=0
+  def function kbInsert            count=0
+  def window.openKeyboard          count=3
+  def window.kbInsert              count=1
+  def window.openKbFor             count=2
+
+========== /daily_tasks STATUS 200 len=136142 ==========
+  unifiedKeyboard      count=4
+  openKbFor            count=4
+  kbInsert             count=100
+  math_keyboard        count=0
+  kb-field-btn         count=7
+  openKeyboard         count=3
+  kbBackdrop           count=3
+  dtToggleKeyboard     count=0
+  openTaskModal        count=0
+  renderTasks          count=3
+  openTask             count=2
+  def function openKeyboard        count=0
+  def function closeKeyboard       count=0
+  def function kbInsert            count=0
+  def window.openKeyboard          count=3
+  def window.kbInsert              count=1
+  def window.openKbFor             count=2

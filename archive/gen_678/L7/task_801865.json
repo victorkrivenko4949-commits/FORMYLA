@@ -1,0 +1,20 @@
+{
+  "id": 801865,
+  "task_text": "В треугольнике $ABC$ на сторонах $AB$ и $AC$ выбраны точки $M$ и $N$ соответственно. Докажите, что середина отрезка $MN$ лежит на прямой, проходящей через середину $BC$ и параллельной биссектрисе угла $A$, **тогда и только тогда**, когда $BM = CN$.",
+  "solution": "Введём систему координат: поместим вершину $A$ в начало, $AB$ направим по оси $Ox$. Пусть $AB = c$, $AC = b$, $\\angle A = \\alpha$. Тогда $A(0,0)$, $B(c,0)$, $C(b\\cos\\alpha,\\; b\\sin\\alpha)$. \n\nТочка $M$ лежит на $AB$, поэтому $M=(x,0)$ с $0\\le x\\le c$, и $BM = c-x$. Точка $N$ лежит на $AC$, поэтому $N=(t\\,b\\cos\\alpha,\\; t\\,b\\sin\\alpha)$ для некоторого $t\\in[0,1]$, и $CN = (1-t)b$. \n\nСередина $P$ отрезка $MN$:\n$$P = \\left(\\frac{x+t b\\cos\\alpha}{2},\\; \\frac{t b\\sin\\alpha}{2}\\right).$$\nСередина $Q$ отрезка $BC$:\n$$Q = \\left(\\frac{c+b\\cos\\alpha}{2},\\; \\frac{b\\sin\\alpha}{2}\\right).$$\nВектор $\\vec{PQ} = P - Q$:\n$$\\vec{PQ} = \\left(\\frac{x+t b\\cos\\alpha - c - b\\cos\\alpha}{2},\\; \\frac{t b\\sin\\alpha - b\\sin\\alpha}{2}\\right) = \\frac{1}{2}\\bigl(x - c + b\\cos\\alpha(t-1),\\; b\\sin\\alpha(t-1)\\bigr).$$\n\nНаправление биссектрисы угла $A$ задаётся вектором $(\\cos\\frac{\\alpha}{2},\\sin\\frac{\\alpha}{2})$ или, с точностью до положительного множителя, $(1+\\cos\\alpha,\\sin\\alpha)$, так как $(1+\\cos\\alpha,\\sin\\alpha)=2\\cos\\frac{\\alpha}{2}(\\cos\\frac{\\alpha}{2},\\sin\\frac{\\alpha}{2})$.\n\n**Прямое утверждение ($BM=CN$ ⇒ середина $MN$ лежит на указанной прямой).** Если $BM=CN$, то $c-x = (1-t)b$, откуда $x = c - b(1-t)$. Подставим в $\\vec{PQ}$:\n$$\\vec{PQ} = \\frac{1}{2}\\bigl(c - b(1-t) - c + b\\cos\\alpha(t-1),\\; b\\sin\\alpha(t-1)\\bigr) = \\frac{b(t-1)}{2}\\bigl(1+\\cos\\alpha,\\; \\sin\\alpha\\bigr).$$\nЗначит, $\\vec{PQ}$ параллелен $(1+\\cos\\alpha,\\sin\\alpha)$, т.е. биссектрисе. Следовательно, $P$ лежит на прямой через $Q$ с этим направлением.\n\n**Обратное утверждение (середина $MN$ лежит на указанной прямой ⇒ $BM=CN$).** Если $P$ лежит на прямой, проходящей через $Q$ параллельно биссектрисе, то $\\vec{PQ}$ коллинеарен вектору $(1+\\cos\\alpha,\\sin\\alpha)$. Это означает, что существует число $\\lambda$ такое, что\n$$\\frac{1}{2}\\bigl(x - c + b\\cos\\alpha(t-1),\\; b\\sin\\alpha(t-1)\\bigr) = \\lambda(1+\\cos\\alpha,\\; \\sin\\alpha).$$\nИз второго равенства: $\\frac{b\\sin\\alpha(t-1)}{2} = \\lambda \\sin\\alpha$. Если $\\sin\\alpha \\neq 0$ (т.е. $\\alpha \\neq 0^\\circ, 180^\\circ$, что верно для невырожденного треугольника), то $\\lambda = \\frac{b(t-1)}{2}$. Подставим в первое равенство:\n$$\\frac{x - c + b\\cos\\alpha(t-1)}{2} = \\frac{b(t-1)}{2}(1+\\cos\\alpha).$$\nУмножая на $2$ и раскрывая скобки:\n$$x - c + b\\cos\\alpha(t-1) = b(t-1) + b(t-1)\\cos\\alpha.$$\nПриводим подобные: $x - c = b(t-1) + b(t-1)\\cos\\alpha - b\\cos\\alpha(t-1) = b(t-1)$. Таким образом,\n$$x - c = b(t-1) \\quad \\Rightarrow \\quad c - x = b(1-t).$$\nНо $c-x = BM$, $b(1-t)=CN$. Следовательно, $BM = CN$.\n\nЕсли $\\sin\\alpha = 0$, то треугольник вырожден (угол $A$ равен $0^\\circ$ или $180^\\circ$), что не рассматривается. Таким образом, обратное утверждение также доказано.\n\nИтак, середина отрезка $MN$ лежит на прямой через середину $BC$, параллельной биссектрисе $\\angle A$, **тогда и только тогда**, когда $BM = CN$.",
+  "correct_answer": "Условие $BM = CN$ является необходимым и достаточным.",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Координатный метод с векторным анализом",
+  "idea_count": 3,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T14:26:42.786057+00:00"
+}

@@ -1,0 +1,33 @@
+MODEL MODE SMOKE TEST — V3 Policy Verification
+Project: c:\Users\Victor\Downloads\FORMYLA_CONDITION_COURT
+Output: c:\Users\Victor\Downloads\FORMYLA_CONDITION_COURT\outputs\live_calibration_v2\model_mode_smoke_test.json
+
+======================================================================
+[TEST 1] Non-thinking: standard_reviewer (deepseek-v4-flash)
+======================================================================
+  Model configured: deepseek-v4-flash
+  Reasoning enabled: False
+  Temperature: 0.1
+  Mode: non_thinking
+  WARNING: Non-thinking call has thinking_confirmed=True (unexpected)
+  OK: Got parseable response: answer=99
+  Elapsed: 3.74s
+
+======================================================================
+[TEST 2] Thinking: reasoning_reviewer (deepseek-v4-pro)
+======================================================================
+  Model configured: deepseek-v4-pro
+  Reasoning enabled: True
+  Temperature: 0.1
+  Mode: thinking
+  PASS: Thinking mode confirmed — reasoning_content was returned
+  V3 Policy verification: deepseek-v4-pro with thinking=enabled is the correct reasoning model
+  OK: Got parseable response: answer=99
+  Elapsed: 6.23s
+
+======================================================================
+OVERALL VERDICT: PASS
+======================================================================
+
+Results saved to: c:\Users\Victor\Downloads\FORMYLA_CONDITION_COURT\outputs\live_calibration_v2\model_mode_smoke_test.json
+Overall verdict: PASS

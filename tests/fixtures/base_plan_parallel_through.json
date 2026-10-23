@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "canvas": {"width": 600, "height": 500, "margin": 40},
+  "constructions": [
+    {"type": "free_point", "id": "A", "x": 150, "y": 80},
+    {"type": "free_point", "id": "B", "x": 100, "y": 420},
+    {"type": "free_point", "id": "C", "x": 520, "y": 420},
+    {"type": "segment", "id": "AB", "p1": "A", "p2": "B"},
+    {"type": "segment", "id": "AC", "p1": "A", "p2": "C"},
+    {"type": "segment", "id": "BC", "p1": "B", "p2": "C"},
+    {"type": "point_on_segment", "id": "D", "p1": "C", "p2": "A", "ratio": 0.6, "visual_role": "key_point"},
+    {"type": "point_on_segment", "id": "E", "p1": "C", "p2": "B", "ratio": 0.6, "visual_role": "key_point"},
+    {"type": "segment", "id": "DE", "p1": "D", "p2": "E"},
+    {"type": "parallel_mark", "id": "par_DE_AB", "p1": "D", "p2": "E", "p3": "A", "p4": "B"}
+  ],
+  "given_marks": [
+    {"type": "parallel_mark", "p1": "D", "p2": "E", "p3": "A", "p4": "B"}
+  ],
+  "assumptions": [
+    "Точка D выбрана на стороне AC с отношением CD:CA = 0.6 (конкретное значение не задано в условии, взято произвольно для построения чертежа).",
+    "Точка E на стороне BC выбрана с тем же отношением CE:CB = 0.6, чтобы прямая DE была численно параллельна AB, как того требует условие."
+  ],
+  "aux": {"has_aux": false, "reason": "", "constructions": []}
+}

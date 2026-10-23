@@ -1,0 +1,104 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "CI"
+  },
+  {
+   "type": "reflect_point",
+   "id": "R",
+   "of": "A",
+   "over": "M"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AB",
+   "line2": "IR"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "BC",
+   "line2": "IR"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AI",
+   "style": "soft"
+  },
+  {
+   "segment": "CI",
+   "style": "soft"
+  },
+  {
+   "segment": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AP",
+    "PI"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CQ",
+    "QI"
+   ],
+   "ticks": 2
+  },
+  {
+   "angle": [
+    "P",
+    "A",
+    "I"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "P",
+    "I",
+    "A"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "Q",
+    "C",
+    "I"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "Q",
+    "I",
+    "C"
+   ],
+   "text": "β"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

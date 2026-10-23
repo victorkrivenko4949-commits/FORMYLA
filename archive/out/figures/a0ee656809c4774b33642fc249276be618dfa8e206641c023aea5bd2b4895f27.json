@@ -1,0 +1,75 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "CD",
+   "ratio": 0.4
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AK"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "K"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "K",
+    "A",
+    "D"
+   ],
+   "text": "α"
+  },
+  {
+   "equal": [
+    "DK",
+    "BC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_line",
+   "id": "D1",
+   "of": "D",
+   "over": "AK",
+   "reason": "Точка D' симметрична D относительно биссектрисы AK, лежит на луче AB и AD'=AD"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AD1",
+   "style": "dashed"
+  },
+  {
+   "segment": "BD1",
+   "style": "dashed"
+  },
+  {
+   "segment": "D1K",
+   "style": "dashed"
+  },
+  {
+   "segment": "BK",
+   "style": "dashed"
+  }
+ ]
+}

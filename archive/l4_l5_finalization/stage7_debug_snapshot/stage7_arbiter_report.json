@@ -1,0 +1,10 @@
+{
+  "total_checked": 114,
+  "arbiter_answer_fail": 13,
+  "arbiter_solution_fail": 13,
+  "arbiter_proof_fail": 3,
+  "all_arbiter_pass": 99,
+  "solver_b_not_called_arbiter_analyzed": 28,
+  "solver_b_not_called_arbiter_data_uses_solver_a": 0,
+  "samples": []
+}

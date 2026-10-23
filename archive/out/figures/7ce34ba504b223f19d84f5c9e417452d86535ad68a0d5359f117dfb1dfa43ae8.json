@@ -1,0 +1,140 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 4,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 0,
+   "y": 2.5
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": -2,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 0,
+   "y": -1.5
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AC",
+   "line2": "BD"
+  },
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "triangle",
+   "id": "BCD",
+   "kind": "any"
+  },
+  {
+   "type": "triangle",
+   "id": "CDA",
+   "kind": "any"
+  },
+  {
+   "type": "triangle",
+   "id": "DAB",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I1",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "I2",
+   "of": "BCD"
+  },
+  {
+   "type": "incenter",
+   "id": "I3",
+   "of": "CDA"
+  },
+  {
+   "type": "incenter",
+   "id": "I4",
+   "of": "DAB"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "segment": "I1I2",
+   "style": "accent"
+  },
+  {
+   "segment": "I2I3",
+   "style": "accent"
+  },
+  {
+   "segment": "I3I4",
+   "style": "accent"
+  },
+  {
+   "segment": "I4I1",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "O",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "O",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "O",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "D",
+    "O",
+    "A"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

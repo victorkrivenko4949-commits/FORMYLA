@@ -1,0 +1,64 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "XBCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "reflect_point",
+   "id": "A",
+   "of": "C",
+   "over": "X"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BX",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AX",
+    "XC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "M",
+   "of": "B",
+   "over": "X",
+   "reason": "Продолжаем BX за точку X так, что X — середина BM (удвоение медианы)."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "XM",
+   "style": "soft"
+  },
+  {
+   "segment": "AM",
+   "style": "soft"
+  },
+  {
+   "segment": "MD",
+   "style": "soft"
+  },
+  {
+   "segment": "CM",
+   "style": "soft"
+  }
+ ]
+}

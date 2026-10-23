@@ -1,0 +1,960 @@
+{
+  "schema_version": "1.0",
+  "authority": "direct_user_specification",
+  "numbering_rule": {
+    "topics": "ordered_1_based_T001_to_T043",
+    "subtopics": {
+      "ПОДТЕМА 1": "S0",
+      "ПОДТЕМА 2": "S1",
+      "ПОДТЕМА 3": "S2"
+    }
+  },
+  "topics": {
+    "T001": {
+      "topic_id": "T001",
+      "topic_name": "Алгебра: теория групп",
+      "order": 1,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Группы: определения и примеры",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Группы: подгруппы, смежные классы",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Гомоморфизмы и факторгруппы",
+          "order": 3
+        }
+      }
+    },
+    "T002": {
+      "topic_id": "T002",
+      "topic_name": "Арифметика и теория чисел",
+      "order": 2,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Делимость и остатки",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "НОД, НОК, алгоритм Евклида",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Сравнения по модулю (a ≡ b mod n)",
+          "order": 3
+        }
+      }
+    },
+    "T003": {
+      "topic_id": "T003",
+      "topic_name": "Графы: основные понятия",
+      "order": 3,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Графы: определения, изоморфизм",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Маршруты, цепи, циклы, Эйлеровы графы",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Связность и компоненты связности",
+          "order": 3
+        }
+      }
+    },
+    "T004": {
+      "topic_id": "T004",
+      "topic_name": "Дополнительные задачи и смешанные темы",
+      "order": 4,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Задачи на оптимизацию",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Комбинированные задачи (алгебра + геометрия)",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Задачи на составление уравнений по условию",
+          "order": 3
+        }
+      }
+    },
+    "T005": {
+      "topic_id": "T005",
+      "topic_name": "Комбинаторика и теория игр",
+      "order": 5,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Выигрышные и проигрышные позиции",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Игры с симметричной стратегией",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Стратегия и анализ игр",
+          "order": 3
+        }
+      }
+    },
+    "T006": {
+      "topic_id": "T006",
+      "topic_name": "Комбинаторика: счётные техники",
+      "order": 6,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Перестановки и факториалы",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Правила сложения и умножения в комбинаторике",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Размещения и сочетания",
+          "order": 3
+        }
+      }
+    },
+    "T007": {
+      "topic_id": "T007",
+      "topic_name": "Логика и множества",
+      "order": 7,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Высказывания и предикаты",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Логические операции и таблицы истинности",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Множества и операции над ними",
+          "order": 3
+        }
+      }
+    },
+    "T008": {
+      "topic_id": "T008",
+      "topic_name": "Метод координат: декартовы координаты",
+      "order": 8,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Координаты на прямой и плоскости",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Расстояние между точками, середина отрезка",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Уравнения прямых и окружностей",
+          "order": 3
+        }
+      }
+    },
+    "T009": {
+      "topic_id": "T009",
+      "topic_name": "Метод координат: векторы",
+      "order": 9,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Векторы: сложение, умножение на число",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Координаты вектора, связь с точками",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Скалярное произведение векторов",
+          "order": 3
+        }
+      }
+    },
+    "T010": {
+      "topic_id": "T010",
+      "topic_name": "Неравенства: алгебраические неравенства",
+      "order": 10,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Доказательство неравенств",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Квадратные неравенства",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Неравенства с модулем",
+          "order": 3
+        }
+      }
+    },
+    "T011": {
+      "topic_id": "T011",
+      "topic_name": "Неравенства: метод интервалов и рациональные",
+      "order": 11,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Дробно-рациональные неравенства",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Иррациональные неравенства",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Метод интервалов для рациональных неравенств",
+          "order": 3
+        }
+      }
+    },
+    "T012": {
+      "topic_id": "T012",
+      "topic_name": "Неравенства: показательные и логарифмические",
+      "order": 12,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Логарифмические неравенства",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Показательные неравенства",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Системы показательных и логарифмических неравенств",
+          "order": 3
+        }
+      }
+    },
+    "T013": {
+      "topic_id": "T013",
+      "topic_name": "Неравенства: тригонометрические",
+      "order": 13,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Неравенства с обратными тригонометрическими функциями",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Простейшие тригонометрические неравенства с sin, cos",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Простейшие тригонометрические неравенства с tg, ctg",
+          "order": 3
+        }
+      }
+    },
+    "T014": {
+      "topic_id": "T014",
+      "topic_name": "Неравенства: числовые наборы",
+      "order": 14,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Неравенства о среднем арифметическом и среднем геометрическом",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Неравенство Чебышева для числовых наборов",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Цепочки неравенств, взвешенные средние",
+          "order": 3
+        }
+      }
+    },
+    "T015": {
+      "topic_id": "T015",
+      "topic_name": "Планиметрия: многоугольники",
+      "order": 15,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Многоугольники: виды, свойства",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Параллелограммы и трапеции",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Треугольники: виды, свойства",
+          "order": 3
+        }
+      }
+    },
+    "T016": {
+      "topic_id": "T016",
+      "topic_name": "Планиметрия: окружность",
+      "order": 16,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Вписанные углы и их свойства",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Длина окружности, площадь круга и сектора",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Касательные и секущие к окружности",
+          "order": 3
+        }
+      }
+    },
+    "T017": {
+      "topic_id": "T017",
+      "topic_name": "Планиметрия: площадь",
+      "order": 17,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Площади подобных фигур",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Площадь многоугольников (через разбиение и дополнение)",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Формулы площади треугольника и четырёхугольника",
+          "order": 3
+        }
+      }
+    },
+    "T018": {
+      "topic_id": "T018",
+      "topic_name": "Планиметрия: треугольники",
+      "order": 18,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Подобие треугольников",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Признаки равенства треугольников",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Теорема Пифагора",
+          "order": 3
+        }
+      }
+    },
+    "T019": {
+      "topic_id": "T019",
+      "topic_name": "Последовательности и прогрессии",
+      "order": 19,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Арифметическая прогрессия",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Геометрическая прогрессия",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Суммы последовательностей",
+          "order": 3
+        }
+      }
+    },
+    "T020": {
+      "topic_id": "T020",
+      "topic_name": "Производная и её применение",
+      "order": 20,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Геометрический смысл производной",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Исследование функций с помощью производной",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Правила и формулы дифференцирования",
+          "order": 3
+        }
+      }
+    },
+    "T021": {
+      "topic_id": "T021",
+      "topic_name": "Проценты, отношения и пропорции",
+      "order": 21,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Задачи на проценты",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Пропорции и отношения",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Прямая и обратная пропорциональность",
+          "order": 3
+        }
+      }
+    },
+    "T022": {
+      "topic_id": "T022",
+      "topic_name": "Рациональные уравнения и неравенства",
+      "order": 22,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Дробно-рациональные уравнения",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Метод замены переменной в рациональных уравнениях",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Целые рациональные уравнения (линейные и квадратные)",
+          "order": 3
+        }
+      }
+    },
+    "T023": {
+      "topic_id": "T023",
+      "topic_name": "Решение задач: анализ и интерпретация",
+      "order": 23,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Оценка и прикидка",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Проверка решения и поиск ошибок",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Составление плана решения",
+          "order": 3
+        }
+      }
+    },
+    "T024": {
+      "topic_id": "T024",
+      "topic_name": "Решение уравнений: методы замены",
+      "order": 24,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Замена переменной (подстановка)",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Использование симметрии",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Сведение к системе уравнений",
+          "order": 3
+        }
+      }
+    },
+    "T025": {
+      "topic_id": "T025",
+      "topic_name": "Решение уравнений: разложение на множители",
+      "order": 25,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Вынесение общего множителя и группировка",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Использование формул сокращённого умножения",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Разложение квадратного трёхчлена",
+          "order": 3
+        }
+      }
+    },
+    "T026": {
+      "topic_id": "T026",
+      "topic_name": "Системы уравнений",
+      "order": 26,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Графический метод решения систем",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Метод подстановки",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Системы линейных уравнений",
+          "order": 3
+        }
+      }
+    },
+    "T027": {
+      "topic_id": "T027",
+      "topic_name": "Стереометрия: аксиомы и прямые",
+      "order": 27,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Аксиомы стереометрии",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Взаимное расположение прямых в пространстве",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Параллельность прямых и плоскостей",
+          "order": 3
+        }
+      }
+    },
+    "T028": {
+      "topic_id": "T028",
+      "topic_name": "Стереометрия: многогранники",
+      "order": 28,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Параллелепипеды, призмы",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Пирамиды",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Правильные многогранники",
+          "order": 3
+        }
+      }
+    },
+    "T029": {
+      "topic_id": "T029",
+      "topic_name": "Стереометрия: объёмы и сечения",
+      "order": 29,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Сечения многогранников",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Объём многогранников",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Объём тел вращения",
+          "order": 3
+        }
+      }
+    },
+    "T030": {
+      "topic_id": "T030",
+      "topic_name": "Стереометрия: тела вращения",
+      "order": 30,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Конус, цилиндр",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Сфера, шар",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Тела вращения: сечения, комбинации",
+          "order": 3
+        }
+      }
+    },
+    "T031": {
+      "topic_id": "T031",
+      "topic_name": "Стереометрия: угол и расстояние",
+      "order": 31,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Расстояние от точки до плоскости",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Угол между плоскостями (двугранный угол)",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Угол между прямой и плоскостью",
+          "order": 3
+        }
+      }
+    },
+    "T032": {
+      "topic_id": "T032",
+      "topic_name": "Текстовые задачи: движение",
+      "order": 32,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Движение в противоположных направлениях",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Движение по воде",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Движение по кругу",
+          "order": 3
+        }
+      }
+    },
+    "T033": {
+      "topic_id": "T033",
+      "topic_name": "Текстовые задачи: производительность и смеси",
+      "order": 33,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Задачи на концентрацию, сплавы, смеси",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Задачи на совместную работу",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Задачи на производительность труда",
+          "order": 3
+        }
+      }
+    },
+    "T034": {
+      "topic_id": "T034",
+      "topic_name": "Теория вероятностей: дискретные распределения",
+      "order": 34,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Биномиальное распределение",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Дискретные случайные величины",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Математическое ожидание и дисперсия",
+          "order": 3
+        }
+      }
+    },
+    "T035": {
+      "topic_id": "T035",
+      "topic_name": "Теория вероятностей: классическая модель",
+      "order": 35,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Геометрическая вероятность",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Классическая вероятность",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Условная вероятность и формула Байеса",
+          "order": 3
+        }
+      }
+    },
+    "T036": {
+      "topic_id": "T036",
+      "topic_name": "Тригонометрические уравнения",
+      "order": 36,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Однородные тригонометрические уравнения",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Отбор корней в тригонометрических уравнениях",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Простейшие тригонометрические уравнения",
+          "order": 3
+        }
+      }
+    },
+    "T037": {
+      "topic_id": "T037",
+      "topic_name": "Тригонометрия: преобразования",
+      "order": 37,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Основное тригонометрическое тождество",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Формулы приведения",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Формулы сложения и двойного угла",
+          "order": 3
+        }
+      }
+    },
+    "T038": {
+      "topic_id": "T038",
+      "topic_name": "Уравнения с модулем",
+      "order": 38,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Графическое решение уравнений с модулем",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Метод интервалов для уравнений с модулем",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Решение уравнений с модулем (раскрытие по случаям)",
+          "order": 3
+        }
+      }
+    },
+    "T039": {
+      "topic_id": "T039",
+      "topic_name": "Уравнения: иррациональные",
+      "order": 39,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Уравнения с одним радикалом",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Уравнения с двумя и более радикалами",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Иррациональные уравнения: метод возведения в степень",
+          "order": 3
+        }
+      }
+    },
+    "T040": {
+      "topic_id": "T040",
+      "topic_name": "Уравнения: показательные и логарифмические",
+      "order": 40,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Логарифмические уравнения",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Показательные уравнения",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Системы показательных и логарифмических уравнений",
+          "order": 3
+        }
+      }
+    },
+    "T041": {
+      "topic_id": "T041",
+      "topic_name": "Уравнения: тригонометрические системы",
+      "order": 41,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Системы тригонометрических уравнений",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Тригонометрические уравнения с параметром",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Универсальная тригонометрическая подстановка и метод вспомогательного угла",
+          "order": 3
+        }
+      }
+    },
+    "T042": {
+      "topic_id": "T042",
+      "topic_name": "Числа, индукция, алгоритмы",
+      "order": 42,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Системы счисления и запись чисел",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Комплексные числа",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Метод математической индукции",
+          "order": 3
+        }
+      }
+    },
+    "T043": {
+      "topic_id": "T043",
+      "topic_name": "Функции и графики",
+      "order": 43,
+      "subtopics": {
+        "S0": {
+          "subtopic_id": "S0",
+          "subtopic_name": "Область определения и область значений функции",
+          "order": 1
+        },
+        "S1": {
+          "subtopic_id": "S1",
+          "subtopic_name": "Чтение, построение и преобразование графиков",
+          "order": 2
+        },
+        "S2": {
+          "subtopic_id": "S2",
+          "subtopic_name": "Композиция и обратная функция",
+          "order": 3
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,130 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "B",
+   "line": "AD"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AB"
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "C",
+   "through": "D"
+  },
+  {
+   "type": "circle",
+   "id": "c2",
+   "center": "D",
+   "through": "C"
+  },
+  {
+   "type": "circle_circle",
+   "id": "P",
+   "circle1": "c1",
+   "circle2": "c2",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "Q",
+   "circle1": "c1",
+   "circle2": "c2",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "BH",
+   "line2": "PQ"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "BH",
+   "style": "soft"
+  },
+  {
+   "segment": "MK",
+   "style": "accent"
+  },
+  {
+   "segment": "KD",
+   "style": "accent"
+  },
+  {
+   "segment": "MC",
+   "style": "dashed"
+  },
+  {
+   "segment": "MD",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "M",
+    "H",
+    "D"
+   ]
+  },
+  {
+   "equal": [
+    "AK",
+    "KB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "MC",
+    "MD"
+   ],
+   "ticks": 2
+  },
+  {
+   "angle": [
+    "M",
+    "K",
+    "D"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "L",
+   "of": "CD",
+   "reason": "Середина CD нужна для решения: четырёхугольники MLDH и KLDH вписанные."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "KL",
+   "style": "dashed"
+  },
+  {
+   "segment": "KH",
+   "style": "dashed"
+  },
+  {
+   "segment": "ML",
+   "style": "dashed"
+  }
+ ]
+}

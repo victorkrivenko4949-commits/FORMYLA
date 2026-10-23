@@ -1,0 +1,32 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0055",
+      "mode": "replace_bad",
+      "id": "5-B3-39-L8-g",
+      "grade": 5,
+      "difficulty": 8,
+      "theme": "Дроби, доли, проценты",
+      "subtopic": "Задачи на части",
+      "method_code": "B3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 16
+    },
+    {
+      "job_id": "audit-0092-8-C2-L8-fill-0144",
+      "mode": "replace_bad",
+      "id": "8-C2-L8-fill-0144",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Системы и текстовые задачи",
+      "subtopic": "На движение/работу/смеси",
+      "method_code": "C2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

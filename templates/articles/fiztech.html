@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}Олимпиада «Физтех» по математике: разбор 9, 10 и 11 классов по разделам | FORMYLA.net{% endblock %}
+{% block meta_description %}Разбор заключительного этапа олимпиады «Физтех» по математике за 2019–2026 годы: 165 задач, 24 варианта, отдельно для 9, 10 и 11 классов. Алгебра, теория чисел, комбинаторика, геометрия, параметры, тригонометрия и стереометрия — какие приёмы повторяются и 33 задачи с решениями.{% endblock %}
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/article_school_to_olympiad.css') }}?v={{ asset_version }}">
+<style>
+  .fa .fa-hero--ft{background:#0b1428}
+  .fa .fa-hero--ft .fa-hero__shade{background:linear-gradient(90deg,#0b1428 0%,#0b1428 30%,rgba(11,20,40,.2) 60%,rgba(11,20,40,0) 100%),linear-gradient(0deg,#070C18 0%,rgba(7,12,24,0) 40%)}
+  .fa .fa-hero--ft .fa-hero__img{object-fit:contain;object-position:right center;width:62%}
+  .fa .fa-kpi{list-style:none;padding:0!important;margin:30px auto!important;max-width:900px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  @media(min-width:760px){.fa .fa-kpi{grid-template-columns:repeat(4,1fr)}}
+  .fa .fa-kpi li{margin:0;background:var(--field);border:1px solid var(--border-mid);border-radius:14px;padding:16px 18px}
+  .fa .fa-kpi b{display:block;font-family:var(--serif);font-size:2rem;line-height:1;color:var(--amber);margin-bottom:6px;font-variant-numeric:lining-nums}
+  .fa .fa-kpi span{color:var(--muted);font-size:.9rem;line-height:1.4}
+  .fa .fa-chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+  .fa .fa-chip{display:inline-block;padding:5px 12px;border-radius:999px;border:1px solid rgba(244,162,89,.45);background:rgba(244,162,89,.1);color:var(--amber-l);font-size:.8125rem;font-weight:700}
+  .fa .fa-chip--teal{border-color:rgba(94,234,212,.45);background:rgba(94,234,212,.08);color:var(--teal)}
+  .fa .fa-verdict{margin:26px 0;padding:20px 22px;border-radius:16px;background:linear-gradient(135deg,rgba(244,162,89,.14),rgba(244,162,89,.04));border:1px solid rgba(244,162,89,.45)}
+  .fa .fa-verdict p{margin:0!important;color:#fff!important;font-size:1.05rem}
+  .fa .fa-verdict p b{color:var(--amber)}
+  .fa .fa-sol{margin:0 0 14px;color:var(--soft)}
+  .fa .fa-sol p{margin-bottom:12px!important}
+  .fa .fa-sol .fa-key{color:var(--teal);font-weight:800}
+  .fa .fa-ans{display:inline-block;margin-top:4px;padding:6px 14px;border-radius:10px;background:rgba(56,239,125,.12);border:1px solid rgba(56,239,125,.4);color:#86efac;font-weight:800}
+  .fa .fa-grade{margin:34px 0 8px;padding:14px 18px;border-radius:14px;background:rgba(94,234,212,.07);border:1px solid rgba(94,234,212,.3)}
+  .fa .fa-grade h3{margin:0 0 6px!important;color:var(--teal)}
+  .fa .fa-grade p{margin:0!important;font-size:.95rem}
+  .fa sup{font-size:.72em}
+</style>
+{% endblock %}
+{% block content %}
+<div class="fa">
+<div class="fa-progress" aria-hidden="true"><div class="fa-progress__bar" id="faBar"></div></div>
+
+<section class="fa-hero fa-hero--ft">
+  <img class="fa-hero__img" src="{{ url_for('static', filename='articles/cover-fiztech.svg') }}" alt="Чертёж: треугольник с высотами и окружностью на меловой доске, рядом формулы" width="800" height="800">
+  <div class="fa-hero__shade"></div>
+  <div class="fa-hero__inner">
+    <p class="fa-kicker"><span>Разбор</span> 9, 10 и 11 классы · 25 минут</p>
+    <h1>«Физтех» по математике: та&nbsp;же школьная программа, только с&nbsp;приёмами</h1>
+    <p class="fa-hero__lead">Мы прорешали все варианты заключительного этапа «Физтеха» с 2019 по 2026 год для 9, 10 и 11 классов: 24 варианта, 165 задач. Разложили их по разделам и показываем на 33 задачах, какие приёмы повторяются из года в год.</p>
+  </div>
+</section>
+
+<div class="fa-hud" id="faHud" role="navigation" aria-label="Карта статьи">
+  <ol>
+    <li><a href="#start" data-step="0"><i>0</i><span>Старт</span></a></li>
+    <li><a href="#g9" data-step="1"><i>9</i><span>9 класс</span></a></li>
+    <li><a href="#g10" data-step="2"><i>10</i><span>10 класс</span></a></li>
+    <li><a href="#g11" data-step="3"><i>11</i><span>11 класс</span></a></li>
+    <li><a href="#plan" data-step="4"><i>★</i><span>План</span></a></li>
+  </ol>
+</div>
+
+<div class="fa-page">
+  <article id="faArticle">
+
+    <section class="fa-chapter fa-chapter--wide" id="start" data-step="0">
+      <div class="fa-col">
+        <p class="fa-chapter__no">Глава 0 · Что это за олимпиада</p>
+        <h2>Сначала факты</h2>
+        <p>«Физтех» проводит МФТИ для 9–11 классов. Осенью идут онлайн-туры отборочного этапа, в феврале очный заключительный. На финале по математике 7 задач и 4 часа; формат не меняется уже больше десяти лет, только в 2021 году было 6 задач. Олимпиада входит в перечень РСОШ, диплом даёт льготы при поступлении не только в МФТИ.</p>
+        <p>Задачи «Физтеха» выросли из вступительных экзаменов в МФТИ, поэтому они похожи на очень сильную школьную контрольную. Если ты уверенно решаешь профильный ЕГЭ до 18 задачи включительно, половина варианта тебе уже по силам.</p>
+      </div>
+      <ul class="fa-kpi">
+        <li><b>8 лет</b><span>финалы 2019–2026, по одному варианту каждого класса</span></li>
+        <li><b>165</b><span>задач разобрано и разложено по разделам</span></li>
+        <li><b>≈50%</b><span>баллов обычно хватает на диплом призёра</span></li>
+        <li><b>33</b><span>задачи с решениями в этой статье, по 11 на класс</span></li>
+      </ul>
+      <figure class="fa-fig">
+        <svg viewBox="0 0 680 438" role="img" aria-labelledby="tb db" xmlns="http://www.w3.org/2000/svg"><title id="tb">Темы 165 задач финалов 2019–2026 по классам</title><desc id="db">Для каждого раздела три столбца: 9, 10 и 11 класс. Планиметрия 14/15/8, алгебра 12/16/13, параметры 10/9/7, теория чисел 10/6/5, комбинаторика 8/8/7, тригонометрия 0/0/7, стереометрия 0/0/8, текстовые 1/1/0.</desc><rect x="250" y="10" width="16" height="16" rx="4" fill="#f4a259"/><text x="272" y="23" font-size="14" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">9 класс</text><rect x="370" y="10" width="16" height="16" rx="4" fill="#5eead4"/><text x="392" y="23" font-size="14" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">10 класс</text><rect x="490" y="10" width="16" height="16" rx="4" fill="#c4b5fd"/><text x="512" y="23" font-size="14" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">11 класс</text><text x="240" y="68" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Планиметрия</text><rect x="252" y="44" width="332" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><text x="590" y="53" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">14</text><rect x="252" y="56" width="356" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><text x="614" y="65" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">15</text><rect x="252" y="68" width="190" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="448" y="77" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">8</text><text x="240" y="114" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Алгебра</text><rect x="252" y="90" width="285" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><text x="543" y="99" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">12</text><rect x="252" y="102" width="380" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><text x="638" y="111" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">16</text><rect x="252" y="114" width="309" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="567" y="123" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">13</text><text x="240" y="160" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Параметры и графики</text><rect x="252" y="136" width="238" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><text x="496" y="145" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">10</text><rect x="252" y="148" width="214" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><text x="472" y="157" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">9</text><rect x="252" y="160" width="166" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="424" y="169" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">7</text><text x="240" y="206" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Теория чисел</text><rect x="252" y="182" width="238" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><text x="496" y="191" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">10</text><rect x="252" y="194" width="142" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><text x="400" y="203" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">6</text><rect x="252" y="206" width="119" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="377" y="215" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">5</text><text x="240" y="252" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Комбинаторика</text><rect x="252" y="228" width="190" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><text x="448" y="237" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">8</text><rect x="252" y="240" width="190" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><text x="448" y="249" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">8</text><rect x="252" y="252" width="166" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="424" y="261" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">7</text><text x="240" y="298" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Тригонометрия</text><rect x="252" y="274" width="2" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><rect x="252" y="286" width="2" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><rect x="252" y="298" width="166" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="424" y="307" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">7</text><text x="240" y="344" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Стереометрия</text><rect x="252" y="320" width="2" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><rect x="252" y="332" width="2" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><rect x="252" y="344" width="190" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/><text x="448" y="353" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">8</text><text x="240" y="390" text-anchor="end" font-size="15" fill="#e2e8f0" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">Текстовая задача</text><rect x="252" y="366" width="24" height="10" rx="3" fill="#f4a259" fill-opacity=".92"/><text x="282" y="375" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">1</text><rect x="252" y="378" width="24" height="10" rx="3" fill="#5eead4" fill-opacity=".92"/><text x="282" y="387" font-size="11" font-weight="700" fill="#fff" font-family="Satoshi,system-ui,-apple-system,Segoe UI,sans-serif">1</text><rect x="252" y="390" width="2" height="10" rx="3" fill="#c4b5fd" fill-opacity=".92"/></svg>
+        <figcaption>Темы 165 задач заключительного этапа 2019–2026. Для каждого раздела три столбца: 9, 10 и 11 класс. Планиметрия и алгебра лидируют везде; тригонометрия и стереометрия есть только у выпускников.</figcaption>
+      </figure>
+      <div class="fa-col">
+        <div class="fa-verdict"><p><b>Мы проанализировали все эти годы и можем сказать:</b> в каждом варианте есть одна-две планиметрии, одна задача на целые числа или комбинаторику (часто обе), одна задача с параметром или фигурой на координатной плоскости и одна-две алгебраические. Одиннадцатиклассникам добавляют тригонометрию и стереометрию, и это всё. Ни одной темы, которой нет в школьной программе.</p></div>
+        <p>Отличие от школы в другом: каждая задача собрана из двух-трёх шагов, и первый шаг нужно увидеть самому. Этот первый шаг и есть «приём». Ниже три раздела, по одному на класс, и в каждом те приёмы, которые в этом классе спрашивают чаще всего.</p>
+        <div class="fa-fact"><strong>Как читать.</strong> У каждой задачи указан год, класс и номер в варианте. Сначала попробуй решить сам, потом открывай спойлер: там решение и, зелёным, приём, на котором оно держится.</div>
+      </div>
+    </section>
+
+    {% include "articles/_fiztech_g9.html" %}
+    {% include "articles/_fiztech_g10.html" %}
+    {% include "articles/_fiztech_g11.html" %}
+
+    <section class="fa-chapter fa-chapter--wide" id="plan" data-step="4">
+      <div class="fa-col">
+        <p class="fa-chapter__no">Глава 4 · Итог</p>
+        <h2>Школа и «Физтех»: одна программа, разные привычки</h2>
+      </div>
+      <div class="fa-table-scroll">
+      <table>
+        <thead><tr><th>Раздел</th><th>Что спрашивают в школе</th><th>Что спрашивает «Физтех»</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Алгебра</th><td>Решить уравнение по алгоритму</td><td>Собрать уравнение из условия, увидеть замену или разность квадратов</td></tr>
+          <tr><th scope="row">Целые числа</th><td>Признаки делимости</td><td>Показатели простых по отдельности, оценки сумм</td></tr>
+          <tr><th scope="row">Комбинаторика</th><td>Формулы C и P</td><td>Классы остатков, наборы цифр, вычитание плохих случаев</td></tr>
+          <tr><th scope="row">Геометрия</th><td>Одна теорема на задачу</td><td>Окружность на диаметре, касательные, три-четыре теоремы подряд</td></tr>
+          <tr><th scope="row">Параметры</th><td>Редко</td><td>Каждый год: квадраты из модулей, окружности, прямая между графиками</td></tr>
+          <tr><th scope="row">11 класс</th><td>Уравнение тригонометрии, объём по формуле</td><td>Сумма квадратов, свёртка в произведение, перпендикулярное сечение</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="fa-col">
+        <p>Поэтому мы и говорим: «Физтех» — усложнённая версия школьной программы. Не другая математика, а та же, в которой каждая задача требует двух-трёх шагов вместо одного. Эти шаги повторяются из года в год, а значит, тренируются.</p>
+        <h3>Как готовиться за два месяца</h3>
+        <ol>
+          <li>Прорешай один вариант прошлого года своего класса на время. Отметь, в каких разделах ноль.</li>
+          <li>По каждому «нулевому» разделу разбери 10 задач «Физтеха» прошлых лет именно своего класса: приёмы у составителей постоянные, а наборы по классам отличаются.</li>
+          <li>Геометрию решай с чертежом в масштабе. Половина догадок (что K это середина AC, что PM и TN медианы) видна на аккуратном рисунке.</li>
+          <li>За неделю до тура снова реши вариант на время. Цель на диплом призёра: уверенно 3–4 задачи из 7.</li>
+        </ol>
+        <aside class="fa-signpost">
+          <p>Если ты ещё не понимаешь, чем олимпиадное мышление отличается от школьного, начни с нашей первой статьи.</p>
+          <a href="/articles/ot-shkoly-k-olimpiadam">Читать «Пятёрка по математике — а на олимпиаде ноль» →</a>
+        </aside>
+      </div>
+    </section>
+
+    <section class="fa-finale" id="cta">
+      <p class="fa-finale__k">Твой ход</p>
+      <h2>Реши 11 задач своего класса без спойлеров</h2>
+      <p>Все задачи выше — реальные задачи финалов. Дальше — задачи дня и каталог методов на FORMYLA: там разделы «Физтеха» разобраны глубже, а решение проверяет ИИ. Чертежи к геометрии можно строить в генераторе чертежей.</p>
+      <div class="fa-cta-row">
+        <a class="fa-btn-amber" href="/daily_tasks/">Перейти к задачам</a>
+        <a class="fa-btn-ghost" href="/olympiads/methods">Каталог методов</a>
+        <a class="fa-btn-ghost" href="/geometry/draw/">Генератор чертежей</a>
+      </div>
+      <p class="fa-finale__end">Приёмы повторяются. Используй это.</p>
+    </section>
+  </article>
+</div>
+
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+  var bar=document.getElementById('faBar'), article=document.getElementById('faArticle'), hdr=document.querySelector('.header'), root=document.querySelector('.fa');
+  function setHdr(){root.style.setProperty('--fa-hdr',(hdr?hdr.offsetHeight:0)+'px');}
+  setHdr();window.addEventListener('resize',setHdr);
+  var links=[].slice.call(document.querySelectorAll('#faHud a'));
+  var secs=[].slice.call(article.querySelectorAll('section[data-step]'));
+  function tick(){
+    var h=document.documentElement, max=h.scrollHeight-window.innerHeight;
+    bar.style.width=(max>0?Math.min(100,Math.max(0,window.scrollY/max*100)):0)+'%';
+    var line=window.innerHeight*0.4, cur=0;
+    secs.forEach(function(s){ if(s.getBoundingClientRect().top<line) cur=+s.getAttribute('data-step'); });
+    links.forEach(function(a){
+      var n=+a.getAttribute('data-step'), li=a.parentNode;
+      li.classList.toggle('fa-is-done',n<cur); li.classList.toggle('fa-is-active',n===cur);
+      if(n===cur)a.setAttribute('aria-current','step');else a.removeAttribute('aria-current');
+    });
+  }
+  window.addEventListener('scroll',tick,{passive:true});window.addEventListener('resize',tick);tick();
+})();
+</script>
+{% endblock %}

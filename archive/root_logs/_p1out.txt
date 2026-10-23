@@ -1,0 +1,73 @@
+2026-07-29 02:55:15,438 - app - INFO - [security] init_security applied (headers + csrf helpers)
+2026-07-29 02:55:15,438 - app - INFO - === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+2026-07-29 02:55:16,870 - routes.wb_ws - INFO - [ws] SocketIO initialized on namespace /ws-call
+2026-07-29 02:55:16,977 - services.vsosh_10_11_additive_seed - INFO - [VSOSH10_11-ADD] DB already has 43 probniks (target 43) - skip
+2026-07-29 02:55:21,050 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:55:21,050 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:55:21,085 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:55:21,085 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:55:21,085 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:55:21,085 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:55:21,085 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:55:21,087 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-07-29 02:55:21,087 - apscheduler.scheduler - INFO - Added job "daily_quest_deadline_reminder_job" to job store "default"
+2026-07-29 02:55:21,087 - apscheduler.scheduler - INFO - Added job "curator_evening_notification_job" to job store "default"
+2026-07-29 02:55:21,087 - apscheduler.scheduler - INFO - Added job "curator_morning_prep_reminder_job" to job store "default"
+2026-07-29 02:55:21,087 - apscheduler.scheduler - INFO - Added job "curator_evening_prep_generate_job" to job store "default"
+2026-07-29 02:55:21,087 - apscheduler.scheduler - INFO - Added job "process_pregen_queue_job" to job store "default"
+2026-07-29 02:55:21,087 - apscheduler.scheduler - INFO - Added job "daily_midnight_assign_job" to job store "default"
+2026-07-29 02:55:21,087 - apscheduler.scheduler - INFO - Scheduler started
+=== 1.1 plan_slots ===
+plan_slots: daily_tasks/pipeline/slot_planner.py:269
+pick_daily_set (live daily route): services/daily_task_rotation.py:329
+
+=== 1.2 route codes ===
+/daily -> 404
+/daily-set -> 302
+  Location: /login?next=%2Fdaily-set
+/daily_tasks -> 308
+  Location: http://localhost/daily_tasks/
+/daily_tasks/ -> 302
+  Location: /login?next=%2Fdaily_tasks%2F
+/prep/coach -> 302
+  Location: /login?next=%2Fprep%2Fcoach
+/prep/onboarding -> 302
+  Location: /login?next=%2Fprep%2Fonboarding
+
+=== 1.3 cta_url ===
+services/next_action.py: uses 'url' field, NOT 'cta_url'
+  line 57: url='/prep/onboarding'
+  line 86: url='/olympiad-test?...'
+  line 114: url='/daily_tasks'
+  line 126: url='/daily_tasks'
+  line 141: url='/prep/coach'
+routes/prep.py cta_url values:
+  cta_url='/profile',
+  cta_url=na.get('url'),
+  cta_url=None,
+  cta_url='/olympiad-test',
+  cta_url='/olympiad-test',
+  cta_url=None,
+  cta_url='/prep/new' if recommended else None,
+  cta_url='/coach',
+  cta_url='/coach',
+  cta_url='/daily_tasks',
+  cta_url='/daily_tasks',
+  cta_url=None,
+  cta_url=None,
+  cta_url=None,
+
+=== 1.4 selection code features ===
+  daily_tasks from profile: services/daily_task_rotation.py:75-82 (_get_daily_tasks_count)
+  allowed_difficulty: services/daily_task_rotation.py:101-113 (_get_allowed_difficulty)
+  route_ceiling: services/daily_task_rotation.py:85-92 (_get_route_ceiling)
+  level_by_section priority: services/daily_task_rotation.py:116-128 (_section_priorities)
+  max 2 consecutive: services/daily_task_rotation.py:411-415 (last_section check with >=2)
+  exclude seen task_ids: services/daily_task_rotation.py:131-168 (_get_seen_task_ids)
+  soft degradation (repeat): services/daily_task_rotation.py:247-324 (soft degradation loop)
+  diversity check 3 sections: services/daily_task_rotation.py:461-540 (diversity_check)
+
+=== 1.5 record_result ===
+record_result called at: services/daily_task_rotation.py:686,691
+Section as canonical slug: line 665 (_normalize_section(item.topic))
+Then passed to level_engine.record_result at line 686/691

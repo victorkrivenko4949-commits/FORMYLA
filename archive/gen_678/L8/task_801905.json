@@ -1,0 +1,20 @@
+{
+  "id": 801905,
+  "task_text": "В треугольнике $ABC$ на сторонах $AB$ и $AC$ взяты точки $D$ и $E$ такие, что $AD:DB = 1:3$, $AE:EC = 1:4$. Через точку $D$ проведена прямая, параллельная $AC$, а через точку $E$ — прямая, параллельная $AB$. Эти прямые пересекаются в точке $O$. Оказалось, что точка $O$ является ортоцентром треугольника $ABC$. Найдите $\\cos \\angle A$.",
+  "solution": "Пусть $A$ — начало координат. Введем векторы $\\vec{AB} = \\mathbf{b}$, $\\vec{AC} = \\mathbf{c}$. Так как $AD:DB = 1:3$, то $\\vec{AD} = \\frac{1}{4}\\mathbf{b}$, $\\vec{AE} = \\frac{1}{5}\\mathbf{c}$. Тогда $D = A + \\frac{1}{4}\\mathbf{b}$, $E = A + \\frac{1}{5}\\mathbf{c}$. Прямая через $D$, параллельная $AC$, имеет направление $\\mathbf{c}$; прямая через $E$, параллельная $AB$, имеет направление $\\mathbf{b}$. Их пересечение $O$ находится из равенства $A + \\frac{1}{4}\\mathbf{b} + t\\mathbf{c} = A + \\frac{1}{5}\\mathbf{c} + s\\mathbf{b}$, откуда $s = \\frac{1}{4}$, $t = \\frac{1}{5}$, следовательно, $O = A + \\frac{1}{4}\\mathbf{b} + \\frac{1}{5}\\mathbf{c}$.\n\n$O$ — ортоцентр, поэтому $AO \\perp BC$ и $BO \\perp AC$ (или $CO \\perp AB$). Запишем первое условие: $(O - A)\\cdot(B - C) = 0$. $O - A = \\frac{1}{4}\\mathbf{b} + \\frac{1}{5}\\mathbf{c}$, $B - C = \\mathbf{b} - \\mathbf{c}$. Получаем\n\\[\n\\left(\\frac{1}{4}\\mathbf{b} + \\frac{1}{5}\\mathbf{c}\\right)\\cdot(\\mathbf{b} - \\mathbf{c}) = 0 \\quad\\Rightarrow\\quad \\frac{1}{4}|\\mathbf{b}|^2 - \\frac{1}{4}\\mathbf{b}\\cdot\\mathbf{c} + \\frac{1}{5}\\mathbf{b}\\cdot\\mathbf{c} - \\frac{1}{5}|\\mathbf{c}|^2 = 0.\n\\]\nПриводя подобные, имеем\n\\[\n\\frac{1}{4}|\\mathbf{b}|^2 - \\frac{1}{20}\\mathbf{b}\\cdot\\mathbf{c} - \\frac{1}{5}|\\mathbf{c}|^2 = 0.\n\\]\nУмножим на $20$:\n\\[\n5|\\mathbf{b}|^2 - \\mathbf{b}\\cdot\\mathbf{c} - 4|\\mathbf{c}|^2 = 0. \\tag{1}\n\\]\n\nВторое условие: $(O - B)\\cdot(C - A) = 0$. $O - B = \\frac{1}{4}\\mathbf{b} + \\frac{1}{5}\\mathbf{c} - \\mathbf{b} = -\\frac{3}{4}\\mathbf{b} + \\frac{1}{5}\\mathbf{c}$, $C - A = \\mathbf{c}$. Тогда\n\\[\n\\left(-\\frac{3}{4}\\mathbf{b} + \\frac{1}{5}\\mathbf{c}\\right)\\cdot\\mathbf{c} = 0 \\quad\\Rightarrow\\quad -\\frac{3}{4}\\mathbf{b}\\cdot\\mathbf{c} + \\frac{1}{5}|\\mathbf{c}|^2 = 0.\n\\]\nУмножаем на $20$:\n\\[\n-15\\mathbf{b}\\cdot\\mathbf{c} + 4|\\mathbf{c}|^2 = 0 \\quad\\Rightarrow\\quad 4|\\mathbf{c}|^2 = 15\\mathbf{b}\\cdot\\mathbf{c}. \\tag{2}\n\\]\n\nИз (2) выражаем $\\mathbf{b}\\cdot\\mathbf{c} = \\frac{4}{15}|\\mathbf{c}|^2$. Подставляем в (1):\n\\[\n5|\\mathbf{b}|^2 - \\frac{4}{15}|\\mathbf{c}|^2 - 4|\\mathbf{c}|^2 = 0 \\quad\\Rightarrow\\quad 5|\\mathbf{b}|^2 = \\frac{64}{15}|\\mathbf{c}|^2 \\quad\\Rightarrow\\quad |\\mathbf{b}|^2 = \\frac{64}{75}|\\mathbf{c}|^2.\n\\]\nОтсюда $|\\mathbf{b}| = \\frac{8}{\\sqrt{75}}|\\mathbf{c}|$.\n\nТеперь находим $\\cos \\angle A = \\cos(\\mathbf{b},\\mathbf{c}) = \\frac{\\mathbf{b}\\cdot\\mathbf{c}}{|\\mathbf{b}||\\mathbf{c}|} = \\frac{\\frac{4}{15}|\\mathbf{c}|^2}{|\\mathbf{c}|\\cdot\\frac{8}{\\sqrt{75}}|\\mathbf{c}|} = \\frac{4}{15}\\cdot\\frac{\\sqrt{75}}{8} = \\frac{\\sqrt{75}}{30} = \\frac{5\\sqrt{3}}{30} = \\frac{\\sqrt{3}}{6}$.",
+  "correct_answer": "\\dfrac{\\sqrt{3}}{6}",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 8,
+  "real_level": 8,
+  "key_method": "векторный метод и условия перпендикулярности",
+  "idea_count": 3,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T14:37:08.503084+00:00"
+}

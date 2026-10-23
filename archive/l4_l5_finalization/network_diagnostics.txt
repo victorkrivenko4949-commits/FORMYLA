@@ -1,0 +1,9 @@
+Network Diagnostics Report
+==================================================
+
+SMOKE1_DNS: PASS -> 3.173.21.63
+SMOKE2_TCP: PASS
+SMOKE3_TLS: PASS -> TLS_AES_128_GCM_SHA256
+SMOKE4_AUTH: PARTIAL -> HTTP 401
+
+FINAL VERDICT: PASS

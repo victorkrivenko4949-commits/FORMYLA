@@ -1,0 +1,40 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0425-7-D3-3-L8-g678",
+      "mode": "replace_bad",
+      "id": "7-D3-3-L8-g678",
+      "grade": 7,
+      "difficulty": 8,
+      "theme": "Геометрия треугольников и углов",
+      "subtopic": "Равнобедренный треугольник и медианы/высоты",
+      "method_code": "D3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0351-11-G1-3-L8-gh3",
+      "mode": "replace_bad",
+      "id": "11-G1-3-L8-gh3",
+      "grade": 11,
+      "difficulty": 8,
+      "theme": "Комбинаторика, графы, логика",
+      "subtopic": "Подсчёт",
+      "method_code": "G1",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0159-8-E2-4-L8-g678",
+      "mode": "replace_bad",
+      "id": "8-E2-4-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Геометрия: подобие и окружность",
+      "subtopic": "Вписанные углы",
+      "method_code": "E2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

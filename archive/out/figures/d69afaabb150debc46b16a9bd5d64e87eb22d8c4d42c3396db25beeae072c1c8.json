@@ -1,0 +1,124 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "BI",
+   "line2": "AC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "CL",
+   "ratio": 0.7
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "BC",
+   "ratio": 0.59
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BL"
+  },
+  {
+   "segment": "DE"
+  },
+  {
+   "segment": "LD",
+   "style": "accent"
+  },
+  {
+   "segment": "BE",
+   "style": "accent"
+  },
+  {
+   "segment": "AB",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "A",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "L",
+    "D",
+    "E"
+   ]
+  },
+  {
+   "equal": [
+    "AL",
+    "DE"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "L"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "L",
+    "B",
+    "C"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [
+  {
+   "type": "point_on_segment",
+   "id": "A0",
+   "of": "BC",
+   "ratio": 0.71,
+   "reason": "Отметим A0 на BC так, что BA0=BA; далее используем равенство треугольников BAL и BA0L."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "A0L",
+   "style": "dashed"
+  },
+  {
+   "segment": "A0E",
+   "style": "dashed"
+  },
+  {
+   "segment": "EL",
+   "style": "dashed"
+  },
+  {
+   "right_angle": [
+    "L",
+    "A0",
+    "B"
+   ]
+  }
+ ]
+}

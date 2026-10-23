@@ -1,0 +1,100 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "ACM"
+  },
+  {
+   "type": "incenter",
+   "id": "O",
+   "of": "ACM"
+  },
+  {
+   "type": "foot",
+   "id": "K",
+   "from": "O",
+   "line": "CM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CM"
+  },
+  {
+   "circle": "w"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "AM",
+    "MB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CM",
+    "AM"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "CK",
+    "KM"
+   ],
+   "ticks": 3
+  }
+ ],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "L",
+   "from": "O",
+   "line": "AM"
+  },
+  {
+   "type": "foot",
+   "id": "N",
+   "from": "O",
+   "line": "AC"
+  }
+ ],
+ "reason": "Точки касания L и N нужны, чтобы использовать равенство отрезков касательных, проведённых из одной точки.",
+ "draw_aux": [
+  {
+   "segment": "OK",
+   "style": "dashed"
+  },
+  {
+   "segment": "OL",
+   "style": "soft"
+  },
+  {
+   "segment": "ON",
+   "style": "soft"
+  }
+ ]
+}

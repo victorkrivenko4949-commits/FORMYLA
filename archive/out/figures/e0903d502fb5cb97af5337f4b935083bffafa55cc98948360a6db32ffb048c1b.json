@@ -1,0 +1,86 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 1,
+   "y": 2
+  },
+  {
+   "type": "point",
+   "id": "O",
+   "x": 1,
+   "y": 1
+  },
+  {
+   "type": "reflect_point",
+   "id": "B",
+   "of": "D",
+   "over": "O"
+  },
+  {
+   "type": "reflect_point",
+   "id": "C",
+   "of": "A",
+   "over": "O"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "BC",
+   "ratio": 0.2
+  },
+  {
+   "type": "point_on_segment",
+   "id": "F",
+   "of": "BC",
+   "ratio": 0.4
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "AOD"
+  },
+  {
+   "type": "circumcircle",
+   "id": "v",
+   "of": "EOF"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "segment": "AE"
+  },
+  {
+   "segment": "DF"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "circle": "v",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

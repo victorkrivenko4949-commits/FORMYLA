@@ -1,0 +1,11 @@
+import requests, sys, io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+s = requests.Session()
+r1 = s.get('http://127.0.0.1:5000/dev_login?uid=1', allow_redirects=True)
+print('Login:', r1.status_code, 'cookies:', dict(s.cookies))
+r2 = s.get('http://127.0.0.1:5000/olympiad-test?length=10&level_hint=2&scope=all_sections')
+print('Set params:', r2.status_code, 'cookies:', dict(s.cookies))
+r3 = s.get('http://127.0.0.1:5000/olympiad-test/select-section?grade=7', allow_redirects=False)
+print('Select-section status:', r3.status_code)
+print('Location:', r3.headers.get('Location',''))
+print('Cookies:', dict(s.cookies))

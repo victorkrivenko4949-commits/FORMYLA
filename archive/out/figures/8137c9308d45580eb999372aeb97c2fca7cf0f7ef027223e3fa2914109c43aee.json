@@ -1,0 +1,112 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "circumcircle",
+   "id": "Omega",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "midpoint",
+   "id": "M_AC",
+   "of": "AC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "P",
+   "of": "B",
+   "over": "M_AC"
+  },
+  {
+   "type": "intersection",
+   "id": "B'",
+   "line1": "BI",
+   "line2": "AP"
+  },
+  {
+   "type": "midpoint",
+   "id": "M_BC",
+   "of": "BC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "Q",
+   "of": "A",
+   "over": "M_BC"
+  },
+  {
+   "type": "intersection",
+   "id": "A'",
+   "line1": "AI",
+   "line2": "BQ"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "Omega",
+   "line": "A'B'",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "Omega",
+   "line": "A'B'",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "circle": "Omega",
+   "style": "soft"
+  },
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AI",
+   "style": "soft"
+  },
+  {
+   "segment": "BI",
+   "style": "soft"
+  },
+  {
+   "segment": "AB'",
+   "style": "dashed"
+  },
+  {
+   "segment": "BA'",
+   "style": "dashed"
+  },
+  {
+   "line": "A'B'",
+   "style": "dashed"
+  },
+  {
+   "polygon": "CDE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "60°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

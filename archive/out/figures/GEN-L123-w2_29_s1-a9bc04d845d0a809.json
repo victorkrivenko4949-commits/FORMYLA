@@ -1,0 +1,129 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "A1",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "CA"
+  },
+  {
+   "type": "foot",
+   "id": "C1",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "quad",
+   "id": "A1B1C1H",
+   "kind": "cyclic"
+  }
+ ],
+ "aux": [
+  {
+   "type": "triangle",
+   "id": "AB1H",
+   "kind": "right"
+  },
+  {
+   "type": "triangle",
+   "id": "BA1H",
+   "kind": "right"
+  },
+  {
+   "type": "triangle",
+   "id": "CA1H",
+   "kind": "right"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w_AH",
+   "of": "AB1H"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w_BH",
+   "of": "BA1H"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w_CH",
+   "of": "CA1H"
+  },
+  {
+   "type": "triangle",
+   "id": "A1B1C1",
+   "kind": "general"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w_orthic",
+   "of": "A1B1C1"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "A1B1C1H",
+   "style": "soft"
+  },
+  {
+   "segment": "AA1",
+   "style": "soft"
+  },
+  {
+   "segment": "BB1",
+   "style": "soft"
+  },
+  {
+   "segment": "CC1",
+   "style": "soft"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w_AH",
+   "style": "soft"
+  },
+  {
+   "circle": "w_BH",
+   "style": "soft"
+  },
+  {
+   "circle": "w_CH",
+   "style": "soft"
+  },
+  {
+   "circle": "w_orthic",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right": "AA1B"
+  },
+  {
+   "right": "BB1C"
+  },
+  {
+   "right": "CC1A"
+  }
+ ]
+}

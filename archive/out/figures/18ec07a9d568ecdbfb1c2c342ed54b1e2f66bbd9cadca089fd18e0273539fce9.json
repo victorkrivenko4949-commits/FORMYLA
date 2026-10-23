@@ -1,0 +1,111 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 60
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 240
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "w",
+   "angle": 300
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "BA",
+   "line2": "CD"
+  },
+  {
+   "type": "point",
+   "id": "U",
+   "x": 1,
+   "y": -1.154700538
+  },
+  {
+   "type": "point",
+   "id": "V",
+   "x": 2.5,
+   "y": -0.288675135
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "CUV"
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w"
+  },
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "BP",
+   "style": "soft"
+  },
+  {
+   "segment": "CP",
+   "style": "soft"
+  },
+  {
+   "line": "AU",
+   "style": "soft"
+  },
+  {
+   "line": "BV",
+   "style": "soft"
+  },
+  {
+   "line": "UV",
+   "style": "accent"
+  },
+  {
+   "circle": "w1",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "point",
+   "id": "E",
+   "x": 0,
+   "y": -1.154700538,
+   "reason": "Точка на касательной к окружности в точке D, чтобы показать параллельность UV этой касательной."
+  }
+ ],
+ "draw_aux": [
+  {
+   "line": "DE",
+   "style": "dashed"
+  }
+ ]
+}

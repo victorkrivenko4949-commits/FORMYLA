@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 360" role="img" aria-label="Разложение сторон прямоугольника на проекции к ℓ">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="520" height="360" rx="14"/>
+  <polygon points="80.00,280.00 400.00,280.00 362.57,177.15" fill="#12A7C8" fill-opacity="0.16" stroke="#12A7C8" stroke-width="1.6"/>
+  <polygon points="80.00,280.00 80.00,80.00 144.28,256.60" fill="#D6C65A" fill-opacity="0.16" stroke="#D6C65A" stroke-width="1.6"/>
+  <polygon class="edge" points="80.00,280.00 400.00,280.00 400.00,80.00 80.00,80.00"/>
+  <line class="aux" x1="80.00" y1="280.00" x2="455.88" y2="143.19"/>
+  <line class="aux-dash" x1="400.00" y1="280.00" x2="362.57" y2="177.15"/>
+  <line class="aux-dash" x1="80.00" y1="80.00" x2="144.28" y2="256.60"/>
+  <polyline class="edge" fill="none" points="354.11,180.23 357.19,188.69 365.65,185.61"/>
+  <polyline class="edge" fill="none" points="135.82,259.68 132.74,251.23 141.20,248.15"/>
+  <circle class="dot" cx="80.00" cy="280.00" r="4.00"/>
+  <text class="label" x="64.00" y="294.00" text-anchor="middle" dominant-baseline="middle">A</text>
+  <circle class="dot" cx="400.00" cy="280.00" r="4.00"/>
+  <text class="label" x="416.00" y="294.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dot" cx="400.00" cy="80.00" r="4.00"/>
+  <text class="label" x="416.00" y="70.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <circle class="dot" cx="80.00" cy="80.00" r="4.00"/>
+  <text class="label" x="64.00" y="70.00" text-anchor="middle" dominant-baseline="middle">D</text>
+  <circle class="dot" cx="362.57" cy="177.15" r="4.00"/>
+  <text class="label" x="362.57" y="161.15" text-anchor="middle" dominant-baseline="middle">X</text>
+  <circle class="dot" cx="144.28" cy="256.60" r="4.00"/>
+  <text class="label" x="144.28" y="240.60" text-anchor="middle" dominant-baseline="middle">Y</text>
+  <text class="num-aux" x="260.00" y="30.00" text-anchor="middle" dominant-baseline="middle">ход: △ABX ⟂ AB,  △ADY ⟂ AD — проекции на ℓ</text>
+</svg>

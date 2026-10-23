@@ -1,0 +1,148 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "isosceles"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AC"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "C",
+   "through": "A"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "w1",
+   "line": "AB",
+   "pick": 1
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "B",
+   "through": "M"
+  },
+  {
+   "type": "circle",
+   "id": "w3",
+   "center": "M",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "E",
+   "circle1": "w2",
+   "circle2": "w3",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "F",
+   "circle1": "w2",
+   "circle2": "w3",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "N",
+   "line1": "EF",
+   "line2": "BC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T",
+   "of": "NC",
+   "ratio": 0.3
+  },
+  {
+   "type": "circle",
+   "id": "w4",
+   "center": "N",
+   "through": "T"
+  },
+  {
+   "type": "line_circle",
+   "id": "Q",
+   "circle": "w4",
+   "line": "NM",
+   "pick": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "S",
+   "of": "TQ"
+  },
+  {
+   "type": "intersection",
+   "id": "H",
+   "line1": "NS",
+   "line2": "CM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CM"
+  },
+  {
+   "segment": "MN"
+  },
+  {
+   "segment": "NH"
+  },
+  {
+   "segment": "BK",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "BC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CM",
+    "AC"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "BN",
+    "MN"
+   ],
+   "ticks": 3
+  },
+  {
+   "angle": [
+    "C",
+    "N",
+    "H"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "M",
+    "N",
+    "H"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

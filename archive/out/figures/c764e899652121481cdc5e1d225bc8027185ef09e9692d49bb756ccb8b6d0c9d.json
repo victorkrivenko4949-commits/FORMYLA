@@ -1,0 +1,107 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 1.6,
+   "y": 3.6661
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 6.4,
+   "y": 4.8
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 10,
+   "y": 0
+  },
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "cyclic"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "B",
+   "line": "AD"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "BH",
+   "line2": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC"
+  },
+  {
+   "segment": "BD"
+  },
+  {
+   "segment": "BH",
+   "style": "dashed"
+  },
+  {
+   "segment": "AO",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "B"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AD",
+   "reason": "Окружность с диаметром AD: точки B и C лежат на ней"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "M",
+   "through": "A"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
+   "style": "dashed"
+  }
+ ]
+}

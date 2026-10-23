@@ -1,0 +1,85 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 4,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 6.4,
+   "y": 3.2
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 6.4,
+   "y": 7.2
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "BD"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "MN",
+   "line2": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "MN",
+   "line2": "CD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "line": "MN"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "CD"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "P",
+    "M"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "D",
+    "Q",
+    "M"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

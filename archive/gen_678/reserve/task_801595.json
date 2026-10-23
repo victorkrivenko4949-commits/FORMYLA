@@ -1,0 +1,20 @@
+{
+  "id": 801595,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $A_1$, $B_1$, $C_1$ соответственно так, что отрезки $AA_1$, $BB_1$, $CC_1$ пересекаются в одной точке $O$. Известно, что площади треугольников $AOB$, $BOC$, $COA$ равны $3$, $4$, $5$, а площадь треугольника $A_1B_1C_1$ равна $5$. Найдите площадь треугольника $ABC$.",
+  "solution": "Пусть $S = [ABC]$. Обозначим $S_A = [OBC] = 3$, $S_B = [OCA] = 4$, $S_C = [OAB] = 5$. Так как треугольники $OAB$ и $OAC$ имеют общую высоту из $O$ к стороне $BC$, то отношение площадей равно отношению отрезков, на которые $A_1$ делит $BC$: $\\frac{BA_1}{A_1C} = \\frac{S_C}{S_B} = \\frac{5}{4}$. Аналогично, $\\frac{CB_1}{B_1A} = \\frac{S_A}{S_C} = \\frac{3}{5}$, $\\frac{AC_1}{C_1B} = \\frac{S_B}{S_A} = \\frac{4}{3}$.  \n\nВыразим отрезки через отношения: \n$BA_1 = \\frac{5}{9}BC$, $A_1C = \\frac{4}{9}BC$; \n$CB_1 = \\frac{3}{8}CA$, $B_1A = \\frac{5}{8}CA$; \n$AC_1 = \\frac{4}{7}AB$, $C_1B = \\frac{3}{7}AB$.  \n\nТеперь найдём площади треугольников, прилегающих к вершинам: \n$[AB_1C_1] = \\frac{AC_1}{AB} \\cdot \\frac{AB_1}{AC} \\cdot S = \\frac{4}{7} \\cdot \\frac{5}{8} \\cdot S = \\frac{5}{14}S$; \n$[BC_1A_1] = \\frac{BA_1}{BC} \\cdot \\frac{BC_1}{AB} \\cdot S = \\frac{5}{9} \\cdot \\frac{3}{7} \\cdot S = \\frac{5}{21}S$; \n$[CA_1B_1] = \\frac{CB_1}{CA} \\cdot \\frac{CA_1}{BC} \\cdot S = \\frac{3}{8} \\cdot \\frac{4}{9} \\cdot S = \\frac{1}{6}S$.  \n\nСумма этих трёх площадей: \n$\\frac{5}{14}S + \\frac{5}{21}S + \\frac{1}{6}S = \\left(\\frac{15}{42}+\\frac{10}{42}+\\frac{7}{42}\\right)S = \\frac{32}{42}S = \\frac{16}{21}S$.  \nТогда площадь треугольника $A_1B_1C_1$ равна $S - \\frac{16}{21}S = \\frac{5}{21}S$. По условию $\\frac{5}{21}S = 5$, откуда $S = 21$.  \n\nОтвет: $21$.",
+  "correct_answer": "21",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Площади треугольников с общей вершиной и отношения отрезков",
+  "idea_count": 5,
+  "is_clone": true,
+  "clone_similarity": 0.713,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T13:28:09.909817+00:00"
+}

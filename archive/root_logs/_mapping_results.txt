@@ -1,0 +1,68 @@
+Bank: 545 tasks, Source: 2686 tasks
+Source[0] keys: ['id', 'grade', 'method_code', 'difficulty', 'task_text', 'correct_answer', 'solution', 'theme', 'subtopic', 'original_difficulty', 'status', 'review_note', 'audit_note', 'compression_rule', 'compression_status']
+  MISMATCH: Bank G5|L1 (si=0) -> Source G5|LNone id=5-A1-10-L2-g
+  MISMATCH: Bank GNone|L1 (si=1) -> Source G5|LNone id=5-A1-11-L2-g
+  MISMATCH: Bank GNone|L1 (si=2) -> Source G5|LNone id=5-A1-2-L1-g
+
+Grade+Level match via source_index: 0/545
+Grade+Level mismatch: 545/545
+
+First 5 bank tasks mapped via source_index:
+  Bank[SEL1080-0001] si=0 G5|L1 -> Source id=5-A1-10-L2-g G5|LNone subtopic=Признаки делимости и чётность
+  Bank[SEL1080-0002] si=1 GNone|L1 -> Source id=5-A1-11-L2-g G5|LNone subtopic=Признаки делимости и чётность
+  Bank[SEL1080-0003] si=2 GNone|L1 -> Source id=5-A1-2-L1-g G5|LNone subtopic=Признаки делимости и чётность
+  Bank[SEL1080-0004] si=3 GNone|L1 -> Source id=5-A1-4-L1-g G5|LNone subtopic=Признаки делимости и чётность
+  Bank[SEL1080-0005] si=4 GNone|L1 -> Source id=5-A1-6-L2-g G5|LNone subtopic=Признаки делимости и чётность
+
+=== Grade|Level cells (L1-L3 target): 22 ===
+  G2|L1: 5 tasks
+  G5|L1: 5 tasks
+  G5|L2: 6 tasks
+  G5|L3: 5 tasks
+  G6|L1: 8 tasks
+  G6|L2: 8 tasks
+  G6|L3: 6 tasks
+  G7|L1: 6 tasks
+  G7|L2: 8 tasks
+  G7|L3: 5 tasks
+  G8|L1: 5 tasks
+  G8|L2: 5 tasks
+  G8|L3: 6 tasks
+  G9|L1: 7 tasks
+  G9|L2: 5 tasks
+  G9|L3: 6 tasks
+  G10|L1: 6 tasks
+  G10|L2: 10 tasks
+  G10|L3: 7 tasks
+  G11|L1: 20 tasks
+  G11|L2: 25 tasks
+  G11|L3: 10 tasks
+
+=== Grade|Level|Subtopic cells: 22 ===
+  G2|L1|__GL_MISMATCH__: 5 tasks
+  G5|L1|__GL_MISMATCH__: 5 tasks
+  G5|L2|__GL_MISMATCH__: 6 tasks
+  G5|L3|__GL_MISMATCH__: 5 tasks
+  G6|L1|__GL_MISMATCH__: 8 tasks
+  G6|L2|__GL_MISMATCH__: 8 tasks
+  G6|L3|__GL_MISMATCH__: 6 tasks
+  G7|L1|__GL_MISMATCH__: 6 tasks
+  G7|L2|__GL_MISMATCH__: 8 tasks
+  G7|L3|__GL_MISMATCH__: 5 tasks
+  G8|L1|__GL_MISMATCH__: 5 tasks
+  G8|L2|__GL_MISMATCH__: 5 tasks
+  G8|L3|__GL_MISMATCH__: 6 tasks
+  G9|L1|__GL_MISMATCH__: 7 tasks
+  G9|L2|__GL_MISMATCH__: 5 tasks
+  G9|L3|__GL_MISMATCH__: 6 tasks
+  G10|L1|__GL_MISMATCH__: 6 tasks
+  G10|L2|__GL_MISMATCH__: 10 tasks
+  G10|L3|__GL_MISMATCH__: 7 tasks
+  G11|L1|__GL_MISMATCH__: 20 tasks
+  G11|L2|__GL_MISMATCH__: 25 tasks
+  G11|L3|__GL_MISMATCH__: 10 tasks
+
+Unique subtopics found via mapping: 0
+
+Tasks with failed mapping: 0
+Tasks with grade/level mismatch: 174

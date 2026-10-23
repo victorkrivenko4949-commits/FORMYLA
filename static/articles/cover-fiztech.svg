@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Чертёж треугольника с высотами и окружностью, формулы на тёмной доске">
+<defs><radialGradient id="g" cx="60%" cy="40%" r="70%"><stop offset="0" stop-color="#1c2a4d"/><stop offset="1" stop-color="#0b1428"/></radialGradient><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="rgba(255,255,255,.06)"/></pattern></defs>
+<rect width="800" height="800" fill="url(#g)"/><rect width="800" height="800" fill="url(#grid)"/>
+<circle cx="430" cy="470" r="150" fill="rgba(94,234,212,.06)" stroke="#5eead4" stroke-width="4"/>
+<polygon points="150,640 650,640 520,180" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+<line x1="520" y1="180" x2="520" y2="640" stroke="#94a3b8" stroke-width="3" stroke-dasharray="10 8"/>
+<line x1="150" y1="640" x2="575" y2="372" stroke="#94a3b8" stroke-width="3" stroke-dasharray="10 8"/>
+<line x1="650" y1="640" x2="394" y2="412" stroke="#94a3b8" stroke-width="3" stroke-dasharray="10 8"/>
+<line x1="335" y1="410" x2="520" y2="530" stroke="#f4a259" stroke-width="5"/>
+<line x1="335" y1="410" x2="575" y2="372" stroke="#f4a259" stroke-width="5"/>
+<circle cx="335" cy="410" r="9" fill="#f4a259"/><circle cx="520" cy="530" r="7" fill="#fff"/><circle cx="575" cy="372" r="7" fill="#fff"/>
+<text x="120" y="690" font-size="34" font-weight="700" fill="#fff" font-family="Georgia,serif">A</text>
+<text x="660" y="690" font-size="34" font-weight="700" fill="#fff" font-family="Georgia,serif">C</text>
+<text x="505" y="160" font-size="34" font-weight="700" fill="#fff" font-family="Georgia,serif">B</text>
+<text x="300" y="395" font-size="34" font-weight="700" fill="#f4a259" font-family="Georgia,serif">K</text>
+<text x="60" y="110" font-size="30" fill="#cbd5e1" font-family="Georgia,serif" font-style="italic">BC = 2R·sin A</text>
+<text x="60" y="160" font-size="30" fill="#cbd5e1" font-family="Georgia,serif" font-style="italic">n!·(n+2)² ⋮ 19²</text>
+<text x="60" y="210" font-size="30" fill="#cbd5e1" font-family="Georgia,serif" font-style="italic">x² + y² = a²</text>
+<text x="60" y="760" font-size="26" font-weight="800" fill="#f4a259" font-family="system-ui,sans-serif" letter-spacing="6">ФИЗТЕХ · РАЗБОР</text>
+</svg>

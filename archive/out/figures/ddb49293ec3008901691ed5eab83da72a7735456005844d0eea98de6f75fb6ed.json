@@ -1,0 +1,128 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "BC",
+   "ratio": 1.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "S",
+   "of": "AC",
+   "ratio": 0.67
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "BS",
+   "ratio": 0.75
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BN",
+   "style": "soft"
+  },
+  {
+   "segment": "BS"
+  },
+  {
+   "segment": "ML"
+  },
+  {
+   "segment": "AC",
+   "style": "accent"
+  },
+  {
+   "segment": "LN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "MC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "S"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "S",
+    "B",
+    "C"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "BC",
+   "reason": "Средняя линия MK параллельна AB; L лежит на MK."
+  },
+  {
+   "type": "reflect_point",
+   "id": "N'",
+   "of": "B",
+   "over": "N",
+   "reason": "N — середина BN', то есть NN'=BN."
+  },
+  {
+   "type": "reflect_point",
+   "id": "L'",
+   "of": "B",
+   "over": "L",
+   "reason": "L — середина BL', то есть LL'=BL."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "MK",
+   "style": "soft"
+  },
+  {
+   "segment": "BN'",
+   "style": "soft"
+  },
+  {
+   "segment": "BL'",
+   "style": "soft"
+  },
+  {
+   "segment": "CL'",
+   "style": "dashed"
+  },
+  {
+   "segment": "CN'",
+   "style": "dashed"
+  },
+  {
+   "segment": "N'L'",
+   "style": "dashed"
+  }
+ ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": 801760,
+  "task_text": "В треугольнике $ABC$ проведены медианы $AD$, $BE$, $CF$. Пусть $P$, $Q$, $R$ — середины отрезков $AD$, $BE$, $CF$ соответственно. Докажите, что треугольник $PQR$ подобен треугольнику $ABC$, и найдите коэффициент подобия.",
+  "solution": "Введем векторы с началом в произвольной точке. Обозначим $\\vec{A}$, $\\vec{B}$, $\\vec{C}$ — радиус-векторы вершин. Тогда середина $BC$ — точка $D$: $\\vec{D} = \\frac{\\vec{B}+\\vec{C}}{2}$. Середина $AD$ — точка $P$: $\\vec{P} = \\frac{\\vec{A}+\\vec{D}}{2} = \\frac{\\vec{A} + \\frac{\\vec{B}+\\vec{C}}{2}}{2} = \\frac{2\\vec{A}+\\vec{B}+\\vec{C}}{4}$. Аналогично $\\vec{Q} = \\frac{\\vec{A}+2\\vec{B}+\\vec{C}}{4}$, $\\vec{R} = \\frac{\\vec{A}+\\vec{B}+2\\vec{C}}{4}$. Центроид $G$ треугольника $ABC$ имеет вектор $\\vec{G} = \\frac{\\vec{A}+\\vec{B}+\\vec{C}}{3}$. Вычислим $\\vec{P} - \\vec{G}$: $$\\vec{P} - \\vec{G} = \\frac{2\\vec{A}+\\vec{B}+\\vec{C}}{4} - \\frac{\\vec{A}+\\vec{B}+\\vec{C}}{3} = \\frac{3(2\\vec{A}+\\vec{B}+\\vec{C}) - 4(\\vec{A}+\\vec{B}+\\vec{C})}{12} = \\frac{6\\vec{A}+3\\vec{B}+3\\vec{C} -4\\vec{A}-4\\vec{B}-4\\vec{C}}{12} = \\frac{2\\vec{A} - \\vec{B} - \\vec{C}}{12}.$$ С другой стороны $\\vec{A} - \\vec{G} = \\vec{A} - \\frac{\\vec{A}+\\vec{B}+\\vec{C}}{3} = \\frac{2\\vec{A} - \\vec{B} - \\vec{C}}{3} = \\frac{8\\vec{A} - 4\\vec{B} - 4\\vec{C}}{12}$. Следовательно, $$\\vec{P} - \\vec{G} = \\frac{1}{4}(\\vec{A} - \\vec{G}).$$ Аналогично $\\vec{Q} - \\vec{G} = \\frac{1}{4}(\\vec{B} - \\vec{G})$, $\\vec{R} - \\vec{G} = \\frac{1}{4}(\\vec{C} - \\vec{G})$. Таким образом, треугольник $PQR$ получается из треугольника $ABC$ гомотетией с центром в точке $G$ и коэффициентом $\\frac{1}{4}$. Значит, $\\triangle PQR \\sim \\triangle ABC$ с коэффициентом подобия $k = \\frac{1}{4}$. Отношение площадей равно $k^2 = \\frac{1}{16}$.",
+  "correct_answer": "Коэффициент подобия $k = \\frac{1}{4}$.",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Векторный метод и гомотетия",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.869,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:09:49.945491+00:00"
+}

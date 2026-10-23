@@ -1,0 +1,216 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "BI",
+   "line2": "AC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "CL",
+   "ratio": 0.4
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "Omega",
+   "of": "ABC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "Op",
+   "of": "O",
+   "over": "B"
+  },
+  {
+   "type": "circle",
+   "id": "cO1",
+   "center": "O",
+   "through": "Op"
+  },
+  {
+   "type": "circle",
+   "id": "cOp",
+   "center": "Op",
+   "through": "O"
+  },
+  {
+   "type": "circle_circle",
+   "id": "T1",
+   "circle1": "cO1",
+   "circle2": "cOp",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "T2",
+   "circle1": "cO1",
+   "circle2": "cOp",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "T1T2",
+   "line2": "AC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O2",
+   "of": "BLM"
+  },
+  {
+   "type": "circumcircle",
+   "id": "Gamma",
+   "of": "BLM"
+  },
+  {
+   "type": "reflect_point",
+   "id": "O2B",
+   "of": "O2",
+   "over": "B"
+  },
+  {
+   "type": "reflect_point",
+   "id": "O2M",
+   "of": "O2",
+   "over": "M"
+  },
+  {
+   "type": "circle",
+   "id": "cB1",
+   "center": "O2",
+   "through": "O2B"
+  },
+  {
+   "type": "circle",
+   "id": "cB2",
+   "center": "O2B",
+   "through": "O2"
+  },
+  {
+   "type": "circle_circle",
+   "id": "TB1",
+   "circle1": "cB1",
+   "circle2": "cB2",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "TB2",
+   "circle1": "cB1",
+   "circle2": "cB2",
+   "pick": 1
+  },
+  {
+   "type": "circle",
+   "id": "cM1",
+   "center": "O2",
+   "through": "O2M"
+  },
+  {
+   "type": "circle",
+   "id": "cM2",
+   "center": "O2M",
+   "through": "O2"
+  },
+  {
+   "type": "circle_circle",
+   "id": "TM1",
+   "circle1": "cM1",
+   "circle2": "cM2",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "TM2",
+   "circle1": "cM1",
+   "circle2": "cM2",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "TB1TB2",
+   "line2": "TM1TM2"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "Omega"
+  },
+  {
+   "circle": "Gamma"
+  },
+  {
+   "segment": "BL",
+   "style": "accent"
+  },
+  {
+   "line": "PQ",
+   "style": "accent"
+  },
+  {
+   "line": "BP",
+   "style": "soft"
+  },
+  {
+   "line": "BQ",
+   "style": "dashed"
+  },
+  {
+   "line": "MQ",
+   "style": "dashed"
+  },
+  {
+   "segment": "BM",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "L"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "L",
+    "B",
+    "C"
+   ],
+   "text": "α"
+  },
+  {
+   "equal": [
+    "QB",
+    "QM"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

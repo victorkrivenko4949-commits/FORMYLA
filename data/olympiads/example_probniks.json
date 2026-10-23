@@ -1,0 +1,35 @@
+[
+  {
+    "code": "vsosh-9-2027-topic-1",
+    "type": "topic",
+    "number": 1,
+    "title": "Тема 1. Математическая индукция",
+    "description": "Тематический пробник по методу математической индукции. Решите задачи, проработайте теорию, затем переходите к этапному.",
+    "competition": "ВсОШ",
+    "grade": 9,
+    "season_year": 2027,
+    "sort_order": 10,
+    "is_published": true,
+    "theory": [
+      {"method_code": "E14", "order": 1},
+      {"method_code": "F4a", "order": 2}
+    ]
+  },
+  {
+    "code": "vsosh-9-2027-stage-1",
+    "type": "stage",
+    "number": 1,
+    "title": "Этап 1. Школьный тур",
+    "description": "Этапный пробник школьного тура: 4 задачи, 90 минут.",
+    "competition": "ВсОШ",
+    "grade": 9,
+    "season_year": 2027,
+    "duration_minutes": 90,
+    "max_score": 28,
+    "threshold_prize": 14,
+    "threshold_winner": 21,
+    "sort_order": 100,
+    "is_published": true,
+    "theory": []
+  }
+]

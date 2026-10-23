@@ -1,0 +1,116 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  },
+  {
+   "type": "reflect_point",
+   "id": "C1",
+   "of": "C",
+   "over": "M"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "C",
+   "through": "A"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "C1",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "N",
+   "circle1": "w1",
+   "circle2": "w2",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "AD",
+   "line2": "MN"
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "M",
+   "line": "CE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "CM"
+  },
+  {
+   "segment": "ME"
+  },
+  {
+   "segment": "CE"
+  },
+  {
+   "segment": "MP",
+   "style": "soft"
+  },
+  {
+   "segment": "AP",
+   "style": "accent"
+  },
+  {
+   "segment": "PB",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "D",
+    "A",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "E",
+    "M",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "M",
+    "P",
+    "E"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "P",
+    "B"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

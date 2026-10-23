@@ -1,0 +1,135 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AB",
+   "ratio": 0.33
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "BC",
+   "ratio": 0.5
+  },
+  {
+   "type": "midpoint",
+   "id": "O1",
+   "of": "AE"
+  },
+  {
+   "type": "midpoint",
+   "id": "O2",
+   "of": "CD"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "O1",
+   "through": "A"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "O2",
+   "through": "C"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "circle_circle",
+   "id": "P",
+   "circle1": "w1",
+   "circle2": "w2",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD"
+  },
+  {
+   "segment": "BE"
+  },
+  {
+   "segment": "AE",
+   "style": "dashed"
+  },
+  {
+   "segment": "CD",
+   "style": "dashed"
+  },
+  {
+   "segment": "AP",
+   "style": "soft"
+  },
+  {
+   "segment": "CP",
+   "style": "soft"
+  },
+  {
+   "segment": "DP",
+   "style": "soft"
+  },
+  {
+   "segment": "EP",
+   "style": "soft"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  },
+  {
+   "circle": "w",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AD",
+    "BE"
+   ],
+   "ticks": 1
+  },
+  {
+   "right_angle": [
+    "A",
+    "P",
+    "E"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "P",
+    "D"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

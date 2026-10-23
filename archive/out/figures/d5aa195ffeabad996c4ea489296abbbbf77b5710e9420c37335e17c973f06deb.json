@@ -1,0 +1,113 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "P",
+   "circle": "w",
+   "line": "AB",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "Q",
+   "circle": "w",
+   "line": "AC",
+   "pick": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "PM",
+   "style": "accent"
+  },
+  {
+   "segment": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "30°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "incenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "foot",
+   "id": "R",
+   "from": "O",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "S",
+   "from": "P",
+   "line": "AC"
+  }
+ ],
+ "draw_aux": [
+  {
+   "polygon": "PORB",
+   "style": "soft"
+  },
+  {
+   "segment": "BM",
+   "style": "soft"
+  },
+  {
+   "segment": "OP",
+   "style": "dashed"
+  },
+  {
+   "segment": "OR",
+   "style": "dashed"
+  },
+  {
+   "segment": "OQ",
+   "style": "dashed"
+  },
+  {
+   "segment": "PS",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Добавлены центр O вписанной окружности, точка R касания с BC и проекция S точки P на AC; это даёт квадрат PORB и равенство треугольников PSQ и PSM."
+}

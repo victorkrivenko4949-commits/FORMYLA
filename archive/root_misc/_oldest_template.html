@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}FORMYLA — Задачи дня{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/daily_tasks.css') }}?v={{ asset_version }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/daily_tasks_modal.css') }}?v={{ asset_version }}">
+<style>
+  /* ── Темная тема для daily_tasks ─────────────────────────────── */
+  body.page-daily-tasks {
+    background: #0b0f1a;
+    color: rgba(255,255,255,0.88);
+  }
+  body.page-daily-tasks .header {
+    background: rgba(11,15,26,0.92);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* fallback LaTeX, когда KaTeX CDN не загрузился */
+  .dt-latex-fallback {
+    font-style: italic;
+    color: rgba(255,255,255,0.88);
+    background: rgba(56,239,125,0.06);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'Times New Roman', serif;
+  }
+  .dt-latex-display {
+    display: block;
+    text-align: center;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 16px;
+    background: rgba(0,0,0,0.2);
+    border-left: 3px solid rgba(56,239,125,0.2);
+    font-family: 'Times New Roman', serif;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dt-container" id="dt-app">
+  <!-- ── Заголовок ─────────────────────────────────────────────── -->
+  <div class="dt-header-title">
+    <h1>📋 Задачи дня</h1>
+  </div>
+
+  <!-- ── Пусто / нет задач ─────────────────────────────────────── -->
+  <div class="dt-section dt-hidden" id="dt-empty-state">
+    <div class="dt-empty">
+      <div class="dt-empty-icon">📭</div>
+      <p class="dt-empty-text" id="dt-empty-text">
+        Сегодня задач пока нет. Нажми «Сгенерировать», чтобы получить подборку.
+      </p>
+      <button class="btn-generate" id="dt-btn-generate" onclick="startGeneration()">
+        ✨ Сгенерировать задачи
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Генерация ─────────────────────────────────────────────── -->
+  <div class="dt-section dt-hidden" id="dt-generating-state">
+    <div class="dt-generating">
+      <div class="dt-gen-spinner"></div>
+      <p class="dt-gen-text">Формируем задачи специально для тебя…</p>
+      <div class="dt-gen-progress">
+        <div class="dt-progress-track" id="dt-progress-track">
+          <div class="dt-progress-fill" id="dt-progress-fill"></div>
+        </div>
+        <div class="dt-progress-label">
+          <span id="dt-progress-text">0 / 10</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Задачи готовы ─────────────────────────────────────────── -->
+  <div class="dt-section dt-hidden" id="dt-ready-state">
+    <div class="dt-header">
+      <div class="dt-header-meta">
+        <span class="dt-date" id="dt-date"></span>
+        <span class="dt-count" id="dt-count"></span>
+      </div>
+    </div>
+
+    <div class="dt-summary-card dt-hidden" id="dt-summary-card">
+      <div class="dt-summary-meta">
+        <span class="dt-summary-label">Средняя сложность</span>
+        <span class="dt-summary-value" id="dt-avg-difficulty"></span>
+      </div>
+    </div>
+
+    <div class="dt-partial-notice dt-hidden" id="dt-partial-notice">
+      ⏳ Ещё несколько задач в процессе…
+    </div>
+
+    <div class="dt-grid" id="dt-task-grid"></div>
+
+    <div class="dt-regenerate-section">
+      <button class="btn-generate btn-generate-sm" onclick="startGeneration()">
+        🔄 Сгенерировать заново
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Модалка задачи (1-в-1 как /adaptive_test_simple) ──────── -->
+  <div class="dt-modal-overlay dt-hidden" id="dt-modal-overlay" onclick="closeModal()">
+    <div class="dt-modal" onclick="event.stopPropagation()">
+      <div class="dt-modal-header">
+        <span class="dt-modal-title" id="dt-modal-title">Задача</span>
+        <button class="dt-modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="dt-modal-body" id="dt-modal-body">
+        <!-- Динамический контент: рендерится из openTaskModal() в daily_tasks.js.
+             Включает условие, форму ответа, поле «Ход решения», единую клавиатуру,
+             фото-аплоад, AI-лоадер и блок результата от тьютора. -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KaTeX делимитеры для рендера формул в AI-фидбеке -->
+<script>
+  window._dtKatexDelimiters = [
+    {left: '$$', right: '$$', display: true},
+    {left: '$',  right: '$',  display: false},
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ];
+</script>
+
+<!-- MathLive — для поля ответа (та же библиотека, что в адаптивном тесте) -->
+<script src="https://unpkg.com/mathlive"></script>
+
+<script src="{{ url_for('static', filename='js/daily_tasks.js') }}?v={{ asset_version }}"></script>
+<!-- Адаптивная модалка: переопределяет openTaskModal / submitAnswer / getHint -->
+<script src="{{ url_for('static', filename='js/daily_tasks_modal.js') }}?v={{ asset_version }}"></script>
+{% endblock %}

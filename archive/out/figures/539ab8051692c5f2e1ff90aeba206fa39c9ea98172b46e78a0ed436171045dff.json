@@ -1,0 +1,102 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "AO",
+   "line2": "BC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "E",
+   "of": "C",
+   "over": "D"
+  },
+  {
+   "type": "foot",
+   "id": "T",
+   "from": "E",
+   "line": "CO"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "ABD"
+  },
+  {
+   "type": "line_circle",
+   "id": "K",
+   "circle": "w2",
+   "line": "BT",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "circle": "w2"
+  },
+  {
+   "line": "AO",
+   "style": "soft"
+  },
+  {
+   "line": "CO",
+   "style": "soft"
+  },
+  {
+   "segment": "ET",
+   "style": "soft"
+  },
+  {
+   "line": "BT",
+   "style": "soft"
+  },
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "segment": "AK",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "E",
+    "T",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "CD",
+    "DE"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

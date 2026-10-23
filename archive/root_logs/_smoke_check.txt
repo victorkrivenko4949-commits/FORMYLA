@@ -1,0 +1,4 @@
+A cond: correct ans: correct sol: correct overall: correct
+A justification: Условие однозначно и непротиворечиво, уравнение составлено верно, все единицы переведены корректно, решение приводит к правильному ответу 450 г.
+B cond: correct ans: correct sol: correct overall: correct
+_reason: both_correct

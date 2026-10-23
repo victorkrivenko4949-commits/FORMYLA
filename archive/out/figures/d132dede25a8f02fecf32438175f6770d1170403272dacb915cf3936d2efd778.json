@@ -1,0 +1,124 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 4,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 5,
+   "y": 3
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 1,
+   "y": 3
+  },
+  {
+   "type": "point",
+   "id": "P",
+   "x": 1,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "O1",
+   "x": 4.2882456,
+   "y": 1.7762495
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T1",
+   "of": "BP",
+   "ratio": 0.09115
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "O1",
+   "through": "T1"
+  },
+  {
+   "type": "incircle",
+   "id": "w2",
+   "of": "PCD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "PA",
+   "style": "soft"
+  },
+  {
+   "segment": "PB",
+   "style": "soft"
+  },
+  {
+   "segment": "PC",
+   "style": "soft"
+  },
+  {
+   "segment": "PD",
+   "style": "soft"
+  },
+  {
+   "circle": "w1"
+  },
+  {
+   "circle": "w2"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "P",
+    "D",
+    "A"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "P",
+    "B",
+    "A"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AB",
+   "ratio": 0.45596,
+   "reason": "общая касательная пересекает AB"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "F",
+   "of": "DC",
+   "ratio": 0.45596,
+   "reason": "общая касательная параллельна AD"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "EF",
+   "style": "accent"
+  }
+ ]
+}

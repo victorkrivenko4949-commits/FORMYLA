@@ -1,0 +1,20 @@
+{
+  "id": 801350,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $D$, $E$, $F$ соответственно такие, что $BD:DC = 1:2$, $CE:EA = 2:3$, $AF:FB = x:1$, где $x>0$. Пусть $P$ — точка пересечения прямых $AD$ и $BE$, $Q$ — точка пересечения $BE$ и $CF$, $R$ — точка пересечения $CF$ и $AD$. Площадь треугольника $PQR$ равна $1$, а площадь треугольника $ABC$ равна $10$. Найдите $x$.",
+  "solution": "Пусть $\\alpha = BD/DC = 1/2$, $\\beta = CE/EA = 2/3$, $\\gamma = AF/FB = x$. По теореме Рауса площадь треугольника, образованного пересечениями трёх чевиан, равна\n$$\nS_{PQR} = \\frac{(\\alpha\\beta\\gamma-1)^2}{(\\alpha\\beta+\\beta+1)(\\beta\\gamma+\\gamma+1)(\\gamma\\alpha+\\alpha+1)}\\cdot S_{ABC}.\n$$\n\nПодставим известные значения:\n$\\alpha\\beta = \\frac12\\cdot\\frac23 = \\frac13$, $\\alpha\\beta\\gamma = \\frac{x}{3}$, $\\alpha\\beta+\\beta+1 = \\frac13+\\frac23+1 = 2$,\n$\\beta\\gamma+\\gamma+1 = \\frac{2x}{3}+x+1 = \\frac{5x+3}{3}$,\n$\\gamma\\alpha+\\alpha+1 = \\frac{x}{2}+\\frac12+1 = \\frac{x+3}{2}$.\n\nТогда\n$$\nS_{PQR} = \\frac{\\left(\\frac{x}{3}-1\\right)^2}{2\\cdot\\frac{5x+3}{3}\\cdot\\frac{x+3}{2}}\\cdot10 = \\frac{\\frac{(x-3)^2}{9}}{\\frac{(5x+3)(x+3)}{3}}\\cdot10 = \\frac{(x-3)^2}{3(5x+3)(x+3)}\\cdot10.\n$$\n\nПо условию $S_{PQR}=1$, поэтому\n$$\n\\frac{10(x-3)^2}{3(5x+3)(x+3)} = 1 \\quad\\Longrightarrow\\quad 10(x-3)^2 = 3(5x+3)(x+3).\n$$\n\nРаскрываем скобки:\n$10(x^2-6x+9)=3(5x^2+18x+9)$,\n$10x^2-60x+90 = 15x^2+54x+27$,\n$0 = 5x^2+114x-63$.\n\nРешаем квадратное уравнение:\n$5x^2+114x-63=0$,\n$D = 114^2+4\\cdot5\\cdot63 = 12996+1260 = 14256 = 36^2\\cdot11$,\n$x = \\frac{-114 \\pm 36\\sqrt{11}}{10} = \\frac{-57 \\pm 18\\sqrt{11}}{5}$.\n\nТак как $x>0$, выбираем положительный корень:\n$x = \\frac{18\\sqrt{11}-57}{5}$.\n\nПолученное значение $x\\approx0.54$ удовлетворяет условию $AF:FB = x:1$ (точка $F$ лежит на отрезке $AB$).",
+  "correct_answer": "\\frac{18\\sqrt{11}-57}{5}",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Теорема Рауса",
+  "idea_count": 3,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T12:37:52.402382+00:00"
+}

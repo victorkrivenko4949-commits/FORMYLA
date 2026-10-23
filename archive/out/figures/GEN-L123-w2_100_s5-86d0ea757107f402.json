@@ -1,0 +1,165 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circle",
+   "id": "cAB1",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "cAB2",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "X",
+   "circle1": "cAB1",
+   "circle2": "cAB2",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "cBC1",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "cBC2",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "Y",
+   "circle1": "cBC1",
+   "circle2": "cBC2",
+   "pick": 0
+  },
+  {
+   "type": "circumcircle",
+   "id": "wABX",
+   "of": "ABX"
+  },
+  {
+   "type": "circumcircle",
+   "id": "wBCY",
+   "of": "BCY"
+  },
+  {
+   "type": "circle_circle",
+   "id": "P",
+   "circle1": "wABX",
+   "circle2": "wBCY",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABX"
+  },
+  {
+   "polygon": "BCY"
+  },
+  {
+   "segment": "XY",
+   "style": "accent"
+  },
+  {
+   "segment": "AP",
+   "style": "soft"
+  },
+  {
+   "segment": "BP",
+   "style": "soft"
+  },
+  {
+   "segment": "CP",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "P",
+    "B"
+   ],
+   "text": "120°"
+  },
+  {
+   "angle": [
+    "B",
+    "P",
+    "C"
+   ],
+   "text": "120°"
+  },
+  {
+   "angle": [
+    "C",
+    "P",
+    "A"
+   ],
+   "text": "120°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "circle",
+   "id": "wBP",
+   "center": "B",
+   "through": "P"
+  },
+  {
+   "type": "circle",
+   "id": "wPB",
+   "center": "P",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "P1",
+   "circle1": "wBP",
+   "circle2": "wPB",
+   "pick": 1
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "wBP",
+   "style": "dashed"
+  },
+  {
+   "circle": "wPB",
+   "style": "dashed"
+  },
+  {
+   "segment": "PP1",
+   "style": "soft"
+  },
+  {
+   "segment": "BP1",
+   "style": "soft"
+  },
+  {
+   "segment": "XP1",
+   "style": "soft"
+  },
+  {
+   "segment": "YP1",
+   "style": "soft"
+  }
+ ],
+ "reason": "P1 — образ точки P при повороте вокруг B на 60°; треугольник BPP1 равносторонний, поворот переводит AP в XP1 и CP в YP1, поэтому углы вокруг P1 дают 180°, откуда X, P, Y коллинеарны."
+}

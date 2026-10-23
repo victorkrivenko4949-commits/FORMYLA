@@ -1,0 +1,71 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AB",
+   "ratio": 0.54
+  },
+  {
+   "type": "foot",
+   "id": "K",
+   "from": "M",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "B",
+   "line": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "MK"
+  },
+  {
+   "segment": "BH"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "M",
+    "K",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "H",
+    "A"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "22°"
+  },
+  {
+   "equal": [
+    "AM",
+    "BC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

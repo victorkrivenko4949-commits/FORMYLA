@@ -1,0 +1,31 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0512",
+      "mode": "replace_bad",
+      "id": "8-C2-1-L7-g678",
+      "grade": 8,
+      "difficulty": 7,
+      "theme": "Системы и текстовые задачи",
+      "subtopic": "На движение/работу/смеси",
+      "method_code": "C2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 11
+    },
+    {
+      "job_id": "audit-0016-5-A3-33-L7-g",
+      "mode": "replace_bad",
+      "id": "5-A3-33-L7-g",
+      "grade": 5,
+      "difficulty": 7,
+      "theme": "Числа и делимость",
+      "subtopic": "Числовые ребусы и закономерности",
+      "method_code": "A3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

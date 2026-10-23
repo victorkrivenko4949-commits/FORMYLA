@@ -1,0 +1,138 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": -1,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w_BA",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w_BA",
+   "angle": 60
+  },
+  {
+   "type": "circle",
+   "id": "w_AB",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "M",
+   "circle": "w_BA",
+   "angle": 270
+  },
+  {
+   "type": "point_on_circle",
+   "id": "N",
+   "circle": "w_AB",
+   "angle": 270
+  },
+  {
+   "type": "circle",
+   "id": "w_BC",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "w_CB",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "P",
+   "circle": "w_CB",
+   "angle": 330
+  },
+  {
+   "type": "point_on_circle",
+   "id": "Q",
+   "circle": "w_BC",
+   "angle": 330
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "O1",
+   "line1": "AM",
+   "line2": "BN"
+  },
+  {
+   "type": "intersection",
+   "id": "O2",
+   "line1": "BP",
+   "line2": "CQ"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABMN"
+  },
+  {
+   "polygon": "BCPQ"
+  },
+  {
+   "segment": "O1K",
+   "style": "accent"
+  },
+  {
+   "segment": "O2K",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "BC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "O1K",
+    "O2K"
+   ],
+   "ticks": 2
+  },
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "M"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "C",
+    "P"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

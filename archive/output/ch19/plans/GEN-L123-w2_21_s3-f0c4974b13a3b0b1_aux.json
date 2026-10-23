@@ -1,0 +1,1 @@
+{"has_aux": false, "reason": null, "constructions": [], "type": "line_through_point_parallel", "id": "aux_line_N_parallel_BM", "point": "N", "line": "seg_BM", "dashed": true, "style": "aux", "purpose": "Прямая через N, параллельная BM", "solution_evidence": {"step_no": 1, "quote": "Проведём через точку N прямую, параллельную BM, до пересечения с AC в точке K."}}

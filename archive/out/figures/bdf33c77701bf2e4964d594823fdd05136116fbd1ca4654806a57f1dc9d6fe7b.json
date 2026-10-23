@@ -1,0 +1,124 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "cyclic"
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AC"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "BD"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AD",
+   "line2": "BC"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "AB",
+   "line2": "CD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "circle": "w",
+   "style": "dashed"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "line": "AD",
+   "style": "soft"
+  },
+  {
+   "line": "BC",
+   "style": "soft"
+  },
+  {
+   "line": "AB",
+   "style": "soft"
+  },
+  {
+   "line": "CD",
+   "style": "soft"
+  },
+  {
+   "segment": "PN",
+   "style": "accent"
+  },
+  {
+   "segment": "PK",
+   "style": "accent"
+  },
+  {
+   "segment": "QN",
+   "style": "accent"
+  },
+  {
+   "segment": "QK",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AK",
+    "KC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BK",
+    "KD"
+   ],
+   "ticks": 2
+  },
+  {
+   "angle": [
+    "P",
+    "K",
+    "Q"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "P",
+    "N",
+    "Q"
+   ],
+   "text": "β"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

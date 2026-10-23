@@ -1,0 +1,32 @@
+=== QUICK AUDIT ===
+victor2_generated.json: 625 records
+With statement: 625
+Cells L1-L3: 129
+  L1: 215 tasks, 43 cells
+  L2: 211 tasks, 43 cells
+  L3: 199 tasks, 43 cells
+  Grade 5: 90 tasks
+  Grade 6: 90 tasks
+  Grade 7: 88 tasks
+  Grade 8: 88 tasks
+  Grade 9: 89 tasks
+  Grade 10: 84 tasks
+  Grade 11: 96 tasks
+
+Taxonomy grades: []
+TOTAL subtopics: 0
+TARGET cells: 0
+TARGET tasks: 0
+
+Pipeline output dir: l1_l3_generation/max_fill_20260722_111737
+Files: []
+
+Checkpoint exists: keys=['completed_cells', 'tasks', 'cell_results', 'started_at', 'last_updated', 'verification_report', 'total_cells']
+  approved_count=?
+  total_candidates=?
+
+=== SUMMARY ===
+Task file: victor2_generated.json
+Total records: 625
+Existing L1-L3 cells: 129 of 0 needed
+Shortage estimate: -625

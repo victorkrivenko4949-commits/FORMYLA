@@ -1,0 +1,12 @@
+{
+  "created": [
+    "orchestrator.py",
+    "worker.py",
+    "validator.py",
+    "merge_results.py",
+    "README.md"
+  ],
+  "queue": "output/formyla_20worker_generation_queue.json",
+  "workers": 20,
+  "note": "Готов каркас реального одновременного запуска; нужен API-вызов в worker.py"
+}

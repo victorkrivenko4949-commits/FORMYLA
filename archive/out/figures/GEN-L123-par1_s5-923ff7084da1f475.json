@@ -1,0 +1,88 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "AC",
+   "ratio": 0.8
+  },
+  {
+   "type": "circle",
+   "id": "w_ck",
+   "center": "C",
+   "through": "K"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "w_ck",
+   "line": "BC",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AM",
+   "line2": "BK"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CH",
+   "style": "soft"
+  },
+  {
+   "segment": "AM"
+  },
+  {
+   "segment": "BK"
+  },
+  {
+   "segment": "CP",
+   "style": "accent"
+  },
+  {
+   "segment": "HM",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "CK",
+    "CM"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

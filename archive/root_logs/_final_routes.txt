@@ -1,0 +1,4 @@
+/daily_tasks -> 308
+/daily_tasks/ -> 200
+/prep/coach -> 200
+/prep/onboarding -> 200

@@ -1,0 +1,20 @@
+{
+  "id": 800079,
+  "task_text": "В треугольнике $ABC$ на сторонах $AB$ и $AC$ выбраны точки $D$ и $E$ соответственно так, что $AD\\cdot DB = AE\\cdot EC$. Пусть $F$ — точка пересечения отрезков $BE$ и $CD$. Докажите, что если прямая $AF$ является биссектрисой угла $A$, то $AB = AC$.",
+  "solution": "Пусть $AF$ — биссектриса, $L = AF \\cap BC$. По свойству биссектрисы $\\dfrac{BL}{LC} = \\dfrac{AB}{AC}$. Применим теорему Чевы к треугольнику $ABC$ с чевианами $AL$, $BE$, $CD$, пересекающимися в $F$:\n$$\\frac{AD}{DB} \\cdot \\frac{BL}{LC} \\cdot \\frac{CE}{EA} = 1.$$\nПодставляя отношение $BL/LC$, получаем:\n$$\\frac{AD}{DB} \\cdot \\frac{AB}{AC} \\cdot \\frac{CE}{EA} = 1 \\quad\\Rightarrow\\quad AD\\cdot AB\\cdot CE = DB\\cdot AC\\cdot EA. \\qquad (1)$$\n\nОбозначим $a = AD$, $b = DB$, $c = AE$, $d = EC$. Тогда $a+b = AB$, $c+d = AC$, а условие задачи записывается как $a b = c d$ $(2)$. Из $(1)$ имеем:\n$$a\\,(a+b)\\,d = b\\,(c+d)\\,c. \\qquad (3)$$\n\nИз $(2)$ выразим $d = \\dfrac{ab}{c}$ и подставим в $(3)$:\n$$a\\,(a+b)\\cdot\\frac{ab}{c} = b\\,(c+d)\\,c \\quad\\Rightarrow\\quad \\frac{a^2 b (a+b)}{c} = b c (c+d).$$\nСокращая на $b>0$, получаем:\n$$\\frac{a^2 (a+b)}{c} = c (c+d) \\quad\\Rightarrow\\quad a^2 (a+b) = c^2 (c+d).$$\nУчитывая $a+b=AB$, $c+d=AC$, имеем:\n$$a^2\\, AB = c^2\\, AC. \\qquad (4)$$\n\nТеперь из $(2)$ выразим $b = \\dfrac{cd}{a}$ и подставим в $(3)$ другим способом, а проще воспользуемся $(2)$ и $(4)$. Перепишем $(2)$:\n$$a(AB-a) = c(AC-c).$$\nИз $(4)$ выразим $AB = \\dfrac{c^2}{a^2} AC$ и подставим:\n$$a\\left(\\frac{c^2}{a^2}AC - a\\right) = c(AC - c) \\quad\\Rightarrow\\quad \\frac{c^2 AC}{a} - a^2 = c AC - c^2.$$\nУмножаем на $a$:\n$$c^2 AC - a^3 = a c AC - a c^2 \\quad\\Rightarrow\\quad c^2 AC - a c AC = a^3 - a c^2 \\quad\\Rightarrow\\quad AC\\,c(c-a) = a(a^2-c^2) = a(a-c)(a+c).$$\nЕсли $a \\neq c$, то сокращаем на $(c-a)$ (учитывая, что $c-a = -(a-c)$):\n$$AC\\,c = -a(a+c) \\quad\\Rightarrow\\quad AC = -\\frac{a(a+c)}{c}.$$\nПравая часть отрицательна, а $AC>0$ — противоречие. Следовательно, $a=c$. Тогда из $(2)$ получаем $b=d$, а из $(4)$: $a^2 AB = a^2 AC$, откуда $AB=AC$.\n\nТаким образом, если $AF$ — биссектриса, то $AB=AC$.",
+  "correct_answer": "Если AF — биссектриса, то AB = AC.",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Теорема Чевы и алгебраические подстановки",
+  "idea_count": 5,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T01:52:25.512438+00:00"
+}

@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} — FORMYLA.net{% endblock %}
+{% block extra_css %}
+<style>
+    .group-page {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+    }
+    .group-page h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 8px;
+    }
+    .group-invite {
+        color: var(--muted);
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
+    .group-invite span {
+        background: var(--surface-2);
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-family: monospace;
+        color: var(--accent-hi);
+    }
+    .group-actions {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        font-family: Satoshi, system-ui, sans-serif;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        transition: opacity 0.18s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-accent { background: var(--accent); color: var(--text); }
+    .btn-bad { background: var(--bad); color: var(--text); }
+    .rename-form {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    .rename-form input {
+        padding: 8px 12px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text);
+        font-size: 14px;
+        font-family: Satoshi, system-ui, sans-serif;
+        width: 240px;
+    }
+    .group-avg {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        font-size: 16px;
+        color: var(--text);
+    }
+    .group-avg strong { color: var(--accent-hi); }
+    .student-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+    }
+    .student-table th {
+        text-align: left;
+        padding: 14px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--border);
+    }
+    .student-table td {
+        padding: 12px 16px;
+        font-size: 15px;
+        color: var(--text);
+        border-bottom: 1px solid var(--border);
+    }
+    .student-table tr:last-child td { border-bottom: none; }
+    .student-table tr.row-green { border-left: 3px solid var(--ok); }
+    .student-table tr.row-red { border-left: 3px solid var(--bad); }
+    .student-table tr.row-gray { border-left: 3px solid var(--muted); }
+    .student-table a {
+        color: var(--accent-hi);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .student-table a:hover { text-decoration: underline; }
+    .anchor-badges {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .anchor-badge {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 2px 8px;
+        font-size: 12px;
+        color: var(--muted);
+    }
+    .student-count-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(56,239,125,0.12);
+        border: 1px solid rgba(56,239,125,0.25);
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-size: 14px;
+        color: #38ef7d;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+    .flash-msg {
+        padding: 10px 16px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    .flash-success { background: rgba(62,207,142,0.12); border: 1px solid rgba(62,207,142,0.3); color: #3ecf8e; }
+    .flash-error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #f87171; }
+    .flash-info { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; }
+    @media (max-width: 600px) {
+        .group-page { padding: 24px 16px 100px; }
+        .student-table { font-size: 13px; }
+        .student-table th, .student-table td { padding: 8px 10px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="group-page">
+    <h1>{{ group.name }}</h1>
+    <div class="group-invite">
+        Код приглашения: <span>{{ group.invite_code }}</span>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Student count -->
+    <div class="student-count-badge">
+        👥 Учеников в группе: <strong>{{ students|length }}</strong>
+    </div>
+
+    <div class="group-actions">
+        <form method="POST" action="{{ url_for('parent_teacher.teacher_group_rename', gid=group.id) }}" class="rename-form">
+            <input type="text" name="name" value="{{ group.name }}" required maxlength="120">
+            <button type="submit" class="btn btn-accent">Переименовать</button>
+        </form>
+        <form method="POST" action="{{ url_for('parent_teacher.teacher_group_add_student', gid=group.id) }}" class="rename-form">
+            <input type="text" name="nickname" placeholder="Никнейм ученика" required maxlength="50">
+            <button type="submit" class="btn btn-accent">➕ Добавить ученика</button>
+        </form>
+        <form method="POST" action="{{ url_for('parent_teacher.teacher_group_delete', gid=group.id) }}"
+              onsubmit="return confirm('Удалить группу навсегда?');">
+            <button type="submit" class="btn btn-bad">Удалить группу</button>
+        </form>
+    </div>
+
+    <div class="group-avg">
+        Среднее количество решённых задач дня по группе за 7 дней:
+        <strong>{{ group_avg }}</strong>
+    </div>
+
+    {% if students %}
+    <table class="student-table">
+        <thead>
+            <tr>
+                <th>Ученик</th>
+                <th>Задач/день (7 дн.)</th>
+                <th>Серия</th>
+                <th>Якоря (mu/sigma)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in students %}
+            <tr class="row-{{ s.row_color }}">
+                <td>
+                    <a href="{{ url_for('parent_teacher.student_detail', sid=s.id) }}">
+                        {{ s.name }}
+                    </a>
+                </td>
+                {% if s.progress_hidden %}
+                <td colspan="2" style="color: var(--muted); font-style: italic;">Ученик скрыл прогресс</td>
+                {% else %}
+                <td>{{ s.avg_tasks }}</td>
+                <td>{{ s.streak }}</td>
+                {% endif %}
+                <td>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div class="anchor-badges">
+                            {% if s.progress_hidden %}
+                            <span style="color: var(--muted); font-style: italic;">скрыто</span>
+                            {% else %}
+                            {% for anchor, vals in s.anchors.items() %}
+                            <span class="anchor-badge"
+                                  title="{{ anchor }}">{{ anchor[0].upper() }} {{ vals.mu }}/{{ vals.sigma }}</span>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                        <a href="{{ url_for('parent_teacher.student_detail', sid=s.id) }}"
+                           style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; text-decoration: none; font-weight: 600; font-size: 13px; white-space: nowrap;">
+                            📂 Открыть профиль
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:40px;color:var(--muted);">В группе пока нет учеников.</div>
+    {% endif %}
+</div>
+<script>
+(function() {
+    var flashes = document.querySelectorAll('.flash-msg');
+    flashes.forEach(function(el) {
+        setTimeout(function() {
+            el.style.transition = 'opacity 0.4s';
+            el.style.opacity = '0';
+            setTimeout(function() { el.remove(); }, 400);
+        }, 4500);
+    });
+})();
+</script>
+{% endblock %}

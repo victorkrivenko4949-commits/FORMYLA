@@ -1,0 +1,46 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AC",
+   "line2": "BD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "dashed"
+  },
+  {
+   "segment": "BD",
+   "style": "dashed"
+  },
+  {
+   "polygon": "APB",
+   "style": "soft"
+  },
+  {
+   "polygon": "CPD",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "parallel": [
+    "AD",
+    "BC"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,112 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "c1",
+   "angle": 45
+  },
+  {
+   "type": "circle",
+   "id": "cA",
+   "center": "A",
+   "through": "O"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "P",
+   "circle": "cA",
+   "angle": 150
+  },
+  {
+   "type": "circle",
+   "id": "cB",
+   "center": "B",
+   "through": "O"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "Q",
+   "circle": "cB",
+   "angle": 240
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "AP",
+   "line2": "BQ"
+  }
+ ],
+ "draw": [
+  {
+   "segment": "OA"
+  },
+  {
+   "segment": "OB"
+  },
+  {
+   "segment": "AM"
+  },
+  {
+   "segment": "BM"
+  },
+  {
+   "segment": "OM",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "O",
+    "B"
+   ],
+   "text": "45°"
+  },
+  {
+   "angle": [
+    "M",
+    "A",
+    "O"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "M",
+    "B",
+    "O"
+   ],
+   "text": "15°"
+  },
+  {
+   "angle": [
+    "A",
+    "M",
+    "B"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

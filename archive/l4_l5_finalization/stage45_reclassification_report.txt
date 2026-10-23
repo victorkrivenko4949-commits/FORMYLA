@@ -1,0 +1,68 @@
+======================================================================
+  STAGE 4.5: RECLASSIFICATION REPORT
+======================================================================
+
+  Total FIX tasks analyzed: 40
+
+  Failure type breakdown:
+    no_failure                    : 23
+    invalid_json                  : 17
+
+  Retry stats:
+    Attempted: 17
+    Succeeded: 17
+    Failed:    0
+
+  New category counts:
+    KEEP      : 10
+    FIX       : 14
+    REPLACE   : 16
+    REVIEW    : 0
+
+----------------------------------------------------------------------
+  ID               Cell                      Q Old      New      Failure/D reason
+----------------------------------------------------------------------
+  c28e94076cc6     G6|L5|T006|S2            43 FIX      KEEP     SOLVER_ok+answer_matches+solution_complete
+  72feb7a8c418     G6|L5|T006|S2            43 FIX      KEEP     SOLVER_ok+answer_matches+solution_complete
+  cdf76dff28bc     G6|L5|T006|S2            44 FIX      KEEP     SOLVER_ok+answer_matches+solution_complete
+  f7a0c59e2019     G6|L5|T006|S2            45 FIX      KEEP     SOLVER_ok+answer_matches+solution_complete
+  ffac6a343086     G5|L5|T004|S2            52 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  167562c3d464     G7|L5|T003|S1            52 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  6787c2edde0d     G7|L5|T003|S1            54 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  a8a672e7f2b3     G5|L5|T002|S2            54 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  04ad8880942f     G5|L4|T022|S2            55 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  f29e647f9881     G5|L4|T022|S2            56 FIX      KEEP     SOLVER_ok+answer_matches+solution_complete
+  486d7f4431a0     G5|L5|T004|S2            56 FIX      KEEP     SOLVER_ok+answer_matches+solution_complete
+  581cc39bf4f0     G5|L4|T008|S1            57 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  f5a31a5003df     G6|L5|T032|S1            59 FIX      KEEP     SOLVER_ok+answer_matches+solution_complete
+  495e06fc6844     G5|L5|T024|S1            59 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  ab5bf34e626a     G11|L5|T001|S2           60 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  97762757cf9e     G5|L5|T024|S1            61 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  b0283feaaa8f     G5|L4|T005|S0            61 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  139c195d2b47     G5|L5|T022|S0            61 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  d7b30d0953e4     G5|L5|T022|S2            62 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  2411a1ae595e     G5|L4|T005|S0            62 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  6e06828e3d72     G5|L5|T022|S0            62 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  defdb4650efb     G5|L5|T002|S2            63 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  db39686b4adf     G5|L5|T005|S2            63 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  b83ab2ce0b72     G5|L5|T024|S2            64 FIX      KEEP     SOLVER_ok+answer_matches+solution_complete
+  274146cf37e5     G11|L5|T001|S2           64 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  e011d46e1c08     G5|L5|T022|S0            65 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  4a1f362c3106     G11|L5|T034|S0           65 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  468aa9188b50     G11|L5|T001|S1           66 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  5557f065526c     G5|L5|T024|S1            66 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  41132df26c2a     G5|L5|T002|S1            66 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  7dbecced5add     G5|L5|T024|S2            67 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  75db01688ab4     G5|L4|T005|S0            67 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  d21e045486af     G5|L5|T008|S0            68 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  cf1b975a398e     G5|L5|T024|S0            68 FIX      KEEP     retry_ok+answer_matches+solution_complete (was:inv
+  a2974faf4afe     G5|L5|T022|S0            68 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+  a0b8a1c1d792     G5|L5|T024|S1            68 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  96c72e3bb0e7     G5|L5|T005|S0            68 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  627b2ba84fe6     G5|L5|T005|S2            69 FIX      KEEP     SOLVER_ok+answer_matches+solution_complete
+  bff87d012432     G5|L5|T008|S1            69 FIX      FIX      SOLVER_ok+arbiter_matches_but_answer_differs
+  a7b6a236ee58     G11|L5|T021|S1           70 FIX      REPLACE  retry_ok+wrong_answer (was:invalid_json)
+
+======================================================================
+  END OF STAGE 4.5 REPORT
+======================================================================

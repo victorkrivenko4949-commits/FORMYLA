@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<rect width="620" height="620" fill="#070C18"/>
+<polygon points="527.2,342.8 92.8,342.8 228.6,141.4" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<circle cx="310.0" cy="342.8" r="217.2" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="310.0" y1="342.8" x2="228.6" y2="141.4" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="228.6" y1="141.4" x2="430.0" y2="60.0" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<polyline points="239.4,148.6 232.1,159.4 221.4,152.2" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<path d="M 501.2 342.8 A 26 26 0 0 1 505.7 328.2" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="488.0" y="335.8" fill="#8C9ABC" font-size="15" text-anchor="middle">34°</text>
+<path d="M 252.7 131.6 A 26 26 0 0 1 250.2 155.9" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="269.4" y="150.7" fill="#8C9ABC" font-size="15" text-anchor="middle">56°</text>
+<circle cx="310.0" cy="342.8" r="3.4" fill="#E6EBF7"/>
+<text x="310.0" y="368.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O</text>
+<circle cx="527.2" cy="342.8" r="3.4" fill="#E6EBF7"/>
+<text x="544.5" y="358.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="92.8" cy="342.8" r="3.4" fill="#E6EBF7"/>
+<text x="75.5" y="358.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="228.6" cy="141.4" r="3.4" fill="#E6EBF7"/>
+<text x="214.5" y="133.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="430.0" cy="60.0" r="3.4" fill="#E6EBF7"/>
+<text x="440.0" y="48.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">T</text>
+</svg>

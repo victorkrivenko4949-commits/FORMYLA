@@ -1,0 +1,101 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "X",
+   "x": 8,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "Y",
+   "x": 4,
+   "y": 6.928
+  },
+  {
+   "type": "point",
+   "id": "M",
+   "x": 6.928,
+   "y": 2
+  },
+  {
+   "type": "foot",
+   "id": "B",
+   "from": "M",
+   "line": "AX"
+  },
+  {
+   "type": "foot",
+   "id": "C",
+   "from": "M",
+   "line": "AY"
+  }
+ ],
+ "draw": [
+  {
+   "segment": "AB"
+  },
+  {
+   "segment": "AC"
+  },
+  {
+   "segment": "MB"
+  },
+  {
+   "segment": "MC"
+  },
+  {
+   "segment": "AM",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "M"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "M"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "BM",
+   "line2": "AC",
+   "reason": "Продолжение BM до пересечения со стороной AC"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "MD",
+   "style": "dashed"
+  },
+  {
+   "segment": "CD",
+   "style": "dashed"
+  }
+ ]
+}

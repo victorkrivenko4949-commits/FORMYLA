@@ -1,0 +1,77 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AB",
+   "ratio": 0.333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "AB",
+   "ratio": 0.667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "DC",
+   "ratio": 0.333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "DC",
+   "ratio": 0.667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R",
+   "of": "AD",
+   "ratio": 0.333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "S",
+   "of": "AD",
+   "ratio": 0.667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T",
+   "of": "BC",
+   "ratio": 0.333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "U",
+   "of": "BC",
+   "ratio": 0.667
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "MP"
+  },
+  {
+   "segment": "NQ"
+  },
+  {
+   "segment": "RT"
+  },
+  {
+   "segment": "SU"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

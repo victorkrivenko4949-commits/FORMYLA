@@ -1,0 +1,22 @@
+статусы активных:
+{'base_thinking': 2, 'queued': 239}
+
+последние активные (по updated_at DESC):
+  job=5092 base_thinking    prio=0 age=12s
+  job=5422 queued           prio=0 age=107s
+  job=5419 base_thinking    prio=1 age=117s
+  job=5421 queued           prio=0 age=594s
+  job=5420 queued           prio=0 age=631s
+  job=5329 queued           prio=0 age=11847s
+  job=5325 queued           prio=0 age=12097s
+  job=5326 queued           prio=0 age=12097s
+  job=5327 queued           prio=0 age=12097s
+  job=5316 queued           prio=0 age=12097s
+  job=5317 queued           prio=0 age=12097s
+  job=5318 queued           prio=0 age=12097s
+  job=5319 queued           prio=0 age=12097s
+  job=5320 queued           prio=0 age=12097s
+  job=5321 queued           prio=0 age=12097s
+
+failed всего: 3342
+done всего: 890

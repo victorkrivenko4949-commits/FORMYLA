@@ -1,0 +1,31 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0407",
+      "mode": "replace_bad",
+      "id": "7-F2-2-L7-gh2",
+      "grade": 7,
+      "difficulty": 7,
+      "theme": "Комбинаторика и графы",
+      "subtopic": "Графы и рукопожатия",
+      "method_code": "F2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 12
+    },
+    {
+      "job_id": "audit-0257-11-D2-6-L7-gf",
+      "mode": "replace_bad",
+      "id": "11-D2-6-L7-gf",
+      "grade": 11,
+      "difficulty": 7,
+      "theme": "Функции, графики и параметры",
+      "subtopic": "Задачи с параметром",
+      "method_code": "D2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

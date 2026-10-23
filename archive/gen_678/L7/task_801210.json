@@ -1,0 +1,20 @@
+{
+  "id": 801210,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$ и $AB$ выбраны точки $D$, $E$ и $F$ соответственно, отличные от вершин. Известно, что $\\angle BDF = \\angle CED = \\angle AFE = 60^\\circ$ и $BF = CD = AE$. Докажите, что треугольник $ABC$ равносторонний.",
+  "solution": "Обозначим углы треугольника $ABC$: $\\angle A = \\alpha$, $\\angle B = \\beta$, $\\angle C = \\gamma$.\n\n1. В $\\triangle BDF$: $\\angle DBF = \\beta$ (так как $BF$ и $BD$ лежат на сторонах $AB$ и $BC$), $\\angle BDF = 60^\\circ$. Тогда $\\angle BFD = 180^\\circ - \\beta - 60^\\circ = 120^\\circ - \\beta$. По теореме синусов:\n   $$\\frac{BF}{\\sin60^\\circ} = \\frac{BD}{\\sin(120^\\circ-\\beta)} \\quad\\Rightarrow\\quad BD = BF\\cdot\\frac{\\sin(120^\\circ-\\beta)}{\\sin60^\\circ}.$$\n2. В $\\triangle CDE$: $\\angle DCE = \\gamma$, $\\angle CED = 60^\\circ$, $\\angle CDE = 120^\\circ - \\gamma$. Аналогично:\n   $$CD = CD\\,(\\text{дано}),\\quad CE = CD\\cdot\\frac{\\sin(120^\\circ-\\gamma)}{\\sin60^\\circ}.$$\n3. В $\\triangle AEF$: $\\angle EAF = \\alpha$, $\\angle AFE = 60^\\circ$, $\\angle AEF = 120^\\circ - \\alpha$. Получаем:\n   $$AE = AE,\\quad AF = AE\\cdot\\frac{\\sin(120^\\circ-\\alpha)}{\\sin60^\\circ}.$$\n4. По условию $BF = CD = AE = l$. Пусть $AB = c$, $BC = a$, $CA = b$. Тогда\n   $$c = AF + FB = l\\left(1 + \\frac{\\sin(120^\\circ-\\alpha)}{\\sin60^\\circ}\\right),$$\n   $$a = BD + DC = l\\left(1 + \\frac{\\sin(120^\\circ-\\beta)}{\\sin60^\\circ}\\right),$$\n   $$b = CE + EA = l\\left(1 + \\frac{\\sin(120^\\circ-\\gamma)}{\\sin60^\\circ}\\right).$$\n5. По теореме синусов для $\\triangle ABC$: $\\frac{a}{\\sin\\alpha} = \\frac{b}{\\sin\\beta} = \\frac{c}{\\sin\\gamma}$. Подставляя выражения, получаем:\n   $$\\frac{1 + \\frac{\\sin(120^\\circ-\\alpha)}{\\sin60^\\circ}}{\\sin\\alpha} = \\frac{1 + \\frac{\\sin(120^\\circ-\\beta)}{\\sin60^\\circ}}{\\sin\\beta} = \\frac{1 + \\frac{\\sin(120^\\circ-\\gamma)}{\\sin60^\\circ}}{\\sin\\gamma}.$$\n6. Упростим: $\\sin60^\\circ = \\frac{\\sqrt3}{2}$, $\\sin(120^\\circ-\\theta) = \\frac{\\sqrt3}{2}\\cos\\theta + \\frac12\\sin\\theta$, откуда\n   $$\\frac{\\sin(120^\\circ-\\theta)}{\\sin60^\\circ} = \\cos\\theta + \\frac{1}{\\sqrt3}\\sin\\theta.$$\n   Тогда\n   $$1 + \\frac{\\sin(120^\\circ-\\theta)}{\\sin60^\\circ} = 1 + \\cos\\theta + \\frac{1}{\\sqrt3}\\sin\\theta = \\sin\\theta\\left(\\frac{1+\\cos\\theta}{\\sin\\theta} + \\frac{1}{\\sqrt3}\\right) = \\sin\\theta\\left(\\operatorname{ctg}\\frac{\\theta}{2} + \\frac{1}{\\sqrt3}\\right).$$\n   Следовательно,\n   $$\\frac{1 + \\frac{\\sin(120^\\circ-\\theta)}{\\sin60^\\circ}}{\\sin\\theta} = \\operatorname{ctg}\\frac{\\theta}{2} + \\frac{1}{\\sqrt3}.$$\n7. Таким образом, из п.5 имеем:\n   $$\\operatorname{ctg}\\frac{\\alpha}{2} + \\frac{1}{\\sqrt3} = \\operatorname{ctg}\\frac{\\beta}{2} + \\frac{1}{\\sqrt3} = \\operatorname{ctg}\\frac{\\gamma}{2} + \\frac{1}{\\sqrt3},$$\n   откуда $\\operatorname{ctg}\\frac{\\alpha}{2} = \\operatorname{ctg}\\frac{\\beta}{2} = \\operatorname{ctg}\\frac{\\gamma}{2}$.\n   Функция $\\operatorname{ctg}x$ строго убывает на $(0,\\frac{\\pi}{2})$, а $\\frac{\\alpha}{2},\\frac{\\beta}{2},\\frac{\\gamma}{2}\\in(0,\\frac{\\pi}{2})$, поэтому $\\frac{\\alpha}{2} = \\frac{\\beta}{2} = \\frac{\\gamma}{2}$, т.е. $\\alpha = \\beta = \\gamma$.\n8. Так как $\\alpha+\\beta+\\gamma = 180^\\circ$, получаем $\\alpha = \\beta = \\gamma = 60^\\circ$. Значит, треугольник $ABC$ равносторонний.",
+  "correct_answer": "Треугольник ABC равносторонний.",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Теорема синусов и тригонометрические преобразования",
+  "idea_count": 4,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T12:15:56.302001+00:00"
+}

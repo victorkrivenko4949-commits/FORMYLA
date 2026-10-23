@@ -1,0 +1,26 @@
+{
+  "task_id": "ffac6a343086",
+  "cell_key": "G5|L5|T004|S2",
+  "quality_score": 52.2,
+  "statement": "В некотором государстве 100 городов. Между некоторыми городами есть авиарейсы (в обе стороны). Извес",
+  "reference_answer": "198",
+  "outcome": "replace",
+  "final_solution": null,
+  "cycles": [
+    {
+      "cycle": 1,
+      "fix_status": "failed",
+      "solver_status": "skipped"
+    },
+    {
+      "cycle": 2,
+      "fix_status": "failed",
+      "solver_status": "skipped"
+    },
+    {
+      "cycle": 3,
+      "fix_status": "failed",
+      "solver_status": "skipped"
+    }
+  ]
+}

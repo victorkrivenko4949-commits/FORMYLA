@@ -1,0 +1,62 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "AC",
+    "BC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "D",
+   "of": "AC"
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "F",
+   "of": "AB"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "DE",
+   "style": "soft"
+  },
+  {
+   "segment": "EF",
+   "style": "soft"
+  },
+  {
+   "segment": "FD",
+   "style": "soft"
+  }
+ ],
+ "reason": "Средние линии делят большой треугольник на 4 подобных ему; повторяя такое деление до 16 треугольников и затем разделяя каждый пополам высотой, получаем 32 исходных треугольника."
+}

@@ -1,0 +1,110 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 2,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 1,
+   "y": 1
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BD"
+  },
+  {
+   "type": "reflect_point",
+   "id": "C",
+   "of": "A",
+   "over": "M"
+  },
+  {
+   "type": "circumcenter",
+   "id": "P",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "Q",
+   "of": "BCD"
+  },
+  {
+   "type": "circumcenter",
+   "id": "R",
+   "of": "CDA"
+  },
+  {
+   "type": "circumcenter",
+   "id": "S",
+   "of": "DAB"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "BCD"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w3",
+   "of": "CDA"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w4",
+   "of": "DAB"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "PQRS",
+   "style": "accent"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  },
+  {
+   "circle": "w3",
+   "style": "soft"
+  },
+  {
+   "circle": "w4",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "D",
+    "A",
+    "B"
+   ],
+   "text": "45°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

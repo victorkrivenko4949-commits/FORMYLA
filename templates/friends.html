@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% block title %}Друзья — FORMYLA.net{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/friends.css') }}?v={{ asset_version }}">
+{% endblock %}
+{% block content %}
+<div class="friends-page">
+
+  <div class="friends-hero">
+    <h1>👫 Мои друзья</h1>
+    <p>Соревнуйся с друзьями и достигай новых высот вместе!</p>
+  </div>
+
+  {# ── Запросы ── #}
+  <section class="friends-section requests-section">
+    <h2>📨 Запросы
+      {%- set total_requests = (incoming|length) + (outgoing|length) -%}
+      {% if total_requests > 0 %}<span class="count-badge">{{ total_requests }}</span>{% endif %}
+    </h2>
+
+    {% if incoming %}
+    <div class="requests-sub">
+      <h3 class="requests-sub-title">📥 Входящие <span class="count-badge-sm">{{ incoming|length }}</span></h3>
+      <div class="requests-grid">
+        {% for req in incoming %}
+        <article class="request-card">
+          <div class="req-avatar">
+            {% if req.requester.avatar_url %}
+            <img src="{{ req.requester.avatar_url }}" alt="avatar" class="avatar">
+            {% else %}
+            <div class="avatar-placeholder">{{ (req.requester.name or req.requester.email)[0].upper() }}</div>
+            {% endif %}
+          </div>
+          <div class="req-info">
+            <h3>{{ req.requester.name or req.requester.email }}</h3>
+            {% if req.requester.nickname %}<p class="req-nick">@{{ req.requester.nickname }}{% if req.requester.has_diamond %} 💎{% endif %}</p>{% endif %}
+            <p class="req-stats">Уровень {{ req.requester.current_level }} · {{ req.requester.experience_points }} XP</p>
+          </div>
+          <div class="req-actions">
+            <button class="btn-accept" data-rid="{{ req.id }}" onclick="acceptRequest(this)">✅ Принять</button>
+            <button class="btn-decline" data-rid="{{ req.id }}" onclick="declineRequest(this)">❌ Отклонить</button>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if outgoing %}
+    <div class="requests-sub">
+      <h3 class="requests-sub-title">📤 Исходящие <span class="count-badge-sm">{{ outgoing|length }}</span></h3>
+      <div class="requests-grid">
+        {% for req in outgoing %}
+        <article class="request-card">
+          <div class="req-avatar">
+            {% if req.addressee.avatar_url %}
+            <img src="{{ req.addressee.avatar_url }}" alt="avatar" class="avatar">
+            {% else %}
+            <div class="avatar-placeholder">{{ (req.addressee.name or req.addressee.email)[0].upper() }}</div>
+            {% endif %}
+          </div>
+          <div class="req-info">
+            <h3>{{ req.addressee.name or req.addressee.email }}</h3>
+            {% if req.addressee.nickname %}<p class="req-nick">@{{ req.addressee.nickname }}{% if req.addressee.has_diamond %} 💎{% endif %}</p>{% endif %}
+          </div>
+          <button class="btn-cancel" data-rid="{{ req.id }}" onclick="cancelRequest(this)">Отменить</button>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if not incoming and not outgoing %}
+    <div class="requests-empty">
+      <p>Нет активных запросов. Найди друзей через поиск ниже!</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="friends-section">
+    <h2>🔍 Найти пользователя</h2>
+    <div class="friends-search-wrap">
+      <input type="text" id="user-search" placeholder="Введи имя или никнейм..." autocomplete="off">
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </section>
+
+  <section class="friends-section">
+    <h2>👫 Мои друзья {% if friends %}<span class="count-badge">{{ friends|length }}</span>{% endif %}</h2>
+    {% if friends %}
+    <div class="friends-grid" id="friends-grid">
+      {% for f in friends %}
+      <article class="friend-card" id="fc-{{ f.id }}"
+               onclick="window.location.href='{{ url_for('public_profile', user_id=f.id) }}'">
+        <a href="{{ url_for('public_profile', user_id=f.id) }}"
+           class="fc-avatar-link" onclick="event.stopPropagation()">
+          {% if f.avatar_url %}
+            <img src="{{ f.avatar_url }}" alt="avatar" class="fc-avatar">
+          {% else %}
+            <div class="fc-avatar-ph">{{ (f.name or f.email)[0].upper() }}</div>
+          {% endif %}
+        </a>
+        <div class="fc-body">
+          <a href="{{ url_for('public_profile', user_id=f.id) }}"
+             class="fc-name-link" onclick="event.stopPropagation()">
+            <div class="fc-name">{{ f.name or f.email }}</div>
+          </a>
+          {% if f.nickname %}<div class="fc-nick">@{{ f.nickname }}{% if f.has_diamond %} 💎{% endif %}</div>{% endif %}
+          <div class="fc-stats">
+            <span> {{ f.streak.current_streak if f.streak else 0 }}</span>
+            <span>⭐ Ур. {{ f.current_level }}</span>
+            <span> {{ f.experience_points }} XP</span>
+          </div>
+        </div>
+        <div class="fc-actions" onclick="event.stopPropagation()">
+          <button class="fc-btn fc-btn-remove" data-uid="{{ f.id }}"
+                  onclick="removeFriend(event, this)" title="Удалить из друзей"></button>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="friends-empty">
+      <div class="fe-icon"></div>
+      <p>У тебя пока нет друзей. Найди их через поиск выше!</p>
+    </div>
+    {% endif %}
+  </section>
+
+</div>
+<div id="friends-toast" style="display:none" class="friends-toast"></div>
+<script>
+function showToast(msg, ok) {
+  var t = document.getElementById('friends-toast');
+  t.textContent = msg;
+  t.className = 'friends-toast ' + (ok ? 'friends-toast-ok' : 'friends-toast-err');
+  t.style.display = 'block';
+  setTimeout(function(){ t.style.display = 'none'; }, 3000);
+}
+
+function doFetch(url, cb) {
+  fetch(url, {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){
+      return r.text().then(function(txt){
+        var d;
+        try { d = JSON.parse(txt); }
+        catch(e) { d = {error: r.ok ? 'Сервер вернул некорректный ответ' : 'Ошибка сервера (' + r.status + ')'}; }
+        return d;
+      });
+    })
+    .then(cb)
+    .catch(function(){ showToast('Ошибка сети', false); });
+}
+
+function acceptRequest(btn) {
+  var rid = btn.dataset.rid;
+  doFetch('/friends/accept/' + rid, function(d) {
+    showToast(d.message || 'Теперь вы друзья!', true);
+    btn.closest('article').remove();
+    setTimeout(function(){ location.reload(); }, 1200);
+  });
+}
+
+function declineRequest(btn) {
+  var rid = btn.dataset.rid;
+  doFetch('/friends/decline/' + rid, function(d) {
+    showToast('Запрос отклонён', true);
+    btn.closest('article').remove();
+  });
+}
+
+function cancelRequest(btn) {
+  var rid = btn.dataset.rid;
+  doFetch('/friends/cancel/' + rid, function(d) {
+    showToast('Запрос отменён', true);
+    btn.closest('article').remove();
+  });
+}
+
+function removeFriend(e, btn) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (!confirm('Удалить из друзей?')) return;
+  var uid = btn.dataset.uid;
+  doFetch('/friends/remove/' + uid, function(d) {
+    showToast('Удалён из друзей', true);
+    var card = document.getElementById('fc-' + uid);
+    if (card) card.remove();
+  });
+}
+
+var searchTimer = null;
+document.getElementById('user-search').addEventListener('input', function() {
+  clearTimeout(searchTimer);
+  var q = this.value.trim();
+  var res = document.getElementById('search-results');
+  if (q.length < 2) { res.innerHTML = ''; return; }
+  searchTimer = setTimeout(function() {
+    fetch('/api/social/search-users?q=' + encodeURIComponent(q))
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        res.innerHTML = '';
+        if (!data.users || !data.users.length) {
+          res.innerHTML = '<p style="color:rgba(255,255,255,0.4);font-size:13px;padding:8px">Никого не найдено</p>';
+          return;
+        }
+        // FRIEND_SEARCH_FE_V2
+        data.users.forEach(function(u) {
+          var label = u.display_name || u.name || u.nickname || u.email || 'Аноним';
+          var safeLabel = String(label).replace(/[&<>"]/g, function(c){
+            return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];
+          });
+          var initial = (safeLabel[0] || '?').toUpperCase();
+          var avatarHtml = u.avatar_url
+            ? '<img class="sr-avatar" src="' + u.avatar_url + '" alt="">'
+            : '<div class="sr-avatar-ph">' + initial + '</div>';
+          var nickHtml = u.nickname
+            ? '<div class="sr-nick">@' + String(u.nickname).replace(/[<>"]/g,'') + '</div>'
+            : '';
+          var div = document.createElement('div');
+          div.className = 'search-result-item';
+          div.innerHTML = avatarHtml +
+            '<div class="sr-info"><div class="sr-name">' + safeLabel + '</div>' +
+            nickHtml + '</div>' +
+            '<button class="sr-btn" data-uid="' + u.id + '" onclick="sendRequest(this)">Добавить</button>';
+          res.appendChild(div);
+        });
+      });
+  }, 400);
+});
+
+function sendRequest(btn) {
+  var uid = btn.dataset.uid;
+  doFetch('/friends/request/' + uid, function(d) {
+    if (d.error === 'Запрос уже отправлен') {
+      // заявка уже есть в БД — считаем, что она отправлена
+      showToast('Запрос отправлен', true);
+      btn.textContent = 'Отправлено';
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      return;
+    }
+    if (d.error) { showToast(d.error, false); return; }
+    showToast(d.message || 'Запрос отправлен', true);
+    btn.textContent = 'Отправлено';
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+  });
+}
+</script>
+{% endblock %}

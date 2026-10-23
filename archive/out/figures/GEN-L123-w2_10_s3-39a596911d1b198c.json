@@ -1,0 +1,56 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 5,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 5,
+   "y": 5
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 0,
+   "y": 5
+  },
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "AB",
+    "BC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

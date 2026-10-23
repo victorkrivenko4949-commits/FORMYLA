@@ -1,0 +1,120 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "A1",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "CA"
+  },
+  {
+   "type": "foot",
+   "id": "C1",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "H",
+   "line1": "AA1",
+   "line2": "BB1"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AH"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AA1",
+   "style": "soft"
+  },
+  {
+   "segment": "BB1",
+   "style": "soft"
+  },
+  {
+   "segment": "CC1",
+   "style": "soft"
+  },
+  {
+   "segment": "A1C1",
+   "style": "accent"
+  },
+  {
+   "segment": "B1M",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A1",
+    "A",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "B1",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "C1",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "equal": [
+    "AM",
+    "MH"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "M",
+   "through": "A",
+   "reason": "B₁ и C₁ лежат на окружности с диаметром AH, M — её центр, что помогает увидеть равнобедренный треугольник MB₁C₁"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
+   "style": "dashed"
+  },
+  {
+   "segment": "C1M",
+   "style": "soft"
+  }
+ ]
+}

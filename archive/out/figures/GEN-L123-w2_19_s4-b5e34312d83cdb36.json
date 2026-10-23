@@ -1,0 +1,246 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A1",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A1"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A2",
+   "circle": "w",
+   "angle": 20
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A3",
+   "circle": "w",
+   "angle": 40
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A4",
+   "circle": "w",
+   "angle": 60
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A5",
+   "circle": "w",
+   "angle": 80
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A6",
+   "circle": "w",
+   "angle": 100
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A7",
+   "circle": "w",
+   "angle": 120
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A8",
+   "circle": "w",
+   "angle": 140
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A9",
+   "circle": "w",
+   "angle": 160
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A10",
+   "circle": "w",
+   "angle": 180
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A11",
+   "circle": "w",
+   "angle": 200
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A12",
+   "circle": "w",
+   "angle": 220
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A13",
+   "circle": "w",
+   "angle": 240
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A14",
+   "circle": "w",
+   "angle": 260
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A15",
+   "circle": "w",
+   "angle": 280
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A16",
+   "circle": "w",
+   "angle": 300
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A17",
+   "circle": "w",
+   "angle": 320
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A18",
+   "circle": "w",
+   "angle": 340
+  },
+  {
+   "type": "point",
+   "id": "P",
+   "x": -0.3,
+   "y": 0.5
+  }
+ ],
+ "draw": [
+  {
+   "segment": "A1A2"
+  },
+  {
+   "segment": "A2A3"
+  },
+  {
+   "segment": "A3A4"
+  },
+  {
+   "segment": "A4A5"
+  },
+  {
+   "segment": "A5A6"
+  },
+  {
+   "segment": "A6A7"
+  },
+  {
+   "segment": "A7A8"
+  },
+  {
+   "segment": "A8A9"
+  },
+  {
+   "segment": "A9A10"
+  },
+  {
+   "segment": "A10A11"
+  },
+  {
+   "segment": "A11A12"
+  },
+  {
+   "segment": "A12A13"
+  },
+  {
+   "segment": "A13A14"
+  },
+  {
+   "segment": "A14A15"
+  },
+  {
+   "segment": "A15A16"
+  },
+  {
+   "segment": "A16A17"
+  },
+  {
+   "segment": "A17A18"
+  },
+  {
+   "segment": "A18A1"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "A1A4",
+   "style": "dashed"
+  },
+  {
+   "segment": "A4A7",
+   "style": "dashed"
+  },
+  {
+   "segment": "A7A13",
+   "style": "dashed"
+  },
+  {
+   "segment": "PA1",
+   "style": "accent"
+  },
+  {
+   "segment": "PA4",
+   "style": "accent"
+  },
+  {
+   "segment": "PA7",
+   "style": "accent"
+  },
+  {
+   "segment": "PA13",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A1",
+    "P",
+    "A7"
+   ],
+   "text": "10°"
+  },
+  {
+   "angle": [
+    "A7",
+    "P",
+    "A13"
+   ],
+   "text": "20°"
+  },
+  {
+   "angle": [
+    "A1",
+    "P",
+    "A4"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

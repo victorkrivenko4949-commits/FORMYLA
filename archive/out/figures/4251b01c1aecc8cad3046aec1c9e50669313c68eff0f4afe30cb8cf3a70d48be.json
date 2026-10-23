@@ -1,0 +1,86 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "AB",
+   "ratio": 0.634
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "BC",
+   "ratio": 0.536
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AK",
+   "style": "accent"
+  },
+  {
+   "segment": "CL",
+   "style": "accent"
+  },
+  {
+   "segment": "CH",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "C",
+    "A",
+    "K"
+   ],
+   "text": "15°"
+  },
+  {
+   "angle": [
+    "H",
+    "C",
+    "L"
+   ],
+   "text": "15°"
+  },
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "C"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

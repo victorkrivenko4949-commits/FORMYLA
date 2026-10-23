@@ -1,0 +1,3 @@
+user_id=1 before=7
+after=37 (added 30)
+txn amount=30 reference=p30

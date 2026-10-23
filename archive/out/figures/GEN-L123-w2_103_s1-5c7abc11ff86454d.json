@@ -1,0 +1,84 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "triangle",
+   "id": "ACM",
+   "kind": "equilateral"
+  },
+  {
+   "type": "triangle",
+   "id": "BCN",
+   "kind": "equilateral"
+  },
+  {
+   "type": "midpoint",
+   "id": "P",
+   "of": "AN"
+  },
+  {
+   "type": "midpoint",
+   "id": "Q",
+   "of": "BM"
+  }
+ ],
+ "aux": [
+  {
+   "type": "circle",
+   "id": "rot",
+   "center": "C",
+   "radius": 50
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B1",
+   "on": "rot",
+   "angle": 60
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ACM"
+  },
+  {
+   "polygon": "BCN"
+  },
+  {
+   "segment": "AN",
+   "style": "soft"
+  },
+  {
+   "segment": "BM",
+   "style": "soft"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CB1",
+   "style": "soft"
+  },
+  {
+   "segment": "CP",
+   "style": "accent"
+  },
+  {
+   "segment": "CQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "CP",
+    "CQ"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,38 @@
+{
+  "total": 40,
+  "clean": 35,
+  "has_aux_true": 10,
+  "has_aux_false": 30,
+  "actions": {
+    "extend_side": 1,
+    "draw_perpendicular": 4,
+    "draw_segment": 9,
+    "reflect_point": 1,
+    "draw_parallel": 4,
+    "mark_intersection": 6,
+    "mark_midpoint": 1
+  },
+  "issues_by_task": {
+    "GEN-L123-w2_46_s5-388aa21cffd4e7e5": [
+      "UNRESOLVED_POINT:B",
+      "UNRESOLVED_POINT:M"
+    ],
+    "GEN-L123-w2_21_s3-f0c4974b13a3b0b1": [
+      "UNRESOLVED_POINT:N",
+      "UNKNOWN_STEP_ID:par1"
+    ],
+    "GEN-L123-par6_s3-b6e0c34aae26aa19": [
+      "UNRESOLVED_POINT:D",
+      "UNKNOWN_STEP_ID:par1"
+    ],
+    "GEN-L123-w2_100_s3-83800a377724ae4b": [
+      "UNRESOLVED_POINT:M",
+      "UNKNOWN_STEP_ID:par1"
+    ],
+    "GEN-L123-w2_71_s6-5a9cdd7e0b9df013": [
+      "UNRESOLVED_POINT:D",
+      "UNKNOWN_STEP_ID:par1"
+    ]
+  },
+  "name_issues": []
+}

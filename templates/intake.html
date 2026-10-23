@@ -1,0 +1,748 @@
+{% extends "base.html" %}
+{% block title %}Анкета — FORMYLA.net{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --accent: #4c7dff;
+    --accent-hi: #6b9aff;
+    --accent-dim: rgba(76,125,255,0.08);
+    --text: #e2e8f0;
+    --text-soft: #cbd5e1;
+    --muted: #94a3b8;
+    --faint: #64748b;
+    --border: rgba(255,255,255,0.08);
+    --border-soft: rgba(255,255,255,0.05);
+    --ok: #3ecf8e;
+    --bad: #ef4444;
+    --warn: #E5AC3A;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+  }
+
+  .intake-container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 60px 20px 80px;
+  }
+
+  .intake-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .intake-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .intake-header p {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* ── Progress bar ─────────────────────────────── */
+  .intake-progress-wrap {
+    margin-bottom: 32px;
+  }
+
+  .intake-progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .intake-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .intake-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* ── Card ──────────────────────────────────────── */
+  .intake-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+  }
+
+  .intake-card h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 24px;
+    line-height: 1.4;
+  }
+
+  /* ── Options ───────────────────────────────────── */
+  .intake-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .intake-option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 14px 18px;
+    background: var(--surface2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    color: var(--text-soft);
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .intake-option:hover {
+    background: var(--accent-dim);
+    border-color: rgba(76,125,255,0.25);
+    color: var(--text);
+  }
+
+  .intake-option.selected {
+    background: rgba(76,125,255,0.12);
+    border-color: var(--accent);
+    color: var(--accent-hi);
+  }
+
+  .intake-option.multi-selected {
+    background: rgba(76,125,255,0.12);
+    border-color: var(--accent);
+    color: var(--accent-hi);
+  }
+
+  /* ── Anchor section ────────────────────────────── */
+  .intake-anchor-section {
+    margin-bottom: 16px;
+  }
+
+  .intake-anchor-statement {
+    background: var(--surface2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* ── Anchor solution blocks (финал) — не даём LaTeX/тексту вылезти ── */
+  .intake-solution-block {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    max-width: 100%;
+  }
+  .intake-solution-block .katex-display,
+  .intake-solution-block .katex {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  /* ── Anchor figure ─────────────────────────────── */
+  .intake-anchor-figure {
+    width: 100%;
+    margin-bottom: 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .intake-anchor-figure img {
+    width: 100%;
+    height: auto;
+    max-height: 280px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .intake-anchor-label {
+    font-size: 12px;
+    color: var(--accent-hi);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .intake-answer-input {
+    width: 100%;
+    padding: 14px 18px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .intake-answer-input:focus {
+    border-color: var(--accent);
+  }
+
+  /* ── Buttons ───────────────────────────────────── */
+  .intake-btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .intake-btn {
+    padding: 12px 28px;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    border: none;
+  }
+
+  .intake-btn-primary {
+    background: var(--accent);
+    color: #fff;
+    flex: 1;
+  }
+
+  .intake-btn-primary:hover {
+    background: var(--accent-hi);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(76,125,255,0.25);
+  }
+
+  .intake-btn-primary:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .intake-btn-back {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .intake-btn-back:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  /* ── Multi-select hint ─────────────────────────── */
+  .intake-multi-hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  /* ── Finish screen ─────────────────────────────── */
+  .intake-finish {
+    text-align: center;
+    padding: 48px 20px;
+  }
+
+  .intake-finish h2 {
+    font-size: 22px;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .intake-finish p {
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  /* ── Loading spinner ───────────────────────────── */
+  .intake-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ── Error ─────────────────────────────────────── */
+  .intake-error {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    margin-top: 16px;
+    color: #f87171;
+    font-size: 13px;
+  }
+
+  /* ── Responsive ────────────────────────────────── */
+  /* ── Поп-ап подтверждения перед задачами дня ── */
+  .dt-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(6, 9, 18, 0.72);
+    backdrop-filter: blur(3px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    animation: dtFadeIn .18s ease-out;
+  }
+  .dt-modal {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 34px 28px;
+    max-width: 430px; width: calc(100% - 40px);
+    text-align: center;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.5);
+    animation: dtPopIn .22s cubic-bezier(.2,.9,.3,1.2);
+  }
+  .dt-modal-icon {
+    width: 54px; height: 54px; margin: 0 auto 16px;
+    background: rgba(76,125,255,0.12);
+    border: 1px solid rgba(76,125,255,0.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+  .dt-modal h3 { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+  .dt-modal p { color: var(--text-soft); font-size: 14px; line-height: 1.6; margin-bottom: 22px; }
+  .dt-modal-actions { display: flex; flex-direction: column; gap: 10px; }
+  .dt-modal .btn-yes {
+    padding: 13px 20px; font-size: 15px; border: none; border-radius: 10px;
+    cursor: pointer; font-weight: 700; font-family: inherit;
+    background: linear-gradient(135deg, #4c7dff, #7c5cff); color: #fff;
+  }
+  .dt-modal .btn-yes:hover { filter: brightness(1.12); }
+  .dt-modal .btn-later {
+    padding: 11px 20px; font-size: 14px; border-radius: 10px;
+    cursor: pointer; font-family: inherit;
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+  }
+  .dt-modal .btn-later:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+  @keyframes dtFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes dtPopIn { from { opacity: 0; transform: scale(.92) translateY(8px); } to { opacity: 1; transform: none; } }
+
+  @media (max-width: 480px) {
+    .intake-container { padding: 30px 14px 60px; }
+    .intake-card { padding: 24px 18px; }
+    .intake-card h2 { font-size: 16px; }
+    .intake-option { padding: 12px 14px; font-size: 14px; }
+    .intake-btn { padding: 10px 20px; font-size: 14px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="intake-container">
+  <div class="intake-header">
+    <h1>Анкета</h1>
+    <p>Ответь на 5 вопросов, чтобы мы подобрали задачи под тебя</p>
+    <p style="margin-top:14px;font-size:13px;">
+      <a href="#" onclick="skipIntake(event)" style="color:var(--muted);text-decoration:underline;text-underline-offset:3px;">Пропустить анкету и посмотреть, что это за сайт</a>
+    </p>
+  </div>
+
+  <!-- Progress -->
+  <div class="intake-progress-wrap">
+    <div class="intake-progress-label">
+      <span id="intake-progress-text">Вопрос 1 из 5</span>
+      <span id="intake-progress-pct">20%</span>
+    </div>
+    <div class="intake-progress-bar">
+      <div class="intake-progress-fill" id="intake-progress-fill" style="width: 20%;"></div>
+    </div>
+  </div>
+
+  <!-- Dynamic content -->
+  <div id="intake-card" class="intake-card">
+    <div style="text-align: center; padding: 40px;">
+      <div class="intake-spinner"></div>
+      <span style="color: var(--muted);">Загрузка...</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = '/intake';
+  let currentState = null;
+  let selectedMulti = [];
+  let currentAnchorSolution = '';
+  let currentAnchorStatement = '';
+  let currentAnchorAnswer = '';
+  let currentAnchorTaskId = null;
+  let currentAnchorSectionRu = '';
+
+  async function apiCall(url, body) {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return await resp.json();
+  }
+
+  function updateProgress(qIndex, total) {
+    const pct = Math.round((qIndex / total) * 100);
+    document.getElementById('intake-progress-text').textContent =
+      total > 6 ? `Задача ${qIndex - 6} из 5 (якорь)` : `Вопрос ${qIndex} из ${total}`;
+    document.getElementById('intake-progress-pct').textContent = pct + '%';
+    document.getElementById('intake-progress-fill').style.width = pct + '%';
+  }
+
+  function renderQuestion(q, qIndex, total) {
+    updateProgress(qIndex, total);
+    const isMulti = q.multi;
+    let html = `<h2>${q.text}</h2>`;
+
+    if (isMulti) {
+      html += '<div class="intake-multi-hint">Можно выбрать несколько вариантов</div>';
+      html += '<div class="intake-options">';
+      for (const opt of q.options) {
+        const sel = selectedMulti.includes(opt.key) ? ' multi-selected' : '';
+        html += `<button class="intake-option${sel}" data-key="${opt.key}" onclick="toggleMulti(this, '${opt.key}')">${opt.label}</button>`;
+      }
+      html += '</div>';
+      html += '<div class="intake-btn-row">';
+      html += `<button class="intake-btn intake-btn-back" onclick="goBack()"><- Назад</button>`;
+      html += `<button class="intake-btn intake-btn-primary" id="intake-submit-btn" onclick="submitMulti()">Далее -></button>`;
+      html += '</div>';
+    } else {
+      html += '<div class="intake-options">';
+      for (const opt of q.options) {
+        html += `<button class="intake-option" onclick="selectSingle('${q.id}', '${opt.key}')">${opt.label}</button>`;
+      }
+      html += '</div>';
+      if (qIndex > 1) {
+        html += '<div class="intake-btn-row">';
+        html += `<button class="intake-btn intake-btn-back" onclick="goBack()"><- Назад</button>`;
+        html += '</div>';
+      }
+    }
+
+    document.getElementById('intake-card').innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&')
+      .replace(/</g, '<')
+      .replace(/>/g, '>');
+  }
+
+  function solutionToHtml(solution) {
+    // LaTeX-формулы ($...$, $$...$$, \(...\), \[...\]) сохраняем как есть,
+    // переводы строк превращаем в <br>, чтобы KaTeX их отрендерил.
+    if (!solution) return '<em>Решение отсутствует.</em>';
+    let s = String(solution).replace(/\r\n/g, '\n');
+
+    // Выносим display-математику (\[...\] и $$...$$) за пределы разбивки по
+    // строкам: вставка <br> между \[ и \] разрывает блок на отдельные текстовые
+    // узлы, из-за чего KaTeX auto-render не видит цельный блок и показывает
+    // сырые команды (\frac, \left\lfloor и т.п.).
+    const mathBlocks = [];
+    s = s.replace(/(\\\[[\s\S]*?\\\]|\$\$[\s\S]*?\$\$)/g, function(match) {
+      mathBlocks.push(match);
+      return '\u0000' + (mathBlocks.length - 1) + '\u0000';
+    });
+
+    // Экранируем HTML-опасные символы (вне математики), НЕ трогая $ и слэши.
+    let html = escapeHtml(s).replace(/\n/g, '<br>');
+
+    // Возвращаем display-блоки в первозданном виде.
+    html = html.replace(/\u0000(\d+)\u0000/g, function(_m, idx) {
+      return mathBlocks[+idx];
+    });
+
+    return html;
+  }
+
+  function renderAnchor(anchor, qIndex, total) {
+    updateProgress(qIndex, total);
+    currentAnchorSolution = anchor.solution || '';
+    currentAnchorStatement = anchor.statement || '';
+    currentAnchorAnswer = anchor.answer || '';
+    currentAnchorTaskId = anchor.task_id;
+    currentAnchorSectionRu = anchor.section_ru || '';
+    // Решение/ответ НЕ показываем во время прохождения анкеты — только на финальном экране.
+    let figureHtml = '';
+    if (anchor.figure_url) {
+      figureHtml = `<div class="intake-anchor-figure"><img src="${anchor.figure_url}" alt="Чертёж" loading="lazy"></div>`;
+    }
+    const html = `
+      <div class="intake-anchor-label">Задача по разделу «${anchor.section_ru}» (${anchor.anchor_idx} из ${anchor.total_anchors})</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Это не экзамен — ответь, как получится. По этим задачам мы просто подберём тебе стартовый уровень. Зашла в тупик — смело жми «Не знаю».</div>
+      ${figureHtml}
+      <div class="intake-anchor-statement">${escapeHtml(anchor.statement).replace(/\n/g, '<br>')}</div>
+      <input type="text" class="intake-answer-input" id="anchor-answer" placeholder="Твой ответ..." autofocus>
+      <div class="intake-btn-row">
+        <button class="intake-btn intake-btn-back" onclick="submitAnchor(${anchor.task_id}, true)">Не знаю -></button>
+        <button class="intake-btn intake-btn-primary" onclick="submitAnchor(${anchor.task_id})">Проверить</button>
+      </div>
+      <div id="anchor-solution" style="display:none;margin-top:16px;padding:16px;background:var(--surface2);border:1px solid var(--border-soft);border-radius:var(--radius-sm);font-size:14px;line-height:1.7;color:var(--text-soft);"></div>
+    `;
+    document.getElementById('intake-card').innerHTML = html;
+    document.getElementById('anchor-answer').focus();
+    document.getElementById('anchor-answer').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') submitAnchor(anchor.task_id);
+    });
+  }
+
+  // Кнопка «Проверить решение» убрана из анкеты: решение и ответ показываются
+  // только после прохождения (см. renderFinish). Функция оставлена на случай,
+  // если её вызовут из других мест шаблона, но сама кнопка больше не рендерится.
+  function toggleSolution() {
+    const box = document.getElementById('anchor-solution');
+    if (!box) return;
+    if (box.style.display === 'none') {
+      box.innerHTML = '<strong style="color:var(--accent-hi);">Решение:</strong><br>' +
+        solutionToHtml(currentAnchorSolution) +
+        '<br><strong style="color:var(--accent-hi);">Ответ:</strong> ' + escapeHtml(currentAnchorAnswer);
+      box.style.display = 'block';
+      if (typeof reRenderMath === 'function') reRenderMath(box);
+    } else {
+      box.style.display = 'none';
+    }
+  }
+
+  // ── Поп-ап «Готов решать задачи дня?» перед переходом ──
+  function showDailyTasksConfirm() {
+    if (document.querySelector('.dt-modal-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'dt-modal-overlay';
+    overlay.innerHTML =
+      '<div class="dt-modal" role="dialog" aria-modal="true" aria-label="Готов решать задачи дня?">' +
+        '<div class="dt-modal-icon">&#9200;</div>' +
+        '<h3>Готов решать задачи дня?</h3>' +
+        '<p>Без этого не будет прогресса — план держится только на ежедневной практике. Сегодня это займёт примерно 30 минут.</p>' +
+        '<div class="dt-modal-actions">' +
+          '<button class="btn-yes" id="dt-modal-yes">Да, погнали</button>' +
+          '<button class="btn-later" id="dt-modal-later">Позже</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById('dt-modal-yes').addEventListener('click', function () {
+      // Цель Метрики: нажатие «Да, погнали» в поп-апе после анкеты
+      try {
+        if (typeof ym === 'function') {
+          ym({{ config.YANDEX_METRIKA_ID | default(109394525) }}, 'reachGoal', 'daily_tasks_start_yes');
+        }
+      } catch (e) {}
+      window.location.href = '/daily_tasks';
+    });
+    document.getElementById('dt-modal-later').addEventListener('click', function () {
+      // Цель Метрики: нажатие «Позже» в том же поп-апе
+      try {
+        if (typeof ym === 'function') {
+          ym({{ config.YANDEX_METRIKA_ID | default(109394525) }}, 'reachGoal', 'daily_tasks_start_later');
+        }
+      } catch (e) {}
+      overlay.remove();
+    });
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) overlay.remove();
+    });
+  }
+
+  function renderFinish(result) {
+    updateProgress(6, 6);
+    const correct = result.anchors_correct || 0;
+    const hasAnchors = (result.anchors_count || 0) > 0;
+    let solutionsHtml = '';
+    const anchorSolutions = result.anchor_solutions || [];
+    if (anchorSolutions.length > 0) {
+      solutionsHtml += '<div style="margin-top:24px;text-align:left;border-top:1px solid var(--border);padding-top:20px;">';
+      solutionsHtml += '<h3 style="color:#e2e8f0;font-size:16px;font-weight:700;margin:0 0 12px;">Решения якорных задач</h3>';
+      anchorSolutions.forEach(function(sol) {
+        const okIcon = sol.correct === true ? '✅' : (sol.correct === false ? '❌' : '');
+        solutionsHtml += '<div style="background:var(--surface2);border:1px solid var(--border-soft);border-radius:10px;padding:14px 16px;margin-bottom:10px;">';
+        solutionsHtml += '<div style="color:var(--accent-hi);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">' + escapeHtml(sol.section_ru) + ' ' + okIcon + '</div>';
+        solutionsHtml += '<div style="color:var(--muted);font-size:13px;margin-bottom:8px;">' + escapeHtml(sol.statement).replace(/\n/g, '<br>') + '</div>';
+        solutionsHtml += '<div class="intake-solution-block" style="color:var(--text-soft);font-size:13px;line-height:1.7;">' + solutionToHtml(sol.solution) + '</div>';
+        solutionsHtml += '<div style="color:var(--accent-hi);font-size:13px;margin-top:6px;">Ответ: ' + escapeHtml(sol.answer) + '</div>';
+        solutionsHtml += '</div>';
+      });
+      solutionsHtml += '</div>';
+    }
+    let finishMsg;
+    if (!hasAnchors) {
+      finishMsg = 'Анкета пройдена! Мы уже настроили план и начальную сложность под твои ответы.';
+    } else if (correct >= 4) {
+      finishMsg = 'Сильный старт — уровень заметно выше школьного. План соберём под серьёзную подготовку.';
+    } else if (correct >= 2) {
+      finishMsg = 'Хороший старт — видна база. Теперь докрутим до уверенного уровня.';
+    } else {
+      finishMsg = 'Нормально — большинство начинает именно так. Система уже поняла, с чего начать, и подберёт задачи, которые получаются.';
+    }
+    const html = `
+      <div class="intake-finish">
+        <h2>Готово — день 1 из 7 начался</h2>
+        <p style="color:var(--text);font-size:15px;line-height:1.6;">${finishMsg}</p>
+        <div style="display:flex;justify-content:center;gap:24px;margin:18px 0 4px;">
+          ${hasAnchors ? `<div style="text-align:center;"><div style="font-size:28px;font-weight:800;color:var(--accent-hi);">${correct}/5</div><div style="font-size:12px;color:var(--muted);">якорных задач</div></div>` : ''}
+          <div style="text-align:center;"><div style="font-size:28px;font-weight:800;color:var(--accent-hi);">${result.daily_tasks}</div><div style="font-size:12px;color:var(--muted);">задач в день</div></div>
+          <div style="text-align:center;"><div style="font-size:28px;font-weight:800;color:#38ef7d;">1</div><div style="font-size:12px;color:var(--muted);">день серии</div></div>
+        </div>
+        <div style="margin:18px 0;padding:14px 16px;background:rgba(76,125,255,0.07);border:1px solid rgba(76,125,255,0.22);border-radius:10px;color:var(--text-soft);font-size:14px;line-height:1.6;">
+          <b style="color:var(--text);">Задачи дня уже готовы.</b><br>
+          Уровень подобран по анкете, темы — все разделы по кругу. Завтра в 10:30 пришлём письмо со следующим днём — серия уже идёт.
+        </div>
+        <div style="margin:18px 0;padding:16px 18px;background:linear-gradient(135deg,rgba(56,189,248,0.10),rgba(139,92,246,0.10));border:1px solid rgba(139,92,246,0.35);border-radius:12px;color:var(--text-soft);font-size:14px;line-height:1.65;text-align:left;">
+          <b style="color:var(--text);">Почему это стоит твоего времени?</b><br>
+          Олимпиадный диплом даёт <b style="color:var(--text);">БВИ или 100 баллов по профильному предмету</b> вместо ЕГЭ — и это реально не так сложно, как кажется. Раздел «102 метода» заменяет кружок: полный набор приёмов с разборами, в своём темпе.<br>
+          <a href="/olympiad-start" style="color:#7dd3fc;font-weight:700;text-decoration:underline;text-underline-offset:3px;">Прочитать, как войти в олимпиадную математику -></a>
+        </div>
+        <button class="intake-btn intake-btn-primary" onclick="showDailyTasksConfirm()" style="margin-top:8px;font-size:16px;padding:14px 34px;">Начать задачи дня -&gt;</button>
+
+        ${solutionsHtml}
+
+        <!-- Баннер генерации чертежей -->
+      </div>
+    `;
+    document.getElementById('intake-card').innerHTML = html;
+    if (typeof reRenderMath === 'function') reRenderMath(document.getElementById('intake-card'));
+  }
+
+  function renderError(msg) {
+    document.getElementById('intake-card').innerHTML = `
+      <div class="intake-finish">
+        <h2>Ошибка</h2>
+        <p>${msg}</p>
+        <a href="/intake" class="intake-btn intake-btn-primary" style="display:inline-block;text-decoration:none;">Начать заново</a>
+      </div>
+    `;
+  }
+
+  async function selectSingle(qid, key) {
+    const result = await apiCall(API_BASE + '/answer', { qid, key });
+    processResponse(result);
+  }
+
+  function toggleMulti(btn, key) {
+    if (selectedMulti.includes(key)) {
+      selectedMulti = selectedMulti.filter(k => k !== key);
+      btn.classList.remove('multi-selected');
+    } else {
+      selectedMulti.push(key);
+      btn.classList.add('multi-selected');
+    }
+  }
+
+  async function submitMulti() {
+    if (selectedMulti.length === 0) {
+      selectedMulti = ['dont_know'];
+    }
+    const key = selectedMulti.join(',');
+    const qid = currentState.question ? currentState.question.id : 'weak_sections';
+    const result = await apiCall(API_BASE + '/answer', { qid, key });
+    selectedMulti = [];
+    processResponse(result);
+  }
+
+  async function submitAnchor(taskId, skip) {
+    const answerEl = document.getElementById('anchor-answer');
+    if (!answerEl) return;
+    const answer = skip ? '__skip__' : answerEl.value.trim();
+    if (!answer) return;
+
+    document.getElementById('intake-card').innerHTML =
+      '<div style="text-align:center;padding:40px;"><div class="intake-spinner"></div><span style="color:var(--muted);">Проверяю...</span></div>';
+
+    const result = await apiCall(API_BASE + '/anchor', { task_id: taskId, answer });
+    processResponse(result);
+  }
+
+  async function goBack() {
+    const result = await apiCall(API_BASE + '/back', {});
+    processResponse(result);
+  }
+
+  async function skipIntake(e) {
+    if (e) e.preventDefault();
+    try {
+      const resp = await fetch(API_BASE + '/skip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await resp.json();
+      if (data.redirect_url) {
+        window.location.href = data.redirect_url;
+        return;
+      }
+    } catch (err) {}
+    window.location.href = '/olympiad-start';
+  }
+
+  function processResponse(data) {
+    if (data.error) {
+      renderError(data.error);
+      return;
+    }
+
+    if (data.done) {
+      if (data.redirect_url) {
+        window.location.href = data.redirect_url;
+        return;
+      }
+      if (data.result) {
+        renderFinish(data.result);
+      } else {
+        renderError('Анкета уже пройдена.');
+      }
+      return;
+    }
+
+    currentState = data;
+
+    if (data.anchor) {
+      renderAnchor(data.anchor, data.q_index, data.total_questions);
+    } else if (data.question) {
+      renderQuestion(data.question, data.q_index, data.total_questions);
+    }
+  }
+
+  // Start on load
+  (async function init() {
+    const result = await apiCall(API_BASE + '/start', {});
+    processResponse(result);
+  })();
+</script>
+{% endblock %}

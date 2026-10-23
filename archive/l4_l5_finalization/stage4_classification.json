@@ -1,0 +1,580 @@
+{
+  "summary": {
+    "total": 63,
+    "counts": {
+      "KEEP": 3,
+      "FIX": 40,
+      "REPLACE": 20,
+      "REVIEW": 0
+    }
+  },
+  "classifications": [
+    {
+      "task_id": "c5307bfa5ccd",
+      "cell_key": "G6|L5|T006|S2",
+      "quality_score": 38.2,
+      "phase": "Phase 1 (<60)",
+      "statement": "Сколько существует способов расставить 5 различных книг на полке?",
+      "category": "REPLACE",
+      "reason": "solver_failed_very_short_solution"
+    },
+    {
+      "task_id": "c28e94076cc6",
+      "cell_key": "G6|L5|T006|S2",
+      "quality_score": 42.8,
+      "phase": "Phase 1 (<60)",
+      "statement": "Сколько существует способов выбрать 2 книги из 5 и расставить их на полке?",
+      "category": "FIX",
+      "reason": "short_solution:118chars"
+    },
+    {
+      "task_id": "72feb7a8c418",
+      "cell_key": "G6|L5|T006|S2",
+      "quality_score": 43.3,
+      "phase": "Phase 1 (<60)",
+      "statement": "Сколько существует способов выбрать 3 книги из 7, если одна из книг обязательно должна быть выбрана?",
+      "category": "FIX",
+      "reason": "short_solution:71chars"
+    },
+    {
+      "task_id": "ef0b407220bb",
+      "cell_key": "G5|L5|T022|S1",
+      "quality_score": 43.6,
+      "phase": "Phase 1 (<60)",
+      "statement": "Отношение возраста отца к возрасту сына равно 7:2. Сумма их возрастов 45 лет. Сколько лет отцу и сын",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "cdf76dff28bc",
+      "cell_key": "G6|L5|T006|S2",
+      "quality_score": 43.8,
+      "phase": "Phase 1 (<60)",
+      "statement": "Сколько существует способов составить трёхзначное число из цифр 1, 2, 3, 4, 5, если цифры не повторя",
+      "category": "FIX",
+      "reason": "short_solution:69chars"
+    },
+    {
+      "task_id": "f7a0c59e2019",
+      "cell_key": "G6|L5|T006|S2",
+      "quality_score": 44.9,
+      "phase": "Phase 1 (<60)",
+      "statement": "Сколько существует способов выбрать 3 различные книги из 10, если порядок выбора не важен?",
+      "category": "FIX",
+      "reason": "short_solution:119chars"
+    },
+    {
+      "task_id": "053f552cec0f",
+      "cell_key": "G5|L5|T022|S1",
+      "quality_score": 46.0,
+      "phase": "Phase 1 (<60)",
+      "statement": "В сплаве меди и цинка отношение массы меди к массе цинка равно 3:5. Сколько килограммов каждого мета",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "668efb906002",
+      "cell_key": "G5|L5|T022|S1",
+      "quality_score": 46.4,
+      "phase": "Phase 1 (<60)",
+      "statement": "В классе 30 учеников. Отношение числа мальчиков к числу девочек равно 2:3. Сколько мальчиков и сколь",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "88d9f7084cd2",
+      "cell_key": "G5|L5|T002|S2",
+      "quality_score": 49.0,
+      "phase": "Phase 1 (<60)",
+      "statement": "Найдите остаток от деления числа \\(3^{2023}\\) на 7.",
+      "category": "REPLACE",
+      "reason": "solver_failed_low_quality"
+    },
+    {
+      "task_id": "d8b9d06cc096",
+      "cell_key": "G5|L5|T004|S2",
+      "quality_score": 51.5,
+      "phase": "Phase 1 (<60)",
+      "statement": "В стране 2024 города. Между некоторыми городами есть дороги. Известно, что в стране ровно 2023 дорог",
+      "category": "REPLACE",
+      "reason": "solver_failed_very_short_solution"
+    },
+    {
+      "task_id": "c48f84e6585b",
+      "cell_key": "G5|L5|T022|S1",
+      "quality_score": 52.1,
+      "phase": "Phase 1 (<60)",
+      "statement": "Для приготовления компота берут 3 части яблок, 2 части груш и 1 часть сахара. Сколько килограммов ка",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "7681c5edc853",
+      "cell_key": "G5|L5|T004|S2",
+      "quality_score": 52.2,
+      "phase": "Phase 1 (<60)",
+      "statement": "В стране 10 городов. Некоторые пары городов соединены дорогами с односторонним движением. Известно, ",
+      "category": "REPLACE",
+      "reason": "solver_failed_very_short_solution"
+    },
+    {
+      "task_id": "8b95dc7d5035",
+      "cell_key": "G5|L5|T004|S2",
+      "quality_score": 52.2,
+      "phase": "Phase 1 (<60)",
+      "statement": "В стране 20 городов, некоторые пары соединены дорогами с двусторонним движением. Известно, что если ",
+      "category": "REPLACE",
+      "reason": "solver_failed_very_short_solution"
+    },
+    {
+      "task_id": "ffac6a343086",
+      "cell_key": "G5|L5|T004|S2",
+      "quality_score": 52.2,
+      "phase": "Phase 1 (<60)",
+      "statement": "В некотором государстве 100 городов. Между некоторыми городами есть авиарейсы (в обе стороны). Извес",
+      "category": "FIX",
+      "reason": "short_solution:12chars"
+    },
+    {
+      "task_id": "167562c3d464",
+      "cell_key": "G7|L5|T003|S1",
+      "quality_score": 52.2,
+      "phase": "Phase 1 (<60)",
+      "statement": "Случайным образом выбирается трехзначное число (от 100 до 999). Какова вероятность того, что в его з",
+      "category": "FIX",
+      "reason": "solver_failed; short_solution:182chars"
+    },
+    {
+      "task_id": "6787c2edde0d",
+      "cell_key": "G7|L5|T003|S1",
+      "quality_score": 53.8,
+      "phase": "Phase 1 (<60)",
+      "statement": "В мешке лежат 5 белых и 7 черных шаров. Из мешка последовательно извлекают 4 шара без возвращения. К",
+      "category": "FIX",
+      "reason": "short_solution:88chars"
+    },
+    {
+      "task_id": "a8a672e7f2b3",
+      "cell_key": "G5|L5|T002|S2",
+      "quality_score": 54.4,
+      "phase": "Phase 1 (<60)",
+      "statement": "Докажите, что число \\(11^{10} - 1\\) делится на 100.",
+      "category": "FIX",
+      "reason": "solver_failed"
+    },
+    {
+      "task_id": "04ad8880942f",
+      "cell_key": "G5|L4|T022|S2",
+      "quality_score": 55.0,
+      "phase": "Phase 1 (<60)",
+      "statement": "Пять землекопов за 3 часа выкопали 15 метров канавы. Сколько метров канавы выкопают 8 землекопов за ",
+      "category": "FIX",
+      "reason": "short_solution:166chars"
+    },
+    {
+      "task_id": "d454a6c61c44",
+      "cell_key": "G5|L5|T002|S1",
+      "quality_score": 55.6,
+      "phase": "Phase 1 (<60)",
+      "statement": "Найдите все пары натуральных чисел \\(a\\) и \\(b\\), для которых \\(\\text{НОД}(a, b) = 5\\) и \\(\\text{НОК",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "e8e10be25736",
+      "cell_key": "G6|L5|T032|S1",
+      "quality_score": 55.7,
+      "phase": "Phase 1 (<60)",
+      "statement": "Катер проплывает расстояние между двумя пунктами по течению за 2 часа, а против течения — за 3 часа.",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "f29e647f9881",
+      "cell_key": "G5|L4|T022|S2",
+      "quality_score": 55.8,
+      "phase": "Phase 1 (<60)",
+      "statement": "Для приготовления варенья из ягод берут сахар и ягоды в отношении 3:2 по массе. Сколько килограммов ",
+      "category": "FIX",
+      "reason": "short_solution:194chars"
+    },
+    {
+      "task_id": "486d7f4431a0",
+      "cell_key": "G5|L5|T004|S2",
+      "quality_score": 56.1,
+      "phase": "Phase 1 (<60)",
+      "statement": "В некотором государстве 10 городов. Между некоторыми городами есть дороги. Известно, что любые два г",
+      "category": "FIX",
+      "reason": "short_solution:77chars"
+    },
+    {
+      "task_id": "581cc39bf4f0",
+      "cell_key": "G5|L4|T008|S1",
+      "quality_score": 57.3,
+      "phase": "Phase 1 (<60)",
+      "statement": "В таблице истинности для логического выражения (A и B) или (не A и не B) есть два столбца: A и B. Ск",
+      "category": "FIX",
+      "reason": "short_solution:201chars"
+    },
+    {
+      "task_id": "f5a31a5003df",
+      "cell_key": "G6|L5|T032|S1",
+      "quality_score": 59.0,
+      "phase": "Phase 1 (<60)",
+      "statement": "Моторная лодка прошла расстояние между двумя пристанями по течению реки за 3 часа, а обратно — за 4 ",
+      "category": "FIX",
+      "reason": "short_solution:184chars"
+    },
+    {
+      "task_id": "495e06fc6844",
+      "cell_key": "G5|L5|T024|S1",
+      "quality_score": 59.1,
+      "phase": "Phase 1 (<60)",
+      "statement": "Маша решала задачу: «Сколько существует трёхзначных чисел, в записи которых нет цифры 0?» Она рассуж",
+      "category": "FIX",
+      "reason": "short_solution:127chars"
+    },
+    {
+      "task_id": "ab5bf34e626a",
+      "cell_key": "G11|L5|T001|S2",
+      "quality_score": 60.2,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Пусть \\(G\\) — группа, \\(N\\) — её нормальная подгруппа. Докажите, что отображение \\(\\phi: G \to G/N\\),",
+      "category": "FIX",
+      "reason": "solver_failed; short_solution:186chars"
+    },
+    {
+      "task_id": "97762757cf9e",
+      "cell_key": "G5|L5|T024|S1",
+      "quality_score": 61.2,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Ученик решал уравнение: \\(x + 2x + 3x + \\dots + 10x = 550\\). Он написал: «Сумма коэффициентов \\(1+2+",
+      "category": "FIX",
+      "reason": "short_solution:162chars"
+    },
+    {
+      "task_id": "b0283feaaa8f",
+      "cell_key": "G5|L4|T005|S0",
+      "quality_score": 61.4,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Из города A в город B ведут три дороги: первая длиной 10 км, вторая — 8 км, третья — 12 км. По перво",
+      "category": "FIX",
+      "reason": "short_solution:165chars"
+    },
+    {
+      "task_id": "139c195d2b47",
+      "cell_key": "G5|L5|T022|S0",
+      "quality_score": 61.4,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Цена товара сначала повысилась на 20%, затем понизилась на 20%, а потом снова повысилась на 20%. На ",
+      "category": "FIX",
+      "reason": "solver_failed; short_solution:240chars"
+    },
+    {
+      "task_id": "d7b30d0953e4",
+      "cell_key": "G5|L5|T022|S2",
+      "quality_score": 61.9,
+      "phase": "Phase 2 (60-70)",
+      "statement": "В трёх цехах завода работают 180 рабочих. Во втором цехе работает в 2 раза больше рабочих, чем в пер",
+      "category": "FIX",
+      "reason": "solver_failed; short_solution:203chars"
+    },
+    {
+      "task_id": "2411a1ae595e",
+      "cell_key": "G5|L4|T005|S0",
+      "quality_score": 62.0,
+      "phase": "Phase 2 (60-70)",
+      "statement": "В коробке лежат 7 красных, 5 синих и 4 зеленых карандаша. Какое наименьшее количество карандашей нуж",
+      "category": "FIX",
+      "reason": "short_solution:198chars"
+    },
+    {
+      "task_id": "6e06828e3d72",
+      "cell_key": "G5|L5|T022|S0",
+      "quality_score": 62.0,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Винни-Пух и Пятачок пошли в гости к Кролику. Винни-Пух съел 60% всего меда, а Пятачок — 40% оставшег",
+      "category": "FIX",
+      "reason": "solver_failed; short_solution:231chars"
+    },
+    {
+      "task_id": "defdb4650efb",
+      "cell_key": "G5|L5|T002|S2",
+      "quality_score": 62.8,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Найдите все натуральные числа \\(n\\), для которых число \\(2^n + 3^n\\) делится на 5.",
+      "category": "FIX",
+      "reason": "solver_failed"
+    },
+    {
+      "task_id": "db39686b4adf",
+      "cell_key": "G5|L5|T005|S2",
+      "quality_score": 63.4,
+      "phase": "Phase 2 (60-70)",
+      "statement": "В коробке лежат 10 красных, 15 синих и 20 зелёных шаров. Какое наименьшее количество шаров нужно вын",
+      "category": "FIX",
+      "reason": "solver_failed; short_solution:245chars"
+    },
+    {
+      "task_id": "b83ab2ce0b72",
+      "cell_key": "G5|L5|T024|S2",
+      "quality_score": 64.0,
+      "phase": "Phase 2 (60-70)",
+      "statement": "На доске написаны числа 1, 2, 3, 4, 5, 6, 7, 8, 9. За один ход можно выбрать два числа и заменить их",
+      "category": "FIX",
+      "reason": "short_solution:208chars"
+    },
+    {
+      "task_id": "69a8bb8eb7cb",
+      "cell_key": "G7|L5|T003|S2",
+      "quality_score": 64.2,
+      "phase": "Phase 2 (60-70)",
+      "statement": "В классе 15 мальчиков и 10 девочек. Известно, что 60% мальчиков и 40% девочек занимаются спортом. Сл",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "274146cf37e5",
+      "cell_key": "G11|L5|T001|S2",
+      "quality_score": 64.3,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Пусть \\(G\\) — группа, \\(H\\) — подгруппа индекса 2. Докажите, что \\(H\\) нормальна в \\(G\\) и \\(G/H \\co",
+      "category": "FIX",
+      "reason": "solver_failed"
+    },
+    {
+      "task_id": "c4cfd64d2456",
+      "cell_key": "G7|L5|T003|S2",
+      "quality_score": 64.3,
+      "phase": "Phase 2 (60-70)",
+      "statement": "В некоторой популяции 1% людей болен редкой болезнью. Тест на болезнь дает положительный результат с",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "e011d46e1c08",
+      "cell_key": "G5|L5|T022|S0",
+      "quality_score": 64.9,
+      "phase": "Phase 2 (60-70)",
+      "statement": "В классе 30 учеников. В олимпиаде по математике участвовали 60% мальчиков и 40% девочек, всего 14 че",
+      "category": "FIX",
+      "reason": "solver_failed"
+    },
+    {
+      "task_id": "f03be060f6b3",
+      "cell_key": "G11|L5|T001|S2",
+      "quality_score": 65.0,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Пусть \\(G\\) — конечная группа, \\(H\\) — её подгруппа индекса \\(n\\). Докажите, что существует гомоморф",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "4a1f362c3106",
+      "cell_key": "G11|L5|T034|S0",
+      "quality_score": 65.0,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Вероятность успеха в каждом испытании равна \\( p \\). Проводится \\( n \\) независимых испытаний. Пусть",
+      "category": "FIX",
+      "reason": "solver_failed; short_solution:232chars"
+    },
+    {
+      "task_id": "aca199da7d47",
+      "cell_key": "G7|L5|T003|S1",
+      "quality_score": 65.4,
+      "phase": "Phase 2 (60-70)",
+      "statement": "На шахматной доске размером 8×8 случайным образом выбирают две различные клетки. Какова вероятность ",
+      "category": "KEEP",
+      "reason": "all_roles_ok"
+    },
+    {
+      "task_id": "468aa9188b50",
+      "cell_key": "G11|L5|T001|S1",
+      "quality_score": 65.5,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Пусть \\(G\\) — группа, \\(H\\) — подгруппа индекса 2. Докажите, что для любого элемента \\(g \\in G\\) вып",
+      "category": "FIX",
+      "reason": "solver_failed"
+    },
+    {
+      "task_id": "5557f065526c",
+      "cell_key": "G5|L5|T024|S1",
+      "quality_score": 65.6,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Петя утверждает, что число \\(1234567890\\) делится на 9, потому что сумма его цифр равна \\(1+2+3+4+5+",
+      "category": "FIX",
+      "reason": "short_solution:235chars"
+    },
+    {
+      "task_id": "0cabbe464aa4",
+      "cell_key": "G6|L5|T032|S1",
+      "quality_score": 65.6,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Катер плывет по течению реки из пункта A в пункт B за 4 часа, а против течения — за 6 часов. За како",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "41132df26c2a",
+      "cell_key": "G5|L5|T002|S1",
+      "quality_score": 66.0,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Найдите все натуральные числа \\(n\\), для которых \\(\\text{НОД}(n, n+5) = 5\\).",
+      "category": "FIX",
+      "reason": "solver_failed"
+    },
+    {
+      "task_id": "bd869dd1c1d3",
+      "cell_key": "G5|L5|T002|S1",
+      "quality_score": 66.5,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Докажите, что для любых натуральных чисел \\(m\\) и \\(n\\) числа \\(m+n\\) и \\(\\text{НОК}(m, n)\\) не могу",
+      "category": "KEEP",
+      "reason": "all_roles_ok"
+    },
+    {
+      "task_id": "7dbecced5add",
+      "cell_key": "G5|L5|T024|S2",
+      "quality_score": 66.9,
+      "phase": "Phase 2 (60-70)",
+      "statement": "В коробке лежат 5 красных, 6 синих и 7 зеленых шаров. Какое наименьшее количество шаров нужно вынуть",
+      "category": "FIX",
+      "reason": "short_solution:256chars"
+    },
+    {
+      "task_id": "623e35b0654d",
+      "cell_key": "G11|L5|T001|S2",
+      "quality_score": 67.2,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Пусть \\(G\\) — группа, \\(H\\) — подгруппа. Докажите, что существует гомоморфизм \\(\\phi: G \to \\operator",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "75db01688ab4",
+      "cell_key": "G5|L4|T005|S0",
+      "quality_score": 67.4,
+      "phase": "Phase 2 (60-70)",
+      "statement": "У фермера есть 20 метров забора. Он хочет огородить прямоугольный участок максимальной площади, прим",
+      "category": "FIX",
+      "reason": "solver_failed; short_solution:265chars"
+    },
+    {
+      "task_id": "11ae5d991c89",
+      "cell_key": "G7|L5|T023|S1",
+      "quality_score": 67.5,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Решите уравнение: \\(\\frac{x^2 + 2x + 2}{x+1} + \\frac{x+1}{x^2 + 2x + 2} = \\frac{5}{2}\\).",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "812f4b5f4d2c",
+      "cell_key": "G7|L5|T023|S1",
+      "quality_score": 67.6,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Решите уравнение: \\(\\frac{x^2 + 3x + 1}{x+2} + \\frac{x+2}{x^2 + 3x + 1} = \\frac{10}{3}\\).",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "d21e045486af",
+      "cell_key": "G5|L5|T008|S0",
+      "quality_score": 67.8,
+      "phase": "Phase 2 (60-70)",
+      "statement": "В волшебной стране есть три вида погоды: солнечно (S), дождливо (R) и ветрено (W). Каждый день бывае",
+      "category": "FIX",
+      "reason": "short_solution:272chars"
+    },
+    {
+      "task_id": "cf1b975a398e",
+      "cell_key": "G5|L5|T024|S0",
+      "quality_score": 68.0,
+      "phase": "Phase 2 (60-70)",
+      "statement": "В коробке лежат 20 шариков: 7 красных, 6 синих и 7 зеленых. Какое наименьшее количество шариков нужн",
+      "category": "FIX",
+      "reason": "solver_failed"
+    },
+    {
+      "task_id": "a03ed1222b30",
+      "cell_key": "G11|L5|T043|S1",
+      "quality_score": 68.1,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Куб с ребром \\(a\\) вращается вокруг своей диагонали. Найдите объём полученного тела вращения.",
+      "category": "REPLACE",
+      "reason": "arbiter_errors:Неправильное применение теоремы Паппа-Гульдина: для объёма тела вращения нужно использовать площадь поверхности, а не объём.; Ошибочное утверждение о цилиндре с нулевой высотой.; Неверный итоговый ответ."
+    },
+    {
+      "task_id": "a2974faf4afe",
+      "cell_key": "G5|L5|T022|S0",
+      "quality_score": 68.1,
+      "phase": "Phase 2 (60-70)",
+      "statement": "В магазине продаются три вида конфет: шоколадные, карамельные и желейные. Цена шоколадных конфет сос",
+      "category": "FIX",
+      "reason": "solver_failed; short_solution:276chars"
+    },
+    {
+      "task_id": "a0b8a1c1d792",
+      "cell_key": "G5|L5|T024|S1",
+      "quality_score": 68.2,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Ученик решал задачу: «Найдите сумму всех натуральных чисел от 1 до 100, которые не делятся на 3». Он",
+      "category": "FIX",
+      "reason": "short_solution:279chars"
+    },
+    {
+      "task_id": "96c72e3bb0e7",
+      "cell_key": "G5|L5|T005|S0",
+      "quality_score": 68.4,
+      "phase": "Phase 2 (60-70)",
+      "statement": "У Маши есть 9 одинаковых кубиков. Она хочет сложить из них прямоугольный параллелепипед (не обязател",
+      "category": "FIX",
+      "reason": "short_solution:281chars"
+    },
+    {
+      "task_id": "627b2ba84fe6",
+      "cell_key": "G5|L5|T005|S2",
+      "quality_score": 68.8,
+      "phase": "Phase 2 (60-70)",
+      "statement": "У Пети есть 100 рублей. Он хочет купить несколько ручек по 12 рублей и несколько карандашей по 8 руб",
+      "category": "FIX",
+      "reason": "short_solution:288chars"
+    },
+    {
+      "task_id": "5109f65b67aa",
+      "cell_key": "G6|L5|T016|S1",
+      "quality_score": 69.2,
+      "phase": "Phase 2 (60-70)",
+      "statement": "В равнобедренной трапеции \\(ABCD\\) с основаниями \\(AD\\) и \\(BC\\) диагональ \\(AC\\) равна 10, а высота",
+      "category": "REPLACE",
+      "reason": "duplicate_detected"
+    },
+    {
+      "task_id": "bff87d012432",
+      "cell_key": "G5|L5|T008|S1",
+      "quality_score": 69.3,
+      "phase": "Phase 2 (60-70)",
+      "statement": "В некоторой стране 5 городов. Между некоторыми городами есть авиарейсы. Известно, что для любых двух",
+      "category": "FIX",
+      "reason": "short_solution:296chars"
+    },
+    {
+      "task_id": "a7b6a236ee58",
+      "cell_key": "G11|L5|T021|S1",
+      "quality_score": 69.9,
+      "phase": "Phase 2 (60-70)",
+      "statement": "Пусть \\(f(x) = e^{x} \\sin x\\). Найдите количество точек перегиба функции \\(f(x)\\) на отрезке \\([0, 2",
+      "category": "FIX",
+      "reason": "solver_failed"
+    },
+    {
+      "task_id": "4cf0c4d29402",
+      "cell_key": "G6|L5|T018|S1",
+      "quality_score": 69.9,
+      "phase": "Phase 2 (60-70)",
+      "statement": "В круге проведены две параллельные хорды длины 6 и 8. Расстояние между ними равно 1. Найдите площадь",
+      "category": "KEEP",
+      "reason": "all_roles_ok"
+    }
+  ]
+}

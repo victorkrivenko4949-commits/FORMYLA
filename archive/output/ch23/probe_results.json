@@ -1,0 +1,138 @@
+[
+  {
+    "task_uid": "GEN-L123-par27_s2-428077da17e93a",
+    "steps_count": 0,
+    "ops_count": 0,
+    "aux_status": "AUX_NOT_NEEDED",
+    "has_aux": 0,
+    "issues": [],
+    "latency_ms": 10041,
+    "steps": [],
+    "constructions": []
+  },
+  {
+    "task_uid": "GEN-L123-w2_71_s6-5a9cdd7e0b9df0",
+    "steps_count": 0,
+    "ops_count": 0,
+    "aux_status": "-",
+    "has_aux": 0,
+    "issues": [],
+    "latency_ms": 8461,
+    "steps": [],
+    "constructions": []
+  },
+  {
+    "task_uid": "REG-d8cd9f277c05383990b58e13",
+    "steps_count": 0,
+    "ops_count": 0,
+    "aux_status": "-",
+    "has_aux": 0,
+    "issues": [],
+    "latency_ms": 423941,
+    "steps": [],
+    "constructions": []
+  },
+  {
+    "task_uid": "RG2-04a8ef202822bb265b56bc33",
+    "steps_count": 0,
+    "ops_count": 0,
+    "aux_status": "-",
+    "has_aux": 0,
+    "issues": [],
+    "latency_ms": 9942,
+    "steps": [],
+    "constructions": []
+  },
+  {
+    "task_uid": "GEN-L123-w2_123r_s2-3b807a85021b",
+    "steps_count": 0,
+    "ops_count": 0,
+    "aux_status": "AUX_NOT_NEEDED",
+    "has_aux": 0,
+    "issues": [],
+    "latency_ms": 8655,
+    "steps": [],
+    "constructions": []
+  },
+  {
+    "task_uid": "0d6906742da7dcdbf7993bd4b9b4ba15",
+    "steps_count": 0,
+    "ops_count": 0,
+    "aux_status": "AUX_NOT_NEEDED",
+    "has_aux": 0,
+    "issues": [],
+    "latency_ms": 112778,
+    "steps": [],
+    "constructions": []
+  },
+  {
+    "task_uid": "GEN-L123-w2_22_s4-a9c808a8dfb635",
+    "steps_count": 1,
+    "ops_count": 1,
+    "aux_status": "AUX_BUILT",
+    "has_aux": 1,
+    "issues": [],
+    "latency_ms": 12570,
+    "steps": [
+      {
+        "step_no": 1,
+        "action": "draw_segment",
+        "args": {
+          "p1": "A",
+          "p2": "C"
+        },
+        "creates_point": null,
+        "quote": "Проведём диагональ AC"
+      }
+    ],
+    "constructions": [
+      {
+        "type": "segment",
+        "p1": "A",
+        "p2": "C",
+        "id": "aux_segment_A_C",
+        "style": "aux",
+        "dashed": true,
+        "visual_role": "aux",
+        "purpose": "Построен отрезок из решения",
+        "solution_evidence": {
+          "step_no": 1,
+          "quote": "Проведём диагональ AC"
+        }
+      }
+    ]
+  },
+  {
+    "task_uid": "2908b8065bf4e2557a33776c6910d776",
+    "steps_count": 0,
+    "ops_count": 0,
+    "aux_status": "-",
+    "has_aux": 0,
+    "issues": [],
+    "latency_ms": 26374,
+    "steps": [],
+    "constructions": []
+  },
+  {
+    "task_uid": "GEN-fill_0558",
+    "steps_count": 0,
+    "ops_count": 0,
+    "aux_status": "AUX_NOT_NEEDED",
+    "has_aux": 0,
+    "issues": [],
+    "latency_ms": 13242,
+    "steps": [],
+    "constructions": []
+  },
+  {
+    "task_uid": "REG-4b14f342d2a6f7a6331ee49b",
+    "steps_count": 0,
+    "ops_count": 0,
+    "aux_status": "-",
+    "has_aux": 0,
+    "issues": [],
+    "latency_ms": 10129,
+    "steps": [],
+    "constructions": []
+  }
+]

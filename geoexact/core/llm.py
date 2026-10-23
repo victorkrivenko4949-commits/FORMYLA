@@ -1,0 +1,861 @@
+"""Этапы 2 и 4: единственные места, где работает LLM.
+
+Модель НЕ рисует и НЕ считает координаты. Она только:
+  - классифицирует задачу (этап 2)
+  - переводит текст в FigurePlan (этап 4)
+
+Учёт стоимости честный, по фактическим токенам ответа API.
+"""
+from __future__ import annotations
+
+import json
+import os
+import re
+import time
+import math
+import threading
+from datetime import datetime, timezone
+from dataclasses import dataclass, field
+
+import requests
+from requests.adapters import HTTPAdapter
+
+from .schema import FigurePlan, PlanError, plan_json_schema, validate_plan
+
+BASE = "https://api.deepseek.com"
+
+# Verified 2026-09-22: https://api-docs.deepseek.com/quick_start/pricing
+# Off-peak USD / 1M; budget admission ALWAYS uses twice these (peak).
+PRICES = {
+    "deepseek-v4-flash": {"in": 0.15, "cached": 0.003, "out": 0.60},
+    "deepseek-v4-pro": {"in": 0.66, "cached": 0.022, "out": 1.98},
+}
+
+# Маршрутизация: класс сложности -> (модель, лимит вывода) для каждого пути
+ROUTES = {
+    # путь A: без доп. построений — только формализация
+    ("A", "S"):  ("deepseek-v4-flash", 4000),
+    ("A", "M"):  ("deepseek-v4-flash", 6000),
+    ("A", "L"):  ("deepseek-v4-flash", 8000),
+    ("A", "XL"): ("deepseek-v4-pro", 10000),
+    # путь B: с доп. построениями — модель обязана решить задачу
+    # FLASH_NO_THINKING_V1: везде deepseek-v4-flash (быстрая, без thinking).
+    # Раньше L/XL уходили на v4-pro с thinking — доп. построение «думало»
+    # 3-4 минуты, пользователь не дожидался. Flash отвечает за десятки
+    # секунд. Лимиты S/M сохранены из GEOEXACT_TIMING (6000/10000),
+    # L/XL — те же 10000 у flash (12000+ не проверены).
+    ("B", "S"):  ("deepseek-v4-flash", 6000),
+    ("B", "M"):  ("deepseek-v4-flash", 10000),
+    ("B", "L"):  ("deepseek-v4-flash", 10000),
+    ("B", "XL"): ("deepseek-v4-flash", 10000),
+}
+
+# ВАЖНО: в thinking mode токены рассуждения входят в completion_tokens и,
+# значит, в max_tokens. Тесный лимит обрезает JSON на середине — отказ выглядит
+# как BAD_JSON, хотя модель работала правильно. Вход и все повторные попытки
+# тоже входят в бюджет. FLASH_NO_THINKING_V1: путь B (доп. построения)
+# всегда идёт на flash без thinking — v4-pro больше не используется.
+
+BUDGET_HARD_CAP = 0.10  # $ на один запрос пользователя
+_API_SLOTS = threading.BoundedSemaphore(4)
+_START_LOCK = threading.Lock()
+_LAST_START = 0.0
+
+# Модели, для которых провайдер не принял параметр thinking
+# (HTTP 400 с упоминанием «thinking») — повтор идёт без параметра.
+_THINKING_UNSUPPORTED: set[str] = set()
+
+
+_DEADLINE = threading.local()
+
+
+def set_deadline(when: float | None) -> None:
+    """Wall-clock moment (time.time()) after which no API call may still run."""
+    _DEADLINE.value = when
+
+
+def _read_timeout() -> float:
+    when = getattr(_DEADLINE, "value", None)
+    if when is None:
+        return 180.0
+    left = when - time.time()
+    if left < 8:
+        # Not a network failure: nothing was sent, so no unknown cost.
+        raise PlanError("TIME_LIMIT", "время на построение исчерпано")
+    return min(180.0, left)
+
+
+def _bounded_call(fn, limit: float):
+    """Run fn() and give up after `limit` seconds in total.
+
+    A socket read timeout only limits the gap between bytes: a provider that keeps
+    the connection alive (keep-alive lines) can hold a request for minutes past the
+    deadline. The abandoned call finishes in a daemon thread and is ignored.
+    """
+    box: dict = {}
+
+    def run():
+        try:
+            box["value"] = fn()
+        except BaseException as exc:  # noqa: BLE001 - re-raised in the caller
+            box["error"] = exc
+
+    th = threading.Thread(target=run, daemon=True)
+    th.start()
+    th.join(max(0.0, limit))
+    if th.is_alive():
+        raise requests.Timeout(f"общее время запроса превысило {limit:.0f} с")
+    if "error" in box:
+        raise box["error"]
+    return box["value"]
+
+
+def _post_limited(sess, payload):
+    """Independent CPU workers, bounded API concurrency and safe 429 backoff."""
+    global _LAST_START
+    with _API_SLOTS:
+        for attempt in range(3):
+            with _START_LOCK:
+                delay = .35 - (time.monotonic() - _LAST_START)
+                if delay > 0:
+                    time.sleep(delay)
+                _LAST_START = time.monotonic()
+            left = _read_timeout()
+            r = _bounded_call(lambda: sess.post(f"{BASE}/chat/completions",
+                                                timeout=(15, left), json=payload), left)
+            if r.status_code != 429 or attempt == 2:
+                return r
+            try:
+                delay = min(20, max(1, float(r.headers.get("Retry-After", 2 ** (attempt + 1)))))
+            except (ValueError, TypeError):
+                delay = 2 ** (attempt + 1)
+            time.sleep(delay)
+
+
+def make_session() -> requests.Session:
+    s = requests.Session()
+    # Production package uses standard requests TLS validation, not sandbox CA.
+    s.mount("https://", HTTPAdapter(pool_maxsize=8))
+    # Optional deployment environment. Never embed this value in a client bundle.
+    if os.getenv("DEEPSEEK_API_KEY"):
+        s.headers["Authorization"] = "Bearer " + os.environ["DEEPSEEK_API_KEY"]
+    return s
+
+
+@dataclass
+class Usage:
+    model: str = ""
+    stage: str = ""
+    tok_in: int = 0
+    tok_cached: int = 0
+    tok_out: int = 0
+    cost: float = 0.0
+    seconds: float = 0.0
+    rate_multiplier: float = 1.0
+
+    @staticmethod
+    def of(model: str, stage: str, u: dict, seconds: float,
+           multiplier: float = 1.0) -> "Usage":
+        p = PRICES[model]
+        total = max(0, u.get("prompt_tokens", 0) or 0)
+        cached = min(total, max(0, u.get("prompt_cache_hit_tokens", 0) or 0))
+        fresh = total - cached
+        out = u.get("completion_tokens", 0) or 0
+        cost = multiplier * (fresh * p["in"] + cached * p["cached"] + out * p["out"]) / 1e6
+        return Usage(model, stage, fresh, cached, out, cost, seconds, multiplier)
+
+
+@dataclass
+class Budget:
+    """Контроль лимита на уровне запроса, а не отдельного вызова."""
+    cap: float = BUDGET_HARD_CAP
+    spent: float = 0.0
+    calls: list[Usage] = field(default_factory=list)
+    uncertain: bool = False
+
+    def __post_init__(self):
+        if not math.isfinite(self.cap) or self.cap <= 0 or self.cap > BUDGET_HARD_CAP:
+            raise PlanError("BAD_BUDGET", "лимит должен быть в (0, 0.10]")
+
+    def add(self, u: Usage) -> None:
+        self.spent += u.cost
+        self.calls.append(u)
+
+    @property
+    def left(self) -> float:
+        return self.cap - self.spent
+
+    def can_afford(self, model: str, max_out: int, input_bound: int = 16000) -> bool:
+        """Peak rates, no cache discount; byte bound on the COMPLETE prompt."""
+        p = PRICES[model]
+        est = 2 * (input_bound * p["in"] + max_out * p["out"]) / 1e6
+        return not self.uncertain and est <= self.left
+
+    @property
+    def seconds(self) -> float:
+        return sum(c.seconds for c in self.calls)
+
+
+# ------------------------------------------------------------------ промпты
+# Статика идёт ПЕРВОЙ и неизменной — так работает кэш промпта (в 10 раз дешевле).
+SYS_FORMALIZE = """Ты переводишь условие планиметрической задачи в JSON-план построения чертежа.
+Ты НЕ вычисляешь координаты. Координаты найдёт геометрический движок по твоим ограничениям.
+
+Доступны ТОЛЬКО следующие операции. Ничего другого использовать нельзя:
+
+""" + plan_json_schema() + """
+
+ФОРМАТ ОТВЕТА — один JSON-объект, без markdown-обёртки:
+{
+  "space": "plane",
+  "points": ["A","B","C"],
+  "constructions": [{"op":"free_point","out":"A"}, ...],
+  "constraints": [{"type":"dist","args":["A","B"],"value":6}, ...],
+  "draw": {"segments":[["A","B"],["B","C"],["C","A"]], "aux_segments":[],
+           "circles":[], "aux_circles":[], "right_angles":[],
+           "angle_marks":[{"pts":["B","A","C"],"text":"60°"}],
+           "length_marks":[{"pts":["A","B"],"text":"6"}], "hide_labels":[]},
+  "target": {"kind":"angle","args":["B","A","C"]},
+  "scale_free": false,
+  "notes": ""
+}
+
+ЖЁСТКИЕ ПРАВИЛА:
+1. Каждая точка из points обязана быть построена ровно одной конструкцией.
+2. Конструкции идут в топологическом порядке: ссылаться можно только на уже построенные точки.
+3. Базовую фигуру задавай через free_point + ограничения. Всё, что выводится
+   однозначно (середина, основание перпендикуляра, центр окружности, пересечение) —
+   через конструкцию, а НЕ через ограничения. Конструкция точна, ограничение приближённо.
+4. Сохраняй ВСЕ условия, включая принадлежность отрезку и сторону прямой.
+   Недостаток уравнений допускает иллюстративный пример; избыток не обязательно
+   противоречив. НЕ добавляй равенства или симметрию, которых нет в условии.
+5. Если в условии нет конкретных длин (задача на подобие) — поставь scale_free: true
+   и задай удобный масштаб через одну dist, чтобы фигура была определена.
+6. angle всегда в ГРАДУСАХ, вершина угла — ВТОРАЯ точка в args.
+7. Подписывай на чертеже только то, что дано в условии: length_marks и angle_marks
+   для известных величин. Искомую величину НЕ подписывай.
+8. Окружность задаётся РОВНО двумя ИМЕНАМИ точек из points: [центр, точка на окружности].
+   Радиус числом ЗАПРЕЩЁН. Если точки на окружности нет — объяви её в points
+   и построй. В draw, constraints и target разрешены ТОЛЬКО имена из points:
+   слова вроде "center", "O1", "tangent" без объявления — ошибка.
+9. Не возвращай UNSUPPORTED_CONSTRUCTION, если фигуру можно получить цепочкой
+   доступных операций и ограничений. Сначала разбей фразу на отношения:
+   доли отрезка — divide_segment(A,B,value=доля); параллель через M к AN
+   — D=line_intersect(C,A,M,R), где R=translate(M,A,N);
+   продолжение CA за A проверь on_segment(A,C,D), но НЕ on_segment(D,C,A).
+   Доказанные геометрией аффинные зависимости тоже можно задавать точно:
+   если M,N делят BC на три части, MD∥AN и D лежит на CA,
+   то A=midpoint(C,D), значит D=reflect_point(C,A).
+   cos(2∠CAN)=q задавай cos_double_angle([C,A,N],value=q), не
+   придумывай величину ∠CAN и не превращай q в длину.
+   Если часть условия не выражается, не опускай её молча: только после
+   попытки разложения верни {"error":"UNSUPPORTED_CONSTRUCTION",
+   "notes":"какое именно отношение нельзя проверить"}.
+10. Можно рисовать бесконечные lines и rays (пары точек), aux_lines/aux_rays,
+    aux_points (новые точки только для решения); equal_marks:
+    [{"pts":["A","B"],"count":1,"layer":"main"}] ставит засечки равных длин.
+    arcs: [{"center":"O","start":"A","end":"B","reflex":false,"layer":"main"}].
+    У angle_marks допустимы count (1..3), reflex (true для >180°), layer.
+    У length_marks допустим layer. Числовые метки должны совпадать с геометрией.
+11. Все отрезки, точки, биссектрисы и высоты, которые УЖЕ даны в условии,
+    принадлежат основному слою, даже в режиме B. В A не добавляй решение.
+    Отметки прямых углов задавай right_angles; не заменяй ими непрямые углы.
+12. Для точки НА ОТРЕЗКЕ используй on_segment, а не только collinear.
+    Для выпуклого четырёхугольника контролируй расположение по сторонам
+    диагоналей с помощью opposite_side. Не подменяй его перекрещенным.
+14. Точка P с условием «AP = AB и PB ∥ AC» (равенство длины И параллельность):
+    H=translate(B,A,C) (прямая BH ∥ AC), P=line_circle_other(B,H,A,B) — второе
+    пересечение этой прямой с окружностью (A, |AB|). НЕ задавай такую точку через
+    translate/parallel_point вместе с dist_eq: это сужает треугольник до частного случая.
+    Все вспомогательные точки (H, K и т. п.) ОБЯЗАТЕЛЬНО перечисли в points.
+    Если в условии нет числовых данных и слов «равнобедренный/правильный/прямоугольный»,
+    чертёж должен быть построен для ПРОИЗВОЛЬНОГО треугольника.
+13. circle_circle(out,[O,R1,P,R2],value): центры O и P, радиусы |OR1| и |PR2|.
+    Это НЕ список двух центров, повторённый дважды! Для числовых радиусов создай
+    R1=perp_point(O,O,P,r1), R2=perp_point(P,O,P,r2); скрой их подписи.
+    Радиусные служебные точки не надо рисовать как самостоятельные объекты.
+    Для двух точек пересечения используй одну пару окружностей и value=0 и 1.
+14. Условие может быть просто фигурой без чисел и вопроса («треугольник ABC»,
+    «трапеция ABCD», «окружность с центром O»). Это НЕ ошибка: построй типовую
+    невырожденную конфигурацию через free_point, задай масштаб одной удобной
+    dist и поставь scale_free: true. Выдуманных подписей длин и углов не ставь.
+15. Если точка P лежит на стороне UV, а угол между OP и OQ известен, НЕ
+    оставляй P свободной точкой с on_segment + angle: это тяжёлая
+    плохо обусловленная система. Построй вспомогательную точку R на луче:
+    {"op":"angle_ray","out":"R","args":["O","Q"],"value":theta}.
+    angle_ray принимает РОВНО ДВА аргумента: вершину O и точку Q,
+    задающую базовый луч OQ; value — ЗНАКОВЫЙ поворот в градусах против
+    часовой стрелки. Затем P = пересечение прямых UV и OR:
+    {"op":"line_intersect","out":"P","args":["U","V","O","R"]}.
+    R добавь в points и draw.hide_labels, P строй только один раз;
+    on_segment(P,U,V) и angle(P,O,Q)=abs(theta) оставь ограничениями
+    для проверки выбранной ветви. Если P оказывается вне UV, смени знак
+    theta для этой точки. Для двух таких точек нужны ДВА разных
+    вспомогательных имени R и S. Пример: D на AC при угле DBC=60°:
+    R=angle_ray(B,C,+60); D=line_intersect(A,C,B,R), если ABC
+    ориентирован против часовой стрелки. E на AB при ECB=50°:
+    S=angle_ray(C,B,-50); E=line_intersect(A,B,C,S).
+    Не выдумывай длины в length_marks; произвольный dist для масштаба
+    допустим только как не подписанная калибровка.
+16. bisector_point(A,B,C) возвращает точку НА BC, а НЕ на описанной
+    окружности. Для второго пересечения биссектрисы угла A с описанной
+    окружностью ABC используй bisector_circumcircle(out=W,args=[A,B,C]).
+    Если длины сторон в условии не заданы, НЕ выдумывай три длины:
+    scale_free=true и не больше одной произвольной dist для масштаба.
+17. Центр вневписанной окружности, касающейся BC (напротив A), задавай
+    excenter(out=I_A,args=[A,B,C],value=0). Для такого треугольника W
+    является серединой II_A и WB=WC=WI=WI_A; не заменяй W серединой
+    отрезка BC и не выдумывай дополнительные длины.
+18. Если явно просят ПОСТРОИТЬ вписанную окружность ABC, обязательно
+    включи её в основной draw.circles: I=incenter(A,B,C),
+    T=foot(I,B,C), circles=[[I,T]]. Одна точка I без окружности не
+    выполняет запрос. Радиус IA до вершины A неверен.
+19. Описанная окружность ABC: O=circumcenter(A,B,C),
+    circles=[[O,A]] в ОСНОВНОМ слое. Для ромба ABCD можно взять свободные
+    A,B, затем D=angle_ray(A,B,theta), C=translate(B,A,D):
+    4 стороны равны, ссылки идут только на уже построенные точки.
+20. Показывай данные равенства: dist_eq и angle_eq дополняются засечками/дугами
+    автоматически после проверки координат. Для внешней биссектрисы к I_A
+    в режиме B используй aux_segments [[B,I_A],[C,I_A]], а продолжения AB за B
+    и AC за C задавай aux_extensions [[A,B],[A,C]]. Внешний угол при B
+    задаётся angle_marks pts:[A,B,I_A], reverse_first:true; его равная
+    половина pts:[I_A,B,C] с тем же count. При C аналогично.
+    Не маркируй равными углы/отрезки только из-за сходства на рисунке.
+21. «Докажите, что BE=BF» — это НЕ измерение: target.kind="none",
+    target.args=[]. Равенство проверяется независимо по координатам.
+    Не создавай target.kind="dist_eq", "proof" или "equality".
+22. Для F на AC с CF=BD: R=translate(C,B,D) даёт CR=BD,
+    F=line_circle(A,C,C,R,value=0) выбирает точку между A и C
+    (проверяй on_segment(F,A,C)), а E=translate(D,C,F) задаёт
+    параллелограмм CDEF. Не ставь F=line_intersect(A,C,B,D):
+    если D лежит на AB, это возвращает A, а не нужную точку.
+23. ВСЁ, что сказано в условии, должно быть ПРОВЕДЕНО и ОТМЕЧЕНО на чертеже:
+    каждая названная точка существует и построена; каждый названный отрезок —
+    медиана AM, биссектриса BK, высота CH, диагональ, хорда, «отрезки AD и BE» —
+    проведён в draw.segments основного слоя; каждое данное равенство длин
+    AB = CD — ограничением dist_eq (засечки добавятся после проверки);
+    данная длина AB = 5 — length_marks; данный угол ∠ABC = 30° — angle_marks;
+    прямой угол (⊥, «с прямым углом C») — right_angles. Пропуск названного
+    объекта или данной величины — ошибка плана, а не экономия."""
+
+SYS_AUX = SYS_FORMALIZE + """
+
+РЕЖИМ ДОПОЛНИТЕЛЬНЫХ ПОСТРОЕНИЙ.
+Сначала реши задачу про себя. Затем определи, какое вспомогательное построение
+действительно нужно для решения (высота, медиана, продолжение стороны, средняя линия,
+описанная окружность, поворот, симметрия, параллельная прямая).
+Это построение добавь конструкциями и положи в aux_segments / aux_circles —
+НЕ в основной слой segments. В notes одной строкой напиши идею решения
+на русском: зачем нужно это построение.
+
+В segments идёт ВСЯ исходная фигура из условия, включая уже заданные
+высоты, биссектрисы, медианы и диагонали. Всё, чего в условии нет, а ты добавил для решения
+— высота, медиана, биссектриса, средняя линия, описанная окружность, радиус,
+продолжение стороны, параллельная прямая — идёт только в aux_*.
+Если дополнительное построение НЕ нужно, оставь aux_* пустыми и объясни в notes.
+Нельзя искусственно переносить данную биссектрису в aux или придумывать лишнюю.
+Все добавленные точки перечисли в draw.aux_points. Метки на новых построениях
+должны иметь layer:"aux", чтобы их можно было скрыть вместе с построением."""
+
+SYS_CLASSIFY = """Классифицируй геометрическую задачу. Ответ — только JSON, без пояснений:
+{"space":"plane"|"space","class":"S"|"M"|"L"|"XL","needs_aux":true|false,"ok":true|false,"reason":""}
+space: "space" для стереометрии (куб, призма, пирамида, сфера, тетраэдр).
+class: S — 1-2 объекта, прямое применение формулы; M — стандартная задача, 3-5 объектов;
+L — много объектов или неочевидная конфигурация; XL — олимпиадная, нестандартная.
+needs_aux: нужно ли для решения вспомогательное построение.
+ok: true для ЛЮБОГО связного геометрического описания, даже короткого и без
+вопроса или числовых данных: «треугольник ABC», «ромб ABCD», «окружность с
+диаметром AB» — это запрос чертежа фигуры, а не ошибка. Отсутствие вопроса,
+длин или углов НЕ делает условие некорректным.
+ok: false только если текст вообще не про геометрию, это бессмысленный набор
+символов или условие внутренне противоречиво."""
+
+
+def _chat(sess, model: str, system: str, user: str, max_out: int,
+          stage: str, budget: Budget, temperature: float = 0.0,
+          thinking: bool = False, reason: bool = False,
+          json_mode: bool = True) -> tuple[str, Usage]:
+    # thinking по-прежнему не управляет запросом (см. _THINKING_FIX ниже);
+    # reason=True включает режим рассуждения явно, только для доп. построения.
+    input_bound = len((system + user).encode("utf-8")) + 512
+    if not budget.can_afford(model, max_out, input_bound):
+        raise PlanError("BUDGET_EXCEEDED", f"остаток ${budget.left:.4f} не покрывает вызов {model}")
+    t0 = time.time()
+    now = datetime.now(timezone.utc)
+    multiplier = 2.0 if now.weekday() < 5 and (1 <= now.hour < 4 or 6 <= now.hour < 10) else 1.0
+    reserve = 2 * (input_bound * PRICES[model]["in"] + max_out * PRICES[model]["out"]) / 1e6
+    # GEOEXACT_MODEL_FIX: тело запроса повторяет проверенную форму AI-тьютора
+    # (services/atlas_tutor.py): model/messages/temperature/max_tokens
+    # (+ response_format json_object — сайт уже использует это в проде).
+    # GEOEXACT_THINKING_FIX: модели DeepSeek v4 по умолчанию «думают» перед
+    # ответом: reasoning-токены входят в completion_tokens (обрезка JSON —
+    # TRUNCATED) и растягивают каждый вызов на минуты. Для JSON-планов мышление
+    # не нужно — отключаем тем же параметром, что и services/llm_router.py
+    # (работает в проде на api.deepseek.com). Если провайдер параметр не знает —
+    # помечаем и повторяем без него.
+    payload = {"model": model, "max_tokens": max_out, "temperature": temperature,
+               "messages": [{"role": "system", "content": system},
+                            {"role": "user", "content": user}]}
+    if json_mode:
+        # json_object — сайт уже использует это в проде; для свободного текста
+        # (оформление решения в LaTeX) режим JSON выключается.
+        payload["response_format"] = {"type": "json_object"}
+    if model not in _THINKING_UNSUPPORTED:
+        payload["thinking"] = {"type": "enabled" if reason else "disabled"}
+        if reason:
+            payload.pop("temperature", None)     # ignored in reasoning mode
+    try:
+        r = _post_limited(sess, payload)
+    except requests.RequestException as e:
+        budget.uncertain = True
+        budget.spent += reserve  # upper-bound reservation, NOT a verified API charge
+        raise PlanError("NETWORK_UNCERTAIN", "ответ API не получен; стоимость неизвестна, автоповтор запрещён") from e
+    if r.status_code == 400 and model not in _THINKING_UNSUPPORTED \
+            and "thinking" in (r.text or "").lower():
+        # Провайдер не знает параметр thinking — повторяем без него.
+        _THINKING_UNSUPPORTED.add(model)
+        payload.pop("thinking", None)
+        try:
+            r = _post_limited(sess, payload)
+        except requests.RequestException as e:
+            budget.uncertain = True
+            budget.spent += reserve
+            raise PlanError("NETWORK_UNCERTAIN", "ответ API не получен; стоимость неизвестна, автоповтор запрещён") from e
+    dt = time.time() - t0
+    if r.status_code != 200:
+        if r.status_code >= 500:
+            budget.uncertain = True
+            budget.spent += reserve
+        raise PlanError("API_ERROR", f"HTTP {r.status_code}")
+    try:
+        d = r.json()
+        if not isinstance(d.get("usage"), dict):
+            raise ValueError("missing usage")
+        raw_usage = d["usage"]
+        for key in ("prompt_tokens", "completion_tokens"):
+            if type(raw_usage.get(key)) is not int or raw_usage[key] < 0:
+                raise ValueError("invalid usage counters")
+        if "prompt_cache_hit_tokens" in raw_usage:
+            cached = raw_usage["prompt_cache_hit_tokens"]
+            if type(cached) is not int or not 0 <= cached <= raw_usage["prompt_tokens"]:
+                raise ValueError("invalid cached count")
+        u = Usage.of(model, stage, d["usage"], dt, multiplier)
+    except (ValueError, KeyError, TypeError) as e:
+        budget.uncertain = True
+        budget.spent += reserve
+        raise PlanError("API_BAD_RESPONSE", "нет достоверного учёта токенов; автоповтор запрещён") from e
+    budget.add(u)
+    try:
+        ch = d["choices"][0]
+        content = ch["message"]["content"]
+    except (KeyError, IndexError, TypeError) as e:
+        raise PlanError("API_BAD_RESPONSE", "в ответе API нет content") from e
+    if ch.get("finish_reason") == "length":
+        raise PlanError("TRUNCATED",
+                        f"ответ обрезан лимитом {max_out} токенов "
+                        f"(модель {model} израсходовала {u.tok_out})")
+    return content, u
+
+
+def _parse_json(text: str) -> dict:
+    if not isinstance(text, str):
+        raise PlanError("BAD_JSON", "ответ должен быть текстом JSON")
+    text = text.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```[a-z]*\s*|\s*```$", "", text)
+    try:
+        d = json.loads(text)
+    except json.JSONDecodeError:
+        m = re.search(r"\{.*\}", text, re.S)
+        if not m:
+            raise PlanError("BAD_JSON", "модель вернула не JSON")
+        try:
+            d = json.loads(m.group(0))
+        except json.JSONDecodeError as e:
+            raise PlanError("BAD_JSON", "повреждённый JSON") from e
+    if not isinstance(d, dict):
+        raise PlanError("BAD_JSON", "ожидался JSON-объект, не массив")
+    return d
+
+
+# ------------------------------------------------------------------ этап 2
+def classify(sess, problem: str, budget: Budget) -> dict:
+    """Классификация с запасом лимита и одним повтором.
+
+    Раньше лимит был 300 токенов: reasoning-токены модели входят в
+    completion_tokens и съедали весь лимит, JSON обрезался — TRUNCATED
+    БЕЗ права на повтор (этап 2 не ретраится в конвейере). Теперь
+    стартовый запас 4000 и повтор на 12000.
+    """
+    d = None
+    for max_out in (4000, 12000):
+        try:
+            txt, _ = _chat(sess, "deepseek-v4-flash", SYS_CLASSIFY, problem,
+                            max_out, "classify", budget)
+            d = _parse_json(txt)
+            break
+        except PlanError as e:
+            # Повтор имеет смысл только для обрезки/битого JSON;
+            # бюджет и сбои API повторять бессмысленно или опасно.
+            if e.code not in ("TRUNCATED", "BAD_JSON", "BAD_CLASSIFICATION"):
+                raise
+    if d is None:
+        raise PlanError("BAD_CLASSIFICATION", "классификация не удалась после повтора")
+    d.setdefault("space", "plane")
+    d.setdefault("class", "M")
+    d.setdefault("needs_aux", False)
+    d.setdefault("ok", True)
+    if d["class"] not in ("S", "M", "L", "XL") or d["space"] not in ("plane", "space"):
+        raise PlanError("BAD_CLASSIFICATION", "недопустимый класс или пространство")
+    if not isinstance(d["ok"], bool):
+        raise PlanError("BAD_CLASSIFICATION", "ok должен быть boolean")
+    return d
+
+
+# ------------------------------------------------------------------ этап 4
+def formalize(sess, problem: str, cls: str, with_aux: bool, budget: Budget,
+              feedback: str = "", prev_code: str = "") -> tuple[FigurePlan, list[str]]:
+    path = "B" if with_aux else "A"
+    model, max_out = ROUTES.get((path, cls), ROUTES[(path, "M")])
+    if feedback:
+        # A repeated malformed formalization needs reasoning, not the same
+        # deterministic non-thinking response with a slightly longer prompt.
+        max_out = max(max_out, 8000)
+    if prev_code == "TRUNCATED":
+        # Предыдущий ответ упёрся в лимит токенов и был обрезан —
+        # повтор с тем же лимитом обрежется так же. Даём заметно больше места.
+        max_out = min(max(max_out * 2, 8000), 24000)
+    # деградация модели, если бюджета не хватает
+    if not budget.can_afford(model, max_out) and model == "deepseek-v4-pro":
+        model, max_out = "deepseek-v4-flash", min(max_out, 16000)
+    system = SYS_AUX if with_aux else SYS_FORMALIZE
+    user = problem if not feedback else (
+        f"{problem}\n\nПРЕДЫДУЩАЯ ПОПЫТКА ОТКЛОНЕНА ДВИЖКОМ: {feedback}\n"
+        + ("Предыдущий ответ отказался строить фигуру. Попробуй использовать "
+           "free_point с явными ограничениями, divide_segment, translate, "
+           "line_intersect и cos_double_angle вместо новой операции. "
+           "Не теряй ни одного условия. Верни полный JSON заново."
+           if prev_code == "UNSUPPORTED_CONSTRUCTION" else
+           "Исправь план. Верни полный JSON заново."))
+    bound = len((system + user).encode("utf-8")) + 512
+    if not budget.can_afford(model, max_out, bound) and model == "deepseek-v4-pro":
+        model, max_out = "deepseek-v4-flash", min(max_out, 16000)
+    txt, _ = _chat(sess, model, system, user, max_out, f"formalize-{path}", budget,
+                  thinking=(bool(feedback) or cls in ("L", "XL") or (with_aux and cls == "M")))
+    d = _parse_json(txt)
+    if "error" in d:
+        raise PlanError(str(d["error"]), d.get("notes", ""))
+    # A proof of segment equality has no scalar measurement target. Models
+    # sometimes invent target.kind="dist_eq"/"proof" despite the schema.
+    # Only this explicitly recognized proof form is safely normalizable;
+    # unrelated unknown kinds must still fail schema validation.
+    from .semantics import proof_equality
+    from .schema import TARGETS
+    asserted = proof_equality(problem)
+    target = d.get("target") if isinstance(d, dict) else None
+    if (asserted and isinstance(target, dict)
+            and isinstance(target.get("kind"), str)
+            and target["kind"] not in TARGETS
+            and isinstance(d.get("points"), list)
+            and all(isinstance(n, str) for n in d["points"])
+            and set("".join(asserted)) <= set(d.get("points", []))
+            and isinstance(target.get("args", []), list)
+            and all(isinstance(n, str) for n in target.get("args", []))
+            and set(target.get("args", [])) <= set(d.get("points", []))):
+        d["target"] = {"kind": "none", "args": []}
+    _declare_helper_points(d)
+    plan = FigurePlan.from_dict(d)
+    warn = validate_plan(plan)          # этап 5
+    if not (plan.draw.segments or plan.draw.lines or plan.draw.rays
+            or plan.draw.circles or any(a.get("layer", "main") == "main" for a in plan.draw.arcs)):
+        raise PlanError("EMPTY_DRAW", "план не содержит основной геометрии для рисунка")
+    aux_marks = any(m.get("layer") == "aux"
+                    for group in (plan.draw.arcs, plan.draw.angle_marks,
+                                  plan.draw.length_marks, plan.draw.equal_marks)
+                    for m in group)
+    if not with_aux and (plan.draw.aux_segments or plan.draw.aux_circles
+                         or plan.draw.aux_lines or plan.draw.aux_rays or plan.draw.aux_points or aux_marks):
+        raise PlanError("UNREQUESTED_AUX", "режим A не должен содержать дополнительные построения")
+    return plan, warn
+
+
+def formalize_space(sess, problem: str, cls: str, with_aux: bool, budget: Budget,
+                    feedback: str = "", prev_code: str = "") -> dict:
+    from .space3d import scene_schema_prompt
+    model, max_out = ROUTES.get(("B" if with_aux else "A", cls), ROUTES[("A", "M")])
+    if feedback:
+        # Повторная формализация после отказа движка — нужен запас на рассуждение.
+        max_out = max(max_out, 8000)
+    if prev_code == "TRUNCATED":
+        # Предыдущий ответ был обрезан лимитом токенов — повтор с тем же
+        # лимитом обрежется так же, даём заметно больше места.
+        max_out = min(max(max_out * 2, 8000), 24000)
+    system = ("Переведи геометрическую задачу в точную параметрическую 3D-сцену. "
+              "Никаких координат от модели. НЕ заменяй произвольную пирамиду правильной. "
+              "Не выдумывай размеры. Если данных мало, верни error: NEEDS_CLARIFICATION. "
+              "Если фигура не поддерживается, верни error: UNSUPPORTED_SOLID. "
+              "Данные в условии линии относятся к main, только новые к aux. "
+              "Режим aux=" + str(with_aux) + ". Только JSON.\n" + scene_schema_prompt())
+    user = problem + (("\nИсправь отказ движка: " + feedback) if feedback else "")
+    bound = len((system + user).encode()) + 512
+    if not budget.can_afford(model, max_out, bound) and model == "deepseek-v4-pro":
+        model, max_out = "deepseek-v4-flash", min(max_out, 8000)
+    text, _ = _chat(sess, model, system, user, max_out, "formalize-3D", budget,
+                    thinking=cls in ("L", "XL"))
+    d = _parse_json(text)
+    if "error" in d:
+        raise PlanError(str(d["error"]), str(d.get("notes", "")))
+    return d
+
+
+# ------------------------------------------------------------------ доп. построение
+def _declare_helper_points(d) -> None:
+    """A construction output the model forgot to list in `points` is a helper point:
+    declare it (hidden unless drawn) instead of failing the whole answer."""
+    try:
+        points, cons = d.get("points"), d.get("constructions")
+        if not isinstance(points, list) or not isinstance(cons, list):
+            return
+        draw = d.get("draw") if isinstance(d.get("draw"), dict) else {}
+        drawn = set()
+        for key, val in draw.items():
+            if key in ("hide_labels", "length_marks", "angle_marks", "equal_marks", "arcs"):
+                continue
+            for item in val if isinstance(val, list) else []:
+                drawn.update(x for x in (item if isinstance(item, list) else [item]) if isinstance(x, str))
+        for c in cons:
+            out = c.get("out") if isinstance(c, dict) else None
+            if isinstance(out, str) and out and out not in points:
+                points.append(out)
+                if out not in drawn and isinstance(draw.get("hide_labels", []), list):
+                    draw.setdefault("hide_labels", []).append(out)
+                    d["draw"] = draw
+    except Exception:  # noqa: BLE001 - validation reports real problems
+        return
+
+
+def aux_plan(sess, problem: str, figure: str, budget: Budget, deep: bool = False) -> dict:
+    """Separate, small request: only the auxiliary construction for a built figure."""
+    from .auxplan import SYS_AUXPLAN
+    # The request wording is the user's own, proven fast formulation.
+    user = (f'Задача: "{problem}"\n'
+            "Здесь скорее всего есть доп. построения. Напиши только доп. построения, "
+            "которые нужно сделать, чтобы решить эту задачу, и проверь, что они самые "
+            "оптимальные. Ответь JSON по формату из системной инструкции.\n\n"
+            f"Чертёж: {figure}")
+    # The strongest model with reasoning: the auxiliary construction is the hard
+    # mathematical step, and reasoning tokens count toward max_tokens.
+    # deep=False is the quick answer without reasoning, used when the reasoning
+    # request does not finish in time.
+    model, max_out = "deepseek-v4-pro", (12000 if deep else 6000)
+    bound = len((SYS_AUXPLAN + user).encode("utf-8")) + 512
+    # Always the pro model (no silent downgrade); an unaffordable call raises BUDGET_EXCEEDED.
+    txt, _ = _chat(sess, model, SYS_AUXPLAN, user, max_out, "aux-plan", budget,
+                   thinking=deep, reason=deep)
+    return _parse_json(txt)
+
+
+# --------------------------------------------------------------------------
+# Expert: GPT-6 Luna through OdiRouter (OpenAI-compatible, same key/host as the
+# rest of the site: GEMINI_API_KEY / GEMINI_API_BASE). The router answers a
+# plain request with 504 after ~60 s, so the answer is always streamed.
+# Gemini 3.7/3.8 gave trouble (silence / no answer): the expert is GPT-6 Luna.
+# GEOEXACT_EXPERT_MODEL overrides the first choice without a deploy of code; if the router
+# does not know the model (HTTP 400/404/503), the next one is tried.
+EXPERT_MODEL = (os.environ.get("GEOEXACT_EXPERT_MODEL") or "").strip() or "gpt-6-luna"
+EXPERT_FALLBACKS = ("gpt-6-sol", "gemini-3.7-flash-thinking", "gemini-3.7-flash")
+
+
+def safe_detail(text, limit: int = 200) -> str:
+    """Short error text for the user: one line, no key-like tokens."""
+    import re
+    t = re.sub(r"\s+", " ", str(text or "")).strip()
+    t = re.sub(r"(?i)(sk|key|token|bearer)[-_ :=]*[A-Za-z0-9._-]{8,}", r"\1-…", t)
+    return t[:limit]
+
+
+def _expert_credentials() -> tuple[str, str]:
+    """(key, chat-completions URL) of the expert.
+
+    ODIROUTER_API_KEY is the OdiRouter key and always goes to OdiRouter (its own base
+    URL or the default). Only without it the shared GEMINI_API_KEY / GEMINI_API_BASE
+    pair of the rest of the site is used.
+    """
+    odi = (os.environ.get("ODIROUTER_API_KEY") or "").strip()
+    if odi:
+        key = odi
+        base = os.environ.get("ODIROUTER_BASE_URL") or "https://api.odirouter.ai/v1"
+    else:
+        key = (os.environ.get("GEMINI_API_KEY") or "").strip()
+        base = (os.environ.get("GEMINI_API_BASE") or os.environ.get("GEMINI_BASE_URL")
+                or os.environ.get("ODIROUTER_BASE_URL") or "https://api.odirouter.ai/v1")
+    base = base.strip().rstrip("/")
+    return key, (base if base.endswith("/chat/completions") else base + "/chat/completions")
+
+
+def _expert_url() -> str:
+    return _expert_credentials()[1]
+
+
+ANOTHER_AUX = "отлично! но давай использовать какое-нибудь другое тоже удобное доп построение"
+SOLUTION_REQUEST = "а теперь давай полное решение этой задачи"
+MAX_HISTORY = 7      # first prompt + three (answer, request) exchanges
+
+
+def expert_messages(problem: str, history: list | None = None,
+                    followup: str | None = None) -> list[dict]:
+    """The chat sent to the expert: the user's prompt; on «another construction»
+    the earlier answers followed by the user's own follow-up."""
+    if history:
+        msgs = [dict(m) for m in history]
+        if len(msgs) > MAX_HISTORY:
+            msgs = msgs[:1] + msgs[-(MAX_HISTORY - 1):]
+        return msgs + [{"role": "user", "content": followup or ANOTHER_AUX}]
+    prompt = ("вероятно тут есть доп построение - напиши все доп построения которые тут требуются\n"
+              f'"{problem}"\n'
+              "напиши только доп построение и что в итоге получится\n"
+              "выбери самое оптимальное при котором легче всего решить задачу")
+    return [{"role": "user", "content": prompt}]
+
+
+def solution_messages(problem: str, history: list | None = None) -> list[dict]:
+    """The «full solution» request: the SAME expert chat continues with the
+    user's own words; without an earlier chat the problem is asked afresh."""
+    if history:
+        return expert_messages(problem, history, followup=SOLUTION_REQUEST)
+    prompt = ("опираясь на построенный чертёж, реши задачу полностью\n"
+              f'"{problem}"\n'
+              "напиши полное решение: все шаги с обоснованиями и ответ")
+    return [{"role": "user", "content": prompt}]
+
+
+def expert_text(sess, problem: str, history: list | None = None, max_out: int = 16000,
+                diag: dict | None = None, messages: list | None = None) -> str:
+    """The expert's free-text auxiliary construction, in the user's own wording.
+
+    `messages` replaces the built-in prompt pair (problem, history): the
+    full-solution request sends its own chat into the same expert channel.
+    """
+    key, url = _expert_credentials()
+    if not key:
+        raise PlanError("NO_EXPERT_KEY", "нет ключа OdiRouter (ODIROUTER_API_KEY / GEMINI_API_KEY)")
+    t0 = time.time()
+    diag = diag if diag is not None else {}
+    diag.update(t0=t0, headers=None, first=None, chars=0, lines=0, reasoning=0, model=EXPERT_MODEL)
+    models = [EXPERT_MODEL] + [m for m in EXPERT_FALLBACKS if m != EXPERT_MODEL]
+    for i, model in enumerate(models):
+        payload = {"model": model, "max_tokens": max_out, "stream": True,
+                   "messages": messages if messages is not None else expert_messages(problem, history)}
+        diag["model"] = model
+        r = sess.post(url, json=payload, stream=True,
+                      headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
+                      timeout=(15, _read_timeout()))
+        diag["headers"] = round(time.time() - t0, 1)
+        # the router does not know this model name: try the next one, not a failure yet
+        if r.status_code in (400, 404, 503) and i + 1 < len(models):
+            continue
+        break
+    if r.status_code != 200:
+        try:
+            body = r.text[:300]
+        except Exception:  # noqa: BLE001
+            body = ""
+        raise PlanError("EXPERT_HTTP", f"{diag.get('model', '')} HTTP {r.status_code} {safe_detail(body)}".strip())
+    parts: list[str] = []
+    finish = None
+    # chunk_size=1: the default 512 bytes would hold small SSE events back
+    for raw in r.iter_lines(chunk_size=1, decode_unicode=True):
+        diag["lines"] += 1
+        if time.time() - t0 > 150:
+            raise PlanError("TIME_LIMIT", "эксперт не уложился во время")
+        line = (raw.decode("utf-8", "replace") if isinstance(raw, bytes) else raw or "").strip()
+        if not line.startswith("data:"):
+            continue
+        chunk = line[5:].strip()
+        if chunk == "[DONE]":
+            break
+        try:
+            d = json.loads(chunk)
+        except json.JSONDecodeError:
+            continue
+        for ch in d.get("choices") or []:
+            delta = ch.get("delta") or {}
+            if delta.get("reasoning_content") or delta.get("reasoning"):
+                diag["reasoning"] += len(delta.get("reasoning_content") or delta.get("reasoning") or "")
+            piece = delta.get("content")
+            if piece:
+                if diag["first"] is None:
+                    diag["first"] = round(time.time() - t0, 1)
+                diag["chars"] += len(piece)
+                parts.append(piece)
+            finish = ch.get("finish_reason") or finish
+    text = "".join(parts).strip()
+    if finish == "length" or not text:
+        raise PlanError("EXPERT_EMPTY", f"эксперт не дал ответа (finish={finish}, символов={len(text)})")
+    return text
+
+
+# Оформление полного решения в LaTeX: те же правила KaTeX, что и у этапа 4
+# конвейера задач дня (services/pipeline/prompts/stage4.py), но короче —
+# модель получает уже готовый текст решения, а не условие.
+SYS_LATEX = (
+    "Ты — редактор математических текстов. Тебе дают полное решение"
+    " геометрической задачи. Оформи его как Markdown с формулами LaTeX"
+    " для рендеринга KaTeX 0.16 в браузере.\n"
+    "Правила:\n"
+    "- inline-формула: $...$; отдельной строкой: $$...$$; парные $ обязательны.\n"
+    "- команды с аргументами — всегда в фигурных скобках: \\frac{a}{b}, \\sqrt{a+b}.\n"
+    "- степени и индексы из 2+ символов — в скобках: x^{10}, a_{n+1}.\n"
+    "- символы командами: \\angle, \\triangle, \\circ, \\cdot, \\times, \\perp,"
+    " \\parallel, \\cong, \\sim, \\Rightarrow, \\geq, \\leq, \\neq, \\pm.\n"
+    "- обычный текст не оборачивай в $; русский язык и смысл решения не меняй.\n"
+    "- верни только готовый Markdown без пояснений и без ```-ограждений.")
+
+
+def latex_solution(sess, solution: str, budget: Budget, max_out: int = 8000) -> str:
+    """Полное решение от Луны -> Markdown с LaTeX (DeepSeek, свободный текст)."""
+    user = ("Оформи следующее полное решение задачи в Markdown с LaTeX для KaTeX.\n"
+            "Не меняй математическое содержание, только оформление.\n\n"
+            f"{solution}")
+    txt, _ = _chat(sess, "deepseek-v4-flash", SYS_LATEX, user, max_out,
+                   "solution-latex", budget, temperature=0.1, json_mode=False)
+    txt = txt.strip()
+    # модель иногда оборачивает ответ в ```markdown ... ``` — снимаем ограждение
+    if txt.startswith("```"):
+        txt = re.sub(r"^```[a-zA-Z]*\s*", "", txt)
+        txt = re.sub(r"\s*```$", "", txt).strip()
+    if not txt:
+        raise PlanError("LATEX_EMPTY", "DeepSeek не вернул оформленное решение")
+    return txt
+
+
+def aux_plan_from_text(sess, problem: str, expert: str, budget: Budget) -> dict:
+    """Turn the expert's words into our checked JSON steps (same points, same idea)."""
+    from .auxplan import SYS_AUXPLAN
+    user = (f'Задача: "{problem}"\n\nЭксперт предложил такое доп. построение:\n{expert}\n\n'
+            "Переведи именно это построение в JSON по формату из системной инструкции: "
+            "сохрани имена точек эксперта, ничего своего не придумывай. «Через P провести прямую, "
+            "параллельную AB, до пересечения с CD» — это одна операция parallel_intersect(P,A,B,C,D). "
+            "Число пиши в поле value, а не в args. В поле idea — одно-два "
+            "предложения: что построено и что в итоге получится.")
+    txt, _ = _chat(sess, "deepseek-v4-pro", SYS_AUXPLAN, user, 6000, "aux-from-text", budget)
+    data = _parse_json(txt)
+    data["_expert_text"] = expert
+    return data
+
+
+def aux_plan_repair(sess, problem: str, expert: str, figure: str, reasons: list, budget: Budget) -> dict:
+    """One corrective request: the engine refused the first translation; say why and
+    show the real figure, so the same idea is re-expressed with existing points only."""
+    from .auxplan import SYS_AUXPLAN
+    user = (f'Задача: "{problem}"\n\nЭксперт предложил такое доп. построение:\n{expert}\n\n'
+            f"Чертёж (в нём есть ТОЛЬКО эти точки; точек из прошлых ответов эксперта здесь нет, "
+            f"их нужно построить заново):\n{figure}\n\n"
+            "Прошлый перевод в шаги отклонён движком: " + "; ".join(reasons[:4]) + ".\n"
+            "Переведи ТО ЖЕ построение заново: только разрешённые операции, только существующие точки "
+            "и точки, созданные выше; новые имена — буквы, которых нет на чертеже. Если что-то "
+            "построено ранее в диалоге, повтори его шаги. Верни JSON по формату из системной инструкции.")
+    txt, _ = _chat(sess, "deepseek-v4-pro", SYS_AUXPLAN, user, 6000, "aux-repair", budget)
+    data = _parse_json(txt)
+    data["_expert_text"] = expert
+    return data

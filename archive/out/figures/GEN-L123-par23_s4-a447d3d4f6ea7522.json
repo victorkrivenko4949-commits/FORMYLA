@@ -1,0 +1,81 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AB",
+   "ratio": 0.5
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CD"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "D"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "D",
+    "C",
+    "B"
+   ],
+   "text": "30°"
+  },
+  {
+   "equal": [
+    "AD",
+    "DB"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "E",
+   "of": "C",
+   "over": "D"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "F",
+   "of": "CE",
+   "ratio": 0.5
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CE",
+   "style": "soft"
+  },
+  {
+   "segment": "FD",
+   "style": "soft"
+  }
+ ],
+ "reason": "E — продолжение CD за D с DE=CD; F — точка на CE с CF=AC (после доказанного AD=DB имеем AC=BC, поэтому F — середина CE)."
+}

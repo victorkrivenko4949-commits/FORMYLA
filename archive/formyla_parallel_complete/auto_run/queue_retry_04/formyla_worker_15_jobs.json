@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0249-11-B3-1-L8-gh3",
+      "mode": "replace_bad",
+      "id": "11-B3-1-L8-gh3",
+      "grade": 11,
+      "difficulty": 8,
+      "theme": "Тригонометрия и смешанные уравнения",
+      "subtopic": "Отбор корней",
+      "method_code": "B3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

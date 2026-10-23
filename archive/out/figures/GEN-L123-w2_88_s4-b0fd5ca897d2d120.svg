@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<rect width="620" height="620" fill="#070C18"/>
+<circle cx="310.0" cy="395.1" r="164.9" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="873.4" y1="870.1" x2="-59.9" y2="-242.2" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="119.9" y1="-358.2" x2="389.0" y2="1168.1" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<path d="M 210.4 79.9 A 26 26 0 0 1 198.2 85.6" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="211.0" y="102.2" fill="#8C9ABC" font-size="15" text-anchor="middle">30°</text>
+<path d="M 336.0 395.1 A 26 26 0 0 1 305.5 420.7" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="336.4" y="431.5" fill="#8C9ABC" font-size="15" text-anchor="middle">100°</text>
+<path d="M 297.0 372.6 A 26 26 0 0 1 314.5 369.5" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="302.9" y="359.8" fill="#8C9ABC" font-size="15" text-anchor="middle">?</text>
+<circle cx="310.0" cy="395.1" r="3.4" fill="#E6EBF7"/>
+<text x="330.0" y="401.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O</text>
+<circle cx="474.9" cy="395.1" r="3.4" fill="#E6EBF7"/>
+<text x="492.2" y="411.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="338.6" cy="232.8" r="3.4" fill="#E6EBF7"/>
+<text x="348.6" y="221.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="227.6" cy="252.4" r="3.4" fill="#E6EBF7"/>
+<text x="213.4" y="244.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="281.4" cy="557.5" r="3.4" fill="#E6EBF7"/>
+<text x="281.4" y="583.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="193.6" cy="60.0" r="3.4" fill="#E6EBF7"/>
+<text x="188.5" y="46.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P</text>
+</svg>

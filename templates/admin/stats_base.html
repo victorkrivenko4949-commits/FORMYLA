@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Статистика — {{ section.title }} · FORMYLA{% endblock %}
+{% block extra_css %}
+<style>
+.st-wrap{display:flex;max-width:1560px;margin:auto;min-height:70vh;color:#e2e8f0;gap:20px;align-items:flex-start}
+.st-wrap *{box-sizing:border-box}
+.st-side{position:sticky;top:90px;flex:0 0 260px;width:260px;max-height:calc(100vh - 110px);overflow:auto;overscroll-behavior:contain;background:#0b1120;border:1px solid #263247;border-radius:12px;padding:14px;scrollbar-gutter:stable}
+.st-side label{display:block;font-size:13px;margin-bottom:6px;color:#cbd5e1}
+.st-search{width:100%;padding:10px;border:1px solid #475569;background:#111827;color:#e2e8f0;border-radius:8px;font:inherit}
+.st-nav-group{margin-top:10px}.st-nav-group summary{cursor:pointer;padding:10px 4px;color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+.st-side a{display:flex;gap:8px;justify-content:space-between;padding:10px;border-radius:8px;color:#cbd5e1;text-decoration:none;font-size:14px;overflow-wrap:anywhere}
+.st-side a:hover{background:#17243d}.st-side a.active{background:#203b70;color:#dbeafe;border-left:3px solid #60a5fa;font-weight:700}
+.st-side a.soon{color:#94a3b8}.since{font-size:11px;white-space:nowrap}
+.st-wrap [hidden]{display:none!important}
+.st-wrap a:focus-visible,.st-wrap button:focus-visible,.st-wrap input:focus-visible,.st-wrap summary:focus-visible{outline:2px solid #7dd3fc;outline-offset:3px}
+.st-main{flex:1;min-width:0;padding:8px 0 40px}.st-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.st-head h1{font-size:24px;margin:0}
+.st-period{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.st-period a,.st-period button{display:inline-block;padding:8px 10px;border:1px solid #475569;border-radius:8px;background:#111827;color:#e2e8f0;text-decoration:none;font:inherit;font-size:13px;cursor:pointer}.st-period a.active{background:#244d9e}.st-period form{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.st-period input{padding:7px;background:#111827;color:#e2e8f0;border:1px solid #475569;border-radius:6px;color-scheme:dark;max-width:100%}.st-period label{font-size:12px;color:#cbd5e1}
+.st-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.st-card{display:block;background:#111827;border:1px solid #334155;border-radius:12px;padding:16px;color:inherit;text-decoration:none}.st-card .t{font-size:13px;color:#cbd5e1;margin-bottom:8px}.st-card .v{font-size:27px;font-weight:800;font-variant-numeric:tabular-nums}.st-card .s{font-size:12px;line-height:1.5;color:#94a3b8;margin-top:6px}
+.st-table-scroll{max-width:100%;overflow-x:auto;border:1px solid #334155;border-radius:10px;margin:12px 0;overscroll-behavior-x:contain}table.st{width:100%;border-collapse:collapse;background:#111827;font-size:14px}table.st th,table.st td{padding:11px 12px;border-bottom:1px solid #263247;text-align:right;vertical-align:top;font-variant-numeric:tabular-nums}table.st th:first-child,table.st td:first-child{text-align:left}table.st th{color:#cbd5e1;font-size:12px}table.st tbody tr:hover{background:#18243a}
+.st-bar{height:10px;background:#60a5fa;border-radius:5px}.st-note{background:#111e36;border:1px solid #36547e;border-radius:10px;padding:14px;color:#cbd5e1;font-size:14px;line-height:1.6;margin:12px 0}.st-muted{color:#94a3b8;font-size:13px;line-height:1.6}.st-iframe{width:100%;height:72vh;min-height:400px;border:1px solid #334155;border-radius:12px;background:#0b1120}.st-main a{color:#bfdbfe}.st-mobile-menu>summary{display:none}
+@media(max-width:900px){.st-wrap{display:block;padding:0 10px}.st-mobile-menu>summary{display:block;cursor:pointer;padding:12px;background:#17243d;border-radius:8px}.st-side{position:static;width:100%;max-height:55vh;margin-bottom:16px}.st-main{padding-top:12px}.st-head{align-items:flex-start}.st-head h1{font-size:21px}.st-period{width:100%}.st-period form{width:100%}.st-iframe{height:65vh;min-height:320px}.st-cards{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))}}
+</style>
+{% endblock %}
+{% block content %}
+{% set filtered = section.kind == 'view' and section.slug not in ('env_flags','streaks','trial','curator','cohorts') %}
+<div class="st-wrap">
+<details class="st-mobile-menu" open id="st-navigation">
+<summary>Разделы статистики · {{ section.title }}</summary>
+<aside class="st-side" aria-label="Разделы статистики">
+<label for="st-section-search">Найти раздел</label>
+<input class="st-search" id="st-section-search" type="search" placeholder="Например: задачи, опросы" autocomplete="off">
+<nav aria-label="Меню отчётов">
+{% for group, items in nav %}
+<details class="st-nav-group" open>
+<summary>{{ group }}</summary>
+{% for s in items %}
+<a data-st-link href="/admin/stats/{{ s.slug }}?p={{ period }}&amp;from={{ d_from }}&amp;to={{ d_to }}" class="{% if s.slug == section.slug %}active{% endif %}{% if not s.ready %} soon{% endif %}" {% if s.slug == section.slug %}aria-current="page"{% endif %}><span>{{ s.title }}</span>{% if not s.ready %}<span class="since">Запланировано{% if s.since %}: {{ s.since }}{% endif %}</span>{% endif %}</a>
+{% endfor %}
+</details>
+{% endfor %}
+<p id="st-search-empty" class="st-muted" role="status" hidden>Раздел не найден.</p>
+</nav>
+</aside>
+</details>
+<section class="st-main" aria-label="Отчёт: {{ section.title }}">
+<div class="st-head"><h1>{{ section.title }}</h1>
+{% if filtered %}
+<div class="st-period" aria-label="Период отчёта">
+<a href="?p=today" class="{% if period=='today' %}active{% endif %}">Сегодня</a><a href="?p=7" class="{% if period=='7' %}active{% endif %}">7 дней</a><a href="?p=30" class="{% if period=='30' %}active{% endif %}">30 дней</a>
+<form method="get"><input type="hidden" name="p" value="custom"><label for="st-from">С</label><input id="st-from" type="date" name="from" value="{{ d_from }}" required><label for="st-to">По</label><input id="st-to" type="date" name="to" value="{{ d_to }}" required><button type="submit">Показать</button></form>
+{% if section.slug in ('funnel','sources') %}<a href="?p={{ period }}&amp;from={{ d_from }}&amp;to={{ d_to }}&amp;csv=1">CSV</a>{% endif %}
+</div>
+{% endif %}
+</div>
+{% if section.kind == 'embed' %}
+<p class="st-muted">Встроенный отчёт использует собственные фильтры. Общий период панели к нему не применяется.</p>
+{% elif section.slug == 'env_flags' %}
+<p class="st-muted">Текущие настройки процесса приложения, а не данные за период.</p>
+{% elif not filtered %}
+<p class="st-muted">Срез состояния или фиксированный горизонт отчёта; фильтр периода здесь не применяется.</p>
+{% else %}
+<p class="st-muted">Выбранный период: {{ d_from.strftime('%d.%m.%Y') }} — {{ d_to.strftime('%d.%m.%Y') }} (МСК). Карточки «сейчас» и «всего» относятся к текущему состоянию или всей истории.</p>
+{% endif %}
+{% block stats_content %}{% endblock %}
+</section>
+</div>
+<script>
+(function(){
+var root=document.getElementById('st-navigation');if(!root)return;
+var mobile=window.matchMedia('(max-width:900px)');root.open=!mobile.matches;
+mobile.addEventListener('change',function(e){root.open=!e.matches;});
+var input=document.getElementById('st-section-search');
+input.addEventListener('input',function(){
+var q=input.value.trim().toLocaleLowerCase('ru');var any=false;
+root.querySelectorAll('.st-nav-group').forEach(function(group){var found=false;
+group.querySelectorAll('[data-st-link]').forEach(function(link){var match=link.textContent.toLocaleLowerCase('ru').indexOf(q)!==-1;link.hidden=!match;found=found||match;});
+group.hidden=!found;if(q&&found)group.open=true;any=any||found;});
+document.getElementById('st-search-empty').hidden=any;
+});
+document.querySelectorAll('.st-main table.st').forEach(function(table){
+if(table.parentElement.classList.contains('st-table-scroll'))return;
+var box=document.createElement('div');box.className='st-table-scroll';box.tabIndex=0;box.setAttribute('role','region');box.setAttribute('aria-label','Таблица отчёта, горизонтальная прокрутка');table.parentNode.insertBefore(box,table);box.appendChild(table);
+});
+})();
+</script>
+{% endblock %}

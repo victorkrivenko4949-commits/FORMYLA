@@ -1,0 +1,107 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 120
+  },
+  {
+   "type": "point_on_circle",
+   "id": "P",
+   "circle": "w",
+   "angle": 250
+  },
+  {
+   "type": "midpoint",
+   "id": "X",
+   "of": "AP"
+  },
+  {
+   "type": "midpoint",
+   "id": "Y",
+   "of": "CP"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "OXY"
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w"
+  },
+  {
+   "polygon": "OXY"
+  },
+  {
+   "segment": "AP",
+   "style": "soft"
+  },
+  {
+   "segment": "CP",
+   "style": "soft"
+  },
+  {
+   "segment": "XY",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AX",
+    "XP"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CY",
+    "YP"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC",
+   "reason": "M — середина AC; доказывается, что H совпадает с M."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "YH",
+   "style": "dashed"
+  },
+  {
+   "segment": "XH",
+   "style": "dashed"
+  }
+ ]
+}

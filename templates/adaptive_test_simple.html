@@ -1,0 +1,1674 @@
+{% extends "base.html" %}
+
+{% block title %}Адаптивный тест - {{ topic_name }} - FORMYLA.net
+{% endblock %}
+
+{% block content %}
+{# YM_GOALS: mock_start — ученик начал адаптивный тест (главный вариант проверки по темам). #}
+<script>if (typeof ym !== 'undefined') { ym(109394525, 'reachGoal', 'mock_start'); }</script>
+<div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
+    
+    <!-- Заголовок -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="font-size: 2em; color: var(--text-main); margin-bottom: 10px;">
+             {{ topic_name }} - Класс {{ grade }}
+        </h1>
+        <p style="font-size: 1em; color: var(--text-soft); margin-bottom: 6px;">
+            Задача {{ current_slot or current_index }} из 25
+        </p>
+    </div>
+
+    {# UI-FIX (Task 1): убрали 25 нумерованных кружков + легенду — навигация
+       по слотам теперь только через кнопки «<- Предыдущая» / «Следующая ->».
+       Старый код см. git history до 2026-05-25. #}
+
+    <!-- Карточка задачи -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 40px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        
+        <!-- Уровень сложности -->
+        <div style="display: inline-block; padding: 8px 16px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border-radius: 20px; font-weight: 600; font-size: 0.9em; margin-bottom: 20px;">
+                            ⭐ Уровень сложности: {{ current_level }}/8
+        </div>
+        
+        <!-- Условие задачи -->
+        <div style="margin-bottom: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
+                <h3 style="color: var(--accent-2); margin: 0;"> Условие:</h3>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="share-friend-btn"
+                            data-task-id="{{ task.id }}"
+                            data-task-source="adaptive"
+                            data-task-topic="{{ topic_name }}"
+                            data-task-grade="{{ grade }}"
+                            data-task-difficulty="{{ task.difficulty_level }}"
+                            data-task-url="/adaptive_task/{{ task.id }}"
+                            data-task-preview="{{ task.task_text|truncate(280) }}"
+                            style="padding: 8px 16px; background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 8px; font-size: 0.85em; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px;"
+                            onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'; this.style.borderColor='#8b5cf6'"
+                            onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'; this.style.borderColor='rgba(139, 92, 246, 0.35)'">
+                        <span></span>
+                        <span>Поделиться с другом</span>
+                    </button>
+                    <button type="button" id="reportBtn" onclick="reportTask({{ task.id }})"
+                            style="padding: 8px 16px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; font-size: 0.85em; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px;"
+                            onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.borderColor='#ef4444'"
+                            onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.borderColor='rgba(239, 68, 68, 0.3)'">
+                        <span></span>
+                        <span>Сообщить об ошибке</span>
+                    </button>
+                </div>
+            </div>
+            <div style="color: var(--text-main); font-size: 1.1em; line-height: 1.8;" id="taskTextBlock">
+                {{ task.task_text }}
+            </div>
+        </div>
+
+        <!-- Форма ответа -->
+        <form id="answerForm" enctype="multipart/form-data">
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: var(--text-muted); margin-bottom: 15px; font-weight: 500;">
+                    Ваш ответ:
+                </label>
+                
+                {% if task.options and task.options|length > 0 %}
+                <!-- Multiple Choice (для логических задач) -->
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    {% for option in task.options %}
+                    <label style="display: flex; align-items: center; padding: 15px 20px; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border-mid); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.3s;"
+                           onmouseover="this.style.borderColor='var(--accent-1)'; this.style.background='rgba(59, 130, 246, 0.1)'"
+                           onmouseout="this.style.borderColor='var(--border-mid)'; this.style.background='rgba(15, 23, 42, 0.6)'">
+                        <input type="radio" name="answer" value="{{ option }}" required
+                               style="margin-right: 15px; width: 20px; height: 20px; cursor: pointer;">
+                        <span style="color: var(--text-main); font-size: 16px; font-weight: 500;">{{ option }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <!-- MathLive Input (для математических задач).
+                     UI-FIX (Task 3): mode='manual' — клавиатура НЕ открывается
+                     автоматически (нажать кнопку  справа внизу).
+                     UI-FIX (Task 4): theme='material' — светлая тема без тёмных
+                     палок-разделителей между клавишами. -->
+                <math-field id="user_answer" name="answer"
+                           virtual-keyboard-mode="manual"
+                           virtual-keyboard-theme="material"
+                           class="math-input-field"></math-field>
+                <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
+                     Нажмите кнопку «» справа внизу поля, чтобы открыть математическую клавиатуру (√, дроби, степени).
+                </p>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
+                    Ход решения:
+                </label>
+                <div style="background: rgba(59, 130, 246, 0.06); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.88em; color: #94a3b8;">
+                     Напишите ход решения по шагам — это обязательно. Система оценит ответ точнее и даст более полезную обратную связь.
+                </div>
+                {# UI-FIX (2026-05): заменили <math-field> на <textarea> — math-field
+                   рендерит весь текст в одну растягивающуюся строку и не переносит
+                   слова. Для «хода решения» нужен многострочный ввод с переносами,
+                   плюс по-прежнему доступна вставка LaTeX через клавиатуру ниже. #}
+                <textarea id="solution_text" name="solution" rows="6"
+                          placeholder="Пишите решение по шагам, каждый шаг — с новой строки. Можно вставлять формулы: \frac{1}{2}, x^2, \sqrt{3} и т.д."
+                          class="solution-textarea"
+                          style="width: 100%; min-height: 160px; padding: 14px 16px; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-family: 'Inter', system-ui, sans-serif; font-size: 16px; line-height: 1.7; resize: vertical; display: block; box-sizing: border-box; white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere;"></textarea>
+                <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
+                     Пишите <strong>по шагам</strong> — каждое действие с новой строки (Enter). Формулы вставляются как LaTeX-код (можно через кнопку «⌨️ Клавиатура» ниже).
+                </p>
+            </div>
+
+            <!-- Единая клавиатура ввода -->
+            <div class="kb-wrapper" style="margin-bottom: 20px;">
+                <button type="button" id="kbToggleBtn" class="unified-kb-toggle" onclick="toggleKeyboard()">
+                    ⌨️ Клавиатура
+                </button>
+
+                <div id="unifiedKeyboard" class="unified-keyboard">
+                    <div class="kb-header">
+                        <span class="kb-field-indicator">
+                            <span class="dot"></span>
+                            <span id="kbFieldLabel">Ответ</span>
+                        </span>
+                        <button type="button" class="kb-close-btn" onclick="toggleKeyboard()"></button>
+                    </div>
+
+                    <div class="kb-tabs">
+                        <button type="button" class="kb-tab active" data-layout="math" onclick="switchKbTab('math')"> Математическая</button>
+                        <button type="button" class="kb-tab" data-layout="regular" onclick="switchKbTab('regular')">⌨️ Обычная</button>
+                    </div>
+
+                    <!-- ===== Математическая раскладка ===== -->
+                    <div id="kbLayoutMath" class="kb-layout active">
+                        <!-- Греческие буквы -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\alpha')">α</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\beta')">β</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\gamma')">γ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\delta')">δ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\theta')">θ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\lambda')">λ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\mu')">μ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\pi')">π</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\sigma')">σ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\phi')">φ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\omega')">ω</button>
+                        </div>
+                        <!-- Математические символы -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\sqrt{}')">√</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\sum')">∑</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\int')">∫</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\pm')">±</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\infty')">∞</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\approx')">≈</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\neq')">≠</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leq')">≤</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\geq')">≥</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\rightarrow')">-></button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leftrightarrow')"><-></button>
+                        </div>
+                        <!-- LaTeX-команды -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\frac{}{}')">\frac</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\sqrt{}')">\sqrt</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\cdot')">\cdot</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\times')">\times</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\div')">\div</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\partial')">\partial</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\nabla')">\nabla</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\leq')">\le</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\geq')">\ge</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\neq')">\ne</button>
+                        </div>
+                        <!-- Числа и скобки -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key" onclick="kbInsert('7')">7</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('8')">8</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('9')">9</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('4')">4</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('5')">5</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('6')">6</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('1')">1</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('2')">2</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('3')">3</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('0')">0</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('.')">.</button>
+                            <button type="button" class="kb-key" onclick="kbInsert(',')">,</button>
+                        </div>
+                        <!-- Нижний ряд: скобки, backspace, space, enter -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key" onclick="kbInsert('(')">(</button>
+                            <button type="button" class="kb-key" onclick="kbInsert(')')">)</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('[')">[</button>
+                            <button type="button" class="kb-key" onclick="kbInsert(']')">]</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('\\\\{')">{</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('\\\\}')">}</button>
+                            <button type="button" class="kb-key action wide" onclick="kbBackspace()">⌫</button>
+                            <button type="button" class="kb-key space" onclick="kbInsert(' ')">Пробел</button>
+                            <button type="button" class="kb-key enter" onclick="kbInsert('\\\\quad ')">⏎</button>
+                        </div>
+                    </div>
+
+                    <!-- ===== Обычная раскладка ===== -->
+                    <div id="kbLayoutRegular" class="kb-layout">
+                        <!-- Ряд 1 -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key" onclick="kbInsert('й')">й</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ц')">ц</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('у')">у</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('к')">к</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('е')">е</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('н')">н</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('г')">г</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ш')">ш</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('щ')">щ</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('з')">з</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('х')">х</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ъ')">ъ</button>
+                        </div>
+                        <!-- Ряд 2 -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key" onclick="kbInsert('ф')">ф</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ы')">ы</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('в')">в</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('а')">а</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('п')">п</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('р')">р</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('о')">о</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('л')">л</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('д')">д</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ж')">ж</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('э')">э</button>
+                        </div>
+                        <!-- Ряд 3 -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key" onclick="kbInsert('я')">я</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ч')">ч</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('с')">с</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('м')">м</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('и')">и</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('т')">т</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ь')">ь</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('б')">б</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ю')">ю</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('.')">.</button>
+                            <button type="button" class="kb-key" onclick="kbInsert(',')">,</button>
+                        </div>
+                        <!-- Цифры -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key" onclick="kbInsert('1')">1</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('2')">2</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('3')">3</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('4')">4</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('5')">5</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('6')">6</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('7')">7</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('8')">8</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('9')">9</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('0')">0</button>
+                        </div>
+                        <!-- Нижний ряд -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key action wide" onclick="kbBackspace()">⌫</button>
+                            <button type="button" class="kb-key space" onclick="kbInsert(' ')">Пробел</button>
+                            <button type="button" class="kb-key enter" onclick="submitCurrentAnswer()">Готово [OK]</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Затемнение для мобильных -->
+                <div class="kb-backdrop" id="kbBackdrop" onclick="toggleKeyboard()"></div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
+                     Фото решения из тетради (можно несколько, опционально):
+                </label>
+                <div style="position: relative;">
+                    <input type="file" id="photoInput" name="solution_photo" accept="image/*" capture="environment" multiple
+                           style="display: none;">
+                    <button type="button" onclick="document.getElementById('photoInput').click()"
+                            style="width: 100%; padding: 20px; background: rgba(59, 130, 246, 0.1); border: 2px dashed var(--accent-1); border-radius: var(--radius-sm); color: var(--accent-1); font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;"
+                            onmouseover="this.style.background='rgba(59, 130, 246, 0.2)'; this.style.borderColor='var(--accent-2)'"
+                            onmouseout="this.style.background='rgba(59, 130, 246, 0.1)'; this.style.borderColor='var(--accent-1)'">
+                        <span style="font-size: 24px;"></span>
+                        <span id="photoButtonText">Сфотографировать / Загрузить решение</span>
+                    </button>
+                    <div id="photoPreviewList" style="display: none; margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px;"></div>
+                    <p id="photoFileName" style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px; display: none;">
+                        [OK] Прикреплено фото: <span id="fileName"></span>
+                    </p>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
+                     Нажимайте кнопку повторно, чтобы <strong>добавить</strong> ещё фото. Каждое снимается/распознаётся отдельно (OpenRouter Vision) и подмешивается в решение для AI-тьютора. Лишнее фото можно удалить крестиком.
+                </p>
+            </div>
+
+            <input type="hidden" name="task_id" value="{{ task.id }}">
+            <input type="hidden" name="slot" id="currentSlotInput" value="{{ current_slot or current_index }}">
+
+            <!-- Read-only баннер для уже отвеченных слотов -->
+            {% if is_readonly %}
+            <div id="readonlyBanner" style="margin: 10px 0 20px; padding: 14px 18px; background: rgba(34,197,94,0.10); border: 1px solid rgba(34,197,94,0.4); border-radius: var(--radius-sm); color: #86efac; font-size: 0.95em;">
+                [OK] На эту задачу уже отвечен ответ. Поля заблокированы для редактирования.
+                {% if existing_user_answer %}<div style="margin-top:6px; color: var(--text-muted); font-size: 0.9em;">Ваш ответ: <code style="color:#86efac;">{{ existing_user_answer }}</code></div>{% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Кнопки навигации и действий -->
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 16px;">
+                <button type="button" id="prevSlotBtn" onclick="goToSlot({{ (current_slot or current_index) - 1 }})"
+                        {% if (current_slot or current_index) <= 1 %}disabled{% endif %}
+                        style="padding: 14px 22px; background: rgba(100, 116, 139, 0.18); color: var(--text-main); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer;">
+                    <- Предыдущая
+                </button>
+
+                {% if is_readonly %}
+                    <!-- Read-only режим: только «Следующая» -->
+                    <button type="button" id="nextSlotBtnRO" onclick="goToSlot({{ (current_slot or current_index) + 1 }})"
+                            {% if (current_slot or current_index) >= 25 %}disabled{% endif %}
+                            style="padding: 14px 28px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                        Следующая ->
+                    </button>
+                {% else %}
+                    <button type="button" id="skipBtn" onclick="skipCurrentSlot()"
+                            style="padding: 14px 22px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer;">
+                        Пропустить ->
+                    </button>
+                    <button type="submit" id="submitBtn"
+                            style="padding: 14px 28px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                        Ответить ->
+                    </button>
+                {% endif %}
+
+                <button type="button" id="finishBtnTop"
+                        onclick="finishTest()"
+                        {% if not can_finish %}disabled{% endif %}
+                        title="{% if can_finish %}Завершить тест и посмотреть результаты{% else %}Осталось ответить на {{ remaining_to_finish }} задач(и){% endif %}"
+                        style="padding: 14px 22px; background: {% if can_finish %}linear-gradient(135deg, #22c55e, #16a34a){% else %}rgba(100, 116, 139, 0.2){% endif %}; color: {% if can_finish %}white{% else %}var(--text-muted){% endif %}; border: 1px solid {% if can_finish %}#16a34a{% else %}var(--border-mid){% endif %}; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: {% if can_finish %}pointer{% else %}not-allowed{% endif %}; opacity: {% if can_finish %}1{% else %}0.65{% endif %};">
+                    Завершить тест [OK]
+                </button>
+            </div>
+            {% if not can_finish %}
+            <p id="finishHint" style="text-align: center; color: var(--text-muted); font-size: 0.85em; margin-top: 10px; display: none;">
+            </p>
+            {% endif %}
+        </form>
+
+        <!-- Лоадер AI проверки -->
+        <div id="aiLoader" style="display: none; text-align: center; padding: 60px 20px; background: var(--bg-card); border-radius: var(--radius-lg); border: 2px dashed var(--accent-1); margin-top: 30px;">
+            <div class="spinner" style="width: 50px; height: 50px; border: 4px solid rgba(59, 130, 246, 0.2); border-top-color: var(--accent-1); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+            <p style="color: var(--text-main); font-size: 1.2em; font-weight: 600; margin-bottom: 10px;">
+                 AI проверяет ваше решение...
+            </p>
+            <p style="font-size: 0.9em; color: var(--text-muted);">
+                Это может занять 5-10 секунд
+            </p>
+        </div>
+
+        <!-- Блок результата -->
+        <div id="resultBlock" style="display: none; margin-top: 30px;">
+            <!-- Вердикт -->
+            <div id="verdict"></div>
+            
+            <!-- Фидбек от AI -->
+            <div id="feedbackBlock" style="margin-top: 30px; padding: 25px; background: rgba(15, 23, 42, 0.6); border-radius: 12px; border: 1px solid var(--border-soft);">
+                <h4 style="color: var(--accent-2); margin-bottom: 15px; font-size: 1.1em;"> Разбор от AI-тьютора:</h4>
+                <div id="feedbackText" class="ai-feedback-text" style="color: var(--text-main); line-height: 1.8; font-size: 1em;"></div>
+            </div>
+            
+            <!-- Кнопки действий -->
+            <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button id="nextTaskBtn" onclick="goToNextTask()"
+                        style="padding: 15px 40px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4)'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)'">
+                    Следующая задача ->
+                </button>
+                <button id="finishBtn" onclick="finishTest()" disabled
+                        title="Кнопка активируется после того, как вы ответите на все 25 задач"
+                        style="display: none; padding: 15px 40px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; cursor: not-allowed; opacity: 0.65; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);">
+                    Завершить тест [OK]
+                </button>
+            </div>
+            <p id="finishBtnHint" style="display:none; text-align: center; color: var(--text-muted); font-size: 0.85em; margin-top: 10px;"></p>
+        </div>
+
+    </div>
+
+    <!-- Информация -->
+    <div style="background: rgba(59, 130, 246, 0.05); padding: 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft);">
+        <p style="color: var(--text-muted); line-height: 1.6; margin: 0; font-size: 0.9em;">
+             <strong style="color: var(--text-main);">Адаптивный алгоритм:</strong>
+            AI-тьютор проверит ваше решение и даст оценку (+1, 0 или -1 уровень).
+            Следующая задача будет соответствовать вашему новому уровню!
+        </p>
+    </div>
+
+</div>
+
+<style>
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.verdict-success {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
+    border: 2px solid #22c55e;
+    padding: 20px;
+    border-radius: 12px;
+    color: #22c55e;
+    font-size: 1.3em;
+    font-weight: 700;
+    text-align: center;
+}
+
+.verdict-partial {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.1));
+    border: 2px solid #fbbf24;
+    padding: 20px;
+    border-radius: 12px;
+    color: #fbbf24;
+    font-size: 1.3em;
+    font-weight: 700;
+    text-align: center;
+}
+
+.verdict-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+    border: 2px solid #ef4444;
+    padding: 20px;
+    border-radius: 12px;
+    color: #ef4444;
+    font-size: 1.3em;
+    font-weight: 700;
+    text-align: center;
+}
+
+.level-badge {
+    margin-top: 10px;
+    font-size: 0.8em;
+    opacity: 0.9;
+}
+
+/* Стили для блока AI-фидбека */
+.ai-feedback-text {
+    line-height: 1.8 !important;
+}
+
+/* Отступы для блочных формул (KaTeX генерирует .katex-display) */
+.ai-feedback-text .katex-display {
+    margin: 1.5em 0 !important;
+}
+
+/* Отступы для параграфов в фидбеке */
+.ai-feedback-text p {
+    margin: 1em 0;
+}
+
+/* Стили для MathLive поля ввода */
+.math-input-field {
+    width: 100%;
+    padding: 15px;
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 2px solid var(--border-mid) !important;
+    border-radius: var(--radius-sm);
+    font-size: 20px !important;
+    min-height: 60px;
+    cursor: text;
+    transition: border-color 0.3s;
+}
+
+.math-input-field:focus {
+    border-color: var(--accent-1) !important;
+    outline: none;
+}
+
+/* ── Поле «Ход решения»: обычный textarea с переносами строк ── */
+.solution-textarea {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px solid var(--border-mid);
+    border-radius: var(--radius-sm);
+    color: var(--text-main);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 160px;
+    resize: vertical;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+    white-space: pre-wrap;        /* сохраняем переносы строк */
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+.solution-textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 0.65;
+}
+.solution-textarea:focus {
+    border-color: var(--accent-1);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Курсор в MathLive */
+.math-input-field::part(content) {
+    color: var(--text-main);
+    caret-color: var(--accent-1);
+}
+</style>
+
+<!-- ===== ЕДИНАЯ КЛАВИАТУРА ВВОДА (Математическая / Обычная) ===== -->
+<style>
+/* ---- Кнопка открытия клавиатуры ---- */
+.unified-kb-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    margin-top: 4px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.unified-kb-toggle:hover { opacity: 0.9; }
+.unified-kb-toggle:active { transform: scale(0.96); }
+.unified-kb-toggle.active {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* ---- Контейнер клавиатуры ---- */
+.unified-keyboard {
+    display: none;
+    margin-top: 16px;
+    margin-bottom: 10px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    position: relative;
+    z-index: 100;
+}
+.unified-keyboard.open { display: block; }
+
+/* ---- Затемнение фона (только мобильные) ---- */
+.kb-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+}
+
+/* ---- Заголовок + индикатор поля ---- */
+.kb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: rgba(30, 41, 59, 0.8);
+    border-bottom: 1px solid var(--border-mid);
+}
+.kb-field-indicator {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.kb-field-indicator .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-1);
+    animation: pulse-dot 1.5s infinite;
+}
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+.kb-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+.kb-close-btn:hover { color: #fff; }
+
+/* ---- Вкладки ---- */
+.kb-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-mid);
+}
+.kb-tab {
+    flex: 1;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    position: relative;
+}
+.kb-tab:hover { color: var(--text-main); background: rgba(59,130,246,0.08); }
+.kb-tab.active {
+    color: var(--accent-1);
+    background: rgba(59,130,246,0.12);
+}
+.kb-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    right: 20%;
+    height: 2px;
+    background: var(--accent-1);
+    border-radius: 1px;
+}
+
+/* ---- Раскладки ---- */
+.kb-layout {
+    display: none;
+    padding: 10px 8px;
+}
+.kb-layout.active { display: block; }
+
+.kb-row {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+.kb-row:last-child { margin-bottom: 0; }
+
+/* ---- Клавиши ---- */
+.kb-key {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 42px;
+    padding: 0 8px;
+    background: rgba(30, 41, 59, 0.85);
+    border: 1px solid rgba(100, 116, 139, 0.25);
+    border-radius: 6px;
+    color: #e2e8f0;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.08s, border-color 0.12s;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    flex-shrink: 0;
+}
+.kb-key:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+.kb-key:active {
+    transform: scale(0.92);
+    background: rgba(59, 130, 246, 0.3);
+}
+
+/* Математические символы — чуть крупнее */
+.kb-key.math-symbol {
+    font-size: 18px;
+    min-width: 42px;
+}
+/* Греческие буквы */
+.kb-key.math-greek {
+    font-size: 17px;
+    min-width: 40px;
+    font-style: italic;
+}
+/* LaTeX-команды */
+.kb-key.math-command {
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 52px;
+    padding: 0 10px;
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+.kb-key.math-command:hover {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+/* Широкие клавиши */
+.kb-key.wide { min-width: 60px; }
+.kb-key.space {
+    min-width: 140px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Клавиши действий */
+.kb-key.action {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.2);
+    min-width: 50px;
+    font-size: 13px;
+}
+.kb-key.action:hover {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+.kb-key.action.shift {
+    background: rgba(251, 191, 36, 0.15);
+    border-color: rgba(251, 191, 36, 0.2);
+}
+.kb-key.action.shift:hover {
+    background: rgba(251, 191, 36, 0.3);
+    border-color: rgba(251, 191, 36, 0.4);
+}
+.kb-key.action.shift.active {
+    background: rgba(251, 191, 36, 0.4);
+    border-color: #fbbf24;
+}
+
+/* Enter */
+.kb-key.enter {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-color: transparent;
+    color: #fff;
+    font-weight: 700;
+    min-width: 60px;
+}
+.kb-key.enter:hover {
+    opacity: 0.9;
+}
+
+/* ---- Мобильная версия (фиксированная + оверлей) ---- */
+@media (max-width: 640px) {
+    .unified-keyboard {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 0;
+        border-radius: 12px 12px 0 0;
+        max-height: 55vh;
+        overflow-y: auto;
+        z-index: 200;
+        box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+    }
+    .unified-keyboard.open + .kb-backdrop { display: block; }
+    .unified-keyboard.open ~ .kb-backdrop { display: block; }
+
+    .kb-key {
+        height: 38px;
+        min-width: 32px;
+        font-size: 14px;
+    }
+    .kb-key.math-symbol { font-size: 16px; min-width: 36px; }
+    .kb-key.math-greek { font-size: 15px; min-width: 36px; }
+    .kb-key.math-command { font-size: 11px; min-width: 44px; }
+    .kb-key.wide { min-width: 48px; }
+    .kb-key.space { min-width: 100px; }
+    .kb-key.enter { min-width: 50px; }
+
+    .kb-row { gap: 3px; margin-bottom: 4px; }
+    .kb-layout { padding: 8px 4px; }
+    .kb-tab { font-size: 12px; padding: 8px 4px; }
+}
+
+/* ---- Планшеты ---- */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .unified-keyboard {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 0;
+        border-radius: 12px 12px 0 0;
+        max-height: 50vh;
+        overflow-y: auto;
+        z-index: 200;
+        box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+    }
+    .unified-keyboard.open + .kb-backdrop { display: block; }
+    .kb-key {
+        height: 44px;
+        min-width: 40px;
+        font-size: 16px;
+    }
+    .kb-key.space { min-width: 180px; }
+}
+
+/* Блокировка скролла body когда клавиатура открыта на мобильных */
+body.kb-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+</style>
+
+<script>
+// ФИКС: ждём загрузки KaTeX (defer) перед рендером
+// base.html уже рендерит через onload, этот блок — для динамического контента
+var _katexDelimiters = [
+    {left: '$$', right: '$$', display: true},
+    {left: '$', right: '$', display: false},
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+];
+
+function renderKatexSafe(element) {
+    if (window.renderMathInElement) {
+        renderMathInElement(element, {delimiters: _katexDelimiters, throwOnError: false});
+    }
+}
+
+/**
+ * Auto-mathify: оборачивает «голые» математические выражения в \(...\),
+ * чтобы KaTeX их отрендерил красиво (степени x², дроби, индексы, неравенства…).
+ *
+ * Работает на сырой строке ДО конвертации \n -> <br>. Уважает уже
+ * существующие LaTeX-делимитеры $...$, $$...$$, \(...\), \[...\]: текст
+ * внутри них не трогается.
+ */
+function autoMathify(raw) {
+    if (!raw) return raw;
+
+    // 1. Сначала «защищаем» уже-обёрнутые куски, заменяя их на токены,
+    //    чтобы regexp'ы не трогали их.
+    const PROTECTED = [];
+    function protect(s, re) {
+        return s.replace(re, (m) => {
+            PROTECTED.push(m);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        });
+    }
+    let s = String(raw);
+    s = protect(s, /\$\$[\s\S]+?\$\$/g);
+    s = protect(s, /\$[^\n$]+?\$/g);
+    s = protect(s, /\\\([\s\S]+?\\\)/g);
+    s = protect(s, /\\\[[\s\S]+?\\\]/g);
+    // Также защищаем существующие LaTeX-команды \frac{}, \sqrt{}, \cdot и т.п.
+    // вместе с их «склейкой» окружающих символов: проще сразу обернуть их.
+    s = s.replace(/(\\(?:frac|sqrt|cdot|sum|prod|int|lim|left|right|binom|gcd|overline|underline|vec|hat|bar|tilde|dot|ddot|pmod|bmod|geq|leq|neq|approx|equiv|times|div|pm|infty|alpha|beta|gamma|delta|theta|lambda|mu|pi|sigma|phi|omega)(?:\{[^{}]*\})*)/g,
+        (m) => {
+            PROTECTED.push(`\\(${m}\\)`);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        }
+    );
+
+    // 2. Базовые трансформации одиночных токенов:
+    //    x^2 -> \(x^{2}\),  a_1 -> \(a_{1}\),  x^{n+1} -> \(x^{n+1}\)
+    //    Поддерживаем как одиночную цифру/букву после ^, так и {...}.
+    s = s.replace(/([A-Za-zА-Яа-я0-9])\^(\{[^{}]+\}|-?\d+|[A-Za-z])/g,
+        (m, base, exp) => {
+            const e = exp.startsWith('{') ? exp : `{${exp}}`;
+            PROTECTED.push(`\\(${base}^${e}\\)`);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        }
+    );
+    s = s.replace(/([A-Za-z])_(\{[^{}]+\}|\d+|[A-Za-z])/g,
+        (m, base, idx) => {
+            const i = idx.startsWith('{') ? idx : `{${idx}}`;
+            PROTECTED.push(`\\(${base}_${i}\\)`);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        }
+    );
+
+    // 3. Уравнения / неравенства с переменной с обеих сторон или с числом справа:
+    //    «a = 3», «x ≥ 0», «n ≠ 1», «2k + 1 = 7»
+    s = s.replace(
+        /(?<![\w\\])([A-Za-zα-ωΑ-Ω][\wα-ωΑ-Ω]*(?:\s*[+\-*/]\s*[\wα-ωΑ-Ω\d]+)*)\s*([=≠≤≥<>]|<=|>=|!=)\s*(-?\d+(?:[.,]\d+)?(?:\s*[+\-*/]\s*[\wα-ωΑ-Ω\d]+)*|[A-Za-zα-ωΑ-Ω][\wα-ωΑ-Ω]*(?:\s*[+\-*/]\s*[\wα-ωΑ-Ω\d]+)*)(?![\w\\])/g,
+        (m, lhs, op, rhs) => {
+            // Не трогаем чисто текстовые слова: «равно», «равно 3 балла» и т.п.
+            // Эвристика: оборачиваем только если в lhs или rhs есть math-операция
+            //            или одиночная переменная (1-2 буквы латиницы).
+            const looksMath =
+                /[+\-*/]/.test(lhs) || /[+\-*/]/.test(rhs) ||
+                /^[a-zA-Zα-ωΑ-Ω]{1,2}$/.test(lhs.trim()) ||
+                /^-?\d/.test(rhs.trim());
+            if (!looksMath) return m;
+            const opMap = { '<=':'\\le', '>=':'\\ge', '!=':'\\ne',
+                            '≤':'\\le', '≥':'\\ge', '≠':'\\ne' };
+            const opTex = opMap[op] || op;
+            PROTECTED.push(`\\(${lhs}${opTex}${rhs}\\)`);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        }
+    );
+
+    // 4. Дроби «вида (числитель)/(знаменатель)»: (x^2 - 4x + 3)/(x - 1) -> \frac{...}{...}
+    s = s.replace(/\(([^()]{1,80})\)\s*\/\s*\(([^()]{1,80})\)/g,
+        (m, num, den) => {
+            PROTECTED.push(`\\(\\frac{${num.trim()}}{${den.trim()}}\\)`);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        }
+    );
+
+    // 5. Простые умножения «2 * x», «a · b» -> \(2 \cdot x\)
+    s = s.replace(/(\b[A-Za-z0-9]+)\s*[·∙]\s*([A-Za-z0-9]+\b)/g,
+        (m, a, b) => {
+            PROTECTED.push(`\\(${a} \\cdot ${b}\\)`);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        }
+    );
+
+    // 6. Заменяем юникодные степени x² x³ на \(x^{2}\) \(x^{3}\)
+    s = s.replace(/([A-Za-zа-яА-Я0-9])([²³⁴⁵⁶⁷⁸⁹⁰¹])/g, (m, base, sup) => {
+        const map = { '²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁰':'0','¹':'1' };
+        PROTECTED.push(`\\(${base}^{${map[sup]}}\\)`);
+        return `\u0001${PROTECTED.length - 1}\u0001`;
+    });
+
+    // 7. Восстанавливаем защищённые куски.
+    s = s.replace(/\u0001(\d+)\u0001/g, (m, i) => PROTECTED[parseInt(i, 10)] || m);
+
+    return s;
+}
+
+// Функция для отправки жалобы на задачу
+async function reportTask(taskId) {
+    if (!confirm('Вы уверены, что хотите сообщить об ошибке в этой задаче? Мы проверим её и исправим.')) {
+        return;
+    }
+    
+    const reportBtn = document.getElementById('reportBtn');
+    const originalHTML = reportBtn.innerHTML;
+    reportBtn.disabled = true;
+    reportBtn.innerHTML = '<span>⏳</span><span>Отправка...</span>';
+    
+    try {
+        const response = await fetch(`/api/report_task/${taskId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            reportBtn.innerHTML = '<span>[OK]</span><span>Спасибо!</span>';
+            reportBtn.style.background = 'rgba(34, 197, 94, 0.1)';
+            reportBtn.style.color = '#22c55e';
+            reportBtn.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+            
+            alert(result.message);
+        } else {
+            throw new Error(result.message || 'Ошибка отправки');
+        }
+    } catch (error) {
+        console.error('Error reporting task:', error);
+        alert('Ошибка при отправке жалобы. Попробуйте позже.');
+        reportBtn.disabled = false;
+        reportBtn.innerHTML = originalHTML;
+    }
+}
+
+// ─── Накопительный буфер фото (несколько последовательных выборов добавляются,
+//     а не перезаписывают друг друга) ───
+const PHOTO_BUFFER = [];   // массив File
+const MAX_PHOTOS = 8;
+
+function renderPhotoBuffer() {
+    const list = document.getElementById('photoPreviewList');
+    const nameEl = document.getElementById('photoFileName');
+    const fileNameSpan = document.getElementById('fileName');
+    const btnText = document.getElementById('photoButtonText');
+
+    list.innerHTML = '';
+
+    if (!PHOTO_BUFFER.length) {
+        list.style.display = 'none';
+        nameEl.style.display = 'none';
+        btnText.textContent = 'Сфотографировать / Загрузить решение';
+        return;
+    }
+
+    PHOTO_BUFFER.forEach((f, idx) => {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative; aspect-ratio:1/1; border-radius:8px; overflow:hidden; border:1px solid var(--border-mid); background:#0f172a;';
+
+        const img = document.createElement('img');
+        img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+        img.alt = `Фото ${idx + 1}`;
+        const r = new FileReader();
+        r.onload = (ev) => { img.src = ev.target.result; };
+        r.readAsDataURL(f);
+        wrap.appendChild(img);
+
+        const badge = document.createElement('div');
+        badge.textContent = `#${idx + 1}`;
+        badge.style.cssText = 'position:absolute; top:4px; left:4px; background:rgba(0,0,0,0.65); color:#fff; font-size:11px; padding:2px 6px; border-radius:6px; font-weight:600;';
+        wrap.appendChild(badge);
+
+        // Кнопка удаления конкретного фото
+        const rmBtn = document.createElement('button');
+        rmBtn.type = 'button';
+        rmBtn.textContent = '×';
+        rmBtn.title = 'Убрать это фото';
+        rmBtn.style.cssText = 'position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%; border:none; background:rgba(239, 68, 68, .85); color:#fff; font-size:14px; font-weight:700; cursor:pointer; line-height:1; padding:0;';
+        rmBtn.onclick = (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            PHOTO_BUFFER.splice(idx, 1);
+            renderPhotoBuffer();
+        };
+        wrap.appendChild(rmBtn);
+
+        list.appendChild(wrap);
+    });
+
+    list.style.display = 'grid';
+    fileNameSpan.textContent = String(PHOTO_BUFFER.length);
+    nameEl.style.display = 'block';
+    btnText.textContent = `+ Добавить ещё фото (сейчас ${PHOTO_BUFFER.length})`;
+}
+
+// При выборе файлов — ДОБАВЛЯЕМ их в буфер (а не заменяем)
+document.getElementById('photoInput').addEventListener('change', function(e) {
+    const newFiles = Array.from(e.target.files || []);
+    for (const f of newFiles) {
+        if (PHOTO_BUFFER.length >= MAX_PHOTOS) {
+            alert(`Можно прикрепить не больше ${MAX_PHOTOS} фото.`);
+            break;
+        }
+        // Дедупликация: одинаковое имя+размер не добавляем повторно
+        const dup = PHOTO_BUFFER.some(p => p.name === f.name && p.size === f.size);
+        if (!dup) PHOTO_BUFFER.push(f);
+    }
+    // Сбрасываем value, чтобы повторный выбор того же файла снова срабатывал
+    e.target.value = '';
+    renderPhotoBuffer();
+});
+
+// Утилита: читаем File как base64 (без data: префикса)
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const result = reader.result || '';
+            // result имеет вид "data:image/jpeg;base64,XXXX..."
+            const idx = String(result).indexOf(',');
+            resolve(idx >= 0 ? String(result).slice(idx + 1) : String(result));
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+    });
+}
+
+// Утилита: уменьшаем фото перед отправкой, чтобы не таскать 5+ МБ
+async function compressImage(file, maxDim = 1600, quality = 0.82) {
+    if (!file.type || !file.type.startsWith('image/')) return file;
+    try {
+        const bitmap = await createImageBitmap(file);
+        let { width, height } = bitmap;
+        if (Math.max(width, height) > maxDim) {
+            const k = maxDim / Math.max(width, height);
+            width = Math.round(width * k);
+            height = Math.round(height * k);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(bitmap, 0, 0, width, height);
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
+        if (!blob) return file;
+        return new File([blob], (file.name || 'photo') + '.jpg', { type: 'image/jpeg' });
+    } catch (err) {
+        console.warn('compressImage failed, sending original:', err);
+        return file;
+    }
+}
+
+// ── Read-only режим: если слот уже answered, блокируем форму ────────
+const IS_READONLY = {{ 'true' if is_readonly else 'false' }};
+const CURRENT_SLOT = parseInt('{{ current_slot or current_index }}', 10) || 1;
+
+if (IS_READONLY) {
+    // Отключаем все поля ввода и кнопки сабмита
+    const formEl = document.getElementById('answerForm');
+    if (formEl) {
+        formEl.querySelectorAll('input, math-field, button[type="submit"]').forEach(el => {
+            try {
+                if (el.tagName && el.tagName.toLowerCase() === 'math-field') {
+                    el.setAttribute('readonly', 'true');
+                    el.setAttribute('disabled', 'true');
+                    el.style.opacity = '0.6';
+                    el.style.pointerEvents = 'none';
+                } else {
+                    el.disabled = true;
+                }
+            } catch(e) {}
+        });
+        // Прячем фото-кнопку и форму отправки
+        const photoBtn = formEl.querySelector('button[onclick*="photoInput"]');
+        if (photoBtn) photoBtn.style.display = 'none';
+    }
+}
+
+// Обработчик отправки формы
+document.getElementById('answerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    if (IS_READONLY) {
+        alert('На эту задачу уже отвечен ответ. Перейдите к другой задаче через пагинацию.');
+        return;
+    }
+
+    // Собираем данные формы
+    const formData = new FormData(this);
+
+    // Получаем ответ из MathLive (в формате LaTeX)
+    const mathField = document.getElementById('user_answer');
+    let userAnswer = '';
+
+    if (mathField) {
+        // Если это MathLive поле, получаем LaTeX
+        userAnswer = mathField.getValue('latex');
+    } else {
+        // Fallback для обычного input (для задач с вариантами ответов)
+        userAnswer = formData.get('answer');
+    }
+
+    // Получаем решение: теперь это обычный <textarea> (многострочный),
+    // поэтому просто читаем .value. Старая ветка с math-field.getValue('latex')
+    // оставлена для обратной совместимости, если поле всё ещё math-field.
+    const solutionField = document.getElementById('solution_text');
+    let userSolution = '';
+
+    if (solutionField) {
+        if (typeof solutionField.value === 'string') {
+            // <textarea> или <input>
+            userSolution = solutionField.value || '';
+        } else if (typeof solutionField.getValue === 'function') {
+            // legacy <math-field>
+            userSolution = solutionField.getValue('latex-expanded') || solutionField.getValue('latex') || '';
+        }
+    } else {
+        userSolution = formData.get('solution') || '';
+    }
+
+    // Если прикреплены фото(-и) — сжимаем и кодируем каждое в base64.
+    // Берём из накопительного буфера PHOTO_BUFFER (а не из photoInput.files,
+    // т.к. он перезаписывается при каждом новом выборе).
+    let solutionImagesB64 = [];
+    if (typeof PHOTO_BUFFER !== 'undefined' && PHOTO_BUFFER.length) {
+        try {
+            for (const f of PHOTO_BUFFER) {
+                const compressed = await compressImage(f);
+                const b64 = await fileToBase64(compressed);
+                solutionImagesB64.push(b64);
+            }
+            console.log(`[adaptive] ${solutionImagesB64.length} photo(s) attached, total b64 len =`,
+                solutionImagesB64.reduce((s, x) => s + x.length, 0));
+        } catch (err) {
+            console.error('Photo encoding failed:', err);
+            alert('Не удалось прочитать одно из фото. Попробуйте другой файл.');
+            return;
+        }
+    }
+
+    const data = {
+        task_id: formData.get('task_id'),
+        user_answer: userAnswer,
+        user_solution: userSolution,
+        // legacy single-photo поле — для совместимости передаём первое фото
+        solution_image_b64: solutionImagesB64[0] || '',
+        // новое поле — массив со всеми фото
+        solution_images_b64: solutionImagesB64,
+    };
+
+    // Проверяем, что ответ введен
+    if (!data.user_answer || data.user_answer.trim() === '') {
+        alert('Пожалуйста, введите ответ!');
+        return;
+    }
+    
+    showLoader();
+    
+    try {
+        // Отправляем AJAX-запрос
+        const response = await fetch('/api/check_adaptive_answer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        // Скрываем лоадер
+        hideLoader();
+        
+        if (result.status === 'success') {
+            // Показываем результат
+            showResult(result);
+        } else {
+            // Показываем ошибку
+            alert('Ошибка: ' + (result.message || 'Неизвестная ошибка'));
+            // Возвращаем форму
+            document.getElementById('answerForm').style.display = 'block';
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        hideLoader();
+        alert('Ошибка соединения с сервером. Попробуйте еще раз.');
+        document.getElementById('answerForm').style.display = 'block';
+    }
+});
+
+function showLoader() {
+    document.getElementById('answerForm').style.display = 'none';
+    document.getElementById('aiLoader').style.display = 'block';
+    document.getElementById('submitBtn').disabled = true;
+}
+
+function hideLoader() {
+    document.getElementById('aiLoader').style.display = 'none'; var _sb = document.getElementById('submitBtn'); if (_sb) _sb.disabled = false;
+}
+
+function showResult(result) {
+    const resultBlock = document.getElementById('resultBlock');
+    const verdict = document.getElementById('verdict');
+    const feedbackText = document.getElementById('feedbackText');
+    
+    // Формируем вердикт
+    let verdictHTML = '';
+    const prevLevel = result.new_level - (result.score === 1 ? 1 : 0);
+    const levelChanged = result.new_level !== result.current_level;
+
+    if (result.score === 1) {
+        verdictHTML = `
+            <div class="verdict-success">
+                [OK] Верно! +1 уровень, уровень: ${result.new_level}/8
+                <div class="level-badge">Уровень: ${result.new_level}/8</div>
+            </div>
+        `;
+    } else if (result.score === 0) {
+        // Частично верно или ответ неверный — 0 баллов, уровень без изменений
+        verdictHTML = `
+            <div class="verdict-partial">
+                ℹ️ 0 баллов — уровень без изменений
+                <div class="level-badge">Уровень: ${result.new_level}/8</div>
+            </div>
+        `;
+    } else {
+        verdictHTML = `
+            <div class="verdict-error">
+                [ERROR] Неверно — -1 уровень
+                <div class="level-badge">Уровень: ${result.new_level}/8</div>
+            </div>
+        `;
+    }
+
+    verdict.innerHTML = verdictHTML;
+
+    // Обрабатываем feedback:
+    // 1) автообёртка голых формул (x^2, a=3, дроби, юникод-степени)
+    // 2) markdown **жирный**
+    // 3) переносы строк -> <br>
+    // 4) KaTeX render
+    let formattedFeedback = autoMathify(result.feedback || '');
+    formattedFeedback = formattedFeedback.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+    formattedFeedback = formattedFeedback.replace(/\n/g, '<br>');
+    feedbackText.innerHTML = formattedFeedback;
+
+    // Рендерим KaTeX в блоке feedback после вставки HTML
+    renderKatexSafe(feedbackText);
+    
+    // Запоминаем next_slot для кнопки «Следующая задача»
+    const nextSlot = parseInt(result.next_slot || 0, 10);
+    const canFinish = !!result.can_finish;
+    const remaining = parseInt(result.remaining_to_finish || 0, 10);
+
+    const nextBtn = document.getElementById('nextTaskBtn');
+    const finishBtnInResult = document.getElementById('finishBtn');
+    const finishBtnHint = document.getElementById('finishBtnHint');
+
+    if (nextBtn) {
+        if (nextSlot && nextSlot >= 1 && nextSlot <= 25) {
+            nextBtn.onclick = function() { goToSlot(nextSlot); };
+            nextBtn.style.display = 'inline-block';
+        } else {
+            nextBtn.style.display = 'none';
+        }
+    }
+
+    if (finishBtnInResult) {
+        finishBtnInResult.style.display = 'inline-block';
+        if (canFinish) {
+            finishBtnInResult.disabled = false;
+            finishBtnInResult.style.opacity = '1';
+            finishBtnInResult.style.cursor = 'pointer';
+            finishBtnInResult.title = 'Завершить тест и посмотреть результаты';
+            if (finishBtnHint) finishBtnHint.style.display = 'none';
+        } else {
+            finishBtnInResult.disabled = true;
+            finishBtnInResult.style.opacity = '0.65';
+            finishBtnInResult.style.cursor = 'not-allowed';
+            finishBtnInResult.title = 'Осталось ответить на ' + remaining + ' задач(и)';
+            if (finishBtnHint) {
+                finishBtnHint.textContent = 'Осталось ответить: ' + remaining;
+                finishBtnHint.style.display = 'block';
+            }
+        }
+    }
+
+    // Обновляем верхнюю кнопку «Завершить тест» (на случай если ученик
+    // ответил на последнюю задачу прямо сейчас — не нужно перезагружать).
+    const finishBtnTop = document.getElementById('finishBtnTop');
+    if (finishBtnTop) {
+        if (canFinish) {
+            finishBtnTop.disabled = false;
+            finishBtnTop.style.opacity = '1';
+            finishBtnTop.style.cursor = 'pointer';
+            finishBtnTop.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+            finishBtnTop.style.color = 'white';
+            finishBtnTop.title = 'Завершить тест и посмотреть результаты';
+        } else {
+            finishBtnTop.disabled = true;
+            finishBtnTop.style.opacity = '0.65';
+            finishBtnTop.style.cursor = 'not-allowed';
+            finishBtnTop.title = 'Осталось ответить на ' + remaining + ' задач(и)';
+        }
+    }
+
+    resultBlock.style.display = 'block';
+
+    // АВТОПЕРЕКЛЮЧЕНИЕ ОТКЛЮЧЕНО — ученик сам переходит к следующему слоту
+}
+
+function goToSlot(slotNum) {
+    const n = parseInt(slotNum, 10);
+    if (!n || n < 1 || n > 25) return;
+    if (window._clearTaskStorage) window._clearTaskStorage();
+    window.location.href = '/adaptive_test_simple?slot=' + n;
+}
+
+function goToNextTask() {
+    // Legacy-функция: оставлена для обратной совместимости
+    if (window._clearTaskStorage) window._clearTaskStorage();
+    window.location.href = '/adaptive_test_simple';
+}
+
+async function skipCurrentSlot() {
+    const slotInput = document.getElementById('currentSlotInput');
+    const slot = parseInt(slotInput ? slotInput.value : '0', 10);
+    if (!slot) return;
+    const skipBtn = document.getElementById('skipBtn');
+    if (skipBtn) {
+        skipBtn.disabled = true;
+        skipBtn.textContent = 'Пропускаем…';
+    }
+    try {
+        const r = await fetch('/adaptive_test_simple/skip', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({slot: slot}),
+        });
+        const j = await r.json();
+        if (j && j.status === 'success') {
+            if (window._clearTaskStorage) window._clearTaskStorage();
+            const next = parseInt(j.next_slot || (slot + 1), 10) || (slot + 1);
+            window.location.href = '/adaptive_test_simple?slot=' + Math.min(25, Math.max(1, next));
+        } else {
+            alert((j && j.message) || 'Не удалось пропустить задачу');
+            if (skipBtn) { skipBtn.disabled = false; skipBtn.textContent = 'Пропустить ->'; }
+        }
+    } catch (err) {
+        console.error('skip failed', err);
+        alert('Ошибка сети при пропуске задачи');
+        if (skipBtn) { skipBtn.disabled = false; skipBtn.textContent = 'Пропустить ->'; }
+    }
+}
+
+function finishTest() {
+    // Защита на фронте: если кнопка disabled — не идём дальше
+    const btnTop = document.getElementById('finishBtnTop');
+    const btnInResult = document.getElementById('finishBtn');
+    const blocked = (btnTop && btnTop.disabled) && (!btnInResult || btnInResult.disabled);
+    if (blocked) {
+        const t = (btnTop && btnTop.getAttribute('title'))
+                  || (btnInResult && btnInResult.getAttribute('title'))
+                  || 'Сначала ответьте на все 25 задач';
+        alert(t);
+        return;
+    }
+    if (window._clearTaskStorage) window._clearTaskStorage();
+    // Идём через серверный gate /finish — он сам проверит answered_count == 25
+    window.location.href = '/adaptive_test_simple/finish';
+}
+</script>
+
+<!-- MathLive для ввода математических формул -->
+<script src="https://unpkg.com/mathlive"></script>
+<script>
+// Настройка MathLive после загрузки + автосохранение в localStorage
+document.addEventListener('DOMContentLoaded', function() {
+    const taskId = '{{ task.id }}';
+    const STORAGE_KEY_ANSWER = 'adaptive_answer_' + taskId;
+    const STORAGE_KEY_SOLUTION = 'adaptive_solution_' + taskId;
+    
+    // Настройка поля ответа
+    const mathField = document.getElementById('user_answer');
+    if (mathField) {
+        // UI-FIX (Task 3+4): manual + material theme (без auto-open и тёмных «палок»).
+        mathField.setOptions({
+            virtualKeyboardMode: 'manual',
+            virtualKeyboardTheme: 'material',
+            virtualKeyboards: 'numeric symbols greek',
+            smartFence: true,
+            smartMode: true
+        });
+        
+        // Восстанавливаем сохранённый ответ из localStorage
+        const savedAnswer = localStorage.getItem(STORAGE_KEY_ANSWER);
+        if (savedAnswer) {
+            mathField.setValue(savedAnswer);
+        }
+        
+        // Автосохранение при каждом изменении
+        mathField.addEventListener('input', function() {
+            try {
+                localStorage.setItem(STORAGE_KEY_ANSWER, mathField.getValue('latex'));
+            } catch(e) {}
+        });
+    }
+    
+    // Настройка поля решения — теперь это обычный <textarea>.
+    const solutionField = document.getElementById('solution_text');
+    if (solutionField) {
+        const isTextarea = (solutionField.tagName === 'TEXTAREA');
+
+        // Восстанавливаем сохранённое решение из localStorage
+        const savedSolution = localStorage.getItem(STORAGE_KEY_SOLUTION);
+        if (savedSolution) {
+            if (isTextarea) {
+                solutionField.value = savedSolution;
+            } else if (typeof solutionField.setValue === 'function') {
+                solutionField.setValue(savedSolution);
+            }
+        }
+
+        // Автосохранение при каждом изменении
+        solutionField.addEventListener('input', function() {
+            try {
+                const val = isTextarea
+                    ? (solutionField.value || '')
+                    : (solutionField.getValue ? solutionField.getValue('latex') : '');
+                localStorage.setItem(STORAGE_KEY_SOLUTION, val);
+            } catch(e) {}
+        });
+    }
+    
+    // Очищаем localStorage после успешной отправки (при переходе к следующей задаче)
+    window._clearTaskStorage = function() {
+        localStorage.removeItem(STORAGE_KEY_ANSWER);
+        localStorage.removeItem(STORAGE_KEY_SOLUTION);
+    };
+});
+</script>
+
+<script>
+// ─── Единая клавиатура ввода (Математическая / Обычная) ───
+let _kbActiveField = null;
+
+// Следим за фокусом на полях ввода (math-field для ответа + textarea для решения)
+document.addEventListener('focusin', function(e) {
+    const el = e.target;
+    // MathLive использует shadow DOM, прокси через closest
+    const mf = el.closest ? el.closest('math-field') : null;
+    if (mf && (mf.id === 'user_answer' || mf.id === 'solution_text')) {
+        _kbActiveField = mf;
+        const label = document.getElementById('kbFieldLabel');
+        if (label) {
+            label.textContent = (mf.id === 'user_answer') ? 'Ответ' : 'Решение';
+        }
+    } else if (el && (el.id === 'user_answer' || el.id === 'solution_text')) {
+        // Обычный <textarea> для решения тоже отслеживаем
+        _kbActiveField = el;
+        const label = document.getElementById('kbFieldLabel');
+        if (label) {
+            label.textContent = (el.id === 'user_answer') ? 'Ответ' : 'Решение';
+        }
+    }
+});
+
+// Вспомогательно: textarea использует .value, math-field — getValue/setValue.
+function _kbIsTextarea(el) {
+    return el && el.tagName === 'TEXTAREA';
+}
+function _kbGetValue(el) {
+    if (!el) return '';
+    if (_kbIsTextarea(el)) return el.value || '';
+    if (typeof el.getValue === 'function') return el.getValue('latex') || '';
+    return el.value || '';
+}
+function _kbSetValue(el, val) {
+    if (!el) return;
+    if (_kbIsTextarea(el)) {
+        el.value = val;
+    } else if (typeof el.setValue === 'function') {
+        el.setValue(val);
+    } else {
+        el.value = val;
+    }
+}
+function _kbInsertAtCursor(el, text) {
+    // Для textarea вставляем в позицию каретки (с переносами строк); иначе — в конец.
+    if (_kbIsTextarea(el)) {
+        const start = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
+        const end   = (typeof el.selectionEnd === 'number')   ? el.selectionEnd   : el.value.length;
+        const before = el.value.substring(0, start);
+        const after  = el.value.substring(end);
+        el.value = before + text + after;
+        const pos = start + text.length;
+        try { el.setSelectionRange(pos, pos); } catch(e) {}
+    } else {
+        _kbSetValue(el, _kbGetValue(el) + text);
+    }
+}
+
+function kbInsert(text) {
+    if (!_kbActiveField) {
+        _kbActiveField = document.getElementById('user_answer');
+    }
+    if (!_kbActiveField) return;
+    try {
+        // Спец-обработка «⏎» для textarea — реальный перенос строки вместо \quad
+        if (_kbIsTextarea(_kbActiveField) && text === '\\quad ') {
+            text = '\n';
+        }
+        _kbInsertAtCursor(_kbActiveField, text);
+        _kbActiveField.focus();
+        // Триггер события для автосохранения
+        _kbActiveField.dispatchEvent(new Event('input', { bubbles: true }));
+    } catch(e) {
+        console.warn('kbInsert error:', e);
+    }
+}
+
+function kbBackspace() {
+    if (!_kbActiveField) {
+        _kbActiveField = document.getElementById('user_answer');
+    }
+    if (!_kbActiveField) return;
+    try {
+        if (_kbIsTextarea(_kbActiveField)) {
+            const el = _kbActiveField;
+            const start = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
+            const end   = (typeof el.selectionEnd === 'number')   ? el.selectionEnd   : el.value.length;
+            if (start === end && start > 0) {
+                el.value = el.value.substring(0, start - 1) + el.value.substring(end);
+                try { el.setSelectionRange(start - 1, start - 1); } catch(e) {}
+            } else if (start !== end) {
+                el.value = el.value.substring(0, start) + el.value.substring(end);
+                try { el.setSelectionRange(start, start); } catch(e) {}
+            }
+            el.focus();
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            return;
+        }
+        const current = _kbGetValue(_kbActiveField);
+        if (current && current.length > 0) {
+            _kbSetValue(_kbActiveField, current.slice(0, -1));
+            _kbActiveField.focus();
+            _kbActiveField.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    } catch(e) {
+        console.warn('kbBackspace error:', e);
+    }
+}
+
+function toggleKeyboard() {
+    const kb = document.getElementById('unifiedKeyboard');
+    const btn = document.getElementById('kbToggleBtn');
+    const body = document.body;
+    const isMobile = window.innerWidth <= 640;
+    if (!kb) return;
+    const isOpen = kb.classList.contains('open');
+    if (isOpen) {
+        kb.classList.remove('open');
+        if (btn) btn.classList.remove('active');
+        if (isMobile) body.classList.remove('kb-open');
+    } else {
+        kb.classList.add('open');
+        if (btn) btn.classList.add('active');
+        if (isMobile) body.classList.add('kb-open');
+        if (_kbActiveField) _kbActiveField.focus();
+    }
+}
+
+function switchKbTab(tabName) {
+    document.querySelectorAll('.kb-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.kb-layout').forEach(function(l) { l.classList.remove('active'); });
+    var tab = document.querySelector('.kb-tab[data-tab="' + tabName + '"]');
+    var layoutId = 'kbLayout' + tabName.charAt(0).toUpperCase() + tabName.slice(1);
+    var layout = document.getElementById(layoutId);
+    if (tab) tab.classList.add('active');
+    if (layout) layout.classList.add('active');
+}
+
+function submitCurrentAnswer() {
+    var form = document.getElementById('answerForm');
+    if (form) {
+        form.dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+}
+
+// Закрытие клавиатуры по клику на backdrop
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.classList.contains('kb-backdrop')) {
+        toggleKeyboard();
+    }
+});
+</script>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- test session restoration: сохраняем session_id при закрытии/уходе со страницы -->
+<script>
+(function(){
+var u=new URLSearchParams(window.location.search);
+var sid=u.get("session");
+if(sid){
+window._adaptiveSessionId=sid;
+try{localStorage.setItem("adaptive_session_id",sid)}catch(e){}}else{
+try{sid=localStorage.getItem("adaptive_session_id")}catch(e){}
+if(sid)window._adaptiveSessionId=sid}
+function save(){
+var s=window._adaptiveSessionId;if(!s)return;
+var u="/api/test/"+encodeURIComponent(s)+"/answer";
+try{navigator.sendBeacon(u,JSON.stringify({}))}catch(e){
+var x=new XMLHttpRequest();
+x.open("POST",u,false);
+x.setRequestHeader("Content-Type","application/json");
+x.send("{}")}}
+window.addEventListener("beforeunload",save);
+document.addEventListener("visibilitychange",function(){
+if(document.visibilityState==="hidden")save()});
+})();
+</script>
+{% endblock %}

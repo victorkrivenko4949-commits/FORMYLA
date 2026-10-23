@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Конференция — Formyla{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/wb_conference.css') }}?v={{ version }}">
+{% endblock %}
+
+{% block content %}
+<div class="cf-container" id="cf-container">
+  <!-- Everything managed by wb_ui.js -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/wb_ui.js') }}?v={{ version }}"></script>
+<script>
+(function () {
+    "use strict";
+    var container = document.getElementById("cf-container");
+    if (container && window.__conferenceUI) {
+        window.__conferenceUI.init(container);
+    }
+})();
+</script>
+{% endblock %}

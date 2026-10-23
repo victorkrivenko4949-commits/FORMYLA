@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Олимпиадный тест — FORMYLA</title>
+    <meta name="description" content="FORMYLA — онлайн-платформа для подготовки школьников 5–11 классов к олимпиадам по математике: ВсОШ, Ломоносов, Эйлер, Турнир городов. ИИ-тьютор, задачи дня, теория, разборы.">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/style.css?v=5">
+    <link rel="stylesheet" href="/static/css/nav.css?v=1784415778">
+    <link rel="stylesheet" href="/static/css/mobile.css?v=3">
+    <link rel="stylesheet" href="/static/css/mobile_features.css?v=1784415778">
+    <link rel="stylesheet" href="/static/css/errors.css?v=1784415778">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    
+    <!-- KaTeX for math rendering — синхронная загрузка + скрытие до рендера,
+         чтобы не было «вспышки» сырого $LaTeX$ перед заменой на формулы. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+      /* Прячем содержимое до завершения рендера KaTeX. Применяется только
+         если есть потенциально математический контент (через JS-флаг).
+         Fail-safe: автоматически снимается через 1500ms, чтобы страница
+         НЕ зависла навсегда если KaTeX упал. */
+      html:not(.katex-ready) body.has-math .oly-md,
+      html:not(.katex-ready) body.has-math .task-text,
+      html:not(.katex-ready) body.has-math .problem-card,
+      html:not(.katex-ready) body.has-math .ai-feedback,
+      html:not(.katex-ready) body.has-math [data-katex] {
+        visibility: hidden;
+      }
+    </style>
+    <!-- preload — браузер начинает качать ещё до парсинга остального HTML -->
+    <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js">
+    <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js">
+    <!-- Синхронная загрузка: блокирует парсинг до загрузки KaTeX,
+         но даёт ГАРАНТИЮ что renderMathInElement доступна как только
+         DOM закончит парсить body. -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+      // Помечаем body как «возможно содержит math» — чтобы CSS-скрытие
+      // действовало только на странички с формулами, а не на всю морду.
+      (function(){
+        try {
+          document.documentElement.classList.add('katex-loading');
+          // Fail-safe: если KaTeX не справится за 1.5s — показываем как есть.
+          setTimeout(function(){
+            document.documentElement.classList.remove('katex-loading');
+            document.documentElement.classList.add('katex-ready');
+          }, 1500);
+        } catch(e){}
+      })();
+      // Рендер сразу при готовности DOM. Используем DOMContentLoaded —
+      // он срабатывает СРАЗУ как только тело распаршено, не дожидаясь
+      // картинок/iframe'ов, поэтому быстрее чем 'load'.
+      document.addEventListener('DOMContentLoaded', function(){
+        var t0 = performance.now();
+        try {
+          // Помечаем body — теперь CSS-скрытие активируется (если оно нужно)
+          document.body.classList.add('has-math');
+          if (typeof renderMathInElement === 'function') {
+            renderMathInElement(document.body, {
+              delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$',  right: '$',  display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+              ],
+              throwOnError: false,
+              // ignoredTags — НЕ трогать содержимое <script>, <style>, <code>,
+              // <pre> чтобы не ломать примеры кода / синтаксис.
+              ignoredTags: ['script','noscript','style','textarea','pre','code']
+            });
+          }
+        } catch(e) { console.warn('KaTeX render error', e); }
+        finally {
+          // Снимаем класс «загрузка» — содержимое становится видимым.
+          document.documentElement.classList.remove('katex-loading');
+          document.documentElement.classList.add('katex-ready');
+          if (window.console && console.log) {
+            console.log('✓ Ka

@@ -1,0 +1,20 @@
+{
+  "id": 801655,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $D$, $E$, $F$ соответственно так, что $BD = DC$, $CE : EA = 1 : 2$, $AF : FB = 1 : 3$. Прямые $AD$, $BE$, $CF$ попарно пересекаются в точках $P = AD \\cap BE$, $Q = BE \\cap CF$, $R = CF \\cap AD$. Найдите отношение площади треугольника $PQR$ к площади треугольника $ABC$.",
+  "solution": "Пусть $A(0,0)$, $B(1,0)$, $C(0,1)$. Тогда $ABC$ — треугольник площади $\\frac12$. Вычислим координаты точек деления: $D$ — середина $BC$, поэтому $D\\left(\\frac12,\\frac12\\right)$; $E$ делит $CA$ в отношении $CE:EA=1:2$, от $C$ к $A$, значит $E\\left(0, \\frac23\\right)$; $F$ делит $AB$ в отношении $AF:FB=1:3$, от $A$ к $B$, значит $F\\left(\\frac14,0\\right)$.\n\nУравнения прямых:\n$AD$: $y=x$;\n$BE$: через $B(1,0)$ и $E\\left(0,\\frac23\\right)$: $y=\\frac23(1-x)$;\n$CF$: через $C(0,1)$ и $F\\left(\\frac14,0\\right)$: $y=1-4x$.\n\nНайдём точки пересечения:\n$P = AD \\cap BE$: $x=\\frac23(1-x) \\Rightarrow x=\\frac25$, $y=\\frac25$ (так как $y=x$), $P\\left(\\frac25,\\frac25\\right)$.\n$Q = BE \\cap CF$: $\\frac23(1-x)=1-4x \\Rightarrow x=\\frac1{10}$, $y=1-4\\cdot\\frac1{10}=\\frac35$, $Q\\left(\\frac1{10},\\frac35\\right)$.\n$R = CF \\cap AD$: $x=1-4x \\Rightarrow x=\\frac15$, $y=\\frac15$, $R\\left(\\frac15,\\frac15\\right)$.\n\nПлощадь $\\triangle PQR$ вычислим по формуле:\n$$S_{PQR} = \\frac12\\left|x_1(y_2-y_3)+x_2(y_3-y_1)+x_3(y_1-y_2)\\right| = \\frac12\\left|\\frac25\\left(\\frac35-\\frac15\\right)+\\frac1{10}\\left(\\frac15-\\frac25\\right)+\\frac15\\left(\\frac25-\\frac35\\right)\\right|.$$\nУпростим:\n$$\\frac25\\cdot\\frac25 = \\frac4{25},\\quad \\frac1{10}\\cdot\\left(-\\frac15\\right) = -\\frac1{50},\\quad \\frac15\\cdot\\left(-\\frac15\\right) = -\\frac1{25}.$$\nСумма: $\\frac4{25} - \\frac1{50} - \\frac1{25} = \\frac{8}{50} - \\frac1{50} - \\frac2{50} = \\frac5{50} = \\frac1{10}$. Половина модуля: $\\frac12\\cdot\\frac1{10} = \\frac1{20}$.\n\nПлощадь треугольника $ABC$ равна $\\frac12$. Отношение $\\frac{S_{PQR}}{S_{ABC}} = \\frac{1/20}{1/2} = \\frac1{10}$.\n\nКраткий ответ: $\\dfrac{1}{10}$.",
+  "correct_answer": "$$\\frac{1}{10}$$",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Координатный метод или вычисление площадей через отношения",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.794,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T13:41:02.966054+00:00"
+}

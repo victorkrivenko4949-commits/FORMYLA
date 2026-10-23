@@ -1,0 +1,20 @@
+{
+  "id": 801890,
+  "task_text": "В трапеции $ABCD$ с основаниями $AD\\parallel BC$ ($AD>BC$) на стороне $AD$ выбрана точка $M$ так, что отрезок $CM$ делит площадь трапеции пополам. На стороне $AB$ выбрана точка $N$ — середина $AB$. Отрезки $CM$ и $DN$ пересекаются в точке $P$. Найдите отношение площади треугольника $CDP$ к площади трапеции $ABCD$, если $AD=2BC$.",
+  "solution": "Докажем, что отношение не зависит от формы трапеции. При аффинном преобразовании сохраняются параллельность прямых и отношение площадей. Любую трапецию можно аффинно перевести в прямоугольную с теми же длинами оснований, поэтому достаточно рассмотреть прямоугольную трапецию с $AB\\perp AD$.\n\nПусть $BC=a$, $AD=2a$, высота $h$. Введем координаты: $A(0,0)$, $B(0,h)$, $C(a,h)$, $D(2a,0)$. Так как $CM$ делит площадь пополам, $S_{MCD}=\\frac12 S$. С другой стороны, $S_{MCD}=\\frac12\\cdot MD\\cdot h$, а площадь трапеции $S=\\frac{a+2a}{2}\\cdot h=\\frac{3a}{2}h$. Отсюда $\\frac12\\cdot MD\\cdot h=\\frac12\\cdot\\frac{3a}{2}h$, следовательно $MD=\\frac{3a}{2}$, $AM=AD-MD=2a-\\frac{3a}{2}=\\frac{a}{2}$. Итак, $M\\left(\\frac{a}{2},0\\right)$.\n\n$N$ — середина $AB$, поэтому $N\\left(0,\\frac{h}{2}\\right)$.\n\nПрямая $CM$: параметрическое уравнение $C+t(M-C)= (a,h)+t\\left(\\frac{a}{2}-a,0-h\\right)= \\left(a-\\frac{a}{2}t,\\; h(1-t)\\right)$.\n\nПрямая $DN$: $D+s(N-D)= (2a,0)+s\\left(-2a,\\frac{h}{2}\\right)= \\left(2a(1-s),\\; \\frac{h}{2}s\\right)$.\n\nПриравниваем координаты:\n\\[\n\\begin{cases}\na-\\frac{a}{2}t = 2a(1-s)\\\\\nh(1-t) = \\frac{h}{2}s\n\\end{cases}\n\\]\nИз второго $1-t=\\frac{s}{2}$, откуда $s=2(1-t)$. Подставляем в первое:\n$a-\\frac{a}{2}t = 2a(1-2(1-t)) = 2a(1-2+2t)=2a(2t-1)=4at-2a$.\nПереносим: $a+2a = 4at+\\frac{a}{2}t$, $3a = \\frac{9a}{2}t$, $t=\\frac{2}{3}$.\nТогда $s=2\\left(1-\\frac{2}{3}\\right)=\\frac{2}{3}$.\n\nКоординаты $P$: $x=a-\\frac{a}{2}\\cdot\\frac{2}{3}=a-\\frac{a}{3}=\\frac{2a}{3}$, $y=h\\left(1-\\frac{2}{3}\\right)=\\frac{h}{3}$. Итак, $P\\left(\\frac{2a}{3},\\frac{h}{3}\\right)$.\n\nВычислим площадь треугольника $CDP$ через определитель:\n$\\overrightarrow{CD}=(2a-a,\\;0-h)=(a,-h)$,\n$\\overrightarrow{CP}=\\left(\\frac{2a}{3}-a,\\;\\frac{h}{3}-h\\right)=\\left(-\\frac{a}{3},\\;-\\frac{2h}{3}\\right)$.\n\nДетерминант: $a\\cdot\\left(-\\frac{2h}{3}\\right)-(-h)\\cdot\\left(-\\frac{a}{3}\\right)=-\\frac{2ah}{3}-\\frac{ah}{3}=-ah$.\nПлощадь $S_{CDP}=\\frac12|{-ah}|=\\frac{ah}{2}$.\n\nПлощадь трапеции $S_{ABCD}=\\frac{3a}{2}h$.\n\nОтношение $\\displaystyle\\frac{S_{CDP}}{S_{ABCD}}=\\frac{ah/2}{3ah/2}=\\frac{1}{3}$.\n\nОтвет: $\\boxed{\\frac{1}{3}}$.",
+  "correct_answer": "\\frac{1}{3}",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 8,
+  "real_level": 8,
+  "key_method": "Аффинное преобразование + координатный метод",
+  "idea_count": 4,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T14:31:33.972896+00:00"
+}

@@ -1,0 +1,48 @@
+name: atlas-fixes
+
+# Баги Лаврика по чертежам атласа «102 метода» (#9, #10, #12, #13) и тексту (#8).
+# static/methods/atlas.html весит ~5,5 МБ — править его руками нельзя, поэтому
+# исправления описаны кодом в tools/atlas_geometry_fixes.py (чертежи) и
+# tools/clean_methods_atlas.py (TEXT_FIXES). Этот workflow применяет их к обоим
+# HTML-файлам и коммитит результат в main. Запускается при изменении этих двух
+# скриптов или вручную. Коммит трогает только static/methods/*.html, поэтому
+# сам себя повторно не запускает.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - tools/atlas_geometry_fixes.py
+      - tools/clean_methods_atlas.py
+      - .github/workflows/atlas_fixes.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atlas-fixes
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Apply atlas fixes
+        run: python tools/clean_methods_atlas.py
+      - name: Commit regenerated atlas
+        run: |
+          if git diff --quiet -- static/methods; then
+            echo "atlas unchanged"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add static/methods/index.html static/methods/atlas.html
+          git commit -m "chore(atlas): применить исправления чертежей и текста (lavrik-bugs #8 #9 #10 #12 #13)"
+          git push

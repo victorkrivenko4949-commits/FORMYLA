@@ -1,0 +1,109 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 4,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 4,
+   "y": 4.8989794855664
+  },
+  {
+   "type": "point",
+   "id": "P",
+   "x": 3,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "a",
+   "center": "A",
+   "through": "P"
+  },
+  {
+   "type": "point",
+   "id": "Q",
+   "x": 9,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "b",
+   "center": "B",
+   "through": "Q"
+  },
+  {
+   "type": "point",
+   "id": "R",
+   "x": -3,
+   "y": 4.8989794855664
+  },
+  {
+   "type": "circle",
+   "id": "c",
+   "center": "C",
+   "through": "R"
+  },
+  {
+   "type": "circle_circle",
+   "id": "U",
+   "circle1": "a",
+   "circle2": "b",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "V",
+   "circle1": "a",
+   "circle2": "b",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC",
+   "style": "accent"
+  },
+  {
+   "circle": "a"
+  },
+  {
+   "circle": "b"
+  },
+  {
+   "circle": "c"
+  },
+  {
+   "segment": "UV",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "A",
+    "U"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

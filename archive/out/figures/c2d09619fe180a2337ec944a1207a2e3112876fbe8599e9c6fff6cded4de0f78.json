@@ -1,0 +1,146 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "B",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "M",
+   "x": 2,
+   "y": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "BM"
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "O",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "c2",
+   "center": "B",
+   "through": "O"
+  },
+  {
+   "type": "circle_circle",
+   "id": "A",
+   "circle1": "c1",
+   "circle2": "c2",
+   "pick": 0
+  },
+  {
+   "type": "reflect_point",
+   "id": "C",
+   "of": "B",
+   "over": "M"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "AM",
+   "ratio": 0.3333
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "AH",
+   "line2": "BL"
+  },
+  {
+   "type": "intersection",
+   "id": "N",
+   "line1": "BL",
+   "line2": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AM",
+   "style": "accent"
+  },
+  {
+   "segment": "AH",
+   "style": "accent"
+  },
+  {
+   "segment": "BN",
+   "style": "accent"
+  },
+  {
+   "polygon": "AKL",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "A",
+    "M"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "B"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "M"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "B",
+    "M",
+    "A"
+   ],
+   "text": "30°"
+  },
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "AK",
+    "KL"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "KL",
+    "LA"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

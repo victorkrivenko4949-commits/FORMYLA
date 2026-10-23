@@ -1,0 +1,172 @@
+[
+  {
+    "uid": "GEN-fill_0453",
+    "note": "reflect_point: «продлим AM за M»",
+    "compiled_ops": 1,
+    "aux_status": "AUX_BUILT",
+    "creates_ok": true,
+    "issues": [],
+    "base_svg": "c:\\Users\\Redmi\\Desktop\\Новая папка (2)\\output\\ch27\\svg\\GEN-fill_0453_base.svg",
+    "aux_svg": "",
+    "latency_ms": 3669,
+    "check": "A1=2M−A; |mid(A,A1)−M|=0.00e+00 OK",
+    "statement": "В треугольнике ABC известно, что AB = 7 и AC = 9, а M — середина стороны BC. Длина медианы AM выражается целым числом. Н",
+    "steps": [
+      {
+        "step_no": 1,
+        "action": "reflect_point",
+        "args": {
+          "point": "A",
+          "center": "M"
+        },
+        "creates_point": "A1",
+        "quote": "пусть A' — точка, для которой M — середина AA'"
+      }
+    ]
+  },
+  {
+    "uid": "GEN-L123-w2_46_s5",
+    "note": "reflect_point + параллелограмм ABCD",
+    "compiled_ops": 3,
+    "aux_status": "AUX_BUILT",
+    "creates_ok": true,
+    "issues": [],
+    "base_svg": "",
+    "aux_svg": "",
+    "latency_ms": 4020,
+    "check": "AB∥CD (cross=0.00e+00), AD∥BC (cross=0.00e+00) OK",
+    "statement": "В треугольнике ABC проведена медиана BM. Известно, что AB = 6, BC = 8, а угол ABC равен 60°. Найдите длину медианы BM.",
+    "steps": [
+      {
+        "step_no": 1,
+        "action": "reflect_point",
+        "args": {
+          "point": "B",
+          "center": "M"
+        },
+        "creates_point": "D",
+        "quote": "Продлим медиану BM за M на отрезок MD = BM"
+      },
+      {
+        "step_no": 2,
+        "action": "draw_segment",
+        "args": {
+          "p1": "A",
+          "p2": "D"
+        },
+        "creates_point": null,
+        "quote": "соединим A и D"
+      },
+      {
+        "step_no": 3,
+        "action": "draw_segment",
+        "args": {
+          "p1": "C",
+          "p2": "D"
+        },
+        "creates_point": null,
+        "quote": "соединим C и D"
+      }
+    ]
+  },
+  {
+    "uid": "GEN-fill_0452",
+    "note": "rotate_point maps: A -> C",
+    "compiled_ops": 1,
+    "aux_status": "AUX_BUILT",
+    "creates_ok": true,
+    "issues": [],
+    "base_svg": "c:\\Users\\Redmi\\Desktop\\Новая папка (2)\\output\\ch27\\svg\\GEN-fill_0452_base.svg",
+    "aux_svg": "c:\\Users\\Redmi\\Desktop\\Новая папка (2)\\output\\ch27\\svg\\GEN-fill_0452_aux.svg",
+    "latency_ms": 4134,
+    "check": "rotate(A,B,∠ABC)≈C; dev=6.36e-14 OK",
+    "statement": "Точка P лежит внутри равностороннего треугольника ABC, причём PA = 3, PB = 4, PC = 5. Найдите величину угла APB.",
+    "steps": [
+      {
+        "step_no": 1,
+        "action": "rotate_point",
+        "args": {
+          "point": "P",
+          "center": "B",
+          "maps": [
+            "A",
+            "C"
+          ]
+        },
+        "creates_point": "P1",
+        "quote": "повернём вокруг B так, чтобы A перешла в C"
+      }
+    ]
+  },
+  {
+    "uid": "GEN-fill_0454",
+    "note": "rotate_point maps: D -> B (квадрат)",
+    "compiled_ops": 1,
+    "aux_status": "AUX_BUILT",
+    "creates_ok": true,
+    "issues": [],
+    "base_svg": "",
+    "aux_svg": "",
+    "latency_ms": 3675,
+    "check": "rotate(D,A,∠DAB)≈B; dev=2.84e-14 OK",
+    "statement": "Дан квадрат ABCD со стороной 1. На стороне BC отмечена точка M, а на стороне CD — точка N так, что угол MAN равен 45°. Н",
+    "steps": [
+      {
+        "step_no": 1,
+        "action": "rotate_point",
+        "args": {
+          "point": "N",
+          "center": "A",
+          "maps": [
+            "D",
+            "B"
+          ]
+        },
+        "creates_point": "N1",
+        "quote": "повернём квадрат вокруг A на 90°"
+      }
+    ]
+  },
+  {
+    "uid": "GEN-L123-w2_21_s3",
+    "note": "mark_intersection по step-id (par_N)",
+    "compiled_ops": 3,
+    "aux_status": "AUX_BUILT",
+    "creates_ok": true,
+    "issues": [],
+    "base_svg": "c:\\Users\\Redmi\\Desktop\\Новая папка (2)\\output\\ch27\\svg\\GEN-L123-w2_21_s3_base.svg",
+    "aux_svg": "c:\\Users\\Redmi\\Desktop\\Новая папка (2)\\output\\ch27\\svg\\GEN-L123-w2_21_s3_aux.svg",
+    "latency_ms": 3179,
+    "check": "K на AC: dist=0.00e+00 on_seg=True OK",
+    "statement": "В треугольнике ABC на стороне AC отмечена точка M так, что AM : MC = 1 : 3. На стороне BC отмечена точка N — середина ст",
+    "steps": [
+      {
+        "step_no": 1,
+        "id": "par_N",
+        "action": "draw_parallel",
+        "args": {
+          "point": "N",
+          "line": [
+            "B",
+            "M"
+          ]
+        },
+        "creates_point": null,
+        "quote": "Проведём через N прямую, параллельную BM"
+      },
+      {
+        "step_no": 2,
+        "action": "mark_intersection",
+        "args": {
+          "obj1": "par_N",
+          "obj2": [
+            "A",
+            "C"
+          ]
+        },
+        "creates_point": "K",
+        "quote": "до пересечения с AC в точке K"
+      }
+    ]
+  }
+]

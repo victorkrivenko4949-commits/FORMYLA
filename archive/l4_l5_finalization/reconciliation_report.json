@@ -1,0 +1,608 @@
+{
+  "reconciliation_timestamp": "2026-07-17T16:27:59.378057+00:00",
+  "stage3_unique_task_ids": 63,
+  "stage4_classified_task_ids": 63,
+  "stage45_reclassified_task_ids": 40,
+  "stage5_fix_task_ids": 14,
+  "final_sets": {
+    "keep": {
+      "count": 13,
+      "task_ids": [
+        "486d7f4431a0",
+        "4cf0c4d29402",
+        "627b2ba84fe6",
+        "72feb7a8c418",
+        "aca199da7d47",
+        "b83ab2ce0b72",
+        "bd869dd1c1d3",
+        "c28e94076cc6",
+        "cdf76dff28bc",
+        "cf1b975a398e",
+        "f29e647f9881",
+        "f5a31a5003df",
+        "f7a0c59e2019"
+      ]
+    },
+    "fixed": {
+      "count": 4,
+      "task_ids": [
+        "2411a1ae595e",
+        "495e06fc6844",
+        "97762757cf9e",
+        "a0b8a1c1d792"
+      ]
+    },
+    "replace": {
+      "count": 46,
+      "task_ids": [
+        "04ad8880942f",
+        "053f552cec0f",
+        "0cabbe464aa4",
+        "11ae5d991c89",
+        "139c195d2b47",
+        "167562c3d464",
+        "274146cf37e5",
+        "41132df26c2a",
+        "468aa9188b50",
+        "4a1f362c3106",
+        "5109f65b67aa",
+        "5557f065526c",
+        "581cc39bf4f0",
+        "623e35b0654d",
+        "668efb906002",
+        "6787c2edde0d",
+        "69a8bb8eb7cb",
+        "6e06828e3d72",
+        "75db01688ab4",
+        "7681c5edc853",
+        "7dbecced5add",
+        "812f4b5f4d2c",
+        "88d9f7084cd2",
+        "8b95dc7d5035",
+        "96c72e3bb0e7",
+        "a03ed1222b30",
+        "a2974faf4afe",
+        "a7b6a236ee58",
+        "a8a672e7f2b3",
+        "ab5bf34e626a",
+        "b0283feaaa8f",
+        "bff87d012432",
+        "c48f84e6585b",
+        "c4cfd64d2456",
+        "c5307bfa5ccd",
+        "d21e045486af",
+        "d454a6c61c44",
+        "d7b30d0953e4",
+        "d8b9d06cc096",
+        "db39686b4adf",
+        "defdb4650efb",
+        "e011d46e1c08",
+        "e8e10be25736",
+        "ef0b407220bb",
+        "f03be060f6b3",
+        "ffac6a343086"
+      ]
+    }
+  },
+  "total_unique": 63,
+  "expected_total": 63,
+  "invariants": {
+    "classified_unique_ids_equals_keep_plus_fixed_plus_replace": true,
+    "keep_intersect_fixed_empty": true,
+    "keep_intersect_replace_empty": true,
+    "fixed_intersect_replace_empty": true
+  },
+  "cross_file_duplicates": {
+    "c28e94076cc6": [
+      "stage4",
+      "stage45"
+    ],
+    "72feb7a8c418": [
+      "stage4",
+      "stage45"
+    ],
+    "cdf76dff28bc": [
+      "stage4",
+      "stage45"
+    ],
+    "f7a0c59e2019": [
+      "stage4",
+      "stage45"
+    ],
+    "ffac6a343086": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "167562c3d464": [
+      "stage4",
+      "stage45"
+    ],
+    "6787c2edde0d": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "a8a672e7f2b3": [
+      "stage4",
+      "stage45"
+    ],
+    "04ad8880942f": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "f29e647f9881": [
+      "stage4",
+      "stage45"
+    ],
+    "486d7f4431a0": [
+      "stage4",
+      "stage45"
+    ],
+    "581cc39bf4f0": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "f5a31a5003df": [
+      "stage4",
+      "stage45"
+    ],
+    "495e06fc6844": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "ab5bf34e626a": [
+      "stage4",
+      "stage45"
+    ],
+    "97762757cf9e": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "b0283feaaa8f": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "139c195d2b47": [
+      "stage4",
+      "stage45"
+    ],
+    "d7b30d0953e4": [
+      "stage4",
+      "stage45"
+    ],
+    "2411a1ae595e": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "6e06828e3d72": [
+      "stage4",
+      "stage45"
+    ],
+    "defdb4650efb": [
+      "stage4",
+      "stage45"
+    ],
+    "db39686b4adf": [
+      "stage4",
+      "stage45"
+    ],
+    "b83ab2ce0b72": [
+      "stage4",
+      "stage45"
+    ],
+    "274146cf37e5": [
+      "stage4",
+      "stage45"
+    ],
+    "e011d46e1c08": [
+      "stage4",
+      "stage45"
+    ],
+    "4a1f362c3106": [
+      "stage4",
+      "stage45"
+    ],
+    "468aa9188b50": [
+      "stage4",
+      "stage45"
+    ],
+    "5557f065526c": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "41132df26c2a": [
+      "stage4",
+      "stage45"
+    ],
+    "7dbecced5add": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "75db01688ab4": [
+      "stage4",
+      "stage45"
+    ],
+    "d21e045486af": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "cf1b975a398e": [
+      "stage4",
+      "stage45"
+    ],
+    "a2974faf4afe": [
+      "stage4",
+      "stage45"
+    ],
+    "a0b8a1c1d792": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "96c72e3bb0e7": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "627b2ba84fe6": [
+      "stage4",
+      "stage45"
+    ],
+    "bff87d012432": [
+      "stage4",
+      "stage45",
+      "stage5"
+    ],
+    "a7b6a236ee58": [
+      "stage4",
+      "stage45"
+    ]
+  },
+  "per_cell_slots": [
+    {
+      "cell_key": "G11|L5|T001|S1",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "468aa9188b50"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G11|L5|T001|S2",
+      "replace_ids_count": 4,
+      "replace_ids": [
+        "ab5bf34e626a",
+        "274146cf37e5",
+        "f03be060f6b3",
+        "623e35b0654d"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G11|L5|T021|S1",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "a7b6a236ee58"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G11|L5|T034|S0",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "4a1f362c3106"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G11|L5|T043|S1",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "a03ed1222b30"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L4|T005|S0",
+      "replace_ids_count": 2,
+      "replace_ids": [
+        "75db01688ab4",
+        "b0283feaaa8f"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L4|T008|S1",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "581cc39bf4f0"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L4|T022|S2",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "04ad8880942f"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L5|T002|S1",
+      "replace_ids_count": 2,
+      "replace_ids": [
+        "41132df26c2a",
+        "d454a6c61c44"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L5|T002|S2",
+      "replace_ids_count": 3,
+      "replace_ids": [
+        "88d9f7084cd2",
+        "defdb4650efb",
+        "a8a672e7f2b3"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L5|T004|S2",
+      "replace_ids_count": 4,
+      "replace_ids": [
+        "8b95dc7d5035",
+        "d8b9d06cc096",
+        "ffac6a343086",
+        "7681c5edc853"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L5|T005|S0",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "96c72e3bb0e7"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L5|T005|S2",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "db39686b4adf"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L5|T008|S0",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "d21e045486af"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L5|T008|S1",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "bff87d012432"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L5|T022|S0",
+      "replace_ids_count": 4,
+      "replace_ids": [
+        "139c195d2b47",
+        "6e06828e3d72",
+        "a2974faf4afe",
+        "e011d46e1c08"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L5|T022|S1",
+      "replace_ids_count": 4,
+      "replace_ids": [
+        "c48f84e6585b",
+        "ef0b407220bb",
+        "053f552cec0f",
+        "668efb906002"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L5|T022|S2",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "d7b30d0953e4"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L5|T024|S1",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "5557f065526c"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G5|L5|T024|S2",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "7dbecced5add"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G6|L5|T006|S2",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "c5307bfa5ccd"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G6|L5|T016|S1",
+      "replace_ids_count": 1,
+      "replace_ids": [
+        "5109f65b67aa"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G6|L5|T032|S1",
+      "replace_ids_count": 2,
+      "replace_ids": [
+        "0cabbe464aa4",
+        "e8e10be25736"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G7|L5|T003|S1",
+      "replace_ids_count": 2,
+      "replace_ids": [
+        "167562c3d464",
+        "6787c2edde0d"
+      ],
+      "total_in_bank": 4,
+      "replace_in_bank": 0,
+      "valid_existing": 4,
+      "needed_slots": 1,
+      "replacement_slots": 1
+    },
+    {
+      "cell_key": "G7|L5|T003|S2",
+      "replace_ids_count": 2,
+      "replace_ids": [
+        "69a8bb8eb7cb",
+        "c4cfd64d2456"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    },
+    {
+      "cell_key": "G7|L5|T023|S1",
+      "replace_ids_count": 2,
+      "replace_ids": [
+        "11ae5d991c89",
+        "812f4b5f4d2c"
+      ],
+      "total_in_bank": 5,
+      "replace_in_bank": 0,
+      "valid_existing": 5,
+      "needed_slots": 0,
+      "replacement_slots": 0
+    }
+  ],
+  "total_replacement_slots": 1,
+  "total_fixed_tasks": 4,
+  "verdict": "PASS"
+}

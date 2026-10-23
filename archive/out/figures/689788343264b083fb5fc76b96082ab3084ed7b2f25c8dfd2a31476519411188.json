@@ -1,0 +1,56 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "intersection",
+   "id": "S",
+   "line1": "AC",
+   "line2": "BD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC"
+  },
+  {
+   "segment": "BD"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "D",
+    "A",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "C",
+    "A"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BS",
+   "reason": "M — середина BS; в прямоугольном треугольнике BCS медиана CM равна половине гипотенузы, а по условию BS=2CD, поэтому CM=CD."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CM",
+   "style": "soft"
+  }
+ ]
+}

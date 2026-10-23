@@ -1,0 +1,123 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "BI",
+   "line2": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "F",
+   "line1": "CI",
+   "line2": "AB"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "EIF"
+  },
+  {
+   "type": "line_circle",
+   "id": "T",
+   "circle": "w",
+   "line": "AI",
+   "pick": 0
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "AEF"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BE"
+  },
+  {
+   "segment": "CF"
+  },
+  {
+   "segment": "EF"
+  },
+  {
+   "line": "AI"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "HI",
+   "style": "accent"
+  },
+  {
+   "segment": "HT",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "I"
+   ],
+   "text": "α/2"
+  },
+  {
+   "angle": [
+    "I",
+    "A",
+    "C"
+   ],
+   "text": "α/2"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "E"
+   ],
+   "text": "β/2"
+  },
+  {
+   "angle": [
+    "E",
+    "B",
+    "C"
+   ],
+   "text": "β/2"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "F"
+   ],
+   "text": "γ/2"
+  },
+  {
+   "angle": [
+    "F",
+    "C",
+    "B"
+   ],
+   "text": "γ/2"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

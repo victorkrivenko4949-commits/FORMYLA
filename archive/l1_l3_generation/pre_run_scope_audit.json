@@ -1,0 +1,135 @@
+{
+  "audit_timestamp": "2026-07-18T14:24:15.100299+00:00",
+  "taxonomy_file": "canonical_taxonomy.json",
+  "target_grid_file": "target_grid.json",
+  "taxonomy_sha256": "115f4f7d811acb31894e1d638a4715abbe142e85cf4ab776f75057808953300f",
+  "target_grid_sha256": "2e75baa1bd57b0da357adfc73d0b80a93efa50ae295e952343f3ce6742c58ca5",
+  "taxonomy_scope": {
+    "total_topics": 43,
+    "total_subtopics": 129,
+    "theoretical_max_cells": 129
+  },
+  "grid_scope": {
+    "total_allowed_cells": 128,
+    "total_excluded_cells": 1,
+    "total_cells_in_grid": 129
+  },
+  "cross_reference": {
+    "delta_count": 1,
+    "is_authoritative_exclusion": true,
+    "taxonomy_cells_never_allowed": [
+      {
+        "topic_id": "T042",
+        "subtopic_id": "S1",
+        "topic_name": "Числа, индукция, алгоритмы",
+        "subtopic_name": "Комплексные числа",
+        "reason": "Subtopics S1 of topic T042 ('Числа, индукция, алгоритмы') is NOT allowed in any grade."
+      }
+    ],
+    "exclusion_details": [
+      {
+        "grade": 8,
+        "topic_id": "T042",
+        "topic_name": "Числа, индукция, алгоритмы",
+        "subtopic_id": "S1",
+        "subtopic_name": "Комплексные числа",
+        "cell_key": "G8|T042|S1",
+        "exclusion_reason": "Комплексные числа не входят в программу 8 класса (изучаются в 10-11 классе).",
+        "source": "pedagogical_review"
+      }
+    ]
+  },
+  "counts": {
+    "formula": {
+      "base_cells": 128,
+      "levels_per_cell": 3,
+      "level_cells": "128 × 3 = 384",
+      "tasks_per_level_cell": 5,
+      "total_tasks": "384 × 5 = 1920"
+    },
+    "total_base_cells": 128,
+    "total_level_cells": 384,
+    "total_expected_tasks": 1920,
+    "per_level": {
+      "L1": {
+        "level_cells": 128,
+        "tasks_per_cell": 5,
+        "total_tasks": 640
+      },
+      "L2": {
+        "level_cells": 128,
+        "tasks_per_cell": 5,
+        "total_tasks": 640
+      },
+      "L3": {
+        "level_cells": 128,
+        "tasks_per_cell": 5,
+        "total_tasks": 640
+      }
+    }
+  },
+  "grade_breakdown": {
+    "5": {
+      "topics": 6,
+      "allowed_subtopic_cells": 18,
+      "excluded_subtopic_cells": 0,
+      "level_cells": 54,
+      "expected_tasks": 270
+    },
+    "6": {
+      "topics": 6,
+      "allowed_subtopic_cells": 18,
+      "excluded_subtopic_cells": 0,
+      "level_cells": 54,
+      "expected_tasks": 270
+    },
+    "7": {
+      "topics": 6,
+      "allowed_subtopic_cells": 18,
+      "excluded_subtopic_cells": 0,
+      "level_cells": 54,
+      "expected_tasks": 270
+    },
+    "8": {
+      "topics": 6,
+      "allowed_subtopic_cells": 17,
+      "excluded_subtopic_cells": 1,
+      "level_cells": 51,
+      "expected_tasks": 255
+    },
+    "9": {
+      "topics": 6,
+      "allowed_subtopic_cells": 18,
+      "excluded_subtopic_cells": 0,
+      "level_cells": 54,
+      "expected_tasks": 270
+    },
+    "10": {
+      "topics": 6,
+      "allowed_subtopic_cells": 18,
+      "excluded_subtopic_cells": 0,
+      "level_cells": 54,
+      "expected_tasks": 270
+    },
+    "11": {
+      "topics": 7,
+      "allowed_subtopic_cells": 21,
+      "excluded_subtopic_cells": 0,
+      "level_cells": 63,
+      "expected_tasks": 315
+    }
+  },
+  "invariants": {
+    "expected_base_cells": 128,
+    "expected_level_cells": 384,
+    "expected_total_tasks": 1920,
+    "taxonomy_max_possible_cells": 129,
+    "delta_vs_taxonomy": 1,
+    "exclusion_is_authoritative": true,
+    "tasks_per_level_cell": 5,
+    "level_count": 3,
+    "per_level_task_count": 640
+  },
+  "all_invariants_pass": true,
+  "status": "SCOPE_AUDIT_OK"
+}
