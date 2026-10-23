@@ -6,6 +6,20 @@ import traceback
 from dataclasses import asdict
 
 
+def _journal(result) -> dict:
+    """Журнал сервера (stderr — в логи сервиса, не клиенту): план
+    формализатора. Без него сбои формализатора на проде не воспроизводимы:
+    payload в БД план не хранит, а без плана нельзя понять, какая фраза
+    условия потеряна. Текст задачи в плане не дублируется — только геометрия."""
+    try:
+        plan = result["plan"] if isinstance(result, dict) else result.plan
+        if plan is not None:
+            print("WORKER_PLAN " + json.dumps(plan, ensure_ascii=False), file=sys.stderr)
+    except Exception:  # noqa: BLE001 - журнал не должен ломать воркер
+        pass
+    return result if isinstance(result, dict) else asdict(result)
+
+
 def main():
     # Enforce a wall-clock limit even if Gunicorn dies and this child is orphaned.
     import signal
@@ -29,6 +43,7 @@ def main():
         result = generate(data["problem"], data["with_aux"],
                           budget=Budget(cap=.10), use_cache=False,
                           aux_history=data.get("history") or None)
+        payload = _journal(result)
     except Exception as exc:  # noqa: BLE001 - показать место падения, а не «не удалось»
         # Раньше любое исключение конвейера давало безликое WORKER_ERROR по коду
         # возврата, и найти причину можно было только в логах сервера. Теперь

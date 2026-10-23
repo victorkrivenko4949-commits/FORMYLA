@@ -490,6 +490,17 @@ def _sketch_payload(problem, with_aux):
     return payload
 
 
+def _forward_worker_journal(process) -> None:
+    """Журнал воркера (stderr) — в журнал сервиса: план формализатора и
+    трейсбеки падений иначе терялись в перехваченной трубе."""
+    try:
+        if process.stderr:
+            sys.stderr.write(process.stderr)
+            sys.stderr.flush()
+    except Exception:  # noqa: BLE001 - журнал не должен ломать очередь
+        pass
+
+
 def run_generation(problem, with_aux):
     if is_solution_job(problem):
         # «Полное решение»: продолжение того же диалога с экспертом + LaTeX.
@@ -503,6 +514,7 @@ def run_generation(problem, with_aux):
                                   "history": history}),
                 text=True, capture_output=True, timeout=200, env=env,
             )
+            _forward_worker_journal(process)
         except subprocess.TimeoutExpired:
             return {"ok": False, "kind": "solution", "reason": "TIMEOUT",
                     "detail": "Превышено время получения решения. Возможен расход API; "
@@ -520,6 +532,7 @@ def run_generation(problem, with_aux):
             input=json.dumps({"problem": problem, "with_aux": with_aux, "history": history}),
             text=True, capture_output=True, timeout=WORKER_TIMEOUT_SEC, env=env,
         )
+        _forward_worker_journal(process)
     except subprocess.TimeoutExpired:
         return _sketch_payload(problem, with_aux) or failure("TIMEOUT",
             "Превышено время генерации. Возможен расход API; автоматического повторения нет.")
