@@ -17,6 +17,15 @@ class _FakeResult:
     warnings: list = field(default_factory=list)
 
 
+@dataclass
+class _FakeResultWithNotes:
+    ok: bool = True
+    plan: dict = field(default_factory=lambda: {
+        "points": ["A", "B"], "notes": "текст задачи с секретами",
+        "draw": {"length_marks": [{"text": "AG = 6 (секретная подпись)"}]}})
+    usage: list = field(default_factory=list)
+
+
 def test_journal_logs_plan_to_stderr_not_stdout(capsys):
     payload = worker._journal(_FakeResult())
     err = capsys.readouterr().err
@@ -52,3 +61,13 @@ def test_run_generation_forwards_worker_journal(monkeypatch, capsys):
     out = jobs.run_generation("Задача", False)
     assert out == {"ok": True}
     assert "model=deepseek-v4-pro" in capsys.readouterr().err
+
+
+def test_journal_excludes_free_text_fields(capsys):
+    """Свободный текст плана (notes — почти весь текст задачи; подписи
+    draw.length_marks) в журнал сервера не попадает: только разрешённый
+    набор структурных полей."""
+    worker._journal(_FakeResultWithNotes())
+    err = capsys.readouterr().err
+    assert "WORKER_PLAN" in err and '"points"' in err
+    assert "текст задачи" not in err and "секрет" not in err and "draw" not in err

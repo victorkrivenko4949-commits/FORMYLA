@@ -9,12 +9,26 @@ from dataclasses import asdict
 def _journal(result) -> dict:
     """Журнал сервера (stderr — в логи сервиса, не клиенту): план
     формализатора. Без него сбои формализатора на проде не воспроизводимы:
-    payload в БД план не хранит, а без плана нельзя понять, какая фраза
-    условия потеряна. Текст задачи в плане не дублируется — только геометрия."""
+    payload в БД план не хранит. В журнал идёт ТОЛЬКО разрешённый набор
+    структурных полей (space/points/constructions/constraints/scale_free):
+    свободный текст (notes, подписи draw) не копируется никогда."""
     try:
         plan = result["plan"] if isinstance(result, dict) else result.plan
-        if plan is not None:
-            print("WORKER_PLAN " + json.dumps(plan, ensure_ascii=False), file=sys.stderr)
+        if isinstance(plan, dict):
+            safe = {
+                "space": plan.get("space"),
+                "points": plan.get("points"),
+                "constructions": [
+                    {"op": c.get("op"), "out": c.get("out"),
+                     "args": c.get("args"), "value": c.get("value")}
+                    for c in plan.get("constructions", []) if isinstance(c, dict)],
+                "constraints": [
+                    {"type": c.get("type"), "args": c.get("args"),
+                     "value": c.get("value")}
+                    for c in plan.get("constraints", []) if isinstance(c, dict)],
+                "scale_free": plan.get("scale_free"),
+            }
+            print("WORKER_PLAN " + json.dumps(safe, ensure_ascii=False), file=sys.stderr)
     except Exception:  # noqa: BLE001 - журнал не должен ломать воркер
         pass
     return result if isinstance(result, dict) else asdict(result)

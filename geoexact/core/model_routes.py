@@ -22,6 +22,7 @@ flash-формализатором, не выдаются за свежие.
 """
 import logging
 import os
+import sys
 
 CACHE_SUFFIX = "+proFormalize1"
 
@@ -56,6 +57,15 @@ def _install_call_log(llm_module):
     real = getattr(llm_module, "_chat", None)
     if real is None or getattr(real, "_pro_call_log", False):
         return
+    # свой handler + уровень: в воркер-подпроцессе root-логгер не настроен,
+    # INFO без handler теряется молча — журнал вызовов обязан доходить до stderr
+    logger = logging.getLogger("geoexact.routes")
+    if not logger.handlers:
+        handler = logging.StreamHandler(sys.stderr)
+        handler.setFormatter(logging.Formatter("%(message)s"))
+        logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
 
     def logged_chat(*a, **k):
         out = real(*a, **k)
