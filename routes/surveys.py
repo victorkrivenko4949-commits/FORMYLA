@@ -69,6 +69,11 @@ def _readiness_csrf_token(user_id):
     под логином, same-origin), ни вычислить его без SECRET_KEY.
     """
     secret = current_app.config.get('SECRET_KEY') or ''
+    if not secret:
+        # Без серверного секрета токен стал бы предсказуемым — лучше уронить
+        # запрос с явной ошибкой, чем ослабить CSRF-защиту.
+        current_app.logger.error('readiness survey: SECRET_KEY is not set')
+        abort(500)
     if isinstance(secret, str):
         secret = secret.encode('utf-8')
     msg = 'readiness_survey_csrf:{}'.format(user_id).encode('utf-8')
