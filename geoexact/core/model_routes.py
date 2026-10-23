@@ -72,8 +72,9 @@ def _install_call_log(llm_module):
         try:
             model = a[1] if len(a) > 1 else k.get("model", "?")
             stage = a[5] if len(a) > 5 else k.get("stage", "?")
+            thinking = bool(a[8] if len(a) > 8 else k.get("thinking", False))
             logging.getLogger("geoexact.routes").info(
-                "llm call model=%s stage=%s", model, stage)
+                "llm call model=%s stage=%s thinking=%d", model, stage, thinking)
         except Exception:  # noqa: BLE001 - журнал не должен ломать вызов
             pass
         return out

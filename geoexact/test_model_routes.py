@@ -150,3 +150,27 @@ def test_call_log_wraps_chat(caplog, monkeypatch):
                for r in caplog.records)
     # текст задачи в журнал не попадает
     assert not any("user" == r.message or "sys" in r.message[:4] for r in caplog.records)
+
+
+def test_call_log_includes_thinking(caplog, monkeypatch):
+    """Флаг thinking в строке вызова: без него по журналу нельзя отличить
+    вызовы с рассуждением от быстрых — а это гипотеза о нестабильности
+    формализации (pro без thinking)."""
+    import logging
+    import geoexact.core.model_routes as mr
+    calls = []
+
+    def fake_chat(*a, **k):
+        calls.append((a, k))
+        return ("{}", None)
+
+    monkeypatch.setattr(L, "_chat", fake_chat)
+    with caplog.at_level(logging.INFO, logger="geoexact.routes"):
+        mr._install_call_log(L)
+        L._chat(object(), "deepseek-v4-pro", "sys", "user", 1000,
+                "formalize-A", L.Budget(cap=0.10), thinking=True)
+        L._chat(object(), "deepseek-v4-pro", "sys", "user", 1000,
+                "formalize-A", L.Budget(cap=0.10))
+    msgs = [r.message for r in caplog.records if "llm call" in r.message]
+    assert any("thinking=1" in m for m in msgs)
+    assert any("thinking=0" in m for m in msgs)

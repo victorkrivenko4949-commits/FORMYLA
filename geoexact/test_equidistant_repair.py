@@ -326,3 +326,31 @@ def test_wrapper_fixes_pro_plan2_through_real_formalize():
         d1 = np.linalg.norm(np.array(pts[p1]) - np.array(pts[p2]))
         d2 = np.linalg.norm(np.array(pts[q1]) - np.array(pts[q2]))
         assert abs(d1 - d2) < 1e-3 * max(d1, d2), (p1, p2, d1, d2)
+
+
+def test_formalize_plan_journal(capsys):
+    """Диагностическая граница: ответ формализатора ДО ремонта попадает в
+    журнал (stderr) с номером попытки — при провале пайплайна Result.plan
+    подменяется планом фолбэка (скетча), и фактическй ответ модели иначе
+    не воспроизвести. Только структурные поля: текст задачи не утекает."""
+    def chat(sess, model, system, user, max_out, stage, budget, **kw):
+        return json.dumps(PRO_PLAN2), None
+    with patch.object(L, "_chat", chat), \
+         patch.object(L, "classify", lambda *a, **k: {"ok": True, "class": "O", "space": "plane"}):
+        result = pipeline.generate(PROBLEM, use_cache=False)
+    assert result.ok and result.stage == "9-render", result.stage
+    err = capsys.readouterr().err
+    assert "текст условия" not in err and '"notes"' not in err    # свободный текст не утекает
+    pre = [l for l in err.splitlines() if l.startswith("FORMALIZE_PLAN #")]
+    post = [l for l in err.splitlines() if l.startswith("FORMALIZE_REPAIRED #")]
+    assert pre and post
+    p1 = json.loads(pre[-1].split(" ", 2)[2])
+    p2 = json.loads(post[-1].split(" ", 2)[2])
+    # одна и та же попытка: до ремонта — прямая DA, после — серединные перпендикуляры
+    assert pre[-1].split(" ")[1] == post[-1].split(" ")[1]
+    xy_pre = {c["out"]: c for c in p1["constructions"] if c["out"] in ("X", "Y")}
+    assert all(c["args"] == ["B", "C", "D", "A"] for c in xy_pre.values())
+    xy_post = {c["out"]: c for c in p2["constructions"] if c["out"] in ("X", "Y")}
+    assert all(c["op"] == "line_intersect" and c["args"][2] not in ("D", "A")
+               for c in xy_post.values())
+    assert any(c["op"] == "midpoint" for c in p2["constructions"])

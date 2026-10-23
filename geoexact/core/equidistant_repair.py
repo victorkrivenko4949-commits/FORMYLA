@@ -229,6 +229,42 @@ def _append_rules(llm_module) -> bool:
     return True
 
 
+_ATTEMPT = 0
+
+
+def _allowlist(plan) -> dict | None:
+    """Структурные поля плана без свободного текста (notes, draw): как в
+    журнале воркера — текст задачи в диагностические строки не попадает."""
+    if not isinstance(plan, dict):
+        return None
+    return {
+        "space": plan.get("space"),
+        "points": plan.get("points"),
+        "constructions": [
+            {"op": c.get("op"), "out": c.get("out"),
+             "args": c.get("args"), "value": c.get("value")}
+            for c in plan.get("constructions", []) if isinstance(c, dict)],
+        "constraints": [
+            {"type": c.get("type"), "args": c.get("args"), "value": c.get("value")}
+            for c in plan.get("constraints", []) if isinstance(c, dict)],
+        "scale_free": plan.get("scale_free"),
+    }
+
+
+def _log_plan(tag: str, plan) -> None:
+    """План формализатора в журнал сервера (stderr): при провале пайплайна
+    Result.plan подменяется планом фолбэка (скетча) — фактический ответ
+    формализатора иначе не воспроизвести. Только структурные поля."""
+    try:
+        import json as _json
+        import sys as _sys
+        safe = _allowlist(plan.to_dict() if hasattr(plan, "to_dict") else plan)
+        if safe is not None:
+            print(f"{tag} {_json.dumps(safe, ensure_ascii=False)}", file=_sys.stderr)
+    except Exception:               # noqa: BLE001 - журнал не должен валить формализацию
+        pass
+
+
 def install(llm_module) -> bool:
     """Правило в промпты + пост-ремонт плана после formalize. Повторно — no-op."""
     if not ENABLED:
@@ -238,10 +274,14 @@ def install(llm_module) -> bool:
     if orig is not None and not getattr(orig, "_equidistant", False):
         @wraps(orig)
         def formalize(sess, text, *args, **kwargs):
+            global _ATTEMPT
+            _ATTEMPT += 1
             plan, warn = orig(sess, text, *args, **kwargs)
+            _log_plan(f"FORMALIZE_PLAN #{_ATTEMPT}", plan)      # ответ модели ДО ремонта
             try:
                 msg = repair(text, plan)
                 if msg:
+                    _log_plan(f"FORMALIZE_REPAIRED #{_ATTEMPT}", plan)  # после ремонта
                     warn = [str(w) for w in (warn or [])] + \
                         [f"EQUIDISTANT_FIXED: {msg}"]
             except Exception:               # noqa: BLE001 - проверка не должна валить формализацию
