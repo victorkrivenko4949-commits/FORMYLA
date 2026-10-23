@@ -38,7 +38,7 @@ _TABLES_ENSURED = False
 
 
 def is_diamond_admin(user) -> bool:
-    """Платная покупка 💎 доступна ТОЛЬКО админам victor и lavrik."""
+    """Настройка ключей ЮKassa доступна ТОЛЬКО админам victor и lavrik."""
     if not user or not getattr(user, "is_authenticated", False):
         return False
     if getattr(user, "is_guest", False):
@@ -50,6 +50,16 @@ def is_diamond_admin(user) -> bool:
         return True
     nick = (getattr(user, "nickname", None) or "").strip().lower()
     return nick in ("victor", "victorkrivenko", "lavrik")
+
+
+def is_diamond_buyer(user) -> bool:
+    """Покупка 💎 видна админам (victor, lavrik) и тестовому аккаунту проверки ЮKassa (yookassa@formyla.net)."""
+    if is_diamond_admin(user):
+        return True
+    if not user or not getattr(user, "is_authenticated", False):
+        return False
+    email = (getattr(user, "email", None) or "").strip().lower()
+    return email == "yookassa@formyla.net"
 
 
 def _ensure_tables() -> None:
@@ -311,7 +321,7 @@ def save_config():
 @yookassa_pay_bp.route("/payments/yookassa/buy-diamond", methods=["POST"])
 @login_required
 def buy_diamond():
-    if not is_diamond_admin(current_user):
+    if not is_diamond_buyer(current_user):
         abort(403)
     _ensure_tables()
     cfg = get_yookassa_config()
@@ -422,7 +432,7 @@ def buy_diamond():
 @yookassa_pay_bp.route("/payments/yookassa/return", methods=["GET"])
 @login_required
 def payment_return():
-    if not is_diamond_admin(current_user):
+    if not is_diamond_buyer(current_user):
         abort(403)
     _ensure_tables()
     order_id = (request.args.get("order_id") or "").strip()
@@ -592,12 +602,14 @@ def install_yookassa_pay(app, register=None) -> None:
     def _inject_yookassa_helpers():
         try:
             is_adm = is_diamond_admin(current_user)
-            if not is_adm:
-                return {"is_diamond_admin": False}
+            is_buyer = is_diamond_buyer(current_user)
+            if not is_buyer:
+                return {"is_diamond_admin": False, "is_diamond_buyer": False}
             return {
-                "is_diamond_admin": True,
-                "yookassa_cfg": get_yookassa_config(),
-                "yookassa_recent_payments": get_recent_payments(current_user.id, limit=5),
+                "is_diamond_admin": is_adm,
+                "is_diamond_buyer": True,
+                "yookassa_cfg": get_yookassa_config() if is_adm else None,
+                "yookassa_recent_payments": get_recent_payments(current_user.id, limit=5) if is_adm else [],
             }
         except Exception:
-            return {"is_diamond_admin": False}
+            return {"is_diamond_admin": False, "is_diamond_buyer": False}

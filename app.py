@@ -5823,6 +5823,36 @@ def login():
             flash('Email обязателен', 'error')
             return render_template('login.html')
 
+        # ── Постоянный тестовый аккаунт покупателя для модерации ЮKassa ──
+        # Логин: yookassa@formyla.net, постоянный код/пароль на шаге /verify-code: 748291
+        YOOKASSA_TEST_EMAIL = 'yookassa@formyla.net'
+        YOOKASSA_TEST_CODE = '748291'
+        if email in (YOOKASSA_TEST_EMAIL, f'{YOOKASSA_TEST_EMAIL}:{YOOKASSA_TEST_CODE}'):
+            from flask_login import logout_user as _logout_yk
+            try:
+                _logout_yk()
+                session.clear()
+            except Exception:
+                pass
+            user = User.query.filter_by(email=YOOKASSA_TEST_EMAIL).first()
+            if not user:
+                user = User(
+                    email=YOOKASSA_TEST_EMAIL,
+                    nickname='yookassa_buyer',
+                    name='Тестовый покупатель ЮKassa',
+                    onboarded_at=datetime.utcnow(),
+                    preferred_grade=9,
+                )
+                db.session.add(user)
+                db.session.commit()
+            elif not getattr(user, 'onboarded_at', None):
+                user.onboarded_at = datetime.utcnow()
+                db.session.commit()
+            session.permanent = True
+            session['verify_email'] = YOOKASSA_TEST_EMAIL
+            flash('Введите постоянный тестовый пароль (код) для входа в личный кабинет.', 'success')
+            return redirect(url_for('verify_code'))
+
         # ── Секретный вход в аккаунт поддержки ─────────────────────────
         # Если в поле email введена секретная строка SUPPORT_LOGIN_SECRET,
         # входим сразу (без кода) в служебный аккаунт Lavrik.
@@ -6001,9 +6031,13 @@ def verify_code():
             flash('Пользователь не найден', 'error')
             return redirect(url_for('login'))
         
-        if user.verify_auth_code(code):
+        is_yookassa_test = (
+            email.lower() == 'yookassa@formyla.net' and code == '748291'
+        )
+        if is_yookassa_test or user.verify_auth_code(code):
             # Успешная авторизация
-            user.clear_auth_code()
+            if not is_yookassa_test:
+                user.clear_auth_code()
             from datetime import datetime
             # Считаем нового юзера тем, у кого ещё нет онбординга
             _is_new_user = getattr(user, 'onboarded_at', None) is None and getattr(user, 'last_login', None) is None
@@ -6038,6 +6072,8 @@ def verify_code():
             next_page = request.args.get('next')
             if next_page:
                 return redirect(next_page)
+            if is_yookassa_test:
+                return redirect('/profile')
             if getattr(user, 'onboarded_at', None) is None:
                 return redirect(url_for('intake.intake_page'))
             return redirect('/about')

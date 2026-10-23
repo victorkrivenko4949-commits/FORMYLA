@@ -370,21 +370,23 @@
     </div>
     {% endif %}
 
-    {% if is_diamond_admin %}
-    <!-- ── YOOKASSA_DIAMOND_V1: Платный значок алмаза (только для victor и lavrik) ── -->
+    {% if is_diamond_buyer or is_diamond_admin %}
+    <!-- ── YOOKASSA_DIAMOND_V1: Платный значок алмаза (для victor, lavrik и тестового кабинета ЮKassa) ── -->
     <div id="yookassa-card" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.92)); backdrop-filter: blur(12px); padding: 26px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(56, 189, 248, 0.45); box-shadow: 0 10px 36px rgba(56, 189, 248, 0.15); margin-bottom: 30px;">
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
             <h2 style="color: #38bdf8; margin: 0; font-size: 1.45em; display: flex; align-items: center; gap: 10px;">
                 <span>💎 Значок алмаза после ника</span>
                 <span style="font-size: 0.65em; padding: 4px 10px; border-radius: 999px; background: rgba(56, 189, 248, 0.16); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 700;">10 ₽ · ЮKassa</span>
             </h2>
+            {% if is_diamond_admin %}
             <span style="font-size: 12px; padding: 4px 10px; border-radius: 8px; background: rgba(251, 191, 36, 0.14); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);">
                 Видно только админам (victor и lavrik)
             </span>
+            {% endif %}
         </div>
 
         <p style="color: var(--text-soft); margin: 0 0 16px; font-size: 14.5px; line-height: 1.5;">
-            Покупка добавляет значок <strong style="color: #38bdf8;">💎</strong> сразу после вашего ника в профиле, шапке, рейтинге и списке друзей:
+            Покупка добавляет персональный цифровой значок <strong style="color: #38bdf8;">💎</strong> сразу после вашего ника в профиле, шапке, рейтинге и списке друзей (получение услуги: мгновенная автоматическая активация в личном кабинете сразу после оплаты):
             <span style="display: inline-block; margin-left: 6px; padding: 3px 10px; border-radius: 8px; background: rgba(56, 189, 248, 0.12); color: #e0f2fe; font-weight: 700;">
                 @{{ user.nickname or 'victor' }} 💎
             </span>
@@ -397,22 +399,24 @@
             </span>
             {% else %}
             <span style="padding: 8px 14px; border-radius: 10px; background: rgba(148, 163, 184, 0.12); color: var(--text-muted); border: 1px solid var(--border-soft); font-size: 14px;">
-                Статус: пока не куплен
+                Статус: пока не куплен · Цена: 10 ₽
             </span>
             {% endif %}
 
-            {% if yookassa_cfg and yookassa_cfg.configured %}
-            <span style="padding: 8px 14px; border-radius: 10px; background: rgba(56, 189, 248, 0.12); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 13px;">
-                🟢 ЮKassa подключена (Shop ID: {{ yookassa_cfg.shop_id }}{% if yookassa_cfg.is_test %} · тест{% else %} · боевой{% endif %})
-            </span>
-            {% else %}
-            <span style="padding: 8px 14px; border-radius: 10px; background: rgba(245, 158, 11, 0.14); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 13px;">
-                🟡 Укажите Shop ID и Секретный ключ ЮKassa ниже
-            </span>
+            {% if is_diamond_admin %}
+                {% if yookassa_cfg and yookassa_cfg.configured %}
+                <span style="padding: 8px 14px; border-radius: 10px; background: rgba(56, 189, 248, 0.12); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 13px;">
+                    🟢 ЮKassa подключена (Shop ID: {{ yookassa_cfg.shop_id }}{% if yookassa_cfg.is_test %} · тест{% else %} · боевой{% endif %})
+                </span>
+                {% else %}
+                <span style="padding: 8px 14px; border-radius: 10px; background: rgba(245, 158, 11, 0.14); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 13px;">
+                    🟡 Укажите Shop ID и Секретный ключ ЮKassa ниже
+                </span>
+                {% endif %}
             {% endif %}
         </div>
 
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 18px;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: {% if is_diamond_admin %}18px{% else %}0{% endif %};">
             <form method="POST" action="{{ url_for('yookassa_pay.buy_diamond') }}" style="margin: 0;">
                 <button type="submit"
                         style="padding: 13px 26px; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 6px 20px rgba(14, 165, 233, 0.35); transition: transform 0.15s ease;"
@@ -421,7 +425,7 @@
                 </button>
             </form>
 
-            {% if user.has_diamond %}
+            {% if is_diamond_admin and user.has_diamond %}
             <form method="POST" action="{{ url_for('yookassa_pay.toggle_diamond') }}" style="margin: 0;">
                 <input type="hidden" name="action" value="off">
                 <button type="submit"
@@ -432,6 +436,7 @@
             {% endif %}
         </div>
 
+        {% if is_diamond_admin %}
         <details {% if not (yookassa_cfg and yookassa_cfg.configured) %}open{% endif %} style="background: rgba(15, 23, 42, 0.55); border: 1px solid var(--border-soft); border-radius: 12px; padding: 14px 18px;">
             <summary style="cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px;">
                 ⚙️ Настройка ключей ЮKassa (Shop ID и Секретный ключ)
@@ -480,6 +485,7 @@
             </div>
             {% endif %}
         </details>
+        {% endif %}
     </div>
     {% endif %}
 
