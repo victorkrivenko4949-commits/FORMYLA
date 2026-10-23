@@ -1638,12 +1638,13 @@ def coach():
 @prep_bp.route('/probe')
 @login_required
 def morning_probe():
-    # 2026-09-15: срез временно отключён — старые ссылки ведут на задачи дня.
-    return redirect(url_for('daily_tasks.get_daily_tasks'))
+    # 2026-10-23: тест снова включён (ранее 2026-09-15 был временно отключён
+    # и редиректил на задачи дня — получался цикл: задачи дня -> «Пройти тест» -> задачи дня).
+    return _morning_probe_impl()
 
 
-def _morning_probe_disabled():
-    """Страница утреннего среза подтемы (5 задач, лесенка). Временно не используется."""
+def _morning_probe_impl():
+    """Страница теста подтемы (5 задач, лесенка)."""
     if not current_user.has_access():
         return render_template('trial_expired.html'), 402
     from curator.monthly_cycle import get_cycle_info, build_or_get_cycle, advance_day

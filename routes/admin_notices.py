@@ -275,28 +275,40 @@ def api_pending():
     if not _is_real_user():
         return jsonify({'pending': False})
     _ensure_table()
+    # 2026-10-23: превью для пилотных аккаунтов — им показываются и
+    # запланированные НЕАКТИВНЫЕ анонсы (например, анонс Premium от
+    # 3 ноября), чтобы владельцы могли увидеть их до запуска.
+    try:
+        from services.pilot import is_pilot_user
+        _pilot = bool(is_pilot_user(current_user.id))
+    except Exception:
+        _pilot = False
     try:
         dialect = db.engine.dialect.name
         if dialect == 'postgresql':
             row = db.session.execute(text(
                 "SELECT n.id, n.title, n.body FROM admin_notices n "
-                "WHERE n.active = :a "
-                "AND (n.activate_at IS NULL OR n.activate_at <= NOW()) "
+                "WHERE ("
+                "  (n.active = :a AND (n.activate_at IS NULL OR n.activate_at <= NOW()))"
+                "  OR (:pilot AND n.active = FALSE AND n.activate_at IS NOT NULL)"
+                ") "
                 "AND NOT EXISTS ("
                 "  SELECT 1 FROM site_notice_seen s "
                 "  WHERE s.user_id = :u AND s.notice_key = 'admin:' || CAST(n.id AS TEXT)) "
                 "ORDER BY n.id ASC LIMIT 1"
-            ), {'u': current_user.id, 'a': True}).mappings().first()
+            ), {'u': current_user.id, 'a': True, 'pilot': _pilot}).mappings().first()
         else:
             row = db.session.execute(text(
                 "SELECT n.id, n.title, n.body FROM admin_notices n "
-                "WHERE n.active = :a "
-                "AND (n.activate_at IS NULL OR n.activate_at <= :now) "
+                "WHERE ("
+                "  (n.active = :a AND (n.activate_at IS NULL OR n.activate_at <= :now))"
+                "  OR (:pilot AND n.active = 0 AND n.activate_at IS NOT NULL)"
+                ") "
                 "AND NOT EXISTS ("
                 "  SELECT 1 FROM site_notice_seen s "
                 "  WHERE s.user_id = :u AND s.notice_key = 'admin:' || CAST(n.id AS TEXT)) "
                 "ORDER BY n.id ASC LIMIT 1"
-            ), {'u': current_user.id, 'a': True,
+            ), {'u': current_user.id, 'a': True, 'pilot': _pilot,
                 'now': datetime.utcnow()}).mappings().first()
     except Exception as e:  # noqa: BLE001
         db.session.rollback()
