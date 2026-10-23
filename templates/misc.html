@@ -46,6 +46,10 @@
         <div class="misc-group-title">🛠️ Инструменты</div>
         {% if current_user.is_authenticated %}
         <div class="misc-row">
+            <a href="/prep/coach" class="misc-link"><span class="misc-link-label">📊 Статистика</span><span class="misc-link-desc">Радары тем, календарь занятий, прогресс обучения</span></a>
+            <button class="pin-btn" data-pin-id="coach" data-pin-label="📊 Статистика" data-pin-href="/prep/coach" data-pin-desc="Радары тем, календарь занятий, прогресс обучения" title="На главную">📌</button>
+        </div>
+        <div class="misc-row">
             <a href="javascript:void(0)" class="misc-link"
                onclick="event.preventDefault(); var b=document.getElementById('tutorBtn'); if(b){b.click();} return false;">
                 <span class="misc-link-label">🤖 AI Тьютор</span>
