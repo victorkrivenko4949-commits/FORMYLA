@@ -354,3 +354,46 @@ def test_median_centroid_any_arg_order(swap_lines, flip1, flip2):
     assert texts.get("3") == ("G", "A_1")
     assert texts.get("8") == ("B", "G")
     assert texts.get("4") == ("G", "B_1")
+
+
+def test_third_median_marks_centroid_via_result_marks():
+    """Прод-сценарий (задача о медианах, живая генерация 23.10.2026): построение —
+    третья медиана CC1, она НЕ ссылается на центроид явно. Модель прислала
+    result_marks с перепутанными числами (6/8 при данных 12/9) — подписи верно
+    отброшены, но построение обязано всё равно дать итог: автоподстановка выводит
+    правильные 8/4/6/3, а точка G получает имя (не безымянная точка)."""
+    import copy
+    plan = _medians_plan()
+    d = {"type": "dist", "args": ["A", "A_1"], "value": 12}
+    plan.constraints[0] = type(plan.constraints[0])(**d)
+    plan.constraints[1] = type(plan.constraints[1])(**{"type": "dist", "args": ["B", "B_1"], "value": 9})
+    plan.draw.length_marks[0]["text"] = "AA_1 = 12"
+    plan.draw.length_marks[1]["text"] = "BB_1 = 9"
+    ranked = rank_solutions(plan, solve(plan, n_seeds=8), strict_readability=False)
+    assert ranked
+    sol = ranked[0][0]
+    data = {
+        "idea": "провести третью медиану CC1: три равновеликих треугольника",
+        "steps": [{"op": "midpoint", "out": "C_1", "args": ["A", "B"]}],
+        "aux_segments": [["C", "C_1"]],
+        "result_marks": [
+            {"pts": ["A", "G"], "text": "6"},   # модель перепутала медианы
+            {"pts": ["B", "G"], "text": "8"},
+        ],
+    }
+    why: list = []
+    applied = auxplan.apply_aux(plan, sol.coords, data, why)
+    assert applied is not None, why
+    plan2 = applied[0]
+    notes = plan2.notes or ""
+    assert "отброшена" in notes                    # неверные 6/8 отвергнуты
+    texts = {m["text"]: tuple(m["pts"]) for m in plan2.draw.length_marks
+             if m.get("layer") == "aux"}
+    assert texts.get("8") == ("A", "G")            # 2/3 от AA_1 = 12
+    assert texts.get("4") == ("G", "A_1")
+    assert texts.get("6") == ("B", "G")            # 2/3 от BB_1 = 9
+    assert texts.get("3") == ("G", "B_1")
+    assert "G" not in plan2.draw.hide_labels        # точка получила имя
+    svg = render_svg(plan2, sol, show_aux=True)
+    root, out_texts = _texts(svg)
+    assert "G" in out_texts

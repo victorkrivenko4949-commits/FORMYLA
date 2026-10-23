@@ -702,6 +702,12 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
     # и точки-свидетели радиуса — не «обозначенные» точки: имя не раскрываем.
     referenced = {n for pr in segments + extensions + lines for n in pr if n}
     referenced |= {arc.get(k) for arc in arcs for k in ("start", "end")}
+    # Точки из result_marks — тоже часть построения: модель описывает ИТОГ
+    # («AG = 6»), значит точка G нужна построению, даже если число не сошлось
+    # и подпись отброшена. Без этого построение «провести третью медиану CC1»
+    # (не ссылающееся на центроид явно) оставляло его безымянным и без меток.
+    referenced |= {alias.get(n, n) for m in (data.get("result_marks") or [])
+                   for n in (m.get("pts") or []) if isinstance(n, str)}
     aux_drawn = {frozenset(pr) for pr in segments + lines}
     visible_aux = {frozenset(s) for f in ("segments", "aux_segments") for s in getattr(draw, f)}
     for pr in segments:
