@@ -1,6 +1,0 @@
-openai>=1.40.0
-requests>=2.31.0
-pdfplumber>=0.11.0
-pypdf>=4.0.0
-rapidfuzz>=3.6.0
-tqdm>=4.66.0

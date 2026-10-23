@@ -1,3 +1,0 @@
-total: 19600
-unique keys: 2896
-duplicates: 16704

@@ -1,4 +1,0 @@
-file2 missing sample: total=380
-now have svg (done): 0
-still missing: 380
-geometry missing: 10/362

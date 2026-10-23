@@ -1,4 +1,0 @@
-moonshot-v1-8k: 404
-kimi-k2.6: 200
-kimi-k2-0905-preview: 404
-kimi-latest: 404

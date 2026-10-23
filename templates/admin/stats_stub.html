@@ -1,7 +1,0 @@
-{% extends "admin/stats_base.html" %}
-{% block stats_content %}
-<div class="st-note">
-  <b style="color:#e2e8f0;">Раздел появится с {{ section.since or '—' }}</b> — вместе с PR, в котором добавляются его события.<br>
-  {{ section.note or '' }}
-</div>
-{% endblock %}

@@ -1,3 +1,0 @@
-Total methods: 102
-Fully compliant: 102/102
-Issues (0):
