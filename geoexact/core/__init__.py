@@ -27,6 +27,10 @@ solver.py и gates.py:
     (принадлежность без слипания). Независимые проверки по тексту условия +
     правило 37 формализатора (иллюстративные углы, антипод, серединный
     перпендикуляр).
+  * model_routes.install — формализатор (оба пути) на deepseek-v4-pro: перевод
+    по просьбе пользователя после вырожденной конфигурации; классификация и
+    оценка сложности не меняются, бюджетная деградация pro→flash сохранена.
+    GEOEXACT_PRO_FORMALIZE=0 выключает; к ENGINE_VERSION дописывается суффикс.
   * degenerate_policy.install — вырожденность с учётом семантики плана:
     совпадение построенных точек и коллинеарные «треугольники», объявленные
     конструкциями/ограничениями (D на продолжении CA, высота CH≡M при
@@ -37,9 +41,10 @@ solver.py и gates.py:
 GEOEXACT_GENERAL_POSITION=0, GEOEXACT_FORMALIZE_RULES=0, GEOEXACT_CONVEXITY=0,
 GEOEXACT_INCIRCLE_TANGENTS=0, GEOEXACT_RADIUS_CLAIMS=0, GEOEXACT_LABEL_SUBSCRIPTS=0,
 GEOEXACT_DEGENERATE_POLICY=0, GEOEXACT_GIVEN_ORDER=0,
-GEOEXACT_ACUTE_TRIANGLE=0.
+GEOEXACT_ACUTE_TRIANGLE=0, GEOEXACT_PRO_FORMALIZE=0.
 """
 from . import llm as _llm
+from . import pipeline as _pipeline
 from . import difficulty as _difficulty
 from . import solver as _solver
 from . import gates as _gates
@@ -55,6 +60,7 @@ from . import degenerate_policy as _degenerate_policy
 from . import label_subscripts as _label_subscripts
 from . import given_order as _given_order
 from . import acute_triangle as _acute_triangle
+from . import model_routes as _model_routes
 from . import angle_marks_layout as _angle_marks_layout
 from . import aux_view_marks as _aux_view_marks
 
@@ -71,3 +77,4 @@ _angle_marks_layout.install(_render)   # после label_subscripts: дуга/�
 _aux_view_marks.install(_render)       # после angle_marks_layout: в виде с построением полная длина скрыта, если куски отмечены
 _given_order.install(_llm)             # после formalize_rules: порядок «соответственно» данных длин
 _acute_triangle.install(_semantics, _llm)    # после radius_claims: острота, антипод, принадлежность отрезку
+_model_routes.install(_llm, _pipeline)        # после acute_triangle: путь A формализатора на v4-pro
