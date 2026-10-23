@@ -164,7 +164,9 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    padding: 12px 0;
+    padding: 12px;
+    box-sizing: border-box;
+    gap: 12px;
     background: none;
     border: none;
     cursor: pointer;
@@ -174,6 +176,7 @@
     text-align: left;
   }
   .dt-debt-toggle-arrow {
+    flex-shrink: 0;
     font-size: 12px;
     transition: transform 0.2s ease;
   }
