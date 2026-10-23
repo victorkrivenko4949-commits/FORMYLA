@@ -13109,9 +13109,32 @@ def subscribe_page():
     plan_expires_at = getattr(current_user, 'plan_expires_at', None)
     if plan_expires_at:
         plan_expires_at = str(plan_expires_at)[:10]
+    # Состояние пробного дня: активен / использован
+    trial_active_until = None
+    trial_used = False
+    try:
+        from sqlalchemy import text as _text
+        row = db.session.execute(_text(
+            "SELECT expires_at FROM subscriptions WHERE user_id = :u "
+            "AND plan IN ('premium_intense','premium_calm') "
+            "AND COALESCE(CAST(is_trial AS INTEGER),0) = 1 "
+            "AND status = 'active' AND expires_at > NOW() ORDER BY id DESC LIMIT 1"
+        ), {'u': current_user.id}).first()
+        if row and row[0]:
+            trial_active_until = str(row[0])[:16]
+        used = db.session.execute(_text(
+            "SELECT 1 FROM subscriptions WHERE user_id = :u "
+            "AND plan IN ('premium_intense','premium_calm') "
+            "AND COALESCE(CAST(is_trial AS INTEGER),0) = 1 LIMIT 1"
+        ), {'u': current_user.id}).first()
+        trial_used = bool(used)
+    except Exception:
+        pass
     return render_template('subscribe.html',
                            current_plan=current_plan,
-                           plan_expires_at=plan_expires_at)
+                           plan_expires_at=plan_expires_at,
+                           trial_active_until=trial_active_until,
+                           trial_used=trial_used)
 
 
 # Канонические значения current_plan в БД:
@@ -13167,6 +13190,68 @@ def _inject_user_helpers():
     except Exception:
         helpers['has_active_probe'] = False
     return helpers
+
+
+@app.route('/api/subscribe/trial', methods=['POST'])
+@login_required
+def api_subscribe_trial():
+    """Пробный день Premium: 1 день полного доступа, один раз на аккаунт.
+
+    Тело: {plan: 'premium_intense'|'premium_calm'}.
+    После истечения дня аккаунт снова бесплатный (3 задачи в день и т.д.)
+    и сайт предлагает оплатить. Пробный день не выдаётся, если уже есть
+    активный Premium.
+    """
+    if getattr(current_user, 'is_guest', False):
+        return jsonify({'error': 'Недоступно для гостей'}), 403
+    data = request.get_json() or {}
+    plan = data.get('plan', 'premium_intense')
+    if plan not in ('premium_intense', 'premium_calm'):
+        return jsonify({'error': 'Неизвестный тариф'}), 400
+    try:
+        from sqlalchemy import text as _text
+        # Уже есть активный Premium (пилотный или оплаченный)?
+        active = db.session.execute(_text(
+            "SELECT 1 FROM subscriptions WHERE user_id = :u AND status = 'active' "
+            "AND plan LIKE 'premium%' AND "
+            "((payment_id IS NOT NULL AND COALESCE(CAST(is_beta_access AS INTEGER),0)=0) "
+            " OR plan IN ('premium_intense','premium_calm')) AND expires_at > NOW()"
+        ), {'u': current_user.id}).first()
+        if active:
+            return jsonify({'error': 'У вас уже активен Premium — пробный день не нужен'}), 409
+        # Пробный день уже использован?
+        used = db.session.execute(_text(
+            "SELECT 1 FROM subscriptions WHERE user_id = :u "
+            "AND plan IN ('premium_intense','premium_calm') "
+            "AND COALESCE(CAST(is_trial AS INTEGER),0) = 1 LIMIT 1"
+        ), {'u': current_user.id}).first()
+        if used:
+            return jsonify({'error': 'Пробный день уже использован'}), 409
+        # Активируем: 1 день полного доступа
+        from datetime import timedelta
+        expires = datetime.utcnow() + timedelta(days=1)
+        from services.subscription import get_subscription_service
+        result = get_subscription_service().activate_premium(
+            user_id=current_user.id,
+            plan=plan,
+            is_beta=True,
+            is_trial=True,
+            expires_at=expires,
+        )
+        db.session.commit()
+        return jsonify({
+            'ok': True,
+            'plan_variant': plan,
+            'expires_at': str(result.get('expires_at') or expires)[:16],
+            'message': 'Пробный день активирован! Полный доступ до ' + str(expires)[:16] + ' UTC',
+        })
+    except Exception as e:
+        app.logger.error(f'[api_subscribe_trial] failed: {e}')
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return jsonify({'error': 'Не удалось активировать пробный день'}), 500
 
 
 @app.route('/api/subscribe', methods=['POST'])
