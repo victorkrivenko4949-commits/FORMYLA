@@ -18,6 +18,9 @@ solver.py и gates.py:
     формализатора (радиус через circumcenter/incenter + dist_eq);
   * label_subscripts.install — подписи точек B_1, K_2, I_A с настоящим нижним
     индексом вместо буквального «B_1».
+  * given_order.install — «равны a и b соответственно»: правило формализатора и
+    пост-проверка плана; перепутанный порядок данных длин исправляется сам
+    (обмен значений двух dist-ограничений и их подписей) с пометкой в notes.
   * degenerate_policy.install — вырожденность с учётом семантики плана:
     совпадение построенных точек и коллинеарные «треугольники», объявленные
     конструкциями/ограничениями (D на продолжении CA, высота CH≡M при
@@ -27,7 +30,7 @@ solver.py и gates.py:
 Выключатели: GEOEXACT_DIFFICULTY_ROUTER=0, GEOEXACT_FIRST_TOKEN_LIMIT=0,
 GEOEXACT_GENERAL_POSITION=0, GEOEXACT_FORMALIZE_RULES=0, GEOEXACT_CONVEXITY=0,
 GEOEXACT_INCIRCLE_TANGENTS=0, GEOEXACT_RADIUS_CLAIMS=0, GEOEXACT_LABEL_SUBSCRIPTS=0,
-GEOEXACT_DEGENERATE_POLICY=0.
+GEOEXACT_DEGENERATE_POLICY=0, GEOEXACT_GIVEN_ORDER=0.
 """
 from . import llm as _llm
 from . import difficulty as _difficulty
@@ -43,6 +46,7 @@ from . import incircle_tangents as _incircle_tangents
 from . import radius_claims as _radius_claims
 from . import degenerate_policy as _degenerate_policy
 from . import label_subscripts as _label_subscripts
+from . import given_order as _given_order
 from . import angle_marks_layout as _angle_marks_layout
 from . import aux_view_marks as _aux_view_marks
 
@@ -57,3 +61,4 @@ _radius_claims.install(_semantics, _llm)
 _label_subscripts.install(_render)   # после bisector_marks: самый внешний слой рендера
 _angle_marks_layout.install(_render)   # после label_subscripts: дуга/подпись широкого угла
 _aux_view_marks.install(_render)       # после angle_marks_layout: в виде с построением полная длина скрыта, если куски отмечены
+_given_order.install(_llm)             # после formalize_rules: порядок «соответственно» данных длин

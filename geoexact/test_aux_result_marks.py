@@ -397,3 +397,31 @@ def test_third_median_marks_centroid_via_result_marks():
     svg = render_svg(plan2, sol, show_aux=True)
     root, out_texts = _texts(svg)
     assert "G" in out_texts
+
+
+def test_third_median_without_result_marks():
+    """Блокер раунда 5: построение «третья медиана CC1» БЕЗ result_marks.
+    Прямая построения не ссылается на центроид, модель не прислала итог —
+    но центроид лежит на нарисованной построением прямой (третья медиана
+    проходит через него точно), значит он часть построения: подпись и
+    итоговые метки 2:1 обязаны появиться."""
+    plan = _medians_plan()
+    ranked = rank_solutions(plan, solve(plan, n_seeds=8), strict_readability=False)
+    assert ranked
+    sol = ranked[0][0]
+    data = {
+        "idea": "провести третью медиану CC1: три равновеликих треугольника",
+        "steps": [{"op": "midpoint", "out": "C_1", "args": ["A", "B"]}],
+        "aux_segments": [["C", "C_1"]],
+    }
+    why: list = []
+    applied = auxplan.apply_aux(plan, sol.coords, data, why)
+    assert applied is not None, why
+    plan2 = applied[0]
+    texts = {m["text"]: tuple(m["pts"]) for m in plan2.draw.length_marks
+             if m.get("layer") == "aux"}
+    assert texts.get("6") == ("A", "G")            # 2/3 от AA_1 = 9
+    assert texts.get("3") == ("G", "A_1")
+    assert texts.get("8") == ("B", "G")            # 2/3 от BB_1 = 12
+    assert texts.get("4") == ("G", "B_1")
+    assert "G" not in plan2.draw.hide_labels        # точка получила имя
