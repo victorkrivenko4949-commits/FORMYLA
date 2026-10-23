@@ -371,28 +371,45 @@ def _median_piece_marks(plan, known, referenced, visible):
 
     Классический результат построения «обозначить точку пересечения медиан»: если
     построение пользуется центроидом, а на нарисованной медиане известна полная
-    длина (данное dist-ограничение или числовая подпись), куски выводятся из
-    теоремы и сверяются с чертежом — даже если модель подписи результата
-    не прислала. Основание теоретическое, числовая сверка — та же, что у гейта.
+    длина из ДАННОГО (dist-ограничение), куски выводятся из теоремы и сверяются
+    с чертежом — даже если модель подписи результата не прислала. Источник —
+    только данное: числовая подпись метки недоказуема и исходной длиной быть не
+    может.
 
-    Центроид ищется строго: line_intersect(X, M1, Y, M2), где M1 — середина
-    стороны, НЕ содержащей X, M2 — середина стороны, НЕ содержащей Y, и у сторон
-    есть общая вершина (иначе это середины несвязанных отрезков, а не медианы
-    одного треугольника — случайное отношение 2:1 не принимается)."""
-    mp_args = {c.out: set(c.args) for c in plan.constructions if c.op == "midpoint"}
+    Центроид ищется строго: line_intersect по двум медианам одного треугольника
+    XYZ — прямые «вершина—середина», где M1 = midpoint(Y, Z) и M2 = midpoint(X,
+    Z) с общей вершиной Z. Порядок концов внутри каждой прямой и порядок самих
+    прямых нормализуется (формализатор может записать и (M1, X), и (X, M1)).
+    Совпадение чисел на посторонних серединах не принимается (случайное
+    отношение 2:1 — не теорема), база — только доказуемая конфигурация."""
+    mp_args = {c.out: frozenset(c.args) for c in plan.constructions if c.op == "midpoint"}
     if not mp_args:
         return []
+
+    def _vertex_midpoint(p, q):
+        """Прямая «вершина—середина»: (вершина, середина) независимо от записи."""
+        p_mid, q_mid = p in mp_args, q in mp_args
+        if p_mid == q_mid:
+            return None               # обе вершины или обе середины
+        return (q, p) if p_mid else (p, q)
+
     centroid = None
     for c in plan.constructions:
         if c.op != "line_intersect" or len(c.args) != 4:
             continue
-        x, m1, y, m2 = c.args
-        if m1 not in mp_args or m2 not in mp_args:
+        first = _vertex_midpoint(c.args[0], c.args[1])
+        second = _vertex_midpoint(c.args[2], c.args[3])
+        if first is None or second is None:
             continue
-        if x in mp_args[m1] or y in mp_args[m2]:
-            continue                    # «медиана» к середине своей же стороны
-        if not (mp_args[m1] & mp_args[m2]):
-            continue                    # нет общей вершины — не один треугольник
+        (x, m1), (y, m2) = first, second
+        if x == y:
+            continue
+        common = mp_args[m1] & mp_args[m2]
+        if len(common) != 1:
+            continue                    # нет единой общей вершины Z
+        z = next(iter(common))
+        if mp_args[m1] != frozenset((y, z)) or mp_args[m2] != frozenset((x, z)):
+            continue                    # не медианы одного треугольника XYZ
         if c.out in referenced:
             centroid = c.out
             break
@@ -402,19 +419,12 @@ def _median_piece_marks(plan, known, referenced, visible):
     out: list[dict] = []
     have = {tuple(m["pts"]) for m in plan.draw.length_marks}
     have |= {tuple(m["pts"])[::-1] for m in plan.draw.length_marks}
-    for mark in plan.draw.length_marks:
-        pts = list(mark.get("pts") or [])
-        if len(pts) != 2:
-            continue
-        if frozenset(pts) not in visible:
+    for key, full in given.items():
+        if key not in visible or full is None or full <= 0:
             continue
         # медиана: ровно один конец — середина стороны
+        pts = list(key)
         if not ((pts[0] in mp_args) ^ (pts[1] in mp_args)):
-            continue
-        full = given.get(frozenset(pts))
-        if full is None:
-            full = _numeric_label(mark.get("text"))
-        if full is None or full <= 0:
             continue
         a, b = (known[n] for n in pts)
         g = known[centroid]
