@@ -1,5 +1,17 @@
-[0;93m2026-10-24 22:27:24.670710496 [W:onnxruntime:Default, device_discovery.cc:95 GetPciBusId] Skipping pci_bus_id for PCI path at "/sys/devices/LNXSYSTM:00/LNXSYBUS:00/ACPI0004:00/MSFT1000:00/5620e0c7-8062-4dce-aeb7-520c7ef76171" because filename "5620e0c7-8062-4dce-aeb7-520c7ef76171" did not match expected pattern of [0-9a-f]+:[0-9a-f]+:[0-9a-f]+[.][0-9a-f]+[m
-/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/fitz/__init__.py:17: FutureWarning: The `fitz` API is deprecated and will be removed in future. Use `import pymupdf` instead.
-  warnings.warn(
-ЭКСТРАКЦИЯ: {'no_pdf': 3, 'extracted': 21, 'no_figure_on_page': 5} | всего рисунков: 25
+[0;93m2026-10-24 22:43:42.512874795 [W:onnxruntime:Default, device_discovery.cc:95 GetPciBusId] Skipping pci_bus_id for PCI path at "/sys/devices/LNXSYSTM:00/LNXSYBUS:00/ACPI0004:00/MSFT1000:00/5620e0c7-8062-4dce-aeb7-520c7ef76171" because filename "5620e0c7-8062-4dce-aeb7-520c7ef76171" did not match expected pattern of [0-9a-f]+:[0-9a-f]+:[0-9a-f]+[.][0-9a-f]+[m
+[vsosh] {'page_not_found': 20, 'no_pdf': 12, 'extracted': 43, 'no_figure_on_page': 41}
+[mmo] {'no_pdf': 19, 'no_figure_on_page': 3, 'extracted': 1}
+[kurchatov] {'extracted': 13, 'no_figure_on_page': 2, 'page_not_found': 1}
+[turgor] {'no_figure_on_page': 9, 'download_failed': 5, 'no_pdf': 23, 'extracted': 12}
+[lomonosov] {'extracted': 9, 'no_figure_on_page': 7, 'no_pdf': 2, 'page_not_found': 1, 'download_failed': 1}
+[formula-unity] {'no_pdf': 4, 'no_figure_on_page': 6, 'extracted': 1}
+[pvg] {'no_figure_on_page': 2, 'extracted': 1, 'page_not_found': 1, 'download_failed': 1}
+[euler] {'extracted': 4, 'no_figure_on_page': 3}
+[vysshaya-proba] {'extracted': 2, 'no_figure_on_page': 1, 'page_not_found': 6}
+[matprazdnik] {'extracted': 10, 'no_figure_on_page': 6, 'no_pdf': 9}
+[spbgu] {'extracted': 1, 'no_pdf': 1}
+[phystech] {}
+[other] {}
+ЭКСТРАКЦИЯ: {'page_not_found': 29, 'no_pdf': 70, 'extracted': 97, 'no_figure_on_page': 80, 'download_failed': 7} | всего рисунков: 143
+  по якорю (extracted): {'none': 25, 'text': 44, 'num': 28}
 Отчёт: reports/olymp_figs_extract.csv
