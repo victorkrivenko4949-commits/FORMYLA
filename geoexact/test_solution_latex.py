@@ -35,6 +35,38 @@ def test_one_line_display_and_non_string():
     assert normalize_math(None) == ""
 
 
+def test_final_boxed_answer_gets_label_and_clean_punctuation():
+    # сценарий со скриншота: точка внутри \boxed, «Следовательно,» обрывается
+    md = ("Оба угла острые, значит $\\beta = \\gamma$. Следовательно,\n\n"
+          "$$\\boxed{\\angle B = \\frac{135^\\circ}{2} = 67^\\circ 30'.}$$")
+    out = normalize_math(md)
+    assert "\\boxed" not in out
+    assert out.endswith("**Ответ:** $\\angle B = \\frac{135^\\circ}{2} = 67^\\circ 30'$")
+    assert "Следовательно," not in out
+    _lines_are_balanced(out)
+
+
+def test_existing_answer_label_is_not_duplicated():
+    md = "Решение.\n\n**Ответ:**\n\n$$\\boxed{42.}$$"
+    out = normalize_math(md)
+    assert out.count("Ответ") == 1
+    assert out.endswith("**Ответ:**\n\n$42$")
+
+
+def test_inline_boxed_only_loses_trailing_punctuation():
+    md = "Итак, $\\boxed{5.}$ — это ответ."
+    out = normalize_math(md)
+    assert out == "Итак, $\\boxed{5}$ — это ответ."
+
+
+def test_display_boxed_with_extra_text_is_left_alone():
+    # \boxed не занимает всю формулу — не превращаем в «Ответ»
+    md = "Проверка:\n\n$$\\text{итог} \\boxed{7}$$"
+    out = normalize_math(md)
+    assert "**Ответ:**" not in out
+    assert "$$\\text{итог} \\boxed{7}$$" in out
+
+
 def test_generate_solution_returns_normalized_markdown(monkeypatch):
     monkeypatch.setattr(llm, "make_session", lambda: None)
     monkeypatch.setattr(llm, "expert_text", lambda *a, **k: "решение")
