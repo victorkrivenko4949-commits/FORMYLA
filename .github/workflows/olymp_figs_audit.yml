@@ -1,0 +1,29 @@
+name: olymp-figs-audit
+
+on:
+  push:
+    branches: [figs-audit]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run audit
+        run: |
+          mkdir -p reports
+          python scripts/olymp_catalog_figs_audit.py --csv reports/olymp_figs_audit.csv | tee reports/olymp_figs_audit_summary.txt
+      - name: Commit report
+        run: |
+          git config user.name "figs-audit-bot"
+          git config user.email "bot@formyla.net"
+          git add reports/
+          git commit -m "audit: olymp figures report [skip ci]" || echo "no changes"
+          git push
