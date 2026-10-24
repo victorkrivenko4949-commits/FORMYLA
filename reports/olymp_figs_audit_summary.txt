@@ -1,11 +1,11 @@
-ПОЧИНЕНО: 1 привязок в 1 файлах; список: reports/olymp_figs_fix.csv
-  по олимпиадам: {'vsosh': 1}
-ИТОГО: {'fig_not_linked': 321, 'fig_orphan': 206}
+ПОЧИНКА: {'low_sim': 14, 'no_match': 38, 'fixed': 3}; изменено файлов JSON: 2; список: reports/olymp_figs_fix.csv
+  fixed по олимпиадам: {'kurchatov': 2, 'vsosh': 1}
+ИТОГО: {'fig_not_linked': 320, 'fig_orphan': 203}
 
 По олимпиадам:
   fig_not_linked  euler            8
   fig_not_linked  formula-unity    31
-  fig_not_linked  kurchatov        18
+  fig_not_linked  kurchatov        17
   fig_not_linked  lomonosov        18
   fig_not_linked  matprazdnik      30
   fig_not_linked  mmo              23
