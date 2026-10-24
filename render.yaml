@@ -79,6 +79,11 @@ services:
       # См. services/adaptive_full_seed.py.
       - key: ADAPTIVE_FORCE_IMPORT
         value: "1"
+      # Фото решений: пока R2/S3 не настроен, сохраняем локально на диск,
+      # иначе загрузка фото в тесте падает с «Хранилище фото не настроено».
+      # Файлы раздаёт маршрут /uploads/<path> в app.py.
+      - key: PHOTO_LOCAL_FALLBACK
+        value: "1"
       - key: SECRET_KEY
         sync: false
       - key: DEEPSEEK_API_KEY

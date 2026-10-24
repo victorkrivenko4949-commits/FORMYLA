@@ -1,6 +1,6 @@
 import re
 import markdown as md_lib
-from flask import Flask, render_template, request, abort, redirect, session, jsonify, url_for, flash
+from flask import Flask, render_template, request, abort, redirect, session, jsonify, url_for, flash, send_from_directory
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, user_logged_in
 from flask_mail import Mail, Message
 from utils.math_answer_utils import compare_math_answers
@@ -3494,6 +3494,18 @@ OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '')
 
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+@app.route('/uploads/<path:filename>')
+def serve_solution_uploads(filename):
+    """Раздача локально сохранённых фото решений (PHOTO_LOCAL_FALLBACK=1).
+
+    services/storage.py при выключенном R2 пишет файлы в <repo>/uploads
+    и возвращает URL вида /uploads/photos/<user_id>/<hash>.jpg — без этого
+    маршрута ссылки на фото отдавали 404.
+    """
+    from services.storage import LOCAL_PHOTO_DIR
+    return send_from_directory(LOCAL_PHOTO_DIR, filename)
 
 
 # VARIANTS dict was used by the removed "Написать олимпиаду" routes (/practice*).
