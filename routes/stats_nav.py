@@ -5,6 +5,10 @@ routes/stats_nav.py — STATS_PAGE_V1 + THEME_EVAL_V1 (18.10.2026).
 1) Переименование пункта меню «🎓 Куратор подготовки» → «📊 Статистика»
    (десктоп-шапка, мобильный drawer, нижняя панель) без правки base.html:
    after_request-хук подменяет текст в готовом HTML.
+   2026-10-23: хук переименования УБРАН — метки исправлены прямо в
+   base.html («Куратор» = чат /curator, «Статистика» = /prep/coach,
+   ссылка на статистику — в «Прочее»). Хук переименовывал и пункт
+   «Куратор» в нижней панели, что ломало навигацию.
 2) before_request на /prep/coach: пересчёт итогов по темам
    (services/theme_level_eval.evaluate_user) — после каждых 10 решённых задач
    дня тема получает уровень 1..4, который попадает в радары.
@@ -96,18 +100,5 @@ def install_stats_nav(app, register=None) -> None:
             pass
         return None
 
-    @app.after_request
-    def _stats_nav(response):
-        try:
-            if (response.status_code != 200 or response.direct_passthrough
-                    or response.mimetype != 'text/html'):
-                return response
-            body = response.get_data(as_text=True)
-            if 'Куратор' not in body:
-                return response
-            new_body = rename_nav(body)
-            if new_body != body:
-                response.set_data(new_body)
-        except Exception:  # noqa: BLE001
-            pass
-        return response
+    # 2026-10-23: after_request-переименование «Куратор» -> «Статистика»
+    # удалено — метки теперь заданы правильно в base.html.

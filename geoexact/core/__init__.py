@@ -18,6 +18,29 @@ solver.py и gates.py:
     формализатора (радиус через circumcenter/incenter + dist_eq);
   * label_subscripts.install — подписи точек B_1, K_2, I_A с настоящим нижним
     индексом вместо буквального «B_1».
+  * given_order.install — «равны a и b соответственно»: правило формализатора и
+    пост-проверка плана; перепутанный порядок данных длин исправляется сам
+    (обмен значений двух dist-ограничений и их подписей) с пометкой в notes.
+  * acute_triangle.install — качественные условия: «остроугольный
+    треугольник» (углы < 90°), «диаметрально противоположная» (антипод через
+    центр описанной окружности), «точка лежит на отрезке/стороне»
+    (принадлежность без слипания). Независимые проверки по тексту условия +
+    правило 37 формализатора (иллюстративные углы, антипод, серединный
+    перпендикуляр).
+  * equidistant_repair.install — «BX=XD»: равноудалённая точка на прямой —
+    пересечение с серединным перпендикуляром (правило 38 + детерминированный
+    ремонт планов, где равенство закодировано окружностью line_circle —
+    это добавляет |XU|=|UV| и переограничивает фигуру; ремонт — только для
+    полностью распознанной по закрытому шаблону конфигурации, иначе no-op);
+  * diameter_claims.install — «(полу)окружность с диаметром XY»: концы
+    диаметра лежат НА окружности, центр — середина XY, отрезок XY виден
+    из названных точек под прямым углом (Фалес), полуокружность — одна
+    сторона прямой XY; правило 39 + проверка плана против текста (прод-ошибка:
+    окружность «диаметра AD», построенная с центром A);
+  * model_routes.install — формализатор (оба пути) на deepseek-v4-pro: перевод
+    по просьбе пользователя после вырожденной конфигурации; классификация и
+    оценка сложности не меняются, бюджетная деградация pro→flash сохранена.
+    GEOEXACT_PRO_FORMALIZE=0 выключает; к ENGINE_VERSION дописывается суффикс.
   * degenerate_policy.install — вырожденность с учётом семантики плана:
     совпадение построенных точек и коллинеарные «треугольники», объявленные
     конструкциями/ограничениями (D на продолжении CA, высота CH≡M при
@@ -27,9 +50,12 @@ solver.py и gates.py:
 Выключатели: GEOEXACT_DIFFICULTY_ROUTER=0, GEOEXACT_FIRST_TOKEN_LIMIT=0,
 GEOEXACT_GENERAL_POSITION=0, GEOEXACT_FORMALIZE_RULES=0, GEOEXACT_CONVEXITY=0,
 GEOEXACT_INCIRCLE_TANGENTS=0, GEOEXACT_RADIUS_CLAIMS=0, GEOEXACT_LABEL_SUBSCRIPTS=0,
-GEOEXACT_DEGENERATE_POLICY=0.
+GEOEXACT_DEGENERATE_POLICY=0, GEOEXACT_GIVEN_ORDER=0,
+GEOEXACT_ACUTE_TRIANGLE=0, GEOEXACT_PRO_FORMALIZE=0,
+GEOEXACT_EQUIDISTANT=0.
 """
 from . import llm as _llm
+from . import pipeline as _pipeline
 from . import difficulty as _difficulty
 from . import solver as _solver
 from . import gates as _gates
@@ -43,6 +69,12 @@ from . import incircle_tangents as _incircle_tangents
 from . import radius_claims as _radius_claims
 from . import degenerate_policy as _degenerate_policy
 from . import label_subscripts as _label_subscripts
+from . import given_order as _given_order
+from . import equidistant_repair as _equidistant_repair
+from . import acute_triangle as _acute_triangle
+from . import diameter_claims as _diameter_claims
+from . import statement as _statement
+from . import model_routes as _model_routes
 from . import angle_marks_layout as _angle_marks_layout
 from . import aux_view_marks as _aux_view_marks
 
@@ -57,3 +89,8 @@ _radius_claims.install(_semantics, _llm)
 _label_subscripts.install(_render)   # после bisector_marks: самый внешний слой рендера
 _angle_marks_layout.install(_render)   # после label_subscripts: дуга/подпись широкого угла
 _aux_view_marks.install(_render)       # после angle_marks_layout: в виде с построением полная длина скрыта, если куски отмечены
+_given_order.install(_llm)             # после formalize_rules: порядок «соответственно» данных длин
+_equidistant_repair.install(_llm)        # после given_order: равноудалённая точка — серединный перпендикуляр
+_acute_triangle.install(_semantics, _llm)    # после radius_claims: острота, антипод, принадлежность отрезку
+_diameter_claims.install(_semantics, _llm, _pipeline, _statement)  # после acute_triangle: диаметр — Фалес, центр-середина и отрезок в чертеже
+_model_routes.install(_llm, _pipeline)        # после acute_triangle: путь A формализатора на v4-pro

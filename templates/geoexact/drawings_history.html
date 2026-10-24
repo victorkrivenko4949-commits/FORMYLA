@@ -46,7 +46,7 @@
 </div>
 <script>
 function dhSvg(id){ var c=document.querySelector('#dh-'+id+' .dh-svg'); return c?c.innerHTML:''; }
-function dhOpen(id){ var w=window.open('about:blank'); if(!w)return; w.document.write('<html><body style="margin:0;background:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;">'+dhSvg(id)+'</body></html>'); w.document.close(); }
+function dhOpen(id){ var w=window.open('about:blank'); if(!w)return; w.document.write('<html><body style="margin:0;background:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;">'+dhSvg(id)+'<\/body><\/html>'); w.document.close(); }
 function dhDownload(id){ var b=new Blob([dhSvg(id)],{type:'image/svg+xml'}); var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='formyla-drawing-'+id+'.svg'; a.click(); }
 function dhDelete(id){ if(!confirm('Удалить чертёж из истории?'))return; fetch('/geometry/drawings/'+id+'/delete',{method:'POST',credentials:'include'}).then(function(r){return r.json();}).then(function(d){ if(d&&d.ok){ var c=document.getElementById('dh-'+id); if(c)c.remove(); } }); }
 </script>

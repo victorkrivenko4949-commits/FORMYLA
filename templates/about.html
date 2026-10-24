@@ -783,10 +783,12 @@
         <button class="faq__q" type="button">Учитель: как добавить ученика? <span class="pm">+</span></button>
         <div class="faq__a"><div><p>Войдите в аккаунт учителя → раздел «👨‍🏫 Мои ученики» → создайте группу (или откройте существующую) → нажмите «Добавить ученика» и введите его никнейм. Ученик появится в группе, вы сможете открыть его профиль и видеть все решённые задачи, уровень и серию.</p></div></div>
       </div>
+      {% if is_pilot %}
       <div class="faq__item">
         <button class="faq__q" type="button">Сколько стоит FORMYLA.net? <span class="pm">+</span></button>
         <div class="faq__a"><div><p>3 ноября запускается Premium: тариф «Работяга» — 800 ₽/мес (6 занятий в неделю) и «Спокойный» — 500 ₽/мес (3 занятия в неделю). Все детали — на странице «Подписка».</p></div></div>
       </div>
+      {% endif %}
       <div class="faq__item">
         <button class="faq__q" type="button">Есть ли мобильное приложение? <span class="pm">+</span></button>
         <div class="faq__a"><div><p>Нативного приложения пока нет, но сайт полностью адаптирован под смартфон. Отдельное приложение для iOS/Android — в планах на 2027 год.</p></div></div>
@@ -839,6 +841,7 @@
       }
       .contact-chat__avatar {
         width: 38px; height: 38px;
+        flex: 0 0 38px;
         border-radius: 50%;
         background: rgba(255,255,255,0.22);
         display: flex; align-items: center; justify-content: center;
@@ -864,8 +867,8 @@
       }
       .contact-chat__messages {
         padding: 18px;
-        min-height: 160px;
-        max-height: 360px;
+        min-height: 420px;
+        max-height: 560px;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
@@ -990,6 +993,8 @@
       }
       .contact-chat__textarea {
         flex: 1;
+        min-width: 0;
+        width: auto !important;
         background: transparent;
         border: none;
         outline: none;
@@ -997,13 +1002,16 @@
         font-size: 14px;
         resize: none;
         max-height: 120px;
-        min-height: 22px;
-        padding: 6px 8px;
+        min-height: 64px;
+        padding: 8px !important;
         line-height: 1.4;
         font-family: inherit;
       }
       .contact-chat__btn {
-        width: 36px; height: 36px;
+        width: 44px; height: 44px;
+        min-width: 44px;
+        padding: 0 !important;
+        margin: 0;
         border-radius: 10px;
         border: none;
         cursor: pointer;
@@ -1011,6 +1019,12 @@
         font-size: 16px;
         transition: all 0.15s;
         flex-shrink: 0;
+      }
+      .contact-chat__btn svg,
+      .contact-chat__avatar svg {
+        width: 22px; height: 22px;
+        flex-shrink: 0;
+        pointer-events: none;
       }
       .contact-chat__btn--attach {
         background: rgba(148, 163, 184, 0.14);
@@ -1067,7 +1081,9 @@
 
     <div class="contact-chat">
       <div class="contact-chat__header">
-        <div class="contact-chat__avatar"></div>
+        <div class="contact-chat__avatar" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"/></svg>
+        </div>
         <div>
           <div class="contact-chat__title">Поддержка FORMYLA.net</div>
           <div class="contact-chat__status">Обычно отвечаем за 1-2 часа</div>
@@ -1097,14 +1113,18 @@
 
         <div class="contact-chat__input-row">
           <button type="button" class="contact-chat__btn contact-chat__btn--attach" id="contact-chat-attach"
-                  title="Прикрепить файлы (картинки или PDF, до 10 МБ каждый)"></button>
+                  aria-label="Прикрепить файлы" title="Прикрепить файлы (картинки или PDF, до 10 МБ каждый)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 11-8.5 8.5a6 6 0 0 1-8.5-8.5L13 2a4 4 0 0 1 5.7 5.7l-9 9a2 2 0 0 1-2.8-2.8L15 5.8"/></svg>
+          </button>
           <input type="file" id="contact-chat-fileinput" multiple
                  accept="image/*,application/pdf,.pdf,.png,.jpg,.jpeg,.webp,.gif"
                  style="display:none">
           <textarea class="contact-chat__textarea" id="contact-chat-text"
-                    placeholder="Опишите проблему или идею…" rows="1" maxlength="4000"></textarea>
+                    placeholder="Опишите проблему или идею…" rows="2" maxlength="4000"></textarea>
           <button type="button" class="contact-chat__btn contact-chat__btn--send" id="contact-chat-send"
-                  title="Отправить (Ctrl+Enter)"></button>
+                  aria-label="Отправить сообщение" title="Отправить (Ctrl+Enter)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13"/></svg>
+          </button>
         </div>
 
         <div class="contact-chat__hint">

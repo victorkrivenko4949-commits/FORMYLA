@@ -370,6 +370,29 @@ def get_daily_tasks():
     user_id = current_user.id
     today = today_in_user_tz()
 
+    # ── TEACHER: задачи дня — практика учеников; учителю набор не выдаётся,
+    # лимиты и цикл куратора для роли teacher не трогаем вообще. ──────────
+    if getattr(current_user, "role", "student") == "teacher":
+        data = {
+            "status": "teacher",
+            "daily_set_id": None,
+            "target_date": today.isoformat(),
+            "message": (
+                "Задачи дня выдаются ученикам — в аккаунте учителя "
+                "задач дня нет."
+            ),
+            "class_level": None,
+            "summary": None,
+            "generated_at": None,
+            "total_cost_usd": None,
+            "progress": {"completed": 0, "total": 0},
+            "items": [],
+        }
+        return render_template(
+            "daily_tasks/daily_tasks_dashboard.html",
+            data={**data, "theme_today": _theme_for_day(today, None)},
+        )
+
     # ── LIMITS_V1: мягкие лимиты Free (3 задачи / 1 ИИ-разбор в день, МСК) ──
     # Лимит действует только при resolve_access=free И apply_limits=True;
     # PAYWALL_MODE=off выключает немедленно. Списание — атомарный try_consume.

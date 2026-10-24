@@ -139,7 +139,7 @@
         '<div style="font-size:20px;font-weight:800;margin-bottom:6px;">' + esc(question) + '</div>' +
         '<div style="font-size:14px;color:var(--muted,#9aa3b5);margin-bottom:18px;line-height:1.5;">' + esc(subtitle) + '</div>' +
         '<div id="ft-sfb-stars" style="display:flex;gap:8px;justify-content:center;margin-bottom:6px;">' +
-          [1,2,3,4,5].map(function (n) { return '<button type="button" data-star="' + n + '" style="font-size:34px;background:none;border:none;cursor:pointer;color:#5c6478;padding:2px;">★</button>'; }).join('') +
+          [1,2,3,4,5].map(function (n) { return '<button type="button" data-star="' + n + '" style="font-size:34px;background:none;border:none;cursor:pointer;color:#5c6478 !important;padding:2px;">★</button>'; }).join('') +
         '</div>' +
         '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted,#9aa3b5);margin-bottom:14px;padding:0 6px;"><span>сложно, непонятно</span><span>всё понятно</span></div>' +
         '<textarea id="ft-sfb-text" rows="3" maxlength="2000" placeholder="Какой метод было тяжело понять и почему? (необязательно)" style="width:100%;box-sizing:border-box;border-radius:10px;padding:10px 12px;font-size:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:inherit;resize:vertical;"></textarea>' +
@@ -153,7 +153,9 @@
     stars.forEach(function (b) {
       b.addEventListener('click', function () {
         chosen = parseInt(b.dataset.star, 10);
-        stars.forEach(function (s) { s.style.color = parseInt(s.dataset.star, 10) <= chosen ? '#F4B942' : '#5c6478'; });
+        // ВАЖНО: глобальное правило `button { color: #fff !important }` в static/style.css
+        // перекрывает обычный color — ставим inline-стиль с приоритетом 'important'.
+        stars.forEach(function (s) { s.style.setProperty('color', parseInt(s.dataset.star, 10) <= chosen ? '#F4B942' : '#5c6478', 'important'); });
         ov.querySelector('#ft-sfb-hint').style.display = 'none';
       });
     });

@@ -11,12 +11,15 @@
       Ты уже провёл на FORMYLA больше 25 минут — значит, тебе есть что сказать.
       Это займёт полминуты и поможет сделать сайт лучше.
     </div>
-    <div id="ft-fb-stars" style="display:flex;gap:6px;justify-content:center;margin-bottom:16px;">
-      <button type="button" class="ft-fb-star" data-star="1" onclick="ftFbPick(1,event)">★</button>
-      <button type="button" class="ft-fb-star" data-star="2" onclick="ftFbPick(2,event)">★</button>
-      <button type="button" class="ft-fb-star" data-star="3" onclick="ftFbPick(3,event)">★</button>
-      <button type="button" class="ft-fb-star" data-star="4" onclick="ftFbPick(4,event)">★</button>
-      <button type="button" class="ft-fb-star" data-star="5" onclick="ftFbPick(5,event)">★</button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px;">
+      <div id="ft-fb-stars" role="radiogroup" aria-label="Оценка сайта" style="display:flex;gap:6px;">
+        <button type="button" class="ft-fb-star" data-star="1" aria-label="1 из 5" aria-pressed="false" onclick="ftFbPick(1,event)">★</button>
+        <button type="button" class="ft-fb-star" data-star="2" aria-label="2 из 5" aria-pressed="false" onclick="ftFbPick(2,event)">★</button>
+        <button type="button" class="ft-fb-star" data-star="3" aria-label="3 из 5" aria-pressed="false" onclick="ftFbPick(3,event)">★</button>
+        <button type="button" class="ft-fb-star" data-star="4" aria-label="4 из 5" aria-pressed="false" onclick="ftFbPick(4,event)">★</button>
+        <button type="button" class="ft-fb-star" data-star="5" aria-label="5 из 5" aria-pressed="false" onclick="ftFbPick(5,event)">★</button>
+      </div>
+      <div id="ft-fb-count" style="font-size:16px;font-weight:800;color:var(--muted,#9aa3b5);min-width:44px;">0 / 5</div>
     </div>
     <textarea id="ft-fb-text" rows="3" maxlength="2000"
       placeholder="Пара слов: что понравилось, что бесит? (необязательно)"
@@ -35,14 +38,17 @@
   </div>
 </div>
 <style>
+  /* ВАЖНО: глобальное правило `button { color: #fff !important }` в static/style.css
+     перекрывает обычный цвет — поэтому здесь тоже !important (специфичность
+     класса выше, чем у элемента button, при равном приоритете). */
   .ft-fb-star {
     font-size: 40px; background: none; border: none; cursor: pointer;
-    color: #5c6478; padding: 4px 6px; line-height: 1;
+    color: #5c6478 !important; padding: 4px 6px; line-height: 1;
     transition: transform 0.12s ease, color 0.12s ease;
     pointer-events: auto;
   }
-  .ft-fb-star:hover { transform: scale(1.25); color: #F4B942; }
-  .ft-fb-star.on { color: #F4B942; }
+  .ft-fb-star:hover { transform: scale(1.25); color: #F4B942 !important; }
+  .ft-fb-star.on { color: #F4B942 !important; }
 </style>
 <script>
 var ftFb = { chosen: 0, shown: false, sending: false };
@@ -54,7 +60,10 @@ window.ftFbPick = function (n, ev) {
   for (var i = 0; i < stars.length; i++) {
     var s = parseInt(stars[i].getAttribute('data-star'), 10);
     if (s <= n) { stars[i].classList.add('on'); } else { stars[i].classList.remove('on'); }
+    stars[i].setAttribute('aria-pressed', s <= n ? 'true' : 'false');
   }
+  var cnt = document.getElementById('ft-fb-count');
+  if (cnt) { cnt.textContent = n + ' / 5'; cnt.style.color = '#F4B942'; }
   var hint = document.getElementById('ft-fb-hint');
   if (hint) hint.style.display = 'none';
 };

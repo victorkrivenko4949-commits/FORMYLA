@@ -269,6 +269,7 @@ class SubscriptionService:
 
     def activate_premium(self, user_id: int, plan: str = 'premium_monthly',
                          payment_id: Optional[str] = None, is_beta: bool = True,
+                         is_trial: bool = False,
                          amount_rub: Optional[int] = None,
                          starts_at: Optional[datetime] = None,
                          expires_at: Optional[datetime] = None) -> dict:
@@ -303,14 +304,15 @@ class SubscriptionService:
         self._execute("""
             INSERT INTO subscriptions
                 (user_id, plan, status, started_at, expires_at,
-                 payment_id, amount_rub, is_beta_access, created_at)
-            VALUES (?, ?, 'active', ?, ?, ?, ?, ?, ?)
+                 payment_id, amount_rub, is_beta_access, is_trial, created_at)
+            VALUES (?, ?, 'active', ?, ?, ?, ?, ?, ?, ?)
         """, (
             user_id, plan,
             started_at.isoformat(), expires_at.isoformat(),
             payment_id,
             amount_rub or (0 if is_beta else limits['price_rub']),
             bool(is_beta),
+            bool(is_trial),
             now.isoformat(),
         ))
 

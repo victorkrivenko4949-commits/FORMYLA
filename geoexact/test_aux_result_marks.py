@@ -19,6 +19,8 @@
 * подписи длин стоят сбоку от отрезков (штатное поведение рендера, зафиксировано
   проверкой прямоугольника подписи против отрезков)."""
 import math
+
+import pytest
 import xml.etree.ElementTree as ET
 
 from geoexact.core import auxplan
@@ -282,3 +284,144 @@ def test_aux_result_labels_render_beside_segments():
         for x1, y1, x2, y2 in segs:
             assert not rect_seg_hit(rect, (x1, y1), (x2, y2)), \
                 f"подпись {t} пересекает линию отрезка"
+
+
+def test_coincidental_two_to_one_not_derived():
+    """Совпадение 2:1 на посторонних серединах — не теорема, куски не выводятся.
+
+    M1 = midpoint(Y, Z) и M2 = midpoint(W, Z) с W ≠ X: пересечение [X, M1] и
+    [Y, M2] делит [X, M1] ровно 2:1 по построению координат, но это не центроид
+    треугольника (M2 — середина WZ, а не XZ). Слабая проверка (общая вершина +
+    «медиана не к своей стороне») приняла бы это; строгая требует M2 = midpoint(X, Z).
+    """
+    import numpy as np
+    from geoexact.core import auxplan as ap
+    from geoexact.core.schema import FigurePlan
+
+    plan = FigurePlan.from_dict({
+        "points": ["X", "Y", "Z", "W", "M1", "M2", "G"],
+        "constructions": [
+            {"op": "free_point", "out": n} for n in ("X", "Y", "Z", "W")
+        ] + [
+            {"op": "midpoint", "out": "M1", "args": ["Y", "Z"]},
+            {"op": "midpoint", "out": "M2", "args": ["W", "Z"]},
+            {"op": "line_intersect", "out": "G", "args": ["X", "M1", "Y", "M2"]},
+        ],
+        "constraints": [{"type": "dist", "args": ["X", "M1"], "value": 3}],
+        "draw": {"segments": [["X", "M1"], ["Y", "M2"]]},
+        "target": {"kind": "none", "args": []},
+        "scale_free": True,
+    })
+    known = {n: np.array(v, dtype=float) for n, v in {
+        "X": (0.0, 0.0), "Y": (0.0, 6.0), "Z": (6.0, -6.0), "W": (2.0, -6.0),
+        "M1": (3.0, 0.0), "M2": (4.0, -6.0), "G": (2.0, 0.0)}.items()}
+    # численно 2:1 сходится (защита не на числах, а на структуре):
+    assert abs(np.linalg.norm(known["X"] - known["G"]) - 2.0) < 1e-9
+    assert abs(np.linalg.norm(known["G"] - known["M1"]) - 1.0) < 1e-9
+    visible = {frozenset(("X", "M1")), frozenset(("Y", "M2"))}
+    assert ap._median_piece_marks(plan, known, {"G"}, visible) == []
+
+
+@pytest.mark.parametrize("swap_lines,flip1,flip2", [
+    (s, f1, f2) for s in (False, True) for f1 in (False, True) for f2 in (False, True)])
+def test_median_centroid_any_arg_order(swap_lines, flip1, flip2):
+    """Порядок концов в line_intersect не должен влиять: формализатор может
+    записать медиану и как (A, A_1), и как (A_1, A), прямые — в любом порядке.
+    Все 8 эквивалентных записей дают одинаковые подписи 6/3/4/8."""
+    import copy
+    base = _medians_plan()
+    c = next(x for x in base.constructions if x.op == "line_intersect")
+    l1 = list(c.args[:2])
+    l2 = list(c.args[2:])
+    if flip1:
+        l1.reverse()
+    if flip2:
+        l2.reverse()
+    args = l2 + l1 if swap_lines else l1 + l2
+    plan = copy.deepcopy(base)
+    cc = next(x for x in plan.constructions if x.op == "line_intersect")
+    cc.args = args
+    ranked = rank_solutions(plan, solve(plan, n_seeds=8), strict_readability=False)
+    assert ranked
+    sol = ranked[0][0]
+    data = {k: v for k, v in AUX.items() if k != "result_marks"}
+    why: list = []
+    applied = auxplan.apply_aux(plan, sol.coords, data, why)
+    assert applied is not None, why
+    texts = {m["text"]: tuple(m["pts"]) for m in applied[0].draw.length_marks
+             if m.get("layer") == "aux"}
+    assert texts.get("6") == ("A", "G"), (swap_lines, flip1, flip2)
+    assert texts.get("3") == ("G", "A_1")
+    assert texts.get("8") == ("B", "G")
+    assert texts.get("4") == ("G", "B_1")
+
+
+def test_third_median_marks_centroid_via_result_marks():
+    """Прод-сценарий (задача о медианах, живая генерация 23.10.2026): построение —
+    третья медиана CC1, она НЕ ссылается на центроид явно. Модель прислала
+    result_marks с перепутанными числами (6/8 при данных 12/9) — подписи верно
+    отброшены, но построение обязано всё равно дать итог: автоподстановка выводит
+    правильные 8/4/6/3, а точка G получает имя (не безымянная точка)."""
+    import copy
+    plan = _medians_plan()
+    d = {"type": "dist", "args": ["A", "A_1"], "value": 12}
+    plan.constraints[0] = type(plan.constraints[0])(**d)
+    plan.constraints[1] = type(plan.constraints[1])(**{"type": "dist", "args": ["B", "B_1"], "value": 9})
+    plan.draw.length_marks[0]["text"] = "AA_1 = 12"
+    plan.draw.length_marks[1]["text"] = "BB_1 = 9"
+    ranked = rank_solutions(plan, solve(plan, n_seeds=8), strict_readability=False)
+    assert ranked
+    sol = ranked[0][0]
+    data = {
+        "idea": "провести третью медиану CC1: три равновеликих треугольника",
+        "steps": [{"op": "midpoint", "out": "C_1", "args": ["A", "B"]}],
+        "aux_segments": [["C", "C_1"]],
+        "result_marks": [
+            {"pts": ["A", "G"], "text": "6"},   # модель перепутала медианы
+            {"pts": ["B", "G"], "text": "8"},
+        ],
+    }
+    why: list = []
+    applied = auxplan.apply_aux(plan, sol.coords, data, why)
+    assert applied is not None, why
+    plan2 = applied[0]
+    notes = plan2.notes or ""
+    assert "отброшена" in notes                    # неверные 6/8 отвергнуты
+    texts = {m["text"]: tuple(m["pts"]) for m in plan2.draw.length_marks
+             if m.get("layer") == "aux"}
+    assert texts.get("8") == ("A", "G")            # 2/3 от AA_1 = 12
+    assert texts.get("4") == ("G", "A_1")
+    assert texts.get("6") == ("B", "G")            # 2/3 от BB_1 = 9
+    assert texts.get("3") == ("G", "B_1")
+    assert "G" not in plan2.draw.hide_labels        # точка получила имя
+    svg = render_svg(plan2, sol, show_aux=True)
+    root, out_texts = _texts(svg)
+    assert "G" in out_texts
+
+
+def test_third_median_without_result_marks():
+    """Блокер раунда 5: построение «третья медиана CC1» БЕЗ result_marks.
+    Прямая построения не ссылается на центроид, модель не прислала итог —
+    но центроид лежит на нарисованной построением прямой (третья медиана
+    проходит через него точно), значит он часть построения: подпись и
+    итоговые метки 2:1 обязаны появиться."""
+    plan = _medians_plan()
+    ranked = rank_solutions(plan, solve(plan, n_seeds=8), strict_readability=False)
+    assert ranked
+    sol = ranked[0][0]
+    data = {
+        "idea": "провести третью медиану CC1: три равновеликих треугольника",
+        "steps": [{"op": "midpoint", "out": "C_1", "args": ["A", "B"]}],
+        "aux_segments": [["C", "C_1"]],
+    }
+    why: list = []
+    applied = auxplan.apply_aux(plan, sol.coords, data, why)
+    assert applied is not None, why
+    plan2 = applied[0]
+    texts = {m["text"]: tuple(m["pts"]) for m in plan2.draw.length_marks
+             if m.get("layer") == "aux"}
+    assert texts.get("6") == ("A", "G")            # 2/3 от AA_1 = 9
+    assert texts.get("3") == ("G", "A_1")
+    assert texts.get("8") == ("B", "G")            # 2/3 от BB_1 = 12
+    assert texts.get("4") == ("G", "B_1")
+    assert "G" not in plan2.draw.hide_labels        # точка получила имя

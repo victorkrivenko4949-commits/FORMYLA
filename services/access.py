@@ -126,10 +126,10 @@ def _paid_expires_at(user_id: int, now: datetime) -> Optional[datetime]:
               AND plan LIKE 'premium%'
               AND (
                 (payment_id IS NOT NULL
-                 AND COALESCE(CAST(is_beta_access AS INTEGER), 0) = 0)
+                 AND COALESCE(CAST(is_beta_access AS INTEGER), 0) = 0
+                 AND COALESCE(CAST(is_trial AS INTEGER), 0) = 0)
                 OR plan IN ('premium_intense', 'premium_calm')
               )
-              AND COALESCE(CAST(is_trial AS INTEGER), 0) = 0
               AND {cond}
         """), {'u': user_id, 'now': now_n.isoformat(sep=' ')}).first()
         return _to_aware(row[0]) if row and row[0] else None

@@ -6,7 +6,8 @@
 .ntc-panel{margin:24px 0;padding:20px;background:var(--card,#141a2e);border:1px solid var(--border,#334155);border-radius:16px}
 .ntc-senders{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
 .ntc-sender{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--border,#334155);background:rgba(255,255,255,.03);cursor:pointer;font-weight:600}
-.ntc-sender input{accent-color:#f4b942}
+.ntc-sender input[type="radio"]{accent-color:#f4b942;width:18px;height:18px;flex-shrink:0;margin:0;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none}
+.ntc-sender input[type="radio"]:focus-visible{outline:2px solid #f4b942;outline-offset:3px}
 .ntc-sender:has(input:checked){border-color:#f4b942;background:rgba(244,185,66,.12)}
 .ntc-form textarea{width:100%;box-sizing:border-box;min-height:110px;resize:vertical;padding:12px 14px;border-radius:12px;border:1px solid var(--border,#334155);background:rgba(255,255,255,.04);color:inherit;font:inherit;font-size:15px}
 .ntc-btn{display:inline-block;margin-top:14px;padding:11px 22px;border:0;border-radius:10px;font:inherit;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#F4B942,#e09a1f);color:#1a1205}

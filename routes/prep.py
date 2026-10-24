@@ -798,8 +798,7 @@ def _evaluate_solution(task, user_answer, user_solution, images_b64=None):
             'score': 0,
             'message': _md_solution(
                 "**Оценка тьютора: −1 балл, уровень −1** (нет хода решения — "
-                "напиши, как именно ты рассуждал, а не только название метода).\n\n"
-                "Проверяла модель: " + model
+                "напиши, как именно ты рассуждал, а не только название метода)."
             ),
             'errors': [],
             'hint': 'Опиши решение по шагам: что предположил, что вычислил, какой вывод сделал.',
@@ -848,9 +847,6 @@ def _evaluate_solution(task, user_answer, user_solution, images_b64=None):
         message = verdict.get('feedback', '')
 
     model = _checking_model_name()
-    # Добавляем в конец разбора строку о модели-проверяющем (если её ещё нет).
-    if model and model not in (message or ''):
-        message = f"{message}\n\n_Проверяла модель: {model}_"
 
     feedback = {
         'verdict': verdict_label,

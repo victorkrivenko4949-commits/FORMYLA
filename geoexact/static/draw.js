@@ -138,7 +138,12 @@
     const out = [];
     let list = null, para = [];
     const flushPara = () => {
-      if (para.length) { out.push("<p>" + para.join("<br>") + "</p>"); para = []; } };
+      if (para.length) {
+        const joined = para.join("<br>");
+        // Абзац финального ответа — с метки «Ответ:» — подсвечиваем рамкой
+        const cls = /^<strong>Ответ/.test(joined) ? " class=\"gx-answer\"" : "";
+        out.push("<p" + cls + ">" + joined + "</p>"); para = [];
+      } };
     const flushList = () => { if (list) { out.push("</" + list + ">"); list = null; } };
     for (const line of lines) {
       const t = line.trim();
@@ -160,6 +165,11 @@
     text.innerHTML = solutionHTML(res.markdown);
     box.hidden = false;
     try { if (typeof reRenderMath === "function") reRenderMath(text); } catch (e) { /* KaTeX не загрузился — формулы останутся текстом */ }
+    // Абзацы «Ответ: …» подсвечиваем и после KaTeX (рендер меняет текстовые
+    // узлы, но не классы абзацев).
+    text.querySelectorAll("p").forEach(p => {
+      if (/^\s*Ответ\s*:/i.test(p.textContent)) p.classList.add("gx-answer");
+    });
     box.scrollIntoView({behavior: "smooth", block: "nearest"});
   }
   async function poll() {

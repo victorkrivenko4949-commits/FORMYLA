@@ -219,11 +219,10 @@
                 </div>
             </div>
 
-            <!-- 2. Задачи дня + Куратор (видны всем ролям) -->
+            <!-- 2. Задачи дня + Куратор (чат, пилотам). Статистика — в «Прочее». -->
             <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="nav-item">📅 Задачи дня</a>
-            <a href="{{ url_for('prep.coach') }}" class="nav-item">🎓 Куратор подготовки</a>
             {% if is_pilot %}
-            <a href="/curator" class="nav-item" style="color:#f4b942;">💬 Куратор (чат)</a>
+            <a href="/curator" class="nav-item" style="color:#f4b942;">💬 Куратор</a>
             {% endif %}
             <a href="/olympiad-start" class="nav-item">📖 С чего начать</a>
             <a href="/articles" class="nav-item">📰 Статьи</a>
@@ -269,7 +268,7 @@
                        style="padding: 8px 16px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.2s;"
                        onmouseover="this.style.background='rgba(56, 189, 248, 0.2)'"
                        onmouseout="this.style.background='rgba(56, 189, 248, 0.1)'">
-                        👤 Профиль{% if current_user.has_diamond %} 💎{% endif %}
+                        👤 Профиль
                     </a>
                     <button type="button" class="nav-unpin-btn"
                             title="Открепить" aria-label="Открепить профиль"
@@ -373,20 +372,25 @@
                 Олимпиады
             </a>
 
-            <a href="/prep/coach" class="drawer-link">
-                <span class="drawer-link-icon">🎓</span>
-                Куратор подготовки
-            </a>
-
-
             <a href="/misc" class="drawer-link">
                 <span class="drawer-link-icon">📦</span>
                 Прочее <span class="insights-badge"></span>
+            </a>
+
+            <a href="/prep/coach" class="drawer-link">
+                <span class="drawer-link-icon">📊</span>
+                Статистика
             </a>
         </nav>
 
         <!-- Footer: auth actions -->
         <div class="drawer-footer">
+            {% if current_user.is_authenticated and not current_user.is_guest %}
+            <a href="{{ url_for('subscribe_page') }}" class="drawer-link">
+                <span class="drawer-link-icon">💳</span>
+                Тарифы и платные услуги
+            </a>
+            {% endif %}
             {% if current_user.is_authenticated and not current_user.is_guest %}
             <a href="{{ url_for('logout') }}" class="drawer-link" onclick="return confirmLogout(event)">
                 <span class="drawer-link-icon">🚪</span>
@@ -435,17 +439,12 @@
             <span class="bottom-nav-label">Олимпиады</span>
         </a>
         {% if is_pilot %}
-        <a href="/curator" class="bottom-nav-item" data-path="/curator*,/prep/coach*">
-            <span class="bottom-nav-icon">🎓</span>
-            <span class="bottom-nav-label">Куратор</span>
-        </a>
-        {% else %}
-        <a href="/prep/coach" class="bottom-nav-item" data-path="/prep/coach*">
+        <a href="/curator" class="bottom-nav-item" data-path="/curator*">
             <span class="bottom-nav-icon">🎓</span>
             <span class="bottom-nav-label">Куратор</span>
         </a>
         {% endif %}
-        <a href="/misc" class="bottom-nav-item" data-path="/misc*,/profile*,/friends*,/leaderboard*,/chat*,/about*,/probniks*,/secrets*,/problems*,/matstat*,/index*">
+        <a href="/misc" class="bottom-nav-item" data-path="/misc*,/profile*,/friends*,/leaderboard*,/chat*,/about*,/probniks*,/secrets*,/problems*,/matstat*,/index*,/prep/coach*">
             <span class="bottom-nav-icon">📦</span>
             <span class="bottom-nav-label">Прочее</span>
         </a>

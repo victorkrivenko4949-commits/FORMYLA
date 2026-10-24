@@ -190,7 +190,13 @@ _REPLACEABLE_FAILURES = ("TIMEOUT", "WORKER_ERROR", "PIPELINE_CRASH", "INTERRUPT
 _REUSE_BAD_CODES = ("SLIVER", "BAD_ASPECT", "UNDECLARED_INCIDENCE", "DEGENERATE",
                     "APPROXIMATE", "SIMPLIFIED", "SKETCH", "INTERNAL", "INVALID_CONDITION")
 _NOT_REUSABLE_VERIFICATION = ("sketch", "approximate", "simplified")
-_REUSE_DEFAULT_NOT_BEFORE = 1792078800.0      # 2026-10-15 15:40 UTC
+# 24.10.2026: поднята при деплое diameter_claims — проверка «(полу)окружность
+# с диаметром XY» меняет приёмку: прод-задание 4 (окружность «диаметра AD» с
+# центром A, on_circle(B,A,A,D), создано 13:24:46 UTC) числилось чистым и могло
+# подставиться снова. Отсечка — сразу после него; при позднем деплое окно
+# между отсечкой и деплоем можно закрыть env-переменной GEOEXACT_REUSE_NOT_BEFORE
+# (= времени деплоя).
+_REUSE_DEFAULT_NOT_BEFORE = 1792848600.0      # 2026-10-24 13:30 UTC
 _env_nb = (os.environ.get("GEOEXACT_REUSE_NOT_BEFORE") or "").strip()
 REUSE_NOT_BEFORE = float(_env_nb) if _env_nb else _REUSE_DEFAULT_NOT_BEFORE
 
@@ -490,6 +496,17 @@ def _sketch_payload(problem, with_aux):
     return payload
 
 
+def _forward_worker_journal(process) -> None:
+    """Журнал воркера (stderr) — в журнал сервиса: план формализатора и
+    трейсбеки падений иначе терялись в перехваченной трубе."""
+    try:
+        if process.stderr:
+            sys.stderr.write(process.stderr)
+            sys.stderr.flush()
+    except Exception:  # noqa: BLE001 - журнал не должен ломать очередь
+        pass
+
+
 def run_generation(problem, with_aux):
     if is_solution_job(problem):
         # «Полное решение»: продолжение того же диалога с экспертом + LaTeX.
@@ -503,6 +520,7 @@ def run_generation(problem, with_aux):
                                   "history": history}),
                 text=True, capture_output=True, timeout=200, env=env,
             )
+            _forward_worker_journal(process)
         except subprocess.TimeoutExpired:
             return {"ok": False, "kind": "solution", "reason": "TIMEOUT",
                     "detail": "Превышено время получения решения. Возможен расход API; "
@@ -520,6 +538,7 @@ def run_generation(problem, with_aux):
             input=json.dumps({"problem": problem, "with_aux": with_aux, "history": history}),
             text=True, capture_output=True, timeout=WORKER_TIMEOUT_SEC, env=env,
         )
+        _forward_worker_journal(process)
     except subprocess.TimeoutExpired:
         return _sketch_payload(problem, with_aux) or failure("TIMEOUT",
             "Превышено время генерации. Возможен расход API; автоматического повторения нет.")

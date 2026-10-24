@@ -366,55 +366,86 @@ def _given_dists(plan):
     return out
 
 
+def _strict_centroid(plan, mp_args=None):
+    """Имя строгого центроида плана: line_intersect двух медиан одного
+    треугольника XYZ (M1 = midpoint(Y,Z), M2 = midpoint(X,Z)), без учёта того,
+    ссылается ли на него построение. None — центроида нет."""
+    mp_args = mp_args if mp_args is not None else {
+        c.out: frozenset(c.args) for c in plan.constructions if c.op == "midpoint"}
+
+    def _vertex_midpoint(p, q):
+        """Прямая «вершина—середина»: (вершина, середина) независимо от записи."""
+        p_mid, q_mid = p in mp_args, q in mp_args
+        if p_mid == q_mid:
+            return None               # обе вершины или обе середины
+        return (q, p) if p_mid else (p, q)
+
+    for c in plan.constructions:
+        if c.op != "line_intersect" or len(c.args) != 4:
+            continue
+        first = _vertex_midpoint(c.args[0], c.args[1])
+        second = _vertex_midpoint(c.args[2], c.args[3])
+        if first is None or second is None:
+            continue
+        (x, m1), (y, m2) = first, second
+        if x == y:
+            continue
+        common = mp_args[m1] & mp_args[m2]
+        if len(common) != 1:
+            continue                    # нет единой общей вершины Z
+        z = next(iter(common))
+        if mp_args[m1] != frozenset((y, z)) or mp_args[m2] != frozenset((x, z)):
+            continue                    # не медианы одного треугольника XYZ
+        return c.out
+    return None
+
+
+def _point_on_segment(p, a, b, tol=1e-6) -> bool:
+    """Точка p на отрезке [a, b] (векторная проверка с относительным допуском)."""
+    import numpy as np
+    p, a, b = (np.asarray(v, dtype=float) for v in (p, a, b))
+    v = b - a
+    den = float(v @ v)
+    if den < 1e-20:
+        return False
+    t = float((p - a) @ v) / den
+    if not (-1e-9 <= t <= 1 + 1e-9):
+        return False
+    proj = a + t * v
+    return float(np.linalg.norm(p - proj)) <= tol * (1.0 + np.linalg.norm(v))
+
+
 def _median_piece_marks(plan, known, referenced, visible):
     """Теорема о медианах: центроид делит каждую медиану 2:1 (AG = 2/3·AA1).
 
     Классический результат построения «обозначить точку пересечения медиан»: если
     построение пользуется центроидом, а на нарисованной медиане известна полная
-    длина (данное dist-ограничение или числовая подпись), куски выводятся из
-    теоремы и сверяются с чертежом — даже если модель подписи результата
-    не прислала. Основание теоретическое, числовая сверка — та же, что у гейта.
+    длина из ДАННОГО (dist-ограничение), куски выводятся из теоремы и сверяются
+    с чертежом — даже если модель подписи результата не прислала. Источник —
+    только данное: числовая подпись метки недоказуема и исходной длиной быть не
+    может.
 
-    Центроид ищется строго: line_intersect(X, M1, Y, M2), где M1 — середина
-    стороны, НЕ содержащей X, M2 — середина стороны, НЕ содержащей Y, и у сторон
-    есть общая вершина (иначе это середины несвязанных отрезков, а не медианы
-    одного треугольника — случайное отношение 2:1 не принимается)."""
-    mp_args = {c.out: set(c.args) for c in plan.constructions if c.op == "midpoint"}
+    Центроид ищется строго (см. _strict_centroid): line_intersect по двум медианам
+    одного треугольника XYZ. Совпадение чисел на посторонних серединах
+    не принимается (случайное отношение 2:1 — не теорема), база — только
+    доказуемая конфигурация."""
+    mp_args = {c.out: frozenset(c.args) for c in plan.constructions if c.op == "midpoint"}
     if not mp_args:
         return []
-    centroid = None
-    for c in plan.constructions:
-        if c.op != "line_intersect" or len(c.args) != 4:
-            continue
-        x, m1, y, m2 = c.args
-        if m1 not in mp_args or m2 not in mp_args:
-            continue
-        if x in mp_args[m1] or y in mp_args[m2]:
-            continue                    # «медиана» к середине своей же стороны
-        if not (mp_args[m1] & mp_args[m2]):
-            continue                    # нет общей вершины — не один треугольник
-        if c.out in referenced:
-            centroid = c.out
-            break
+    name = _strict_centroid(plan, mp_args)
+    centroid = name if (name is not None and name in referenced) else None
     if centroid is None or centroid not in known:
         return []
     given = _given_dists(plan)
     out: list[dict] = []
     have = {tuple(m["pts"]) for m in plan.draw.length_marks}
     have |= {tuple(m["pts"])[::-1] for m in plan.draw.length_marks}
-    for mark in plan.draw.length_marks:
-        pts = list(mark.get("pts") or [])
-        if len(pts) != 2:
-            continue
-        if frozenset(pts) not in visible:
+    for key, full in given.items():
+        if key not in visible or full is None or full <= 0:
             continue
         # медиана: ровно один конец — середина стороны
+        pts = list(key)
         if not ((pts[0] in mp_args) ^ (pts[1] in mp_args)):
-            continue
-        full = given.get(frozenset(pts))
-        if full is None:
-            full = _numeric_label(mark.get("text"))
-        if full is None or full <= 0:
             continue
         a, b = (known[n] for n in pts)
         g = known[centroid]
@@ -692,6 +723,23 @@ def apply_aux(plan, coords: dict, data, why: list | None = None) -> tuple | None
     # и точки-свидетели радиуса — не «обозначенные» точки: имя не раскрываем.
     referenced = {n for pr in segments + extensions + lines for n in pr if n}
     referenced |= {arc.get(k) for arc in arcs for k in ("start", "end")}
+    # Точки из result_marks — тоже часть построения: модель описывает ИТОГ
+    # («AG = 6»), значит точка G нужна построению, даже если число не сошлось
+    # и подпись отброшена. Без этого построение «провести третью медиану CC1»
+    # (не ссылающееся на центроид явно) оставляло его безымянным и без меток.
+    referenced |= {alias.get(n, n) for m in (data.get("result_marks") or [])
+                   for n in (m.get("pts") or []) if isinstance(n, str)}
+    # И связь по самой фигуре: строгий центроид, лежащий на нарисованной
+    # построением прямой (третья медиана проходит через него точно), — тоже
+    # часть построения. Без этого построение CC1 без result_marks оставляло
+    # центроид безымянным и без итоговых меток.
+    cn = _strict_centroid(plan)
+    if cn and cn in known:
+        for pr in list(segments) + list(lines):
+            if len(pr) == 2 and pr[0] in known and pr[1] in known \
+                    and _point_on_segment(known[cn], known[pr[0]], known[pr[1]]):
+                referenced.add(cn)
+                break
     aux_drawn = {frozenset(pr) for pr in segments + lines}
     visible_aux = {frozenset(s) for f in ("segments", "aux_segments") for s in getattr(draw, f)}
     for pr in segments:

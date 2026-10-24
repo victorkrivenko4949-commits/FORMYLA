@@ -331,6 +331,16 @@ function initProofUi() {
   if (ansInput) ansInput.value = '';
 }
 
+// Имя ИИ-модели пользователю не показываем: убираем служебные подписи вида
+// «Проверяла модель: …» и упоминания конкретных моделей — на сайте только «ИИ-тьютор».
+function _hideModelNames(s) {
+  if (!s) return '';
+  s = String(s);
+  s = s.replace(/_?\s*Проверял[аи]?\s+модель:?[^\n_<]*_?/gi, '');
+  s = s.replace(/(deepseek|дипсик)[\w\-\.]*/gi, 'ИИ-тьютор');
+  return s.replace(/(\s*<br\s*\/?>\s*){2,}$/i, '').trim();
+}
+
 async function submitAnswer() {
   const answerInput = document.getElementById('userAnswer');
   const answer = answerInput ? answerInput.value.trim() : '';
@@ -421,18 +431,16 @@ async function submitAnswer() {
       verdictText.textContent = ' Неверно';
     }
 
-    let explainHtml = ai.message || '';
-    if (ai.checking_model) {
-      explainHtml += '<br><br> <strong>Модель проверки:</strong> ' + ai.checking_model;
-    }
+    // Имя модели (ai.checking_model) пользователю не показываем.
+    let explainHtml = _hideModelNames(ai.message);
     if (ai.correct_answer) {
       explainHtml += '<br><br> <strong>Правильный ответ:</strong> ' + ai.correct_answer;
     }
     if (ai.solution) {
-      explainHtml += '<br><br> <strong>Решение:</strong><br>' + ai.solution;
+      explainHtml += '<br><br> <strong>Решение:</strong><br>' + _hideModelNames(ai.solution);
     }
     if (ai.hint && verdict !== 'correct') {
-      explainHtml += '<br><br> <strong>Подсказка:</strong> ' + ai.hint;
+      explainHtml += '<br><br> <strong>Подсказка:</strong> ' + _hideModelNames(ai.hint);
     }
     verdictExplain.innerHTML = explainHtml;
 
@@ -476,7 +484,7 @@ async function submitAnswer() {
           krLabel.textContent = '';
         }
         if (data.kimi_review.raw_response) {
-          krText.textContent = data.kimi_review.raw_response;
+          krText.textContent = _hideModelNames(data.kimi_review.raw_response);
         }
         krBlock.style.display = 'block';
       }

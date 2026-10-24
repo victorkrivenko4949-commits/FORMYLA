@@ -130,6 +130,13 @@ def status(jid):
     result = current_app.extensions["geoexact"].get(jid, str(current_user.get_id()))
     if result is None:
         abort(404)
+    # Решения, сохранённые до правки оформления, переоформляем при выдаче —
+    # без нового платного запроса к модели (normalize_math идемпотентна).
+    res = result.get("result") if isinstance(result, dict) else None
+    if isinstance(res, dict) and res.get("kind") == "solution" and res.get("ok") \
+            and isinstance(res.get("markdown"), str):
+        from .core.solution import normalize_math
+        res["markdown"] = normalize_math(res["markdown"])
     return jsonify(result)
 
 

@@ -38,7 +38,7 @@ _TABLES_ENSURED = False
 
 
 def is_diamond_admin(user) -> bool:
-    """Платная покупка 💎 доступна ТОЛЬКО админам victor и lavrik."""
+    """Настройка ключей ЮKassa доступна ТОЛЬКО админам victor и lavrik."""
     if not user or not getattr(user, "is_authenticated", False):
         return False
     if getattr(user, "is_guest", False):
@@ -50,6 +50,16 @@ def is_diamond_admin(user) -> bool:
         return True
     nick = (getattr(user, "nickname", None) or "").strip().lower()
     return nick in ("victor", "victorkrivenko", "lavrik")
+
+
+def is_diamond_buyer(user) -> bool:
+    """Покупка 💎 видна админам (victor, lavrik) и тестовому аккаунту проверки ЮKassa (yookassa@formyla.net)."""
+    if is_diamond_admin(user):
+        return True
+    if not user or not getattr(user, "is_authenticated", False):
+        return False
+    email = (getattr(user, "email", None) or "").strip().lower()
+    return email == "yookassa@formyla.net"
 
 
 def _ensure_tables() -> None:
@@ -311,7 +321,7 @@ def save_config():
 @yookassa_pay_bp.route("/payments/yookassa/buy-diamond", methods=["POST"])
 @login_required
 def buy_diamond():
-    if not is_diamond_admin(current_user):
+    if not is_diamond_buyer(current_user):
         abort(403)
     _ensure_tables()
     cfg = get_yookassa_config()
@@ -422,7 +432,7 @@ def buy_diamond():
 @yookassa_pay_bp.route("/payments/yookassa/return", methods=["GET"])
 @login_required
 def payment_return():
-    if not is_diamond_admin(current_user):
+    if not is_diamond_buyer(current_user):
         abort(403)
     _ensure_tables()
     order_id = (request.args.get("order_id") or "").strip()
@@ -534,7 +544,25 @@ def yookassa_webhook():
             order_id = order_id or row[1]
 
     if (event == "payment.succeeded" or verified_status == "succeeded") and verified_paid and user_id_raw:
-        _activate_diamond_for_user(user_id=int(user_id_raw), payment_id=payment_id, order_id=order_id)
+        # PREMIUM_PAY_V1: по item_code решаем, что активировать —
+        # premium_intense/premium_calm (30 дней Premium) или значок-алмаз.
+        item_code = "diamond_badge"
+        try:
+            _row = db.session.execute(
+                text("SELECT item_code FROM yookassa_payments WHERE payment_id = :pid OR order_id = :oid LIMIT 1"),
+                {"pid": payment_id, "oid": order_id or ""},
+            ).fetchone()
+            if _row and _row[0]:
+                item_code = str(_row[0])
+        except Exception:
+            pass
+        if item_code.startswith("premium_"):
+            from routes.premium_pay import activate_premium_for_payment
+            activate_premium_for_payment(
+                user_id=int(user_id_raw), plan=item_code,
+                payment_id=payment_id, order_id=order_id)
+        else:
+            _activate_diamond_for_user(user_id=int(user_id_raw), payment_id=payment_id, order_id=order_id)
         return jsonify({"ok": True, "status": "succeeded"}), 200
 
     if event == "payment.canceled" or verified_status == "canceled":
@@ -590,14 +618,5 @@ def install_yookassa_pay(app, register=None) -> None:
 
     @app.context_processor
     def _inject_yookassa_helpers():
-        try:
-            is_adm = is_diamond_admin(current_user)
-            if not is_adm:
-                return {"is_diamond_admin": False}
-            return {
-                "is_diamond_admin": True,
-                "yookassa_cfg": get_yookassa_config(),
-                "yookassa_recent_payments": get_recent_payments(current_user.id, limit=5),
-            }
-        except Exception:
-            return {"is_diamond_admin": False}
+        # Блок оплаты 💎 скрыт из профиля для всех
+        return {"is_diamond_admin": False, "is_diamond_buyer": False}

@@ -1,6 +1,6 @@
 import re
 import markdown as md_lib
-from flask import Flask, render_template, request, abort, redirect, session, jsonify, url_for, flash
+from flask import Flask, render_template, request, abort, redirect, session, jsonify, url_for, flash, send_from_directory
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, user_logged_in
 from flask_mail import Mail, Message
 from utils.math_answer_utils import compare_math_answers
@@ -3496,6 +3496,18 @@ UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
+@app.route('/uploads/<path:filename>')
+def serve_solution_uploads(filename):
+    """Раздача локально сохранённых фото решений (PHOTO_LOCAL_FALLBACK=1).
+
+    services/storage.py при выключенном R2 пишет файлы в <repo>/uploads
+    и возвращает URL вида /uploads/photos/<user_id>/<hash>.jpg — без этого
+    маршрута ссылки на фото отдавали 404.
+    """
+    from services.storage import LOCAL_PHOTO_DIR
+    return send_from_directory(LOCAL_PHOTO_DIR, filename)
+
+
 # VARIANTS dict was used by the removed "Написать олимпиаду" routes (/practice*).
 # Kept as a no-op placeholder so any lingering references won't crash at import.
 VARIANTS = {}
@@ -5823,6 +5835,36 @@ def login():
             flash('Email обязателен', 'error')
             return render_template('login.html')
 
+        # ── Постоянный тестовый аккаунт покупателя для модерации ЮKassa ──
+        # Логин: yookassa@formyla.net, постоянный код/пароль на шаге /verify-code: 748291
+        YOOKASSA_TEST_EMAIL = 'yookassa@formyla.net'
+        YOOKASSA_TEST_CODE = '748291'
+        if email in (YOOKASSA_TEST_EMAIL, f'{YOOKASSA_TEST_EMAIL}:{YOOKASSA_TEST_CODE}'):
+            from flask_login import logout_user as _logout_yk
+            try:
+                _logout_yk()
+                session.clear()
+            except Exception:
+                pass
+            user = User.query.filter_by(email=YOOKASSA_TEST_EMAIL).first()
+            if not user:
+                user = User(
+                    email=YOOKASSA_TEST_EMAIL,
+                    nickname='yookassa_buyer',
+                    name='Тестовый покупатель ЮKassa',
+                    onboarded_at=datetime.utcnow(),
+                    preferred_grade=9,
+                )
+                db.session.add(user)
+                db.session.commit()
+            elif not getattr(user, 'onboarded_at', None):
+                user.onboarded_at = datetime.utcnow()
+                db.session.commit()
+            session.permanent = True
+            session['verify_email'] = YOOKASSA_TEST_EMAIL
+            flash('Введите постоянный тестовый пароль (код) для входа в личный кабинет.', 'success')
+            return redirect(url_for('verify_code'))
+
         # ── Секретный вход в аккаунт поддержки ─────────────────────────
         # Если в поле email введена секретная строка SUPPORT_LOGIN_SECRET,
         # входим сразу (без кода) в служебный аккаунт Lavrik.
@@ -6001,9 +6043,13 @@ def verify_code():
             flash('Пользователь не найден', 'error')
             return redirect(url_for('login'))
         
-        if user.verify_auth_code(code):
+        is_yookassa_test = (
+            email.lower() == 'yookassa@formyla.net' and code == '748291'
+        )
+        if is_yookassa_test or user.verify_auth_code(code):
             # Успешная авторизация
-            user.clear_auth_code()
+            if not is_yookassa_test:
+                user.clear_auth_code()
             from datetime import datetime
             # Считаем нового юзера тем, у кого ещё нет онбординга
             _is_new_user = getattr(user, 'onboarded_at', None) is None and getattr(user, 'last_login', None) is None
@@ -6038,6 +6084,8 @@ def verify_code():
             next_page = request.args.get('next')
             if next_page:
                 return redirect(next_page)
+            if is_yookassa_test:
+                return redirect('/profile')
             if getattr(user, 'onboarded_at', None) is None:
                 return redirect(url_for('intake.intake_page'))
             return redirect('/about')
@@ -13106,12 +13154,60 @@ def api_progress(user_id):
 def subscribe_page():
     """Страница выбора тарифа."""
     current_plan = current_user.current_plan or 'free'
+    # PAYMENTS_DOC_V1 (24.10.2026): менеджер ЮKassa просил показать
+    # понятное описание платных товаров/услуг и тарифов для проверки анкеты.
+    # Показываем таблицу всех доступных платных товаров/тарифов, чтобы покупатель
+    # видел за что платит, а также ссылку на соответствующие платные товары (💎 и др.).
+    paid_items = [
+        {
+            'name': 'Формула «Работяга» (месячная)',
+            'description': 'Полная версия FORMYLA.net для подготовки к олимпиадам: 6 занятий в неделю, 1 пробник в неделю, 1 метод в неделю, доступ к ИИ-тьютору, куратору и генератору чертежей.',
+            'price_rub': 800.00,
+            'duration_days': 30,
+            'delivery': 'Автоматическая активация Premium-доступа в личном кабинете сразу после оплаты (на 30 дней).',
+            'refund_policy': 'Возврат не производится после активации Premium-доступа.',
+            'endpoint_hint': 'Нажмите «Выбрать «Работяга»» на этой странице тарифов.',
+        },
+        {
+            'name': 'Формула «Спокойный» (месячная)',
+            'description': 'Полная версия FORMYLA.net без спешки: 3 занятия в неделю, 1 пробник и 1 метод в 2 недели, доступ к ИИ-тьютору, куратору и генератору чертежей.',
+            'price_rub': 500.00,
+            'duration_days': 30,
+            'delivery': 'Автоматическая активация Premium-доступа в личном кабинете сразу после оплаты (на 30 дней).',
+            'refund_policy': 'Возврат не производится после активации Premium-доступа.',
+            'endpoint_hint': 'Нажмите «Выбрать «Спокойный»» на этой странице тарифов.',
+        },
+    ]
     plan_expires_at = getattr(current_user, 'plan_expires_at', None)
     if plan_expires_at:
         plan_expires_at = str(plan_expires_at)[:10]
+    # Состояние пробного дня: активен / использован
+    trial_active_until = None
+    trial_used = False
+    try:
+        from sqlalchemy import text as _text
+        row = db.session.execute(_text(
+            "SELECT expires_at FROM subscriptions WHERE user_id = :u "
+            "AND plan IN ('premium_intense','premium_calm') "
+            "AND COALESCE(CAST(is_trial AS INTEGER),0) = 1 "
+            "AND status = 'active' AND expires_at > NOW() ORDER BY id DESC LIMIT 1"
+        ), {'u': current_user.id}).first()
+        if row and row[0]:
+            trial_active_until = str(row[0])[:16]
+        used = db.session.execute(_text(
+            "SELECT 1 FROM subscriptions WHERE user_id = :u "
+            "AND plan IN ('premium_intense','premium_calm') "
+            "AND COALESCE(CAST(is_trial AS INTEGER),0) = 1 LIMIT 1"
+        ), {'u': current_user.id}).first()
+        trial_used = bool(used)
+    except Exception:
+        pass
     return render_template('subscribe.html',
                            current_plan=current_plan,
-                           plan_expires_at=plan_expires_at)
+                           plan_expires_at=plan_expires_at,
+                           trial_active_until=trial_active_until,
+                           trial_used=trial_used,
+                           paid_items=paid_items)
 
 
 # Канонические значения current_plan в БД:
@@ -13167,6 +13263,75 @@ def _inject_user_helpers():
     except Exception:
         helpers['has_active_probe'] = False
     return helpers
+
+
+@app.route('/api/subscribe/trial', methods=['POST'])
+@login_required
+def api_subscribe_trial():
+    """Пробный день Premium: 1 день полного доступа, один раз на аккаунт.
+
+    Тело: {plan: 'premium_intense'|'premium_calm'}.
+    После истечения дня аккаунт снова бесплатный (3 задачи в день и т.д.)
+    и сайт предлагает оплатить. Пробный день не выдаётся, если уже есть
+    активный Premium.
+    """
+    if getattr(current_user, 'is_guest', False):
+        return jsonify({'error': 'Недоступно для гостей'}), 403
+    # 2026-10-24: пробный день — только пилотным аккаунтам (до запуска 3 ноября).
+    try:
+        from services.pilot import is_pilot_user as _is_pilot
+        if not _is_pilot(current_user.id):
+            return jsonify({'error': 'Недоступно'}), 403
+    except Exception:
+        return jsonify({'error': 'Недоступно'}), 403
+    data = request.get_json() or {}
+    plan = data.get('plan', 'premium_intense')
+    if plan not in ('premium_intense', 'premium_calm'):
+        return jsonify({'error': 'Неизвестный тариф'}), 400
+    try:
+        from sqlalchemy import text as _text
+        # Уже есть активный Premium (пилотный или оплаченный)?
+        active = db.session.execute(_text(
+            "SELECT 1 FROM subscriptions WHERE user_id = :u AND status = 'active' "
+            "AND plan LIKE 'premium%' AND "
+            "((payment_id IS NOT NULL AND COALESCE(CAST(is_beta_access AS INTEGER),0)=0) "
+            " OR plan IN ('premium_intense','premium_calm')) AND expires_at > NOW()"
+        ), {'u': current_user.id}).first()
+        if active:
+            return jsonify({'error': 'У вас уже активен Premium — пробный день не нужен'}), 409
+        # Пробный день уже использован?
+        used = db.session.execute(_text(
+            "SELECT 1 FROM subscriptions WHERE user_id = :u "
+            "AND plan IN ('premium_intense','premium_calm') "
+            "AND COALESCE(CAST(is_trial AS INTEGER),0) = 1 LIMIT 1"
+        ), {'u': current_user.id}).first()
+        if used:
+            return jsonify({'error': 'Пробный день уже использован'}), 409
+        # Активируем: 1 день полного доступа
+        from datetime import timedelta
+        expires = datetime.utcnow() + timedelta(days=1)
+        from services.subscription import get_subscription_service
+        result = get_subscription_service().activate_premium(
+            user_id=current_user.id,
+            plan=plan,
+            is_beta=True,
+            is_trial=True,
+            expires_at=expires,
+        )
+        db.session.commit()
+        return jsonify({
+            'ok': True,
+            'plan_variant': plan,
+            'expires_at': str(result.get('expires_at') or expires)[:16],
+            'message': 'Пробный день активирован! Полный доступ до ' + str(expires)[:16] + ' UTC',
+        })
+    except Exception as e:
+        app.logger.error(f'[api_subscribe_trial] failed: {e}')
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return jsonify({'error': 'Не удалось активировать пробный день'}), 500
 
 
 @app.route('/api/subscribe', methods=['POST'])

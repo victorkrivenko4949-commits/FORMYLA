@@ -85,8 +85,17 @@ def resets_at_iso(now: Optional[datetime] = None) -> str:
 
 # ─────────────────────────── активность ───────────────────────────
 
+# 2026-10-24: ГЛАВНЫЙ ВЫКЛЮЧАТЕЛЬ лимитов Free. Лимиты (3 задачи и
+# 1 ИИ-разбор в день) не должны показываться пользователям до
+# официального запуска платной версии 3 ноября — без анонса это
+# выглядит как поломка сайта. Вернуть лимиты: поставить False.
+FREE_LIMITS_DISABLED = True
+
+
 def limits_active(user, now: Optional[datetime] = None) -> bool:
     """Лимит действует: доступ free И эксперимент включил лимиты."""
+    if FREE_LIMITS_DISABLED:
+        return False
     try:
         from services.access import resolve_access
         from services.ab import apply_limits

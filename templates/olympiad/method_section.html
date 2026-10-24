@@ -6,7 +6,8 @@
 {% block content %}
 <div class="oly-wrap">
     <p style="margin-bottom: 12px;">
-        <a href="{{ url_for('olympiad.vsosh_course', grade=grade) }}" class="oly-btn-ghost oly-btn oly-btn-sm"><- к курсу</a>
+{% set course_ep = 'olympiad.course_probnik_10' if grade == 10 else ('olympiad.course_probnik_11' if grade == 11 else 'olympiad.course_probnik') %}
+        <a href="{{ url_for(course_ep) }}" class="oly-btn-ghost oly-btn oly-btn-sm"><- к курсу</a>
     </p>
 
     <header style="margin-bottom: 24px;">
