@@ -1,6 +1,6 @@
-ПОЧИНКА: {'low_sim': 38, 'fixed': 12, 'ambiguous': 2}; изменено файлов JSON: 3; список: reports/olymp_figs_fix.csv
-  fixed по олимпиадам: {'formula-unity': 4, 'vsosh': 1, 'matprazdnik': 7}
-  fixed по методам: {'map-text': 5, 'map-key': 7}
+ПОЧИНКА: {'low_sim': 38, 'ambiguous': 2}; изменено файлов JSON: 0; список: reports/olymp_figs_fix.csv
+  fixed по олимпиадам: {}
+  fixed по методам: {}
 ИТОГО: {'fig_not_linked': 316, 'fig_orphan': 191}
 
 По олимпиадам:
