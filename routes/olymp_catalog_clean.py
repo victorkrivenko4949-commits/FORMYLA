@@ -10,8 +10,14 @@ STATUS_LABEL = {
     "broken_text": "условие повреждено", "figure_only": "только рисунок",
 }
 QA_KEYS = ("tasks", "task_block_removed", "solution_in_text", "text_dup_in_solution",
-           "solution_truncated", "text_truncated", "fig_missing", "no_solution",
+           "solution_truncated", "text_truncated", "fig_missing", "fig_not_linked", "no_solution",
            "garbled", "needs_review", "ocr_suspected", "pdf_boundary_suspected")
+
+# FIGS_AUDIT: текст ссылается на рисунок, а файлов рисунков у задачи нет
+FIG_WORDS = re.compile(
+    r"рисун|чертеж|чертёж|см\.\s*рис|на\s+картинк|изображ[её]н|закрашен|заштрихован|серы[хе]\s+клет|"
+    r"ч[её]рны[ехм]\s+клет|клет(?:ки|ок)\s+ч[её]рн|бел(?:ые|ых)\s+клет|фигурк|показан[оа]?\s+на|"
+    r"приведен[оа]?\s+на\s+рис|диаграмм|на\s+доске\s+(?:нарисован|изображ)|развёртк|разверт", re.IGNORECASE)
 
 
 def new_qa():
@@ -55,6 +61,11 @@ def inspect_task(t, fig_dir):
                 valid = False
             if not valid:
                 issues.append({"field": field, "code": "fig_missing", "path": value})
+    if not (t.get("fig_statement") or t.get("fig_solution")):
+        blob = text + " " + norm_tex(t.get("solution"))
+        m = FIG_WORDS.search(blob)
+        if m:
+            issues.append({"field": "text", "code": "fig_not_linked", "hint": m.group(0)})
     return issues
 
 
@@ -63,9 +74,11 @@ def clean_task(t, qa, fig_dir):
     t["quality_issues"] = issues
     t["needs_review"] = bool(issues)
     t["fig_missing"] = sum(x["code"] == "fig_missing" for x in issues)
+    t["fig_not_linked"] = any(x["code"] == "fig_not_linked" for x in issues)
     # Disable unverified reconstruction and automatic solution spoilers.
     t["garbled"] = False
     qa["fig_missing"] += t["fig_missing"]
+    qa["fig_not_linked"] += bool(t["fig_not_linked"])
     qa["no_solution"] += not bool(norm_tex(t.get("solution")).strip())
     qa["needs_review"] += bool(issues)
     for code in ("solution_in_text", "ocr_suspected", "pdf_boundary_suspected"):

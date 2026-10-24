@@ -9,8 +9,9 @@
     {% if link %}<a class="ttl" href="{{ task_url }}">Задача {{ t.num }} — {{ t.grade }} класс <span class="arr">→</span></a>{% else %}<span class="ttl">Задача {{ t.num }} — {{ t.grade }} класс</span>{% endif %}
     <span class="oc-badge {{ status_class(t.status) }}">{{ labels.get(t.status, t.status) }}</span>
     {% if t.day %}<span class="oc-badge">День {{ t.day }}</span>{% endif %}
-    {% if t.fig_statement or t.fig_solution %}<span class="oc-badge" title="есть рисунок">▣ рисунок</span>{% endif %}
+    {% if t.fig_statement or t.fig_solution %}<span class="oc-badge" title="есть рисунок{% if t.fig_extracted_auto %} (извлечён автоматически из первоисточника{% if t.fig_anchor == 'block_snapshot' %}, снимок блока задачи{% endif %}){% endif %}">▣ рисунок{% if t.fig_extracted_auto %} · авто{% endif %}</span>{% endif %}
     {% if t.fig_missing %}<span class="oc-badge warn" title="файл рисунка отсутствует в static/olymp_figures">▣ рисунок не найден ({{ t.fig_missing }})</span>{% endif %}
+    {% if t.fig_not_linked %}<span class="oc-badge warn" title="условие ссылается на рисунок, но рисунок к задаче не приложен">▣ нет рисунка</span>{% endif %}
     {% if t.garbled %}<span class="oc-badge warn" title="формулы в тексте разрушены при распознавании PDF; тьютор восстановит решение">⚠ формулы повреждены</span>{% endif %}
     <span class="sp"></span>
     {% if link %}<a class="oc-btn vio sm" href="{{ task_url }}#tutor" title="Открыть задачу с ИИ-тьютором">✦ Тьютор</a>{% endif %}
@@ -18,6 +19,7 @@
   <span class="oc-lbl">Условие</span>
   <div class="oc-text">{{ t.text }}</div>
   {% for f in t.fig_statement or [] %}<img class="oc-fig" src="{{ url_for('olymp_catalog.figure', subpath=f) }}" alt="рисунок к условию" loading="lazy">{% endfor %}
+  {% if t.fig_not_linked %}<div class="oc-src" style="margin:8px 0 0">⚠ В условии упоминается рисунок, но в каталоге его нет.{% if t.source and t.source.startswith('http') %} Посмотреть в первоисточнике: <a href="{{ t.source.split(';')[0].strip() }}" target="_blank" rel="noopener">открыть PDF/страницу ↗</a>.{% endif %}</div>{% endif %}
   <div class="oc-toggles">
     {% if t.answer %}<details class="oc-ans-wrap"><summary>🎯 Ответ</summary><div class="oc-ans">{{ t.answer }}</div></details>{% endif %}
     <details class="oc-sol-wrap"><summary>📖 Решение</summary>
