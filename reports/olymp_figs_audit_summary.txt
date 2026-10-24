@@ -1,21 +1,19 @@
-ПОЧИНКА: {'low_sim': 38, 'ambiguous': 2}; изменено файлов JSON: 0; список: reports/olymp_figs_fix.csv
-  fixed по олимпиадам: {}
-  fixed по методам: {}
-ИТОГО: {'fig_not_linked': 204, 'fig_orphan': 191}
+ИТОГО: {'fig_not_linked': 131, 'fig_missing': 5, 'fig_orphan': 191}
 
 По олимпиадам:
-  fig_not_linked  euler            4
-  fig_not_linked  formula-unity    10
-  fig_not_linked  kurchatov        5
-  fig_not_linked  lomonosov        9
-  fig_not_linked  matprazdnik      17
-  fig_not_linked  mmo              22
+  fig_missing     mmo              5
+  fig_not_linked  euler            2
+  fig_not_linked  formula-unity    5
+  fig_not_linked  kurchatov        3
+  fig_not_linked  lomonosov        2
+  fig_not_linked  matprazdnik      7
+  fig_not_linked  mmo              13
   fig_not_linked  other            1
   fig_not_linked  phystech         3
-  fig_not_linked  pvg              4
+  fig_not_linked  pvg              2
   fig_not_linked  spbgu            1
-  fig_not_linked  turgor           37
-  fig_not_linked  vsosh            79
-  fig_not_linked  vysshaya-proba   12
+  fig_not_linked  turgor           30
+  fig_not_linked  vsosh            51
+  fig_not_linked  vysshaya-proba   11
 
 Подробности: reports/olymp_figs_audit.csv
