@@ -3,6 +3,9 @@ name: olymp-figs-audit
 on:
   push:
     branches: [figs-audit]
+    paths-ignore:
+      - 'scripts/olymp_catalog_figs_extract.py'
+      - '.github/workflows/olymp_figs_extract.yml'
   workflow_dispatch:
 
 permissions:
@@ -26,4 +29,5 @@ jobs:
           git config user.email "bot@formyla.net"
           git add reports/ data/olymp_catalog/
           git commit -m "audit: fix orphan figures + report [skip ci]" || echo "no changes"
+          git pull --rebase origin figs-audit || true
           git push
