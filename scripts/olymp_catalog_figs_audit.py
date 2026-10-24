@@ -9,9 +9,12 @@
   fig_not_linked  — текст упоминает рисунок/чертёж/закраску, а fig_statement/fig_solution пустые
   fig_orphan      — файл рисунка есть, но ни одна задача на него не ссылается
 
---fix-orphans: для каждого «сиротского» файла, имя которого начинается с полного uid задачи,
-дописывает путь в fig_statement (…_statement*.png, <uid>.svg) или fig_solution (…_solution*.png, <uid>_aux.svg)
-и перезаписывает data/olymp_catalog/<slug>.json. Список правок — reports/olymp_figs_fix.csv.
+--fix-orphans (две стадии):
+  1) по uid: имя файла начинается с полного uid задачи;
+  2) по карте static/olymp_figures/FINAL_FIGURES/tasks.jsonl: (olympiad, year, grade, num) + сходство текста условия.
+     Привязка делается, если кандидат один и сходство >= MIN_SIM, либо кандидатов несколько и лучший
+     заметно лучше второго. Остальное — в отчёт как ambiguous/no_match (JSON не трогается).
+Правки пишутся в data/olymp_catalog/<slug>.json; список — reports/olymp_figs_fix.csv.
 """
 import argparse, csv, json, re, sys
 from collections import Counter, defaultdict
@@ -20,6 +23,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data" / "olymp_catalog"
 FIGS = ROOT / "static" / "olymp_figures"
+MAP = FIGS / "FINAL_FIGURES" / "tasks.jsonl"
+MIN_SIM = 0.25
 
 FIG_WORDS = re.compile(
     r"рисун|чертеж|чертёж|см\.\s*рис|на\s+картинк|изображ[её]н|закрашен|заштрихован|серы[хе]\s+клет|"
@@ -27,6 +32,7 @@ FIG_WORDS = re.compile(
     re.IGNORECASE,
 )
 UID_RE = re.compile(r"^([0-9a-f]{64})(.*)$")
+WORD_RE = re.compile(r"[а-яёa-z0-9]{3,}", re.IGNORECASE)
 
 def load(slug):
     p = DATA / f"{slug}.json"
@@ -40,14 +46,28 @@ def all_fig_files():
             if p.is_file() and p.suffix.lower() in (".png", ".svg", ".jpg", ".jpeg")}
 
 def fig_field(relpath):
-    stem = Path(relpath).stem
-    m = UID_RE.match(stem)
+    m = UID_RE.match(Path(relpath).stem)
     if not m:
         return None, None
-    uid, tail = m.group(1), m.group(2)
-    if tail.startswith("_solution") or tail.startswith("_aux"):
-        return uid, "fig_solution"
-    return uid, "fig_statement"
+    tail = m.group(2)
+    return m.group(1), ("fig_solution" if tail.startswith(("_solution", "_aux")) else "fig_statement")
+
+def tokens(s):
+    return set(w.lower() for w in WORD_RE.findall(s or ""))
+
+def sim(a, b):
+    ta, tb = tokens(a), tokens(b)
+    return len(ta & tb) / len(ta | tb) if ta and tb else 0.0
+
+def norm_slug(name):
+    return str(name or "").strip().lower().replace("_", "-")
+
+def attach(t, field, f):
+    lst = t.get(field) or []
+    if f in lst:
+        return False
+    lst.append(f); t[field] = lst
+    return True
 
 def main():
     ap = argparse.ArgumentParser()
@@ -63,40 +83,81 @@ def main():
     files = all_fig_files()
     data = {s: load(s) for s in slugs}
 
-    # --- автопочинка сирот по uid ---
     fixes = []
     if a.fix_orphans:
-        referenced = set()
-        for ts in data.values():
-            for t in ts:
-                for f in (t.get("fig_statement") or []) + (t.get("fig_solution") or []):
-                    referenced.add(str(f).replace("\\", "/"))
+        def referenced_set():
+            r = set()
+            for ts in data.values():
+                for t in ts:
+                    for f in (t.get("fig_statement") or []) + (t.get("fig_solution") or []):
+                        r.add(str(f).replace("\\", "/"))
+            return r
+        changed = set()
+
+        # стадия 1: по uid
         by_uid = defaultdict(list)
-        for f in sorted(set(files) - referenced):
+        for f in sorted(set(files) - referenced_set()):
             uid, field = fig_field(f)
             if uid:
                 by_uid[uid].append((f, field))
-        changed = set()
         for slug, ts in data.items():
             for t in ts:
                 for f, field in by_uid.get(t["uid"], []):
-                    lst = t.get(field) or []
-                    if f not in lst:
-                        lst.append(f)
-                        t[field] = lst
+                    if attach(t, field, f):
                         changed.add(slug)
-                        fixes.append(dict(slug=slug, uid=t["uid"][:12], year=t.get("year"), grade=t.get("grade"),
-                                          num=t.get("num"), field=field, file=f,
-                                          url=f"https://formyla.net/olymp-catalog/{slug}/{t['uid'][:12]}"))
+                        fixes.append(dict(status="fixed", method="uid", sim="1.00", slug=slug, uid=t["uid"][:12],
+                                          year=t.get("year"), grade=t.get("grade"), num=t.get("num"),
+                                          field=field, file=f, url=f"https://formyla.net/olymp-catalog/{slug}/{t['uid'][:12]}"))
+
+        # стадия 2: по tasks.jsonl
+        if MAP.exists():
+            orphans = set(files) - referenced_set()
+            key_index = defaultdict(list)
+            for slug, ts in data.items():
+                for t in ts:
+                    key_index[(slug, str(t.get("year")), str(t.get("grade")), str(t.get("num")))].append((slug, t))
+            for line in MAP.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    m = json.loads(line)
+                except Exception:
+                    continue
+                f = "FINAL_FIGURES/" + str(m.get("file", ""))
+                if f not in orphans:
+                    continue
+                slug = norm_slug(m.get("olympiad"))
+                key = (slug, str(m.get("year")), str(m.get("grade")), str(m.get("num")))
+                field = "fig_solution" if m.get("kind") == "solution" else "fig_statement"
+                cands = key_index.get(key, [])
+                rec = dict(slug=slug, uid="", year=m.get("year"), grade=m.get("grade"), num=m.get("num"),
+                           field=field, file=f, url="", method="map", sim="")
+                if not cands:
+                    fixes.append({**rec, "status": "no_match"}); continue
+                scored = sorted(((sim(m.get("statement", ""), t.get("text", "")), s, t) for s, t in cands),
+                                key=lambda x: -x[0])
+                best, s, t = scored[0]
+                second = scored[1][0] if len(scored) > 1 else 0.0
+                rec.update(uid=t["uid"][:12], sim=f"{best:.2f}", url=f"https://formyla.net/olymp-catalog/{s}/{t['uid'][:12]}")
+                ok = (len(scored) == 1 and best >= MIN_SIM) or (len(scored) > 1 and best >= MIN_SIM and best >= second + 0.15)
+                if not ok:
+                    fixes.append({**rec, "status": "ambiguous" if len(scored) > 1 else "low_sim"}); continue
+                if attach(t, field, f):
+                    changed.add(s); orphans.discard(f)
+                    fixes.append({**rec, "status": "fixed"})
+
         for slug in changed:
             save(slug, data[slug])
+        cols = ["status", "method", "sim", "slug", "year", "grade", "num", "uid", "field", "file", "url"]
         with open(a.fix_csv, "w", newline="", encoding="utf-8") as fh:
-            w = csv.DictWriter(fh, fieldnames=["slug", "year", "grade", "num", "uid", "field", "file", "url"])
-            w.writeheader(); w.writerows(fixes)
-        print(f"ПОЧИНЕНО: {len(fixes)} привязок в {len(changed)} файлах; список: {a.fix_csv}")
-        print("  по олимпиадам:", dict(Counter(x["slug"] for x in fixes)))
+            w = csv.DictWriter(fh, fieldnames=cols); w.writeheader()
+            for r in fixes:
+                w.writerow({c: r.get(c, "") for c in cols})
+        st = Counter(r["status"] for r in fixes)
+        print(f"ПОЧИНКА: {dict(st)}; изменено файлов JSON: {len(changed)}; список: {a.fix_csv}")
+        print("  fixed по олимпиадам:", dict(Counter(r["slug"] for r in fixes if r["status"] == "fixed")))
 
-    # --- аудит (после починки) ---
     referenced, rows = set(), []
     for slug, ts in data.items():
         for t in ts:
