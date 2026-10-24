@@ -17,13 +17,13 @@
   </div>
   <span class="oc-lbl">Условие</span>
   <div class="oc-text">{{ t.text }}</div>
-  {% for f in t.fig_statement %}<img class="oc-fig" src="{{ url_for('olymp_catalog.figure', subpath=f) }}" alt="рисунок к условию" loading="lazy">{% endfor %}
+  {% for f in t.fig_statement or [] %}<img class="oc-fig" src="{{ url_for('olymp_catalog.figure', subpath=f) }}" alt="рисунок к условию" loading="lazy">{% endfor %}
   <div class="oc-toggles">
     {% if t.answer %}<details class="oc-ans-wrap"><summary>🎯 Ответ</summary><div class="oc-ans">{{ t.answer }}</div></details>{% endif %}
     <details class="oc-sol-wrap"><summary>📖 Решение</summary>
       {% if t.garbled %}<div class="oc-src" style="margin:8px 0 0">Текст распознан из PDF с потерей дробей, корней и индексов. Корректную версию готовит ИИ-тьютор — см. «Конспект подготовки» на странице задачи.</div>{% endif %}
       <div class="oc-sol">{{ t.solution if t.solution else '— решение отсутствует —' }}</div>
-      {% for f in t.fig_solution %}<img class="oc-fig" src="{{ url_for('olymp_catalog.figure', subpath=f) }}" alt="рисунок к решению" loading="lazy">{% endfor %}
+      {% for f in t.fig_solution or [] %}<img class="oc-fig" src="{{ url_for('olymp_catalog.figure', subpath=f) }}" alt="рисунок к решению" loading="lazy">{% endfor %}
     </details>
   </div>
   {% if t.source %}<div class="oc-src">Источник: {{ t.source }}</div>{% endif %}
