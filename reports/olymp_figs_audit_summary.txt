@@ -1,11 +1,8 @@
-ПОЧИНКА: {'low_sim': 38, 'ambiguous': 2}; изменено файлов JSON: 0; список: reports/olymp_figs_fix.csv
-  fixed по олимпиадам: {}
-  fixed по методам: {}
-ИТОГО: {'fig_not_linked': 316, 'fig_orphan': 191}
+ИТОГО: {'fig_not_linked': 295, 'fig_orphan': 191}
 
 По олимпиадам:
   fig_not_linked  euler            8
-  fig_not_linked  formula-unity    31
+  fig_not_linked  formula-unity    10
   fig_not_linked  kurchatov        17
   fig_not_linked  lomonosov        18
   fig_not_linked  matprazdnik      26
