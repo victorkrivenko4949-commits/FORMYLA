@@ -386,6 +386,12 @@
         <!-- Footer: auth actions -->
         <div class="drawer-footer">
             {% if current_user.is_authenticated and not current_user.is_guest %}
+            <a href="{{ url_for('subscribe_page') }}" class="drawer-link">
+                <span class="drawer-link-icon">💳</span>
+                Тарифы и платные услуги
+            </a>
+            {% endif %}
+            {% if current_user.is_authenticated and not current_user.is_guest %}
             <a href="{{ url_for('logout') }}" class="drawer-link" onclick="return confirmLogout(event)">
                 <span class="drawer-link-icon">🚪</span>
                 Выйти

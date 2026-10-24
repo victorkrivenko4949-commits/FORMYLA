@@ -386,7 +386,9 @@
         </div>
 
         <p style="color: var(--text-soft); margin: 0 0 16px; font-size: 14.5px; line-height: 1.5;">
-            Покупка добавляет персональный цифровой значок <strong style="color: #38bdf8;">💎</strong> сразу после вашего ника в профиле, шапке, рейтинге и списке друзей (получение услуги: мгновенная автоматическая активация в личном кабинете сразу после оплаты):
+            Покупка добавляет персональный цифровой значок <strong style="color: #38bdf8;">💎</strong> сразу после вашего ника в профиле, шапке, рейтинге и списке друзей (получение услуги: мгновенная автоматическая активация в личном кабинете сразу после оплаты).
+            Цена: <strong>10 ₽</strong>. Все базовые разделы FORMYLA, задачи, ИИ-агенты, доска и AI-чертежи предоставляются бесплатно, эта покупка — опциональное платное дополнение.
+            Тарифы и условия предоставления платных услуг доступны на странице тарифов: <a href="{{ url_for('subscribe_page') }}" style="color: #7dd3fc; text-decoration: underline;">{{ request.host_url.rstrip('/') }}/subscribe</a>
             <span style="display: inline-block; margin-left: 6px; padding: 3px 10px; border-radius: 8px; background: rgba(56, 189, 248, 0.12); color: #e0f2fe; font-weight: 700;">
                 @{{ user.nickname or 'victor' }} 💎
             </span>
@@ -491,10 +493,15 @@
 
     <!-- ── Доступ ── -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(56,239,125,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px; text-align: center;">
-        <h3 style="color: var(--text-main); margin-bottom: 12px;">🎉 Всё бесплатно</h3>
+        <h3 style="color: var(--text-main); margin-bottom: 12px;">🎉 Все разделы и ИИ-агенты бесплатные, но есть платные премиум-дополнения</h3>
         <p style="color: var(--text-soft); margin-bottom: 0;">
             Все разделы, задачи, ИИ-агенты, доска и AI-чертежи доступны без подписок и оплат.
+            Дополнительно можно купить платные премиум-дополнения (например, значок 💎 за 10 ₽)
+            и расширенные лимиты (см. страницу тарифов выше).
         </p>
+        <a href="{{ url_for('subscribe_page') }}" style="color: var(--accent-2); font-size: 0.95em; text-decoration: underline; display: inline-block; margin-top: 8px;">
+            💳 Тарифы и платные услуги →
+        </a>
     </div>
     <!-- ── /Доступ ── -->
 

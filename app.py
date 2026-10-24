@@ -13154,6 +13154,21 @@ def api_progress(user_id):
 def subscribe_page():
     """Страница выбора тарифа."""
     current_plan = current_user.current_plan or 'free'
+    # PAYMENTS_DOC_V1 (24.10.2026): менеджер ЮKassa просил показать
+    # понятное описание платных товаров/услуг и тарифов для проверки анкеты.
+    # Показываем таблицу всех доступных платных товаров/тарифов, чтобы покупатель
+    # видел за что платит, а также ссылку на соответствующие платные товары (💎 и др.).
+    paid_items = [
+        {
+            'name': 'Значок алмаза 💎',
+            'description': 'Персональный цифровой значок, отображаемый сразу после вашего ника в профиле, шапке, рейтинге и списке друзей. Активация автоматическая сразу после оплаты.',
+            'price_rub': 10.00,
+            'duration_days': None,
+            'delivery': 'Автоматическая активация в личном кабинете сразу после оплаты',
+            'refund_policy': 'После оплаты возврат не производится (услуга/товар не является физическим товаром).',
+            'endpoint_hint': 'Нажмите «💎 Купить значок алмаза за 10 ₽» в разделе профиля.',
+        },
+    ]
     plan_expires_at = getattr(current_user, 'plan_expires_at', None)
     if plan_expires_at:
         plan_expires_at = str(plan_expires_at)[:10]
@@ -13182,7 +13197,8 @@ def subscribe_page():
                            current_plan=current_plan,
                            plan_expires_at=plan_expires_at,
                            trial_active_until=trial_active_until,
-                           trial_used=trial_used)
+                           trial_used=trial_used,
+                           paid_items=paid_items)
 
 
 # Канонические значения current_plan в БД:
