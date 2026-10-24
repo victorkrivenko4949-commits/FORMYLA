@@ -600,16 +600,5 @@ def install_yookassa_pay(app, register=None) -> None:
 
     @app.context_processor
     def _inject_yookassa_helpers():
-        try:
-            is_adm = is_diamond_admin(current_user)
-            is_buyer = is_diamond_buyer(current_user)
-            if not is_buyer:
-                return {"is_diamond_admin": False, "is_diamond_buyer": False}
-            return {
-                "is_diamond_admin": is_adm,
-                "is_diamond_buyer": True,
-                "yookassa_cfg": get_yookassa_config() if is_adm else None,
-                "yookassa_recent_payments": get_recent_payments(current_user.id, limit=5) if is_adm else [],
-            }
-        except Exception:
-            return {"is_diamond_admin": False, "is_diamond_buyer": False}
+        # Блок оплаты 💎 скрыт из профиля для всех
+        return {"is_diamond_admin": False, "is_diamond_buyer": False}
