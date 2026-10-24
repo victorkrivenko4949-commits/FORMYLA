@@ -915,14 +915,15 @@
     </div>
   </div>
 
-  <!-- Empty state -->
-  <div id="dt-empty-state" class="dt-hidden">
-    <div class="dt-empty-card">
-      <div class="dt-empty-title">Задач пока нет</div>
+  <!-- Teacher state: учителю задачи дня не выдаются -->
+  <div id="dt-teacher-state" class="{{ 'dt-hidden' if not (data and data.status == 'teacher') }}">
+    <div class="dt-empty-card" style="border-color: rgba(99,102,241,0.35);">
+      <div class="dt-empty-title" style="color: #8c9abc;">Задачи дня — для учеников</div>
       <div class="dt-empty-sub">
-        Задачи дня выдаются автоматически по плану месяца.<br>
-        Если ты видишь это сообщение — обнови страницу или подожди пару минут.
+        В аккаунте учителя задачи дня не выдаются.<br>
+        Прогресс учеников смотрите в разделе «Мои ученики».
       </div>
+      <a href="/teacher" class="dt-btn-primary" style="display:inline-block;margin-top:14px;padding:10px 22px;border-radius:10px;background:rgba(90,174,255,0.22);color:#eaf3ff;font-weight:600;text-decoration:none;">Мои ученики</a>
     </div>
   </div>
 
