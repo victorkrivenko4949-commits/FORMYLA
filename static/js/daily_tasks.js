@@ -37,7 +37,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // «Задач пока нет» здесь НЕ показываем — только лимит.
             break;
         case 'no_set':
-            showEmptyState();
+            // Карточка «Задач пока нет» удалена навсегда: набор подбирает
+            // сервер при заходе на страницу, отдельное пустое состояние
+            // не показываем ни при каких условиях.
             break;
         case 'generating':
             showGeneratingState(data);
@@ -64,7 +66,6 @@ document.addEventListener('DOMContentLoaded', function() {
             break;
         default:
             console.warn('Unknown daily tasks status:', data.status);
-            showEmptyState();
     }
 
     // ── Modal close handlers ──
@@ -112,11 +113,6 @@ function showBlockedState(data) {
     }
 }
 
-function showEmptyState() {
-    var el = document.getElementById('dt-empty-state');
-    if (el) el.classList.remove('dt-hidden');
-}
-
 /**
  * Показать состояние «аккаунт учителя».
  *
@@ -140,7 +136,6 @@ function showTeacherState(data) {
  */
 function showFailedState(data) {
     var el = document.getElementById('dt-failed-state');
-    var empty = document.getElementById('dt-empty-state');
     var msg = (data && (data.error_message || data.summary)) || '';
     msg = String(msg || '').replace(/^[ERROR]\s*/, '');  // убираем дубликат значка
 
@@ -151,30 +146,6 @@ function showFailedState(data) {
             msgEl.textContent = msg;
         }
         el.classList.remove('dt-hidden');
-        return;
-    }
-
-    // Fallback: на старых шаблонах рисуем поверх empty-state.
-    if (empty) {
-        empty.classList.remove('dt-hidden');
-        var title = empty.querySelector('.dt-empty-title');
-        var sub = empty.querySelector('.dt-empty-sub');
-        var btn = empty.querySelector('.dt-btn-primary');
-        if (title) title.textContent = '[ERROR] Не удалось сгенерировать задачи';
-        if (sub) {
-            sub.innerHTML = '';
-            if (msg) {
-                var p = document.createElement('div');
-                p.style.cssText = 'color:#ff9b9b;margin-bottom:14px;line-height:1.45;';
-                p.textContent = msg;
-                sub.appendChild(p);
-            }
-            var hint = document.createElement('div');
-            hint.style.cssText = 'color:rgba(255,255,255,0.55);font-size:14px;';
-            hint.textContent = 'Это не отняло твою дневную попытку — можешь попробовать снова.';
-            sub.appendChild(hint);
-        }
-        if (btn) btn.textContent = ' Попробовать снова';
     }
 }
 
@@ -386,11 +357,9 @@ function startGeneration() {
     if (regenBtn) regenBtn.disabled = true;
 
     // Hide other states (including failed), show generating
-    var emptyState = document.getElementById('dt-empty-state');
     var readyState = document.getElementById('dt-ready-state');
     var failedState = document.getElementById('dt-failed-state');
     var genState = document.getElementById('dt-generating-state');
-    if (emptyState) emptyState.classList.add('dt-hidden');
     if (readyState) readyState.classList.add('dt-hidden');
     if (failedState) failedState.classList.add('dt-hidden');
     if (genState) genState.classList.remove('dt-hidden');
