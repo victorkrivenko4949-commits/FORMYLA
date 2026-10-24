@@ -190,7 +190,13 @@ _REPLACEABLE_FAILURES = ("TIMEOUT", "WORKER_ERROR", "PIPELINE_CRASH", "INTERRUPT
 _REUSE_BAD_CODES = ("SLIVER", "BAD_ASPECT", "UNDECLARED_INCIDENCE", "DEGENERATE",
                     "APPROXIMATE", "SIMPLIFIED", "SKETCH", "INTERNAL", "INVALID_CONDITION")
 _NOT_REUSABLE_VERIFICATION = ("sketch", "approximate", "simplified")
-_REUSE_DEFAULT_NOT_BEFORE = 1792078800.0      # 2026-10-15 15:40 UTC
+# 24.10.2026: поднята при деплое diameter_claims — проверка «(полу)окружность
+# с диаметром XY» меняет приёмку: прод-задание 4 (окружность «диаметра AD» с
+# центром A, on_circle(B,A,A,D), создано 13:24:46 UTC) числилось чистым и могло
+# подставиться снова. Отсечка — сразу после него; при позднем деплое окно
+# между отсечкой и деплоем можно закрыть env-переменной GEOEXACT_REUSE_NOT_BEFORE
+# (= времени деплоя).
+_REUSE_DEFAULT_NOT_BEFORE = 1792848600.0      # 2026-10-24 13:30 UTC
 _env_nb = (os.environ.get("GEOEXACT_REUSE_NOT_BEFORE") or "").strip()
 REUSE_NOT_BEFORE = float(_env_nb) if _env_nb else _REUSE_DEFAULT_NOT_BEFORE
 

@@ -32,6 +32,11 @@ solver.py и gates.py:
     ремонт планов, где равенство закодировано окружностью line_circle —
     это добавляет |XU|=|UV| и переограничивает фигуру; ремонт — только для
     полностью распознанной по закрытому шаблону конфигурации, иначе no-op);
+  * diameter_claims.install — «(полу)окружность с диаметром XY»: концы
+    диаметра лежат НА окружности, центр — середина XY, отрезок XY виден
+    из названных точек под прямым углом (Фалес), полуокружность — одна
+    сторона прямой XY; правило 39 + проверка плана против текста (прод-ошибка:
+    окружность «диаметра AD», построенная с центром A);
   * model_routes.install — формализатор (оба пути) на deepseek-v4-pro: перевод
     по просьбе пользователя после вырожденной конфигурации; классификация и
     оценка сложности не меняются, бюджетная деградация pro→flash сохранена.
@@ -67,6 +72,8 @@ from . import label_subscripts as _label_subscripts
 from . import given_order as _given_order
 from . import equidistant_repair as _equidistant_repair
 from . import acute_triangle as _acute_triangle
+from . import diameter_claims as _diameter_claims
+from . import statement as _statement
 from . import model_routes as _model_routes
 from . import angle_marks_layout as _angle_marks_layout
 from . import aux_view_marks as _aux_view_marks
@@ -85,4 +92,5 @@ _aux_view_marks.install(_render)       # после angle_marks_layout: в ви�
 _given_order.install(_llm)             # после formalize_rules: порядок «соответственно» данных длин
 _equidistant_repair.install(_llm)        # после given_order: равноудалённая точка — серединный перпендикуляр
 _acute_triangle.install(_semantics, _llm)    # после radius_claims: острота, антипод, принадлежность отрезку
+_diameter_claims.install(_semantics, _llm, _pipeline, _statement)  # после acute_triangle: диаметр — Фалес, центр-середина и отрезок в чертеже
 _model_routes.install(_llm, _pipeline)        # после acute_triangle: путь A формализатора на v4-pro
