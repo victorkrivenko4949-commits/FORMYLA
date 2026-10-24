@@ -240,7 +240,7 @@
                     <span style="color: var(--text-muted);">Никнейм:</span>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span id="nickname-current-value" style="color: var(--accent-2); font-weight: 600; word-break: break-word; max-width: 60vw;">
-                            {% if user.nickname %}@{{ user.nickname }}{% if user.has_diamond %} <span title="Алмазный статус FORMYLA" style="filter:drop-shadow(0 0 6px rgba(56,189,248,0.65));">💎</span>{% endif %}{% else %}Не установлен{% endif %}
+                            {% if user.nickname %}@{{ user.nickname }}{% else %}Не установлен{% endif %}
                         </span>
                         <button type="button" onclick="showNicknameForm()" aria-label="Изменить никнейм"
                                 style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); color: var(--accent-2); cursor: pointer; font-size: 15px; padding: 8px 12px; min-width: 40px; min-height: 40px; border-radius: 8px; transition: transform 0.2s, background 0.2s;"
@@ -295,7 +295,7 @@
             🔐 Аккаунт поддержки
         </h2>
         <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 14px;">
-            Вы вошли как <strong>@{{ current_user.nickname }}{% if current_user.has_diamond %} 💎{% endif %}</strong> — это служебный аккаунт поддержки.
+            Вы вошли как <strong>@{{ current_user.nickname }}</strong> — это служебный аккаунт поддержки.
             Вам доступны все функции обычного пользователя и дополнительные админ-разделы ниже.
         </p>
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
@@ -370,134 +370,13 @@
     </div>
     {% endif %}
 
-    {% if is_diamond_buyer or is_diamond_admin %}
-    <!-- ── YOOKASSA_DIAMOND_V1: Платный значок алмаза (для victor, lavrik и тестового кабинета ЮKassa) ── -->
-    <div id="yookassa-card" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.92)); backdrop-filter: blur(12px); padding: 26px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(56, 189, 248, 0.45); box-shadow: 0 10px 36px rgba(56, 189, 248, 0.15); margin-bottom: 30px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
-            <h2 style="color: #38bdf8; margin: 0; font-size: 1.45em; display: flex; align-items: center; gap: 10px;">
-                <span>💎 Значок алмаза после ника</span>
-                <span style="font-size: 0.65em; padding: 4px 10px; border-radius: 999px; background: rgba(56, 189, 248, 0.16); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 700;">10 ₽ · ЮKassa</span>
-            </h2>
-            {% if is_diamond_admin %}
-            <span style="font-size: 12px; padding: 4px 10px; border-radius: 8px; background: rgba(251, 191, 36, 0.14); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);">
-                Видно только админам (victor и lavrik)
-            </span>
-            {% endif %}
-        </div>
-
-        <p style="color: var(--text-soft); margin: 0 0 16px; font-size: 14.5px; line-height: 1.5;">
-            Покупка добавляет персональный цифровой значок <strong style="color: #38bdf8;">💎</strong> сразу после вашего ника в профиле, шапке, рейтинге и списке друзей (получение услуги: мгновенная автоматическая активация в личном кабинете сразу после оплаты).
-            Цена: <strong>10 ₽</strong>. Все базовые разделы FORMYLA, задачи, ИИ-агенты, доска и AI-чертежи предоставляются бесплатно, эта покупка — опциональное платное дополнение.
-            Тарифы и условия предоставления платных услуг доступны на странице тарифов: <a href="{{ url_for('subscribe_page') }}" style="color: #7dd3fc; text-decoration: underline;">{{ request.host_url.rstrip('/') }}/subscribe</a>
-            <span style="display: inline-block; margin-left: 6px; padding: 3px 10px; border-radius: 8px; background: rgba(56, 189, 248, 0.12); color: #e0f2fe; font-weight: 700;">
-                @{{ user.nickname or 'victor' }} 💎
-            </span>
-        </p>
-
-        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px;">
-            {% if user.has_diamond %}
-            <span style="padding: 8px 14px; border-radius: 10px; background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); font-weight: 700; font-size: 14px;">
-                ✅ Значок 💎 активен на вашем аккаунте
-            </span>
-            {% else %}
-            <span style="padding: 8px 14px; border-radius: 10px; background: rgba(148, 163, 184, 0.12); color: var(--text-muted); border: 1px solid var(--border-soft); font-size: 14px;">
-                Статус: пока не куплен · Цена: 10 ₽
-            </span>
-            {% endif %}
-
-            {% if is_diamond_admin %}
-                {% if yookassa_cfg and yookassa_cfg.configured %}
-                <span style="padding: 8px 14px; border-radius: 10px; background: rgba(56, 189, 248, 0.12); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 13px;">
-                    🟢 ЮKassa подключена (Shop ID: {{ yookassa_cfg.shop_id }}{% if yookassa_cfg.is_test %} · тест{% else %} · боевой{% endif %})
-                </span>
-                {% else %}
-                <span style="padding: 8px 14px; border-radius: 10px; background: rgba(245, 158, 11, 0.14); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 13px;">
-                    🟡 Укажите Shop ID и Секретный ключ ЮKassa ниже
-                </span>
-                {% endif %}
-            {% endif %}
-        </div>
-
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: {% if is_diamond_admin %}18px{% else %}0{% endif %};">
-            <form method="POST" action="{{ url_for('yookassa_pay.buy_diamond') }}" style="margin: 0;">
-                <button type="submit"
-                        style="padding: 13px 26px; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 6px 20px rgba(14, 165, 233, 0.35); transition: transform 0.15s ease;"
-                        onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                    💎 {% if user.has_diamond %}Купить ещё раз за 10 ₽ (тест оплаты){% else %}Купить значок алмаза за 10 ₽{% endif %}
-                </button>
-            </form>
-
-            {% if is_diamond_admin and user.has_diamond %}
-            <form method="POST" action="{{ url_for('yookassa_pay.toggle_diamond') }}" style="margin: 0;">
-                <input type="hidden" name="action" value="off">
-                <button type="submit"
-                        style="padding: 12px 18px; background: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.35); border-radius: 10px; font-weight: 600; font-size: 13.5px; cursor: pointer;">
-                    Снять 💎 (для проверки с нуля)
-                </button>
-            </form>
-            {% endif %}
-        </div>
-
-        {% if is_diamond_admin %}
-        <details {% if not (yookassa_cfg and yookassa_cfg.configured) %}open{% endif %} style="background: rgba(15, 23, 42, 0.55); border: 1px solid var(--border-soft); border-radius: 12px; padding: 14px 18px;">
-            <summary style="cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px;">
-                ⚙️ Настройка ключей ЮKassa (Shop ID и Секретный ключ)
-            </summary>
-            <form method="POST" action="{{ url_for('yookassa_pay.save_config') }}" style="margin-top: 14px; display: grid; gap: 12px;">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
-                    <div>
-                        <label style="display: block; color: var(--text-muted); font-size: 12.5px; margin-bottom: 4px;">
-                            Shop ID (Идентификатор магазина в ЛК ЮKassa):
-                        </label>
-                        <input type="text" name="shop_id" value="{{ yookassa_cfg.shop_id if yookassa_cfg else '' }}"
-                               placeholder="Например: 123456" required
-                               style="width: 100%; padding: 10px 12px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main); font-size: 14px;">
-                    </div>
-                    <div>
-                        <label style="display: block; color: var(--text-muted); font-size: 12.5px; margin-bottom: 4px;">
-                            Секретный ключ (Интеграция → Ключи API):
-                        </label>
-                        <input type="password" name="secret_key" value="{{ yookassa_cfg.secret_key if yookassa_cfg else '' }}"
-                               placeholder="live_... или test_..." required
-                               style="width: 100%; padding: 10px 12px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main); font-size: 14px;">
-                    </div>
-                </div>
-                <div style="color: var(--text-muted); font-size: 12.5px; line-height: 1.45;">
-                    URL для HTTP-уведомлений в ЮKassa (Интеграция → HTTP-уведомления):
-                    <code style="color: #7dd3fc; background: rgba(56, 189, 248, 0.1); padding: 2px 6px; border-radius: 4px;">{{ request.host_url.rstrip('/') }}/api/payments/yookassa/webhook</code>
-                </div>
-                <div>
-                    <button type="submit" style="padding: 10px 20px; background: rgba(56, 189, 248, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.45); border-radius: 8px; font-weight: 700; font-size: 13.5px; cursor: pointer;">
-                        💾 Проверить и сохранить ключи ЮKassa
-                    </button>
-                </div>
-            </form>
-
-            {% if yookassa_recent_payments %}
-            <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-soft);">
-                <div style="color: var(--text-muted); font-size: 12.5px; margin-bottom: 8px; font-weight: 600;">Последние платежи:</div>
-                <div style="display: grid; gap: 6px; font-size: 12.5px;">
-                    {% for p in yookassa_recent_payments %}
-                    <div style="display: flex; justify-content: space-between; gap: 8px; color: var(--text-soft);">
-                        <span>{{ p.created_at }} · {{ '%.0f'|format(p.amount_rub) }} ₽ · <code style="font-size:11.5px;">{{ p.payment_id }}</code></span>
-                        <strong style="color: {% if p.status == 'succeeded' %}#4ade80{% elif p.status == 'canceled' %}#f87171{% else %}#fbbf24{% endif %};">{{ p.status }}</strong>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-        </details>
-        {% endif %}
-    </div>
-    {% endif %}
-
     <!-- ── Доступ ── -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(56,239,125,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px; text-align: center;">
-        <h3 style="color: var(--text-main); margin-bottom: 12px;">🎉 Все разделы и ИИ-агенты бесплатные, но есть платные премиум-дополнения</h3>
+        <h3 style="color: var(--text-main); margin-bottom: 12px;">🎉 Сейчас все разделы и ИИ-агенты бесплатные</h3>
         <p style="color: var(--text-soft); margin-bottom: 0;">
             Все разделы, задачи, ИИ-агенты, доска и AI-чертежи доступны без подписок и оплат.
-            Дополнительно можно купить платные премиум-дополнения (например, значок 💎 за 10 ₽)
-            и расширенные лимиты (см. страницу тарифов выше).
+            <strong style="color: #38bdf8;">Платная версия выйдет 3 ноября 2026.</strong>
+            Тарифы и условия платной версии можно посмотреть заранее на странице тарифов ниже.
         </p>
         <a href="{{ url_for('subscribe_page') }}" style="color: var(--accent-2); font-size: 0.95em; text-decoration: underline; display: inline-block; margin-top: 8px;">
             💳 Тарифы и платные услуги →
@@ -826,8 +705,7 @@ async function submitNicknameAjax(ev) {
         // Success
         const newNick = (data && data.nickname) ? data.nickname : value;
         const display = document.getElementById('nickname-current-value');
-        const hasDiamond = {{ 'true' if user.has_diamond else 'false' }};
-        if (display) display.textContent = '@' + newNick + (hasDiamond ? ' 💎' : '');
+        if (display) display.textContent = '@' + newNick;
         _showNicknameFeedback('Никнейм сохранён [OK]', 'ok');
         setTimeout(() => { hideNicknameForm(); }, 700);
     } catch (err) {

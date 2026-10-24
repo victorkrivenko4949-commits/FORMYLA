@@ -109,9 +109,6 @@ class User(UserMixin, db.Model):
     kimi_review_daily = db.Column(db.Boolean, default=False, server_default='0')
     kimi_review_method = db.Column(db.Boolean, default=False, server_default='0')
 
-    # YOOKASSA_DIAMOND_V1: платный значок алмаза 💎 после ника (10 ₽, для админов victor и lavrik)
-    has_diamond = db.Column(db.Boolean, default=False, server_default='0')
-
     @property
     def is_admin(self):
         """Админ — user_id == 1 (Victor), email в whitelist или nickname в whitelist.
@@ -140,19 +137,15 @@ class User(UserMixin, db.Model):
         """Отображаемое имя: nickname (если не Гость-*) -> name -> email username -> Аноним"""
         # If user has a real nickname (not auto-generated guest)
         if self.nickname and not self.nickname.startswith('Гость-'):
-            base = self.nickname
+            return self.nickname
         # Yandex display name or real name
-        elif self.name:
-            base = self.name
+        if self.name:
+            return self.name
         # Email username (before @)
-        elif self.email and '@' in self.email and not self.email.startswith('guest_'):
-            base = self.email.split('@')[0]
-        else:
-            # Fallback to nickname (Гость-XXXX) or Аноним
-            base = self.nickname or 'Аноним'
-        if getattr(self, 'has_diamond', False) and '💎' not in base:
-            return f"{base} 💎"
-        return base
+        if self.email and '@' in self.email and not self.email.startswith('guest_'):
+            return self.email.split('@')[0]
+        # Fallback to nickname (Гость-XXXX) or Аноним
+        return self.nickname or 'Аноним'
     
     def generate_auth_code(self):
         """Генерировать 6-значный код авторизации"""
