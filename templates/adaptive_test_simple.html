@@ -1255,8 +1255,9 @@ function showResult(result) {
     
     // Формируем вердикт
     let verdictHTML = '';
-    const prevLevel = result.new_level - (result.score === 1 ? 1 : 0);
-    const levelChanged = result.new_level !== result.current_level;
+    const prevLevel = (result.prev_level !== undefined) ? result.prev_level : result.new_level - result.score;
+    const levelChanged = result.new_level !== prevLevel;
+    const levelDelta = result.new_level - prevLevel;
 
     if (result.score === 1) {
         verdictHTML = `

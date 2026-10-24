@@ -609,14 +609,14 @@ def _compute_score(
 
     Изменено по ТЗ FORMYLA.net:
       • Верный ответ ВСЕГДА даёт минимум +1 балл (даже без обоснования),
-        полное решение даёт +2 (1.0 во float-шкале).
+        полное решение даёт 1.0 во float-шкале.
       • Неверный ответ даёт 0 баллов (без отрицательных значений).
 
     Таблица:
       пусто/"не знаю"                              -> 0.0
       answer_correct=False, method_correct=*       -> 0.0  (минимум 0, не −1)
-      answer_correct=True,  has_solution=True      -> 1.0  (-> +2 балла во фронте)
-      answer_correct=True,  has_solution=False     -> 0.5  (-> +1 балл во фронте)
+      answer_correct=True,  has_solution=True      -> 1.0
+      answer_correct=True,  has_solution=False     -> 0.5
     """
     # Неверный ответ -> 0. Никаких отрицательных оценок.
     if not answer_correct:
@@ -660,41 +660,19 @@ def score_badge(
 ) -> str:
     """Бейдж результата для UI (FORMYLA.net v2: шкала +1 / 0 / −1).
 
-    Логика:
-        Только ответ (has_solution=False):
-            answer_correct=True  -> +1 балл, уровень +1
-            answer_correct=False -> −1 балл, уровень −1
-        С решением:
-            answer_correct=True  + method_correct≠False -> +1 балл, +1
-            answer_correct=True  + method_correct=False ->  0 баллов (метод не тот)
-            answer_correct=False + method_correct=True  ->  0 баллов (метод понят)
-            answer_correct=False + method_correct≠True  -> −1 балл, −1
-        AI failure / неопределённость -> 0 баллов, без изменений.
+    Логика (единое правило с app.py → check_adaptive_answer):
+        answer_correct is None  ->  0 баллов, уровень без изменений
+        answer_correct is True  -> +1 балл,  уровень +1
+        answer_correct is False -> −1 балл,  уровень −1
     """
-    # Сбой AI или неопределённость -> нейтрально
     if answer_correct is None:
         return (" **Оценка тьютора: 0 баллов, уровень без изменений** "
                 "(проверка не завершена — уровень не изменится)")
 
     if answer_correct is True:
-        if has_solution and method_correct is False:
-            # Ответ верный, но метод/идея неверная — нейтрально
-            return (" **Оценка тьютора: 0 баллов, уровень без изменений** "
-                    "(ответ верный, но метод/решение не соответствует — "
-                    "разберись с правильной идеей)")
-        # Ответ верный (с верным методом или без решения)
-        if has_solution:
-            return (" **Оценка тьютора: +1 балл, уровень +1** "
-                    "(верный ответ + корректный метод решения)")
         return (" **Оценка тьютора: +1 балл, уровень +1** "
                 "(верный ответ — отлично!)")
 
-    # answer_correct is False — ответ неверный
-    if has_solution and method_correct is True:
-        # Ответ не туда, но метод понят — нейтрально
-        return (" **Оценка тьютора: 0 баллов, уровень без изменений** "
-                "(ответ неверный, но метод понят правильно — "
-                "проверь арифметику и финальные шаги)")
     return (" **Оценка тьютора: −1 балл, уровень −1** "
             "(неверный ответ — разбери эталонное решение и попробуй похожую задачу)")
 
