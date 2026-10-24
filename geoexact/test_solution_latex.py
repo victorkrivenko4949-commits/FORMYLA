@@ -62,6 +62,16 @@ def test_answer_label_and_display_merge_into_one_paragraph():
     assert out.endswith("**Ответ:** $\\angle B = 67^\\circ 30'$")
 
 
+def test_answer_label_with_outer_colon_also_merges():
+    # вариант «**Ответ**:** — двоеточие после закрывающих **
+    md = "Решение.\n\n**Ответ**:\n\n$$42$$"
+    out = normalize_math(md)
+    assert out.endswith("**Ответ**: $42$")
+    assert "\n\n" not in out.split("Решение.\n\n", 1)[1]
+    # повторная нормализация ничего не меняет (идемпотентность)
+    assert normalize_math(out) == out
+
+
 def test_intermediate_boxed_is_not_relabelled():
     # рамка посреди решения (после неё ещё текст) — не финальный ответ
     md = "Вспомогательный результат:\n\n$$\\boxed{x=1}$$\n\nТеперь найдём искомое $y$."
