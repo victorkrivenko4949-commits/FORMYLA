@@ -22,6 +22,11 @@ _ANSWER_LABEL = re.compile(
     r"(?:\*\*|__)?\s*(?:Ответ|Итог|Answer)\s*[:=]?\s*(?:\*\*|__)?\s*", re.IGNORECASE)
 # Вводное слово, оборванное запятой в конце абзаца перед формулой ответа.
 _HANGING_INTRO = re.compile(r"[ \t]*(?:Следовательно|Значит|Итак|Поэтому|Тогда),[ \t]*$")
+# Абзац-метка ответа, за которым сразу идёт выключная формула: склеиваем,
+# чтобы подсветка ответа накрыла и метку, и формулу.
+_LABEL_THEN_DISPLAY = re.compile(
+    r"^(?:\*\*|__)?[ \t]*(?:Ответ|Итог|Answer)[ \t]*[:=]?[ \t]*(?:\*\*|__)?[ \t]*\n{2,}"
+    r"(\$\$[^\n]+\$\$)[ \t]*(?=\n|$)", re.M)
 
 
 def _boxed_spans(md: str) -> list[tuple[int, int, str]]:
@@ -48,18 +53,36 @@ def _boxed_spans(md: str) -> list[tuple[int, int, str]]:
     return out
 
 
+def _answer_formula(inner: str, label: str = "") -> str:
+    """Формула ответа в одном абзаце с меткой: простая — инлайн, сложная
+    (aligned и т.п.) — отдельной строкой того же абзаца."""
+    if "\\begin{" in inner or len(inner) > 120:
+        return (label + "\n" if label else "") + "$$" + inner + "$$"
+    return (label + " " if label else "") + "$" + inner + "$"
+
+
+def _merge_answer_label(md: str) -> str:
+    """«**Ответ:**» отдельным абзацем + формула ниже → один абзац ответа."""
+    def repl(m):
+        label = m.group(0).split("\n\n", 1)[0]
+        return _answer_formula(m.group(1)[2:-2], label)
+    return _LABEL_THEN_DISPLAY.sub(repl, md)
+
+
 def _fix_final_answer(md: str) -> str:
     """Финальный ответ — аккуратный абзац «Ответ: …».
 
     Скриншот-дефект: точка оставалась ВНУТРИ \\boxed{...}, абзац перед
     ответом обрывался на «Следовательно,», и рамка с ответом висела сама
-    по себе. Здесь: пунктуация выносится из \\boxed, последний выключной
-    \\boxed{X} становится абзацем «**Ответ:** $X$» (существующая метка
-    ответа не дублируется), оборванное вводное слово убирается.
+    по себе. Здесь: пунктуация выносится из \\boxed; ЗАКЛЮЧИТЕЛЬНАЯ рамка
+    (после которой текста нет) становится абзацем «**Ответ:** …» —
+    существующая метка не дублируется, оборванное вводное слово
+    убирается. Промежуточная рамка, после которой решение продолжается,
+    не переоформляется: это меняло бы смысл, а не оформление.
     """
     spans = _boxed_spans(md)
     if not spans:
-        return md
+        return _merge_answer_label(md)
     # 1) замыкающая пунктуация — из рамки: \boxed{X.} -> \boxed{X}
     for start, end, inner in reversed(spans):
         stripped = inner.rstrip(" .,;:")
@@ -67,22 +90,30 @@ def _fix_final_answer(md: str) -> str:
             md = md[:start] + "\\boxed{" + stripped + "}" + md[end:]
     spans = _boxed_spans(md)
     if not spans:
-        return md
+        return _merge_answer_label(md)
     start, end, inner = spans[-1]
     # 2) ответ должен быть самостоятельной выключной формулой $$\boxed{X}$$
     head = md[:start].rstrip(" \n")
     tail = md[end:].lstrip(" \n")
     if not (head.endswith("$$") and tail.startswith("$$")):
-        return md
+        return _merge_answer_label(md)
     disp_start = head.rfind("$$")
     disp_end = end + md[end:].find("$$") + 2
     before = md[:disp_start]
     last_line = before.rstrip("\n").split("\n")[-1].strip() if before.strip() else ""
-    if last_line and _ANSWER_LABEL.fullmatch(last_line):
-        # метка уже есть — оставляем её, рамку разворачиваем в формулу
-        return md[:disp_start] + "$" + inner + "$" + md[disp_end:]
+    has_label = bool(last_line and _ANSWER_LABEL.fullmatch(last_line))
+    if md[disp_end:].strip() and not has_label:
+        # после рамки ещё есть решение — это промежуточный результат,
+        # а не финальный ответ: оформление не трогаем
+        return _merge_answer_label(md)
+    if has_label:
+        # метка уже есть — приклеиваем формулу к её абзацу, не дублируя
+        before_lines = before.rstrip("\n").split("\n")
+        rest = "\n".join(before_lines[:-1])
+        ans = _answer_formula(inner, before_lines[-1])
+        return (rest + "\n\n" if rest else "") + ans + md[disp_end:]
     before = _HANGING_INTRO.sub("", before.rstrip()) + "\n\n"
-    return before + "**Ответ:** $" + inner + "$" + md[disp_end:]
+    return before + _answer_formula(inner, "**Ответ:**") + md[disp_end:]
 
 
 def _one_line(tex: str) -> str:

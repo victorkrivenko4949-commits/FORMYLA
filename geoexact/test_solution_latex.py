@@ -47,10 +47,28 @@ def test_final_boxed_answer_gets_label_and_clean_punctuation():
 
 
 def test_existing_answer_label_is_not_duplicated():
+    # метка и формула склеиваются в ОДИН абзац ответа (без дублирования метки)
     md = "Решение.\n\n**Ответ:**\n\n$$\\boxed{42.}$$"
     out = normalize_math(md)
     assert out.count("Ответ") == 1
-    assert out.endswith("**Ответ:**\n\n$42$")
+    assert out.endswith("**Ответ:** $42$")
+
+
+def test_answer_label_and_display_merge_into_one_paragraph():
+    # новый формат из промпта: **Ответ:** отдельной строкой + $$формула$$
+    md = "Решение.\n\n**Ответ:**\n\n$$\\angle B = 67^\\circ 30'$$"
+    out = normalize_math(md)
+    assert "\n\n" not in out.split("Решение.\n\n", 1)[1]
+    assert out.endswith("**Ответ:** $\\angle B = 67^\\circ 30'$")
+
+
+def test_intermediate_boxed_is_not_relabelled():
+    # рамка посреди решения (после неё ещё текст) — не финальный ответ
+    md = "Вспомогательный результат:\n\n$$\\boxed{x=1}$$\n\nТеперь найдём искомое $y$."
+    out = normalize_math(md)
+    assert "**Ответ:**" not in out
+    assert "$$\\boxed{x=1}$$" in out
+    assert "Теперь найдём искомое $y$." in out
 
 
 def test_inline_boxed_only_loses_trailing_punctuation():
