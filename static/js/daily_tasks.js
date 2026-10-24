@@ -28,6 +28,14 @@ document.addEventListener('DOMContentLoaded', function() {
         case 'blocked':
             showBlockedState(data);
             break;
+        case 'teacher':
+            showTeacherState(data);
+            break;
+        case 'limit_reached':
+            // Карточка «Дневной лимит бесплатного плана» уже отрендерена
+            // сервером (partials/limit_reached.html). Пустое состояние
+            // «Задач пока нет» здесь НЕ показываем — только лимит.
+            break;
         case 'no_set':
             showEmptyState();
             break;
@@ -106,6 +114,18 @@ function showBlockedState(data) {
 
 function showEmptyState() {
     var el = document.getElementById('dt-empty-state');
+    if (el) el.classList.remove('dt-hidden');
+}
+
+/**
+ * Показать состояние «аккаунт учителя».
+ *
+ * Карточка #dt-teacher-state («Задачи дня — для учеников») отрендерена
+ * в шаблоне и по умолчанию скрыта через dt-hidden. Сервер отдаёт статус
+ * teacher для роли role == 'teacher' (см. daily_tasks/routes.py).
+ */
+function showTeacherState(data) {
+    var el = document.getElementById('dt-teacher-state');
     if (el) el.classList.remove('dt-hidden');
 }
 
