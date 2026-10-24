@@ -1,4 +1,6 @@
-ИТОГО: {'fig_not_linked': 321, 'fig_orphan': 207}
+ПОЧИНЕНО: 1 привязок в 1 файлах; список: reports/olymp_figs_fix.csv
+  по олимпиадам: {'vsosh': 1}
+ИТОГО: {'fig_not_linked': 321, 'fig_orphan': 206}
 
 По олимпиадам:
   fig_not_linked  euler            8
