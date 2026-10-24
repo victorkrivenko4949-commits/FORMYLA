@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 /* ============================================================
-   FORMYLA · Задачи дня — оформление в стиле страницы «О сайте» (v2)
+   FORMYLA · Задачи дня — оформление в стиле страницы «О сайте» (v2.1)
    Подключается через @import из daily_tasks_modal.css.
    Откат: удалить первую строку @import в daily_tasks_modal.css.
    ============================================================ */
@@ -77,8 +77,7 @@
 /* ── Раскладка ── */
 .page-daily-tasks .dt-layout{grid-template-columns:minmax(0,1fr) 340px !important; gap:2.5rem !important}
 
-/* ── Верхний блок над сеткой: единый ритм ── */
-/* таймер 24ч — тонкая строка */
+/* ── Таймер 24ч ── */
 .page-daily-tasks .dt-countdown{
   background:transparent !important; border:none !important; border-bottom:1px solid var(--hair) !important;
   border-radius:0 !important; padding:0 0 14px !important; margin:0 0 22px !important; gap:16px !important;
@@ -90,7 +89,7 @@
 .page-daily-tasks .dt-countdown.dt-expiring .dt-countdown-time{color:var(--warn) !important}
 .page-daily-tasks .dt-countdown.dt-expired .dt-countdown-time{color:var(--bad) !important}
 
-/* заголовок дня */
+/* ── Заголовок дня ── */
 .page-daily-tasks .dt-ready-header{
   background:transparent !important; border:none !important; border-radius:0 !important;
   padding:0 !important; margin:0 0 18px !important; gap:8px 16px !important; align-items:baseline !important;
@@ -99,35 +98,54 @@
 .page-daily-tasks .dt-ready-meta{font-family:var(--font-mono);font-size:.72rem !important;letter-spacing:.14em;text-transform:uppercase;color:var(--faint) !important}
 .page-daily-tasks .dt-ready-actions{gap:8px !important}
 
-/* план · тема · серия — строки «leger» без коробок */
+/* ── План · тема · серия — строки с тире, обычный поток текста ── */
 .page-daily-tasks .dt-plan-note,
 .page-daily-tasks .dt-summary-card,
-.page-daily-tasks .dt-partial-notice,
-.page-daily-tasks .dt-layout > div > div:has(> [data-streak-how]),
-.page-daily-tasks .dt-layout > div > div:has(> * > [data-streak-how]){
+.page-daily-tasks .dt-partial-notice{
+  display:block !important; position:relative;
   background:transparent !important; border:none !important; border-top:1px solid var(--hair) !important;
-  border-radius:0 !important; padding:12px 0 !important; margin:0 !important;
-  font-size:.92rem !important; line-height:1.55 !important; color:var(--muted) !important;
-  display:grid !important; grid-template-columns:2.6em 1fr; gap:0 1rem; align-items:baseline;
+  border-radius:0 !important; padding:12px 0 12px 2.2em !important; margin:0 !important;
+  font-family:var(--font-body) !important; font-size:.92rem !important; line-height:1.55 !important; color:var(--muted) !important;
 }
-.page-daily-tasks .dt-plan-note::before{content:"—";font-family:var(--font-mono);color:var(--gold);font-size:.75rem}
-.page-daily-tasks .dt-summary-card::before{content:"—";font-family:var(--font-mono);color:var(--gold);font-size:.75rem}
-.page-daily-tasks .dt-partial-notice::before{content:"!";font-family:var(--font-mono);color:var(--warn);font-size:.75rem}
-.page-daily-tasks .dt-layout > div > div:has([data-streak-how])::before{content:"—";font-family:var(--font-mono);color:var(--gold);font-size:.75rem}
-.page-daily-tasks .dt-plan-note strong,.page-daily-tasks .dt-summary-card strong{color:var(--ink) !important;font-weight:600 !important}
+.page-daily-tasks .dt-plan-note::before,
+.page-daily-tasks .dt-summary-card::before,
+.page-daily-tasks .dt-partial-notice::before{
+  content:"—"; position:absolute; left:0; top:12px;
+  font-family:var(--font-mono); font-size:.8rem; line-height:1.55; color:var(--gold);
+}
+.page-daily-tasks .dt-partial-notice::before{content:"!";color:var(--warn)}
+.page-daily-tasks .dt-plan-note strong,.page-daily-tasks .dt-summary-card strong{
+  font-family:var(--font-body) !important; font-style:normal !important; font-size:inherit !important;
+  color:var(--ink) !important; font-weight:600 !important;
+}
 .page-daily-tasks .dt-partial-notice{color:var(--warn) !important}
-.page-daily-tasks .dt-layout > div > div:has([data-streak-how]){color:var(--muted) !important;align-items:center}
-.page-daily-tasks .dt-layout > div > div:has([data-streak-how]) b,
-.page-daily-tasks .dt-layout > div > div:has([data-streak-how]) strong{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:1.25rem;color:var(--gold)}
+
+/* серия: строка = прямой родитель кнопки «Как работает» */
+.page-daily-tasks div:has(> [data-streak-how]){
+  display:flex !important; align-items:center !important; gap:12px !important; position:relative;
+  background:transparent !important; border:none !important; border-top:1px solid var(--hair) !important;
+  border-radius:0 !important; padding:12px 0 12px 2.2em !important; margin:0 !important;
+  font-size:.92rem !important; color:var(--muted) !important;
+}
+.page-daily-tasks div:has(> [data-streak-how])::before{
+  content:"—"; position:absolute; left:0; top:12px;
+  font-family:var(--font-mono); font-size:.8rem; line-height:1.55; color:var(--gold);
+}
+.page-daily-tasks div:has(> [data-streak-how]) > div{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;color:var(--muted)}
+.page-daily-tasks div:has(> [data-streak-how]) > div b,
+.page-daily-tasks div:has(> [data-streak-how]) > div strong{
+  font-family:var(--font-display); font-style:italic; font-weight:500; font-size:1.3rem; line-height:1; color:var(--gold);
+}
+.page-daily-tasks div:has(> [data-streak-how]) > div span{font-family:var(--font-mono) !important;font-size:.68rem !important;letter-spacing:.1em;text-transform:uppercase;color:var(--faint) !important;margin-left:0 !important}
 .page-daily-tasks [data-streak-how]{
-  font-family:var(--font-mono) !important; font-size:.68rem !important; letter-spacing:.14em; text-transform:uppercase;
+  font-family:var(--font-mono) !important; font-size:.66rem !important; letter-spacing:.14em; text-transform:uppercase;
   background:none !important; border:1px solid var(--hair-strong) !important; border-radius:4px !important;
-  color:var(--muted) !important; padding:.35em .9em !important; margin-left:auto; cursor:pointer;
+  color:var(--muted) !important; padding:.4em .9em !important; margin-left:auto !important; cursor:pointer; font-weight:400 !important;
   transition:border-color .18s var(--ease),color .18s var(--ease);
 }
 .page-daily-tasks [data-streak-how]:hover{border-color:var(--gold) !important;color:var(--gold) !important}
 
-/* долг */
+/* ── Долг ── */
 .page-daily-tasks .dt-debt-block{
   background:transparent !important; border:1px solid rgba(251,191,36,.28) !important; border-radius:6px !important;
   padding:0 !important; margin:18px 0 0 !important; overflow:hidden;
@@ -173,7 +191,6 @@
 .page-daily-tasks .dt-card.dt-done::before{background:linear-gradient(90deg,transparent,#5eead4,transparent) !important;opacity:.8 !important}
 .page-daily-tasks .dt-card.dt-flagged,.page-daily-tasks .dt-card.dt-calibration{border-color:rgba(251,191,36,.25) !important}
 
-/* верх: номер + тема в одну строку */
 .page-daily-tasks .dt-card-subtopic{
   font-family:var(--font-mono) !important; font-size:.66rem !important; font-weight:400 !important;
   letter-spacing:.14em !important; text-transform:uppercase; color:var(--gold) !important;
@@ -196,7 +213,6 @@
 .page-daily-tasks .dt-difficulty{font-family:var(--font-mono);font-size:.68rem !important;letter-spacing:.1em;color:var(--faint) !important;margin-left:auto}
 .page-daily-tasks .dt-calibration-badge{font-family:var(--font-mono);font-size:.62rem !important;letter-spacing:.1em;border-radius:3px !important;padding:2px 7px !important}
 
-/* условие — крупнее, воздух */
 .page-daily-tasks .dt-card-preview{
   font-size:15.5px !important; line-height:1.62 !important; color:var(--ink) !important;
   -webkit-line-clamp:5 !important; margin:0 0 18px !important;
@@ -204,7 +220,6 @@
 .page-daily-tasks .dt-card-preview .katex{font-size:1.04em}
 .page-daily-tasks .dt-card-figure img{border-radius:4px !important;border-color:var(--hair) !important}
 
-/* подвал: статус слева, кнопка справа */
 .page-daily-tasks .dt-card-footer{
   display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important;
   align-items:center !important; justify-content:space-between !important; gap:12px !important;
@@ -324,9 +339,10 @@
   .page-daily-tasks .dt-pledge{align-items:flex-start !important}
   .page-daily-tasks .dt-pledge::before{display:none}
   .page-daily-tasks .dt-plan-note,.page-daily-tasks .dt-summary-card,.page-daily-tasks .dt-partial-notice,
-  .page-daily-tasks .dt-layout > div > div:has([data-streak-how]){grid-template-columns:1fr;gap:4px}
+  .page-daily-tasks div:has(> [data-streak-how]){padding-left:0 !important}
   .page-daily-tasks .dt-plan-note::before,.page-daily-tasks .dt-summary-card::before,.page-daily-tasks .dt-partial-notice::before,
-  .page-daily-tasks .dt-layout > div > div:has([data-streak-how])::before{display:none}
+  .page-daily-tasks div:has(> [data-streak-how])::before{display:none}
+  .page-daily-tasks div:has(> [data-streak-how]){flex-wrap:wrap !important}
   .page-daily-tasks .dt-card{padding:18px 18px 16px !important}
   .page-daily-tasks .dt-countdown-time{font-size:1.6rem !important}
   #dt-blocked-state .dt-empty-card{padding:2rem 1.25rem !important}
