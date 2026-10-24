@@ -223,8 +223,15 @@
                             <span style="color: var(--muted); font-style: italic;">скрыто</span>
                             {% else %}
                             {% for anchor, vals in s.anchors.items() %}
+                            {% set anchor_ru = {
+                                'algebra': 'Алгебра',
+                                'number_theory': 'Теория чисел',
+                                'geometry': 'Геометрия',
+                                'combinatorics': 'Комбинаторика',
+                                'logic': 'Логика'
+                            }.get(anchor, anchor) %}
                             <span class="anchor-badge"
-                                  title="{{ anchor }}">{{ anchor[0].upper() }} {{ vals.mu }}/{{ vals.sigma }}</span>
+                                  title="{{ anchor_ru }}">{{ anchor[0].upper() }} {{ vals.mu }}/{{ vals.sigma }}</span>
                             {% endfor %}
                             {% endif %}
                         </div>
