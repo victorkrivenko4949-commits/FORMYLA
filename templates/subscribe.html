@@ -350,13 +350,15 @@
     <div class="subscribe-hero">
         <h1>Выберите тариф</h1>
         <p class="subtitle">Разблокируй полный потенциал математики с FORMYLA.net</p>
-        <span class="beta-badge"> Бета-доступ: Полная версия бесплатно до запуска оплаты</span>
+        {% if is_pilot %}<span class="beta-badge"> Бета-доступ: Полная версия бесплатно до запуска оплаты</span>{% endif %}
     </div>
 
     <!-- Success message (shown after activation) -->
+    {% if is_pilot %}
     <div class="success-msg" id="successMsg">
         ✅ Premium активирован! Перезагружаем страницу...
     </div>
+    {% endif %}
 
     <!-- Cancel subscription block (only for non-free plans) -->
     {% if current_plan and current_plan != 'free' %}
@@ -374,7 +376,7 @@
     <!-- Current plan info for free users (no cancel button) -->
     <div style="background: rgba(56,239,125,0.05); border: 1px solid rgba(56,239,125,0.2); border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: center;">
         <p style="color: #38ef7d; margin: 0; font-size: 1em;">
-            Ваш текущий тариф: <strong>free</strong> — бесплатно навсегда
+            Ваш текущий тариф: <strong>free</strong>
         </p>
     </div>
     {% endif %}
@@ -580,7 +582,8 @@
     </script>
     {% endif %}
 
-    <!-- Plan cards -->
+    <!-- Plan cards (pilots only до запуска 3 ноября) -->
+    {% if is_pilot %}
     <div class="plans-grid">
 
     <!-- Free plan -->
@@ -771,6 +774,7 @@
         </div>
 
     </div>
+    {% endif %}
 
     <!-- Payment block (hidden until payment enabled) -->
     {% if payment_enabled %}

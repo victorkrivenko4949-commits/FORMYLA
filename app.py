@@ -13240,6 +13240,13 @@ def api_subscribe_trial():
     """
     if getattr(current_user, 'is_guest', False):
         return jsonify({'error': 'Недоступно для гостей'}), 403
+    # 2026-10-24: пробный день — только пилотным аккаунтам (до запуска 3 ноября).
+    try:
+        from services.pilot import is_pilot_user as _is_pilot
+        if not _is_pilot(current_user.id):
+            return jsonify({'error': 'Недоступно'}), 403
+    except Exception:
+        return jsonify({'error': 'Недоступно'}), 403
     data = request.get_json() or {}
     plan = data.get('plan', 'premium_intense')
     if plan not in ('premium_intense', 'premium_calm'):
