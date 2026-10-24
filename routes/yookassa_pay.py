@@ -544,7 +544,25 @@ def yookassa_webhook():
             order_id = order_id or row[1]
 
     if (event == "payment.succeeded" or verified_status == "succeeded") and verified_paid and user_id_raw:
-        _activate_diamond_for_user(user_id=int(user_id_raw), payment_id=payment_id, order_id=order_id)
+        # PREMIUM_PAY_V1: по item_code решаем, что активировать —
+        # premium_intense/premium_calm (30 дней Premium) или значок-алмаз.
+        item_code = "diamond_badge"
+        try:
+            _row = db.session.execute(
+                text("SELECT item_code FROM yookassa_payments WHERE payment_id = :pid OR order_id = :oid LIMIT 1"),
+                {"pid": payment_id, "oid": order_id or ""},
+            ).fetchone()
+            if _row and _row[0]:
+                item_code = str(_row[0])
+        except Exception:
+            pass
+        if item_code.startswith("premium_"):
+            from routes.premium_pay import activate_premium_for_payment
+            activate_premium_for_payment(
+                user_id=int(user_id_raw), plan=item_code,
+                payment_id=payment_id, order_id=order_id)
+        else:
+            _activate_diamond_for_user(user_id=int(user_id_raw), payment_id=payment_id, order_id=order_id)
         return jsonify({"ok": True, "status": "succeeded"}), 200
 
     if event == "payment.canceled" or verified_status == "canceled":

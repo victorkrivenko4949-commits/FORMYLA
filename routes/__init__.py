@@ -249,6 +249,24 @@ def _install_yookassa_pay(app) -> None:
         logger.exception("[yookassa_pay] auto-register failed: %r", e)
 
 
+def _install_premium_pay(app) -> None:
+    """PREMIUM_PAY_V1: оформление и оплата тарифов Premium через ЮKassa.
+
+    /payments/premium/checkout, /create, /return. Демо-режим без ключей
+    ЮKassa. Отключить: PREMIUM_PAY_AUTOREG=0.
+    """
+    if os.environ.get("PREMIUM_PAY_AUTOREG", "1") == "0":
+        return
+    if app.extensions.get("premium_pay_installed"):
+        return
+    try:
+        from routes.premium_pay import install_premium_pay
+        install_premium_pay(app, register=_ORIG_REGISTER)
+        logger.info("[premium_pay] registered (/payments/premium/*)")
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[premium_pay] auto-register failed: %r", e)
+
+
 def _install_curator_chat(app) -> None:
     """CURATOR_CHAT_V1: чат «Куратор + Поддержка» (/curator) для пилота Premium.
 
@@ -280,6 +298,7 @@ def _install(app) -> None:
     _install_limits(app)
     _install_admin_launch(app)
     _install_yookassa_pay(app)
+    _install_premium_pay(app)
     _install_curator_chat(app)
     if os.environ.get("SURVEYS_AUTOREG", "1") != "0":
         from routes.surveys import install_surveys

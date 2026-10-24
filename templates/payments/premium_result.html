@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Оплата Premium — FORMYLA.net{% endblock %}
+
+{% block extra_css %}
+<style>
+.pm-res-wrap { max-width: 560px; margin: 0 auto; padding: 40px 16px 48px; text-align: center; }
+.pm-res-icon { font-size: 3.2em; margin-bottom: 12px; }
+.pm-res-wrap h1 { font-size: 1.4em; color: #eaf3ff; margin: 0 0 8px; }
+.pm-res-wrap p { color: #a9b9d3; line-height: 1.6; }
+.pm-res-card {
+  margin: 22px 0; padding: 22px; border-radius: 18px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  text-align: left;
+}
+.pm-res-card .row { display: flex; justify-content: space-between; padding: 7px 0; font-size: .95em; color: #b9c8de; }
+.pm-res-card .row b { color: #eaf3ff; }
+.pm-res-btn {
+  display: inline-block; padding: 14px 34px; border-radius: 12px; text-decoration: none;
+  font-weight: 700; color: #fff; background: linear-gradient(135deg, #38bdf8, #8b5cf6);
+}
+.pm-res-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(56,189,248,0.4); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pm-res-wrap">
+  {% if status == 'succeeded' %}
+    <div class="pm-res-icon">🎉</div>
+    <h1>Оплата прошла!</h1>
+    <p>Premium активирован — полный доступ уже открыт.</p>
+    {% if info %}
+    <div class="pm-res-card">
+      <div class="row"><span>Тариф</span><b>{{ info.icon }} {{ info.title }}</b></div>
+      <div class="row"><span>Цена</span><b>{{ info.price_rub }} ₽</b></div>
+      <div class="row"><span>Срок</span><b>30 дней</b></div>
+      {% if demo %}<div class="row"><span>Режим</span><b>тестовый (без списания)</b></div>{% endif %}
+    </div>
+    {% endif %}
+    <a class="pm-res-btn" href="/daily_tasks">Перейти к задачам дня</a>
+
+  {% elif status == 'canceled' %}
+    <div class="pm-res-icon">🚫</div>
+    <h1>Платёж отменён</h1>
+    <p>Деньги не списаны. Можно попробовать ещё раз или взять пробный день.</p>
+    <a class="pm-res-btn" href="/subscribe">Вернуться к тарифам</a>
+
+  {% elif status == 'pending' %}
+    <div class="pm-res-icon">⏳</div>
+    <h1>Платёж обрабатывается</h1>
+    <p>Обычно это занимает пару минут. Обновите страницу через минуту — Premium откроется автоматически.</p>
+    <p><a href="{{ request.full_path }}" style="color:#38bdf8;">Обновить</a></p>
+
+  {% else %}
+    <div class="pm-res-icon">🤔</div>
+    <h1>Платёж не найден</h1>
+    <p>Попробуйте оформить тариф заново.</p>
+    <a class="pm-res-btn" href="/subscribe">Вернуться к тарифам</a>
+  {% endif %}
+</div>
+{% endblock %}
