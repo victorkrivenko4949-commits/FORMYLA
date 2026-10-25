@@ -61,7 +61,7 @@ def inspect_task(t, fig_dir):
                 valid = False
             if not valid:
                 issues.append({"field": field, "code": "fig_missing", "path": value})
-    if not (t.get("fig_statement") or t.get("fig_solution")):
+    if not (t.get("fig_statement") or t.get("fig_solution")) and not t.get("fig_none_in_source"):
         blob = text + " " + norm_tex(t.get("solution"))
         m = FIG_WORDS.search(blob)
         if m:

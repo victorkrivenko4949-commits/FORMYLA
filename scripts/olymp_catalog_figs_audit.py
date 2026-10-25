@@ -50,7 +50,7 @@ def save(slug, tasks):
 
 def all_fig_files():
     return {p.relative_to(FIGS).as_posix(): p for p in FIGS.rglob("*")
-            if p.is_file() and p.suffix.lower() in (".png", ".svg", ".jpg", ".jpeg")}
+            if p.is_file() and p.suffix.lower() in (".png", ".svg", ".jpg", ".jpeg", ".gif")}
 
 def fig_field(relpath):
     m = UID_RE.match(Path(relpath).stem)
@@ -188,7 +188,7 @@ def main():
                 f = str(f).replace("\\", "/"); referenced.add(f)
                 if f not in files:
                     rows.append({**base, "problem": "fig_missing", "detail": f})
-            if not figs:
+            if not figs and not t.get("fig_none_in_source"):
                 hit = FIG_WORDS.search(text)
                 if hit:
                     rows.append({**base, "problem": "fig_not_linked", "detail": re.sub(r"\s+", " ", hit.group(0))})
