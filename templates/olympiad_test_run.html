@@ -166,6 +166,7 @@
                             <span id="photoButtonText">Сфотографировать / Загрузить решение</span>
                         </button>
                         <div id="photoPreviewList" style="display: none; margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px;"></div>
+                        <p id="photoWaitHint" role="status" style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px; display: none;">Проверка фото займёт около 15 секунд</p>
                     </div>
 
                     <div style="text-align: center;">
@@ -247,6 +248,27 @@ function kbInsert(text){
 // Set keyboard target based on focus
 document.getElementById('solution_text').addEventListener('focus', function(){kbActiveField='solution'; document.getElementById('kbFieldLabel').textContent='Решение';});
 document.getElementById('user_answer').addEventListener('focus', function(){kbActiveField='answer'; document.getElementById('kbFieldLabel').textContent='Ответ';});
+
+// Подсказка про время проверки при прикреплении фото
+(function() {
+    var inp = document.getElementById('photoInput');
+    var hint = document.getElementById('photoWaitHint');
+    var form = document.getElementById('answerForm');
+    if (!inp || !hint || !form) return;
+    inp.addEventListener('change', function() {
+        hint.textContent = 'Проверка фото займёт около 15 секунд';
+        hint.style.display = (inp.files && inp.files.length) ? 'block' : 'none';
+    });
+    form.addEventListener('submit', function() {
+        var hasPhotos = inp.files && inp.files.length;
+        if (hasPhotos) {
+            hint.textContent = 'Подождите около 15 секунд';
+            hint.style.display = 'block';
+            var btn = form.querySelector('button[type="submit"]');
+            if (btn) { btn.disabled = true; btn.textContent = 'Подождите около 15 секунд…'; }
+        }
+    });
+})();
 </script>
 
 {# -- MathLive CSS -- #}

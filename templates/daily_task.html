@@ -63,6 +63,7 @@
                 <div style="font-size:14px; color:rgba(255,255,255,0.5);">Нажмите или перетащите фото решения<br><small>jpg, png, heic - до 12 МБ</small></div>
                 <img id="dailyPhotoPreviewImg" style="display:none; max-width:100%; max-height:200px; border-radius:8px; margin-top:8px;" alt="preview">
                 <button type="button" id="dailyPhotoRemoveBtn" style="display:none; margin-top:8px; padding:4px 12px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:6px; color:#e86a62; font-size:12px; cursor:pointer;" onclick="event.stopPropagation();removeDailyPhoto()">🗑️ Удалить фото</button>
+                <div id="dailyPhotoWaitHint" role="status" style="display:none; font-size:13px; color:rgba(255,255,255,0.5); margin-top:8px;">Проверка фото займёт около 15 секунд</div>
               </div>
               <input type="file" id="dailyPhotoInput" accept="image/jpeg,image/png,image/heic,image/heif" style="display:none;" onchange="handleDailyPhotoSelect(this)">
             </div>
@@ -138,6 +139,8 @@ function handleDailyPhotoSelect(input) {
     area.style.borderColor = 'rgba(56,239,125,0.3)';
     area.style.background = 'rgba(56,239,125,0.05)';
     document.getElementById('dailyPhotoRemoveBtn').style.display = 'inline-block';
+    var waitHint = document.getElementById('dailyPhotoWaitHint');
+    if (waitHint) { waitHint.textContent = 'Проверка фото займёт около 15 секунд'; waitHint.style.display = 'block'; }
   };
   reader.readAsDataURL(file);
 }
@@ -152,6 +155,8 @@ function removeDailyPhoto() {
   area.style.borderColor = 'rgba(255,255,255,0.15)';
   area.style.background = 'rgba(0,0,0,0.15)';
   document.getElementById('dailyPhotoRemoveBtn').style.display = 'none';
+  var waitHint = document.getElementById('dailyPhotoWaitHint');
+  if (waitHint) waitHint.style.display = 'none';
   updateSubmitButtonState();
 }
 
@@ -265,6 +270,11 @@ async function submitAnswer() {
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
     submitBtn.textContent = '⏳ Проверяем...';
+    var waitHintEl = document.getElementById('dailyPhotoWaitHint');
+    if (solutionPhoto && waitHintEl) {
+        waitHintEl.textContent = 'Подождите около 15 секунд';
+        waitHintEl.style.display = 'block';
+    }
     
     try {
         var bodyPayload;
@@ -299,6 +309,7 @@ async function submitAnswer() {
                 alert('Ошибка: ' + (data.message || data.error || 'Неизвестная ошибка'));
                 submitBtn.disabled = false;
                 submitBtn.textContent = '📤 Отправить решение';
+                if (waitHintEl) waitHintEl.style.display = 'none';
             }
         }
     } catch (error) {
@@ -306,6 +317,8 @@ async function submitAnswer() {
         alert('Ошибка отправки ответа');
         submitBtn.disabled = false;
         submitBtn.textContent = '📤 Отправить решение';
+        var wh = document.getElementById('dailyPhotoWaitHint');
+        if (wh) wh.style.display = 'none';
     }
 }
 

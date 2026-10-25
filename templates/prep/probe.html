@@ -183,6 +183,7 @@ textarea.answer-input { resize: vertical; min-height: 100px; font-family: inheri
             <div class="photo-upload-icon"></div>
             <div class="photo-upload-text">Можете прикрепить фото из тетрадки — ИИ-тьютор его распознает<br><small>Нажмите, перетащите или вставьте из буфера (Ctrl+V) · jpg, png, heic — до 12 МБ</small></div>
             <img id="photoPreviewImg" class="photo-preview" style="display:none;" alt="preview">
+            <div id="photoWaitHint" role="status" style="display:none;font-size:13px;color:rgba(255,255,255,0.5);margin-top:6px;">Проверка фото займёт около 15 секунд</div>
             <button type="button" class="photo-remove-btn" id="photoRemoveBtn" style="display:none;" onclick="event.preventDefault();event.stopPropagation();removePhoto()"> Удалить фото</button>
           </label>
           <input type="file" id="photoInput" accept="image/*,.heic,.heif" style="display:none;" onchange="handlePhotoSelect(this)">
@@ -280,6 +281,8 @@ function handlePhotoFile(file) {
     img.style.display = 'block';
     document.getElementById('photoDropArea').classList.add('has-photo');
     document.getElementById('photoRemoveBtn').style.display = 'inline-block';
+    const waitHint = document.getElementById('photoWaitHint');
+    if (waitHint) { waitHint.textContent = 'Проверка фото займёт около 15 секунд'; waitHint.style.display = 'block'; }
   };
   reader.readAsDataURL(file);
 }
@@ -309,6 +312,8 @@ function removePhoto() {
   document.getElementById('photoPreviewImg').style.display = 'none';
   document.getElementById('photoDropArea').classList.remove('has-photo');
   document.getElementById('photoRemoveBtn').style.display = 'none';
+  const waitHint = document.getElementById('photoWaitHint');
+  if (waitHint) waitHint.style.display = 'none';
 }
 
 function isProofTask() {
@@ -367,6 +372,11 @@ async function submitAnswer() {
   const submitBtn = document.getElementById('submitBtn');
   submitBtn.disabled = true;
   submitBtn.textContent = 'Проверяем...';
+  const waitHintEl = document.getElementById('photoWaitHint');
+  if (currentMethod === 'photo' && waitHintEl) {
+    waitHintEl.textContent = 'Подождите около 15 секунд';
+    waitHintEl.style.display = 'block';
+  }
 
   try {
     let resp;
@@ -399,6 +409,7 @@ async function submitAnswer() {
       alert(errData.error || 'Ошибка: заполните решение.');
       submitBtn.disabled = false;
       submitBtn.textContent = 'Отправить решение';
+      if (waitHintEl) waitHintEl.style.display = 'none';
       return;
     }
 
@@ -409,6 +420,7 @@ async function submitAnswer() {
       alert(data.error || 'Ошибка проверки. Попробуй ещё раз.');
       submitBtn.disabled = false;
       submitBtn.textContent = 'Отправить решение';
+      if (waitHintEl) waitHintEl.style.display = 'none';
       return;
     }
 
@@ -504,6 +516,7 @@ async function submitAnswer() {
     alert('Ошибка: ' + e.message);
     submitBtn.disabled = false;
     submitBtn.textContent = 'Отправить решение';
+    if (waitHintEl) { waitHintEl.textContent = 'Проверка фото займёт около 15 секунд'; waitHintEl.style.display = 'none'; }
   }
 }
 

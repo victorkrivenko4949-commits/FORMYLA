@@ -1594,6 +1594,7 @@
           '<button type="button" id="dt-photo-btn" class="dt-btn-secondary" style="font-size:13px;">\ud83d\udcf7 Прикрепить фото</button>' +
           '<span id="dt-photo-name" style="font-size:12px;color:var(--muted);"></span>' +
           '<button type="button" id="dt-photo-remove" class="dt-btn-secondary" style="display:none;font-size:12px;color:#e86a62;">\u2715</button>' +
+          '<span id="dt-photo-wait-hint" role="status" style="display:none;font-size:12px;color:var(--muted);">Проверка фото займёт около 15 секунд</span>' +
         '</div>' +
       '</div>' +
       '<div style="display:flex;gap:10px;flex-wrap:wrap;"><button id="dt-submit-btn" class="dt-btn-primary">\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c</button></div>' +
@@ -1622,12 +1623,16 @@
         dtSolutionPhotoFile = f;
         photoName.textContent = f.name;
         photoRemove.style.display = 'inline-block';
+        var waitHint = ov.querySelector('#dt-photo-wait-hint');
+        if (waitHint) waitHint.style.display = 'inline';
       });
       photoRemove.addEventListener('click', function() {
         dtSolutionPhotoFile = null;
         photoInput.value = '';
         photoName.textContent = '';
         photoRemove.style.display = 'none';
+        var waitHint = ov.querySelector('#dt-photo-wait-hint');
+        if (waitHint) waitHint.style.display = 'none';
       });
     }
 
@@ -1770,8 +1775,10 @@
     dtSolutionPhotoFile = null;
     var photoName = $('dt-photo-name');
     var photoRemove = $('dt-photo-remove');
+    var waitHint = $('dt-photo-wait-hint');
     if (photoName) photoName.textContent = '';
     if (photoRemove) photoRemove.style.display = 'none';
+    if (waitHint) { waitHint.style.display = 'none'; waitHint.textContent = 'Проверка фото займёт около 15 секунд'; }
     var photoInput = $('dt-solution-photo');
     if (photoInput) photoInput.value = '';
     // Восстанавливаем сохранённый черновик (ответ + решение) для этой задачи.
@@ -1869,7 +1876,9 @@
     btn.disabled = true;
     var oldTxt = btn.textContent;
     btn.textContent = 'Проверяю…';
-    res.innerHTML = '<div style="color:var(--muted);">ИИ-тьютор проверяет ответ и решение…</div>';
+    res.innerHTML = (photoFile
+      ? '<div style="color:var(--muted);">ИИ-тьютор проверяет ответ и решение по фото — подождите около 15 секунд…</div>'
+      : '<div style="color:var(--muted);">ИИ-тьютор проверяет ответ и решение…</div>');
     var secs = Math.max(0, Math.round((Date.now() - dtOpenStart) / 1000));
 
     // ── Собираем фото в base64 для submit_ai ──

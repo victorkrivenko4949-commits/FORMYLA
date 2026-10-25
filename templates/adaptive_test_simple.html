@@ -300,6 +300,7 @@
                     <p id="photoFileName" style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px; display: none;">
                         [OK] Прикреплено фото: <span id="fileName"></span>
                     </p>
+                    <p id="photoWaitHint" role="status" style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px; display: none;">Проверка фото займёт около 15 секунд</p>
                 </div>
                 <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
                      Нажимайте кнопку повторно, чтобы <strong>добавить</strong> ещё фото. Каждое снимается/распознаётся отдельно (OpenRouter Vision) и подмешивается в решение для AI-тьютора. Лишнее фото можно удалить крестиком.
@@ -363,7 +364,7 @@
             <p style="color: var(--text-main); font-size: 1.2em; font-weight: 600; margin-bottom: 10px;">
                  AI проверяет ваше решение...
             </p>
-            <p style="font-size: 0.9em; color: var(--text-muted);">
+            <p id="aiLoaderTime" style="font-size: 0.9em; color: var(--text-muted);">
                 Это может занять 5-10 секунд
             </p>
         </div>
@@ -999,6 +1000,8 @@ function renderPhotoBuffer() {
         list.style.display = 'none';
         nameEl.style.display = 'none';
         btnText.textContent = 'Сфотографировать / Загрузить решение';
+        var waitHintEmpty = document.getElementById('photoWaitHint');
+        if (waitHintEmpty) { waitHintEmpty.textContent = 'Проверка фото займёт около 15 секунд'; waitHintEmpty.style.display = 'none'; }
         return;
     }
 
@@ -1040,6 +1043,8 @@ function renderPhotoBuffer() {
     fileNameSpan.textContent = String(PHOTO_BUFFER.length);
     nameEl.style.display = 'block';
     btnText.textContent = `+ Добавить ещё фото (сейчас ${PHOTO_BUFFER.length})`;
+    var waitHint = document.getElementById('photoWaitHint');
+    if (waitHint) { waitHint.textContent = 'Проверка фото займёт около 15 секунд'; waitHint.style.display = 'block'; }
 }
 
 // При выборе файлов — ДОБАВЛЯЕМ их в буфер (а не заменяем)
@@ -1171,6 +1176,15 @@ document.getElementById('answerForm').addEventListener('submit', async function(
     // Берём из накопительного буфера PHOTO_BUFFER (а не из photoInput.files,
     // т.к. он перезаписывается при каждом новом выборе).
     let solutionImagesB64 = [];
+    var _photoSubmitBtn = document.getElementById('submitBtn');
+    var _photoWaitShown = false;
+    if (typeof PHOTO_BUFFER !== 'undefined' && PHOTO_BUFFER.length) {
+        // Фото сжимаются и кодируются — сразу показываем пользователю статус ожидания
+        if (_photoSubmitBtn) { _photoSubmitBtn.disabled = true; _photoSubmitBtn.textContent = 'Проверяем…'; }
+        var _wh = document.getElementById('photoWaitHint');
+        if (_wh) { _wh.textContent = 'Подождите около 15 секунд'; _wh.style.display = 'block'; }
+        _photoWaitShown = true;
+    }
     if (typeof PHOTO_BUFFER !== 'undefined' && PHOTO_BUFFER.length) {
         try {
             for (const f of PHOTO_BUFFER) {
@@ -1199,6 +1213,9 @@ document.getElementById('answerForm').addEventListener('submit', async function(
 
     // Проверяем, что ответ введен
     if (!data.user_answer || data.user_answer.trim() === '') {
+        if (_photoWaitShown && _photoSubmitBtn) { _photoSubmitBtn.disabled = false; _photoSubmitBtn.textContent = 'Ответить ->'; }
+        var _whReset = document.getElementById('photoWaitHint');
+        if (_whReset) { _whReset.textContent = 'Проверка фото займёт около 15 секунд'; }
         alert('Пожалуйста, введите ответ!');
         return;
     }
@@ -1242,10 +1259,21 @@ function showLoader() {
     document.getElementById('answerForm').style.display = 'none';
     document.getElementById('aiLoader').style.display = 'block';
     document.getElementById('submitBtn').disabled = true;
+    var timeEl = document.getElementById('aiLoaderTime');
+    if (timeEl) {
+        timeEl.textContent = (typeof PHOTO_BUFFER !== 'undefined' && PHOTO_BUFFER.length)
+            ? 'Подождите около 15 секунд'
+            : 'Это может занять 5-10 секунд';
+    }
 }
 
 function hideLoader() {
-    document.getElementById('aiLoader').style.display = 'none'; var _sb = document.getElementById('submitBtn'); if (_sb) _sb.disabled = false;
+    document.getElementById('aiLoader').style.display = 'none'; var _sb = document.getElementById('submitBtn'); if (_sb) { _sb.disabled = false; if (_sb.textContent.indexOf('Проверяем') !== -1) _sb.textContent = 'Ответить ->'; }
+    // Восстанавливаем подсказку после фото-отправки (если фото всё ещё прикреплено)
+    var _whRestore = document.getElementById('photoWaitHint');
+    if (_whRestore && typeof PHOTO_BUFFER !== 'undefined' && PHOTO_BUFFER.length) {
+        _whRestore.textContent = 'Проверка фото займёт около 15 секунд';
+    }
 }
 
 function showResult(result) {
