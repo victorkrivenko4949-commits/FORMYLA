@@ -150,6 +150,7 @@
           <th title="dur(u) = L(u) − B(u)">Длит. визита</th>
           <th title="Событий в последнем визите">Действий</th>
           <th title="S(u) = 1 + число пауз > {{ ls.gap_min }} мин">Визитов S(u)</th>
+          <th title="С какого устройства заходил: ПК / телефон. Запись устройств включена 25.10.2026">Устройства</th>
           <th title="events — по действиям в БД; login — только User.last_login (действий не найдено)">Источник</th>
         </tr>
       </thead>
@@ -165,6 +166,7 @@
           <td style="text-align:center;">{% if r.last_visit_minutes is not none %}{{ r.last_visit_minutes }} мин{% else %}—{% endif %}</td>
           <td style="text-align:center;">{{ r.events_last_visit }}</td>
           <td style="text-align:center;"><strong>{{ r.visits }}</strong></td>
+          <td style="text-align:center;white-space:nowrap;">{{ r.devices or '—' }}</td>
           <td style="font-size:11px;color:var(--muted);">{{ r.source }}</td>
         </tr>
       {% endfor %}
@@ -176,14 +178,24 @@
 
   <div class="us-sec">Прямо сейчас</div>
   <div class="us-summary">
-    <div class="us-card"><div class="us-card-num online"><span class="us-dot"></span>{{ total.online_now }}</div><div class="us-card-label">онлайн сейчас</div></div>
-    <div class="us-card"><div class="us-card-num">{{ total.peak_today }}</div><div class="us-card-label">макс онлайна сегодня</div></div>
-    <div class="us-card"><div class="us-card-num">{{ total.peak_yesterday }}</div><div class="us-card-label">макс онлайна вчера</div></div>
-    <div class="us-card"><div class="us-card-num">{{ total.peak_ever }}</div><div class="us-card-label">рекорд онлайна</div></div>
+    <div class="us-card"><div class="us-card-num online"><span class="us-dot"></span>{{ total.online_now }}</div><div class="us-card-label">сейчас на сайте</div><div class="us-card-sub">действие за последние 60 мин — как в блоке выше</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.peak_today }}</div><div class="us-card-label">макс онлайн сегодня</div><div class="us-card-sub">сколько людей было в один момент (UTC)</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.peak_yesterday }}</div><div class="us-card-label">макс онлайн вчера</div><div class="us-card-sub">в один момент (UTC)</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.peak_ever }}</div><div class="us-card-label">рекорд онлайна</div><div class="us-card-sub">{{ total.peak_ever_at }} — по сохранённым данным</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.dau }}</div><div class="us-card-label">активны сегодня (DAU)</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.wau }}</div><div class="us-card-label">за 7 дней (WAU)</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.mau }}</div><div class="us-card-label">за 30 дней (MAU)</div></div>
   </div>
+
+  {# ══ DEVICES_V1 (25.10.2026): с ПК или с телефона — по User-Agent. ══ #}
+  <div class="us-sec">Устройства — с ПК или с телефона</div>
+  <div class="us-summary">
+    <div class="us-card"><div class="us-card-num">{{ devices_stats.pc_only }}</div><div class="us-card-label">только с ПК</div></div>
+    <div class="us-card"><div class="us-card-num">{{ devices_stats.mobile_only }}</div><div class="us-card-label">только с телефона</div><div class="us-card-sub">планшеты считаются телефонами</div></div>
+    <div class="us-card"><div class="us-card-num">{{ devices_stats.both }}</div><div class="us-card-label">и с ПК, и с телефона</div></div>
+    <div class="us-card"><div class="us-card-num">{{ devices_stats.unknown }}</div><div class="us-card-label">нет данных</div><div class="us-card-sub">заходили до 25.10.2026, тогда устройства не записывались</div></div>
+  </div>
+  <div class="us-legend">Устройство определяется по браузеру (User-Agent) при каждом входе и heartbeat. Запись включена 25.10.2026 — более ранние визиты устройство не сохраняли. Всего пользователей с визитами: {{ devices_stats.tracked_users }}; группы «только ПК» + «только телефон» + «и то и другое» + «нет данных» в сумме дают это число.</div>
 
   <div class="us-sec">Всего</div>
   <div class="us-summary">

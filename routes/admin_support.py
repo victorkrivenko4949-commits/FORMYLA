@@ -920,11 +920,49 @@ def my_support_unread_count():
 #    (только для админов: Victor + Lavrik)
 # ──────────────────────────────────────────────────────────────────
 # USERS_STATS_V2: события сайта (входы / heartbeat) и дневной пик онлайна.
+_device_schema_done = False  # DEVICES_V1: ALTER device — один раз на процесс
+
+
+def detect_device(ua) -> str | None:
+    """'mobile' / 'pc' / None — по User-Agent. Планшеты считаются телефонами.
+    Пустой/непонятный/ботовский UA → None (устройство неизвестно)."""
+    ua = (ua or '').strip().lower()
+    if not ua or len(ua) < 8:
+        return None
+    if any(x in ua for x in ('mobi', 'android', 'iphone', 'ipad', 'ipod')):
+        return 'mobile'
+    if 'bot' in ua or 'crawl' in ua or 'spider' in ua:
+        return None
+    return 'pc'
+
+
 def ensure_site_events_tables():
     """Auto-migration: site_events + site_daily_peak. Безопасно вызывать часто."""
     try:
         uri = (current_app.config.get('SQLALCHEMY_DATABASE_URI') or '').lower()
         is_pg = uri.startswith('postgresql')
+        # DEVICES_V1 (25.10.2026): колонка device у site_events — один раз
+        # на процесс (ensure вызывается на каждом heartbeat).
+        global _device_schema_done
+        if not _device_schema_done:
+            try:
+                if is_pg:
+                    db.session.execute(text('''
+                        ALTER TABLE site_events ADD COLUMN IF NOT EXISTS device VARCHAR(8)
+                    '''))
+                else:
+                    cols = [r[0] for r in db.session.execute(text(
+                        'PRAGMA table_info(site_events)')).fetchall()]
+                    if 'device' not in cols:
+                        db.session.execute(text('''
+                            ALTER TABLE site_events ADD COLUMN device VARCHAR(8)
+                        '''))
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                logger.warning('ensure device column: %r', e)
+            finally:
+                _device_schema_done = True
         if is_pg:
             db.session.execute(text('''
                 CREATE TABLE IF NOT EXISTS site_events (
@@ -932,6 +970,7 @@ def ensure_site_events_tables():
                     user_id INTEGER NOT NULL,
                     kind VARCHAR(16) NOT NULL,
                     seconds INTEGER NOT NULL DEFAULT 0,
+                    device VARCHAR(8),
                     ts TIMESTAMP NOT NULL DEFAULT NOW()
                 )
             '''))
@@ -945,6 +984,15 @@ def ensure_site_events_tables():
                 CREATE TABLE IF NOT EXISTS site_daily_peak (
                     day DATE PRIMARY KEY,
                     max_online INTEGER NOT NULL DEFAULT 0
+                )
+            '''))
+            db.session.execute(text('''
+                CREATE TABLE IF NOT EXISTS user_devices (
+                    user_id INTEGER NOT NULL,
+                    device VARCHAR(8) NOT NULL,
+                    first_seen TIMESTAMP NOT NULL DEFAULT NOW(),
+                    last_seen TIMESTAMP NOT NULL DEFAULT NOW(),
+                    PRIMARY KEY (user_id, device)
                 )
             '''))
             db.session.execute(text('''
@@ -964,6 +1012,7 @@ def ensure_site_events_tables():
                     user_id INTEGER NOT NULL,
                     kind VARCHAR(16) NOT NULL,
                     seconds INTEGER NOT NULL DEFAULT 0,
+                    device VARCHAR(8),
                     ts DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
                 )
             '''))
@@ -974,6 +1023,15 @@ def ensure_site_events_tables():
                 CREATE TABLE IF NOT EXISTS site_daily_peak (
                     day DATE PRIMARY KEY,
                     max_online INTEGER NOT NULL DEFAULT 0
+                )
+            '''))
+            db.session.execute(text('''
+                CREATE TABLE IF NOT EXISTS user_devices (
+                    user_id INTEGER NOT NULL,
+                    device VARCHAR(8) NOT NULL,
+                    first_seen DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    last_seen DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (user_id, device)
                 )
             '''))
             db.session.execute(text('''
@@ -1077,16 +1135,38 @@ def api_feedback_submit():
         return jsonify(ok=False, error='db'), 500
 
 
-def log_site_event(user_id: int, kind: str, seconds: int = 0) -> None:
+def log_site_event(user_id: int, kind: str, seconds: int = 0,
+                  device: str = None) -> None:
     """Публичный помощник: фиксирует событие (login/heartbeat), бьёт presence,
     обновляет дневной пик одновременных пользователей. Вызывать из heartbeat
     и точек входа. Никогда не бросает исключений наружу."""
     try:
         ensure_site_events_tables()
         db.session.execute(text('''
-            INSERT INTO site_events (user_id, kind, seconds, ts)
-            VALUES (:uid, :kind, :sec, CURRENT_TIMESTAMP)
-        '''), {'uid': user_id, 'kind': kind, 'sec': int(seconds)})
+            INSERT INTO site_events (user_id, kind, seconds, device, ts)
+            VALUES (:uid, :kind, :sec, :dev, CURRENT_TIMESTAMP)
+        '''), {'uid': user_id, 'kind': kind, 'sec': int(seconds),
+               'dev': device if device in ('pc', 'mobile') else None})
+        # DEVICES_V1: сводная таблица «кто с какого устройства» (без полной
+        # развёртки site_events — она большая, heartbeat пишет каждые ~30 сек)
+        if device in ('pc', 'mobile'):
+            uri0 = (current_app.config.get('SQLALCHEMY_DATABASE_URI') or '').lower()
+            if uri0.startswith('postgresql'):
+                db.session.execute(text('''
+                    INSERT INTO user_devices (user_id, device, first_seen, last_seen)
+                    VALUES (:uid, :dev, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                    ON CONFLICT (user_id, device) DO UPDATE
+                    SET last_seen = CURRENT_TIMESTAMP
+                '''), {'uid': user_id, 'dev': device})
+            else:
+                db.session.execute(text('''
+                    INSERT INTO user_devices (user_id, device, first_seen, last_seen)
+                    VALUES (:uid, :dev,
+                            COALESCE((SELECT first_seen FROM user_devices
+                                      WHERE user_id = :uid AND device = :dev),
+                                     CURRENT_TIMESTAMP),
+                            CURRENT_TIMESTAMP)
+                '''), {'uid': user_id, 'dev': device})
         # presence
         db.session.execute(text('''
             UPDATE user_presence SET last_seen = CURRENT_TIMESTAMP WHERE user_id = :uid
@@ -1271,12 +1351,44 @@ def admin_users_stats():
     '''), {'since': today - timedelta(days=13)}).fetchall()
     reg_map = {str(r[0]): int(r[1]) for r in reg_rows}
 
-    # пик одновременных за сегодня / вчера / всё время
-    peak_rows = db.session.execute(text('SELECT day, max_online FROM site_daily_peak')).fetchall()
-    peak_map = {str(r[0]): int(r[1]) for r in peak_rows}
-    peak_today = peak_map.get(today.isoformat(), online_now)
-    peak_yesterday = peak_map.get((today - timedelta(days=1)).isoformat(), 0)
-    peak_ever = max(peak_map.values(), default=online_now)
+    # USER_PEAK_ONLINE_V1 (25.10.2026): пик одновременных — по визитам
+    # (то же правило «на сайте = действие за последние 60 мин», что и карточка
+    # «сейчас на сайте» в блоке «Последний заход»). Старый пик по 5-минутному
+    # presence-окну (site_daily_peak) больше не показывается.
+    peak_today = peak_yesterday = peak_ever = 0
+    peak_ever_at = '—'
+    try:
+        from services.user_returns import peak_online as _peak_online
+        po = _peak_online(gap_min=60, now=now)
+        peak_today = po['peak_today']
+        peak_yesterday = po['peak_yesterday']
+        peak_ever = po['peak_ever']
+        peak_ever_at = po['peak_ever_at']
+        # «сейчас на сайте» — по визитам, чтобы число совпадало с блоком выше
+        online_now = po['online_now']
+    except Exception as _po_err:
+        current_app.logger.exception('admin_users_stats: peak_online failed: %r', _po_err)
+
+    # DEVICES_V1 (25.10.2026): кто с какого устройства заходит
+    devices_stats = {'pc_only': 0, 'mobile_only': 0, 'both': 0,
+                     'unknown': 0, 'tracked_users': 0}
+    try:
+        from services.user_returns import devices_by_user, collect_events
+        _dev_map = devices_by_user()
+        for _devs in _dev_map.values():
+            if _devs == {'pc'}:
+                devices_stats['pc_only'] += 1
+            elif _devs == {'mobile'}:
+                devices_stats['mobile_only'] += 1
+            else:
+                devices_stats['both'] += 1
+        _events_dict, _ = collect_events()
+        devices_stats['tracked_users'] = len(_events_dict)
+        _known = (devices_stats['pc_only'] + devices_stats['mobile_only']
+                  + devices_stats['both'])
+        devices_stats['unknown'] = max(0, devices_stats['tracked_users'] - _known)
+    except Exception as _dev_err:
+        current_app.logger.warning('admin_users_stats: devices failed: %r', _dev_err)
 
     # DAU / WAU / MAU
     dau = db.session.execute(text('''
@@ -1432,6 +1544,7 @@ def admin_users_stats():
         'peak_today': peak_today,
         'peak_yesterday': peak_yesterday,
         'peak_ever': peak_ever,
+        'peak_ever_at': peak_ever_at,
         'solved_today': solved_today,
         'solved_week': solved_week,
         'photos_total': len(photo_items),
@@ -1459,6 +1572,7 @@ def admin_users_stats():
                                    _ase_err)
 
     return render_template('admin/users_stats.html', rows=rows, total=total,
+                           devices_stats=devices_stats,
                            by_day=by_day, reg_map=reg_map, by_hour=by_hour,
                            top_xp=top_xp, top_problems=top_problems,
                            top_time=top_time, inactive=inactive,

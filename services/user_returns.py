@@ -332,6 +332,127 @@ def admin_user_returns_json():
 #   Если действий в БД нет, берётся User.last_login (источник 'login').
 # ══════════════════════════════════════════════════════════════════════════
 
+# ══════════════════════════════════════════════════════════════════════════
+# USER_PEAK_ONLINE_V1 (25.10.2026): максимум людей на сайте В ОДИН МОМЕНТ.
+#
+# «На сайте» = действие за последние GAP_MIN минут — то же правило, что и
+# карточка «сейчас на сайте» (bucket online). Каждое действие держит
+# пользователя «на сайте» ещё GAP_MIN минут, поэтому визит — интервал
+# [B(u), L(u) + GAP]. Пик = максимум наложений таких интервалов (sweep-line).
+# Время/дни — UTC, как и весь блок. peak_today >= online_now — инвариант.
+# ══════════════════════════════════════════════════════════════════════════
+
+def peak_from_events(events, gap_min: int, now: datetime) -> dict:
+    """Чистая функция (для тестов): {user_id: [datetime]} → пики одновременных.
+
+    Интервалы визитов продлеваются на gap после последнего действия — ровно
+    как счётчик «сейчас на сайте» (D(u) ≤ gap). Метки из будущего пропускаются.
+    """
+    gap = timedelta(minutes=gap_min)
+    intervals = []
+    for ts in events.values():
+        if not ts:
+            continue
+        for start, end, _n in sessions_of(ts, gap_min):
+            if start > now:
+                continue
+            stop = end + gap
+            if stop > now:
+                stop = now
+            intervals.append((start, stop))
+
+    # пик за всё время: +1 на начале интервала, -1 на конце (в момент t
+    # сначала засчитывается приход, потом уход — граница D ≤ gap включительна)
+    points = []
+    for s, e in intervals:
+        points.append((s, 1))
+        points.append((e, -1))
+    cur = peak = 0
+    peak_at = None
+    for t, d in sorted(points, key=lambda p: (p[0], -p[1])):
+        cur += d
+        if cur > peak:
+            peak, peak_at = cur, t
+
+    def _day_peak(day_start: datetime, day_end: datetime) -> int:
+        # база = интервалы, уже открытые на начало дня; внутри дня — обычный sweep
+        base = 0
+        pts = []
+        for s, e in intervals:
+            if s < day_start:
+                if e >= day_start:
+                    base += 1
+            elif s < day_end:
+                pts.append((s, 1))
+                if e < day_end:
+                    pts.append((e, -1))
+        best = cur2 = base
+        for _t, d2 in sorted(pts, key=lambda p: (p[0], -p[1])):
+            cur2 += d2
+            if cur2 > best:
+                best = cur2
+        return best
+
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    peak_today = _day_peak(today_start, now)
+    peak_yesterday = _day_peak(today_start - timedelta(days=1), today_start)
+
+    cutoff = now - gap
+    online_now = sum(1 for ts in events.values()
+                     if ts and cutoff <= ts[-1] <= now)
+    return {
+        'gap_min': gap_min,
+        'now': now.strftime('%Y-%m-%d %H:%M'),
+        'online_now': online_now,
+        'peak_today': peak_today,
+        'peak_yesterday': peak_yesterday,
+        'peak_ever': peak,
+        'peak_ever_at': peak_at.strftime('%d.%m.%Y %H:%M') if peak_at else '—',
+        'visits': len(intervals),
+    }
+
+
+def peak_online(gap_min: int = GAP_MIN_DEFAULT, now: datetime = None) -> dict:
+    """Пик одновременных «сейчас на сайте» по всем пользователям (см. выше)."""
+    now = now or datetime.utcnow()
+    events, _ = collect_events()
+    return peak_from_events(events, gap_min, now)
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# DEVICES_V1 (25.10.2026): с какого устройства (ПК / телефон) заходил каждый.
+# Запись устройств включена 25.10.2026 (site_events.device + user_devices);
+# более ранние визиты устройство не сохраняли → «нет данных».
+# ══════════════════════════════════════════════════════════════════════════
+
+def devices_by_user() -> dict:
+    """{user_id: {'pc', 'mobile'}} — из сводной таблицы user_devices."""
+    out = defaultdict(set)
+    try:
+        rows = db.session.execute(text(
+            'SELECT user_id, device FROM user_devices'
+        )).fetchall()
+        for uid, dev in rows:
+            if dev in ('pc', 'mobile'):
+                try:
+                    out[int(uid)].add(dev)
+                except (TypeError, ValueError):
+                    continue
+    except Exception:
+        db.session.rollback()
+    return dict(out)
+
+
+def _devices_label(devs) -> str | None:
+    if not devs:
+        return None
+    if devs == {'pc'}:
+        return 'ПК'
+    if devs == {'mobile'}:
+        return 'телефон'
+    return 'ПК + телефон'
+
+
 _BUCKETS = (
     ('online', 'сейчас на сайте', '#34d399'),
     ('today', 'за последние 24 ч', '#38bdf8'),
@@ -393,6 +514,7 @@ def last_seen_table(gap_min: int = GAP_MIN_DEFAULT, now: datetime = None) -> dic
     now = now or datetime.utcnow()
     events, sources = collect_events()
     users = _all_users()
+    devices = devices_by_user()
     rows = []
     ids = set(events.keys()) | set(users.keys())
     for uid in ids:
@@ -412,6 +534,7 @@ def last_seen_table(gap_min: int = GAP_MIN_DEFAULT, now: datetime = None) -> dic
                 'last_visit_minutes': None, 'ago': 'ни разу', 'ago_seconds': None,
                 'bucket': 'never', 'visits': 0, 'events_last_visit': 0, 'source': 'none',
                 'registered': created.strftime('%Y-%m-%d') if created else '',
+                'devices': _devices_label(devices.get(uid)),
             })
             continue
         delta = now - end
@@ -428,6 +551,7 @@ def last_seen_table(gap_min: int = GAP_MIN_DEFAULT, now: datetime = None) -> dic
             'events_last_visit': n_ev,
             'source': source,
             'registered': created.strftime('%Y-%m-%d') if created else '',
+            'devices': _devices_label(devices.get(uid)),
         })
     rows.sort(key=lambda r: (r['ago_seconds'] is None, r['ago_seconds'] or 0))
     counts = defaultdict(int)
@@ -464,9 +588,9 @@ _LAST_SEEN_HTML = """<!doctype html><html lang="ru"><head><meta charset="utf-8">
  <button>Пересчитать</button> &nbsp; <a href="/admin/users/last_seen.json?gap={{ d.gap_min }}">JSON</a> &nbsp; <a href="/admin/users">← Статистика</a></form>
 <p><small>Сейчас (UTC): {{ d.now }}. Всего пользователей: {{ d.total }}, ни разу не заходили: {{ d.never }}.</small></p>
 {% for b in d.buckets %}<div class="kpi"><small>{{ b.label }}</small><b style="color:{{ b.color }}">{{ b.count }}</b><small>{{ b.pct }}%</small></div>{% endfor %}
-<table><tr><th>id</th><th>Пользователь</th><th>Последнее действие L(u)</th><th>Давность D(u)</th><th>Начало визита B(u)</th><th>Длит. визита</th><th>Действий</th><th>Визитов S(u)</th><th>Источник</th></tr>
+<table><tr><th>id</th><th>Пользователь</th><th>Последнее действие L(u)</th><th>Давность D(u)</th><th>Начало визита B(u)</th><th>Длит. визита</th><th>Действий</th><th>Визитов S(u)</th><th>Устройства</th><th>Источник</th></tr>
 {% for r in d.rows %}<tr><td>{{ r.user_id }}</td><td>{{ r.name }}</td><td>{{ r.last_seen or '—' }}</td><td>{{ r.ago }}</td><td>{{ r.last_visit_start or '—' }}</td>
-<td>{% if r.last_visit_minutes is not none %}{{ r.last_visit_minutes }} мин{% else %}—{% endif %}</td><td>{{ r.events_last_visit }}</td><td>{{ r.visits }}</td><td>{{ r.source }}</td></tr>{% endfor %}</table>
+<td>{% if r.last_visit_minutes is not none %}{{ r.last_visit_minutes }} мин{% else %}—{% endif %}</td><td>{{ r.events_last_visit }}</td><td>{{ r.visits }}</td><td>{{ r.devices or '—' }}</td><td>{{ r.source }}</td></tr>{% endfor %}</table>
 <h2>Формулы</h2>
 <ul>
 <li><code>L(u) = max t_i</code> — последнее действие (UTC)</li>

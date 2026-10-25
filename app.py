@@ -4300,8 +4300,15 @@ def track_site_time():
     try:
         from routes.admin_support import (
             log_site_event, maybe_ask_feedback, has_pending_feedback,
+            detect_device,
         )
-        log_site_event(current_user.id, 'heartbeat', seconds)
+        # DEVICES_V1: пишем устройство (ПК/телефон) в каждый heartbeat
+        _dev = None
+        try:
+            _dev = detect_device(request.user_agent.string)
+        except Exception:
+            _dev = None
+        log_site_event(current_user.id, 'heartbeat', seconds, device=_dev)
         u2 = db.session.get(User, current_user.id)
         _total_sec = (getattr(u2, 'site_seconds_total', 0) or 0) if u2 else 0
         maybe_ask_feedback(current_user.id, _total_sec)
@@ -4316,8 +4323,13 @@ try:
     @user_logged_in.connect_via(app)
     def _on_user_logged_in(sender, user, **extra):
         try:
-            from routes.admin_support import log_site_event
-            log_site_event(user.id, 'login', 0)
+            from routes.admin_support import log_site_event, detect_device
+            _dev = None
+            try:
+                _dev = detect_device(request.user_agent.string)
+            except Exception:
+                _dev = None
+            log_site_event(user.id, 'login', 0, device=_dev)
         except Exception as _e_li:
             app.logger.warning(f"log_site_event login fail: {_e_li}")
 except Exception as _e_sig:
