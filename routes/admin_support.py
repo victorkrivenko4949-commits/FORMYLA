@@ -1306,41 +1306,52 @@ def admin_users_stats():
     online_now = sum(1 for r in rows if r['online'])
 
     # ---------- по дням (14 дней) ----------
-    day_expr = "DATE(ts)" if is_pg else "DATE(ts)"
-    ev_rows = db.session.execute(text(f'''
-        SELECT {day_expr} AS day,
-               COUNT(DISTINCT user_id) AS active_users,
-               COUNT(DISTINCT CASE WHEN kind='login' THEN user_id END) AS login_users,
-               SUM(seconds) AS seconds_total,
-               COUNT(*) AS events
-        FROM site_events
-        WHERE ts >= :since
-        GROUP BY {day_expr}
-        ORDER BY day
-    '''), {'since': today - timedelta(days=13)}).fetchall()
-    by_day = []
-    for r in ev_rows:
-        by_day.append({
-            'day': str(r[0]),
-            'active': int(r[1] or 0),
-            'logins': int(r[2] or 0),
-            'hours': round((r[3] or 0) / 3600.0, 2),
-            'events': int(r[4] or 0),
-        })
+    # USER_ACTIVITY_V2 (25.10.2026): «активность» = любые действия из БД (все
+    # таблицы с user_id + время, включая гостей) — тот же источник, что карточка
+    # «сейчас на сайте». Граница дня — московская полночь (как у «решено сегодня»
+    # и задач дня). Раньше DAU/графики считались только по heartbeat
+    # залогиненных — гости heartbeat не шлют, и «активны сегодня» (9)
+    # противоречили «сейчас на сайте» (19).
+    from services.user_returns import collect_events as _collect_events
+    from services.solved_stats import MSK_UTC_OFFSET as _MSK
+    msk_today_start = msk_day_start_utc(now)
+    since14 = msk_today_start - timedelta(days=13)
+    events_all, _ = _collect_events()
+    day_sets = {}
+    for _uid, _ts in events_all.items():
+        for _t in _ts:
+            if _t >= since14:
+                day_sets.setdefault((_t + _MSK).date().isoformat(), set()).add(_uid)
+    # входы и часы на сайте — по site_events (только залогиненные), МСК-день
+    day_logins, day_secs = {}, {}
+    ev_rows = db.session.execute(text('''
+        SELECT user_id, kind, seconds, ts FROM site_events WHERE ts >= :since
+    '''), {'since': since14}).fetchall()
+    for _uid, _kind, _secs, _ts in ev_rows:
+        _d = (_ts + _MSK).date().isoformat()
+        if _kind == 'login':
+            day_logins.setdefault(_d, set()).add(_uid)
+        day_secs[_d] = day_secs.get(_d, 0) + int(_secs or 0)
     # дополняем нулями дни без событий
-    day_map = {d['day']: d for d in by_day}
+    today_msk = (now + _MSK).date()
     by_day = []
     for i in range(13, -1, -1):
-        d = today - timedelta(days=i)
-        key = d.isoformat()
-        by_day.append(day_map.get(key, {'day': key, 'active': 0, 'logins': 0, 'hours': 0.0, 'events': 0}))
+        key = (today_msk - timedelta(days=i)).isoformat()
+        by_day.append({
+            'day': key,
+            'active': len(day_sets.get(key, ())),
+            'logins': len(day_logins.get(key, ())),
+            'hours': round(day_secs.get(key, 0) / 3600.0, 2),
+            'events': 0,
+        })
 
-    # регистрации по дням (новые пользователи) — users.created_at
+    # регистрации по дням (новые пользователи) — users.created_at, МСК-день
+    # (ось графика совпадает с «активностью по дням»)
     reg_rows = db.session.execute(text('''
-        SELECT DATE(created_at) AS day, COUNT(*) AS cnt
+        SELECT DATE(created_at + INTERVAL '3 hours') AS day, COUNT(*) AS cnt
         FROM users
         WHERE is_guest = FALSE AND created_at >= :since
-        GROUP BY DATE(created_at)
+        GROUP BY DATE(created_at + INTERVAL '3 hours')
         ORDER BY day
     ''' if is_pg else '''
         SELECT DATE(created_at) AS day, COUNT(*) AS cnt
@@ -1348,7 +1359,7 @@ def admin_users_stats():
         WHERE is_guest = 0 AND created_at >= :since
         GROUP BY DATE(created_at)
         ORDER BY day
-    '''), {'since': today - timedelta(days=13)}).fetchall()
+    '''), {'since': since14}).fetchall()
     reg_map = {str(r[0]): int(r[1]) for r in reg_rows}
 
     # USER_PEAK_ONLINE_V1 (25.10.2026): пик одновременных — по визитам
@@ -1390,30 +1401,27 @@ def admin_users_stats():
     except Exception as _dev_err:
         current_app.logger.warning('admin_users_stats: devices failed: %r', _dev_err)
 
-    # DAU / WAU / MAU
-    dau = db.session.execute(text('''
-        SELECT COUNT(DISTINCT user_id) FROM site_events WHERE ts >= :since
-    '''), {'since': today}).scalar() or 0
-    wau = db.session.execute(text('''
-        SELECT COUNT(DISTINCT user_id) FROM site_events WHERE ts >= :since
-    '''), {'since': today - timedelta(days=7)}).scalar() or 0
-    mau = db.session.execute(text('''
-        SELECT COUNT(DISTINCT user_id) FROM site_events WHERE ts >= :since
-    '''), {'since': today - timedelta(days=30)}).scalar() or 0
+    # DAU / WAU / MAU — по любым действиям (включая гостей), МСК-день.
+    # Инвариант: DAU >= «сейчас на сайте».
+    dau = sum(1 for _ts in events_all.values()
+              if _ts and _ts[-1] >= msk_today_start)
+    wau = sum(1 for _ts in events_all.values()
+              if _ts and _ts[-1] >= now - timedelta(days=7))
+    mau = sum(1 for _ts in events_all.values()
+              if _ts and _ts[-1] >= now - timedelta(days=30))
 
-    # Те же пять источников, что и «решено всего». Периоды в UTC.
-    solved_today = sum(solved_today_map.get(u.id, 0) for u in users)
-    solved_week = sum(solved_week_map.get(u.id, 0) for u in users)
+    # Те же источники, что и «решено всего». Считаем ВСЕХ пользователей
+    # (включая гостей — они тоже решают задачи), день — МСК.
+    solved_today = sum(solved_today_map.values())
+    solved_week = sum(solved_week_map.values())
 
-    # почасовое распределение за сегодня (heartbeat + login)
-    hour_expr = "EXTRACT(HOUR FROM ts)" if is_pg else "CAST(strftime('%H', ts) AS INTEGER)"
-    hour_rows = db.session.execute(text(f'''
-        SELECT {hour_expr} AS h, COUNT(DISTINCT user_id) AS u
-        FROM site_events WHERE ts >= :since GROUP BY {hour_expr} ORDER BY h
-    '''), {'since': today}).fetchall()
-    by_hour = [0] * 24
-    for h, cnt in hour_rows:
-        by_hour[int(h)] = int(cnt)
+    # почасовое распределение за сегодня: любые действия, МСК-часы
+    hour_sets = [set() for _ in range(24)]
+    for _uid, _ts in events_all.items():
+        for _t in _ts:
+            if _t >= msk_today_start:
+                hour_sets[(_t + _MSK).hour].add(_uid)
+    by_hour = [len(s) for s in hour_sets]
 
     # топ по XP / задачам / времени
     top_xp = sorted(rows, key=lambda r: r['xp'], reverse=True)[:5]
@@ -1535,8 +1543,8 @@ def admin_users_stats():
         'users': len(rows),
         'online_now': online_now,
         'logins': sum(r['login_count'] for r in rows),
-        'problems': sum(r['problems'] for r in rows),
-        'checked': sum(r['checked'] for r in rows),
+        'problems': sum(solved_map.values()),
+        'checked': sum(checked_map.values()),
         'seconds': sum(r['seconds'] for r in rows),
         'dau': dau,
         'wau': wau,

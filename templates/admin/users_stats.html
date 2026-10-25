@@ -75,7 +75,7 @@
 {% block content %}
 <div class="us-wrap">
   <h1 class="us-title">Статистика пользователей</h1>
-  <div class="us-subtitle">Онлайн, активность по дням, пики, топы. Даты и граница «сегодня» здесь в UTC. Обновляется с каждым heartbeat (~30 сек).</div>
+  <div class="us-subtitle">Онлайн, активность по дням, пики, топы. «На сайте» = любое действие за последние 60 мин, включая гостей. Граница дня и часы — московские (МСК); метки времени в таблицах — UTC. Обновляется с каждым heartbeat (~30 сек).</div>
 
   {# ══ USER_RETURNS_V1 (11.10.2026): сколько людей пришли 2-й, 3-й, 4-й… раз. ══ #}
   {# ══ Визит = серия действий с паузами ≤ 60 мин; пауза > 60 мин = новый визит. ══ #}
@@ -182,7 +182,7 @@
     <div class="us-card"><div class="us-card-num">{{ total.peak_today }}</div><div class="us-card-label">макс онлайн сегодня</div><div class="us-card-sub">сколько людей было в один момент (UTC)</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.peak_yesterday }}</div><div class="us-card-label">макс онлайн вчера</div><div class="us-card-sub">в один момент (UTC)</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.peak_ever }}</div><div class="us-card-label">рекорд онлайна</div><div class="us-card-sub">{{ total.peak_ever_at }} — по сохранённым данным</div></div>
-    <div class="us-card"><div class="us-card-num">{{ total.dau }}</div><div class="us-card-label">активны сегодня (DAU)</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.dau }}</div><div class="us-card-label">активны сегодня (DAU)</div><div class="us-card-sub">любые действия с 00:00 МСК, включая гостей</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.wau }}</div><div class="us-card-label">за 7 дней (WAU)</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.mau }}</div><div class="us-card-label">за 30 дней (MAU)</div></div>
   </div>
@@ -201,9 +201,9 @@
   <div class="us-summary">
     <div class="us-card"><div class="us-card-num">{{ total.users }}</div><div class="us-card-label">пользователей</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.logins }}</div><div class="us-card-label">входов за всё время</div></div>
-    <div class="us-card"><div class="us-card-num">{{ total.solved_today }}</div><div class="us-card-label">решено сегодня</div></div>
-    <div class="us-card"><div class="us-card-num">{{ total.solved_week }}</div><div class="us-card-label">решено за 7 дней</div></div>
-    <div class="us-card"><div class="us-card-num">{{ total.problems }}</div><div class="us-card-label">верно решено всего</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.solved_today }}</div><div class="us-card-label">решено сегодня</div><div class="us-card-sub">верные ответы с 00:00 МСК, включая гостей</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.solved_week }}</div><div class="us-card-label">решено за 7 дней</div><div class="us-card-sub">включая гостей</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.problems }}</div><div class="us-card-label">верно решено всего</div><div class="us-card-sub">включая гостей</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.checked }}</div><div class="us-card-label">проверено разных задач</div><div class="us-card-sub">Верные и неверные; повторы одной задачи не сохраняются отдельно</div></div>
     <div class="us-card"><div class="us-card-num">{{ (total.seconds / 3600) | round(1) }} ч</div><div class="us-card-label">на сайте провели</div></div>
   </div>
@@ -220,7 +220,7 @@
     <div class="us-daylabels">
       {% for d in by_day %}<span>{{ d.day[8:] }}.{{ d.day[5:7] }}</span>{% endfor %}
     </div>
-    <div class="us-legend"><b>Синие</b> — активные пользователи в день. Наведи на столбик: входы и часы.</div>
+    <div class="us-legend"><b>Синие</b> — активные пользователи в день (любые действия, включая гостей; дни — МСК). Наведи на столбик: входы и часы.</div>
   </div>
 
   <div class="us-grid2" style="margin-top:16px">
@@ -245,7 +245,7 @@
         <div class="hbar" title="{{ loop.index0 }}:00 — {{ h }} польз." style="height: {{ (h * 100 / (by_hour|max if (by_hour|max) > 0 else 1)) | round(0, 'floor') }}%"></div>
         {% endfor %}
       </div>
-      <div class="us-legend">0–23 часа, уникальные пользователи в час</div>
+      <div class="us-legend">0–23 часа по МСК; уникальные пользователи в час (любые действия, включая гостей)</div>
     </div>
   </div>
 
