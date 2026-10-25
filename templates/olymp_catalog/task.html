@@ -1,7 +1,21 @@
 {% extends "base.html" %}
 {% from "olymp_catalog/_task.html" import render_task %}
 {% block title %}{{ t.olymp }} {{ t.year }} — задача {{ t.num }} ({{ t.grade }} кл.) | FORMYLA.net{% endblock %}
-{% block extra_css %}{% include "olymp_catalog/_style.html" %}{% endblock %}
+{% block extra_css %}
+{% include "olymp_catalog/_style.html" %}
+<style>
+#oc-tutor .oc-quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:10px 12px 6px;flex-shrink:0}
+#oc-tutor .oc-quick button.oc-chip{display:flex;align-items:center;justify-content:center;min-width:0;min-height:34px;margin:0;padding:6px;font:500 12px/1.35 'Golos Text','Segoe UI',sans-serif;letter-spacing:0;text-transform:none;white-space:normal;overflow-wrap:anywhere;border:1px solid var(--oc-line);border-radius:6px;background:transparent;color:var(--oc-txt);box-shadow:none;text-shadow:none;transform:none}
+#oc-tutor .oc-quick button.oc-chip:hover{background:rgba(143,227,255,.08);border-color:var(--oc-teal);box-shadow:none}
+#oc-tutor .oc-quick button.oc-chip:focus-visible{outline:2px solid var(--oc-teal);outline-offset:2px}
+#oc-tutor .oc-compose{gap:8px;padding:10px 12px 4px;flex-shrink:0}
+#oc-tutor #oc-input{box-sizing:border-box;min-width:0;min-height:46px;max-height:160px;padding:10px 12px;font-size:16px;line-height:24px;resize:none;overflow-y:auto}
+#oc-tutor #oc-send{flex:0 0 46px;width:46px;height:46px;min-width:46px;min-height:46px;padding:0;box-shadow:none}
+#oc-tutor .oc-compose-help{margin:0;padding:2px 12px 6px;color:var(--oc-mute);font-size:11px;line-height:1.4;flex-shrink:0}
+@media(pointer:coarse){#oc-tutor .oc-quick button.oc-chip{min-height:40px}#oc-tutor .oc-compose-help{display:none}}
+@media(max-width:319px){#oc-tutor .oc-quick{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+{% endblock %}
 {% block content %}
 <div class="oc-wrap">
   <div class="oc-crumbs"><a href="{{ url_for('olymp_catalog.index') }}">Каталог задач олимпиад</a><span class="sep">/</span><a href="{{ url_for('olymp_catalog.olympiad', slug=slug) }}">{{ t.olymp }}</a><span class="sep">/</span><a href="{{ url_for('olymp_catalog.olympiad', slug=slug, year=t.year) }}">{{ t.year }}</a><span class="sep">/</span><span>{{ t.grade }} класс · задача {{ t.num }}</span></div>
@@ -26,18 +40,19 @@
       </div>
       <details class="oc-brief" id="oc-brief" style="display:none"{% if t.garbled %} open{% endif %}><summary>Конспект подготовки тьютора (что он уже разобрал)</summary><div class="bd" id="oc-brief-body"></div></details>
       <div class="oc-msgs" id="oc-msgs"></div>
-      <div class="oc-quick">
-        <button class="oc-chip" type="button" data-quick="Дай лёгкую подсказку, с чего начать, не раскрывая решение.">Подсказка</button>
-        <button class="oc-chip" type="button" data-quick="В чём ключевая идея этой задачи?">Ключевая идея</button>
-        <button class="oc-chip" type="button" data-quick="Разбери решение по шагам и объясни, почему каждый шаг верен.">Разбор по шагам</button>
-        <button class="oc-chip" type="button" data-quick="Где в этой задаче чаще всего ошибаются и почему?">Типичные ошибки</button>
-        <button class="oc-chip" type="button" data-quick="Проверь эталонное решение: всё ли в нём строго? Есть ли пробелы?">Проверь эталон</button>
-        <button class="oc-chip" type="button" data-quick="Придумай похожую задачу чуть проще для тренировки и дай к ней ответ.">Похожая задача</button>
+      <div class="oc-quick" role="group" aria-label="Быстрые вопросы тьютору">
+        <button class="oc-chip" type="button" title="Получить подсказку без решения" aria-label="Получить подсказку без решения" data-quick="Дай лёгкую подсказку, с чего начать, не раскрывая решение.">Подсказка</button>
+        <button class="oc-chip" type="button" title="Ключевая идея задачи" aria-label="Ключевая идея задачи" data-quick="В чём ключевая идея этой задачи?">Идея</button>
+        <button class="oc-chip" type="button" title="Разбор решения по шагам" aria-label="Разбор решения по шагам" data-quick="Разбери решение по шагам и объясни, почему каждый шаг верен.">По шагам</button>
+        <button class="oc-chip" type="button" title="Типичные ошибки" aria-label="Типичные ошибки" data-quick="Где в этой задаче чаще всего ошибаются и почему?">Ошибки</button>
+        <button class="oc-chip" type="button" title="Проверить эталонное решение" aria-label="Проверить эталонное решение" data-quick="Проверь эталонное решение: всё ли в нём строго? Есть ли пробелы?">Проверить</button>
+        <button class="oc-chip" type="button" title="Похожая задача для тренировки" aria-label="Похожая задача для тренировки" data-quick="Придумай похожую задачу чуть проще для тренировки и дай к ней ответ.">Похожая</button>
       </div>
       <div class="oc-compose">
-        <textarea id="oc-input" rows="1" placeholder="Спросите тьютора… (Enter — отправить, Shift+Enter — перенос)"></textarea>
-        <button class="oc-send" id="oc-send" type="button" title="Отправить">➤</button>
+        <textarea id="oc-input" rows="1" placeholder="Спросите тьютора…" aria-label="Сообщение ИИ-тьютору" aria-describedby="oc-compose-help"></textarea>
+        <button class="oc-send" id="oc-send" type="button" title="Отправить" aria-label="Отправить сообщение">➤</button>
       </div>
+      <p class="oc-compose-help" id="oc-compose-help">Enter — отправить · Shift+Enter — новая строка</p>
       <div class="oc-hint">
         <a href="javascript:void(0)" id="oc-clear" style="color:inherit">Очистить диалог</a> · <a href="javascript:void(0)" id="oc-copychat" style="color:inherit">Скопировать диалог</a> · <a href="javascript:void(0)" id="oc-reprep" style="color:inherit">Переразобрать задачу</a>
       </div>
