@@ -48,6 +48,10 @@ solver.py и gates.py:
   * named_labels.install — названная в условии точка не может быть скрытой:
     после чистки выдуманных подписей точки из текста возвращаются в
     draw.hide_labels; правило 41 (прод-ошибка: A_1/B_1/C_1 без подписей);
+  * trapezoid.install — «трапеция ABCD»: основания параллельны (явные или по
+    нотации AD ∥ BC), боковые равны у «равнобедренной»; правило 42 —
+    свободные точки + parallel + dist вместо углов (прод-ошибка: фолбэк в
+    схематичный чертёж с пропорциями 1:2 вместо 3:8);
   * degenerate_policy.install — вырожденность с учётом семантики плана:
     совпадение построенных точек и коллинеарные «треугольники», объявленные
     конструкциями/ограничениями (D на продолжении CA, высота CH≡M при
@@ -86,6 +90,7 @@ from . import angle_marks_layout as _angle_marks_layout
 from . import aux_view_marks as _aux_view_marks
 from . import bisector_angle as _bisector_angle
 from . import named_labels as _named_labels
+from . import trapezoid as _trapezoid
 
 _difficulty.install(_llm)
 _general_position.install(_solver, _gates)
@@ -105,3 +110,4 @@ _diameter_claims.install(_semantics, _llm, _pipeline, _statement)  # после 
 _model_routes.install(_llm, _pipeline)        # после acute_triangle: путь A формализатора на v4-pro
 _bisector_angle.install(_semantics, _llm, _pipeline)   # после model_routes: биссектриса угла + суффикс кэша
 _named_labels.install(_pipeline, _llm)       # после bisector_angle: названные точки с подписями + суффикс кэша
+_trapezoid.install(_semantics, _llm, _pipeline)  # после named_labels: основания трапеции параллельны + суффикс кэша
