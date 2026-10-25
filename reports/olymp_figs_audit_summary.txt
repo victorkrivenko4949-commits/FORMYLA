@@ -1,0 +1,5 @@
+ИТОГО: {}
+
+По олимпиадам:
+
+Подробности: reports/olymp_figs_audit.csv

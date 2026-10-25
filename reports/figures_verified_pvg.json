@@ -1,0 +1,86 @@
+{
+  "45fb37ece11e336234e4fb8cda3f09d2a3dadb70cef93ca8fc9948b09f459dbd": {
+    "uid": "45fb37ece11e336234e4fb8cda3f09d2a3dadb70cef93ca8fc9948b09f459dbd",
+    "year": 2015,
+    "grade": "8",
+    "num": "2",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/115/2014/4016186-ans-math-8-final-14-5.pdf#p2",
+    "action": "coloured_rectangle_statement_verified",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/45fb37ece11e336234e4fb8cda3f09d2a3dadb70cef93ca8fc9948b09f459dbd_statement.png",
+        "sha256": "4f4c9d98859e69991be7f175f04002f239d1c889857473f6b6896b765c9ab48d"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "86ad2d0f39884decb5c014bce5dda174788bb1517c424ce87e02785e5a3ef929": {
+    "uid": "86ad2d0f39884decb5c014bce5dda174788bb1517c424ce87e02785e5a3ef929",
+    "year": 2025,
+    "grade": "7",
+    "num": "3",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/115/2024/115-sol-math-9-final-24-25.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/86ad2d0f39884decb5c014bce5dda174788bb1517c424ce87e02785e5a3ef929_solution.png",
+        "sha256": "e249f960029c433e9ac67a7dbf760f15dbf250b04549cc251054584beb854ffd"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "5dfab10fab5b81ad03db9e6281eb745d5e9a18468322f5c229a56bb58ddcd641": {
+    "uid": "5dfab10fab5b81ad03db9e6281eb745d5e9a18468322f5c229a56bb58ddcd641",
+    "year": 2025,
+    "grade": "8",
+    "num": "3",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/115/2024/115-sol-math-9-final-24-25.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/5dfab10fab5b81ad03db9e6281eb745d5e9a18468322f5c229a56bb58ddcd641_solution.png",
+        "sha256": "e249f960029c433e9ac67a7dbf760f15dbf250b04549cc251054584beb854ffd"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "80c6232925052e0b3ddead4f06601ebcac448e8e2c727b7a1ff7f9b9a23d869d": {
+    "uid": "80c6232925052e0b3ddead4f06601ebcac448e8e2c727b7a1ff7f9b9a23d869d",
+    "year": 2024,
+    "grade": "9",
+    "num": "3",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/115/2023/115-sol-math-7-8-final-23-24.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/80c6232925052e0b3ddead4f06601ebcac448e8e2c727b7a1ff7f9b9a23d869d_solution.png",
+        "sha256": "a088e5e6d77e80ed77608a6675579db0f43d4227a4aa63c19e4951088131aee1"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "61e3a6774f9fa8de0953815da026903f38581c1d5bb36165cadaee0668724433": {
+    "uid": "61e3a6774f9fa8de0953815da026903f38581c1d5bb36165cadaee0668724433",
+    "year": 2018,
+    "grade": "11",
+    "num": "5",
+    "source": "https://olymp.sdamgia.ru/problem?id=6240",
+    "action": "no_figure_verified",
+    "reason": "Exact equation matched via formula SVG alt text; complete algebraic solution inspected, only mathematical-formula SVGs, no diagram.",
+    "attachments": [],
+    "fig_none_in_source": true
+  }
+}

@@ -1,0 +1,17 @@
+[0;93m2026-10-24 23:38:18.338209829 [W:onnxruntime:Default, device_discovery.cc:95 GetPciBusId] Skipping pci_bus_id for PCI path at "/sys/devices/LNXSYSTM:00/LNXSYBUS:00/ACPI0004:00/MSFT1000:00/5620e0c7-8062-4dce-aeb7-520c7ef76171" because filename "5620e0c7-8062-4dce-aeb7-520c7ef76171" did not match expected pattern of [0-9a-f]+:[0-9a-f]+:[0-9a-f]+[.][0-9a-f]+[m
+[vsosh] {'page_not_found': 20, 'download_failed': 2, 'snapshot': 32, 'no_figure_on_page': 10, 'no_anchor': 7, 'no_source': 2}
+[mmo] {'no_anchor': 6, 'snapshot': 2, 'extracted': 8, 'no_figure_on_page': 6}
+[kurchatov] {'snapshot': 2, 'page_not_found': 1}
+[turgor] {'snapshot': 8, 'download_failed': 6, 'no_figure_on_page': 3, 'no_anchor': 16, 'no_source': 4}
+[lomonosov] {'snapshot': 7, 'no_figure_on_page': 1, 'no_source': 1, 'page_not_found': 1, 'download_failed': 1}
+[formula-unity] {'no_source': 3, 'snapshot': 6, 'no_figure_on_page': 1}
+[pvg] {'snapshot': 2, 'page_not_found': 1, 'no_anchor': 1}
+[euler] {'snapshot': 3}
+[vysshaya-proba] {'snapshot': 1, 'page_not_found': 6}
+[matprazdnik] {'no_figure_on_page': 5, 'extracted': 5, 'snapshot': 5}
+[spbgu] {'no_source': 1}
+[phystech] {}
+[other] {}
+ЭКСТРАКЦИЯ: {'page_not_found': 29, 'download_failed': 9, 'snapshot': 68, 'no_figure_on_page': 26, 'no_anchor': 30, 'no_source': 11, 'extracted': 13} | всего рисунков: 94
+  по якорю: {'block_snapshot': 68, 'html': 13}
+Отчёт: reports/olymp_figs_extract.csv

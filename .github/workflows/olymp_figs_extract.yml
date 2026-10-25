@@ -1,0 +1,38 @@
+name: olymp-figs-extract
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: 'slug олимпиады или all'
+        default: 'all'
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pymupdf requests
+      - name: Extract figures from source PDFs
+        run: |
+          mkdir -p reports
+          python scripts/olymp_catalog_figs_extract.py --slug "${{ github.event.inputs.slug || 'all' }}" > reports/olymp_figs_extract_summary.txt 2>&1
+          cat reports/olymp_figs_extract_summary.txt
+      - name: Re-run audit
+        run: python scripts/olymp_catalog_figs_audit.py --csv reports/olymp_figs_audit.csv > reports/olymp_figs_audit_summary.txt 2>&1
+      - name: Upload unverified proposals for manual source review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unverified-figure-proposals
+          retention-days: 14
+          path: |
+            reports/olymp_figs_*
+            data/olymp_catalog/
+            static/olymp_figures/FINAL_FIGURES/

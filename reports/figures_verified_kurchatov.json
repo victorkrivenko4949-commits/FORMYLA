@@ -1,0 +1,363 @@
+{
+  "5a15f1ff9a80f7b133b0375c3b463dc927def060a0a1a817f22e99be498038ed": {
+    "uid": "5a15f1ff9a80f7b133b0375c3b463dc927def060a0a1a817f22e99be498038ed",
+    "year": 2014,
+    "grade": "10",
+    "num": "3",
+    "source": "https://old.olimpiadakurchatov.ru/2014/math-final.pdf",
+    "action": "no_figure_verified",
+    "reason": "Full original statement and own solution visually checked; no illustration; neighbouring graphics excluded.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "07d05ca3040fcd5c694d999640476261939f2e548bc5c434b78c9d1483bdaa17": {
+    "uid": "07d05ca3040fcd5c694d999640476261939f2e548bc5c434b78c9d1483bdaa17",
+    "year": 2020,
+    "grade": "8",
+    "num": "5",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/389/2019/389-ans-math-8-final-19-0.pdf#p5",
+    "action": "own_chess_counterexample_verified",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/07d05ca3040fcd5c694d999640476261939f2e548bc5c434b78c9d1483bdaa17_solution.png",
+        "sha256": "f537217c79279eaaebbba76ab7231c66ee8ea377d1d048184833a42bfa6ccd9d"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "8c0395d7edbdba5b9301bcefbef58a765452c844ace410e33899d1537165f527": {
+    "uid": "8c0395d7edbdba5b9301bcefbef58a765452c844ace410e33899d1537165f527",
+    "year": 2025,
+    "grade": "6",
+    "num": "5",
+    "source": "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      4
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/8c0395d7edbdba5b9301bcefbef58a765452c844ace410e33899d1537165f527_solution.png",
+        "sha256": "a8dfd97a66b1d2363b622c1ade9a23e6d81f6c3521a3c56e29d4b6c7b12e601e"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "5056e0c907aba4de4fa01e05fdb440b9afe9a9cf4d5e2ff4fa5c92c155c086c1": {
+    "uid": "5056e0c907aba4de4fa01e05fdb440b9afe9a9cf4d5e2ff4fa5c92c155c086c1",
+    "year": 2025,
+    "grade": "7",
+    "num": "5",
+    "source": "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      9
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/5056e0c907aba4de4fa01e05fdb440b9afe9a9cf4d5e2ff4fa5c92c155c086c1_solution.png",
+        "sha256": "589444e44bc8941cfd9941922ed2365443093e3b2754a9dca8096bd08cebc17a"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "8722e7a2298e4c45a1cebd4668a3c903c09cb697101537a4fc0b40d98aac71ae": {
+    "uid": "8722e7a2298e4c45a1cebd4668a3c903c09cb697101537a4fc0b40d98aac71ae",
+    "year": 2024,
+    "grade": "6",
+    "num": "1",
+    "source": "https://mathus.ru/olymp/Kurchatov2024Math6.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/8722e7a2298e4c45a1cebd4668a3c903c09cb697101537a4fc0b40d98aac71ae_statement.png",
+        "sha256": "78867549e4c9dd40477d0d063b616ceae2f94feb00546d9371d735ea44be4bde"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "923b7622fabe44d1aa0000c4b0e0b5a47e2940e702384bd9594843fa0882d121": {
+    "uid": "923b7622fabe44d1aa0000c4b0e0b5a47e2940e702384bd9594843fa0882d121",
+    "year": 2024,
+    "grade": "7",
+    "num": "2",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-7-final-23-24.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/923b7622fabe44d1aa0000c4b0e0b5a47e2940e702384bd9594843fa0882d121_statement.png",
+        "sha256": "c80b253bce502373aec1d70e2dff9b5f01410f70019be5bd482992b3e83f5670"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "35c0c50e92a501c9a33565f331c2a55fa0ef212c8259ba105370f340cdca2557": {
+    "uid": "35c0c50e92a501c9a33565f331c2a55fa0ef212c8259ba105370f340cdca2557",
+    "year": 2024,
+    "grade": "7",
+    "num": "1",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-taskssol-math-6-7-otbor-23-24.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/35c0c50e92a501c9a33565f331c2a55fa0ef212c8259ba105370f340cdca2557_solution.png",
+        "sha256": "d976b54f67a2f7686b58d97fa4a80aa35d7c4dd4c38c22356e60ddee8ab82051"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "6a2a94fe7c19b3cd870603d9ed10705c85efe77dd3ea1e3caa078d1302076a0d": {
+    "uid": "6a2a94fe7c19b3cd870603d9ed10705c85efe77dd3ea1e3caa078d1302076a0d",
+    "year": 2024,
+    "grade": "8",
+    "num": "4",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-taskssol-math-8-9-otbor-23-24.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/6a2a94fe7c19b3cd870603d9ed10705c85efe77dd3ea1e3caa078d1302076a0d_solution.png",
+        "sha256": "f5938f18e566738a623962493f1fccf586da90a9606c673384e62e024fe8b369"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "0718d763d44afcfcbae82b94413fcb6394cf92feeb8375d003ec9466343487a5": {
+    "uid": "0718d763d44afcfcbae82b94413fcb6394cf92feeb8375d003ec9466343487a5",
+    "year": 2023,
+    "grade": "7",
+    "num": "4",
+    "source": "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      9,
+      9
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/0718d763d44afcfcbae82b94413fcb6394cf92feeb8375d003ec9466343487a5_statement.png",
+        "sha256": "df08aec6df6982477017faed772b97e5ad393db0f85bbbdbb9528b5be8229c9b"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/0718d763d44afcfcbae82b94413fcb6394cf92feeb8375d003ec9466343487a5_solution.png",
+        "sha256": "80baf170667a9ec98c6648b92574282ababd75177c423f0ff105b7a4b4b20823"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "0ec9930c918b40a41112a350dcb560416a449ea863ab23a249d730019f01fe0a": {
+    "uid": "0ec9930c918b40a41112a350dcb560416a449ea863ab23a249d730019f01fe0a",
+    "year": 2019,
+    "grade": "6",
+    "num": "3",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-6-final-18-9.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/0ec9930c918b40a41112a350dcb560416a449ea863ab23a249d730019f01fe0a_solution.png",
+        "sha256": "0e39cf3896b6f8b5f363d037337c8c83118d51a9dec5c25ccdac32bf21163896"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "8ff11ab6a12f76e9e9440f7980f780189ee3b2579426fcb3cc81efdc1165001b": {
+    "uid": "8ff11ab6a12f76e9e9440f7980f780189ee3b2579426fcb3cc81efdc1165001b",
+    "year": 2019,
+    "grade": "7",
+    "num": "5",
+    "source": "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-7-sol.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/8ff11ab6a12f76e9e9440f7980f780189ee3b2579426fcb3cc81efdc1165001b_solution.png",
+        "sha256": "ffb36c4fc200b51c78343a29021b52af9c0a4d5edd9d75f78660724859402acf"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "5f7b65f9849b0d6e0260599647a835137e7207540a6159ea62e346576fc0e5d8": {
+    "uid": "5f7b65f9849b0d6e0260599647a835137e7207540a6159ea62e346576fc0e5d8",
+    "year": 2019,
+    "grade": "7",
+    "num": "5",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-7-final-18-9.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/5f7b65f9849b0d6e0260599647a835137e7207540a6159ea62e346576fc0e5d8_solution.png",
+        "sha256": "ffb36c4fc200b51c78343a29021b52af9c0a4d5edd9d75f78660724859402acf"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "2bb0b5445b218013f611c5bbcc82a44a7ad707febaeab0b5e326f63c94a6c1d2": {
+    "uid": "2bb0b5445b218013f611c5bbcc82a44a7ad707febaeab0b5e326f63c94a6c1d2",
+    "year": 2018,
+    "grade": "9",
+    "num": "5",
+    "source": "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-9-sol.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/2bb0b5445b218013f611c5bbcc82a44a7ad707febaeab0b5e326f63c94a6c1d2_solution.png",
+        "sha256": "f263daff5a4a379c764ca6ffc5a6ea4c4435ceb6ba1c16a14e1ff18848fadfff"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "28cb158ded5d5cc6464f91c3ad3525a2c89a09d3edff906bca73471ce2f0d62a": {
+    "uid": "28cb158ded5d5cc6464f91c3ad3525a2c89a09d3edff906bca73471ce2f0d62a",
+    "year": 2017,
+    "grade": "6",
+    "num": "3",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-6-final-16-7.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/28cb158ded5d5cc6464f91c3ad3525a2c89a09d3edff906bca73471ce2f0d62a_solution.png",
+        "sha256": "fa8a893a3409ee13cf0952742d9936ae01a90bb98a547f5f9ecc9b49bb3a3282"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "d1e808245adbc9873fbdd4c192fbc4d9abbefd95e470317f101fa8aae0da2a41": {
+    "uid": "d1e808245adbc9873fbdd4c192fbc4d9abbefd95e470317f101fa8aae0da2a41",
+    "year": 2017,
+    "grade": "7",
+    "num": "5",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-7-final-16-7.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3,
+      3
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/d1e808245adbc9873fbdd4c192fbc4d9abbefd95e470317f101fa8aae0da2a41_statement.png",
+        "sha256": "28bc5d26e1dd80494ddf644e3d037947b5d53f4b268665a2d2aa5a29ed920f84"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/d1e808245adbc9873fbdd4c192fbc4d9abbefd95e470317f101fa8aae0da2a41_solution.png",
+        "sha256": "09936476d5bf875b8d6b87ce0adbda046a4e9de8388409e161cb2ced83261ed3"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "421e4c0777fcdf05f46815df3c4e38b54a75e003f29d4f4ac8f94aa5f7385a87": {
+    "uid": "421e4c0777fcdf05f46815df3c4e38b54a75e003f29d4f4ac8f94aa5f7385a87",
+    "year": 2017,
+    "grade": "7",
+    "num": "5",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-7-final-16-7.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3,
+      3
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/421e4c0777fcdf05f46815df3c4e38b54a75e003f29d4f4ac8f94aa5f7385a87_statement.png",
+        "sha256": "28bc5d26e1dd80494ddf644e3d037947b5d53f4b268665a2d2aa5a29ed920f84"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/421e4c0777fcdf05f46815df3c4e38b54a75e003f29d4f4ac8f94aa5f7385a87_solution.png",
+        "sha256": "09936476d5bf875b8d6b87ce0adbda046a4e9de8388409e161cb2ced83261ed3"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "62ca1424930b67200539c57abead1cf8c79513c5161aa5c59ec3eef475d46f47": {
+    "uid": "62ca1424930b67200539c57abead1cf8c79513c5161aa5c59ec3eef475d46f47",
+    "year": 2014,
+    "grade": "10",
+    "num": "4",
+    "source": "https://old.olimpiadakurchatov.ru/2014/math-final.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      7,
+      7
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/62ca1424930b67200539c57abead1cf8c79513c5161aa5c59ec3eef475d46f47_statement.png",
+        "sha256": "0468a7a863af1151bcb59e0cf742d067887c3e363eef245b8033052d7ad0e526"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/62ca1424930b67200539c57abead1cf8c79513c5161aa5c59ec3eef475d46f47_solution.png",
+        "sha256": "613afd7837941a9433771550a8fd4680c248c3bbaf32d8c2e231a2c96d763d66"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "03379bb366c7718c0096dd48b2bf18b5c09c37e55804cdd039b38f3a0394c8c1": {
+    "uid": "03379bb366c7718c0096dd48b2bf18b5c09c37e55804cdd039b38f3a0394c8c1",
+    "year": 2024,
+    "grade": "10",
+    "num": "4",
+    "source": "https://old.olimpiadakurchatov.ru/upload/files/kurch_olimp_online_2024_modif.pdf",
+    "action": "Own statement and solution parabola diagrams verified; coordinates1,1and11,121",
+    "pages": [
+      16,
+      17
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/03379bb366c7718c0096dd48b2bf18b5c09c37e55804cdd039b38f3a0394c8c1_statement.png",
+        "sha256": "4f23397b8f8c0c406812e64467cd3d255240c3269e2dd8293fb05abb9eac9a86"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/03379bb366c7718c0096dd48b2bf18b5c09c37e55804cdd039b38f3a0394c8c1_solution.png",
+        "sha256": "51669a225e3b7d4404b42a899a45b98d7f4c9619f07131c38e7a70c538868a21"
+      }
+    ],
+    "fig_none_in_source": false
+  }
+}

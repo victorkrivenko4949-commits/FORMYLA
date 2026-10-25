@@ -1,0 +1,2402 @@
+{
+  "e5dc9922e4485fc1f925815720367598138b577befc4e300dd2bb032a756631e": {
+    "uid": "e5dc9922e4485fc1f925815720367598138b577befc4e300dd2bb032a756631e",
+    "year": 2025,
+    "grade": "9",
+    "num": "2",
+    "source": "https://всош.цпм.рф/upload/files/Arhive_tasks/2024-25/final/math/sol-math-9-final-24-25.pdf#page=4",
+    "action": "own_diagram_visually_verified",
+    "page": 4,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/e5dc9922e4485fc1f925815720367598138b577befc4e300dd2bb032a756631e_solution.png",
+        "sha256": "96ead1758bb1dc3d96ff28af0666a44e28a437ba0bb94c2e56851ec1be7c6df3"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "03255e396c64e4b06101f23d68d9e6dd215323ea24021b5617537273e9dc30db": {
+    "uid": "03255e396c64e4b06101f23d68d9e6dd215323ea24021b5617537273e9dc30db",
+    "year": 2025,
+    "grade": "9",
+    "num": "4",
+    "source": "https://всош.цпм.рф/upload/files/Arhive_tasks/2024-25/final/math/sol-math-9-final-24-25.pdf#page=6",
+    "action": "own_diagram_visually_verified",
+    "page": 6,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/03255e396c64e4b06101f23d68d9e6dd215323ea24021b5617537273e9dc30db_solution.png",
+        "sha256": "76727f7cd1edb9fb6d2f8f6cb49f7835e2ec3b7331727b7ab7e2444096bee2be"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "09672640b70be8fab15d1d14659b666df66e1c9da0bdc623a581c5709fa8004f": {
+    "uid": "09672640b70be8fab15d1d14659b666df66e1c9da0bdc623a581c5709fa8004f",
+    "year": 2025,
+    "grade": "9",
+    "num": "8",
+    "source": "https://всош.цпм.рф/upload/files/Arhive_tasks/2024-25/final/math/sol-math-9-final-24-25.pdf#page=10",
+    "action": "own_diagram_visually_verified",
+    "page": 10,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/09672640b70be8fab15d1d14659b666df66e1c9da0bdc623a581c5709fa8004f_solution.png",
+        "sha256": "9adf2aaff357344f03e001ff581cd9e32b3b25742348c38fea7c55dc7c6998b5"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/09672640b70be8fab15d1d14659b666df66e1c9da0bdc623a581c5709fa8004f_solution_2.png",
+        "sha256": "18615897400169779c3673cd3c0558763594686abcb934aabdcba64ed3d97ab7"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "bab49b74c156b6a312732b11ea0148dddeef0f36f14394de3f3fcc2937e8f43f": {
+    "uid": "bab49b74c156b6a312732b11ea0148dddeef0f36f14394de3f3fcc2937e8f43f",
+    "year": 2023,
+    "grade": "11",
+    "num": "6",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2022-23/final/math/sol-math-11-day2-final-22-23.pdf#page=3",
+    "action": "own_diagram_visually_verified",
+    "page": 3,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/bab49b74c156b6a312732b11ea0148dddeef0f36f14394de3f3fcc2937e8f43f_solution.png",
+        "sha256": "620501355097613263943d07437329f47b8021c47dba3b889489a58707c69345"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "c9028582351e4ad3355b438035c50eb0c394447d3fa243198660fbe27b1e66d9": {
+    "uid": "c9028582351e4ad3355b438035c50eb0c394447d3fa243198660fbe27b1e66d9",
+    "year": 2022,
+    "grade": "9",
+    "num": "8",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2021-22/reg/math/sol-math-9-day2-reg-21-22.pdf#page=8",
+    "action": "own_diagram_visually_verified",
+    "page": 8,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/c9028582351e4ad3355b438035c50eb0c394447d3fa243198660fbe27b1e66d9_solution.png",
+        "sha256": "2447a74b92d441af61d2e029d719496128bd07cf1b0f5155fd47d905e5ad2e6b"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "b1e70dd1675ee3081a58784b789d9a4f6429dfabdcb13c95bf7a1601fa5fdaaf": {
+    "uid": "b1e70dd1675ee3081a58784b789d9a4f6429dfabdcb13c95bf7a1601fa5fdaaf",
+    "year": 2022,
+    "grade": "10",
+    "num": "6",
+    "source": "https://всош.цпм.рф/upload/files/Arhive_tasks/2022-23/school/math/taskssol-math-4-11-msk-sch-22-23.pdf#page=38",
+    "action": "own_diagram_visually_verified",
+    "page": 38,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/b1e70dd1675ee3081a58784b789d9a4f6429dfabdcb13c95bf7a1601fa5fdaaf_solution.png",
+        "sha256": "f7f2a47d07c7921d60f4f4ec199ade105ce7388f330227701adbe1f07d7281aa"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/b1e70dd1675ee3081a58784b789d9a4f6429dfabdcb13c95bf7a1601fa5fdaaf_solution_2.png",
+        "sha256": "5d794412121a5b7b3db5a4d49eb953e7fad178808ad0bc86b47e5a365ade10fa"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "753f00497bd665bfe8faf71f39bc44bd219f11bf4dca9af20adb40c3f0d6be12": {
+    "uid": "753f00497bd665bfe8faf71f39bc44bd219f11bf4dca9af20adb40c3f0d6be12",
+    "year": 2021,
+    "grade": "10",
+    "num": "1",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2020-21/final/math/sol-math-10-day1-final-20-21.pdf#page=3",
+    "action": "own_diagram_visually_verified",
+    "page": 3,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/753f00497bd665bfe8faf71f39bc44bd219f11bf4dca9af20adb40c3f0d6be12_solution.png",
+        "sha256": "f098c25e60e3efe9582832f7932632e52bfe5c962cee3529985969c12a116bcb"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "36c6cb542962526492435e02d104b7acdfcefa5f972fc65482f1b2be07723a44": {
+    "uid": "36c6cb542962526492435e02d104b7acdfcefa5f972fc65482f1b2be07723a44",
+    "year": 2019,
+    "grade": "10",
+    "num": "1",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/final/math/72-ans-math-10-final-18-9.pdf#page=1",
+    "action": "own_diagram_visually_verified",
+    "page": 1,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/36c6cb542962526492435e02d104b7acdfcefa5f972fc65482f1b2be07723a44_solution.png",
+        "sha256": "21098a82c4c2fee1e05450b99764c74b41c8b4e65ea4bb140c6880fe5f920b9a"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "4394cd2cdc870720f317c9935b8c30e36a38f9fb6c341c63d33cddd9774f9564": {
+    "uid": "4394cd2cdc870720f317c9935b8c30e36a38f9fb6c341c63d33cddd9774f9564",
+    "year": 2019,
+    "grade": "10",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/final/math/72-ans-math-10-final-18-9.pdf#page=4",
+    "action": "own_diagram_visually_verified",
+    "page": 4,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/4394cd2cdc870720f317c9935b8c30e36a38f9fb6c341c63d33cddd9774f9564_solution.png",
+        "sha256": "36e330c138d07e6f0f9ccd03871fd130f63bd8fb48ff69285bff66ba915f9e21"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "cab1c1aa4411dd459675574ce61ba544ec1d69faa8ba3991d717ef86fb90cdfb": {
+    "uid": "cab1c1aa4411dd459675574ce61ba544ec1d69faa8ba3991d717ef86fb90cdfb",
+    "year": 2019,
+    "grade": "11",
+    "num": "1",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/final/math/72-ans-math-10-final-18-9.pdf#page=1",
+    "action": "own_diagram_visually_verified",
+    "page": 1,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/cab1c1aa4411dd459675574ce61ba544ec1d69faa8ba3991d717ef86fb90cdfb_solution.png",
+        "sha256": "21098a82c4c2fee1e05450b99764c74b41c8b4e65ea4bb140c6880fe5f920b9a"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "d62c666f1d8403283439693e027a09b2a37b5dfbdca3e36458630b68e01efcd9": {
+    "uid": "d62c666f1d8403283439693e027a09b2a37b5dfbdca3e36458630b68e01efcd9",
+    "year": 2019,
+    "grade": "11",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/final/math/72-ans-math-11-final-18-9.pdf#page=5",
+    "action": "own_diagram_visually_verified",
+    "page": 5,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/d62c666f1d8403283439693e027a09b2a37b5dfbdca3e36458630b68e01efcd9_solution.png",
+        "sha256": "4603afed4fe9e9e32464e234b7a9e99bb1fe5d85147c9d86d6ec4c5d891ca635"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "801b953596f9bd65500723c776550ce864ae5b5d6f9a42cb049e0b28229e3f3d": {
+    "uid": "801b953596f9bd65500723c776550ce864ae5b5d6f9a42cb049e0b28229e3f3d",
+    "year": 2019,
+    "grade": "11",
+    "num": "6",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/final/math/72-ans-math-11-final-18-9.pdf#page=9",
+    "action": "own_diagram_visually_verified",
+    "page": 9,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/801b953596f9bd65500723c776550ce864ae5b5d6f9a42cb049e0b28229e3f3d_solution.png",
+        "sha256": "c4269f9258ba932b300ba6dbcbe8b3071b860362a2f305685f0110f871261e1d"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "d7f83219059634526668ba6e246e394f977bbe760696b9756e609aa370e21a4a": {
+    "uid": "d7f83219059634526668ba6e246e394f977bbe760696b9756e609aa370e21a4a",
+    "year": 2019,
+    "grade": "10",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/mun/math/ans-math-10-mun-18-9.pdf#page=2",
+    "action": "own_diagram_visually_verified",
+    "page": 2,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/d7f83219059634526668ba6e246e394f977bbe760696b9756e609aa370e21a4a_statement.png",
+        "sha256": "df754c76a39e9b5ab7e01eb13947f955b8b6e7500a8567f4bca4320dbd3ac542"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/d7f83219059634526668ba6e246e394f977bbe760696b9756e609aa370e21a4a_solution.png",
+        "sha256": "ba687a27406eaf0eff43102158339b3317b8a21c49e3daf4b80dfa642a33424a"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "24d9b66e09777d855cfa1b3a643855fd5a0dd8e6b3110311237fbd56d2fc76cc": {
+    "uid": "24d9b66e09777d855cfa1b3a643855fd5a0dd8e6b3110311237fbd56d2fc76cc",
+    "year": 2019,
+    "grade": "9",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/region/math/ans-math-9-day1-reg-18-9.pdf#page=7",
+    "action": "own_diagram_visually_verified",
+    "page": 7,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/24d9b66e09777d855cfa1b3a643855fd5a0dd8e6b3110311237fbd56d2fc76cc_solution.png",
+        "sha256": "aa580c55c6a77bdd9d2038f1acdca111fd2c83b193698c81f3ed41a0df058430"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "2ee1a93f140f9c9c56ac36bc1a0c81d192ccaf0deb028f82ac1bd8321bc4dfe2": {
+    "uid": "2ee1a93f140f9c9c56ac36bc1a0c81d192ccaf0deb028f82ac1bd8321bc4dfe2",
+    "year": 2019,
+    "grade": "11",
+    "num": "3",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/region/math/ans-math-11-day1-reg-18-9.pdf#page=6",
+    "action": "own_diagram_visually_verified",
+    "page": 6,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/2ee1a93f140f9c9c56ac36bc1a0c81d192ccaf0deb028f82ac1bd8321bc4dfe2_solution.png",
+        "sha256": "612045fab4f9ded93b160e030ed2de941b45e6c1ad1ed0f34a3812759e4a30ba"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "9a6aa764e6208e0150813634e0a9013220d93a95ab8c3252e57a2b6111ae00e7": {
+    "uid": "9a6aa764e6208e0150813634e0a9013220d93a95ab8c3252e57a2b6111ae00e7",
+    "year": 2019,
+    "grade": "11",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/region/math/ans-math-11-day1-reg-18-9.pdf#page=8",
+    "action": "own_diagram_visually_verified",
+    "page": 8,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/9a6aa764e6208e0150813634e0a9013220d93a95ab8c3252e57a2b6111ae00e7_solution.png",
+        "sha256": "a7c39510948a1a8c0ae392857317d945da1a06ea3cf714a42c5e95c584c1087f"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "80e556d80f7d51dc0e4c85bf494ca9e8f8686e43120e2082951fbfc79e518681": {
+    "uid": "80e556d80f7d51dc0e4c85bf494ca9e8f8686e43120e2082951fbfc79e518681",
+    "year": 2019,
+    "grade": "9",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/region/math/ans-math-9-day1-reg-18-9.pdf#page=8",
+    "action": "own_diagram_visually_verified",
+    "page": 8,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/80e556d80f7d51dc0e4c85bf494ca9e8f8686e43120e2082951fbfc79e518681_solution.png",
+        "sha256": "9d46693d5473254f5740678835f8423143e50d8fbd16457741d2cbcce5b5a9b7"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "d291502cce1cd5d5dcaf0ddad4e9c208982626897f24d3f26dea36e3bc79ef59": {
+    "uid": "d291502cce1cd5d5dcaf0ddad4e9c208982626897f24d3f26dea36e3bc79ef59",
+    "year": 2019,
+    "grade": "9",
+    "num": "8",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/region/math/ans-math-9-day2-reg-18-9.pdf#page=5",
+    "action": "own_diagram_visually_verified",
+    "page": 5,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/d291502cce1cd5d5dcaf0ddad4e9c208982626897f24d3f26dea36e3bc79ef59_solution.png",
+        "sha256": "b8bfdfd75483a4d0a002f1c773753b86d03cef3133ce20d35cb41cb4b58adebb"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "700b9fed8bd34056bfdfdf386ba5eecf2a5fb3ae159c32b39b1b47dbd71e8b93": {
+    "uid": "700b9fed8bd34056bfdfdf386ba5eecf2a5fb3ae159c32b39b1b47dbd71e8b93",
+    "year": 2019,
+    "grade": "10",
+    "num": "8",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/region/math/ans-math-10-day2-reg-18-9.pdf#page=5",
+    "action": "own_diagram_visually_verified",
+    "page": 5,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/700b9fed8bd34056bfdfdf386ba5eecf2a5fb3ae159c32b39b1b47dbd71e8b93_solution.png",
+        "sha256": "6aa32e3d12c4036f45e82d941b16e6b8e7686e6b4a63a5196e5ad9148a519d49"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "48a37f01489def2b3537b0a4fe2bba6c057f862395d497e727280d15bfcf2b29": {
+    "uid": "48a37f01489def2b3537b0a4fe2bba6c057f862395d497e727280d15bfcf2b29",
+    "year": 2018,
+    "grade": "9",
+    "num": "9",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2017-18/region/math/ans-math-9-day2-reg-17-8.pdf#page=6",
+    "action": "own_diagram_visually_verified",
+    "page": 6,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/48a37f01489def2b3537b0a4fe2bba6c057f862395d497e727280d15bfcf2b29_solution.png",
+        "sha256": "ce6f1d2b01321e6d021b4c939023f6a2a5f8e55a7968be30399d1e990a69499a"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "1421cc6a58bd5ba75a72a8fdce4bd541cd4dfbf7fd3dbea890e3652310e66e42": {
+    "uid": "1421cc6a58bd5ba75a72a8fdce4bd541cd4dfbf7fd3dbea890e3652310e66e42",
+    "year": 2015,
+    "grade": "9",
+    "num": "7",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/final_tasks/math/ans-math-9-2day-final-14-5.pdf#page=3",
+    "action": "own_diagram_visually_verified",
+    "page": 3,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/1421cc6a58bd5ba75a72a8fdce4bd541cd4dfbf7fd3dbea890e3652310e66e42_solution.png",
+        "sha256": "427eb8245abe2d60716ab83cae35743b36528658207965fee95c6e0c8636c249"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "9685be8db87b91368b670c887d8547b69e7e8f5d64589606d3d626ff26c2ce16": {
+    "uid": "9685be8db87b91368b670c887d8547b69e7e8f5d64589606d3d626ff26c2ce16",
+    "year": 2015,
+    "grade": "10",
+    "num": "7",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/final_tasks/math/ans-math-10-2day-final-14-5.pdf#page=2",
+    "action": "own_diagram_visually_verified",
+    "page": 2,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/9685be8db87b91368b670c887d8547b69e7e8f5d64589606d3d626ff26c2ce16_solution.png",
+        "sha256": "e72d9dcab38a0a1ea53a3121c91614addecd5f0dd11c25fdb60a4f5c6bcd3400"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/9685be8db87b91368b670c887d8547b69e7e8f5d64589606d3d626ff26c2ce16_solution_2.png",
+        "sha256": "2b1ceb9387bed4213b366446a3fb8d04eb2a45e9a150f789f2ab016868e7d695"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "de535b2431c6b205109b2c86d1261dc8e91ffcca3980ed7324791459f6005363": {
+    "uid": "de535b2431c6b205109b2c86d1261dc8e91ffcca3980ed7324791459f6005363",
+    "year": 2015,
+    "grade": "10",
+    "num": "3",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/school_tasks/math/ans-math-10-sch-msk-14-5.pdf#page=1",
+    "action": "own_diagram_visually_verified",
+    "page": 1,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/de535b2431c6b205109b2c86d1261dc8e91ffcca3980ed7324791459f6005363_solution.png",
+        "sha256": "0c869d9a96471ab0ee087f7f68ebfb7923521d5f469ca53d06d90f5cf4fa8be0"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "b77db5f365b354c1ab05d65a6b816269e66ad1e92ea10a93cbd873455781f2c8": {
+    "uid": "b77db5f365b354c1ab05d65a6b816269e66ad1e92ea10a93cbd873455781f2c8",
+    "year": 2014,
+    "grade": "11",
+    "num": "3",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/okrug_tasks/math/ans-math-11-okr-msk-14-5.pdf#page=1",
+    "action": "own_diagram_visually_verified",
+    "page": 1,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/b77db5f365b354c1ab05d65a6b816269e66ad1e92ea10a93cbd873455781f2c8_solution.png",
+        "sha256": "9819be0c562771422778d6984f749647935d5485ab6a5589dad0a3ee9d121448"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "0d2640f3e170472288b15cf05685accb7db30db840fd920bd5865c7b54bd7140": {
+    "uid": "0d2640f3e170472288b15cf05685accb7db30db840fd920bd5865c7b54bd7140",
+    "year": 2014,
+    "grade": "10",
+    "num": "3",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/school_tasks/math/ans-math-10-sch-msk-14-5.pdf#page=1",
+    "action": "own_diagram_visually_verified",
+    "page": 1,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/0d2640f3e170472288b15cf05685accb7db30db840fd920bd5865c7b54bd7140_solution.png",
+        "sha256": "0c869d9a96471ab0ee087f7f68ebfb7923521d5f469ca53d06d90f5cf4fa8be0"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "21142601e060a7ffdc0a0cbb92c885989a33f6d14e20f69de4db47eff4aeb693": {
+    "uid": "21142601e060a7ffdc0a0cbb92c885989a33f6d14e20f69de4db47eff4aeb693",
+    "year": 2014,
+    "grade": "10",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/school_tasks/math/ans-math-10-sch-msk-14-5.pdf#page=2",
+    "action": "own_diagram_visually_verified",
+    "page": 2,
+    "role": "solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/21142601e060a7ffdc0a0cbb92c885989a33f6d14e20f69de4db47eff4aeb693_solution.png",
+        "sha256": "a60903e1903498799e69b9abae2667003c7b882c2e60a67016e39a2474b35a59"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "21ed18762bdcb4a626a3072fd588e76cd9570df7d6e55b060142a6277eb186a2": {
+    "uid": "21ed18762bdcb4a626a3072fd588e76cd9570df7d6e55b060142a6277eb186a2",
+    "year": 2018,
+    "grade": "9",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2017-18/mun/math/ans-math-9-mun-msk-17-8.pdf#page=1",
+    "action": "native_diagrams_visually_verified; neighbouring_images_excluded",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/21ed18762bdcb4a626a3072fd588e76cd9570df7d6e55b060142a6277eb186a2_solution.png",
+        "sha256": "aba3a53277b9aa8968cd87e2974c4e21f6ccfb066a7ba8386dda734a8f5f58cf"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "6ace8ba15500e5002d2045789619bba81a918014125a7e9310cbeb35d06eddae": {
+    "uid": "6ace8ba15500e5002d2045789619bba81a918014125a7e9310cbeb35d06eddae",
+    "year": 2018,
+    "grade": "10",
+    "num": "3",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2017-18/mun/math/ans-math-10-mun-msk-17-8.pdf#page=2",
+    "action": "native_diagrams_visually_verified; neighbouring_images_excluded",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/6ace8ba15500e5002d2045789619bba81a918014125a7e9310cbeb35d06eddae_solution.png",
+        "sha256": "d108d8ccad031023f9d968fdb168f2f88bc90e85fa5fe17751fbc1bbff3b0a08"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/6ace8ba15500e5002d2045789619bba81a918014125a7e9310cbeb35d06eddae_solution_2.png",
+        "sha256": "3a787e6e1bbdd6b1869a09c563c24f1ef757261963e60268c50f518182fc5ed0"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "745b45e3b335d0e58709081c60326e2b876a58d429b615f4aecde3d31c800b24": {
+    "uid": "745b45e3b335d0e58709081c60326e2b876a58d429b615f4aecde3d31c800b24",
+    "year": 2010,
+    "grade": "10",
+    "num": "3",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/mun/math/ans-math-10-msk-mun-16-7.pdf#page=1",
+    "action": "native_diagrams_visually_verified; neighbouring_images_excluded",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/745b45e3b335d0e58709081c60326e2b876a58d429b615f4aecde3d31c800b24_statement.png",
+        "sha256": "b0f8627a2f5737e23ac5e666bb22219ec0638c8bd1bcb1b6d0d78ef16bdea4cb"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/745b45e3b335d0e58709081c60326e2b876a58d429b615f4aecde3d31c800b24_solution.png",
+        "sha256": "349221a5b0fb460b22299ffbec7fc18d035ea510ffb76f978b05d9303b5d1230"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "7e9b553c5f2a2a9bbf53216c66d72f6fbba04db00f646aa850f97ad4d0affb6c": {
+    "uid": "7e9b553c5f2a2a9bbf53216c66d72f6fbba04db00f646aa850f97ad4d0affb6c",
+    "year": 2024,
+    "grade": "11",
+    "num": "1",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/72/2023/sol-math-11-reg-23-24.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own full statement and solution checked; graph/board is a mathematical object, not a source illustration.",
+    "pages": [
+      5
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "09de5e9fd70a1eae251451102cfc33879218cd068ab26998d9f0c6fd8638aec2": {
+    "uid": "09de5e9fd70a1eae251451102cfc33879218cd068ab26998d9f0c6fd8638aec2",
+    "year": 2022,
+    "grade": "9",
+    "num": "7",
+    "source": "https://всош.цпм.рф/upload/files/Arhive_tasks/2022-23/school/math/taskssol-math-4-11-msk-sch-22-23.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own full statement and solution checked; graph/board is a mathematical object, not a source illustration.",
+    "pages": [
+      33,
+      34
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "94f1564c67cd550e4e5c67f8c661a399ab91a6ca7f18e2ebc3c5a2fdd6c8f3a7": {
+    "uid": "94f1564c67cd550e4e5c67f8c661a399ab91a6ca7f18e2ebc3c5a2fdd6c8f3a7",
+    "year": 2021,
+    "grade": "11",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2020-21/final/math/sol-math-11-day1-final-20-21.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own full statement and solution checked; graph/board is a mathematical object, not a source illustration.",
+    "pages": [
+      3,
+      4
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "801217d8dcc501730c84aaefbcbb860ac6208da91a8cd74bed31bb2fe89b0c68": {
+    "uid": "801217d8dcc501730c84aaefbcbb860ac6208da91a8cd74bed31bb2fe89b0c68",
+    "year": 2021,
+    "grade": "10",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2020-21/final/math/sol-math-10-day2-final-20-21.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own full statement and solution checked; graph/board is a mathematical object, not a source illustration.",
+    "pages": [
+      3
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "23164b57081dfc60b179535840b5522168148a4ccb00c9bb3765e5ad1eebf2aa": {
+    "uid": "23164b57081dfc60b179535840b5522168148a4ccb00c9bb3765e5ad1eebf2aa",
+    "year": 2021,
+    "grade": "11",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2020-21/final/math/sol-math-11-day2-final-20-21.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own full statement and solution checked; graph/board is a mathematical object, not a source illustration.",
+    "pages": [
+      3
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "4da12ec9c124ba8a894b6cec70c991cceed135f94adf094678eb97a298447a08": {
+    "uid": "4da12ec9c124ba8a894b6cec70c991cceed135f94adf094678eb97a298447a08",
+    "year": 2021,
+    "grade": "11",
+    "num": "8",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2020-21/final/math/sol-math-11-day2-final-20-21.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own full statement and solution checked; graph/board is a mathematical object, not a source illustration.",
+    "pages": [
+      6,
+      7
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "e02e57870c8c9acaa375b2c77d217191ad9907391bd73f147524cd712498f017": {
+    "uid": "e02e57870c8c9acaa375b2c77d217191ad9907391bd73f147524cd712498f017",
+    "year": 2020,
+    "grade": "11",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2020-21/final/math/sol-math-11-day1-final-20-21.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own full statement and solution checked; graph/board is a mathematical object, not a source illustration.",
+    "pages": [
+      3,
+      4
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "01ea6b11490476221583a54df663324523d5c4c094c86ec5de21f4ada02470c9": {
+    "uid": "01ea6b11490476221583a54df663324523d5c4c094c86ec5de21f4ada02470c9",
+    "year": 2020,
+    "grade": "9",
+    "num": "1",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2019-20/mun/math/ans-math-9-mun-msk-19-20.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own full statement and solution checked; graph/board is a mathematical object, not a source illustration.",
+    "pages": [
+      1
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "47214a30139509c045fb53ee2a4f89f11296bc5edf2b2ace6a8612f14a99056c": {
+    "uid": "47214a30139509c045fb53ee2a4f89f11296bc5edf2b2ace6a8612f14a99056c",
+    "year": 2019,
+    "grade": "10",
+    "num": "1",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/mun/math/ans-math-10-mun-18-9.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own full statement and solution checked; graph/board is a mathematical object, not a source illustration.",
+    "pages": [
+      1
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "c680b5d8115e6801684be93fa0cf7bff070b5d2b24373d36ac733ea2523e0e54": {
+    "uid": "c680b5d8115e6801684be93fa0cf7bff070b5d2b24373d36ac733ea2523e0e54",
+    "year": 2017,
+    "grade": "11",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/mun/math/ans-math-11-msk-mun-16-7.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own full statement and solution checked; graph/board is a mathematical object, not a source illustration.",
+    "pages": [
+      3
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "86edcad1548a21aa0ef7ed1c5345c479bf858aaffd67ecad28c259f3f6fe09d3": {
+    "uid": "86edcad1548a21aa0ef7ed1c5345c479bf858aaffd67ecad28c259f3f6fe09d3",
+    "year": 2012,
+    "grade": "10",
+    "num": "7",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/72/2024/sol-math-11-mun-komi-24-25.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own full statement and solution checked; graph/board is a mathematical object, not a source illustration.",
+    "pages": [
+      5
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "cbf3b20ca9066943e695d0961602fefb53b443278997ead3858f7127b24e8e97": {
+    "uid": "cbf3b20ca9066943e695d0961602fefb53b443278997ead3858f7127b24e8e97",
+    "year": 2015,
+    "grade": "11",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/okrug_tasks/math/ans-math-11-okr-msk-14-5.pdf#page=1",
+    "action": "own_sine_sign_graph_verified; unrelated_absolute_value_graph_excluded",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/cbf3b20ca9066943e695d0961602fefb53b443278997ead3858f7127b24e8e97_solution.png",
+        "sha256": "69c48618989a478467b4f37f39224c41ef79a0bac996b3e473be814517292856"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "3bc7df0e983a38aa4e1c5bdeaf8538d77f9feaedbb5ab7c71abc089aa184c2d7": {
+    "uid": "3bc7df0e983a38aa4e1c5bdeaf8538d77f9feaedbb5ab7c71abc089aa184c2d7",
+    "year": 2015,
+    "grade": "11",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/okrug_tasks/math/ans-math-11-okr-msk-14-5.pdf#page=1",
+    "action": "own_cube_diagram_verified",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/3bc7df0e983a38aa4e1c5bdeaf8538d77f9feaedbb5ab7c71abc089aa184c2d7_solution.png",
+        "sha256": "c91c68ea6ef5258385c4f59f4e0a414dfe6e1a47d8ebc97e88d580c3cff552f8"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "7b1a38786d4f02e52328684e8c1c5bb429d07277a3c2fd91d3fccaefa2a370c1": {
+    "uid": "7b1a38786d4f02e52328684e8c1c5bb429d07277a3c2fd91d3fccaefa2a370c1",
+    "year": 2024,
+    "grade": "10",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2023-24/final/math/sol-math-10-day1-final-23-24.pdf#page=3",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 3,
+    "rect": [
+      270.82598876953125,
+      387.51080322265625,
+      381.86517333984375,
+      503.5500183105469
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/7b1a38786d4f02e52328684e8c1c5bb429d07277a3c2fd91d3fccaefa2a370c1_solution.png",
+        "sha256": "77367a998efa60682f9f57bddf707d4394a3b2af4013f44a7792c629a22c2237"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "2e69ba18f0f55e7045e8ecf1f0eefa7fa85c0a5ce205eb32c48d7a90cb91f7a3": {
+    "uid": "2e69ba18f0f55e7045e8ecf1f0eefa7fa85c0a5ce205eb32c48d7a90cb91f7a3",
+    "year": 2024,
+    "grade": "10",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2023-24/final/math/sol-math-10-day1-final-23-24.pdf#page=6",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 6,
+    "rect": [
+      72.78700256347656,
+      48.64197540283203,
+      347.3590087890625,
+      249.25238037109375
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/2e69ba18f0f55e7045e8ecf1f0eefa7fa85c0a5ce205eb32c48d7a90cb91f7a3_solution.png",
+        "sha256": "bfb60b1d258c7d19c4e993332176793e28e80a4c0d6ffe7950fa0bb6ca3459d1"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "f4b7a9344a5045c9ffad7c978e450d12003906a933cefbad216552d879f194b5": {
+    "uid": "f4b7a9344a5045c9ffad7c978e450d12003906a933cefbad216552d879f194b5",
+    "year": 2023,
+    "grade": "10",
+    "num": "1",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2022-23/final/math/sol-math-10-day1-final-22-23.pdf#page=2",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 2,
+    "rect": [
+      126.61651611328125,
+      38.75341796875,
+      311.35650634765625,
+      207.22662353515625
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/f4b7a9344a5045c9ffad7c978e450d12003906a933cefbad216552d879f194b5_solution.png",
+        "sha256": "0ba3fe33c17a2b14c248e25bab9c14e5be7b585137dbfe1de901dfc8b623a647"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "7d881371c50d9fe0bcbdea32377aaf0c226392230dbd3673f3beafbf647f7206": {
+    "uid": "7d881371c50d9fe0bcbdea32377aaf0c226392230dbd3673f3beafbf647f7206",
+    "year": 2023,
+    "grade": "10",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2022-23/final/math/sol-math-10-day1-final-22-23.pdf#page=5",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 5,
+    "rect": [
+      253.87399291992188,
+      364.8669738769531,
+      381.9209899902344,
+      497.9139709472656
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/7d881371c50d9fe0bcbdea32377aaf0c226392230dbd3673f3beafbf647f7206_solution.png",
+        "sha256": "7e428ab050253088c7567f0e940520c085381690d0cf8b295b0484ebfe05087e"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "290fa471afe1901e719bcc4b162943265e0229612dd192e3e90bf79c24524110": {
+    "uid": "290fa471afe1901e719bcc4b162943265e0229612dd192e3e90bf79c24524110",
+    "year": 2023,
+    "grade": "10",
+    "num": "1",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2022-23/reg/math/sol-math-10-tur1-reg-22-23.pdf#page=3",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 3,
+    "rect": [
+      240.47601318359375,
+      182.06494140625,
+      368.5230712890625,
+      315.11199951171875
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/290fa471afe1901e719bcc4b162943265e0229612dd192e3e90bf79c24524110_solution.png",
+        "sha256": "69ffa7690e00474c587538fba5af3c3091194037e64afc8db18d3c9e30e4681a"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "d0a4445e54173fcc821a385497c27010c2cf66a68194c93eac1797b9538fee40": {
+    "uid": "d0a4445e54173fcc821a385497c27010c2cf66a68194c93eac1797b9538fee40",
+    "year": 2023,
+    "grade": "11",
+    "num": "8",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2022-23/reg/math/sol-math-11-tur2-reg-22-23.pdf#page=5",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 5,
+    "rect": [
+      126.52212524414062,
+      37.87689971923828,
+      305.5927429199219,
+      229.70413208007812
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/d0a4445e54173fcc821a385497c27010c2cf66a68194c93eac1797b9538fee40_solution.png",
+        "sha256": "ab9d1c33217230f83c7989ae176caa976454f65d57521cf61ab944e44b464d1c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "0b5af52cfa5a008effece4080762ab7ec9a773aad9e372dc8da27960e8b77d3b": {
+    "uid": "0b5af52cfa5a008effece4080762ab7ec9a773aad9e372dc8da27960e8b77d3b",
+    "year": 2022,
+    "grade": "9",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2021-22/final/math/sol-math-9-tur1-final-21-22.pdf#page=2",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 2,
+    "rect": [
+      49.115814208984375,
+      142.53634643554688,
+      387.0661315917969,
+      409.009765625
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/0b5af52cfa5a008effece4080762ab7ec9a773aad9e372dc8da27960e8b77d3b_solution.png",
+        "sha256": "8e388034fb722a1a0690f22482f4ef77bf692d055dc49eeda235207a889d767b"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "01a975dd3f398d892f14acb6be853e899e8642a503994638bce14273fcbaf1f0": {
+    "uid": "01a975dd3f398d892f14acb6be853e899e8642a503994638bce14273fcbaf1f0",
+    "year": 2022,
+    "grade": "10",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2021-22/final/math/sol-math-10-tur1-final-21-22.pdf#page=2",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 2,
+    "rect": [
+      59.03699493408203,
+      47.249481201171875,
+      372.70989990234375,
+      188.9361572265625
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/01a975dd3f398d892f14acb6be853e899e8642a503994638bce14273fcbaf1f0_solution.png",
+        "sha256": "92bb3ceec0b37294956d4ca8f5c4d544d9475ac2a85f1c937dbd266fb03ac8ff"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "afbd00ec3376d4eb2af569bf28dbd48996e49a9e0cea886d49b1c2b3a113074c": {
+    "uid": "afbd00ec3376d4eb2af569bf28dbd48996e49a9e0cea886d49b1c2b3a113074c",
+    "year": 2022,
+    "grade": "10",
+    "num": "7",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2021-22/final/math/sol-math-10-tur2-final-21-22.pdf#page=3",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 3,
+    "rect": [
+      48.46501159667969,
+      238.0512237548828,
+      372.4075622558594,
+      379.2839050292969
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/afbd00ec3376d4eb2af569bf28dbd48996e49a9e0cea886d49b1c2b3a113074c_solution.png",
+        "sha256": "546a2b856cfaa01c8160edd9826d37669296b02b20711138d978ad3a1de9f67f"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "94d63fdb252723bed45665c386b2f3635e7c9b1ec6dd11eb272e9be7c6ce0b50": {
+    "uid": "94d63fdb252723bed45665c386b2f3635e7c9b1ec6dd11eb272e9be7c6ce0b50",
+    "year": 2022,
+    "grade": "11",
+    "num": "8",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2021-22/final/math/sol-math-11-tur2-final-21-22.pdf#page=4",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 4,
+    "rect": [
+      73.71701049804688,
+      240.5985870361328,
+      358.46783447265625,
+      481.2423095703125
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/94d63fdb252723bed45665c386b2f3635e7c9b1ec6dd11eb272e9be7c6ce0b50_solution.png",
+        "sha256": "c76d68552b8f393c6c72482f9ff5299f1013393ab1ea438d3e24b29c50bf7499"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "0be99b44022f65e15744f709cdaccf3ed54f4f6861c7f3fb1aa3e9c6351324cc": {
+    "uid": "0be99b44022f65e15744f709cdaccf3ed54f4f6861c7f3fb1aa3e9c6351324cc",
+    "year": 2022,
+    "grade": "9",
+    "num": "8",
+    "source": "https://всош.цпм.рф/upload/files/Arhive_tasks/2022-23/school/math/taskssol-math-4-11-msk-sch-22-23.pdf#page=34",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 34,
+    "rect": [
+      38.86499786376953,
+      242.63372802734375,
+      375.1300048828125,
+      367.1220397949219
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/0be99b44022f65e15744f709cdaccf3ed54f4f6861c7f3fb1aa3e9c6351324cc_solution.png",
+        "sha256": "450b6498b9c424e91052380bfea20243456032a452e16107f35fba6476636048"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "af29f46989118e3de260a577dcfa3b74c44a97a3070b2954ce9ac7789cce963b": {
+    "uid": "af29f46989118e3de260a577dcfa3b74c44a97a3070b2954ce9ac7789cce963b",
+    "year": 2021,
+    "grade": "10",
+    "num": "1",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2020-21/mun/math/sol-math-9-11-mun-msk-20-21.pdf#page=9",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 9,
+    "rect": [
+      97.79899597167969,
+      266.96429443359375,
+      321.7239990234375,
+      494.6330261230469
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/af29f46989118e3de260a577dcfa3b74c44a97a3070b2954ce9ac7789cce963b_solution.png",
+        "sha256": "df57bb2dfdd85b85cbd0ece06ef502057effb3bed559925b696e5378e77a99ed"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "01fc6ddb61bb88119972b36145eef5fc651e6ea661122a270cf1ad61b8e25eac": {
+    "uid": "01fc6ddb61bb88119972b36145eef5fc651e6ea661122a270cf1ad61b8e25eac",
+    "year": 2020,
+    "grade": "9",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2019-20/mun/math/ans-math-9-mun-msk-19-20.pdf#page=2",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 2,
+    "rect": [
+      354.20001220703125,
+      170.5,
+      562.5,
+      445.20001220703125
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/01fc6ddb61bb88119972b36145eef5fc651e6ea661122a270cf1ad61b8e25eac_solution.png",
+        "sha256": "88f15598a0e418bd127a1a460b085b3400585f0ac4767574e9d4a7128f965e16"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "a1e578e2ddeb6e28edfaee6653eef0aca8f60ce20ab25ad82dd11aaadbd4c4bf": {
+    "uid": "a1e578e2ddeb6e28edfaee6653eef0aca8f60ce20ab25ad82dd11aaadbd4c4bf",
+    "year": 2020,
+    "grade": "10",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2019-20/mun/math/ans-math-10-mun-msk-19-20.pdf#page=2",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 2,
+    "rect": [
+      243.45001220703125,
+      548.8499755859375,
+      564.5,
+      783.8499755859375
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/a1e578e2ddeb6e28edfaee6653eef0aca8f60ce20ab25ad82dd11aaadbd4c4bf_solution.png",
+        "sha256": "6ae681614f7ee6c449c70d6767ffd224e21f3293f135124b96f44b4c0d60b1bc"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "b75f714c68d55c927fa2462a0f80caa169f7f1fec5185a377779ed04a02f466e": {
+    "uid": "b75f714c68d55c927fa2462a0f80caa169f7f1fec5185a377779ed04a02f466e",
+    "year": 2020,
+    "grade": "11",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2019-20/mun/math/ans-math-11-mun-msk-19-20.pdf#page=1",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 1,
+    "rect": [
+      296.6000061035156,
+      288.89996337890625,
+      565.5999755859375,
+      575.3999633789062
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/b75f714c68d55c927fa2462a0f80caa169f7f1fec5185a377779ed04a02f466e_solution.png",
+        "sha256": "5cd8bad667ec7ab0ac1d4599a50c8351569dce19f92b3b4f877194b55f6068a8"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "299991d00cdaf67f7edcd46289c192569c63f6282a6b9261a3a33fa0d0aa7478": {
+    "uid": "299991d00cdaf67f7edcd46289c192569c63f6282a6b9261a3a33fa0d0aa7478",
+    "year": 2020,
+    "grade": "11",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2019-20/mun/math/ans-math-11-mun-msk-19-20.pdf#page=2",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 2,
+    "rect": [
+      188.60000610351562,
+      311.0999755859375,
+      570.1500244140625,
+      480.8499755859375
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/299991d00cdaf67f7edcd46289c192569c63f6282a6b9261a3a33fa0d0aa7478_solution.png",
+        "sha256": "b24e122ac2964fdd549c2529886b57f25028a42161f2bc75006627ed103234fb"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "e0212b3ad9b3bace0d8db1715b2785fbba7421fb2ac47cb76911d6d5242026a0": {
+    "uid": "e0212b3ad9b3bace0d8db1715b2785fbba7421fb2ac47cb76911d6d5242026a0",
+    "year": 2020,
+    "grade": "11",
+    "num": "6",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2019-20/mun/math/ans-math-11-mun-msk-19-20.pdf#page=3",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 3,
+    "rect": [
+      289.3999938964844,
+      101.35000610351562,
+      566.5499877929688,
+      440.29998779296875
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/e0212b3ad9b3bace0d8db1715b2785fbba7421fb2ac47cb76911d6d5242026a0_solution.png",
+        "sha256": "d9504dfc49b975d87e389c1a731b38c93d24c8c3a289c39ff1be8ab7a6576c15"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "63c43bace68d92ca6c8452143bf07e67e0850865a2b9070f68c5d32ea3073500": {
+    "uid": "63c43bace68d92ca6c8452143bf07e67e0850865a2b9070f68c5d32ea3073500",
+    "year": 2020,
+    "grade": "9",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2020-21/reg/math/sol-math-9-day1-reg-20-21.pdf#page=10",
+    "action": "own_source_graphics_verified; prose_snapshot_or_clipped_graphic_replaced; solution_role",
+    "page": 10,
+    "rect": [
+      82.28099822998047,
+      93.6553955078125,
+      381.631591796875,
+      387.9630126953125
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/63c43bace68d92ca6c8452143bf07e67e0850865a2b9070f68c5d32ea3073500_solution.png",
+        "sha256": "9645f00ccc6569a9e9e4c10419a25854c8ae7044a6fd401bba189b54e67ba2e4"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "bf3d487ae0286f63a82d06677019259fc639ebe8097e40675717e3619875260e": {
+    "uid": "bf3d487ae0286f63a82d06677019259fc639ebe8097e40675717e3619875260e",
+    "year": 2020,
+    "grade": "10",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2019-20/mun/math/ans-math-10-mun-msk-19-20.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own full problem10.2 and solution verified on page1; attached circle belongs to problem10.4.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "39a5ef515d6fa3c5da3d4d80bc16447356fb3955e5dd03e517841147e92520f7": {
+    "uid": "39a5ef515d6fa3c5da3d4d80bc16447356fb3955e5dd03e517841147e92520f7",
+    "year": 2020,
+    "grade": "11",
+    "num": "9",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2019-20/region/math/ans-math-11-day2-reg-19-20.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      8
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/39a5ef515d6fa3c5da3d4d80bc16447356fb3955e5dd03e517841147e92520f7_solution.png",
+        "sha256": "41f9f356bf987e230a45d083f2e42d3b4ee8835aee2798f53038c9308b6ed573"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "6bed2116035df390ddc1b8ffd612031da90789131e19eb696539b5443b63892a": {
+    "uid": "6bed2116035df390ddc1b8ffd612031da90789131e19eb696539b5443b63892a",
+    "year": 2020,
+    "grade": "9",
+    "num": "6",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2020-21/school/math/ans-math-4-11-sch-msk-20-21.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      36
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/6bed2116035df390ddc1b8ffd612031da90789131e19eb696539b5443b63892a_solution.png",
+        "sha256": "3cdefe9d1419b10b959983c8cc8b6f8337eb0173623be91ccd636ce5afa68caa"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "d164b4e003bb0365fd18ee74884aa5110dc143511c1039363c47834b11824910": {
+    "uid": "d164b4e003bb0365fd18ee74884aa5110dc143511c1039363c47834b11824910",
+    "year": 2020,
+    "grade": "10",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2020-21/school/math/ans-math-4-11-sch-msk-20-21.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      41
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/d164b4e003bb0365fd18ee74884aa5110dc143511c1039363c47834b11824910_solution.png",
+        "sha256": "b4363e296a325841b7f50dcc58a6a1a2eb03be410672ab44cd16f71f4906c5b9"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "955922a87d754972805b45d8231a6c907d333c8424a15c7234c5fe607d31a2ed": {
+    "uid": "955922a87d754972805b45d8231a6c907d333c8424a15c7234c5fe607d31a2ed",
+    "year": 2020,
+    "grade": "10",
+    "num": "6",
+    "source": "https://mathus.ru/olymp/VserosMath2021S10.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/955922a87d754972805b45d8231a6c907d333c8424a15c7234c5fe607d31a2ed_statement.png",
+        "sha256": "82b6952d0f0967fc6dfd9060a19efae22d2cdd0c042c56715b18140f63b776ff"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "e3f7f4ae711fb06f84458018cad8807a2ba4aeedf50a94fb9d6a40a4f1e52a39": {
+    "uid": "e3f7f4ae711fb06f84458018cad8807a2ba4aeedf50a94fb9d6a40a4f1e52a39",
+    "year": 2019,
+    "grade": "9",
+    "num": "3",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/mun/math/ans-math-9-mun-18-9.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/e3f7f4ae711fb06f84458018cad8807a2ba4aeedf50a94fb9d6a40a4f1e52a39_solution.png",
+        "sha256": "9e5f19df6d77e7beaf8af53c72e4c0eb13f05a99a06e5543d603d2a9fe3faef0"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "c15df00f209b21c0fd35a07b5eecdbb784d6e7329bbaae810374ea12f79453a4": {
+    "uid": "c15df00f209b21c0fd35a07b5eecdbb784d6e7329bbaae810374ea12f79453a4",
+    "year": 2019,
+    "grade": "9",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/mun/math/ans-math-9-mun-18-9.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/c15df00f209b21c0fd35a07b5eecdbb784d6e7329bbaae810374ea12f79453a4_solution.png",
+        "sha256": "17d04a422ae52ce870ffcb6699be50c6ebea116cd54d5027d8f5f5a4e7f3d058"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "b1ef22440e21076d2a17057f77580f605833ab41e64d9c888fda93dd62447f51": {
+    "uid": "b1ef22440e21076d2a17057f77580f605833ab41e64d9c888fda93dd62447f51",
+    "year": 2019,
+    "grade": "11",
+    "num": "6",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2018-19/mun/math/ans-math-11-mun-18-9.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      4,
+      5
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/b1ef22440e21076d2a17057f77580f605833ab41e64d9c888fda93dd62447f51_solution.png",
+        "sha256": "5383e2376098f22ca5ed7fc81ca7bca567cef579dd72cbf1ebb19bff3bc00fa1"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/b1ef22440e21076d2a17057f77580f605833ab41e64d9c888fda93dd62447f51_solution_2.png",
+        "sha256": "01b757a9b44277cbd47ea2908daa98a6768b2433cbfbc93331f7f2100ef44200"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "1c8d59942348467e69fec383b78ac469bd3b0ee687ee42df5ba754d0f16702bf": {
+    "uid": "1c8d59942348467e69fec383b78ac469bd3b0ee687ee42df5ba754d0f16702bf",
+    "year": 2018,
+    "grade": "9",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2017-18/final/math/72-ans-math-9-final-17-8.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      5
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/1c8d59942348467e69fec383b78ac469bd3b0ee687ee42df5ba754d0f16702bf_solution.png",
+        "sha256": "5128e50f6b169b2d16383d29ca638adca3d812e0ca0f73ef6a8dea0a6300516c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "d33632f29296eedf7b507c0f24ac3447b58f6920324149514a997a00229bda1d": {
+    "uid": "d33632f29296eedf7b507c0f24ac3447b58f6920324149514a997a00229bda1d",
+    "year": 2018,
+    "grade": "11",
+    "num": "6",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2017-18/final/math/72-ans-math-11-final-17-8.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      8
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/d33632f29296eedf7b507c0f24ac3447b58f6920324149514a997a00229bda1d_solution.png",
+        "sha256": "3dd73d12f6879b83c178a7f0f46961b8359d04441f1ab911f6c83e8125baf5a6"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "e4ad37ca1baa4e616844cc6391c18e0a055a7cc2a39209b4efafe2f5624c45f5": {
+    "uid": "e4ad37ca1baa4e616844cc6391c18e0a055a7cc2a39209b4efafe2f5624c45f5",
+    "year": 2018,
+    "grade": "9",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2017-18/mun/math/ans-math-9-mun-msk-17-8.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/e4ad37ca1baa4e616844cc6391c18e0a055a7cc2a39209b4efafe2f5624c45f5_solution.png",
+        "sha256": "00efd69588fb880b5d3f53564558bad87f9609cfa0733aa751f3cbf3549c3c44"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "b798a58241222a203d508f5c8f7fbf6e108a4aea65816f0d2e6c519aa9ccbe84": {
+    "uid": "b798a58241222a203d508f5c8f7fbf6e108a4aea65816f0d2e6c519aa9ccbe84",
+    "year": 2018,
+    "grade": "10",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2017-18/mun/math/ans-math-10-mun-msk-17-8.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      2,
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/b798a58241222a203d508f5c8f7fbf6e108a4aea65816f0d2e6c519aa9ccbe84_solution.png",
+        "sha256": "f8768e3e678cf31cf2051fef4871aacd5b92b50b59bb6b24897257f884793852"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/b798a58241222a203d508f5c8f7fbf6e108a4aea65816f0d2e6c519aa9ccbe84_solution_2.png",
+        "sha256": "6751755436b7c1102304c2afaff8236e7a34efb7ce85368b62507bcda722f0ab"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "c08490dc8ac6fb80f549c38e413632ac36c1f2abd83e8bfaba448bddbb64dcd0": {
+    "uid": "c08490dc8ac6fb80f549c38e413632ac36c1f2abd83e8bfaba448bddbb64dcd0",
+    "year": 2018,
+    "grade": "11",
+    "num": "3",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2017-18/mun/math/ans-math-11-mun-msk-17-8.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/c08490dc8ac6fb80f549c38e413632ac36c1f2abd83e8bfaba448bddbb64dcd0_solution.png",
+        "sha256": "363d9e5d4042790974f60d71438eae65f45ce18b020c64cdb7b27d91e1a66e96"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "2b02ef44e78b25e08ca0cbba74750d6e9fd3c298915388b7e331626510a3c1e8": {
+    "uid": "2b02ef44e78b25e08ca0cbba74750d6e9fd3c298915388b7e331626510a3c1e8",
+    "year": 2018,
+    "grade": "11",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2017-18/mun/math/ans-math-11-mun-msk-17-8.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/2b02ef44e78b25e08ca0cbba74750d6e9fd3c298915388b7e331626510a3c1e8_solution.png",
+        "sha256": "78a31c4b571f62ddd5d21c00412449b65a87402e0fc108d93733c86c8962bec3"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "904f84ede872199c91694ba00ea1c0946431340eaa1b923e5cc2e65340e7e9dd": {
+    "uid": "904f84ede872199c91694ba00ea1c0946431340eaa1b923e5cc2e65340e7e9dd",
+    "year": 2018,
+    "grade": "11",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2017-18/region/math/ans-math-11-day1-reg-17-8.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      4
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/904f84ede872199c91694ba00ea1c0946431340eaa1b923e5cc2e65340e7e9dd_solution.png",
+        "sha256": "3bc9ffc40e40d27971f79107079e27bc66bf3631caa1aff7bc7266d4e1973713"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "2294f3dc8004c9fcf17fda4f9bab75d3843c1561a61a58d4a2001f0d014bc1d0": {
+    "uid": "2294f3dc8004c9fcf17fda4f9bab75d3843c1561a61a58d4a2001f0d014bc1d0",
+    "year": 2017,
+    "grade": "9",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/final/math/ans-math-9-tur1-final-16-7.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      4
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/2294f3dc8004c9fcf17fda4f9bab75d3843c1561a61a58d4a2001f0d014bc1d0_solution.png",
+        "sha256": "65cca193a9627eeed438fcb6af2482f0d2e60b80022d4cf49a2d4db191fff647"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "91e5dfe12e58944a7e1bcf5ea262a8c0bfc038139a55495255fdc8bfe8732b73": {
+    "uid": "91e5dfe12e58944a7e1bcf5ea262a8c0bfc038139a55495255fdc8bfe8732b73",
+    "year": 2017,
+    "grade": "11",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/final/math/ans-math-11-tur1-final-16-7.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      4
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/91e5dfe12e58944a7e1bcf5ea262a8c0bfc038139a55495255fdc8bfe8732b73_solution.png",
+        "sha256": "a8d6b8de62f46ff89d3cec92a494bc1d3451235811096fe3c52e9f9f9f44a9ba"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "307f890a2fe12ea9e6833357ff6d85bd4147afcd043b41ed78f2e1f0deaa8436": {
+    "uid": "307f890a2fe12ea9e6833357ff6d85bd4147afcd043b41ed78f2e1f0deaa8436",
+    "year": 2017,
+    "grade": "10",
+    "num": "1",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/mun/math/ans-math-10-msk-mun-16-7.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      1,
+      1
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/307f890a2fe12ea9e6833357ff6d85bd4147afcd043b41ed78f2e1f0deaa8436_statement.png",
+        "sha256": "5a14b6a57173a303c0f31570ba2cb24b42701755cf7c6e40cd99a9946e9ec5ed"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/307f890a2fe12ea9e6833357ff6d85bd4147afcd043b41ed78f2e1f0deaa8436_solution.png",
+        "sha256": "1ac62a8d276e15f10d5c6e6c4fb1cc348fc19c7db74e6af3a9e6da2cbdc2bac7"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "6ace6f30d91546155374b66ea43905f9f0d6878502c007f4630809cece08da24": {
+    "uid": "6ace6f30d91546155374b66ea43905f9f0d6878502c007f4630809cece08da24",
+    "year": 2017,
+    "grade": "10",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/mun/math/ans-math-10-msk-mun-16-7.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/6ace6f30d91546155374b66ea43905f9f0d6878502c007f4630809cece08da24_solution.png",
+        "sha256": "0213c9a5ceb293ba73ac9a6f7046e2a331511b88650687559ec7f975c756f230"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "cc056b72e0e771f2e7f90baef585c85fe8ea27c4e018070f0f44303e812d47ca": {
+    "uid": "cc056b72e0e771f2e7f90baef585c85fe8ea27c4e018070f0f44303e812d47ca",
+    "year": 2017,
+    "grade": "10",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/mun/math/ans-math-10-msk-mun-16-7.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/cc056b72e0e771f2e7f90baef585c85fe8ea27c4e018070f0f44303e812d47ca_solution.png",
+        "sha256": "a989500a4236a4113be48d2e072e89f634ab568a502489edb3b1fb35d9b4c628"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "97e791d08051fb73089cbad3fca9d7854f974c4e2a3b46ffa6b2b6e9ab0c0e1e": {
+    "uid": "97e791d08051fb73089cbad3fca9d7854f974c4e2a3b46ffa6b2b6e9ab0c0e1e",
+    "year": 2017,
+    "grade": "11",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/mun/math/ans-math-11-msk-mun-16-7.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      1,
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/97e791d08051fb73089cbad3fca9d7854f974c4e2a3b46ffa6b2b6e9ab0c0e1e_solution.png",
+        "sha256": "fde68f130449de7e739ddb0532d1ca29b46ee268f45cfd507ea3ed71a5bd983f"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/97e791d08051fb73089cbad3fca9d7854f974c4e2a3b46ffa6b2b6e9ab0c0e1e_solution_2.png",
+        "sha256": "34d3e1e592f794ccaab34c4ee0779c04b6526a0d9ba6c70226d4355cecad9a39"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "dc5e5f94075aa154517187663aeda0fba365275d700af0cc71365732f5ed77cd": {
+    "uid": "dc5e5f94075aa154517187663aeda0fba365275d700af0cc71365732f5ed77cd",
+    "year": 2017,
+    "grade": "11",
+    "num": "3",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/mun/math/ans-math-11-msk-mun-16-7.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/dc5e5f94075aa154517187663aeda0fba365275d700af0cc71365732f5ed77cd_solution.png",
+        "sha256": "229541b87d7000de708d013072fa37963d4cc290cfbc539d531f9e44fda476b4"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/dc5e5f94075aa154517187663aeda0fba365275d700af0cc71365732f5ed77cd_solution_2.png",
+        "sha256": "d6317f2ebc6cc2a6deffdade18129dbf28b36dd743e72822703a4374e44a251a"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "0bd382b207ae1cb17bf99c0ed9287ca16b156ba322521c0eebf9858316b9ca2d": {
+    "uid": "0bd382b207ae1cb17bf99c0ed9287ca16b156ba322521c0eebf9858316b9ca2d",
+    "year": 2017,
+    "grade": "9",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/region/math/ans-math-9-day1-reg-16-7.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/0bd382b207ae1cb17bf99c0ed9287ca16b156ba322521c0eebf9858316b9ca2d_solution.png",
+        "sha256": "55971a828ff6e119dd82330504411aa5074faecc02103f716bc3669914a3d50c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "5743d6069aa9e6321c7db45db6cdb32951c00142375c8983eefb5a8200efc017": {
+    "uid": "5743d6069aa9e6321c7db45db6cdb32951c00142375c8983eefb5a8200efc017",
+    "year": 2017,
+    "grade": "11",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/region/math/ans-math-11-day1-reg-16-7.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/5743d6069aa9e6321c7db45db6cdb32951c00142375c8983eefb5a8200efc017_solution.png",
+        "sha256": "028f703950e571359c82095b89cf607c05cb2b3aff88eb656e07c3aa3fe2668c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "dcfb05e7cc2cb25215c3d6e1cfd59280f4f48d6f523c050a4606c023327677e6": {
+    "uid": "dcfb05e7cc2cb25215c3d6e1cfd59280f4f48d6f523c050a4606c023327677e6",
+    "year": 2017,
+    "grade": "11",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/region/math/ans-math-11-day1-reg-16-7.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/dcfb05e7cc2cb25215c3d6e1cfd59280f4f48d6f523c050a4606c023327677e6_solution.png",
+        "sha256": "e435a88010e4f16fbbc2adce09c83a5e95a33597ae006957b79950604f5d350d"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "95cce8e0cc4143bb6e4a3a8ede82b0061b8494840930e20141381a82460e6baa": {
+    "uid": "95cce8e0cc4143bb6e4a3a8ede82b0061b8494840930e20141381a82460e6baa",
+    "year": 2017,
+    "grade": "9",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/region/math/ans-math-9-day2-reg-16-7.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/95cce8e0cc4143bb6e4a3a8ede82b0061b8494840930e20141381a82460e6baa_solution.png",
+        "sha256": "6f89c62a91826662d9754aa2accc0a9f405d245e40b5c04fb3cfc379cbf09a43"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "82c5bf31069156b17a64026e93393a9ad5e6e88643de585c5bf0716029b75b34": {
+    "uid": "82c5bf31069156b17a64026e93393a9ad5e6e88643de585c5bf0716029b75b34",
+    "year": 2017,
+    "grade": "11",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/region/math/ans-math-11-day2-reg-16-7.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/82c5bf31069156b17a64026e93393a9ad5e6e88643de585c5bf0716029b75b34_solution.png",
+        "sha256": "9c1374608593c6b1c1cf269039a0b6c92c93868acc45d7480babc67c0da0716a"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "217e2bd1b66454201982744f0a77e374cb0f7bcbd4285a7486b5992c8a42285c": {
+    "uid": "217e2bd1b66454201982744f0a77e374cb0f7bcbd4285a7486b5992c8a42285c",
+    "year": 2017,
+    "grade": "9",
+    "num": "5",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/72/2024/sol-math-9-mun-orenb-24-25.pdf",
+    "action": "own_graphics_verified; clipped_or_foreign_automatic_crops_replaced; roles_corrected",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/217e2bd1b66454201982744f0a77e374cb0f7bcbd4285a7486b5992c8a42285c_solution.png",
+        "sha256": "9dfacae8d5a5c04413b28b1f0319872c8278f63caeaf5350f8301ca323354c71"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "b0361b4bf6ef3d698a6be7454494f965fb7bbb63b787837fd4f6b278bbd191c8": {
+    "uid": "b0361b4bf6ef3d698a6be7454494f965fb7bbb63b787837fd4f6b278bbd191c8",
+    "year": 2017,
+    "grade": "10",
+    "num": "7",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2016-17/final/math/ans-math-10-tur2-final-16-7.pdf",
+    "action": "no_figure_verified",
+    "reason": "Complete own problem10.7 and proof on source pages5–6 verified; prose-only, later triangle figure belongs to10.8.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "4d38650de2f1d8bcb417966e6b3227e8364aba2163d90d0b56005bfeded4777f": {
+    "uid": "4d38650de2f1d8bcb417966e6b3227e8364aba2163d90d0b56005bfeded4777f",
+    "year": 2016,
+    "grade": "9",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2015-16/final/math/ans-math-9-day1-final-15-6.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      4
+    ],
+    "statement_template_page": 3,
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/4d38650de2f1d8bcb417966e6b3227e8364aba2163d90d0b56005bfeded4777f_statement.png",
+        "sha256": "f4aea0216dbe60da09cc78ddef305d7ea2bdfe6d52759ec5e0e229b3dccbe300"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/4d38650de2f1d8bcb417966e6b3227e8364aba2163d90d0b56005bfeded4777f_solution.png",
+        "sha256": "05743081503b56d8e4abd6bd0584a9991344de00988c1ce26736b3bdf0494e94"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "63e49114c25cb5db481863b1788f3365866b34c639156caeb13f6a7ab0eceadb": {
+    "uid": "63e49114c25cb5db481863b1788f3365866b34c639156caeb13f6a7ab0eceadb",
+    "year": 2016,
+    "grade": "9",
+    "num": "6",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2015-16/final/math/ans-math-9-day2-final-15-6.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/63e49114c25cb5db481863b1788f3365866b34c639156caeb13f6a7ab0eceadb_solution.png",
+        "sha256": "fd54b3e52d444c0c252ef266eff49486b078b4688fec5600328e13a7ad32f0db"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "df04d7691b137d4c5be35275ce3981087f9c31bfc9fc72ad13e45cc314a26b32": {
+    "uid": "df04d7691b137d4c5be35275ce3981087f9c31bfc9fc72ad13e45cc314a26b32",
+    "year": 2016,
+    "grade": "10",
+    "num": "6",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2015-16/final/math/ans-math-10-day2-final-15-6.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/df04d7691b137d4c5be35275ce3981087f9c31bfc9fc72ad13e45cc314a26b32_solution.png",
+        "sha256": "b229834f0a3c821e807148fc496c951dbb2e6efff70514a51886b94d70039caa"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "c90e0987b90156d9d638ffc242169577a679f1194d04ab449bb8224cc6ba37f7": {
+    "uid": "c90e0987b90156d9d638ffc242169577a679f1194d04ab449bb8224cc6ba37f7",
+    "year": 2016,
+    "grade": "11",
+    "num": "8",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2015-16/final/math/ans-math-11-day2-final-15-6.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      4
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/c90e0987b90156d9d638ffc242169577a679f1194d04ab449bb8224cc6ba37f7_solution.png",
+        "sha256": "106d843c5720edd4e0825755fde4e2aff70ab0c0d6152632400f3c1f330ae3bf"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "f97f9b4a5c3059f6d685ff4c662900d60a4aba694e3f2ffb9b8c4f1ea9c0c046": {
+    "uid": "f97f9b4a5c3059f6d685ff4c662900d60a4aba694e3f2ffb9b8c4f1ea9c0c046",
+    "year": 2016,
+    "grade": "9",
+    "num": "3",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2015-16/mun/math/ans-math-9-msk-mun-15-6.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/f97f9b4a5c3059f6d685ff4c662900d60a4aba694e3f2ffb9b8c4f1ea9c0c046_solution.png",
+        "sha256": "b2c1f0a48777a4776745cee460182c25d4a7d82d75cf8dd776de037792f0d44e"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "505c024b6881193a4469f064ce3bcfcd923bc2efcdf71790e75f058fb52ca889": {
+    "uid": "505c024b6881193a4469f064ce3bcfcd923bc2efcdf71790e75f058fb52ca889",
+    "year": 2016,
+    "grade": "9",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2015-16/mun/math/ans-math-9-msk-mun-15-6.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      2,
+      2
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/505c024b6881193a4469f064ce3bcfcd923bc2efcdf71790e75f058fb52ca889_statement.png",
+        "sha256": "c22fda51254079d12642565cef436dc105594c6a75253ab8e4b5f1e626449f40"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/505c024b6881193a4469f064ce3bcfcd923bc2efcdf71790e75f058fb52ca889_solution.png",
+        "sha256": "c920d164e60e7eb9dd39b4bd2e3030d754255736f5e17976cf6b467abebca634"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "349e7ceff284fe4ccabb700c92b6c951b637890221f9720ea18af3dc757cff67": {
+    "uid": "349e7ceff284fe4ccabb700c92b6c951b637890221f9720ea18af3dc757cff67",
+    "year": 2016,
+    "grade": "10",
+    "num": "7",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2015-16/region/math/ans-math-10-day2-reg-15-6.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/349e7ceff284fe4ccabb700c92b6c951b637890221f9720ea18af3dc757cff67_solution.png",
+        "sha256": "c63227af418c7aa47ce3fedeec0070bbb8148fd5359862f2f81812a9b5b41b0b"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "ea68a1fe6ee125203a2c7a14cc45aff9c403f041a9d15187c7ca0d4f90ece9cb": {
+    "uid": "ea68a1fe6ee125203a2c7a14cc45aff9c403f041a9d15187c7ca0d4f90ece9cb",
+    "year": 2015,
+    "grade": "10",
+    "num": "7",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2015-16/region/math/ans-math-10-day2-reg-15-6.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/ea68a1fe6ee125203a2c7a14cc45aff9c403f041a9d15187c7ca0d4f90ece9cb_solution.png",
+        "sha256": "c63227af418c7aa47ce3fedeec0070bbb8148fd5359862f2f81812a9b5b41b0b"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "758d98df7cda31d6267df4bbdc47f31a8effe6edcc4e4bc6273328eb94c72873": {
+    "uid": "758d98df7cda31d6267df4bbdc47f31a8effe6edcc4e4bc6273328eb94c72873",
+    "year": 2015,
+    "grade": "11",
+    "num": "1",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/final_tasks/math/ans-math-11-1day-final-14-5.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/758d98df7cda31d6267df4bbdc47f31a8effe6edcc4e4bc6273328eb94c72873_solution.png",
+        "sha256": "9f189c77e87621ea759babfae80373b1cf33658922d53168e4f122b195727fc7"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "8df9f20cf63bcd427d4ad195e1306324553fe2ef5d913b2fc61f4d250a4149b6": {
+    "uid": "8df9f20cf63bcd427d4ad195e1306324553fe2ef5d913b2fc61f4d250a4149b6",
+    "year": 2015,
+    "grade": "11",
+    "num": "7",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/final_tasks/math/ans-math-11-2day-final-14-5.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/8df9f20cf63bcd427d4ad195e1306324553fe2ef5d913b2fc61f4d250a4149b6_solution.png",
+        "sha256": "c3329340b4e9861bbd34b8e649a817a44c3a90836a005b98cf07892892bf6295"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "5f607701f74e5be8d363b874fd46feae528023061a431ef2abc9c777bc20034e": {
+    "uid": "5f607701f74e5be8d363b874fd46feae528023061a431ef2abc9c777bc20034e",
+    "year": 2015,
+    "grade": "10",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/okrug_tasks/math/ans-math-10-okr-msk-14-5.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/5f607701f74e5be8d363b874fd46feae528023061a431ef2abc9c777bc20034e_solution.png",
+        "sha256": "317f4efcd15ebb291d5a1a0f2433a2c52c1c16a4f09db23859c63c1945f8166f"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "8321d5b3e3e60f9aad3673a3d3297cf5852d4ae316d3d08a7356fee4457b27a6": {
+    "uid": "8321d5b3e3e60f9aad3673a3d3297cf5852d4ae316d3d08a7356fee4457b27a6",
+    "year": 2015,
+    "grade": "11",
+    "num": "3",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/okrug_tasks/math/ans-math-11-okr-msk-14-5.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/8321d5b3e3e60f9aad3673a3d3297cf5852d4ae316d3d08a7356fee4457b27a6_solution.png",
+        "sha256": "22cd4c6dbd27655c32b762b35b20558ce174fd131dde619505bb78d1af011c96"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "6f7333d3523bd75e059ee3043b593a9fc06504208bf58024873a3920a97d13a7": {
+    "uid": "6f7333d3523bd75e059ee3043b593a9fc06504208bf58024873a3920a97d13a7",
+    "year": 2015,
+    "grade": "9",
+    "num": "8",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2015-16/region/math/ans-math-9-day2-reg-15-6.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      4
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/6f7333d3523bd75e059ee3043b593a9fc06504208bf58024873a3920a97d13a7_solution.png",
+        "sha256": "f039d547e898867e68905ace1c95db4d31ed3c2de51a838daf208661edf79282"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "03d0d1291ac490feb019b79ed44afde191c17846f8c6f7474306f82c9e1264d4": {
+    "uid": "03d0d1291ac490feb019b79ed44afde191c17846f8c6f7474306f82c9e1264d4",
+    "year": 2015,
+    "grade": "11",
+    "num": "7",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2015-16/region/math/ans-math-11-day2-reg-15-6.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      4
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/03d0d1291ac490feb019b79ed44afde191c17846f8c6f7474306f82c9e1264d4_solution.png",
+        "sha256": "940e0c4dd1f323602176c6764194dd49a8e7a0425a3b960d67080b7bc0a2f85a"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "f3a9178a3575f7abf7be1fb57af3a8ac7c857701ea9de8a3d9160006db2b137c": {
+    "uid": "f3a9178a3575f7abf7be1fb57af3a8ac7c857701ea9de8a3d9160006db2b137c",
+    "year": 2015,
+    "grade": "9",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/school_tasks/math/ans-math-9-sch-msk-14-5.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/f3a9178a3575f7abf7be1fb57af3a8ac7c857701ea9de8a3d9160006db2b137c_solution.png",
+        "sha256": "256d94651e412ba761457248eacaae7c6b10eb17e1f45d0d537850ca1acd9184"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "6a87b980c4c049e74fc4953ed3c3fdce4ce5e4198ad5773affad8f21968e74dc": {
+    "uid": "6a87b980c4c049e74fc4953ed3c3fdce4ce5e4198ad5773affad8f21968e74dc",
+    "year": 2015,
+    "grade": "10",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/school_tasks/math/ans-math-10-sch-msk-14-5.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/6a87b980c4c049e74fc4953ed3c3fdce4ce5e4198ad5773affad8f21968e74dc_solution.png",
+        "sha256": "a60903e1903498799e69b9abae2667003c7b882c2e60a67016e39a2474b35a59"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "ef9e0dca6a0f30d6c73d4cec5efa7fdddeb5104b5e447fc4765361970f1c63d4": {
+    "uid": "ef9e0dca6a0f30d6c73d4cec5efa7fdddeb5104b5e447fc4765361970f1c63d4",
+    "year": 2014,
+    "grade": "9",
+    "num": "3",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/okrug_tasks/math/ans-math-9-okr-msk-14-5.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/ef9e0dca6a0f30d6c73d4cec5efa7fdddeb5104b5e447fc4765361970f1c63d4_solution.png",
+        "sha256": "714023b3b2f193916710123917816586acc9494377c35b7c84ee347ff043986d"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "e52bb0ae57bf5f18bce1e722c429b07efb8e5dcbed6fc724b236e0aa477a7c1e": {
+    "uid": "e52bb0ae57bf5f18bce1e722c429b07efb8e5dcbed6fc724b236e0aa477a7c1e",
+    "year": 2014,
+    "grade": "9",
+    "num": "6",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2014-15/school_tasks/math/ans-math-9-sch-msk-14-5.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/e52bb0ae57bf5f18bce1e722c429b07efb8e5dcbed6fc724b236e0aa477a7c1e_solution.png",
+        "sha256": "256d94651e412ba761457248eacaae7c6b10eb17e1f45d0d537850ca1acd9184"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "63cb63a33d8da92825664a7aee8a91af6226b9c805efdf8bb26b94fe164cb2d0": {
+    "uid": "63cb63a33d8da92825664a7aee8a91af6226b9c805efdf8bb26b94fe164cb2d0",
+    "year": 2013,
+    "grade": "9",
+    "num": "5",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2013-14/okrug_tasks/math/ans-math-9-okr-msk-2013-4.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      2
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/63cb63a33d8da92825664a7aee8a91af6226b9c805efdf8bb26b94fe164cb2d0_solution.png",
+        "sha256": "9974ba92d675f543f8eb016b264de8b3f223dc7a14766c9a4966bca064847ccc"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "ed87499579ff387aaf39baeb2eabb90d9ee1366d95f2b363336c62395d3b0912": {
+    "uid": "ed87499579ff387aaf39baeb2eabb90d9ee1366d95f2b363336c62395d3b0912",
+    "year": 2011,
+    "grade": "11",
+    "num": "6",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2010-2011/region_tasks/new-cut/math/ans-math-11-day2-reg-2010-1.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/ed87499579ff387aaf39baeb2eabb90d9ee1366d95f2b363336c62395d3b0912_solution.png",
+        "sha256": "32a6a5b7510789c20f8a41e2e130c794d9857f44c3f891269605842b4bb57760"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "f468da4308550dc8a0f6dae99c42c5e3ba5789443f59bec0e2fc457f72e81f88": {
+    "uid": "f468da4308550dc8a0f6dae99c42c5e3ba5789443f59bec0e2fc457f72e81f88",
+    "year": 2010,
+    "grade": "9",
+    "num": "2",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2009-2010/region_tasks/new-cut/math/ans-math-9-day1-reg-2009-10.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      3
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/f468da4308550dc8a0f6dae99c42c5e3ba5789443f59bec0e2fc457f72e81f88_solution.png",
+        "sha256": "ccd36bef78487a72dec140988ee8a660ddb921842f4bd56d92a791b52a7a899c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "25178ec4ec9fb277b122a0bf1a833b96155c0e01d63007529c661f3ab01a41a8": {
+    "uid": "25178ec4ec9fb277b122a0bf1a833b96155c0e01d63007529c661f3ab01a41a8",
+    "year": 2010,
+    "grade": "11",
+    "num": "6",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2009-2010/region_tasks/new-cut/math/ans-math-11-day2-reg-2009-10.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/25178ec4ec9fb277b122a0bf1a833b96155c0e01d63007529c661f3ab01a41a8_solution.png",
+        "sha256": "8f5456d6a1f5a3fc1618740c132b0af0047078a581b8893328f94780379bd527"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "941eca2c31ba1a4b2c17a7abd1571d18a6ced806104e10c30128432c58a5f22c": {
+    "uid": "941eca2c31ba1a4b2c17a7abd1571d18a6ced806104e10c30128432c58a5f22c",
+    "year": 2016,
+    "grade": "11",
+    "num": "1",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2015-16/mun/math/ans-math-11-msk-mun-15-6.pdf#p1",
+    "action": "restored_own_formula_and_solution",
+    "pages": [
+      1
+    ],
+    "reason": "Original 11.1 contains three nested square roots; foreign pyramid proof removed.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "8587db0f14528c7a7c5f8361fa9257e31fd8269ccb6d5a0f66db6303c4d08392": {
+    "uid": "8587db0f14528c7a7c5f8361fa9257e31fd8269ccb6d5a0f66db6303c4d08392",
+    "year": 2013,
+    "grade": "9",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2013-14/okrug_tasks/math/ans-math-9-okr-msk-2013-4.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own task9.4 statement and full proof have no drawing; neighboring geometry figures are9.3 and9.5.",
+    "pages": [
+      1,
+      2
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "5677bd255d9305ce234d9d6e0bb6143e6510bd7e5ef5472535671c75042e4b80": {
+    "uid": "5677bd255d9305ce234d9d6e0bb6143e6510bd7e5ef5472535671c75042e4b80",
+    "year": 2012,
+    "grade": "10",
+    "num": "7",
+    "source": "https://olympiads.mccme.ru/vmo/2012/iii-2.pdf",
+    "action": "no_figure_verified",
+    "reason": "Full original source tasks9.8 and10.7 and complete proof verified; no illustration is provided. Earlier attached prose fragment was not a figure.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "4234fda680256f77aad66a74d00f9715e40e45b2aad13a9abbb77f11fdc11694": {
+    "uid": "4234fda680256f77aad66a74d00f9715e40e45b2aad13a9abbb77f11fdc11694",
+    "year": 2016,
+    "grade": "10",
+    "num": "1",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2015-16/mun/math/ans-math-10-msk-mun-15-6.pdf",
+    "action": "Both letter tables individually verified; first is statement, rearranged table is solution",
+    "page": 1,
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/4234fda680256f77aad66a74d00f9715e40e45b2aad13a9abbb77f11fdc11694_statement.png",
+        "sha256": "18e1f406fe8a01c66b3e12b4a1ada5e39772ec551862774dd913f5af5a934e09"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/4234fda680256f77aad66a74d00f9715e40e45b2aad13a9abbb77f11fdc11694_solution.png",
+        "sha256": "d3a49f39921654a1c59d6a2579620347a325f30c9324625966f4aae9024aa0ef"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "4b2823ae94c3379c89268fccc99a4aba4197d5e67a13b1090836b2e8fa03d4d2": {
+    "uid": "4b2823ae94c3379c89268fccc99a4aba4197d5e67a13b1090836b2e8fa03d4d2",
+    "year": 2025,
+    "grade": "9",
+    "num": "2",
+    "source": "https://global.s3.cloud.ru/olmath-files/vsosh/school-math/sirius/2025-26/gruppa-2/razbor-9-klass.pdf",
+    "action": "Own task2.1 verified. Source PDF board is vertically inverted relative to its wording (known boundary displayed below although wording says erased below). Board and labels vertically reflected, preserving original glyphs upright; no cells or values invented. Imported inconsistent OCR boundary list removed; wrong answer11 corrected to source10.",
+    "pages": [
+      2,
+      3
+    ],
+    "orientation_repair": "vertical_reflection_of_grid_and_label_positions_only",
+    "bottom_answer": [
+      4,
+      2,
+      0,
+      0,
+      2,
+      1
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/4b2823ae94c3379c89268fccc99a4aba4197d5e67a13b1090836b2e8fa03d4d2_statement.png",
+        "sha256": "d963c1a68d1c4126d5b06fb04cc64301bd1e3a73ee5a79917864eebb15c794c3"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/4b2823ae94c3379c89268fccc99a4aba4197d5e67a13b1090836b2e8fa03d4d2_solution.png",
+        "sha256": "11b8a235101a0a796c7566584698158c3341f54674992fb0a6de9f2a86bc7754"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "d9b4ff1c4b81d7c12044d3b7c976e89111fd6d69a5d24c039f253bbf0487c265": {
+    "uid": "d9b4ff1c4b81d7c12044d3b7c976e89111fd6d69a5d24c039f253bbf0487c265",
+    "year": 2016,
+    "grade": "11",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2015-16/region/math/ans-math-11-day1-reg-15-6.pdf",
+    "action": "Own detector proof nine-region board verified; full proof pages3–4",
+    "pages": [
+      3,
+      4
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/d9b4ff1c4b81d7c12044d3b7c976e89111fd6d69a5d24c039f253bbf0487c265_solution.png",
+        "sha256": "72ebc2335eb38c6ba7f2eae991f25704869feeaf44ffba054de4576f5b87ab20"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "b4295df1b431421a5d3a99364b0d31c6c26458b1fa493049529645abffd14bcc": {
+    "uid": "b4295df1b431421a5d3a99364b0d31c6c26458b1fa493049529645abffd14bcc",
+    "year": 2013,
+    "grade": "10",
+    "num": "3",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2013-14/okrug_tasks/math/ans-math-10-okr-msk-2013-4.pdf",
+    "action": "Own square geometry figure10.3 verified",
+    "page": 1,
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/b4295df1b431421a5d3a99364b0d31c6c26458b1fa493049529645abffd14bcc_solution.png",
+        "sha256": "b93a9dd1282351bf4532fd0ed887cd285d42dec1cd56c221fa0cc63a506015c0"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "8d16feec085e0ae33386505040c31cd0f75cbf77f76f404023008dd48d410c75": {
+    "uid": "8d16feec085e0ae33386505040c31cd0f75cbf77f76f404023008dd48d410c75",
+    "year": 2025,
+    "grade": "11",
+    "num": "8",
+    "source": "https://всош.цпм.рф/upload/files/Arhive_tasks/2024-25/final/math/sol-math-11-final-24-25.pdf",
+    "action": "no_figure_verified",
+    "reason": "Exact own statement and complete proof visually verified; no illustration belongs to this problem.",
+    "pages": [
+      12,
+      13,
+      14
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "b70b69d44decf187f09448b98eab257ba3a59d3ec7feef4e9f662e1413ccb3f1": {
+    "uid": "b70b69d44decf187f09448b98eab257ba3a59d3ec7feef4e9f662e1413ccb3f1",
+    "year": 2025,
+    "grade": "9",
+    "num": "8",
+    "source": "https://global.s3.cloud.ru/olmath-files/vsosh/school-math/sirius/2025-26/gruppa-2/razbor-9-klass.pdf",
+    "action": "no_figure_verified",
+    "reason": "Exact own statement and complete proof visually verified; no illustration belongs to this problem.",
+    "pages": [
+      14,
+      15
+    ],
+    "answer_repair": "Incorrect imported answer120 corrected to165 against source task8.1.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "72dd233c990cd43bf36cd1d073a933578adfcb1b896e1ed5748c28ae7f7bad2c": {
+    "uid": "72dd233c990cd43bf36cd1d073a933578adfcb1b896e1ed5748c28ae7f7bad2c",
+    "year": 2025,
+    "grade": "11",
+    "num": "6",
+    "source": "https://global.s3.cloud.ru/olmath-files/vsosh/school-math/sirius/2025-26/gruppa-2/razbor-11-klass.pdf",
+    "action": "no_figure_verified",
+    "reason": "Exact own statement and complete proof visually verified; no illustration belongs to this problem.",
+    "pages": [
+      7,
+      8
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "599b6ca12cb19212188137293480d9cf43dd65c29428a78396742902c4443bc2": {
+    "uid": "599b6ca12cb19212188137293480d9cf43dd65c29428a78396742902c4443bc2",
+    "year": 2012,
+    "grade": "11",
+    "num": "7",
+    "source": "https://olympiads.mccme.ru/vmo/2012/iii-2.pdf",
+    "action": "no_figure_verified",
+    "reason": "Exact own statement and complete proof visually verified; no illustration belongs to this problem.",
+    "pages": [
+      6
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "1e098b2563792f2065bcd1da9f82bf293b54c2f2fd48c6e7b392741e2df68604": {
+    "uid": "1e098b2563792f2065bcd1da9f82bf293b54c2f2fd48c6e7b392741e2df68604",
+    "year": 2022,
+    "grade": "11",
+    "num": "3",
+    "source": "https://olympiads.mccme.ru/vmo/2023/ii-11.pdf",
+    "action": "no_figure_verified",
+    "reason": "Exact11.3 and complete proof physically verified on printed page29; adjacent volleyball figure is11.4.",
+    "physical_page": 2,
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "9235f40ce394145a03675f362c29f7188422f08219e70e4d64d4710452ddd20e": {
+    "uid": "9235f40ce394145a03675f362c29f7188422f08219e70e4d64d4710452ddd20e",
+    "year": 2026,
+    "grade": "11",
+    "num": "9",
+    "source": "https://olympiads.mccme.ru/vmo/2026/iii-2.pdf",
+    "action": "no_figure_verified",
+    "reason": "Exact11.9 and complete proof physically verified, no own drawing; adjacent geometry excluded.",
+    "physical_page": 14,
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "54158c66b505b394d8a0786021c750bac3d5b9524c8b0237e08520b77ff1821f": {
+    "uid": "54158c66b505b394d8a0786021c750bac3d5b9524c8b0237e08520b77ff1821f",
+    "year": 2018,
+    "grade": "11",
+    "num": "4",
+    "source": "https://vos.olimpiada.ru/upload/files/Arhive_tasks/2017-18/region/math/ans-math-11-day1-reg-17-8.pdf#p5",
+    "action": "Own inline trapezoid-boat template and both proof figures9and10 physically verified",
+    "pages": [
+      6,
+      7
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/54158c66b505b394d8a0786021c750bac3d5b9524c8b0237e08520b77ff1821f_statement.png",
+        "sha256": "39d1d4a2553df1c490772a455982be0fadc58f2603995b8dff7484452d06de58"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/54158c66b505b394d8a0786021c750bac3d5b9524c8b0237e08520b77ff1821f_solution.png",
+        "sha256": "9fb971401e5c71ae6d0839cc6840ed4c6835231ff4e6ba746e72aeffc7aa155d"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "43c3632cb850721ba443084c3337d95b520e04261487b71011d9e1582fd5bd09": {
+    "uid": "43c3632cb850721ba443084c3337d95b520e04261487b71011d9e1582fd5bd09",
+    "year": 2010,
+    "grade": "10",
+    "num": "4",
+    "source": "https://fizmat.space/maths/files/9-gavrikova/9_6_%D0%A0%D0%B0%D1%81%D0%BA%D1%80%D0%B0%D1%81%D0%BA%D0%B8.pdf",
+    "action": "no_figure_verified",
+    "reason": "Exact task3 and entire one-page source worksheet physically inspected: no figures anywhere. Removed foreign prose capture. Worksheet contains statements only, not full solutions.",
+    "verification_scope": "statement_worksheet_only",
+    "attachments": [],
+    "fig_none_in_source": true
+  }
+}
