@@ -43,9 +43,11 @@ LESSON_LABELS = {
 
 
 def ensure_tables() -> None:
+    # id: SERIAL для PostgreSQL, AUTOINCREMENT для SQLite (тесты)
+    id_col = "SERIAL PRIMARY KEY" if _is_pg() else "INTEGER PRIMARY KEY AUTOINCREMENT"
     db.session.execute(text(f"""
         CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
-            id SERIAL PRIMARY KEY,
+            id {id_col},
             user_id INTEGER NOT NULL,
             seq INTEGER NOT NULL,
             lesson_type VARCHAR(16) NOT NULL,
@@ -58,10 +60,26 @@ def ensure_tables() -> None:
             olympiad_slug VARCHAR(64),
             assigned_date DATE,
             completed_at TIMESTAMP,
-            created_at TIMESTAMP DEFAULT NOW()
+            completed_set_id INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """))
+    # старые установки (до 26.10.2026) могут быть без колонки completed_set_id
+    try:
+        if _is_pg():
+            db.session.execute(text(
+                f"ALTER TABLE {TABLE_NAME} ADD COLUMN IF NOT EXISTS completed_set_id INTEGER"
+            ))
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[session_plan] completed_set_id migration failed: %r', e)
     db.session.commit()
+
+
+def _is_pg() -> bool:
+    try:
+        return 'postgres' in (db.session.get_bind().dialect.name or '')
+    except Exception:  # noqa: BLE001
+        return False
 
 
 def _pilot(user_id: int) -> bool:
@@ -144,17 +162,26 @@ _OLYMP_COMPETITION = {
 
 def _pick_probnik(user_id: int, olympiad_slug: Optional[str],
                   used_codes: set) -> Optional[Dict[str, str]]:
-    """Реальный пробник: опубликованный, под олимпиаду и класс, не пройденный.
+    """Реальный пробник: опубликованный, с задачами, под олимпиаду и класс.
 
-    Ищет точное совпадение по олимпиаде и классу; если нет — пробник
-    подходящего класса; если и их нет — любой опубликованный (с пометкой).
+    Требование 26.10.2026 (ревью ротации): пробник без задач — пустая
+    страница, занятие-пробник застрянет. Поэтому:
+      * берём ТОЛЬКО пробники, у которых есть задачи;
+      * ищем точное совпадение по олимпиаде и классу; если нет — пробник
+        подходящего класса; если и их нет — любой опубликованный с задачами;
+      * если задач нет ни у одного пробника — None (CTA ведёт в список).
     """
     grade = _user_grade(user_id)
     competition = _OLYMP_COMPETITION.get(olympiad_slug or '', '') if olympiad_slug else ''
     try:
         rows = db.session.execute(text(
-            "SELECT code, title, competition, grade FROM olympiad_probniks "
-            "WHERE is_published = TRUE ORDER BY sort_order NULLS LAST, id"
+            "SELECT p.code, p.title, p.competition, p.grade, "
+            "count(t.id) AS task_count FROM olympiad_probniks p "
+            "LEFT JOIN olympiad_tasks t ON t.probnik_id = p.id "
+            "WHERE p.is_published = TRUE "
+            "GROUP BY p.id, p.code, p.title, p.competition, p.grade, p.sort_order "
+            "HAVING count(t.id) > 0 "
+            "ORDER BY p.sort_order NULLS LAST, p.id"
         )).fetchall()
     except Exception as e:  # noqa: BLE001
         logger.warning('[session_plan] probnik query failed: %r', e)
@@ -183,13 +210,13 @@ def _lessons(user_id: int) -> List[Dict[str, Any]]:
     ensure_tables()
     rows = db.session.execute(text(
         f"SELECT id, seq, lesson_type, status, theme, method_code, method_name, "
-        f"probnik_code, probnik_title, olympiad_slug, assigned_date, completed_at "
-        f"FROM {TABLE_NAME} WHERE user_id = :uid ORDER BY seq"
+        f"probnik_code, probnik_title, olympiad_slug, assigned_date, completed_at, "
+        f"completed_set_id FROM {TABLE_NAME} WHERE user_id = :uid ORDER BY seq"
     ), {'uid': user_id}).fetchall()
     return [dict(zip(
         ('id', 'seq', 'lesson_type', 'status', 'theme', 'method_code',
          'method_name', 'probnik_code', 'probnik_title', 'olympiad_slug',
-         'assigned_date', 'completed_at'), r)) for r in rows]
+         'assigned_date', 'completed_at', 'completed_set_id'), r)) for r in rows]
 
 
 def _completed_count(user_id: int) -> int:
@@ -239,6 +266,21 @@ def _insert_lesson(user_id: int, seq: int, lesson_type: str) -> None:
                 seq, lesson_type, user_id)
 
 
+def _current_assigned(user_id: int) -> Optional[Dict[str, Any]]:
+    """Текущее назначенное занятие БЕЗ создания следующего.
+
+    Важно для хуков завершения: завершение не должно порождать новые
+    занятия — иначе один и тот же отвеченный сет мог бы закрывать
+    несколько практик подряд (баг 26.10.2026).
+    """
+    if not _pilot(user_id):
+        return None
+    ensure_tables()
+    lessons = _lessons(user_id)
+    assigned = [l for l in lessons if l['status'] == 'assigned']
+    return assigned[0] if assigned else None
+
+
 def current_lesson(user_id: int) -> Optional[Dict[str, Any]]:
     """Текущее (незавершённое) занятие. Создаёт следующее, если все готовы."""
     if not _pilot(user_id):
@@ -257,27 +299,35 @@ def current_lesson(user_id: int) -> Optional[Dict[str, Any]]:
     return assigned[0] if assigned else None
 
 
-def complete_current_lesson(user_id: int, lesson_type: Optional[str] = None) -> bool:
+def complete_current_lesson(user_id: int, lesson_type: Optional[str] = None,
+                            completed_set_id: Optional[int] = None) -> bool:
     """Отметить текущее занятие завершённым (идемпотентно).
 
     lesson_type — опциональная проверка типа (например, 'probnik' при
     сдаче пробника): если тип не совпадает с текущим, ничего не делаем.
+    completed_set_id — источник завершения (для практики: id сета дня),
+    чтобы один сет не закрывал несколько занятий подряд.
     Возвращает True, если занятие было отмечено сейчас.
     """
     if not _pilot(user_id):
         return False
     ensure_tables()
-    lesson = current_lesson(user_id)
+    # ВАЖНО: берём уже назначенное занятие БЕЗ создания нового —
+    # завершение не должно порождать следующие занятия.
+    lesson = _current_assigned(user_id)
     if not lesson:
         return False
     if lesson_type and lesson['lesson_type'] != lesson_type:
         return False
     if lesson['status'] != 'assigned':
         return False
+    if completed_set_id is not None and lesson['completed_set_id'] == completed_set_id:
+        return False  # этот сет уже закрывал данное занятие
     db.session.execute(text(
         f"UPDATE {TABLE_NAME} SET status = 'completed', "
-        f"completed_at = :now WHERE id = :lid AND status = 'assigned'"
-    ), {'now': datetime.utcnow(), 'lid': lesson['id']})
+        f"completed_set_id = :sid, completed_at = :now "
+        f"WHERE id = :lid AND status = 'assigned'"
+    ), {'now': datetime.utcnow(), 'lid': lesson['id'], 'sid': completed_set_id})
     db.session.commit()
     logger.info('[session_plan] completed lesson #%s (%s) user=%s',
                 lesson['seq'], lesson['lesson_type'], user_id)
@@ -287,27 +337,43 @@ def complete_current_lesson(user_id: int, lesson_type: Optional[str] = None) -> 
 # ── Хуки завершения (вызываются из мест сдачи) ───────────────────────────
 
 def maybe_complete_practice(user_id: int, daily_set_id: int) -> bool:
-    """Практика завершена, если все задачи сегодняшнего сета отвечены."""
+    """Практика завершена, если все задачи сегодняшнего сета отвечены.
+
+    Один сет закрывает РОВНО одно занятие-практику: повторные ответы
+    по тому же сету (повторы, ретраи) не двигают прогресс дальше.
+    """
     try:
         from daily_tasks.models import DailyTaskItem
         items = DailyTaskItem.query.filter_by(daily_set_id=daily_set_id).all()
         if not items:
             return False
         if all(it.user_answer is not None for it in items):
-            return complete_current_lesson(user_id, lesson_type='practice')
+            return complete_current_lesson(user_id, lesson_type='practice',
+                                          completed_set_id=daily_set_id)
     except Exception as e:  # noqa: BLE001
         logger.warning('[session_plan] practice hook failed: %r', e)
     return False
 
 
 def maybe_complete_method(user_id: int) -> bool:
-    """Метод завершён, если все задачи метод-сета отвечены."""
+    """Метод завершён, если все задачи метод-сета отвечены.
+
+    Проверяем, что отвечен именно тот метод, который назначен текущим
+    занятием (lesson.method_code): метод-сет другой недели не должен
+    закрывать назначенное занятие.
+    """
     try:
         from method_week.models import MethodWeekSet, MethodWeekAnswer
         s = MethodWeekSet.query.filter_by(user_id=user_id).order_by(
             MethodWeekSet.id.desc()).first()
         if not s or not s.tasks_json:
             return False
+        lesson = _current_assigned(user_id)
+        if not lesson or lesson['lesson_type'] != 'method':
+            return False
+        set_method = getattr(s, 'method_code', None)
+        if lesson['method_code'] and set_method and lesson['method_code'] != set_method:
+            return False  # отвечен другой метод — занятие не закрываем
         import json as _json
         tasks = _json.loads(s.tasks_json) if isinstance(s.tasks_json, str) else (s.tasks_json or [])
         if not tasks:
@@ -324,7 +390,7 @@ def maybe_complete_method(user_id: int) -> bool:
 def maybe_complete_probnik(user_id: int, probnik_code: str) -> bool:
     """Пробник сдан — завершаем занятие-пробник."""
     try:
-        lesson = current_lesson(user_id)
+        lesson = _current_assigned(user_id)
         if not lesson or lesson['lesson_type'] != 'probnik':
             return False
         if lesson['probnik_code'] and lesson['probnik_code'] != probnik_code:
@@ -343,7 +409,7 @@ CTA_FOR_TYPE = {
     # метода в атласе 102 методов (/olympiad/methods/<код> — если код известен).
     'method': '/olympiad/methods',
     'practice': '/daily_tasks',
-    'probnik': '/olympiad/probnik/',
+    'probnik': '/olympiad/course-probnik',
 }
 
 
