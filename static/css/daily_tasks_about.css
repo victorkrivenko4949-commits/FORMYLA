@@ -328,7 +328,8 @@
 /* ── Адаптив ── */
 @media (max-width:1080px){
   .page-daily-tasks .dt-layout{grid-template-columns:1fr !important}
-  .page-daily-tasks .dt-sidebar{display:block !important;position:static !important}
+  /* MOBILE_CAL_HIDE (25.10.2026): календарь на мобильных не показываем — он живёт на странице «Статистика» */
+  .page-daily-tasks .dt-sidebar{display:none !important}
 }
 @media (max-width:1024px){
   .page-daily-tasks .dt-card-footer{flex-wrap:wrap !important}
