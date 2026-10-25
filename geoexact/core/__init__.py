@@ -52,6 +52,10 @@ solver.py и gates.py:
     нотации AD ∥ BC), боковые равны у «равнобедренной»; правило 42 —
     свободные точки + parallel + dist вместо углов (прод-ошибка: фолбэк в
     схематичный чертёж с пропорциями 1:2 вместо 3:8);
+  * special_position.install — незаявленные равенства сторон названного
+    четырёхугольника/трапеции — частное положение (прод-ошибка: «докажите
+    ∠AKX = ∠CKY» с AB = BC нарисован дельтоидом AD = CD); правило 44 —
+    без симметрий, которых нет в тексте;
   * degenerate_policy.install — вырожденность с учётом семантики плана:
     совпадение построенных точек и коллинеарные «треугольники», объявленные
     конструкциями/ограничениями (D на продолжении CA, высота CH≡M при
@@ -92,6 +96,7 @@ from . import bisector_angle as _bisector_angle
 from . import named_labels as _named_labels
 from . import trapezoid as _trapezoid
 from . import isosceles as _isosceles
+from . import special_position as _special_position
 
 _difficulty.install(_llm)
 _general_position.install(_solver, _gates)
@@ -113,3 +118,4 @@ _bisector_angle.install(_semantics, _llm, _pipeline)   # после model_routes
 _named_labels.install(_pipeline, _llm)       # после bisector_angle: названные точки с подписями + суффикс кэша
 _trapezoid.install(_semantics, _llm, _pipeline)  # после named_labels: основания трапеции параллельны + суффикс кэша
 _isosceles.install(_semantics, _llm, _pipeline)     # после trapezoid: боковые равнобедренного равны + суффикс кэша
+_special_position.install(_semantics, _llm, _pipeline)  # после isosceles: незаявленные равенства сторон + суффикс кэша
