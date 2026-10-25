@@ -41,6 +41,13 @@ solver.py и gates.py:
     по просьбе пользователя после вырожденной конфигурации; классификация и
     оценка сложности не меняются, бюджетная деградация pro→flash сохранена.
     GEOEXACT_PRO_FORMALIZE=0 выключает; к ENGINE_VERSION дописывается суффикс.
+  * bisector_angle.install — «биссектриса угла XYZ пересекает ... в точке
+    T» (трёхбуквенный угол, любая фигура): углы XYT и TYZ равны, луч внутри
+    угла; правило 40 — каноническое bisector_point + line_intersect
+    (прод-ошибка: биссектриса в параллелограмме ушла под 19° вместо 30°);
+  * named_labels.install — названная в условии точка не может быть скрытой:
+    после чистки выдуманных подписей точки из текста возвращаются в
+    draw.hide_labels; правило 41 (прод-ошибка: A_1/B_1/C_1 без подписей);
   * degenerate_policy.install — вырожденность с учётом семантики плана:
     совпадение построенных точек и коллинеарные «треугольники», объявленные
     конструкциями/ограничениями (D на продолжении CA, высота CH≡M при
@@ -52,7 +59,7 @@ GEOEXACT_GENERAL_POSITION=0, GEOEXACT_FORMALIZE_RULES=0, GEOEXACT_CONVEXITY=0,
 GEOEXACT_INCIRCLE_TANGENTS=0, GEOEXACT_RADIUS_CLAIMS=0, GEOEXACT_LABEL_SUBSCRIPTS=0,
 GEOEXACT_DEGENERATE_POLICY=0, GEOEXACT_GIVEN_ORDER=0,
 GEOEXACT_ACUTE_TRIANGLE=0, GEOEXACT_PRO_FORMALIZE=0,
-GEOEXACT_EQUIDISTANT=0.
+GEOEXACT_EQUIDISTANT=0, GEOEXACT_BISECTOR_ANGLE=0, GEOEXACT_NAMED_LABELS=0.
 """
 from . import llm as _llm
 from . import pipeline as _pipeline
@@ -77,6 +84,8 @@ from . import statement as _statement
 from . import model_routes as _model_routes
 from . import angle_marks_layout as _angle_marks_layout
 from . import aux_view_marks as _aux_view_marks
+from . import bisector_angle as _bisector_angle
+from . import named_labels as _named_labels
 
 _difficulty.install(_llm)
 _general_position.install(_solver, _gates)
@@ -94,3 +103,5 @@ _equidistant_repair.install(_llm)        # после given_order: равноу�
 _acute_triangle.install(_semantics, _llm)    # после radius_claims: острота, антипод, принадлежность отрезку
 _diameter_claims.install(_semantics, _llm, _pipeline, _statement)  # после acute_triangle: диаметр — Фалес, центр-середина и отрезок в чертеже
 _model_routes.install(_llm, _pipeline)        # после acute_triangle: путь A формализатора на v4-pro
+_bisector_angle.install(_semantics, _llm, _pipeline)   # после model_routes: биссектриса угла + суффикс кэша
+_named_labels.install(_pipeline, _llm)       # после bisector_angle: названные точки с подписями + суффикс кэша

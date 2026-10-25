@@ -78,17 +78,17 @@
     el("toggle-wrap").hidden = !data.with_aux || !data.svg_base;
     el("another").hidden = !(data.with_aux && lastJob);
     // Полное решение доступно для любого готового чертежа: сервер продолжит
-    // диалог с Луной, если он был, или начнёт новый по этому условию.
+    // диалог с ИИ-тьютором, если он был, или начнёт новый по этому условию.
     el("solution").hidden = !lastJob;
     el("another").textContent = Array.isArray(data.expert_history) && data.expert_history.length
-      ? "Использовать другое доп. построение" : "Луна не ответила: повторить запрос";
+      ? "Использовать другое доп. построение" : "ИИ-тьютор не ответил: повторить запрос";
     const fail = data.with_aux && data.expert_status && data.expert_status !== "OK";
     el("expert-note").hidden = !fail;
     const rejected = fail && String(data.expert_status).startsWith("REJECTED:");
     el("expert-note").textContent = !fail ? "" : rejected
-      ? "Луна предложила построение, но его не удалось нарисовать (" + data.expert_status.slice(9).trim() +
+      ? "ИИ-тьютор предложил построение, но его не удалось нарисовать (" + data.expert_status.slice(9).trim() +
         "). Кнопка ниже попросит другое."
-      : "Луна не дала доп. построение (код " + data.expert_status + "). Кнопка ниже отправит запрос заново.";
+      : "ИИ-тьютор не дал доп. построение (код " + data.expert_status + "). Кнопка ниже отправит запрос заново.";
     el("result").hidden = false;
     const value = data.measured;
     el("measured").textContent = value == null ? "" :
