@@ -199,7 +199,14 @@ def install_surveys(app, register=None):
             return response
         extra = ''
         if getattr(current_user, 'is_admin', False) and request.path.startswith('/admin/'):
-            if 'id="ft-surveys-nav"' not in body:
+            # SURVEYS_NAV_V2 (25.10.2026): кнопка «Опросы» показывается только
+            # в разделе «Статистика пользователей» (/admin/users и его
+            # подразделы), а не на всех админ-страницах. На самой странице
+            # опросов кнопка не дублируется.
+            p = request.path
+            in_user_stats = p == '/admin/users' or p.startswith('/admin/users/')
+            if (in_user_stats and p != '/admin/users/surveys'
+                    and 'id="ft-surveys-nav"' not in body):
                 extra += ('<a id="ft-surveys-nav" href="/admin/users/surveys" '
                           'style="position:fixed;right:18px;bottom:74px;z-index:30000;'
                           'padding:10px 16px;border-radius:12px;background:#f4b942;'

@@ -59,7 +59,9 @@ _NAV_SNIPPET = (
     'background:#f4b942;color:#0b1020;font-weight:800;text-decoration:none;'
     'box-shadow:0 6px 24px rgba(0,0,0,.35);font-family:inherit;">📦 База</a></div>'
 )
-_NAV_PATHS = ("/admin/users", "/admin/stats", "/admin/daily", "/admin/sections", "/admin/support")
+# SURVEYS_NAV_V2 (25.10.2026): «📦 База» убрана из раздела «Статистика пользователей"
+# (/admin/users*) — остаётся только на остальных админ-страницах.
+_NAV_PATHS = ("/admin/stats", "/admin/daily", "/admin/sections", "/admin/support")
 
 
 def _install_pwa(app) -> None:
