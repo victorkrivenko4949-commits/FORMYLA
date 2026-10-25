@@ -384,7 +384,29 @@ WELCOME_FALLBACK = (
 
 
 def daily_plan_block(user_id: int) -> str:
-    """План на день для контекста куратора (из пилотного расписания)."""
+    """План на день для контекста куратора (из пилотного расписания).
+
+    SESSION_PLAN_V1 (26.10.2026): приоритет — ротация занятий 1-из-6
+    (метод → 4 практики → пробник, прогресс по завершённым занятиям).
+    Если она неактивна — старый календарный план pilot_session_today.
+    """
+    try:
+        from curator.session_plan import session_info
+        s = session_info(user_id)
+        if s.get('active'):
+            if s['lesson_type'] == 'method':
+                plan = ('изучение метода'
+                        + (f" «{s['method_name']}»" if s.get('method_name') else '')
+                        + ': 70% разбор метода + 3 задачи на закрепление (~45 мин)')
+            elif s['lesson_type'] == 'probnik':
+                plan = ('пробник — реальный вариант прошлых лет по регламенту'
+                        + (f" ({s['probnik_title']})" if s.get('probnik_title') else ''))
+            else:
+                plan = 'задачи дня по теме, назначенной куратором'
+            return (f"- план на сегодня (занятие {s['position_in_block']} из "
+                    f"{s['block_size']}): {plan}")
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[curator_chat] session plan failed: %s', e)
     try:
         from services.pilot import pilot_session_today
         s = pilot_session_today(user_id)

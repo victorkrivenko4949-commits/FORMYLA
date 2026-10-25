@@ -271,6 +271,13 @@ def api_submit(pos: int):
             .filter(MethodWeekAnswer.user_answer.isnot(None)).count()
         if done >= len(s.tasks):
             mark_covered(current_user.id, s.method_code)
+            # ── SESSION_PLAN_V1 (26.10.2026): все задачи метод-сета
+            # отвечены — занятие «изучение метода» завершено (пилоты).
+            try:
+                from curator.session_plan import maybe_complete_method
+                maybe_complete_method(current_user.id)
+            except Exception:
+                logger.exception("session_plan method hook failed")
     except Exception as exc:
         db.session.rollback()
         logger.exception("method_week: save answer failed: %s", exc)

@@ -412,6 +412,13 @@ def stage_submit(code):
         else:
             attempt.result = 'participant'
         db.session.commit()
+        # ── SESSION_PLAN_V1 (26.10.2026): пробник сдан — завершаем
+        # занятие-пробник в ротации 1-из-6 (идемпотентно, пилоты).
+        try:
+            from curator.session_plan import maybe_complete_probnik
+            maybe_complete_probnik(current_user.id, code)
+        except Exception:
+            current_app.logger.exception("session_plan probnik hook failed")
         return jsonify({'ok': True, 'result': attempt.result})
     # GET вЂ” СЃС‚СЂР°РЅРёС†Р° РѕС‚С‡С‘С‚Р°
     tasks = (OlympiadTask.query

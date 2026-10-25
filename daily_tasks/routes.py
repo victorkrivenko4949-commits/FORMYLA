@@ -51,6 +51,19 @@ _RU_THEMES = [
 ]
 
 
+def _session_plan_ctx(user_id: int) -> dict:
+    """SESSION_PLAN_V1: текущее занятие ротации 1-из-6 для дашборда.
+
+    Возвращает {'active': False} для не-пилотов — интерфейс не меняется.
+    """
+    try:
+        from curator.session_plan import session_info
+        return session_info(user_id)
+    except Exception:
+        logger.exception("session_plan ctx failed")
+        return {"active": False}
+
+
 def _theme_for_day(target_date, class_level=None) -> str:
     """Детерминированная тема дня: меняется ежедневно и зависит от класса."""
     try:
@@ -912,6 +925,10 @@ def get_daily_tasks():
         "days_off_available": streak_rec.days_off_available or 0,
     }
 
+    # ── SESSION_PLAN_V1 (26.10.2026): текущее занятие ротации 1-из-6
+    # (пилоты: метод → 4 практики → пробник). Неактивно для остальных.
+    data["session"] = _session_plan_ctx(user_id)
+
     if wants_html:
         return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": real_theme_title})
     return jsonify(data), 200
@@ -1139,6 +1156,14 @@ def submit_answer(item_id: int):
         except Exception:
             db.session.rollback()
             logger.exception("streak credit failed (submit)")
+
+    # ── SESSION_PLAN_V1 (26.10.2026): практика считается завершённой,
+    # когда все задачи сегодняшнего сета отвечены (идемпотентно, пилоты).
+    try:
+        from curator.session_plan import maybe_complete_practice
+        maybe_complete_practice(current_user.id, daily_set.id)
+    except Exception:
+        logger.exception("session_plan practice hook failed")
 
     return jsonify(response), 200
 
