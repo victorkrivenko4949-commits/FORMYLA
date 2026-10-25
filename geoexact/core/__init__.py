@@ -91,6 +91,7 @@ from . import aux_view_marks as _aux_view_marks
 from . import bisector_angle as _bisector_angle
 from . import named_labels as _named_labels
 from . import trapezoid as _trapezoid
+from . import isosceles as _isosceles
 
 _difficulty.install(_llm)
 _general_position.install(_solver, _gates)
@@ -111,3 +112,4 @@ _model_routes.install(_llm, _pipeline)        # после acute_triangle: пу�
 _bisector_angle.install(_semantics, _llm, _pipeline)   # после model_routes: биссектриса угла + суффикс кэша
 _named_labels.install(_pipeline, _llm)       # после bisector_angle: названные точки с подписями + суффикс кэша
 _trapezoid.install(_semantics, _llm, _pipeline)  # после named_labels: основания трапеции параллельны + суффикс кэша
+_isosceles.install(_semantics, _llm, _pipeline)     # после trapezoid: боковые равнобедренного равны + суффикс кэша

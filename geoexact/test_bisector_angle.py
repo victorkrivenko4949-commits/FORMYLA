@@ -72,6 +72,36 @@ def test_hypothetical_sentence_is_skipped():
     assert bisector_failures(text, BAD) == []
 
 
+def test_circle_intersection_checks_angles_only():
+    """«биссектриса угла ... пересекает описанную окружность в точке D»:
+    проверяются только углы — прямой в тексте нет (хвост из батча 2:
+    проверка молча не запускалась, чертёж случайно оказался верен)."""
+    text = ("В равнобедренном треугольнике ABC с основанием AC биссектриса "
+            "угла ABC пересекает описанную окружность в точке D.")
+    # Верная конфигурация: A=(-5,0), C=(5,0), B=(0,12), D на биссектрисе (ось y)
+    # на окружности (центр (0, 119/24), R=6.625): D=(0, 119/24-6.625).
+    R3 = 1.0
+    good = {"A": (-5, 0), "B": (0, 12), "C": (5, 0), "D": (0, 0.0)}
+    # D=(0,0): на оси y (биссектрисе), углы ABD=DBC — проверка должна пройти.
+    assert bisector_failures(text, good) == []
+    # D не на биссектрисе — бракуется.
+    bad = {"A": (-5, 0), "B": (0, 12), "C": (5, 0), "D": (3, 4)}
+    fails = bisector_failures(text, bad)
+    assert len(fails) == 1 and "не лежит на биссектрисе" in fails[0], fails
+
+
+def test_circle_with_triangle_phrase():
+    """«пересекает описанную окружность треугольника ABC в точке D» —
+    вставка «треугольника ABC» между окружностью и точкой не ломает парсинг."""
+    text = ("Биссектриса угла BAC пересекает описанную окружность "
+            "треугольника ABC в точке M.")
+    # Биссектриса угла BAC: направление (0.8819, 0.4720); M = A + 4·направление.
+    good = {"A": (0, 0), "B": (4, 6), "C": (8, 0), "M": (3.5277, 1.8881)}
+    assert bisector_failures(text, good) == []
+    bad = dict(good, M=(6, 1))
+    assert bisector_failures(text, bad) != []
+
+
 def test_unicode_subscripts_in_text():
     text = ("В треугольнике ABC биссектриса угла BAC пересекает сторону BC "
             "в точке A₁. Известно, что AB = AC.")
@@ -87,7 +117,7 @@ def test_wrapper_installed_and_rule40_present():
     assert getattr(semantics.semantic_failures, "_bisector_angle", False)
     assert "40." in L.SYS_FORMALIZE and "BISECTOR_ANGLE_RULE" in L.SYS_FORMALIZE
     # повторная установка — no-op, суффикс не дублируется
-    assert pipeline.ENGINE_VERSION.count("+bisectorAngle2") == 1
+    assert pipeline.ENGINE_VERSION.count("+bisectorAngle3") == 1
 
 
 def test_canonical_plan_solves_and_passes():
