@@ -55,12 +55,74 @@
     if (show || !svg || svg.indexOf("</style>") < 0) return svg;
     return svg.replace("</style>", "\n    .tick { display: none; }\n  </style>");
   }
+  // Окружности можно убрать с чертежа кнопками «Убрать окружность N».
+  // Каждой фигурной окружности (классы circ/aux-circ — точки-маркеры .pt
+  // и дуги-пути не трогаем) присваивается номер по порядку в SVG.
+  // Вместе с окружностью скрывается её центр: точка и подпись —
+  // «подписывать окружность» на чертеже не нужно.
+  let circHidden = new Set();
+  function annotateCircles(svg) {
+    if (!svg || svg.indexOf("data-circ=") >= 0) return svg;   // уже размечен
+    const dotRe = /<circle class="pt" data-point="([^"]+)"[^>]*?cx="([^"]+)" cy="([^"]+)"/g;
+    const byPos = new Map();
+    let m;
+    while ((m = dotRe.exec(svg))) byPos.set(m[2] + "|" + m[3], m[1]);
+    // центр каждой окружности — по совпадению координат с точкой-маркером
+    const centers = new Map();                       // имя точки -> номер окружности
+    let i = 0;
+    svg = svg.replace(/<circle class="(circ|aux-circ)"([^>]*)>/g, (all, cls, attrs) => {
+      i++;
+      const cx = (/cx="([^"]+)"/.exec(attrs) || [])[1];
+      const cy = (/cy="([^"]+)"/.exec(attrs) || [])[1];
+      const name = byPos.get(cx + "|" + cy);
+      if (name && !centers.has(name)) centers.set(name, i);
+      return `<circle class="${cls}" data-circ="${i}"${attrs}>`;
+    });
+    if (centers.size)
+      svg = svg.replace(/<(circle class="pt"|text class="lab") data-point="([^"]+)"([^>]*)>/g,
+        (all, tag, name, rest) => centers.has(name)
+          ? `<${tag} data-point="${name}" data-circ="${centers.get(name)}"${rest}>` : all);
+    return svg;
+  }
+  function withCircles(svg) {
+    svg = annotateCircles(svg);
+    if (!svg || !circHidden.size || svg.indexOf("</style>") < 0) return svg;
+    const rules = [...circHidden].map(i => `[data-circ="${i}"] { display: none; }`)
+      .join("\n    ");
+    return svg.replace("</style>", `\n    ${rules}\n  </style>`);
+  }
+  function circCount(svg) {
+    return !svg ? 0 : (svg.match(/<circle class="(?:circ|aux-circ)"/g) || []).length;
+  }
+  function syncCircButtons(count) {
+    const wrap = el("circ-wrap");
+    if (!count) { wrap.hidden = true; wrap.replaceChildren(); circHidden.clear(); return; }
+    wrap.hidden = false;
+    if (wrap.childElementCount !== count) {
+      wrap.replaceChildren();
+      for (let i = 1; i <= count; i++) {
+        const b = document.createElement("button");
+        b.type = "button"; b.dataset.circ = i;
+        b.addEventListener("click", () => {
+          circHidden.has(i) ? circHidden.delete(i) : circHidden.add(i);
+          render();
+        });
+        wrap.appendChild(b);
+      }
+    }
+    [...wrap.children].forEach(b => {
+      const i = +b.dataset.circ;
+      b.textContent = circHidden.has(i) ? `Показать окружность ${i}` : `Убрать окружность ${i}`;
+    });
+  }
   function render() {
     clearUrls();
     const full = !result.svg_base || el("toggle").checked;
     const raw = full ? result.svg : result.svg_base;
-    const url = imageURL(withTicks(raw, el("ticks").checked));
+    const url = imageURL(withCircles(withTicks(raw, el("ticks").checked)));
     el("image").src = url; el("download").href = url;
+    // Кнопки окружностей — по чертежу, который сейчас показан
+    syncCircButtons(circCount(annotateCircles(raw)));
     // Переключатель виден всегда, пока есть чертёж; без черточек он неактивен.
     const hasTicks = !!raw && raw.indexOf('<path class="tick') >= 0;
     el("ticks-wrap").hidden = false;
@@ -69,11 +131,12 @@
     el("ticks-wrap").style.opacity = hasTicks ? "" : "0.5";
     el("detail").hidden = !full || !result.svg_detail;
     if (full && result.svg_detail)
-      el("detail-image").src = imageURL(withTicks(result.svg_detail, el("ticks").checked));
+      el("detail-image").src = imageURL(withCircles(withTicks(result.svg_detail, el("ticks").checked)));
     else el("detail-image").removeAttribute("src");
   }
   function show(data) {
     result = data;
+    circHidden = new Set();   // новый чертёж — окружности снова видимы
     el("toggle").checked = true;
     el("toggle-wrap").hidden = !data.with_aux || !data.svg_base;
     el("another").hidden = !(data.with_aux && lastJob);

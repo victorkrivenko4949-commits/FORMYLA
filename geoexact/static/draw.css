@@ -164,3 +164,10 @@
 #gx-solution-text .katex-display{margin:14px 0;overflow-x:auto}
 #gx-solution-text .gx-answer{margin:14px 0 10px;padding:10px 14px;border-radius:10px;
   border:1px solid rgba(125,141,252,.45);background:rgba(66,94,216,.14)}
+
+/* Кнопки «Убрать окружность N»: скрывают окружность и её центр с подписью */
+#gx-circ-wrap{display:inline-flex;gap:8px;flex-wrap:wrap;align-items:center}
+#gx-circ-wrap button{font:inherit;font-size:13.5px;padding:8px 14px;border-radius:8px;
+  border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer}
+#gx-circ-wrap button:hover:not(:disabled){opacity:.8}
+#gx-circ-wrap button:disabled{opacity:.5;cursor:default}
