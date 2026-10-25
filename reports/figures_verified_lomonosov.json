@@ -1,0 +1,271 @@
+{
+  "da00b71d275735489825a2ca865a50a51a2650626378ade9dd8edafd860621c8": {
+    "uid": "da00b71d275735489825a2ca865a50a51a2650626378ade9dd8edafd860621c8",
+    "year": 2019,
+    "grade": "9",
+    "num": "5",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/348/2018/14287916-tasksans-math-9-final-18-19.pdf#p6",
+    "action": "both_nine_sided_plot_figures_verified",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/da00b71d275735489825a2ca865a50a51a2650626378ade9dd8edafd860621c8_statement.png",
+        "sha256": "81dfeba1e9e51c19f54a1107f38c6c10387ce8c045071063bb526f0f46d3fd17"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/da00b71d275735489825a2ca865a50a51a2650626378ade9dd8edafd860621c8_solution.png",
+        "sha256": "84b85991db7ed92b7215ead0faea210bebf506324a041566eb9f57b347beafbe"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "b03ded1a19fe8938f5fa3e23b0422d7f597e0da069ce549d282e146dee6b39a2": {
+    "uid": "b03ded1a19fe8938f5fa3e23b0422d7f597e0da069ce549d282e146dee6b39a2",
+    "year": 2011,
+    "grade": "7",
+    "num": "1",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/348/2010/5_16969-ans-math-7-9-final-10-1.pdf#p1",
+    "action": "removed_foreign_solution_tail",
+    "reason": "Kept own complete proof only; removed imported subsequent problems.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "cb1733f02241a6b6e53125e4b6abceec9e8ec68d2893c5ecd3e241e19941a5a3": {
+    "uid": "cb1733f02241a6b6e53125e4b6abceec9e8ec68d2893c5ecd3e241e19941a5a3",
+    "year": 2011,
+    "grade": "8",
+    "num": "1",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/348/2010/5_16969-ans-math-7-9-final-10-1.pdf#p1",
+    "action": "removed_foreign_solution_tail",
+    "reason": "Kept own complete proof only; removed imported subsequent problems.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "118391aee79390032230e7dce6c775be8d3cff189f5a6d0afe340702136eebcc": {
+    "uid": "118391aee79390032230e7dce6c775be8d3cff189f5a6d0afe340702136eebcc",
+    "year": 2010,
+    "grade": "7",
+    "num": "1",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/348/2010/5_16969-ans-math-7-9-final-10-1.pdf#p1",
+    "action": "removed_foreign_solution_tail",
+    "reason": "Kept own complete proof only; removed imported subsequent problems.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "fdaf030be51c02c07c60e131d2defb57ae2e8cd28938664e8e773ec0237667c3": {
+    "uid": "fdaf030be51c02c07c60e131d2defb57ae2e8cd28938664e8e773ec0237667c3",
+    "year": 2010,
+    "grade": "7",
+    "num": "1",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/348/2010/5_16969-ans-math-7-9-final-10-1.pdf#p1",
+    "action": "removed_foreign_solution_tail",
+    "reason": "Kept own complete proof only; removed imported subsequent problems.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "0659896ca02930fce0be25e59bfeeb7674abe5b5e7703c20dab8839bdc5a60cd": {
+    "uid": "0659896ca02930fce0be25e59bfeeb7674abe5b5e7703c20dab8839bdc5a60cd",
+    "year": 2010,
+    "grade": "8",
+    "num": "1",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/348/2010/5_16969-ans-math-7-9-final-10-1.pdf#p1",
+    "action": "removed_foreign_solution_tail",
+    "reason": "Kept own complete proof only; removed imported subsequent problems.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "2ee4dc895398c3ebe0794ef7b05f2128f1874a904645679819e3a902eb6af9d9": {
+    "uid": "2ee4dc895398c3ebe0794ef7b05f2128f1874a904645679819e3a902eb6af9d9",
+    "year": 2011,
+    "grade": "7",
+    "num": "4",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/348/2010/5_16969-ans-math-7-9-final-10-1.pdf#p5",
+    "action": "removed_foreign_solution_tail",
+    "reason": "Kept own complete proof only; removed imported subsequent problems.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "7a4df776908ae1b847f431e84527540a4944f5952cd17fd79a0272aafbc9dd98": {
+    "uid": "7a4df776908ae1b847f431e84527540a4944f5952cd17fd79a0272aafbc9dd98",
+    "year": 2011,
+    "grade": "9",
+    "num": "1",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/348/2010/5_16969-ans-math-7-9-final-10-1.pdf#p5",
+    "action": "removed_foreign_solution_tail",
+    "reason": "Kept own complete proof only; removed imported subsequent problems.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "587ef5fb49bfd747caa67ad350d5449d41b6a47b8f402bd3a1d454d359658d9d": {
+    "uid": "587ef5fb49bfd747caa67ad350d5449d41b6a47b8f402bd3a1d454d359658d9d",
+    "year": 2010,
+    "grade": "7",
+    "num": "5",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/348/2010/5_16969-ans-math-7-9-final-10-1.pdf#p5",
+    "action": "removed_foreign_solution_tail",
+    "reason": "Kept own complete proof only; removed imported subsequent problems.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "84d9f8184641bd3c01b6bdc277108381575d408325e9d1ebbd49744c229bf82f": {
+    "uid": "84d9f8184641bd3c01b6bdc277108381575d408325e9d1ebbd49744c229bf82f",
+    "year": 2010,
+    "grade": "7",
+    "num": "4",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/348/2010/5_16969-ans-math-7-9-final-10-1.pdf#p5",
+    "action": "removed_foreign_solution_tail",
+    "reason": "Kept own complete proof only; removed imported subsequent problems.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "db9319eee977a91b72d489aea2c32ec7f02c9bc6be78da96c3e38d6a3d0cf008": {
+    "uid": "db9319eee977a91b72d489aea2c32ec7f02c9bc6be78da96c3e38d6a3d0cf008",
+    "year": 2010,
+    "grade": "9",
+    "num": "1",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/348/2010/5_16969-ans-math-7-9-final-10-1.pdf#p5",
+    "action": "removed_foreign_solution_tail",
+    "reason": "Kept own complete proof only; removed imported subsequent problems.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "e31b3b8ea232891d6659d7fe670870be3bb9ab357f9105bb9ab329f24e2ef976": {
+    "uid": "e31b3b8ea232891d6659d7fe670870be3bb9ab357f9105bb9ab329f24e2ef976",
+    "year": 2024,
+    "grade": "6",
+    "num": "5",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/348/2023/348-sol-math-5-6-final-23-24.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      4
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/e31b3b8ea232891d6659d7fe670870be3bb9ab357f9105bb9ab329f24e2ef976_solution.png",
+        "sha256": "74a9f03be16a37dc206291674e8c21541435725855e0ea55fc2c7f6cae9bc40a"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "e6a03f3e2f3618a9b3ce06d0d72d464ba5554286456081d1c402c2433226b958": {
+    "uid": "e6a03f3e2f3618a9b3ce06d0d72d464ba5554286456081d1c402c2433226b958",
+    "year": 2023,
+    "grade": "9",
+    "num": "2",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/348/2023/348-sol-math-10-final-23-24.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      2,
+      2
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/e6a03f3e2f3618a9b3ce06d0d72d464ba5554286456081d1c402c2433226b958_statement.png",
+        "sha256": "672d883b137b9cb33c9bf2467568b83c5700ed165b8b5a29b9659dac115622e7"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/e6a03f3e2f3618a9b3ce06d0d72d464ba5554286456081d1c402c2433226b958_solution.png",
+        "sha256": "976ecb1ec44bddf34d6c707ee36ccbc653d442acf01591dc58eccb74c33a5c91"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "76e54a07882791e2f3ef4a59f16d92f8c9a1abaa9a1b30f0b2d63100607b757b": {
+    "uid": "76e54a07882791e2f3ef4a59f16d92f8c9a1abaa9a1b30f0b2d63100607b757b",
+    "year": 2023,
+    "grade": "9",
+    "num": "7",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/348/2023/348-sol-math-9-final-23-24.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      4
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/76e54a07882791e2f3ef4a59f16d92f8c9a1abaa9a1b30f0b2d63100607b757b_statement.png",
+        "sha256": "22d241a22268b617ae064d89ac40e09f3972f2093d527bd78ef5814f92c66807"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "9a3a4b2895f339ebd1345e2ee3c24a13f4b6d97826160c0dec93cf9eeebe0ac8": {
+    "uid": "9a3a4b2895f339ebd1345e2ee3c24a13f4b6d97826160c0dec93cf9eeebe0ac8",
+    "year": 2023,
+    "grade": "9",
+    "num": "7",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/348/2023/348-sol-math-10-final-23-24.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own tunnel task and complete coordinate proof on page6 have no drawing.",
+    "pages": [
+      6
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "bb5f1d611314c6b7ad9501328e35be490b9a2ac034dd673bacaf717b41595186": {
+    "uid": "bb5f1d611314c6b7ad9501328e35be490b9a2ac034dd673bacaf717b41595186",
+    "year": 2025,
+    "grade": "5",
+    "num": "3",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/348/2024/348-sol-math-5-6-final-24-25.pdf",
+    "action": "Full digital display and complete0–9glyph legend verified",
+    "page": 1,
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/bb5f1d611314c6b7ad9501328e35be490b9a2ac034dd673bacaf717b41595186_statement.png",
+        "sha256": "be7ff289740e75131e0ff2473f508bef483ca386789edc108ba71dcf15a4df72"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "fb5596b215cd4d2608c3b0af7345fd936f00fe6d5499afaf5de0050990b4daf1": {
+    "uid": "fb5596b215cd4d2608c3b0af7345fd936f00fe6d5499afaf5de0050990b4daf1",
+    "year": 2010,
+    "grade": "7",
+    "num": "3",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/348/2010/5_16969-ans-math-7-otbor-10-1.pdf",
+    "action": "Own column multiplication statement layout verified; prose snapshot replaced",
+    "page": 1,
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/fb5596b215cd4d2608c3b0af7345fd936f00fe6d5499afaf5de0050990b4daf1_statement.png",
+        "sha256": "d8fa2b80009d8d5744bbd2cf41869c81a010d63f088e37843b6b0d0c064784b9"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "b11d6f56a0b50913a62a65bb92c0374ccf3218d1271a3a5335ccfa37c559fab0": {
+    "uid": "b11d6f56a0b50913a62a65bb92c0374ccf3218d1271a3a5335ccfa37c559fab0",
+    "year": 2017,
+    "grade": "8",
+    "num": "1",
+    "source": "https://mathus.ru/olymp/lom2017m7-8.pdf",
+    "action": "Own first-problem triangle grid verified",
+    "page": 1,
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/b11d6f56a0b50913a62a65bb92c0374ccf3218d1271a3a5335ccfa37c559fab0_statement.png",
+        "sha256": "fcb6a349d5e9cc752a1139c82c062e92d6dc5bacbca427005259ef8c8ff50a0c"
+      }
+    ],
+    "fig_none_in_source": false
+  }
+}

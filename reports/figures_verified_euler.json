@@ -1,0 +1,139 @@
+{
+  "1430cdc645405a2e14fb57cc4f44694a3b2b6c76d12e6dc7cd4dc74b99bf3904": {
+    "uid": "1430cdc645405a2e14fb57cc4f44694a3b2b6c76d12e6dc7cd4dc74b99bf3904",
+    "year": 2018,
+    "grade": "8",
+    "num": "3",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/29/2017/29-ans-math-tur1-dist_stage-17-8.pdf#p3",
+    "action": "no_figure_verified",
+    "reason": "Full original statement and own solution visually checked; no illustration; neighbouring graphics excluded.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "3252ccda8bf804edec0f90a3fad601874f09b0e362fb244d8cb072fced99ff40": {
+    "uid": "3252ccda8bf804edec0f90a3fad601874f09b0e362fb244d8cb072fced99ff40",
+    "year": 2017,
+    "grade": "8",
+    "num": "2",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/29/2016/29-ans-math-day1-final-16-7.pdf#p2",
+    "action": "no_figure_verified",
+    "reason": "Full original statement and own solution visually checked; no illustration; neighbouring graphics excluded.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "813f0a5022a94ef8eee70acb0c4cdcf0d4fed7338e497772c650366cc749ca2d": {
+    "uid": "813f0a5022a94ef8eee70acb0c4cdcf0d4fed7338e497772c650366cc749ca2d",
+    "year": 2016,
+    "grade": "8",
+    "num": "4",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/29/2015/29-ans-math-day2-final-15-6.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own task5 and complete impossibility proof verified on page1; attached parallelograms belong to task8.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "6dd88f764113936585c9b7aba3e7111807174cccdaf615ac9be652b3cf4a2aac": {
+    "uid": "6dd88f764113936585c9b7aba3e7111807174cccdaf615ac9be652b3cf4a2aac",
+    "year": 2019,
+    "grade": "8",
+    "num": "4",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/29/2018/29-ans-math-day1-region-18-9.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/6dd88f764113936585c9b7aba3e7111807174cccdaf615ac9be652b3cf4a2aac_solution.png",
+        "sha256": "26c242d270bed6a973e5c491346c602c933257573cf33a3eeda0ad8f526868d8"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "be49d57578f7d5e22e6e691e8ac8f86d3563a8d1a2c920f9845dfa81adfe89ea": {
+    "uid": "be49d57578f7d5e22e6e691e8ac8f86d3563a8d1a2c920f9845dfa81adfe89ea",
+    "year": 2015,
+    "grade": "8",
+    "num": "5",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/29/2014/29-ans-math-tur1-dist_stage-14-5.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/be49d57578f7d5e22e6e691e8ac8f86d3563a8d1a2c920f9845dfa81adfe89ea_solution.png",
+        "sha256": "b091b265fbbb6cda33bc073674dacde9694c0b7a680afed0438ed3b8f3965610"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "057517b926b2f3726a47177c9d4b674ebe1a7672462c850d85098c0f46866434": {
+    "uid": "057517b926b2f3726a47177c9d4b674ebe1a7672462c850d85098c0f46866434",
+    "year": 2015,
+    "grade": "8",
+    "num": "2",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/29/2014/29-ans-math-region-14-5.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/057517b926b2f3726a47177c9d4b674ebe1a7672462c850d85098c0f46866434_solution.png",
+        "sha256": "ad9024390084eed9ba6ec55d553051d78a2661df25adaa1db33e2e3540c34f0e"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "92aa5565958780eeecd721daf05c19b83219eab7526aa05fe6bbfae198c75558": {
+    "uid": "92aa5565958780eeecd721daf05c19b83219eab7526aa05fe6bbfae198c75558",
+    "year": 2013,
+    "grade": "8",
+    "num": "2",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/29/2012/29-ans-math-day1-final-12-3.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      1
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/92aa5565958780eeecd721daf05c19b83219eab7526aa05fe6bbfae198c75558_solution.png",
+        "sha256": "908803080d2a2c8e1103e9e70d6e74c81766671030775f6004d4eaa3bc20d646"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "2e20d31ff3db6ffa3ab26591724ed4977f8950b5bcb5ee0076acf8258fdf9218": {
+    "uid": "2e20d31ff3db6ffa3ab26591724ed4977f8950b5bcb5ee0076acf8258fdf9218",
+    "year": 2011,
+    "grade": "8",
+    "num": "5",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/29/2010/29-ans-math-tur1-dist_stage-10-1.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own task5 and complete proof at bottom of page1 have no drawing.",
+    "pages": [
+      1
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "3f247492c1416aa5423836bdfc772f2d4a60f740e4a67f51c2a6d982dce437d5": {
+    "uid": "3f247492c1416aa5423836bdfc772f2d4a60f740e4a67f51c2a6d982dce437d5",
+    "year": 2011,
+    "grade": "8",
+    "num": "1",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/29/2010/29-ans-math-region-10-1.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own task1 and full proof have no drawing; later trapezoid belongs to task3.",
+    "pages": [
+      1
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  }
+}

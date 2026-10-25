@@ -924,8 +924,6 @@
   "geo": false,
   "fig_statement": [],
   "fig_solution": [],
-  "fig_extracted_auto": true,
-  "fig_anchor": "block_snapshot",
   "fig_none_in_source": true
  },
  {
@@ -1915,9 +1913,7 @@
    "FINAL_FIGURES/0e3922eab151d9bd55ba34061ba01d3bef49be14ee38ee359bb8d3377e70d4c4_statement_2.png",
    "FINAL_FIGURES/0e3922eab151d9bd55ba34061ba01d3bef49be14ee38ee359bb8d3377e70d4c4_statement_3.png"
   ],
-  "fig_solution": [],
-  "fig_extracted_auto": true,
-  "fig_anchor": "html"
+  "fig_solution": []
  },
  {
   "year": 2021,
@@ -1936,9 +1932,7 @@
    "FINAL_FIGURES/7a23b4c5067f1f87b3ceaf97b58a10aac9fe073eccb1172bccbdc0fd8b22561b_statement_2.png"
   ],
   "fig_solution": "",
-  "uid": "7a23b4c5067f1f87b3ceaf97b58a10aac9fe073eccb1172bccbdc0fd8b22561b",
-  "fig_extracted_auto": true,
-  "fig_anchor": "html"
+  "uid": "7a23b4c5067f1f87b3ceaf97b58a10aac9fe073eccb1172bccbdc0fd8b22561b"
  },
  {
   "uid": "327d08ee41fb7cbc3949c13794b626fa85661d037bbfc682a647c7821587ee46",
@@ -2030,9 +2024,7 @@
    "FINAL_FIGURES/1dd6382b1ad4192d9527b9ffee0a7c2f6bcbbdff2adb61def33560db52092889_statement_3.png"
   ],
   "fig_solution": "",
-  "uid": "1dd6382b1ad4192d9527b9ffee0a7c2f6bcbbdff2adb61def33560db52092889",
-  "fig_extracted_auto": true,
-  "fig_anchor": "html"
+  "uid": "1dd6382b1ad4192d9527b9ffee0a7c2f6bcbbdff2adb61def33560db52092889"
  },
  {
   "year": 2021,
@@ -2051,9 +2043,7 @@
    "FINAL_FIGURES/7886ad56d3740a9c6335a3ad152f430f405f25162dfdc5e1a72b11d5725969fb_statement_2.png"
   ],
   "fig_solution": "",
-  "uid": "7886ad56d3740a9c6335a3ad152f430f405f25162dfdc5e1a72b11d5725969fb",
-  "fig_extracted_auto": true,
-  "fig_anchor": "html"
+  "uid": "7886ad56d3740a9c6335a3ad152f430f405f25162dfdc5e1a72b11d5725969fb"
  },
  {
   "uid": "226f47330ac6410ac5deeefa2caaf8855b186a0c064187925f3b41542e019a39",
@@ -2212,9 +2202,7 @@
   "fig_statement": [],
   "fig_solution": [
    "FINAL_FIGURES/cd30a419389fa695b4d70ab654892e5bdf4f64a67c6f6909567a467ab65540af_solution.png"
-  ],
-  "fig_extracted_auto": true,
-  "fig_anchor": "html"
+  ]
  },
  {
   "uid": "e038ea399a58518ddaffc892df0746b63c50eec9d9c5e83f7a01bf061ed12210",
@@ -5852,9 +5840,7 @@
   "fig_statement": [],
   "fig_solution": [
    "FINAL_FIGURES/bd6753da41f72f1846d969e8c2d4db1869a846db24b7a55eec3c702fdcdaddaa_solution.png"
-  ],
-  "fig_extracted_auto": true,
-  "fig_anchor": "html"
+  ]
  },
  {
   "year": 2003,
@@ -5991,9 +5977,7 @@
   "fig_statement": [
    "FINAL_FIGURES/5dfea28ed89b695be24affd95faa5f09a1543f28a867871f94147b783be80dee_statement.png"
   ],
-  "fig_solution": [],
-  "fig_extracted_auto": true,
-  "fig_anchor": "text"
+  "fig_solution": []
  },
  {
   "uid": "02f4f435e4c4767521b88c5eadf9a88047d7efa85c0b4b1971a2c37c5635765a",
@@ -6135,9 +6119,7 @@
   "fig_statement": [
    "FINAL_FIGURES/0f5a31d72e4944e41a14d64e1eb94c63de071bc073a2f979f0cdd4436e0fa619_statement.gif"
   ],
-  "fig_solution": [],
-  "fig_extracted_auto": true,
-  "fig_anchor": "html"
+  "fig_solution": []
  },
  {
   "uid": "ce29dd73350d6abe65ad017ba3ddadd9fb25c4e8b174d2aad73950379330af19",
@@ -7265,22 +7247,21 @@
  {
   "uid": "51f2f2892c84fdfbd2ac761b5f13d1e6dd3bca3c75d18c309d3427c39491bfa7",
   "olymp": "Московская математическая олимпиада",
-  "year": 1935,
-  "round": "Заключительный этап",
+  "year": 1940,
+  "round": "Второй тур",
   "day": 0,
   "grade": "8",
   "num": "3",
   "status": "official",
   "answer": "Доказано",
-  "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf",
+  "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf#page=163",
   "text": "Данным четырёхугольником неправильной формы настлать паркет, т.е. покрыть всю плоскость четырёхугольниками, равными данному, без промежутков и перекрытий.",
   "solution": "Составим из четырёх экземпляров данного четырёх-\nугольника фигуру, как показано на рис 35. При этом\nABCD -- параллелограмм и при сдвигах на векторы # -\nAB\nи # -\nBC одна пара сторон фигуры переходит в другую пару\nсторон.\nОчевидно, что параллелограммами можно замостить\nвсю плоскость, поэтому полученными фигурами тоже мож-\nно замостить всю плоскость. Данное решение проходит и\nдля невыпуклого четырёхугольника.",
   "geo": true,
   "fig_statement": [],
-  "fig_solution": [],
-  "fig_extracted_auto": true,
-  "fig_anchor": "block_snapshot",
-  "fig_none_in_source": true
+  "fig_solution": [
+   "FINAL_FIGURES/51f2f2892c84fdfbd2ac761b5f13d1e6dd3bca3c75d18c309d3427c39491bfa7_solution.png"
+  ]
  },
  {
   "uid": "5144b52704a63205f82d8d219bc001596eb8d24cea19791003d45c0a2888cc3e",
@@ -7302,21 +7283,20 @@
  {
   "uid": "e0d014681ab8b3e8ce66b43c8fead4fddc7243d5729f0dc7e5b7ae13bd09da7e",
   "olymp": "Московская математическая олимпиада",
-  "year": 1935,
-  "round": "Заключительный этап",
+  "year": 1954,
+  "round": "Второй тур",
   "day": 0,
   "grade": "8",
-  "num": "3",
+  "num": "5",
   "status": "official",
   "answer": "0, 1 или 7.",
-  "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf",
+  "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf#page=271",
   "text": "Сколько осей симметрии может иметь семиугольник?",
   "solution": "Ось симметрии семиугольника обязательно прохо-\nдит через одну из его вершин (остальные вершины раз-\nбиваются на пары симметричных вершин). Пусть у се-\nмиугольника есть ось симметрии. Тогда у него есть три\nпары равных углов и три пары равных сторон. Вторая ось\nсимметрии может быть расположена тремя существенно\nразличными (не симметричными) способами. Легко про-\nверить, что в каждом из этих трёх случаев все стороны\nсемиугольника оказываются равными и все углы тоже.\nТаким образом, если у семиугольника есть хотя бы две\nоси симметрии, то он правильный, поэтому у него 7 осей\nсимметрии.",
   "geo": true,
-  "fig_statement": [
-   "FINAL_FIGURES/e0d014681ab8b3e8ce66b43c8fead4fddc7243d5729f0dc7e5b7ae13bd09da7e_statement.png"
-  ],
-  "fig_solution": []
+  "fig_statement": [],
+  "fig_solution": [],
+  "fig_none_in_source": true
  },
  {
   "uid": "13bd8e0093a7cc38fb383f55f3febba0bda34002d435e8d970d95ff69cdea707",
@@ -7476,39 +7456,41 @@
  {
   "uid": "40a954636298f24d4c89589541bd1e3985b2c151a8df045520698e3135f0732e",
   "olymp": "Московская математическая олимпиада",
-  "year": 1935,
-  "round": "Заключительный этап",
+  "year": 1954,
+  "round": "Второй тур",
   "day": 0,
   "grade": "10",
   "num": "1",
   "status": "official",
   "answer": "0, 1, 2, 3 или 6.",
-  "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf",
+  "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf#page=274",
   "text": "Сколько плоскостей симметрии может иметь треугольная пирамида?",
   "solution": "Плоскость симметрии треугольной пирамиды ABCD\nобязательно содержит две её вершины. Действительно, ес-\nли бы были две пары вершин, симметричных относитель-\nно одной плоскости, то все четыре вершины пирамиды ле-\nжали бы в одной плоскости. Поэтому плоскость симмет-\nрии однозначно задаётся парой вершин C и D, лежащих в\nней. При этом AC = BC и AD = BD.\nПредположим, что есть две плоскости симметрии. Рёб-\nра, через которые они проходят (на рисунках они выделе-\nны), могут либо иметь общую вершину (рис. 85, а), либо\nне иметь (рис. 85, б). В первом случае мы получаем пра-\nвильную пирамиду, которая имеет либо 3 плоскости сим-\nметрии, либо 6 (когда длина бокового ребра равна длине\n\nребра основания, т. е. в случае правильного тетраэдра). Во\nвтором случае пирамида имеет либо 2 плоскости симмет-\nрии, либо 6 (если c=b̸=a, то новых плоскостей симметрии\nне возникает).\na\na\na\nb\nb\nb\na\na\na\na\nb\nc\nа)\nб)\nРис. 85",
   "geo": true,
   "fig_statement": [],
-  "fig_solution": [],
-  "fig_none_in_source": true
+  "fig_solution": [
+   "FINAL_FIGURES/40a954636298f24d4c89589541bd1e3985b2c151a8df045520698e3135f0732e_solution.png"
+  ]
  },
  {
   "uid": "e1fa55a6bb8e69129c43432c41efd5c0c1a7032407c61f1e7a43ae2625758bfd",
   "olymp": "Московская математическая олимпиада",
-  "year": 1935,
-  "round": "Заключительный этап",
+  "year": 1940,
+  "round": "Второй тур",
   "day": 0,
   "grade": "10",
   "num": "1",
   "status": "gemini_solved",
   "answer": "$\\left\\lceil \\frac{180^\\circ}{\\alpha} \\right\\rceil - 1$ (то есть $\\left[\\frac{180^\\circ}{\\alpha}\\right]$, если $\\frac{180^\\circ}{\\alpha}$ не целое, и $\\frac{180^\\circ}{\\alpha} - 1$, если $\\frac{180^\\circ}{\\alpha}$ целое; при $\\alpha \\ge 180^\\circ$ число самопересечений равно $0$).",
-  "source": "https://problems.ru/view_by_source_new.php?parent=165962",
+  "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf#page=164",
   "text": "На бесконечном конусе, угол развёртки которого равен \\(\\alpha\\), взята точка. Из этой точки в обе стороны проводится линия так, что после развёртки она превращается в отрезки прямых. Определить число её самопересечений.",
   "solution": "Развернём конус на плоскость (точнее, на универсальную накрывающую плоскость конической поверхности с вершиной в точке $S$). Линия, проведённая на конусе, при развёртке переходит в некоторую прямую $l$, проходящую через исходную точку $A$ (если прямая проходит через вершину $S$, она является образующей и не имеет самопересечений; далее считаем, что $l$ не проходит через $S$).\n\nТочки $B$ и $C$ прямой $l$ склеиваются в одну точку на конусе (образуя точку самопересечения линии) тогда и только тогда, когда они находятся на одинаковом расстоянии от вершины $S$ и полярный угол между лучами $SB$ и $SC$ кратен углу развёртки $\\alpha$:\n\\[\nSB = SC \\quad \\text{и} \\quad \\angle BSC = k\\alpha \\quad (k \\in \\mathbb{N}).\n\\]\nТак как треугольник $BSC$ равнобедренный с основанием $BC$, лежащим на прямой $l$, высота этого треугольника совпадает с перпендикуляром $SH$, опущенным из вершины $S$ на прямую $l$. Следовательно, точки $B$ и $C$ симметричны относительно точки $H$, а луч $SH$ является биссектрисой угла $\\angle BSC$. \n\nПоэтому для каждого целого $k \\ge 1$ точки $B_k$ и $C_k$ самопересечения определяются условием\n\\[\n\\angle HSB_k = \\angle HSC_k = \\frac{k\\alpha}{2}.\n\\]\nПоскольку точки $B_k$ и $C_k$ лежат на прямой $l$, не проходящей через $S$, угол $\\angle HSB_k$ должен быть строго меньше $90^\\circ$ (так как луч $SH$ перпендикулярен $l$). Отсюда получаем ограничение:\n\\[\n\\frac{k\\alpha}{2} < 90^\\circ \\iff k\\alpha < 180^\\circ \\iff k < \\frac{180^\\circ}{\\alpha}.\n\\]\nДля каждого натурального $k$, удовлетворяющего этому неравенству, на прямой $l$ существует единственная пара точек $B_k, C_k$, дающая самопересечение на конусе. Таким образом, число самопересечений равно количеству натуральных чисел $k$, строго меньших $\\frac{180^\\circ}{\\alpha}$.\n\nЭто число равно $\\left\\lceil \\frac{180^\\circ}{\\alpha} \\right\\rceil - 1$. В частности, если $\\alpha \\ge 180^\\circ$, то таких $k$ нет, и число самопересечений равно $0$.",
   "geo": true,
   "fig_statement": [],
-  "fig_solution": [],
-  "fig_extracted_auto": true,
-  "fig_anchor": "html"
+  "fig_solution": [
+   "FINAL_FIGURES/e1fa55a6bb8e69129c43432c41efd5c0c1a7032407c61f1e7a43ae2625758bfd_solution.png",
+   "FINAL_FIGURES/e1fa55a6bb8e69129c43432c41efd5c0c1a7032407c61f1e7a43ae2625758bfd_solution_2.png"
+  ]
  },
  {
   "uid": "56d27e0c2f4d3004aa73410fa036c56ba0f1375827931003226e281be93fb1e4",
@@ -8074,21 +8056,20 @@
  {
   "uid": "e40574eb3cc5d5ba018bf3919668c970635554017afd899f8df3b068da234e5e",
   "olymp": "Московская математическая олимпиада",
-  "year": 1935,
-  "round": "Отборочный этап",
+  "year": 1949,
+  "round": "Первый тур",
   "day": 0,
   "grade": "7",
-  "num": "5",
+  "num": "4",
   "status": "official",
   "answer": "Возьмём на ломаной две точки A и B, делящие её периметр пополам. Круг радиуса 1/4 с центром в середине AB покрывает ломаную.",
-  "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf",
+  "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf#page=208",
   "text": "Дана плоская замкнутая ломаная периметра 1. Доказать, что можно начертить круг радиусом 1/4, покрывающий всю ломаную.",
   "solution": "Возьмём на ломаной две точки A и B, делящие её\nпериметр пополам. Тогда AB \\leq 1/2. Докажем, что все точ-\nки ломаной лежат внутри круга радиуса 1/4 в центром в\nточке O -- середине отрезка AB. Пусть M -- произвольная\nточка ломаной, а точка M1 симметрична ей относительно\nточки O. Тогда MO = M1M\n\\leq M1A + AM\n= BM + AM\n\\leq 1\n4, так\nкак BM + AM не превосходит половины длины ломаной.\nOb\nC\nA\nB\nM\nO\nРис. 60",
   "geo": false,
-  "fig_statement": [
-   "FINAL_FIGURES/e40574eb3cc5d5ba018bf3919668c970635554017afd899f8df3b068da234e5e_statement.png"
-  ],
-  "fig_solution": []
+  "fig_statement": [],
+  "fig_solution": [],
+  "fig_none_in_source": true
  },
  {
   "uid": "0633ad5f2fcfe4a4b9a079b63481439322ef97b4d98f3c7c3afea5ee46c2b572",
@@ -8195,20 +8176,21 @@
  {
   "uid": "cfd87cdf3f99d824af0c04169487401dfa862dc95c042b05629d03b63353fb3f",
   "olymp": "Московская математическая олимпиада",
-  "year": 1935,
-  "round": "Отборочный этап",
+  "year": 1955,
+  "round": "Первый тур",
   "day": 0,
   "grade": "8",
   "num": "2",
   "status": "official_found",
   "answer": "Внутренность параллелограмма",
-  "source": "https://problems.ru/view_problem_details_new.php?id=78030",
+  "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf#page=276",
   "text": "Дан четырехугольник \\(ABCD\\). На стороне \\(AB\\) взята точка \\(K\\), на стороне \\(BC\\) - точка \\(L\\), на стороне \\(CD\\) - точка \\(M\\) и на стороне \\(AD\\) - точка \\(N\\), так, что \\(KB = BL = a\\), \\(MD = DN = b\\). Пусть \\(KL\\) не параллельна \\(MN\\). Найти геометрическое место точек пересечения прямых \\(KL\\) и \\(MN\\) при изменении \\(a\\) и \\(b\\).",
-  "solution": "KB = BL ⇒ KL ⊥ биссектрисе угла B: направление фиксировано, при изменении a прямая сдвигается параллельно; аналогично MN ⊥ биссектрисе угла D. Точка пересечения двух прямых фиксированных направлений, независимо скользящих каждая в своей полосе, заполняет параллелограмм со сторонами, параллельными KL и MN. Рисунок — problems.ru 78030.",
+  "solution": "2. Выберем из сторон BA и BC меньшую и отложим\nна большей стороне от точки B отрезок, равный меньшей\nстороне. Например, если BC < BA, как на рис. 86, то мы\nотложим отрезок BA′, равный отрезку BC. Затем прове-\nдём через вершину B прямую, параллельную прямой A′C.\nПрямая KL расположена в полосе, ограниченной прямой\nA′C и проведённой прямой. Аналогично строится полоса,\nв которой заключена прямая MN.",
   "geo": true,
   "fig_statement": [],
-  "fig_solution": [],
-  "fig_none_in_source": true
+  "fig_solution": [
+   "FINAL_FIGURES/cfd87cdf3f99d824af0c04169487401dfa862dc95c042b05629d03b63353fb3f_solution.png"
+  ]
  },
  {
   "uid": "0b01af0133528ecf98a8d73e81fa679811b69163189065583f09e9415a6d299f",

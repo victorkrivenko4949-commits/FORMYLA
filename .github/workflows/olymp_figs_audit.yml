@@ -19,15 +19,20 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Fix orphans + audit
+      - name: Verify source ledger, archive, task cards and regressions
+        run: |
+          pip install pytest Pillow Flask Flask-Login Markdown
+          python scripts/olymp_figs_validate.py
+          python -m pytest --noconftest -q tests/test_olymp_figs_source_audit.py tests/test_catalog_preservation.py
+      - name: Read-only figure audit
         run: |
           mkdir -p reports
-          python scripts/olymp_catalog_figs_audit.py --fix-orphans --csv reports/olymp_figs_audit.csv --fix-csv reports/olymp_figs_fix.csv | tee reports/olymp_figs_audit_summary.txt
-      - name: Commit report and fixed data
+          python scripts/olymp_catalog_figs_audit.py --csv reports/olymp_figs_audit.csv | tee reports/olymp_figs_audit_summary.txt
+      - name: Commit audit report only
         run: |
           git config user.name "figs-audit-bot"
           git config user.email "bot@formyla.net"
-          git add reports/ data/olymp_catalog/
-          git commit -m "audit: fix orphan figures + report [skip ci]" || echo "no changes"
-          git pull --rebase origin figs-audit || true
+          git add reports/olymp_figs_audit.csv reports/olymp_figs_audit_summary.txt
+          git commit -m "audit: read-only figures report [skip ci]" || echo "no changes"
+          git pull --rebase origin figs-audit
           git push

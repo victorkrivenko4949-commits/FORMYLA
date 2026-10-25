@@ -1,0 +1,486 @@
+{
+  "51f2f2892c84fdfbd2ac761b5f13d1e6dd3bca3c75d18c309d3427c39491bfa7": {
+    "uid": "51f2f2892c84fdfbd2ac761b5f13d1e6dd3bca3c75d18c309d3427c39491bfa7",
+    "year": 1940,
+    "grade": "8",
+    "num": "3",
+    "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf#page=163",
+    "action": "solution_figure_restored; metadata_verified",
+    "figure": 35,
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/51f2f2892c84fdfbd2ac761b5f13d1e6dd3bca3c75d18c309d3427c39491bfa7_solution.png",
+        "sha256": "56aebac65ec282154cf9ef78bdad397536e9f137a4f5f7948ffc1f0347358806"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "40a954636298f24d4c89589541bd1e3985b2c151a8df045520698e3135f0732e": {
+    "uid": "40a954636298f24d4c89589541bd1e3985b2c151a8df045520698e3135f0732e",
+    "year": 1954,
+    "grade": "10",
+    "num": "1",
+    "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf#page=274",
+    "action": "solution_figure_restored; metadata_verified",
+    "figure": 85,
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/40a954636298f24d4c89589541bd1e3985b2c151a8df045520698e3135f0732e_solution.png",
+        "sha256": "ce8fed202bd03d2b502accfd673e8926d0a10390c86d2a6a551fddd0148b9845"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "cfd87cdf3f99d824af0c04169487401dfa862dc95c042b05629d03b63353fb3f": {
+    "uid": "cfd87cdf3f99d824af0c04169487401dfa862dc95c042b05629d03b63353fb3f",
+    "year": 1955,
+    "grade": "8",
+    "num": "2",
+    "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf#page=276",
+    "action": "solution_figure_restored; metadata_verified",
+    "figure": 86,
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/cfd87cdf3f99d824af0c04169487401dfa862dc95c042b05629d03b63353fb3f_solution.png",
+        "sha256": "a6e401f9e7fa757db78bb4c78fc069e9d6a92bb425da3050fc21d4a129b817a0"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "e1fa55a6bb8e69129c43432c41efd5c0c1a7032407c61f1e7a43ae2625758bfd": {
+    "uid": "e1fa55a6bb8e69129c43432c41efd5c0c1a7032407c61f1e7a43ae2625758bfd",
+    "year": 1940,
+    "grade": "10",
+    "num": "1",
+    "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf#page=164",
+    "action": "solution_figure_restored; metadata_verified",
+    "figure": 37,
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/e1fa55a6bb8e69129c43432c41efd5c0c1a7032407c61f1e7a43ae2625758bfd_solution.png",
+        "sha256": "733e62cd1fb717c1d2e57e5cbdb7c1cc6c10d40ba5ce52a95c17aa0c305fa1c4"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/e1fa55a6bb8e69129c43432c41efd5c0c1a7032407c61f1e7a43ae2625758bfd_solution_2.png",
+        "sha256": "4c643b3a7bba131b4d3a4960df58e56723a0871b3a28074e97d5971325006f9e"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "e0d014681ab8b3e8ce66b43c8fead4fddc7243d5729f0dc7e5b7ae13bd09da7e": {
+    "uid": "e0d014681ab8b3e8ce66b43c8fead4fddc7243d5729f0dc7e5b7ae13bd09da7e",
+    "year": 1954,
+    "grade": "8",
+    "num": "5",
+    "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf#page=271",
+    "action": "no_figure_verified",
+    "reason": "Own complete solution compared with original book; attached graphic belonged to another problem.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "e40574eb3cc5d5ba018bf3919668c970635554017afd899f8df3b068da234e5e": {
+    "uid": "e40574eb3cc5d5ba018bf3919668c970635554017afd899f8df3b068da234e5e",
+    "year": 1949,
+    "grade": "7",
+    "num": "4",
+    "source": "https://mmo.mccme.ru/books/mmo-35-57.pdf#page=208",
+    "action": "no_figure_verified",
+    "reason": "Own complete solution compared with original book; attached graphic belonged to another problem.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "53d5ea485ff4add5625d2927621bf3156ec1b41e609c28b707a992de7abf4183": {
+    "uid": "53d5ea485ff4add5625d2927621bf3156ec1b41e609c28b707a992de7abf4183",
+    "year": 2024,
+    "grade": "11",
+    "num": "5",
+    "source": "https://mmo.mccme.ru/2024/11-sol2.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "0e3922eab151d9bd55ba34061ba01d3bef49be14ee38ee359bb8d3377e70d4c4": {
+    "uid": "0e3922eab151d9bd55ba34061ba01d3bef49be14ee38ee359bb8d3377e70d4c4",
+    "year": 2021,
+    "grade": "8",
+    "num": "5",
+    "source": "https://problems.ru/view_problem_details_new.php?id=66583",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/0e3922eab151d9bd55ba34061ba01d3bef49be14ee38ee359bb8d3377e70d4c4_statement.png",
+        "sha256": "42b077d195079182c8367aa2cb4fb93f36c19cdeb911659dfc82ec7cbc1e974b"
+      },
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/0e3922eab151d9bd55ba34061ba01d3bef49be14ee38ee359bb8d3377e70d4c4_statement_2.png",
+        "sha256": "4becba1d226d285235e5ac688c4a16a64c4dfea48fb9079331535281826f50a4"
+      },
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/0e3922eab151d9bd55ba34061ba01d3bef49be14ee38ee359bb8d3377e70d4c4_statement_3.png",
+        "sha256": "427406ccdfafcdf70b2b9bbc000261172819a0376c37ea4c260fb5135c901a63"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "7a23b4c5067f1f87b3ceaf97b58a10aac9fe073eccb1172bccbdc0fd8b22561b": {
+    "uid": "7a23b4c5067f1f87b3ceaf97b58a10aac9fe073eccb1172bccbdc0fd8b22561b",
+    "year": 2021,
+    "grade": "8",
+    "num": "2",
+    "source": "https://problems.ru/view_problem_details_new.php?id=66580",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/7a23b4c5067f1f87b3ceaf97b58a10aac9fe073eccb1172bccbdc0fd8b22561b_statement.png",
+        "sha256": "11d164613887c7c7bd8cbd6047fd51ae4fd30c9aefdef20086078191a201f0fd"
+      },
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/7a23b4c5067f1f87b3ceaf97b58a10aac9fe073eccb1172bccbdc0fd8b22561b_statement_2.png",
+        "sha256": "36618af04150cfc04da32365e34124d193774cc427bc80eb0b686ab3a846804d"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "1dd6382b1ad4192d9527b9ffee0a7c2f6bcbbdff2adb61def33560db52092889": {
+    "uid": "1dd6382b1ad4192d9527b9ffee0a7c2f6bcbbdff2adb61def33560db52092889",
+    "year": 2021,
+    "grade": "9",
+    "num": "2",
+    "source": "https://problems.ru/view_problem_details_new.php?id=66586",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/1dd6382b1ad4192d9527b9ffee0a7c2f6bcbbdff2adb61def33560db52092889_statement.png",
+        "sha256": "5fe29049005659512a4139ee7a4a5672a202c09b901ee26a753b195909063d39"
+      },
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/1dd6382b1ad4192d9527b9ffee0a7c2f6bcbbdff2adb61def33560db52092889_statement_2.png",
+        "sha256": "2f2ca7b86a28721bee52880fee37d00349501899db989c915a1ae9f50fada350"
+      },
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/1dd6382b1ad4192d9527b9ffee0a7c2f6bcbbdff2adb61def33560db52092889_statement_3.png",
+        "sha256": "d1846d525a7480113cfba748eb2e4dc6264438947a51d58ee2d2632ac371092b"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "7886ad56d3740a9c6335a3ad152f430f405f25162dfdc5e1a72b11d5725969fb": {
+    "uid": "7886ad56d3740a9c6335a3ad152f430f405f25162dfdc5e1a72b11d5725969fb",
+    "year": 2021,
+    "grade": "9",
+    "num": "3",
+    "source": "https://problems.ru/view_problem_details_new.php?id=66587",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/7886ad56d3740a9c6335a3ad152f430f405f25162dfdc5e1a72b11d5725969fb_statement.png",
+        "sha256": "9b181e00569c4293d501183ffd2c85e6347543708dc449ed66777d7679070a68"
+      },
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/7886ad56d3740a9c6335a3ad152f430f405f25162dfdc5e1a72b11d5725969fb_statement_2.png",
+        "sha256": "21744fafb433a5b3b7daee873b15d036434b7d1c7b0ac8b6caa1b75dbdfc814b"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "cd30a419389fa695b4d70ab654892e5bdf4f64a67c6f6909567a467ab65540af": {
+    "uid": "cd30a419389fa695b4d70ab654892e5bdf4f64a67c6f6909567a467ab65540af",
+    "year": 2021,
+    "grade": "11",
+    "num": "3",
+    "source": "https://problems.ru/view_problem_details_new.php?id=66602",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/cd30a419389fa695b4d70ab654892e5bdf4f64a67c6f6909567a467ab65540af_solution.png",
+        "sha256": "fb0fcc08e39379c835cafc9d2f7c2ea0a4830de1991b7a00513119d87b45481b"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "bd6753da41f72f1846d969e8c2d4db1869a846db24b7a55eec3c702fdcdaddaa": {
+    "uid": "bd6753da41f72f1846d969e8c2d4db1869a846db24b7a55eec3c702fdcdaddaa",
+    "year": 2003,
+    "grade": "10",
+    "num": "5",
+    "source": "https://problems.ru/view_problem_details_new.php?id=105160",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/bd6753da41f72f1846d969e8c2d4db1869a846db24b7a55eec3c702fdcdaddaa_solution.png",
+        "sha256": "c4628ec15e04a9c858598227db2bbe5875c60be23e92fc4e81aa370ba4792f49"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "5dfea28ed89b695be24affd95faa5f09a1543f28a867871f94147b783be80dee": {
+    "uid": "5dfea28ed89b695be24affd95faa5f09a1543f28a867871f94147b783be80dee",
+    "year": 1993,
+    "grade": "8",
+    "num": "1",
+    "source": "https://mmo.mccme.ru/books/mmo-93-05.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/5dfea28ed89b695be24affd95faa5f09a1543f28a867871f94147b783be80dee_statement.png",
+        "sha256": "65f749ccf0eaf1c8226f2c5d02276fad6f90dc49cad24d6b05565bcd2c570418"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "0f5a31d72e4944e41a14d64e1eb94c63de071bc073a2f979f0cdd4436e0fa619": {
+    "uid": "0f5a31d72e4944e41a14d64e1eb94c63de071bc073a2f979f0cdd4436e0fa619",
+    "year": 1993,
+    "grade": "8",
+    "num": "3",
+    "source": "https://problems.ru/view_problem_details_new.php?id=105074",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/0f5a31d72e4944e41a14d64e1eb94c63de071bc073a2f979f0cdd4436e0fa619_statement.gif",
+        "sha256": "889aa8e97010c263481cce4425f50035b58a1dd9597cc705b44fd792b0f3e033"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "a4b44f34936abf705a90e841593c22e63c901fa162f8e62fde57edabcd252395": {
+    "uid": "a4b44f34936abf705a90e841593c22e63c901fa162f8e62fde57edabcd252395",
+    "year": 2025,
+    "grade": "11",
+    "num": "4",
+    "source": "https://www.problems.ru/view_problem_details_new.php?id=67463",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "528ae1153051748578e2b0b834004122f19f7ffd12967a9b859c969079d26b5c": {
+    "uid": "528ae1153051748578e2b0b834004122f19f7ffd12967a9b859c969079d26b5c",
+    "year": 2024,
+    "grade": "8",
+    "num": "1",
+    "source": "https://www.problems.ru/view_problem_details_new.php?id=67300",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "fab83cb2b7ebbb31b7233f4f4fed9f0986d0513bfd4575f64549482c34439210": {
+    "uid": "fab83cb2b7ebbb31b7233f4f4fed9f0986d0513bfd4575f64549482c34439210",
+    "year": 2024,
+    "grade": "11",
+    "num": "1",
+    "source": "https://mmo.mccme.ru/2024/11-sol2.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "d7a898b00030e357f031674f5336efb62805b89b507d8c7c0b4fe396b4053bad": {
+    "uid": "d7a898b00030e357f031674f5336efb62805b89b507d8c7c0b4fe396b4053bad",
+    "year": 2021,
+    "grade": "9",
+    "num": "4",
+    "source": "https://problems.ru/view_problem_details_new.php?id=66588",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/d7a898b00030e357f031674f5336efb62805b89b507d8c7c0b4fe396b4053bad_statement.png",
+        "sha256": "b9e50a4abaa5004e87e9cb2a0e52601b85f3f8162793adec850cd3d5703ea82e"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/d7a898b00030e357f031674f5336efb62805b89b507d8c7c0b4fe396b4053bad_solution.png",
+        "sha256": "403767ff114e117fcffe9a75378beafb3dddae304492bafb3704927a056297e8"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "5e3f96a873a688ccc7dd59ff0e215766f78f02904d7bfa096c66b43479d92f63": {
+    "uid": "5e3f96a873a688ccc7dd59ff0e215766f78f02904d7bfa096c66b43479d92f63",
+    "year": 2021,
+    "grade": "11",
+    "num": "3",
+    "source": "https://problems.ru/view_problem_details_new.php?id=66588",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/5e3f96a873a688ccc7dd59ff0e215766f78f02904d7bfa096c66b43479d92f63_statement.png",
+        "sha256": "b9e50a4abaa5004e87e9cb2a0e52601b85f3f8162793adec850cd3d5703ea82e"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/5e3f96a873a688ccc7dd59ff0e215766f78f02904d7bfa096c66b43479d92f63_solution.png",
+        "sha256": "403767ff114e117fcffe9a75378beafb3dddae304492bafb3704927a056297e8"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "f3e9ba8f58bc9ac42660ef21de312533908cdd484a1ef62222160aefeca79321": {
+    "uid": "f3e9ba8f58bc9ac42660ef21de312533908cdd484a1ef62222160aefeca79321",
+    "year": 2021,
+    "grade": "11",
+    "num": "4",
+    "source": "https://www.problems.ru/view_problem_details_new.php?id=66596",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "bd23bc3dff445c3421eb77c42dfc1f01066d8e3c843fc0b420cf59316bbdbc56": {
+    "uid": "bd23bc3dff445c3421eb77c42dfc1f01066d8e3c843fc0b420cf59316bbdbc56",
+    "year": 2015,
+    "grade": "8",
+    "num": "1",
+    "source": "https://problems.ru/view_problem_details_new.php?id=65186",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/bd23bc3dff445c3421eb77c42dfc1f01066d8e3c843fc0b420cf59316bbdbc56_solution.png",
+        "sha256": "1e3e1c47183fcf18497149af070e0cc9f46baefe49f47ccefcaf692efbf943db"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "2a0f07ee901351aa7df087107559f433e9fcdcbc5da720abc9549db142293a87": {
+    "uid": "2a0f07ee901351aa7df087107559f433e9fcdcbc5da720abc9549db142293a87",
+    "year": 2013,
+    "grade": "9",
+    "num": "1",
+    "source": "https://problems.ru/view_problem_details_new.php?id=32891",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/2a0f07ee901351aa7df087107559f433e9fcdcbc5da720abc9549db142293a87_solution.png",
+        "sha256": "092426a35e7539becdc66c7671b41b0340a7e2a253a93cab03f3390359590ff1"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "4aaf063c6f434f352274997de678cde6febbca37d957f3732dac078e1f61294f": {
+    "uid": "4aaf063c6f434f352274997de678cde6febbca37d957f3732dac078e1f61294f",
+    "year": 2009,
+    "grade": "9",
+    "num": "1",
+    "source": "https://www.problems.ru/view_problem_details_new.php?id=111911",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "1febe148dca63fbc663d153289ab01e056db5ff0e99c9570a22f320e04535d05": {
+    "uid": "1febe148dca63fbc663d153289ab01e056db5ff0e99c9570a22f320e04535d05",
+    "year": 2003,
+    "grade": "8",
+    "num": "3",
+    "source": "https://problems.ru/view_problem_details_new.php?id=105146",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/1febe148dca63fbc663d153289ab01e056db5ff0e99c9570a22f320e04535d05_solution.png",
+        "sha256": "d9020c095f38f0b6c599fbb7d54bf2de1f9f4d8a33259fa421d628a9f2179616"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/1febe148dca63fbc663d153289ab01e056db5ff0e99c9570a22f320e04535d05_solution_2.png",
+        "sha256": "61f2d2a92a3abe73d36c183bdadf372cd4f9344e212a738bb17d29e75658e4e7"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/1febe148dca63fbc663d153289ab01e056db5ff0e99c9570a22f320e04535d05_solution_3.png",
+        "sha256": "8d9f943808517fa5e345c7759f078a92e65d50f81a674bb533847e0c729f598e"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/1febe148dca63fbc663d153289ab01e056db5ff0e99c9570a22f320e04535d05_solution_4.png",
+        "sha256": "9125e47703f3b96adbb50621549cdf6aeb30d6c0cf8315bfac0e461fe2b92bdd"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/1febe148dca63fbc663d153289ab01e056db5ff0e99c9570a22f320e04535d05_solution_5.png",
+        "sha256": "2de4454487a9cb77fa110f7b491fbfb61620bee8cc6a83d2628f24c1f5043731"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/1febe148dca63fbc663d153289ab01e056db5ff0e99c9570a22f320e04535d05_solution_6.png",
+        "sha256": "c2d1a956908ee4e5a1da075b8bcf348040fe192f8c6fb5471ad177c99094de75"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "02f4f435e4c4767521b88c5eadf9a88047d7efa85c0b4b1971a2c37c5635765a": {
+    "uid": "02f4f435e4c4767521b88c5eadf9a88047d7efa85c0b4b1971a2c37c5635765a",
+    "year": 1993,
+    "grade": "8",
+    "num": "2",
+    "source": "https://problems.ru/view_problem_details_new.php?id=105097",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "9727dd50",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/02f4f435e4c4767521b88c5eadf9a88047d7efa85c0b4b1971a2c37c5635765a_solution.png",
+        "sha256": "0c8fb75402df9bcd49122bf33b7c54d031e395c2b779533b2d365291a56ec71b"
+      }
+    ],
+    "fig_none_in_source": false
+  }
+}

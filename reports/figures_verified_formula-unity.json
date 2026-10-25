@@ -1,0 +1,580 @@
+{
+  "3a016cb20968320995fd3e3f0f4c2f9aa38f1368a862cd48f0b056d6a43abbfb": {
+    "uid": "3a016cb20968320995fd3e3f0f4c2f9aa38f1368a862cd48f0b056d6a43abbfb",
+    "year": 2024,
+    "grade": "9",
+    "num": "3",
+    "source": "https://mathus.ru/olymp/FETT2024Math9.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/3a016cb20968320995fd3e3f0f4c2f9aa38f1368a862cd48f0b056d6a43abbfb_statement.png",
+        "sha256": "006cfc3f112ba94563cedaf08dbb71e4ba46b3b5a7399cd33fba21325e7b2ff8"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "35171e9e60d4a13dbea1aadf648f90bc7e9cdd43c1c46cab02ab294025a2a517": {
+    "uid": "35171e9e60d4a13dbea1aadf648f90bc7e9cdd43c1c46cab02ab294025a2a517",
+    "year": 2024,
+    "grade": "6",
+    "num": "2",
+    "source": "https://mathus.ru/olymp/FETT2024Math6.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/35171e9e60d4a13dbea1aadf648f90bc7e9cdd43c1c46cab02ab294025a2a517_statement.png",
+        "sha256": "19a9eb617f77cca09e7d6c4e88f8aaec881abec4d74a61648999c8497a44c0cd"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "4aa888d01f9894bd3e199f1a05deb271844f7bbab44c240f734f8564171a7d21": {
+    "uid": "4aa888d01f9894bd3e199f1a05deb271844f7bbab44c240f734f8564171a7d21",
+    "year": 2024,
+    "grade": "8",
+    "num": "2",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2024/223-sol-math-8-final-24-25.pdf#p2",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/4aa888d01f9894bd3e199f1a05deb271844f7bbab44c240f734f8564171a7d21_statement.png",
+        "sha256": "5aab6789ddf74b04178b6e4adf3634c0f01dcd4682266ad4e39e98a30c6a80f6"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/4aa888d01f9894bd3e199f1a05deb271844f7bbab44c240f734f8564171a7d21_solution.png",
+        "sha256": "54f41f5df6448d1310fcef2db02fba4b99f9cb99ee7c7890eba5dfb0f1c0cde4"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "cf9d74edca2975e07c9aeb3ba0dd44577bde801c3c9e601ab0808804a859de72": {
+    "uid": "cf9d74edca2975e07c9aeb3ba0dd44577bde801c3c9e601ab0808804a859de72",
+    "year": 2024,
+    "grade": "11",
+    "num": "5",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2024/223-sol-math-11-final-24-25.pdf#p6",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "6b8b1acdbe327ad6eb2a6f61c69448955d6ed8fecd77bf4178de3fac505f48d5": {
+    "uid": "6b8b1acdbe327ad6eb2a6f61c69448955d6ed8fecd77bf4178de3fac505f48d5",
+    "year": 2024,
+    "grade": "5",
+    "num": "2",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2024/223-taskssol-math-5-otbor-24-25.pdf#p4",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "4efdd18b475a20b384916d673dfa3260080d689d40237c7e32e659c2305b6d9e": {
+    "uid": "4efdd18b475a20b384916d673dfa3260080d689d40237c7e32e659c2305b6d9e",
+    "year": 2024,
+    "grade": "9",
+    "num": "2",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2024/223-taskssol-math-9-otbor-24-25.pdf#p2",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "b8685cfae9fc32879bd9dd4ee7509b6d7ac56247406715350c2e14e1e9d5e8aa": {
+    "uid": "b8685cfae9fc32879bd9dd4ee7509b6d7ac56247406715350c2e14e1e9d5e8aa",
+    "year": 2023,
+    "grade": "5",
+    "num": "4",
+    "source": "https://mathus.ru/olymp/FETT2023Math5.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/b8685cfae9fc32879bd9dd4ee7509b6d7ac56247406715350c2e14e1e9d5e8aa_statement.png",
+        "sha256": "8d41f77a0e3dd5f29be776c3d920eedcb934f1762cb75475c1658c1aa33656d5"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "bd9d64255dc525c54bed615642662f75924737b60ead98f77f44289274c4d1a3": {
+    "uid": "bd9d64255dc525c54bed615642662f75924737b60ead98f77f44289274c4d1a3",
+    "year": 2023,
+    "grade": "8",
+    "num": "1",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2023/223-sol-math-8-final-23-24.pdf#p2",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/bd9d64255dc525c54bed615642662f75924737b60ead98f77f44289274c4d1a3_solution.png",
+        "sha256": "098e64986977b0789e11d184510cd14b7d972d5b12a05f23b1e8b334c5e8bb19"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "bc718738f4aaaa334ce00d246bfc369ae649d81e15eacd40d7affc591d748e05": {
+    "uid": "bc718738f4aaaa334ce00d246bfc369ae649d81e15eacd40d7affc591d748e05",
+    "year": 2023,
+    "grade": "6",
+    "num": "2",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2023/223-taskssol-math-6-otbor-23-24.pdf#p3",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/bc718738f4aaaa334ce00d246bfc369ae649d81e15eacd40d7affc591d748e05_statement.png",
+        "sha256": "b7cbfc66a5b196d847599e9e1774684f9bbe55d71100fb1e6ae71341dfe00be8"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "87e3c005f6079fbfd3752388860ac7c44ef4b55361b98aa2f3a8637f12e67d45": {
+    "uid": "87e3c005f6079fbfd3752388860ac7c44ef4b55361b98aa2f3a8637f12e67d45",
+    "year": 2023,
+    "grade": "6",
+    "num": "5",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2023/223-taskssol-math-6-otbor-23-24.pdf#p6",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "1ee5ffc0810ffe91af880c33fd94437e3bf985abb16e21c124d155d3f29684af": {
+    "uid": "1ee5ffc0810ffe91af880c33fd94437e3bf985abb16e21c124d155d3f29684af",
+    "year": 2023,
+    "grade": "7",
+    "num": "2",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2023/223-taskssol-math-6-otbor-23-24.pdf#p3",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/1ee5ffc0810ffe91af880c33fd94437e3bf985abb16e21c124d155d3f29684af_statement.png",
+        "sha256": "b7cbfc66a5b196d847599e9e1774684f9bbe55d71100fb1e6ae71341dfe00be8"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "0a385a71feb06f805db15a1efa5125092a35d9eb5943dfc1fc8588d557c6285c": {
+    "uid": "0a385a71feb06f805db15a1efa5125092a35d9eb5943dfc1fc8588d557c6285c",
+    "year": 2023,
+    "grade": "7",
+    "num": "5",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2023/223-taskssol-math-7-otbor-23-24.pdf#p6",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/0a385a71feb06f805db15a1efa5125092a35d9eb5943dfc1fc8588d557c6285c_statement.png",
+        "sha256": "75e4d216547acc0954a9eb4f61b8900f1205054d3162c300d178fa94d0f10ae3"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "243b14f0a23e69e1e13c2b0fe965d9a245bc243920c12db0e0ff8cd0aeccdfa2": {
+    "uid": "243b14f0a23e69e1e13c2b0fe965d9a245bc243920c12db0e0ff8cd0aeccdfa2",
+    "year": 2023,
+    "grade": "8",
+    "num": "5",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2023/223-taskssol-math-8-otbor-23-24.pdf#p5",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/243b14f0a23e69e1e13c2b0fe965d9a245bc243920c12db0e0ff8cd0aeccdfa2_statement.png",
+        "sha256": "b7cbfc66a5b196d847599e9e1774684f9bbe55d71100fb1e6ae71341dfe00be8"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "9892ef0491f35fe3f6218441be24276f2db7e912acff47ad5e73a510077cfa51": {
+    "uid": "9892ef0491f35fe3f6218441be24276f2db7e912acff47ad5e73a510077cfa51",
+    "year": 2023,
+    "grade": "9",
+    "num": "1",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2023/223-taskssol-math-9-otbor-23-24.pdf#p1",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/9892ef0491f35fe3f6218441be24276f2db7e912acff47ad5e73a510077cfa51_statement.png",
+        "sha256": "fc1d3b8f8e322f362f81488ce3abf9289a31d2a4f1561235a229601ecaf10ab7"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "83094f693b280f16e637fc81ef5b1fdff21279e60687d04d34a40be99319bc2e": {
+    "uid": "83094f693b280f16e637fc81ef5b1fdff21279e60687d04d34a40be99319bc2e",
+    "year": 2023,
+    "grade": "10",
+    "num": "2",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2023/223-taskssol-math-10-otbor-23-24.pdf#p2",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/83094f693b280f16e637fc81ef5b1fdff21279e60687d04d34a40be99319bc2e_statement.png",
+        "sha256": "057cbf5d66f668809033a982fefaf22974e9f4d012e355a27f1b86183c61cacf"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "a4eeae8ddfa1b956653ba63ea4820769d93735ee9539b2b8916cb23a35072854": {
+    "uid": "a4eeae8ddfa1b956653ba63ea4820769d93735ee9539b2b8916cb23a35072854",
+    "year": 2022,
+    "grade": "5",
+    "num": "1",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2022/223-sol-math-5-final-22-23.pdf#p1",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/a4eeae8ddfa1b956653ba63ea4820769d93735ee9539b2b8916cb23a35072854_statement.png",
+        "sha256": "594a3c53c24199fc6ef3722e29f0f389f29a142a1e0ae79bd39638aea0e0b558"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "df6511b736e65947703d9be7a0201cc07fa2922b88cececb4ded6121bb94b9e3": {
+    "uid": "df6511b736e65947703d9be7a0201cc07fa2922b88cececb4ded6121bb94b9e3",
+    "year": 2022,
+    "grade": "5",
+    "num": "3",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2022/223-sol-math-5-final-22-23.pdf#p3",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/df6511b736e65947703d9be7a0201cc07fa2922b88cececb4ded6121bb94b9e3_statement.png",
+        "sha256": "9294ef5563a513d11ca33ea5f416bf5889527ab4e624573ae603ced8e60b97d8"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "038228fec46cf14ba29d1abf0aa51ab09ecdf2af8d3bad204eae061e20a92246": {
+    "uid": "038228fec46cf14ba29d1abf0aa51ab09ecdf2af8d3bad204eae061e20a92246",
+    "year": 2022,
+    "grade": "5",
+    "num": "4",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2022/223-sol-math-5-final-22-23.pdf#p4",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/038228fec46cf14ba29d1abf0aa51ab09ecdf2af8d3bad204eae061e20a92246_statement.png",
+        "sha256": "1f650aa1811e38f82dbdc29022296b2eff3cfc1f74edf3be32c896917015d647"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "9f4240f4a0c6ebe9b83122734fdddb1debc18573025d24462214f874d5986fa3": {
+    "uid": "9f4240f4a0c6ebe9b83122734fdddb1debc18573025d24462214f874d5986fa3",
+    "year": 2022,
+    "grade": "8",
+    "num": "4",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2022/223-sol-math-8-final-22-23.pdf#p5",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/9f4240f4a0c6ebe9b83122734fdddb1debc18573025d24462214f874d5986fa3_statement.png",
+        "sha256": "a81e6a563a0a25ecb9e3a7de842106169766a5740353e1bdc7845a75d0f4d0d0"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "4419f88e1424ab96ec60a9a1bd4b46672d8b4135a9af7d3747b4f4c97136dc07": {
+    "uid": "4419f88e1424ab96ec60a9a1bd4b46672d8b4135a9af7d3747b4f4c97136dc07",
+    "year": 2022,
+    "grade": "9",
+    "num": "2",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2022/223-sol-math-9-final-22-23.pdf#p2",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/4419f88e1424ab96ec60a9a1bd4b46672d8b4135a9af7d3747b4f4c97136dc07_solution.png",
+        "sha256": "d65dc886ae6ec008d7665cb568b2bb1559e7fe82aac78a603a1f4698bc596f0a"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "df9f0380c8be597db8f6d238204642eea6fdc5b789cb26ab603781e6517949f1": {
+    "uid": "df9f0380c8be597db8f6d238204642eea6fdc5b789cb26ab603781e6517949f1",
+    "year": 2021,
+    "grade": "8",
+    "num": "1",
+    "source": "https://www.formulo.org/wp-content/uploads/2022/04/fdi_tm_2021_22_round2_sol-ru-1.pdf#p4",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/df9f0380c8be597db8f6d238204642eea6fdc5b789cb26ab603781e6517949f1_statement.png",
+        "sha256": "42607bc5e518f9e78101f2ad9bc0b03d02713aeab10a8957d1a3f64eaf09710c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "f2315b93e27d93c420ff8af6639465bc50c1fb657328262f484dd81532b43958": {
+    "uid": "f2315b93e27d93c420ff8af6639465bc50c1fb657328262f484dd81532b43958",
+    "year": 2021,
+    "grade": "8",
+    "num": "4",
+    "source": "https://www.formulo.org/wp-content/uploads/2022/04/fdi_tm_2021_22_round2_sol-ru-1.pdf#p6",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "800821608c456ca82405a11057eef4680db56a843ac6729a8090f606fc357f99": {
+    "uid": "800821608c456ca82405a11057eef4680db56a843ac6729a8090f606fc357f99",
+    "year": 2021,
+    "grade": "10",
+    "num": "2",
+    "source": "https://www.formulo.org/wp-content/uploads/2022/04/fdi_tm_2021_22_round2_sol-ru-1.pdf#p4",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/800821608c456ca82405a11057eef4680db56a843ac6729a8090f606fc357f99_statement.png",
+        "sha256": "42607bc5e518f9e78101f2ad9bc0b03d02713aeab10a8957d1a3f64eaf09710c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "589b62774c463c4707ec13e92ca52bc13c59d6e73c41f646b23e6570c2ba727b": {
+    "uid": "589b62774c463c4707ec13e92ca52bc13c59d6e73c41f646b23e6570c2ba727b",
+    "year": 2019,
+    "grade": "6",
+    "num": "4",
+    "source": "https://www.formulo.org/wp-content/uploads/2020/03/fdi_tm_2019_20_round2_sol_ru.pdf#p4",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/589b62774c463c4707ec13e92ca52bc13c59d6e73c41f646b23e6570c2ba727b_statement.png",
+        "sha256": "ccf3cb16e08049a5db0ce0c59e5b6a9e0c8f82aac176495b224657f45eb9ccfb"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "f0fc8752d744ab118eda530af3ea3124a7b03546c71cc616dfa9070f18942e41": {
+    "uid": "f0fc8752d744ab118eda530af3ea3124a7b03546c71cc616dfa9070f18942e41",
+    "year": 2019,
+    "grade": "7",
+    "num": "3",
+    "source": "https://mathus.ru/olymp/FETT2019Math7.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/f0fc8752d744ab118eda530af3ea3124a7b03546c71cc616dfa9070f18942e41_statement.png",
+        "sha256": "ccb0b751cdc259ba4f5dfb4bbf9db2b28816432fee38e7585904b8fe57a818ed"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "3ab466895f8ca1da351ac5bc6cbb367057510fd2747400d806bd50363a1e80da": {
+    "uid": "3ab466895f8ca1da351ac5bc6cbb367057510fd2747400d806bd50363a1e80da",
+    "year": 2019,
+    "grade": "8",
+    "num": "1",
+    "source": "https://mathus.ru/olymp/FETT2019Math8.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/3ab466895f8ca1da351ac5bc6cbb367057510fd2747400d806bd50363a1e80da_statement.png",
+        "sha256": "3c69f74ff0ce17cdda2b1427ef51bc13dc18511911b0a864c5cc77b10fc1a9d4"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "a1e67f50b2376cef976aec1e5b12c4c30ccccac6b1c59b9f405f89f0626a3920": {
+    "uid": "a1e67f50b2376cef976aec1e5b12c4c30ccccac6b1c59b9f405f89f0626a3920",
+    "year": 2019,
+    "grade": "11",
+    "num": "1",
+    "source": "https://mathus.ru/olymp/FETT2019Math11.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/a1e67f50b2376cef976aec1e5b12c4c30ccccac6b1c59b9f405f89f0626a3920_statement.png",
+        "sha256": "1876be9cc22d6d6ec19f3db939ab0461ce07addd87743ef1d0bd135b3efbdfbc"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "2adb13d789b54a3f75824522e0ef24138ee7e053d41a4e4da2f748bae1ea182c": {
+    "uid": "2adb13d789b54a3f75824522e0ef24138ee7e053d41a4e4da2f748bae1ea182c",
+    "year": 2018,
+    "grade": "8",
+    "num": "3",
+    "source": "https://www.formulo.org/wp-content/uploads/2019/02/fditm_2018-19_p_ru_sol.pdf#p3",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/2adb13d789b54a3f75824522e0ef24138ee7e053d41a4e4da2f748bae1ea182c_statement.png",
+        "sha256": "9bf5844764556e2b5df65300241e5f671c6ec66f2e7cebc8ed81786ae5f5c8b7"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "b276c97b94ad557997e61d2de6e5aae79b24650b92deaf7d52caa86f12340e3e": {
+    "uid": "b276c97b94ad557997e61d2de6e5aae79b24650b92deaf7d52caa86f12340e3e",
+    "year": 2025,
+    "grade": "6",
+    "num": "5",
+    "source": "https://www.formulo.org/wp-content/uploads/2026/04/fdi_tm_25_26_math_f_sol_ru-1.pdf#p6",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/b276c97b94ad557997e61d2de6e5aae79b24650b92deaf7d52caa86f12340e3e_statement.png",
+        "sha256": "a5309f9ac8be60c42df8a2e644974538794e77c024e90f5c9f7c7d847b2086b6"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/b276c97b94ad557997e61d2de6e5aae79b24650b92deaf7d52caa86f12340e3e_solution.png",
+        "sha256": "f2a799226bea4c6ea9f5a23d8bffa888092c96e9542b90a7baf7f2bc4a07df24"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "41ebeefab89cf84258a36a43b84ed5f53814a3b50b8ad3612eb2c952336474a8": {
+    "uid": "41ebeefab89cf84258a36a43b84ed5f53814a3b50b8ad3612eb2c952336474a8",
+    "year": 2025,
+    "grade": "8",
+    "num": "1",
+    "source": "https://www.formulo.org/wp-content/uploads/2026/04/fdi_tm_25_26_math_f_sol_ru-1.pdf#p13",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/41ebeefab89cf84258a36a43b84ed5f53814a3b50b8ad3612eb2c952336474a8_statement.png",
+        "sha256": "a5309f9ac8be60c42df8a2e644974538794e77c024e90f5c9f7c7d847b2086b6"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/41ebeefab89cf84258a36a43b84ed5f53814a3b50b8ad3612eb2c952336474a8_solution.png",
+        "sha256": "f2a799226bea4c6ea9f5a23d8bffa888092c96e9542b90a7baf7f2bc4a07df24"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "beeaa45f2fe3a6a176d79da12cbd74ab1d00f7942fb5868de4d28dc11629d215": {
+    "uid": "beeaa45f2fe3a6a176d79da12cbd74ab1d00f7942fb5868de4d28dc11629d215",
+    "year": 2024,
+    "grade": "10",
+    "num": "5",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2024/223-taskssol-math-10-otbor-24-25.pdf#p5",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/beeaa45f2fe3a6a176d79da12cbd74ab1d00f7942fb5868de4d28dc11629d215_statement.png",
+        "sha256": "25129243361f24e9031f80e507bbbd3e93243d4cc52c64f872a36177380aa12d"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/beeaa45f2fe3a6a176d79da12cbd74ab1d00f7942fb5868de4d28dc11629d215_solution.png",
+        "sha256": "e8ef221f0e7b7e4670aecec6f261a46b8da3a4302ea9ba08f70f0735a41d89e1"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "38cb40b5f5873d5493244396c55de2c0933969d5bdd56ff7a47ae58f67af306f": {
+    "uid": "38cb40b5f5873d5493244396c55de2c0933969d5bdd56ff7a47ae58f67af306f",
+    "year": 2023,
+    "grade": "9",
+    "num": "3",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/223/2023/223-taskssol-math-9-otbor-23-24.pdf#p3",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "59af76d5aac3379a3a66fed171b56862ddfb79579c3c53418a3a308eda14e8dd": {
+    "uid": "59af76d5aac3379a3a66fed171b56862ddfb79579c3c53418a3a308eda14e8dd",
+    "year": 2019,
+    "grade": "8",
+    "num": "3",
+    "source": "https://www.formulo.org/wp-content/uploads/2022/05/fdi_tm_2019_20_round2_solcrit-ru.pdf#p7",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "201e19a5",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/59af76d5aac3379a3a66fed171b56862ddfb79579c3c53418a3a308eda14e8dd_statement.png",
+        "sha256": "34da0c277037655bed9b8a04c74d17d512ea2699005514b47d8d89ef421949b2"
+      }
+    ],
+    "fig_none_in_source": false
+  }
+}

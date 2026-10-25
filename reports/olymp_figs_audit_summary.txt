@@ -1,17 +1,5 @@
-ПОЧИНКА: {'low_sim': 38, 'ambiguous': 2}; изменено файлов JSON: 0; список: reports/olymp_figs_fix.csv
-  fixed по олимпиадам: {}
-  fixed по методам: {}
-ИТОГО: {'fig_not_linked': 95, 'fig_orphan': 191}
+ИТОГО: {}
 
 По олимпиадам:
-  fig_not_linked  euler            2
-  fig_not_linked  kurchatov        3
-  fig_not_linked  lomonosov        2
-  fig_not_linked  other            1
-  fig_not_linked  phystech         3
-  fig_not_linked  pvg              2
-  fig_not_linked  spbgu            1
-  fig_not_linked  turgor           30
-  fig_not_linked  vsosh            51
 
 Подробности: reports/olymp_figs_audit.csv

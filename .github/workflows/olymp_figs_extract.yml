@@ -6,14 +6,8 @@ on:
       slug:
         description: 'slug олимпиады или all'
         default: 'all'
-  push:
-    branches: [figs-audit]
-    paths:
-      - 'scripts/olymp_catalog_figs_extract.py'
-      - '.github/workflows/olymp_figs_extract.yml'
-
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   extract:
@@ -28,15 +22,17 @@ jobs:
       - name: Extract figures from source PDFs
         run: |
           mkdir -p reports
-          python scripts/olymp_catalog_figs_extract.py --slug "${{ github.event.inputs.slug || 'all' }}" > reports/olymp_figs_extract_summary.txt 2>&1 || echo "FAILED exit=$?" >> reports/olymp_figs_extract_summary.txt
+          python scripts/olymp_catalog_figs_extract.py --slug "${{ github.event.inputs.slug || 'all' }}" > reports/olymp_figs_extract_summary.txt 2>&1
           cat reports/olymp_figs_extract_summary.txt
       - name: Re-run audit
-        run: python scripts/olymp_catalog_figs_audit.py --csv reports/olymp_figs_audit.csv > reports/olymp_figs_audit_summary.txt 2>&1 || true
-      - name: Commit
-        run: |
-          git config user.name "figs-audit-bot"
-          git config user.email "bot@formyla.net"
-          git add reports/ data/olymp_catalog/ static/olymp_figures/FINAL_FIGURES/
-          git commit -m "figs: extracted figures from source PDFs [skip ci]" || echo "no changes"
-          git pull --rebase -X theirs origin figs-audit
-          git push
+        run: python scripts/olymp_catalog_figs_audit.py --csv reports/olymp_figs_audit.csv > reports/olymp_figs_audit_summary.txt 2>&1
+      - name: Upload unverified proposals for manual source review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unverified-figure-proposals
+          retention-days: 14
+          path: |
+            reports/olymp_figs_*
+            data/olymp_catalog/
+            static/olymp_figures/FINAL_FIGURES/

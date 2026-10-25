@@ -1,0 +1,245 @@
+{
+  "6f5dea4ce148b56563f29ede5b48b4355609b1556b6f019b78286aab6c9b5c65": {
+    "uid": "6f5dea4ce148b56563f29ede5b48b4355609b1556b6f019b78286aab6c9b5c65",
+    "year": 2012,
+    "grade": "9",
+    "num": "5",
+    "source": "https://www.hse.ru/data/2012/03/21/1264799965/9.pdf",
+    "action": "no_figure_verified",
+    "reason": "Official HSE full statement and solution checked; no illustration for this problem; worksheet pictures excluded.",
+    "pages": [
+      3,
+      4
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "a5b8ba0fcc389f1f9e8cf3e7634c8ea9e834fbf2d8fe5a55096fd5579f1f722a": {
+    "uid": "a5b8ba0fcc389f1f9e8cf3e7634c8ea9e834fbf2d8fe5a55096fd5579f1f722a",
+    "year": 2012,
+    "grade": "10",
+    "num": "3",
+    "source": "https://www.hse.ru/data/2012/03/22/1264590401/10.pdf",
+    "action": "no_figure_verified",
+    "reason": "Official HSE full statement and solution checked; no illustration for this problem; worksheet pictures excluded.",
+    "pages": [
+      3,
+      4
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "34fa31302b5fcee00dc0b4aa621d287773b6f3d1d8e14b872e08e90462b7840b": {
+    "uid": "34fa31302b5fcee00dc0b4aa621d287773b6f3d1d8e14b872e08e90462b7840b",
+    "year": 2012,
+    "grade": "11",
+    "num": "3",
+    "source": "https://www.hse.ru/data/2012/03/30/1265308868/11_new.pdf",
+    "action": "no_figure_verified",
+    "reason": "Official HSE full statement and solution checked; no illustration for this problem; worksheet pictures excluded.",
+    "pages": [
+      3
+    ],
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "4c977558e041a20d1bfcd29fc613b413bb23bc4311971edd3fcf930f50674218": {
+    "uid": "4c977558e041a20d1bfcd29fc613b413bb23bc4311971edd3fcf930f50674218",
+    "year": 2025,
+    "grade": "7",
+    "num": "3",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/149/2024/149-sol-math-7-final-24-25.pdf#p4",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "d50fa7df",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/4c977558e041a20d1bfcd29fc613b413bb23bc4311971edd3fcf930f50674218_statement.png",
+        "sha256": "7b8a6f1050ea542f002581b3d5cf5fb336e330eada4e090e308398957a43f1b8"
+      },
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/4c977558e041a20d1bfcd29fc613b413bb23bc4311971edd3fcf930f50674218_statement_2.png",
+        "sha256": "d3a88451ce6a623414618b1297cab43f8745e4c6e118bb68e28212019f50544c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "ec3833ee1116096e5aa6d81813f785358394a8ef93ca029df86127b876c02468": {
+    "uid": "ec3833ee1116096e5aa6d81813f785358394a8ef93ca029df86127b876c02468",
+    "year": 2025,
+    "grade": "9",
+    "num": "4",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/149/2024/149-sol-math-9-final-24-25.pdf#p5",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "d50fa7df",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/ec3833ee1116096e5aa6d81813f785358394a8ef93ca029df86127b876c02468_statement.png",
+        "sha256": "3eb85c0be394f69c00d123b0880ad76fdac3398b6de522468ae99bfa9581f59c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "c4a4cb467dda9dc1193cc2e04b9bcde1939213b99af956e65d89a73de73f0e6e": {
+    "uid": "c4a4cb467dda9dc1193cc2e04b9bcde1939213b99af956e65d89a73de73f0e6e",
+    "year": 2016,
+    "grade": "9",
+    "num": "1",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/149/2015/5550814-ans-math-9-final-15-16.pdf#p1",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "d50fa7df",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "a84252dd12d45d86bd4b221e2bfd97647d799560770496b5c4395b6390888dcf": {
+    "uid": "a84252dd12d45d86bd4b221e2bfd97647d799560770496b5c4395b6390888dcf",
+    "year": 2016,
+    "grade": "11",
+    "num": "3",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/149/2015/5550814-ans-math-11-final-15-16.pdf#p3",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "d50fa7df",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "c06d63e8be9b10db25d860fae644c31c2d8f5a7f14592d265ac70f6af8756470": {
+    "uid": "c06d63e8be9b10db25d860fae644c31c2d8f5a7f14592d265ac70f6af8756470",
+    "year": 2016,
+    "grade": "11",
+    "num": "5",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/149/2015/5550814-ans-math-11-final-15-16.pdf#p5",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "d50fa7df",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/c06d63e8be9b10db25d860fae644c31c2d8f5a7f14592d265ac70f6af8756470_solution.png",
+        "sha256": "46168d2a69b70f0225c2d734d0a8aebd3de47477b950c17feb1c45cdf3d24300"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/c06d63e8be9b10db25d860fae644c31c2d8f5a7f14592d265ac70f6af8756470_solution_2.png",
+        "sha256": "9c70fa70c6977114a9f4ff886a5cc09e7550982f1a7d57e4c8af91055f608b5e"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/c06d63e8be9b10db25d860fae644c31c2d8f5a7f14592d265ac70f6af8756470_solution_3.png",
+        "sha256": "25f92a5e4500313be6befb6600ec8d2af0f86c404353d188e735fe1e11a3f857"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/c06d63e8be9b10db25d860fae644c31c2d8f5a7f14592d265ac70f6af8756470_solution_4.png",
+        "sha256": "25c9872637ac3147f736f914866a89fc7dae108fa4bacc8c820c0be63cd2b8ca"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/c06d63e8be9b10db25d860fae644c31c2d8f5a7f14592d265ac70f6af8756470_solution_5.png",
+        "sha256": "d9a93857bef58f591ee2c104620d964ccd3903bda741d37f59eaf66d56cd9885"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "457800e6f2eba4acc3883e22dc402fb8bb58f0a3483648625b4657359b98b364": {
+    "uid": "457800e6f2eba4acc3883e22dc402fb8bb58f0a3483648625b4657359b98b364",
+    "year": 2015,
+    "grade": "7",
+    "num": "3",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/149/2014/4016079-ans-math-7-final-14-15.pdf#p3",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "d50fa7df",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/457800e6f2eba4acc3883e22dc402fb8bb58f0a3483648625b4657359b98b364_solution.png",
+        "sha256": "9b86392d9a82cdd04155c349e02f91c8eed347d470cba279035546c8a7f7f609"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "7affe0d6c1a1a5284ada4f1d06cb61ae08a49fd1723e7ed81b0cb22daf7ea204": {
+    "uid": "7affe0d6c1a1a5284ada4f1d06cb61ae08a49fd1723e7ed81b0cb22daf7ea204",
+    "year": 2015,
+    "grade": "8",
+    "num": "2",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/149/2014/4016079-ans-math-8-final-14-15.pdf#p2",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "d50fa7df",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/7affe0d6c1a1a5284ada4f1d06cb61ae08a49fd1723e7ed81b0cb22daf7ea204_solution.png",
+        "sha256": "9b86392d9a82cdd04155c349e02f91c8eed347d470cba279035546c8a7f7f609"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "56ea60b1b73f49b5e83c9317a43059da534f29aff45d553535d8a8e24672b9d2": {
+    "uid": "56ea60b1b73f49b5e83c9317a43059da534f29aff45d553535d8a8e24672b9d2",
+    "year": 2015,
+    "grade": "9",
+    "num": "4",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/149/2014/4016079-ans-math-9-final-14-15.pdf#p4",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "d50fa7df",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/56ea60b1b73f49b5e83c9317a43059da534f29aff45d553535d8a8e24672b9d2_solution.png",
+        "sha256": "4cd1471c41135f9a71e147e77e629f793619bf97e6717e01154093f72cf2f29c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "9ccc357c86efcb12b84c3d492fc64ad288e08670cc9494d800cf783986dc6951": {
+    "uid": "9ccc357c86efcb12b84c3d492fc64ad288e08670cc9494d800cf783986dc6951",
+    "year": 2015,
+    "grade": "10",
+    "num": "4",
+    "source": "https://olymp.hse.ru/data/2015/03/17/1092955838/11 математика.pdf#p4",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "d50fa7df",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "7242c2f09bc25ed4ab4e4a510a317b8aa0bb03b4197b2aeb961a99488e19e2a5": {
+    "uid": "7242c2f09bc25ed4ab4e4a510a317b8aa0bb03b4197b2aeb961a99488e19e2a5",
+    "year": 2015,
+    "grade": "10",
+    "num": "5",
+    "source": "https://olymp.hse.ru/data/2015/03/17/1092955784/10 математика.pdf#p3",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "d50fa7df",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "ed97241160f6e7579b4b5fcfcd13f475e324fcd01bbf2c9fc87d124fd8395d20": {
+    "uid": "ed97241160f6e7579b4b5fcfcd13f475e324fcd01bbf2c9fc87d124fd8395d20",
+    "year": 2013,
+    "grade": "8",
+    "num": "3",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/149/2012/3036834-ans-math-8-final-12-3.pdf#p3",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "d50fa7df",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/ed97241160f6e7579b4b5fcfcd13f475e324fcd01bbf2c9fc87d124fd8395d20_solution.png",
+        "sha256": "73f6abea453da17664654b51a50a654b151832d2a27e1409c484c7345acb518e"
+      }
+    ],
+    "fig_none_in_source": false
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "dc6ae28f36820c73f81b348e36f534a1913cf87b4e28f5341cf3914bc032dcdc": {
+    "uid": "dc6ae28f36820c73f81b348e36f534a1913cf87b4e28f5341cf3914bc032dcdc",
+    "year": 2018,
+    "grade": "10",
+    "num": "2",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/395/2017/8643504-ans-math-10-final-17-18.pdf#p2",
+    "action": "no_figure_verified",
+    "reason": "Full original statement and own solution visually checked; no illustration; neighbouring graphics excluded.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "4aa7c609614d3c19e0e9f305467578cdb4ec100ddd642f6d6c9eca96f659c5d7": {
+    "uid": "4aa7c609614d3c19e0e9f305467578cdb4ec100ddd642f6d6c9eca96f659c5d7",
+    "year": 2015,
+    "grade": "10",
+    "num": "5",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/395/2014/4016476-ans-math-10-final-14-5.pdf",
+    "action": "no_figure_verified",
+    "reason": "Own task5 and full circle/strip proof on page2 visually verified, no drawing.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "4bccccb080d3f425dbde43eab48077c9909fe31e214933f3f7d61e6c459a9306": {
+    "uid": "4bccccb080d3f425dbde43eab48077c9909fe31e214933f3f7d61e6c459a9306",
+    "year": 2018,
+    "grade": "9",
+    "num": "1",
+    "source": "https://mathus.ru/olymp/fizteh-online2018m9.pdf",
+    "action": "no_figure_verified",
+    "reason": "Exact task1 and answer11 visually verified on page1. This available source contains statements and answers only, with no drawing for this task; a full official solution was not located.",
+    "verification_scope": "statement_and_answer_source_only",
+    "attachments": [],
+    "fig_none_in_source": true
+  }
+}

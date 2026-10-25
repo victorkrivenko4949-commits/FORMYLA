@@ -1,0 +1,932 @@
+{
+  "5644b3d5fe335393ac57d534741cb008b222f44bd1df0ce0abbdd301417dc3f3": {
+    "uid": "5644b3d5fe335393ac57d534741cb008b222f44bd1df0ce0abbdd301417dc3f3",
+    "year": 2024,
+    "grade": "9",
+    "num": "3",
+    "source": "https://turgor.ru/problems/45/vs-45-baz-avt.pdf#page=1",
+    "action": "figure_extracted",
+    "kind": "statement",
+    "clip": [
+      245,
+      345,
+      438,
+      530
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/5644b3d5fe335393ac57d534741cb008b222f44bd1df0ce0abbdd301417dc3f3_statement.png",
+        "sha256": "76bdf14d07bb78857c5552c76205677a0049ce46d39737b4b48bbd6f918c0910"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "1c6385806b5e4d94d62a893227991fa3be83e604b77fa6f1ea7245504a1cca23": {
+    "uid": "1c6385806b5e4d94d62a893227991fa3be83e604b77fa6f1ea7245504a1cca23",
+    "year": 2024,
+    "grade": "8",
+    "num": "5",
+    "source": "https://turgor.ru/problems/45/vs-45-sol-fin.pdf#page=7",
+    "action": "figure_extracted",
+    "kind": "statement",
+    "clip": [
+      198,
+      438,
+      418,
+      565
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/1c6385806b5e4d94d62a893227991fa3be83e604b77fa6f1ea7245504a1cca23_statement.png",
+        "sha256": "35e1d57723c1cf6d86370e17ef9d0d50a2744f71769311ba41aa563e074b77d1"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "4ebb513d160c38317ed2c35c970f2940278016d58affd5322bb73c3103d7a62c": {
+    "uid": "4ebb513d160c38317ed2c35c970f2940278016d58affd5322bb73c3103d7a62c",
+    "year": 2024,
+    "grade": "8",
+    "num": "5",
+    "source": "https://turgor.ru/problems/46/os-46-baz-sol.pdf#page=2",
+    "action": "figure_extracted",
+    "kind": "solution",
+    "clip": [
+      439,
+      297,
+      555,
+      402
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/4ebb513d160c38317ed2c35c970f2940278016d58affd5322bb73c3103d7a62c_solution.png",
+        "sha256": "005aa8bceb4daf45499261f37a8ff75ccffcf2ef284d405c6e815b495aca2393"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "1a8c062aa141260086b16c40dfc6cfed57d6effd094ee192f121c954f0e3d6de": {
+    "uid": "1a8c062aa141260086b16c40dfc6cfed57d6effd094ee192f121c954f0e3d6de",
+    "year": 2024,
+    "grade": "9",
+    "num": "2",
+    "source": "https://turgor.ru/problems/46/os-46-sl-sol.pdf#page=1",
+    "action": "figure_extracted",
+    "kind": "solution",
+    "clip": [
+      437,
+      313,
+      539,
+      387
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/1a8c062aa141260086b16c40dfc6cfed57d6effd094ee192f121c954f0e3d6de_solution.png",
+        "sha256": "98f8d8cde6d82292526ede86250820d662cc54b20e14242439cecff188951f05"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "96d34af452e8f89466b0d81e06eeba92b08bf39b4b2ad06aea021a08b99f6576": {
+    "uid": "96d34af452e8f89466b0d81e06eeba92b08bf39b4b2ad06aea021a08b99f6576",
+    "year": 2023,
+    "grade": "8",
+    "num": "3",
+    "source": "https://turgor.ru/problems/45/os-45-baz-sol.pdf#page=2",
+    "action": "figure_extracted",
+    "kind": "solution",
+    "clip": [
+      117,
+      200,
+      247,
+      329
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/96d34af452e8f89466b0d81e06eeba92b08bf39b4b2ad06aea021a08b99f6576_solution.png",
+        "sha256": "af6f386c2cbf7f99fae30b6d969846873f2196c9c327d92bf029a96fe12db9cc"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "79425f2aa0bcbc1cb17c60d3b7968ef6f59cceb8b7715294d714d159f1810e7f": {
+    "uid": "79425f2aa0bcbc1cb17c60d3b7968ef6f59cceb8b7715294d714d159f1810e7f",
+    "year": 2023,
+    "grade": "9",
+    "num": "3",
+    "source": "https://turgor.ru/problems/45/os-45-baz-sol.pdf#page=2",
+    "action": "figure_extracted",
+    "kind": "solution",
+    "clip": [
+      117,
+      200,
+      247,
+      329
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/79425f2aa0bcbc1cb17c60d3b7968ef6f59cceb8b7715294d714d159f1810e7f_solution.png",
+        "sha256": "af6f386c2cbf7f99fae30b6d969846873f2196c9c327d92bf029a96fe12db9cc"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "e5b66ff4f86062f69fc736f2f903ed9c66edf948838695da388e9df4d52f742c": {
+    "uid": "e5b66ff4f86062f69fc736f2f903ed9c66edf948838695da388e9df4d52f742c",
+    "year": 2023,
+    "grade": "10",
+    "num": "5",
+    "source": "https://turgor.ru/problems/45/os-45-baz-sol.pdf#page=6",
+    "action": "figure_extracted",
+    "kind": "solution",
+    "clip": [
+      401,
+      420,
+      556,
+      572
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/e5b66ff4f86062f69fc736f2f903ed9c66edf948838695da388e9df4d52f742c_solution.png",
+        "sha256": "132e762beb8da8ff93f032f5c2212be5cc7f64061712ac21979ce9d318926e5c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "5100a403c470c2e99b69bf3eb80c394208b0b03f73b5bcaebc7aa28959e86176": {
+    "uid": "5100a403c470c2e99b69bf3eb80c394208b0b03f73b5bcaebc7aa28959e86176",
+    "year": 2023,
+    "grade": "11",
+    "num": "5",
+    "source": "https://turgor.ru/problems/45/os-45-baz-sol.pdf#page=6",
+    "action": "figure_extracted",
+    "kind": "solution",
+    "clip": [
+      401,
+      420,
+      556,
+      572
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/5100a403c470c2e99b69bf3eb80c394208b0b03f73b5bcaebc7aa28959e86176_solution.png",
+        "sha256": "132e762beb8da8ff93f032f5c2212be5cc7f64061712ac21979ce9d318926e5c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "5e4e2a672bfdea1d6e248d5ab30174ee329ebe520805d597b7a184c2f2cae20a": {
+    "uid": "5e4e2a672bfdea1d6e248d5ab30174ee329ebe520805d597b7a184c2f2cae20a",
+    "year": 2023,
+    "grade": "8",
+    "num": "2",
+    "source": "https://turgor.ru/problems/45/os-45-sl-sol.pdf#page=2",
+    "action": "figure_extracted",
+    "kind": "solution",
+    "clip": [
+      435,
+      53,
+      560,
+      157
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/5e4e2a672bfdea1d6e248d5ab30174ee329ebe520805d597b7a184c2f2cae20a_solution.png",
+        "sha256": "901686f935b2fd818081a30f73a117a677b6b3c2069d2b78e9e9b1cd6721ef1e"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "ff4147f2f5c5fd632820985d7573ba15b151d64d5e5599a5721c822ed3dac34d": {
+    "uid": "ff4147f2f5c5fd632820985d7573ba15b151d64d5e5599a5721c822ed3dac34d",
+    "year": 2022,
+    "grade": "10",
+    "num": "2",
+    "source": "https://turgor.ru/problems/43/vs-43-sol-fin.pdf#page=10",
+    "action": "figure_extracted",
+    "kind": "solution",
+    "clip": [
+      360,
+      580,
+      545,
+      705
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/ff4147f2f5c5fd632820985d7573ba15b151d64d5e5599a5721c822ed3dac34d_solution.png",
+        "sha256": "40cbd8e658a159f99ce5cfd8bcfc676a901abd52120109108e8a701408c6a1a6"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "9af8c1c0fd1d14e6bfd846d6f9b787e9b2076504da18b53a8c4a8c654fcd8dec": {
+    "uid": "9af8c1c0fd1d14e6bfd846d6f9b787e9b2076504da18b53a8c4a8c654fcd8dec",
+    "year": 2022,
+    "grade": "11",
+    "num": "2",
+    "source": "https://turgor.ru/problems/43/vs-43-sol-fin.pdf#page=10",
+    "action": "figure_extracted",
+    "kind": "solution",
+    "clip": [
+      360,
+      580,
+      545,
+      705
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/9af8c1c0fd1d14e6bfd846d6f9b787e9b2076504da18b53a8c4a8c654fcd8dec_solution.png",
+        "sha256": "40cbd8e658a159f99ce5cfd8bcfc676a901abd52120109108e8a701408c6a1a6"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "fa3f14f11c6cc31d041e2157e677dd3863b47848172ecfdc6114c85d3a365e78": {
+    "uid": "fa3f14f11c6cc31d041e2157e677dd3863b47848172ecfdc6114c85d3a365e78",
+    "year": 2021,
+    "grade": "9",
+    "num": "2",
+    "source": "https://turgor.ru/problems/43/os-43-sl-avt.pdf#page=1",
+    "action": "figure_extracted",
+    "kind": "statement",
+    "clip": [
+      449,
+      178,
+      570,
+      282
+    ],
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/fa3f14f11c6cc31d041e2157e677dd3863b47848172ecfdc6114c85d3a365e78_statement.png",
+        "sha256": "f6f65c4ef28e382e85a9a19d4bea6c77d00609d0e71532d88288f76fa0c371a3"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "2bfc90cd2f5e6d75864e467da03940d3552d03acd3d22b6638b79080677cdc00": {
+    "uid": "2bfc90cd2f5e6d75864e467da03940d3552d03acd3d22b6638b79080677cdc00",
+    "year": 2024,
+    "grade": "8",
+    "num": "7",
+    "source": "https://turgor.ru/problems/46/vs-46-sol-all.pdf#page=18",
+    "action": "figure_extracted",
+    "kind": "solution",
+    "clip": [
+      75,
+      200,
+      560,
+      377
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/2bfc90cd2f5e6d75864e467da03940d3552d03acd3d22b6638b79080677cdc00_solution.png",
+        "sha256": "df6c4c9a0bdfbb55f30150fe49151b6d2ce4dbc8210dcf3346a12a48d93c17b0"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "aaa74fc4b72312233791bd35e3af1577fbc4d0602f55ff129f9deca53c6d52c9": {
+    "uid": "aaa74fc4b72312233791bd35e3af1577fbc4d0602f55ff129f9deca53c6d52c9",
+    "year": 2025,
+    "grade": "10",
+    "num": "5",
+    "source": "https://turgor.ru/problems/47/os-47-baz-sol.pdf#page=6",
+    "action": "figure_extracted",
+    "kind": "solution",
+    "clip": [
+      194,
+      248,
+      418,
+      360
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/aaa74fc4b72312233791bd35e3af1577fbc4d0602f55ff129f9deca53c6d52c9_solution.png",
+        "sha256": "e635d12a14b53099dc31001fc9d9accf2d77265566ff086e4ad42aea9a709ecf"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "e95b8d115ed6d06ccba30e786f3e89531daeb6359c0ae1dfbc85668d09e57124": {
+    "uid": "e95b8d115ed6d06ccba30e786f3e89531daeb6359c0ae1dfbc85668d09e57124",
+    "year": 2025,
+    "grade": "11",
+    "num": "5",
+    "source": "https://turgor.ru/problems/47/os-47-baz-sol.pdf#page=6",
+    "action": "figure_extracted",
+    "kind": "solution",
+    "clip": [
+      194,
+      248,
+      418,
+      360
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/e95b8d115ed6d06ccba30e786f3e89531daeb6359c0ae1dfbc85668d09e57124_solution.png",
+        "sha256": "e635d12a14b53099dc31001fc9d9accf2d77265566ff086e4ad42aea9a709ecf"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "6c4122d59d99242cfccd45caf96bd88ce684218adec67284ce8ccf3d9a77c613": {
+    "uid": "6c4122d59d99242cfccd45caf96bd88ce684218adec67284ce8ccf3d9a77c613",
+    "year": 2025,
+    "grade": "11",
+    "num": "3",
+    "source": "https://turgor.ru/problems/46/vs-46-sol-all.pdf#page=12",
+    "action": "statement_and_four_solution_figures",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/6c4122d59d99242cfccd45caf96bd88ce684218adec67284ce8ccf3d9a77c613_statement.png",
+        "sha256": "aab39399647d884b9fad0f00855e24483f068e41411f0a58b855ee1ed5cb6814"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/6c4122d59d99242cfccd45caf96bd88ce684218adec67284ce8ccf3d9a77c613_solution.png",
+        "sha256": "e11f99de3962a8cb312fee08048b9a4988aacd435c249ad7d64c307115f14ab4"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/6c4122d59d99242cfccd45caf96bd88ce684218adec67284ce8ccf3d9a77c613_solution_2.png",
+        "sha256": "9f54e99bd738f06ba850af69b136f4dbdf5f50f1abd189e4f84d66e2dce878c4"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/6c4122d59d99242cfccd45caf96bd88ce684218adec67284ce8ccf3d9a77c613_solution_3.png",
+        "sha256": "718b5c5117dc30470d5979fb0c8c81b6778e3320a17e37d672da9ec6b94f44c1"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/6c4122d59d99242cfccd45caf96bd88ce684218adec67284ce8ccf3d9a77c613_solution_4.png",
+        "sha256": "a75a8374892c3d97d42b5646712f47c27fe099baf5e6c2b6e620f176e08560ad"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "27fc7bd6014e647f63d09a3bb556f72fee4d60d154fc8c808d618d4b0f9be25d": {
+    "uid": "27fc7bd6014e647f63d09a3bb556f72fee4d60d154fc8c808d618d4b0f9be25d",
+    "year": 2024,
+    "grade": "8",
+    "num": "5",
+    "source": "https://turgor.ru/problems/46/vs-46-sol-all.pdf#page=2",
+    "action": "no_figure_verified",
+    "reason": "Both official solutions are text-only; foreign following problems removed.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "934de4f006b5717c8427c85e5e905d0372d5d80752e99b94f7f39778cf630d86": {
+    "uid": "934de4f006b5717c8427c85e5e905d0372d5d80752e99b94f7f39778cf630d86",
+    "year": 2024,
+    "grade": "8",
+    "num": "4",
+    "source": "https://turgor.ru/problems/46/vs-46-sol-all.pdf#page=13",
+    "action": "no_figure_verified",
+    "reason": "Currency solution is text-only; unrelated geometry solution removed.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "74208be6a62e968a9128ec035b5ef753a70083b0717187f542adfe7d6afe3d99": {
+    "uid": "74208be6a62e968a9128ec035b5ef753a70083b0717187f542adfe7d6afe3d99",
+    "year": 2024,
+    "grade": "9",
+    "num": "4",
+    "source": "https://turgor.ru/problems/46/vs-46-sol-all.pdf#page=13",
+    "action": "no_figure_verified",
+    "reason": "Currency solution is text-only; unrelated geometry solution removed.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "f9800a1b8da27b63252aa2c38254837b990174aff99eb6b6a4ff6b6cf8b2dbc0": {
+    "uid": "f9800a1b8da27b63252aa2c38254837b990174aff99eb6b6a4ff6b6cf8b2dbc0",
+    "year": 2022,
+    "grade": "10",
+    "num": "3",
+    "source": "https://turgor.ru/problems/44/vs-44-sl-sol.pdf#page=6",
+    "action": "no_figure_verified",
+    "reason": "Polynomial proof has no figure; 'graph' denotes the mathematical object.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "a6e2b989d058ec2f30dd82f0a23e741812c1b39195953ce8f8f5875ad68f34eb": {
+    "uid": "a6e2b989d058ec2f30dd82f0a23e741812c1b39195953ce8f8f5875ad68f34eb",
+    "year": 2018,
+    "grade": "8",
+    "num": "3",
+    "source": "https://problems.ru/view_problem_details_new.php?id=66690",
+    "action": "original_4x4_table",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/a6e2b989d058ec2f30dd82f0a23e741812c1b39195953ce8f8f5875ad68f34eb_statement.png",
+        "sha256": "7d689a1a5e73db308a41a6a830293c1d1fd018e8ed7d91ab41a197a1b8d9e65d"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "72b47c7a53c9b765bdc0ac99fcdbff3be3df802a2216ddfc14e623e9cd40ce7e": {
+    "uid": "72b47c7a53c9b765bdc0ac99fcdbff3be3df802a2216ddfc14e623e9cd40ce7e",
+    "year": 2018,
+    "grade": "9",
+    "num": "3",
+    "source": "https://problems.ru/view_problem_details_new.php?id=66690",
+    "action": "original_4x4_table",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/72b47c7a53c9b765bdc0ac99fcdbff3be3df802a2216ddfc14e623e9cd40ce7e_statement.png",
+        "sha256": "7d689a1a5e73db308a41a6a830293c1d1fd018e8ed7d91ab41a197a1b8d9e65d"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "8f74590457caf3fe9ac96d10a1713cb5f4a60ce5407c5283abc9ce4aa08a6a50": {
+    "uid": "8f74590457caf3fe9ac96d10a1713cb5f4a60ce5407c5283abc9ce4aa08a6a50",
+    "year": 2018,
+    "grade": "9",
+    "num": "1",
+    "source": "https://problems.ru/view_problem_details_new.php?id=66692",
+    "action": "two_solution_rook_figures",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/8f74590457caf3fe9ac96d10a1713cb5f4a60ce5407c5283abc9ce4aa08a6a50_solution.png",
+        "sha256": "796f974ddfa783776f03da889d0b4df2a6f745a685b46e7afe53cd44b3c548cf"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/8f74590457caf3fe9ac96d10a1713cb5f4a60ce5407c5283abc9ce4aa08a6a50_solution_2.png",
+        "sha256": "ddbe5c57ae2ffe367ed5413a8578dfd6c83ef584b188ee426ffe4a4d9fca1d2a"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "0303947e5ac5ae6516f0705bade821f840b925d8f4ed73134669889a8ef17d71": {
+    "uid": "0303947e5ac5ae6516f0705bade821f840b925d8f4ed73134669889a8ef17d71",
+    "year": 2014,
+    "grade": "8",
+    "num": "4",
+    "source": "https://problems.ru/view_problem_details_new.php?id=65152",
+    "action": "staircase_statement_and_dissection_solution",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/0303947e5ac5ae6516f0705bade821f840b925d8f4ed73134669889a8ef17d71_statement.png",
+        "sha256": "3ba2e7f27af9cdf59fa08812f52a48aaf15e32e7cf6d8f3dc4afcfcccbaec5cf"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/0303947e5ac5ae6516f0705bade821f840b925d8f4ed73134669889a8ef17d71_solution.png",
+        "sha256": "1a64f8ebcae27bd2b521c8385a718710e4eb8c2e056f16c1ee6f0f5e479eb1d7"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "755db93b08f562abf70ad8d7649040820f87cb4b2e52bd9959e1d748de63d25b": {
+    "uid": "755db93b08f562abf70ad8d7649040820f87cb4b2e52bd9959e1d748de63d25b",
+    "year": 2017,
+    "grade": "9",
+    "num": "2",
+    "source": "https://problems.ru/view_problem_details_new.php?id=66100",
+    "action": "no_figure_verified",
+    "reason": "Full statement and all published solutions checked: no figure.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "e0ac4057617a4b03b719bb819293abdb4691b1c11884e55f36f249a7b9d85652": {
+    "uid": "e0ac4057617a4b03b719bb819293abdb4691b1c11884e55f36f249a7b9d85652",
+    "year": 2016,
+    "grade": "8",
+    "num": "2",
+    "source": "https://problems.ru/view_problem_details_new.php?id=66100",
+    "action": "no_figure_verified",
+    "reason": "Full statement and all published solutions checked: no figure.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "a2e285944d7ccf2717da06b428dd29460717575d0b43de5d2e80583c6360ccbf": {
+    "uid": "a2e285944d7ccf2717da06b428dd29460717575d0b43de5d2e80583c6360ccbf",
+    "year": 2021,
+    "grade": "11",
+    "num": "3",
+    "source": "https://problems.ru/view_problem_details_new.php?id=67045",
+    "action": "no_figure_verified",
+    "reason": "Full statement and all published solutions checked: no figure.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "c5ede6df44f0f968099f8ae098a84f7df2316d12eda69a0b12212ef270e142d8": {
+    "uid": "c5ede6df44f0f968099f8ae098a84f7df2316d12eda69a0b12212ef270e142d8",
+    "year": 2010,
+    "grade": "10",
+    "num": "2",
+    "source": "https://problems.ru/view_problem_details_new.php?id=116412",
+    "action": "no_figure_verified",
+    "reason": "Full statement and all published solutions checked: no figure.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "5c80575acd4552e6a1bd0d671d1ff0e91d319b46bab79b2ebacc48fce5ad0170": {
+    "uid": "5c80575acd4552e6a1bd0d671d1ff0e91d319b46bab79b2ebacc48fce5ad0170",
+    "year": 2023,
+    "grade": "9",
+    "num": "1",
+    "source": "https://turgor.ru/problems/45/os-45-sl-sol.pdf#page=1",
+    "action": "two_number_table_solution_examples",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/5c80575acd4552e6a1bd0d671d1ff0e91d319b46bab79b2ebacc48fce5ad0170_solution.png",
+        "sha256": "8ca94f84f3b3b3925d42fb942163e5514707f8d5a36e70036877964b83ee4d76"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/5c80575acd4552e6a1bd0d671d1ff0e91d319b46bab79b2ebacc48fce5ad0170_solution_2.png",
+        "sha256": "62b369a2008809cbc3cd38f1a54ade62a284439ccd883d2cb1fc31d68a0b0408"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "b905d54014fa478c46db8da67c20b36033ffefc74943cfb53851d4feedb9dcbf": {
+    "uid": "b905d54014fa478c46db8da67c20b36033ffefc74943cfb53851d4feedb9dcbf",
+    "year": 2010,
+    "grade": "9",
+    "num": "4",
+    "source": "https://problems.ru/view_problem_details_new.php?id=116046",
+    "action": "restored_original_statement_and_solution; previous catalog was a different trivial problem",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/b905d54014fa478c46db8da67c20b36033ffefc74943cfb53851d4feedb9dcbf_solution.png",
+        "sha256": "4de98e1cd4fc452769a925b80ec568db09d98d0006db25939d0896b79e67baf0"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "b0ed5d15ca1ca4fa954fe2dd96edc6f08fb6832eb5d8232ebcf152c16e714cdd": {
+    "uid": "b0ed5d15ca1ca4fa954fe2dd96edc6f08fb6832eb5d8232ebcf152c16e714cdd",
+    "year": 2025,
+    "grade": "11",
+    "num": "1",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/5/2024/5-sol-math-10-11-sl_ves-24-25.pdf#p1",
+    "action": "removed_foreign_solution_tail",
+    "reason": "Restored the complete first binomial proof; later unrelated tasks removed.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "970b557d5a3835dc5db79734ac550e4cc4ff06dcbb372fee50c3b5b1f7a33e12": {
+    "uid": "970b557d5a3835dc5db79734ac550e4cc4ff06dcbb372fee50c3b5b1f7a33e12",
+    "year": 2023,
+    "grade": "9",
+    "num": "2",
+    "source": "https://turgor.ru/problems/44/vs-44-sl-sol.pdf#page=1",
+    "action": "no_figure_verified",
+    "reason": "Compared source problem with image; removed prose-only/foreign snapshot.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "d6b096d75273e5a17df469f11ac2dc03dd6ba32f4bd71427011ce1c1e95d46b7": {
+    "uid": "d6b096d75273e5a17df469f11ac2dc03dd6ba32f4bd71427011ce1c1e95d46b7",
+    "year": 2022,
+    "grade": "9",
+    "num": "1",
+    "source": "https://turgor.ru/problems/43/vs-43-sol-fin.pdf#p1",
+    "action": "restored_false_negative_figure",
+    "pages": [
+      1
+    ],
+    "crops": [
+      [
+        363.79998779296875,
+        397.75994873046875,
+        538.0,
+        582.9599609375
+      ]
+    ],
+    "reason": "Own full proof contains diagrams; negative flag was incorrect.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/d6b096d75273e5a17df469f11ac2dc03dd6ba32f4bd71427011ce1c1e95d46b7_solution.png",
+        "sha256": "015d4019a2fdc556117ce7e59f93254ead3aa983b9a130c48f991a30f7293190"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "f5e2ec30655cb68037f54ad574354bcce90852ac20e1822a431af4ae88d52314": {
+    "uid": "f5e2ec30655cb68037f54ad574354bcce90852ac20e1822a431af4ae88d52314",
+    "year": 2022,
+    "grade": "9",
+    "num": "4",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/5/2022/5-sol-math-8-9-sl_os-22-23.pdf#p4",
+    "action": "restored_false_negative_figure",
+    "pages": [
+      3,
+      4
+    ],
+    "crops": [
+      [
+        373.1000061035156,
+        559.949951171875,
+        538.5999755859375,
+        656.5
+      ],
+      [
+        111.25,
+        139.33999633789062,
+        484.04998779296875,
+        358.739990234375
+      ]
+    ],
+    "reason": "Own full proof contains diagrams; negative flag was incorrect.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/f5e2ec30655cb68037f54ad574354bcce90852ac20e1822a431af4ae88d52314_solution.png",
+        "sha256": "00de15fab7dd2343b491dd4274dd31196617a62604f5194760f673cc919f88cd"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/f5e2ec30655cb68037f54ad574354bcce90852ac20e1822a431af4ae88d52314_solution_2.png",
+        "sha256": "26bcdaafd727fd1f88642f5d464552a8e20fa2f082d78c07243375b77ff69d7a"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "42d9fdf629461f5d4ab58f8516ff1124b6b13b0fa99d47066001ec83b9eaf965": {
+    "uid": "42d9fdf629461f5d4ab58f8516ff1124b6b13b0fa99d47066001ec83b9eaf965",
+    "year": 2021,
+    "grade": "9",
+    "num": "4",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/5/2021/5-sol-math-8-9-sl_os-21-22.pdf#p2",
+    "action": "removed_foreign_solution_tail",
+    "reason": "Retained own full digit-game proof, removed subsequent hexagon problem.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "ece8ec74e46ae25b8fbe9aaf3c9f288012bf0158066e3c810a27fc4d3f481187": {
+    "uid": "ece8ec74e46ae25b8fbe9aaf3c9f288012bf0158066e3c810a27fc4d3f481187",
+    "year": 2020,
+    "grade": "9",
+    "num": "3",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/5/2020/18808026-sol-math-8-9-baz_os-20-21.pdf#page=1",
+    "action": "no_figure_verified",
+    "reason": "Compared source problem with image; removed prose-only/foreign snapshot.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "3f5fbb1b268ee8852da70e35c60ab9dd3e269b05e2b6a37f1d94ce4d93c7d4a9": {
+    "uid": "3f5fbb1b268ee8852da70e35c60ab9dd3e269b05e2b6a37f1d94ce4d93c7d4a9",
+    "year": 2018,
+    "grade": "11",
+    "num": "4",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/5/2018/5-ans-math-10-11-sl_os-18-9.pdf#page=2",
+    "action": "no_figure_verified",
+    "reason": "Compared source problem with image; removed prose-only/foreign snapshot.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "cad05312dbd41ee741456d25db865f6c4c93a2d6165ce6af2891d04ce66e8014": {
+    "uid": "cad05312dbd41ee741456d25db865f6c4c93a2d6165ce6af2891d04ce66e8014",
+    "year": 2011,
+    "grade": "11",
+    "num": "2",
+    "source": "https://problems.ru/view_problem_details_new.php?id=116389",
+    "action": "no_figure_verified",
+    "reason": "Complete original statement and solution checked; previous diagram belongs to an unrelated geometry problem.",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "d3df353d6de891ad2f22156f6561572217c146aa8ced0475cd3db4a1fbb12bb4": {
+    "uid": "d3df353d6de891ad2f22156f6561572217c146aa8ced0475cd3db4a1fbb12bb4",
+    "year": 2022,
+    "grade": "9",
+    "num": "4",
+    "source": "https://turgor.ru/problems/43/vs-43-sol-fin.pdf#page=6",
+    "action": "three_clean_counterexample_grids",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/d3df353d6de891ad2f22156f6561572217c146aa8ced0475cd3db4a1fbb12bb4_solution.png",
+        "sha256": "87fec9d2192a71be812c94264a51053d59f61cc6e16951b6fa8856d08a283f34"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "b37cd988051a30e436f41cc4f55f92e9f439ea95e602f87c62e43d24307d94fd": {
+    "uid": "b37cd988051a30e436f41cc4f55f92e9f439ea95e602f87c62e43d24307d94fd",
+    "year": 2019,
+    "grade": "9",
+    "num": "5",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/5/2019/5-ans-math-8-9-baz_os-19-0.pdf#p5",
+    "action": "clean_box_tiling_solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/b37cd988051a30e436f41cc4f55f92e9f439ea95e602f87c62e43d24307d94fd_solution.png",
+        "sha256": "f18343c5a0a84ba805db4eda030037adb49468913fbf4e06f8a93833ddec3b65"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "babe9dec53f44047f27feb165eef513f49be97fc2d66a0532f88fc47cbe054fb": {
+    "uid": "babe9dec53f44047f27feb165eef513f49be97fc2d66a0532f88fc47cbe054fb",
+    "year": 2018,
+    "grade": "9",
+    "num": "3",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/5/2018/5-ans-math-8-9-baz_os-18-9.pdf#p3",
+    "action": "two_clean_dissection_figures",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/babe9dec53f44047f27feb165eef513f49be97fc2d66a0532f88fc47cbe054fb_solution.png",
+        "sha256": "0ea1ffb94d47057e1638573bd60ddecf631e19e53b9c761c7e72074300ee925e"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "58584401ae66f07030162a9d3f08416e3da019aac03753851b1f994d8ad49ef5": {
+    "uid": "58584401ae66f07030162a9d3f08416e3da019aac03753851b1f994d8ad49ef5",
+    "year": 2018,
+    "grade": "9",
+    "num": "4",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/5/2018/5-ans-math-8-9-sl_os-18-9.pdf#p4",
+    "action": "all_four_clean_detector_grids",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/58584401ae66f07030162a9d3f08416e3da019aac03753851b1f994d8ad49ef5_solution.png",
+        "sha256": "175f07bc6a5b7ae93531b6a9b377776cd7d75a10dec06cc4c5d66ade71985f85"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/58584401ae66f07030162a9d3f08416e3da019aac03753851b1f994d8ad49ef5_solution_2.png",
+        "sha256": "c50801bbbb76ad6188158ece4316b345d552079bb6ca9d088d0417b5cb159f86"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/58584401ae66f07030162a9d3f08416e3da019aac03753851b1f994d8ad49ef5_solution_3.png",
+        "sha256": "4296fb30e71f9f8222d6c449bc5ba58f44b851bafe17a00dc4a31aea2d414a31"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/58584401ae66f07030162a9d3f08416e3da019aac03753851b1f994d8ad49ef5_solution_4.png",
+        "sha256": "630787d9d54b61cbf1894bdc7670f0274d469100ed6c18286210d32bca2a433f"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "758d25cabcd0adb9a55c701ec06a10b64775bc3eb320ee8addf050d8721124a2": {
+    "uid": "758d25cabcd0adb9a55c701ec06a10b64775bc3eb320ee8addf050d8721124a2",
+    "year": 2023,
+    "grade": "9",
+    "num": "5",
+    "source": "https://turgor.ru/problems/44/vs-44-baz-sol.pdf#p5",
+    "action": "diagram_verified_against_source; moved_to_solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/758d25cabcd0adb9a55c701ec06a10b64775bc3eb320ee8addf050d8721124a2_solution.png",
+        "sha256": "aee4e6406f4d7e51648bf2c99b4eb8e2a3772540acd945bb18fe5e9ffbf0a620"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "1e31acf870a3e5557a96a20881d1de1a386f6aaa64e98be1639f4594588c61e8": {
+    "uid": "1e31acf870a3e5557a96a20881d1de1a386f6aaa64e98be1639f4594588c61e8",
+    "year": 2023,
+    "grade": "11",
+    "num": "4",
+    "source": "https://turgor.ru/problems/44/vs-44-sl-sol.pdf#p7",
+    "action": "own_solution_diagrams_verified; embedded_images_without_surrounding_prose",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/1e31acf870a3e5557a96a20881d1de1a386f6aaa64e98be1639f4594588c61e8_solution.png",
+        "sha256": "ced1e1c74fd4db506e951a4993fb5ffe9479d0af55fb1989ff877cf0cc35d1be"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "8c85067b8de263d5c03ddb202826471faaa6f1c7a12916212d654f152700175e": {
+    "uid": "8c85067b8de263d5c03ddb202826471faaa6f1c7a12916212d654f152700175e",
+    "year": 2022,
+    "grade": "9",
+    "num": "2",
+    "source": "https://turgor.ru/problems/43/vs-43-sol-fin.pdf#p2",
+    "action": "diagram_verified_against_source; moved_to_solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/8c85067b8de263d5c03ddb202826471faaa6f1c7a12916212d654f152700175e_solution.png",
+        "sha256": "c54e0990c6acfbdf054d805bdf7ff3c27968fb7c6019819c0a990cd6504f3ec5"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "c07cf2e182c27d30b4e7482f1d7f9cda26372a61107e147c6c2132acb4aaf2fe": {
+    "uid": "c07cf2e182c27d30b4e7482f1d7f9cda26372a61107e147c6c2132acb4aaf2fe",
+    "year": 2021,
+    "grade": "11",
+    "num": "5",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/5/2020/18808026-sol-math-10-11-baz_vs-20-21.pdf#p5",
+    "action": "own_solution_diagrams_verified; embedded_images_without_surrounding_prose",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/c07cf2e182c27d30b4e7482f1d7f9cda26372a61107e147c6c2132acb4aaf2fe_solution.png",
+        "sha256": "17385aa1d6cb1e3307ae271adb1a24c3b35c2c9f0e28bf0c10da15141c7497b5"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/c07cf2e182c27d30b4e7482f1d7f9cda26372a61107e147c6c2132acb4aaf2fe_solution_2.png",
+        "sha256": "f7b4b41411a9363884cf9dcc41b9a76958b8e7b7e031f0c0652e80a0fdd91930"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "33cd65d2bcae649f7913c08615ec7040d74bf2f204e5d504b337625b46e6c677": {
+    "uid": "33cd65d2bcae649f7913c08615ec7040d74bf2f204e5d504b337625b46e6c677",
+    "year": 2019,
+    "grade": "9",
+    "num": "2",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/5/2018/5-ans-math-8-9-baz_ves-18-9.pdf#p2",
+    "action": "diagram_verified_against_source; moved_to_solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/33cd65d2bcae649f7913c08615ec7040d74bf2f204e5d504b337625b46e6c677_solution.png",
+        "sha256": "fce135c2b9d72c848a2d00eeac80ac2f7279f6f2e84036d24144ef43aed4c831"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "e41866e7b1dc0e791eae6af82b8568a51e806b1f13d5992990639b860a7bd223": {
+    "uid": "e41866e7b1dc0e791eae6af82b8568a51e806b1f13d5992990639b860a7bd223",
+    "year": 2019,
+    "grade": "9",
+    "num": "5",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/5/2018/5-ans-math-8-9-baz_ves-18-9.pdf#p5",
+    "action": "diagram_verified_against_source; moved_to_solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/e41866e7b1dc0e791eae6af82b8568a51e806b1f13d5992990639b860a7bd223_solution.png",
+        "sha256": "2303eacbf0e29886149c0f1fa50d62dfec96756326b1e860ca42f25933e772fc"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "c26ce89b4ac3aaf30ae0817e21ce9b1bde8f6ec7e349816cc0483d21be4104c3": {
+    "uid": "c26ce89b4ac3aaf30ae0817e21ce9b1bde8f6ec7e349816cc0483d21be4104c3",
+    "year": 2019,
+    "grade": "11",
+    "num": "4",
+    "source": "https://rsr-olymp.ru/upload/files/tasks/5/2018/5-ans-math-10-11-baz_ves-18-9.pdf#p4",
+    "action": "diagram_verified_against_source; moved_to_solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/c26ce89b4ac3aaf30ae0817e21ce9b1bde8f6ec7e349816cc0483d21be4104c3_solution.png",
+        "sha256": "7215c8514888ef7aeb2ca0d8c2f722920f91035945929434b89a5349f0c43126"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "75f03859826a074de820af8f5aa5f1485a65f967b2ec8e365ae31efbac2346b7": {
+    "uid": "75f03859826a074de820af8f5aa5f1485a65f967b2ec8e365ae31efbac2346b7",
+    "year": 2023,
+    "grade": "9",
+    "num": "4",
+    "source": "https://turgor.ru/problems/44/vs-44-sl-sol.pdf#p4",
+    "action": "statement_configuration_verified",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/75f03859826a074de820af8f5aa5f1485a65f967b2ec8e365ae31efbac2346b7_statement.png",
+        "sha256": "da2b621ef4c541c2056eeef1dd10fc081c5ac83ae39813d5a1e56e447e2a7025"
+      }
+    ],
+    "fig_none_in_source": false
+  }
+}

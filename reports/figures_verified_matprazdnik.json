@@ -1,0 +1,572 @@
+{
+  "94bf7d4d1df7436bb14bc8556659cda523d6f03efe316fed3c039a76d356f5b8": {
+    "uid": "94bf7d4d1df7436bb14bc8556659cda523d6f03efe316fed3c039a76d356f5b8",
+    "year": 2025,
+    "grade": "6",
+    "num": "4",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/25/book.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/94bf7d4d1df7436bb14bc8556659cda523d6f03efe316fed3c039a76d356f5b8_statement.png",
+        "sha256": "d1e913213e5d081cd42fac7ef8403e197bafc7cd0a98c24888730c4f2990f66c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "a6d936ae06c34799649c5f0f7ad5f77907906c687dfb15de615f393b867f8778": {
+    "uid": "a6d936ae06c34799649c5f0f7ad5f77907906c687dfb15de615f393b867f8778",
+    "year": 2024,
+    "grade": "6",
+    "num": "1",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/24/book.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/a6d936ae06c34799649c5f0f7ad5f77907906c687dfb15de615f393b867f8778_statement.png",
+        "sha256": "c6106c9950998bd12893a9a6d59a9e90b6d8da451df66df01c1d280443ce3eb3"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "dbdc1d0a692055bec55c0fc7438541da0bfa46d43f62a0512f1444bb8840d786": {
+    "uid": "dbdc1d0a692055bec55c0fc7438541da0bfa46d43f62a0512f1444bb8840d786",
+    "year": 2024,
+    "grade": "6",
+    "num": "4",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/24/book.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/dbdc1d0a692055bec55c0fc7438541da0bfa46d43f62a0512f1444bb8840d786_statement.png",
+        "sha256": "ab48e7ef975034c3a58ce83058499ea95b71f7633d04e9f51d8eddd2e1b3747b"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "ec458d12e4ade95a2a483ac82c5f6a9b3160e07698dc3cd5333300b142fc815b": {
+    "uid": "ec458d12e4ade95a2a483ac82c5f6a9b3160e07698dc3cd5333300b142fc815b",
+    "year": 2024,
+    "grade": "6",
+    "num": "5",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/24/book.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [],
+    "fig_none_in_source": false
+  },
+  "9ef1d3da3c5d28f0177872b4a85f4868a2d48f360d5c413d138044cd1a196650": {
+    "uid": "9ef1d3da3c5d28f0177872b4a85f4868a2d48f360d5c413d138044cd1a196650",
+    "year": 2024,
+    "grade": "6",
+    "num": "2",
+    "source": "https://olympiads.mccme.ru/matprazdnik/prob_24.html",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/9ef1d3da3c5d28f0177872b4a85f4868a2d48f360d5c413d138044cd1a196650_statement.png",
+        "sha256": "66c3266bc22b657e0b0ae9123ec15105594ec95c647d55e6f54e5ab336659d0f"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "fc8db88393be0fe6bee0180844ef7d6978d6ea9a641f504570994f8ceea21e3f": {
+    "uid": "fc8db88393be0fe6bee0180844ef7d6978d6ea9a641f504570994f8ceea21e3f",
+    "year": 2024,
+    "grade": "7",
+    "num": "5",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/24/book.pdf",
+    "action": "restored_false_negative_figure",
+    "reason": "All three diagrams of the second chameleon proof, printed pages 10–11.",
+    "pages": [
+      10,
+      10,
+      11
+    ],
+    "crops": [
+      [
+        120.22900390625,
+        237.65231323242188,
+        299.2996826171875,
+        306.91998291015625
+      ],
+      [
+        120.22900390625,
+        393.5754089355469,
+        299.2996826171875,
+        462.84307861328125
+      ],
+      [
+        113.85105895996094,
+        111.74539184570312,
+        305.6776123046875,
+        181.0130615234375
+      ]
+    ],
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/fc8db88393be0fe6bee0180844ef7d6978d6ea9a641f504570994f8ceea21e3f_solution.png",
+        "sha256": "970f9dc92c34c1e36af2e8ba98dcb9c76c8dc91ab6c4a8d805f8b2b9b860d756"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/fc8db88393be0fe6bee0180844ef7d6978d6ea9a641f504570994f8ceea21e3f_solution_2.png",
+        "sha256": "3ecf816b5d5a49e16db6058a91b1c8e0e1e7781763adbe08de3034d4ab0db3e1"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/fc8db88393be0fe6bee0180844ef7d6978d6ea9a641f504570994f8ceea21e3f_solution_3.png",
+        "sha256": "672af2e11a4e08d1a4baf6d4ba6aa27d4afdc7306fe92972155010b544fa1c2f"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "6a301096b60210025a42a137fe551b9b995e4ac85bbb5b38ed5589a6dbb0edbb": {
+    "uid": "6a301096b60210025a42a137fe551b9b995e4ac85bbb5b38ed5589a6dbb0edbb",
+    "year": 2024,
+    "grade": "7",
+    "num": "4",
+    "source": "https://olympiads.mccme.ru/matprazdnik/prob_24.html",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/6a301096b60210025a42a137fe551b9b995e4ac85bbb5b38ed5589a6dbb0edbb_statement.svg",
+        "sha256": "8a079cb60c76e913acd2c566eeb336ccf66f1329698503e779050b0d24020153"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "fea193700e53ba25acd364ffcd9aac691a1028c0b0b643381f67a403ac1b6a1f": {
+    "uid": "fea193700e53ba25acd364ffcd9aac691a1028c0b0b643381f67a403ac1b6a1f",
+    "year": 2023,
+    "grade": "6",
+    "num": "6",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/23/book.pdf",
+    "action": "no_figure_verified",
+    "pages": [
+      8,
+      9
+    ],
+    "reason": "Full own Koschei problem and proof contain no illustrations.",
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [],
+    "fig_none_in_source": true
+  },
+  "87cd37f613747fad3b3d7bd6237eab0561bbaa6769dc6bf7135b80a11d75a8af": {
+    "uid": "87cd37f613747fad3b3d7bd6237eab0561bbaa6769dc6bf7135b80a11d75a8af",
+    "year": 2023,
+    "grade": "7",
+    "num": "4",
+    "source": "https://olympiads.mccme.ru/matprazdnik/prob_23.html",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/87cd37f613747fad3b3d7bd6237eab0561bbaa6769dc6bf7135b80a11d75a8af_statement.svg",
+        "sha256": "3a9d3f65a0469ae552adec02ed7164589b359688b1766c34ff4e40a797cd8f7b"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "036da4bb1e6c95007ba91203023c606aac28ad72e4df812954fda44ed72c82b4": {
+    "uid": "036da4bb1e6c95007ba91203023c606aac28ad72e4df812954fda44ed72c82b4",
+    "year": 2020,
+    "grade": "6",
+    "num": "4",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/20/book.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/036da4bb1e6c95007ba91203023c606aac28ad72e4df812954fda44ed72c82b4_statement.png",
+        "sha256": "b3a3810630642025e5734445e16f63cf75490607a053ef20e299a820dbcc1a3e"
+      },
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/036da4bb1e6c95007ba91203023c606aac28ad72e4df812954fda44ed72c82b4_statement_2.png",
+        "sha256": "f4334e59145d387be3c5207aeccf40446181d9dae9ab8c0dead4268a5d589066"
+      },
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/036da4bb1e6c95007ba91203023c606aac28ad72e4df812954fda44ed72c82b4_statement_3.png",
+        "sha256": "7c6614abe9a6778a49d8ee366ce0fab98f9e43d03eedf1209038f411b59deadb"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "4970357d28b6d28720d95924f7119a358accccd9822bd374a4aaddb5841782db": {
+    "uid": "4970357d28b6d28720d95924f7119a358accccd9822bd374a4aaddb5841782db",
+    "year": 2020,
+    "grade": "7",
+    "num": "4",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/20/book.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/4970357d28b6d28720d95924f7119a358accccd9822bd374a4aaddb5841782db_statement.png",
+        "sha256": "739376e3062540cf512d3795204f6eb482e46f559991c83a24c972cc20c9c1f4"
+      },
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/4970357d28b6d28720d95924f7119a358accccd9822bd374a4aaddb5841782db_statement_2.png",
+        "sha256": "72a98682ad8656a4b11b6af5d6238f7e213da987da4bd04672e4e19d13d0e5be"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "6d092b77c64d0f519ee57db1b1d52411d73829a32d872796656f840f9bc25d80": {
+    "uid": "6d092b77c64d0f519ee57db1b1d52411d73829a32d872796656f840f9bc25d80",
+    "year": 2020,
+    "grade": "7",
+    "num": "2",
+    "source": "https://olympiads.mccme.ru/matprazdnik/prob_20.html",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/6d092b77c64d0f519ee57db1b1d52411d73829a32d872796656f840f9bc25d80_statement.png",
+        "sha256": "acf9b8073cc429c6c2e9fc1194f298bf54c66748adf6d0771dd07af82a5e85fa"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "74d90c4bb8df83311c55e686dcb5a5f84d3289c6034c6c350390adc848f8b725": {
+    "uid": "74d90c4bb8df83311c55e686dcb5a5f84d3289c6034c6c350390adc848f8b725",
+    "year": 2019,
+    "grade": "6",
+    "num": "6",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/19/book.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/74d90c4bb8df83311c55e686dcb5a5f84d3289c6034c6c350390adc848f8b725_statement.png",
+        "sha256": "e6a5c3d764c34b3d37d0966490a8610c15d32126d2c37f7845b36cdd4ceedb9b"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "66a58c70dab01eb24bbcfd2c3c9be5d1d7f7abf54de10d932089a2cfc304da5e": {
+    "uid": "66a58c70dab01eb24bbcfd2c3c9be5d1d7f7abf54de10d932089a2cfc304da5e",
+    "year": 2019,
+    "grade": "6",
+    "num": "4",
+    "source": "https://olympiads.mccme.ru/matprazdnik/prob_19.html",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/66a58c70dab01eb24bbcfd2c3c9be5d1d7f7abf54de10d932089a2cfc304da5e_statement.png",
+        "sha256": "005b5704e0e75e0e4bb3c5066199d7176c6f350d884c1057cedb66c6038bcca4"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "76727d0a27d48cb3469f9f8cda8ad564ef2aeb0e9b1138f1880b77bb7e844770": {
+    "uid": "76727d0a27d48cb3469f9f8cda8ad564ef2aeb0e9b1138f1880b77bb7e844770",
+    "year": 2018,
+    "grade": "6",
+    "num": "3",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/18/book.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/76727d0a27d48cb3469f9f8cda8ad564ef2aeb0e9b1138f1880b77bb7e844770_statement.png",
+        "sha256": "b06b882838b2f7cd372152a3fb7db59e958224976a76b675f1364eef1abcfaa3"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "1ca7051849836d64448a0d28821bdd606d60e858ce9f2d373e1259ccf8f8ffec": {
+    "uid": "1ca7051849836d64448a0d28821bdd606d60e858ce9f2d373e1259ccf8f8ffec",
+    "year": 2016,
+    "grade": "6",
+    "num": "2",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/16/book.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/1ca7051849836d64448a0d28821bdd606d60e858ce9f2d373e1259ccf8f8ffec_statement.png",
+        "sha256": "4b3689aa3df41a41ea53cea3c219a26028eca17a43628ead6a1589a687432a99"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "c8e053f9daa177d5f52625808ef844810a2ab0baffe1634373eb02f033dc2337": {
+    "uid": "c8e053f9daa177d5f52625808ef844810a2ab0baffe1634373eb02f033dc2337",
+    "year": 2016,
+    "grade": "7",
+    "num": "2",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/16/book.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/c8e053f9daa177d5f52625808ef844810a2ab0baffe1634373eb02f033dc2337_statement.png",
+        "sha256": "4b3689aa3df41a41ea53cea3c219a26028eca17a43628ead6a1589a687432a99"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "00541deba6117ae1e62a26eede4b0fdc7c36a41ff5e4af65c7000d17365bcf4e": {
+    "uid": "00541deba6117ae1e62a26eede4b0fdc7c36a41ff5e4af65c7000d17365bcf4e",
+    "year": 2015,
+    "grade": "6",
+    "num": "2",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/15/book.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/00541deba6117ae1e62a26eede4b0fdc7c36a41ff5e4af65c7000d17365bcf4e_statement.png",
+        "sha256": "37c61e733646c475fc40c11cfb6b4db1ef8ca9beeb25935c234bdb7be98b34ff"
+      },
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/00541deba6117ae1e62a26eede4b0fdc7c36a41ff5e4af65c7000d17365bcf4e_statement_2.png",
+        "sha256": "4fde55d1d45daac66b6ca19b0665471a544fcc6627128c9f85f314fa293fee01"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "ec94d4d2be3d4956cfea758857de8df9faae8f81a140e20c92b79e3cd1ef5447": {
+    "uid": "ec94d4d2be3d4956cfea758857de8df9faae8f81a140e20c92b79e3cd1ef5447",
+    "year": 2014,
+    "grade": "6",
+    "num": "5",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/14/book.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/ec94d4d2be3d4956cfea758857de8df9faae8f81a140e20c92b79e3cd1ef5447_statement.png",
+        "sha256": "7de420d214b53bab933db5cbb43ba99ac61f9ca77823cd5c4be44e24901eeec6"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "0a8cfc33c9026e77c98de218aec54e56a1a6072056dcfe09af0ca6dc594595e9": {
+    "uid": "0a8cfc33c9026e77c98de218aec54e56a1a6072056dcfe09af0ca6dc594595e9",
+    "year": 2013,
+    "grade": "6",
+    "num": "4",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/13/book.pdf",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/0a8cfc33c9026e77c98de218aec54e56a1a6072056dcfe09af0ca6dc594595e9_solution.png",
+        "sha256": "67ebc0610bb7d88fbe818748eeeb3d275d733a5045a5c4fd57cd86c48fe6c330"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "c4f28638e9f3607230e61bddd54b1ac904b798a802b2193465df998c5623a2bd": {
+    "uid": "c4f28638e9f3607230e61bddd54b1ac904b798a802b2193465df998c5623a2bd",
+    "year": 2025,
+    "grade": "6",
+    "num": "3",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/25/book.pdf",
+    "action": "restored_false_negative_figure",
+    "reason": "Own counterexample road network below the answer, printed page 4.",
+    "pages": [
+      4
+    ],
+    "crops": [
+      [
+        96.23884582519531,
+        297.70849609375,
+        323.28973388671875,
+        432.0367431640625
+      ]
+    ],
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/c4f28638e9f3607230e61bddd54b1ac904b798a802b2193465df998c5623a2bd_solution.png",
+        "sha256": "525161bffcdda066821ca699ce4d3faa4d5330facee4d6ce3dea8247d1df68a0"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "6694549b39bdcd6a33344b911466d98f9aef99ba8c3165c6e22d71c9db8d5981": {
+    "uid": "6694549b39bdcd6a33344b911466d98f9aef99ba8c3165c6e22d71c9db8d5981",
+    "year": 2025,
+    "grade": "7",
+    "num": "5",
+    "source": "https://olympiads.mccme.ru/matprazdnik/image/25/book.pdf",
+    "action": "restored_false_negative_figure",
+    "reason": "Own exchange-lattice graph in the second comment, printed page 12.",
+    "pages": [
+      12
+    ],
+    "crops": [
+      [
+        108.0,
+        133.0,
+        300.0,
+        312.0
+      ]
+    ],
+    "evidence_scope": "complete_own_statement_and_solution",
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/6694549b39bdcd6a33344b911466d98f9aef99ba8c3165c6e22d71c9db8d5981_solution.png",
+        "sha256": "cc773013cba4346e25fd4e8d4bc5325599a927867f9c80456da22a502ceede89"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "02b99a22f0b9895627000aaf01f8d91bcf7e89436dd183b3cb49d976535982a6": {
+    "uid": "02b99a22f0b9895627000aaf01f8d91bcf7e89436dd183b3cb49d976535982a6",
+    "year": 2022,
+    "grade": "6",
+    "num": "4",
+    "source": "https://olympiads.mccme.ru/matprazdnik/prob_22.html",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/02b99a22f0b9895627000aaf01f8d91bcf7e89436dd183b3cb49d976535982a6_statement.png",
+        "sha256": "7eb8626202d6fbab24c2318fd462d46ae3cbcfbe77334405f040aa2ddf183e06"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "a22f91604449c845ac22dc2bc360c18510af0fdc02ef3dd0ad09979122ab5113": {
+    "uid": "a22f91604449c845ac22dc2bc360c18510af0fdc02ef3dd0ad09979122ab5113",
+    "year": 2020,
+    "grade": "6",
+    "num": "6",
+    "source": "https://problems.ru/view_problem_details_new.php?id=66524",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/a22f91604449c845ac22dc2bc360c18510af0fdc02ef3dd0ad09979122ab5113_statement.png",
+        "sha256": "2fdcded7d417b5d65282281ba91ad3a4479ad8ace7aa9f6abe803c8be0d49799"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/a22f91604449c845ac22dc2bc360c18510af0fdc02ef3dd0ad09979122ab5113_solution.png",
+        "sha256": "7c65f31fda4dec3c3f1b57cc5c986e52ccd2beb078effddd8b9165632677d1e8"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "ee509d35b51826a1be665be35d65f197961f7038669025a2220b80870a611085": {
+    "uid": "ee509d35b51826a1be665be35d65f197961f7038669025a2220b80870a611085",
+    "year": 2017,
+    "grade": "6",
+    "num": "1",
+    "source": "https://problems.ru/view_problem_details_new.php?id=65972",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/ee509d35b51826a1be665be35d65f197961f7038669025a2220b80870a611085_statement.png",
+        "sha256": "ecefdf4aa2bc76153226565674c79017388dc50a61b6b238ed0b659d11462407"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/ee509d35b51826a1be665be35d65f197961f7038669025a2220b80870a611085_solution.png",
+        "sha256": "3a192c275b5f9f02bc89fe5ba67bd3e2511b4b8ad1ab35f5413d671b2b59df3c"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "da98f75594f36e891c61c8f089978f2f29785c26874b894a327deda53c64f760": {
+    "uid": "da98f75594f36e891c61c8f089978f2f29785c26874b894a327deda53c64f760",
+    "year": 2017,
+    "grade": "7",
+    "num": "5",
+    "source": "https://problems.ru/view_problem_details_new.php?id=65980",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/da98f75594f36e891c61c8f089978f2f29785c26874b894a327deda53c64f760_statement.png",
+        "sha256": "b278776447f250af1178cbb28177413a963462e5518881fa2be121d0f1c51db0"
+      },
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/da98f75594f36e891c61c8f089978f2f29785c26874b894a327deda53c64f760_solution.png",
+        "sha256": "664891b105edd4690ea7a0e79c241fd2929183b0652a227fd5cc48bed22e8075"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "1475e2aaee9ec5cbe255de2669ddbae626c5f8a7ebda18ec8ef27b5c10cb7165": {
+    "uid": "1475e2aaee9ec5cbe255de2669ddbae626c5f8a7ebda18ec8ef27b5c10cb7165",
+    "year": 2016,
+    "grade": "6",
+    "num": "2",
+    "source": "https://problems.ru/view_problem_details_new.php?id=65597",
+    "action": "Source/attachment comparison completed in the earlier per-olympiad pass; retained verified result, not a new automatic match.",
+    "review_commit": "a626a776",
+    "verification_scope": "earlier_pass_source_comparison",
+    "attachments": [
+      {
+        "role": "statement",
+        "path": "FINAL_FIGURES/1475e2aaee9ec5cbe255de2669ddbae626c5f8a7ebda18ec8ef27b5c10cb7165_statement.png",
+        "sha256": "4b3689aa3df41a41ea53cea3c219a26028eca17a43628ead6a1589a687432a99"
+      }
+    ],
+    "fig_none_in_source": false
+  }
+}

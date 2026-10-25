@@ -1,0 +1,32 @@
+{
+  "b41820c427a45df3b7dc28aa36209302fdf6f8e357a1c14db686e9ac976476a9": {
+    "uid": "b41820c427a45df3b7dc28aa36209302fdf6f8e357a1c14db686e9ac976476a9",
+    "year": 2023,
+    "grade": "11",
+    "num": "5",
+    "source": "https://tasks.olimpiada.ru/upload/files/tasks/443/2022/443-sol-math-10-11-final-22-23.pdf",
+    "action": "own_source_graphics_verified; automatic_crop_replaced; statement_solution_roles_checked",
+    "pages": [
+      5
+    ],
+    "attachments": [
+      {
+        "role": "solution",
+        "path": "FINAL_FIGURES/b41820c427a45df3b7dc28aa36209302fdf6f8e357a1c14db686e9ac976476a9_solution.png",
+        "sha256": "5dce93fd009b955cd66393cc33e82cf8a0a812fcee585cbc45ab51f899e64182"
+      }
+    ],
+    "fig_none_in_source": false
+  },
+  "926fba4807d0c1506aab1686727adfae41ea95ba811783ff3bf581209799e15f": {
+    "uid": "926fba4807d0c1506aab1686727adfae41ea95ba811783ff3bf581209799e15f",
+    "year": 2022,
+    "grade": "11",
+    "num": "5",
+    "source": "https://math-olymp.sdamgia.ru/problem?id=8239",
+    "action": "no_figure_verified",
+    "reason": "Exact own statement and complete solution inspected in HTML; image elements are mathematical-formula SVGs only, no diagram.",
+    "attachments": [],
+    "fig_none_in_source": true
+  }
+}
