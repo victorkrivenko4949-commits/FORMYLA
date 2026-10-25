@@ -27,13 +27,23 @@ GOOD = {"A": (0, 0), "B": (6, 0), "D": (5, 5 * R3), "C": (11, 5 * R3),
         "E": (9, 3 * R3), "F": (45 / 8, 15 * R3 / 8)}
 
 # Прод-координаты (SVG, нормировано к AB=6): E на BC в 3 единицах от B —
-# луч AE под ~19.1° к AB, делит угол 60° как 19.1°/40.9°.
+# луч AE под ~19.1° к AB, делит угол 60° как 19.1°/40.9°. E и F на своих
+# прямых (координаты точные, без округления — иначе проверка прямой ложно срабатывает).
 BAD = {"A": (0, 0), "B": (6, 0), "D": (5, 5 * R3), "C": (11, 5 * R3),
-       "E": (7.5, 2.5981), "F": (5.769, 1.999)}
+       "E": (7.5, 1.5 * R3), "F": (75 / 13, 15 * R3 / 13)}
 
 
 def test_good_config_passes():
     assert bisector_failures(PROBLEM, GOOD) == []
+
+
+def test_point_on_bisector_but_wrong_line_fails():
+    """Прод-ошибка №2 (деплой d696e7c9): биссектриса верная (30°/30°), но E
+    построена на диагонали BD вместо стороны BC и совпала с F (E = F)."""
+    wrong_line = dict(GOOD, E=GOOD["F"])          # E стерта с F на диагонали BD
+    fails = bisector_failures(PROBLEM, wrong_line)
+    assert len(fails) == 1, fails
+    assert "точка E не лежит на прямой BC" in fails[0], fails
 
 
 def test_prod_bad_config_names_point_and_angle():
@@ -77,7 +87,7 @@ def test_wrapper_installed_and_rule40_present():
     assert getattr(semantics.semantic_failures, "_bisector_angle", False)
     assert "40." in L.SYS_FORMALIZE and "BISECTOR_ANGLE_RULE" in L.SYS_FORMALIZE
     # повторная установка — no-op, суффикс не дублируется
-    assert pipeline.ENGINE_VERSION.count("+bisectorAngle1") == 1
+    assert pipeline.ENGINE_VERSION.count("+bisectorAngle2") == 1
 
 
 def test_canonical_plan_solves_and_passes():

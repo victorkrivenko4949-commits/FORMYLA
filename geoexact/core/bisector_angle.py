@@ -12,7 +12,9 @@ BE = 3 вместо BE = AB = 6, «измерено» EF = 1.83 вместо ~3.
 CD» (две буквы, треугольник). Здесь — независимая проверка трёхбуквенного
 угла «биссектриса угла XYZ ... в точке T» в любой фигуре: углы XYT и TYZ
 равны, луч YT внутри угла XYZ (сумма половинок равна целому углу), T лежит
-на названной прямой/стороне/диагонали. Плюс правило 40 формализатора:
+на названной прямой/стороне/диагонали (прод-ошибка №2: E построили на
+диагонали BD вместо стороны BC — углы сошлись, прямая нет). Плюс правило 40
+формализатора:
 каноническое построение bisector_point + line_intersect вместо свободной
 точки с angle_eq. GEOEXACT_BISECTOR_ANGLE=0 выключает.
 """
@@ -29,7 +31,7 @@ ENABLED = (os.environ.get("GEOEXACT_BISECTOR_ANGLE") or "1").strip().lower() not
 
 # Суффикс версии движка: новая проверка текста меняет приёмку чертежей —
 # старый дисковый кеш конвейера не подставляется под новую логику.
-CACHE_SUFFIX = "+bisectorAngle1"
+CACHE_SUFFIX = "+bisectorAngle2"
 
 EXTRA_RULES = """
 40. BISECTOR_ANGLE_RULE («биссектриса угла XYZ пересекает сторону/прямую/
@@ -90,14 +92,16 @@ def _angle(u: np.ndarray, v: np.ndarray) -> float:
     return math.degrees(math.acos(max(-1.0, min(1.0, c))))
 
 
-def _sentence_bisectors(sentence: str) -> list[tuple[str, str, str, list[str]]]:
-    """[(arm1, vertex, arm2, [имена точек пересечения])]."""
-    out: list[tuple[str, str, str, list[str]]] = []
+def _sentence_bisectors(sentence: str) -> list[tuple[str, str, str, list[tuple[str | None, str | None, str]]]]:
+    """[(arm1, vertex, arm2, [(P, Q, T), ...])] — T на прямой PQ (если названа)."""
+    out: list[tuple[str, str, str, list[tuple[str | None, str | None, str]]]] = []
     for m in _BISECTOR.finditer(sentence):
         if m[1]:                      # «внешней биссектрисой» — не проверяем
             continue
-        pts = [m[3].upper() for m in _CROSS.finditer(sentence)]
-        pts += [m[3].upper() for m in _LISTED.finditer(sentence)]
+        pts = [(m[1].upper() or None, m[2].upper() or None, m[3].upper())
+               for m in _CROSS.finditer(sentence)]
+        pts += [(m[1].upper(), m[2].upper(), m[3].upper())
+                for m in _LISTED.finditer(sentence)]
         out.append((m[2].upper(), m[3].upper(), m[4].upper(), pts))
     return out
 
@@ -121,7 +125,7 @@ def bisector_failures(text: str, coords: dict) -> list[str]:
             va1 = P[v_arm1] - P[v_vertex]
             va2 = P[v_arm2] - P[v_vertex]
             full = _angle(va1, va2)
-            for name in targets:
+            for line_p, line_q, name in targets:
                 t = _point_key(name, P)
                 if t is None:
                     continue          # отсутствие точки ловит семантика имён
@@ -132,6 +136,19 @@ def bisector_failures(text: str, coords: dict) -> list[str]:
                         f"точка {name} не лежит на биссектрисе угла "
                         f"{arm1}{vertex}{arm2} (делит его как "
                         f"{left:.1f}°/{right:.1f}° вместо {full / 2:.1f}°/{full / 2:.1f}°)")
+                    continue
+                if line_p and line_q:
+                    # точка пересечения обязана лежать на названной прямой
+                    lp, lq = _point_key(line_p, P), _point_key(line_q, P)
+                    if lp is None or lq is None or np.linalg.norm(P[lq] - P[lp]) <= 1e-12:
+                        continue
+                    d = P[lq] - P[lp]
+                    off = float(np.cross(P[t] - P[lp], d)) / float(np.linalg.norm(d))
+                    if abs(off) > 1e-6 * max(1.0, float(np.linalg.norm(d))):
+                        fails.append(
+                            f"точка {name} не лежит на прямой {line_p}{line_q}, "
+                            f"которую пересекает биссектриса угла "
+                            f"{arm1}{vertex}{arm2}")
     return list(dict.fromkeys(fails))
 
 
