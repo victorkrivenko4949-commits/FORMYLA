@@ -1694,6 +1694,23 @@ class T10GroupMember(db.Model):
     )
     role = db.Column(db.String(16), nullable=False, default='student')
     joined_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    # Статус приглашения: 'pending' — учитель отправил запрос, ученик ещё
+    # не подтвердил; 'accepted' — ученик в группе (или сам вступил по коду);
+    # 'rejected' — ученик отклонил запрос (учитель может отправить повторно).
+    # Легаси-строки без статуса трактуются как 'accepted' (server_default).
+    status = db.Column(
+        db.String(16), nullable=False, default='accepted',
+        server_default='accepted', index=True,
+    )
+    responded_at = db.Column(db.DateTime, nullable=True)
+
+    def accept(self):
+        self.status = 'accepted'
+        self.responded_at = datetime.utcnow()
+
+    def reject(self):
+        self.status = 'rejected'
+        self.responded_at = datetime.utcnow()
 
     __table_args__ = (
         db.UniqueConstraint('group_id', 'user_id', name='_t10_group_member_unique'),

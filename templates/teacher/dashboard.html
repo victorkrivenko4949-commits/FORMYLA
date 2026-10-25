@@ -11,10 +11,37 @@
         font-size: 28px;
         font-weight: 700;
         color: var(--text);
-        margin-bottom: 36px;
+        margin-bottom: 20px;
         padding-bottom: 16px;
         border-bottom: 1px solid var(--border);
     }
+    .how-card {
+        background: var(--surface);
+        border: 1px dashed var(--border);
+        border-radius: 14px;
+        padding: 18px 24px;
+        margin-bottom: 28px;
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.65;
+    }
+    .how-card b { color: var(--text); }
+    .how-card .step {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgba(244,185,66,0.15);
+        color: var(--accent-hi);
+        font-size: 12px;
+        font-weight: 700;
+        margin-right: 8px;
+        flex: none;
+    }
+    .how-card .step-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+    .how-card .step-row .step-text { flex: 1; }
     .create-form {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -80,6 +107,18 @@
         color: var(--muted);
         font-size: 14px;
     }
+    .badge-pending {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(244,185,66,0.12);
+        border: 1px solid rgba(244,185,66,0.3);
+        border-radius: 8px;
+        padding: 2px 10px;
+        font-size: 13px;
+        color: #fbbf24;
+        font-weight: 600;
+    }
     .empty-state {
         text-align: center;
         padding: 60px 20px;
@@ -97,6 +136,12 @@
 {% block content %}
 <div class="teacher-page">
     <h1>👨‍🏫 Мои группы</h1>
+
+    <div class="how-card">
+        <div class="step-row"><span class="step">1</span><span class="step-text">Создайте <b>группу</b> и отправьте ученикам код приглашения — они вступят сами.</span></div>
+        <div class="step-row"><span class="step">2</span><span class="step-text">Или <b>добавьте ученика по никнейму</b> внутри группы — ученику придёт уведомление, и он должен <b>подтвердить</b> приглашение.</span></div>
+        <div class="step-row"><span class="step">3</span><span class="step-text">После подтверждения откроется <b>вся статистика</b> ученика: задачи дня, серия, уровни, тесты и календарь активности.</span></div>
+    </div>
 
     <div class="create-form">
         <h3>➕ Создать новую группу</h3>
@@ -118,7 +163,10 @@
                 <div class="group-meta">
                     🔑 Код: {{ gs.group.invite_code }} |
                     👥 Учеников: {{ gs.student_count }} |
-                    📊 Среднее: {{ gs.group_avg }}
+                    📊 Среднее задач/день: {{ gs.group_avg }}
+                    {% if gs.pending_count %}
+                        | <span class="badge-pending">⏳ Ждут подтверждения: {{ gs.pending_count }}</span>
+                    {% endif %}
                 </div>
             </div>
             <a href="{{ url_for('parent_teacher.teacher_group_view', gid=gs.group.id) }}"

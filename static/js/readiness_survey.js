@@ -26,6 +26,14 @@
       waitingTimer = setTimeout(show, 300);
       return;
     }
+    // CONFIRM_LINK_V1: не накрываем уведомление о запросах учителя/родителя —
+    // дождёмся, пока ученик ответит на него, и покажем опрос готовности после.
+    var lr = document.getElementById('ft-linkreq-overlay');
+    if (lr && lr.style.display === 'flex') {
+      clearTimeout(waitingTimer);
+      waitingTimer = setTimeout(show, 300);
+      return;
+    }
     queued = false;
     previousFocus = document.activeElement;
     previousOverflow = document.body.style.overflow;

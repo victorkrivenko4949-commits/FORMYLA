@@ -204,6 +204,20 @@ def app(tmp_path):
     except Exception:
         pass
 
+    # CONFIRM_LINK_V1: недостающие эндпоинты, на которые ссылается base.html
+    # (иначе BuildError при рендере страниц учителя/родителя в тестах).
+    # Добавляем ТОЛЬКО те, которых нет после регистрации настоящих blueprints,
+    # чтобы не перебивать реальные маршруты одноименными заглушками.
+    _have = {str(_r.endpoint) for _r in test_app.url_map.iter_rules()}
+    for _rule, _endpoint in (
+        ('/subscribe', 'subscribe_page'),
+        ('/olympiad/methods', 'olympiad.methods'),
+        ('/prep/calendar', 'olympiad_prep.calendar'),
+        ('/my/support', 'admin_support.my_support_page'),
+    ):
+        if _endpoint not in _have:
+            test_app.add_url_rule(_rule, _endpoint, lambda: '')
+
     # Push context once and keep it for all dependent fixtures and the test.
     ctx = test_app.app_context()
     ctx.push()

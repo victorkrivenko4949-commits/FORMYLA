@@ -13,6 +13,16 @@
         color: var(--text);
         margin-bottom: 8px;
     }
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 14px;
+        text-decoration: none;
+        margin-bottom: 16px;
+    }
+    .back-link:hover { color: var(--accent-hi); }
     .group-invite {
         color: var(--muted);
         font-size: 14px;
@@ -64,6 +74,12 @@
         font-family: Satoshi, system-ui, sans-serif;
         width: 240px;
     }
+    .add-hint {
+        font-size: 12.5px;
+        color: var(--muted);
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
     .group-avg {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -74,6 +90,12 @@
         color: var(--text);
     }
     .group-avg strong { color: var(--accent-hi); }
+    .section-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 28px 0 12px 0;
+    }
     .student-table {
         width: 100%;
         border-collapse: collapse;
@@ -121,6 +143,30 @@
         font-size: 12px;
         color: var(--muted);
     }
+    .badge-pending {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(244,185,66,0.12);
+        border: 1px solid rgba(244,185,66,0.3);
+        border-radius: 8px;
+        padding: 2px 10px;
+        font-size: 13px;
+        color: #fbbf24;
+        font-weight: 600;
+    }
+    .badge-rejected {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(239,68,68,0.1);
+        border: 1px solid rgba(239,68,68,0.28);
+        border-radius: 8px;
+        padding: 2px 10px;
+        font-size: 13px;
+        color: #f87171;
+        font-weight: 600;
+    }
     .student-count-badge {
         display: inline-flex;
         align-items: center;
@@ -134,6 +180,20 @@
         font-weight: 600;
         margin-bottom: 16px;
     }
+    .pending-card {
+        background: var(--surface);
+        border: 1px solid rgba(244,185,66,0.35);
+        border-radius: 14px;
+        padding: 14px 20px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .pending-card .p-name { font-weight: 600; color: var(--text); }
+    .pending-card .p-meta { font-size: 13px; color: var(--muted); }
     .flash-msg {
         padding: 10px 16px;
         border-radius: 10px;
@@ -154,9 +214,10 @@
 
 {% block content %}
 <div class="group-page">
+    <a href="{{ url_for('parent_teacher.teacher_dashboard') }}" class="back-link">← Все группы</a>
     <h1>{{ group.name }}</h1>
     <div class="group-invite">
-        Код приглашения: <span>{{ group.invite_code }}</span>
+        Код приглашения: <span>{{ group.invite_code }}</span> — ученики могут вступать сами
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -167,7 +228,6 @@
     {% endif %}
     {% endwith %}
 
-    <!-- Student count -->
     <div class="student-count-badge">
         👥 Учеников в группе: <strong>{{ students|length }}</strong>
     </div>
@@ -177,29 +237,67 @@
             <input type="text" name="name" value="{{ group.name }}" required maxlength="120">
             <button type="submit" class="btn btn-accent">Переименовать</button>
         </form>
-        <form method="POST" action="{{ url_for('parent_teacher.teacher_group_add_student', gid=group.id) }}" class="rename-form">
-            <input type="text" name="nickname" placeholder="Никнейм ученика" required maxlength="50">
-            <button type="submit" class="btn btn-accent">➕ Добавить ученика</button>
-        </form>
         <form method="POST" action="{{ url_for('parent_teacher.teacher_group_delete', gid=group.id) }}"
               onsubmit="return confirm('Удалить группу навсегда?');">
             <button type="submit" class="btn btn-bad">Удалить группу</button>
         </form>
     </div>
 
+    <form method="POST" action="{{ url_for('parent_teacher.teacher_group_add_student', gid=group.id) }}" class="rename-form">
+        <input type="text" name="nickname" placeholder="Никнейм ученика" required maxlength="50">
+        <button type="submit" class="btn btn-accent">➕ Отправить запрос ученику</button>
+    </form>
+    <div class="add-hint">
+        Ученик получит уведомление «Подтвердить, что вы хотите его добавить» — в группе он появится только после согласия.
+    </div>
+
     <div class="group-avg">
-        Среднее количество решённых задач дня по группе за 7 дней:
+        Среднее количество задач дня по группе за 7 дней:
         <strong>{{ group_avg }}</strong>
     </div>
 
+    {% if pending_students %}
+    <div class="section-title">⏳ Ждут подтверждения ученика</div>
+    {% for p in pending_students %}
+    <div class="pending-card">
+        <div>
+            <span class="p-name">{{ p.name }}</span>
+            <span class="badge-pending">ожидает ответа</span>
+            {% if p.created_at %}
+            <div class="p-meta">запрос отправлен {{ p.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
+            {% endif %}
+        </div>
+        <div class="p-meta">Статистика откроется после подтверждения</div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if rejected_students %}
+    <div class="section-title">🚫 Отклонили приглашение</div>
+    {% for p in rejected_students %}
+    <div class="pending-card" style="border-color: rgba(239,68,68,0.3);">
+        <div>
+            <span class="p-name">{{ p.name }}</span>
+            <span class="badge-rejected">отклонил</span>
+            {% if p.created_at %}
+            <div class="p-meta">запрос отправлен {{ p.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
+            {% endif %}
+        </div>
+        <div class="p-meta">Можно отправить запрос повторно (форма выше)</div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="section-title">📋 Ученики группы</div>
     {% if students %}
     <table class="student-table">
         <thead>
             <tr>
                 <th>Ученик</th>
                 <th>Задач/день (7 дн.)</th>
-                <th>Серия</th>
-                <th>Якоря (mu/sigma)</th>
+                <th>Серия дней</th>
+                <th>Уровни (mu/sigma)</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -212,41 +310,43 @@
                 </td>
                 {% if s.progress_hidden %}
                 <td colspan="2" style="color: var(--muted); font-style: italic;">Ученик скрыл прогресс</td>
+                <td>
+                    <div class="anchor-badges"><span style="color: var(--muted); font-style: italic;">скрыто</span></div>
+                </td>
                 {% else %}
                 <td>{{ s.avg_tasks }}</td>
                 <td>{{ s.streak }}</td>
+                <td>
+                    <div class="anchor-badges">
+                        {% for anchor, vals in s.anchors.items() %}
+                        {% set anchor_ru = {
+                            'algebra': 'Алгебра',
+                            'number_theory': 'Теория чисел',
+                            'geometry': 'Геометрия',
+                            'combinatorics': 'Комбинаторика',
+                            'logic': 'Логика'
+                        }.get(anchor, anchor) %}
+                        <span class="anchor-badge" title="{{ anchor_ru }}">
+                            {% if vals.mu is none %}{{ anchor[0].upper() }} —{% else %}{{ anchor[0].upper() }} {{ vals.mu }}/{{ vals.sigma }}{% endif %}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </td>
                 {% endif %}
                 <td>
-                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <div class="anchor-badges">
-                            {% if s.progress_hidden %}
-                            <span style="color: var(--muted); font-style: italic;">скрыто</span>
-                            {% else %}
-                            {% for anchor, vals in s.anchors.items() %}
-                            {% set anchor_ru = {
-                                'algebra': 'Алгебра',
-                                'number_theory': 'Теория чисел',
-                                'geometry': 'Геометрия',
-                                'combinatorics': 'Комбинаторика',
-                                'logic': 'Логика'
-                            }.get(anchor, anchor) %}
-                            <span class="anchor-badge"
-                                  title="{{ anchor_ru }}">{{ anchor[0].upper() }} {{ vals.mu }}/{{ vals.sigma }}</span>
-                            {% endfor %}
-                            {% endif %}
-                        </div>
-                        <a href="{{ url_for('parent_teacher.student_detail', sid=s.id) }}"
-                           style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; text-decoration: none; font-weight: 600; font-size: 13px; white-space: nowrap;">
-                            📂 Открыть профиль
-                        </a>
-                    </div>
+                    <a href="{{ url_for('parent_teacher.student_detail', sid=s.id) }}"
+                       style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; text-decoration: none; font-weight: 600; font-size: 13px; white-space: nowrap;">
+                        📂 Статистика
+                    </a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% else %}
-    <div style="text-align:center;padding:40px;color:var(--muted);">В группе пока нет учеников.</div>
+    <div style="text-align:center;padding:40px;color:var(--muted);">
+        Пока никого: отправьте запрос по никнейму выше или дайте ученикам код приглашения.
+    </div>
     {% endif %}
 </div>
 <script>

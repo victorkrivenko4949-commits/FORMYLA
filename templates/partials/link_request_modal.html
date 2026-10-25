@@ -1,0 +1,295 @@
+{# CONFIRM_LINK_V1: модальное уведомление ученику о входящих запросах
+   (учитель добавляет по нику / родитель привязывает). Стиль — как у
+   обязательного опроса «Как тебе сайт?». «Позже» скрывает модалку до конца
+   сессии для этих же запросов; новое приглашение (новая дата отправки)
+   показывается снова. Сами запросы остаются на /profile. #}
+<div id="ft-linkreq-overlay" style="display:none;position:fixed;inset:0;z-index:39900;
+     background:rgba(5,8,18,0.78);backdrop-filter:blur(4px);
+     align-items:center;justify-content:center;padding:16px;">
+  <div id="ft-linkreq-card" style="background:var(--card, #141a2e);border:1px solid rgba(244,185,66,0.45);
+              border-radius:16px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto;
+              padding:26px 24px;box-shadow:0 18px 60px rgba(0,0,0,0.55);">
+    <div style="font-size:20px;font-weight:800;margin-bottom:4px;">🔔 Тебя хотят добавить</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:18px;">
+      Подтверди запросы — так учитель или родитель увидит твою статистику.
+      Если не знаешь отправителя — просто отклони.
+    </div>
+    <div id="ft-linkreq-list"></div>
+    <button id="ft-linkreq-later" type="button"
+            style="width:100%;margin-top:16px;padding:10px;border:1px solid rgba(255,255,255,0.15);
+                   border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;
+                   background:rgba(255,255,255,0.04);color:var(--muted,#9aa3b5);">
+      Позже (ответить в профиле)
+    </button>
+  </div>
+</div>
+
+<!-- CONFIRM_LINK_V1: пока анкета входа не пройдена, /profile закрыт гейтом —
+     на страницах анкеты (body.page-intake) держим постоянную кнопку,
+     чтобы ученик мог вернуться к отложенным запросам в любой момент. -->
+<button id="ft-linkreq-badge" type="button"
+        style="display:none;position:fixed;right:16px;bottom:16px;z-index:39800;
+               background:#141a2e;border:1px solid rgba(244,185,66,0.45);color:#e2e8f0;
+               border-radius:12px;padding:12px 18px;font-size:14px;font-weight:600;
+               cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
+  🔔 Запросы на добавление
+</button>
+
+<style>
+  .ft-lr-item {
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 14px 14px 12px;
+    margin-bottom: 12px;
+    background: rgba(255,255,255,0.03);
+  }
+  .ft-lr-item.done { opacity: 0.55; }
+  .ft-lr-title { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .ft-lr-text { font-size: 13.5px; color: var(--muted,#9aa3b5); margin-bottom: 12px; }
+  .ft-lr-btns { display: flex; gap: 10px; }
+  .ft-lr-btn {
+    flex: 1; padding: 10px 8px; border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .ft-lr-accept {
+    background: linear-gradient(135deg, #3ecf8e, #22a06b); color: #05130b !important;
+  }
+  .ft-lr-reject {
+    background: rgba(239,68,68,0.14); color: #f87171 !important;
+    border: 1px solid rgba(239,68,68,0.35);
+  }
+  .ft-lr-btn:disabled { opacity: 0.5; cursor: default; }
+  .ft-lr-status { font-size: 13px; font-weight: 600; padding: 4px 0; }
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  // LR.ids — обработанные (отвеченные) запросы этой страницы.
+  // sessionShown — показанные («Позже» тоже считается показом) за сессию.
+  var LR = { shown: false, ids: {}, sending: 0, lastRequests: [] };
+
+  function overlay() { return document.getElementById('ft-linkreq-overlay'); }
+  function listEl() { return document.getElementById('ft-linkreq-list'); }
+
+  function visible() {
+    var o = overlay();
+    return !!(o && o.style.display === 'flex');
+  }
+
+  function feedbackVisible() {
+    var fb = document.getElementById('ft-feedback-overlay');
+    return !!(fb && fb.style.display === 'flex');
+  }
+
+  function readinessVisible() {
+    // Опрос готовности (readiness_survey.js) рисуется с z-index 41000 —
+    // выше нас: пока он открыт, не выскакиваем и не помечаем показанным
+    // (guard стоит в check() ДО markShown — запрос не потеряется).
+    return !!document.getElementById('ft-readiness-overlay');
+  }
+
+  function show() {
+    // Не выскакиваем поверх обязательного опроса «Как тебе сайт?» и
+    // опроса готовности (readiness) — попробуем на следующем тике.
+    if (feedbackVisible() || readinessVisible()) return;
+    var o = overlay();
+    if (!o) return;
+    o.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    LR.shown = true;
+  }
+
+  function hide() {
+    var o = overlay();
+    if (!o) return;
+    o.style.display = 'none';
+    document.body.style.overflow = '';
+    LR.shown = false;
+  }
+
+  // Ключ включает дату отправки: повторное приглашение (тот же id, новая
+  // дата) считается новым запросом и показывается снова.
+  function key(r) { return r.kind + ':' + r.id + ':' + (r.created_at || ''); }
+
+  function sessionShown() {
+    try { return JSON.parse(sessionStorage.getItem('ftLinkReqShown') || '[]'); }
+    catch (e) { return []; }
+  }
+  function markShown(r) {
+    try {
+      var arr = sessionShown();
+      if (arr.indexOf(key(r)) === -1) {
+        arr.push(key(r));
+        sessionStorage.setItem('ftLinkReqShown', JSON.stringify(arr));
+      }
+    } catch (e) { /* приватный режим — просто показываем */ }
+  }
+
+  function esc(s) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(String(s == null ? '' : s)));
+    return d.innerHTML;
+  }
+
+  function whoHtml(r) {
+    var role = r.kind === 'parent' ? 'Родитель' : 'Учитель';
+    var name = esc(r.name || '—');
+    if (r.nickname) name += ' (@' + esc(r.nickname) + ')';
+    return role + ' <b>' + name + '</b>';
+  }
+
+  function buildCard(r) {
+    var div = document.createElement('div');
+    div.className = 'ft-lr-item';
+    div.setAttribute('data-lr-key', key(r));
+    var text = esc(r.text || '');
+    if (r.kind === 'teacher' && r.group) {
+      text = 'хочет добавить тебя в группу «' + esc(r.group) + '»';
+    }
+    div.innerHTML =
+      '<div class="ft-lr-title">' + whoHtml(r) + '</div>' +
+      '<div class="ft-lr-text">' + text + '.</div>' +
+      '<div class="ft-lr-btns">' +
+        '<button type="button" class="ft-lr-btn ft-lr-accept" data-lr-action="accept">✓ Подтвердить</button>' +
+        '<button type="button" class="ft-lr-btn ft-lr-reject" data-lr-action="reject">✗ Отклонить</button>' +
+      '</div>';
+    return div;
+  }
+
+  function render(requests) {
+    var wrap = listEl();
+    if (!wrap) return;
+    var inDom = {};
+    wrap.querySelectorAll('.ft-lr-item').forEach(function (el) {
+      inDom[el.getAttribute('data-lr-key')] = el;
+    });
+    var added = 0;
+    requests.forEach(function (r) {
+      var k = key(r);
+      if (LR.ids[k]) return;            // уже отвечен на этой странице
+      if (inDom[k]) return;             // карточка уже открыта
+      wrap.appendChild(buildCard(r));
+      markShown(r);
+      added++;
+    });
+    if (!wrap.children.length) { hide(); return; }
+    if (added > 0 || !visible()) show();
+  }
+
+  function respond(btn, r, action) {
+    var k = key(r);
+    var item = btn.closest('.ft-lr-item');
+    if (!item) return;
+    LR.sending++;
+    var btns = item.querySelectorAll('.ft-lr-btn');
+    btns.forEach(function (b) { b.disabled = true; });
+    btn.textContent = action === 'accept' ? 'Принимаю…' : 'Отклоняю…';
+
+    fetch('/api/link-requests/respond', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind: r.kind, id: r.id, action: action })
+    }).then(function (resp) { return resp.json().then(function (d) { return d; }).catch(function () { return null; }); })
+      .then(function (d) {
+        LR.sending--;
+        if (d && d.ok) {
+          LR.ids[k] = true;
+          item.classList.add('done');
+          item.innerHTML =
+            '<div class="ft-lr-status" style="color:' +
+            (action === 'accept' ? '#3ecf8e' : '#f87171') + ';">' +
+            (action === 'accept' ? '✓ Подтверждено' : '✗ Отклонено') + '</div>';
+          setTimeout(function () {
+            item.remove();
+            var wrap = listEl();
+            if (!wrap || !wrap.children.length) hide();
+          }, 1200);
+        } else {
+          // Ошибка — вернём кнопки, запрос остаётся (можно ответить на /profile).
+          btns.forEach(function (b) { b.disabled = false; });
+          btn.textContent = action === 'accept' ? '✓ Подтвердить' : '✗ Отклонить';
+        }
+      })
+      .catch(function () {
+        LR.sending--;
+        btns.forEach(function (b) { b.disabled = false; });
+        btn.textContent = action === 'accept' ? '✓ Подтвердить' : '✗ Отклонить';
+      });
+  }
+
+  // Один обработчик на документ (кнопки пересоздаются).
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.ft-lr-btn') : null;
+    if (!btn || !visible()) return;
+    var item = btn.closest('.ft-lr-item');
+    if (!item) return;
+    var k = item.getAttribute('data-lr-key');
+    var action = btn.getAttribute('data-lr-action');
+    if (!action) return;
+    var r = null;
+    (LR.lastRequests || []).forEach(function (x) { if (key(x) === k) r = x; });
+    if (r) respond(btn, r, action);
+  });
+
+  function badgeEl() { return document.getElementById('ft-linkreq-badge'); }
+
+  function updateBadge(n) {
+    var b = badgeEl();
+    if (!b) return;
+    // Кнопка нужна только на страницах анкеты входа: там /profile за гейтом.
+    var onIntake = document.body.classList.contains('page-intake');
+    b.style.display = (onIntake && n > 0) ? 'block' : 'none';
+    b.textContent = '🔔 Запросы на добавление' + (n > 0 ? ' (' + n + ')' : '');
+  }
+
+  function check() {
+    fetch('/api/link-requests/pending', { credentials: 'include' })
+      .then(function (resp) { return resp.json(); })
+      .then(function (d) {
+        if (!d || !d.pending || !d.requests || !d.requests.length) {
+          // Запросов нет: прячем модалку, если открыта и ничего не отправляется.
+          updateBadge(0);
+          if (visible() && LR.sending === 0 && !listEl().children.length) hide();
+          return;
+        }
+        // На странице анкеты показываем кнопку-бейдж в любом случае:
+        // это доступный путь к отложенным запросам, пока /profile закрыт.
+        updateBadge(d.requests.filter(function (r) { return !LR.ids[key(r)]; }).length);
+        // Не мешаем обязательным опросам — попробуем на следующем тике.
+        if (feedbackVisible() || readinessVisible()) return;
+        LR.lastRequests = d.requests;
+        // Не трогаем UI, пока уходит ответ на какой-то запрос.
+        if (LR.sending > 0) return;
+        // Показываем только то, что ещё не показывали в этой сессии
+        // (после «Позже» те же запросы снова не выскакивают).
+        var shownArr = sessionShown();
+        var fresh = d.requests.filter(function (r) {
+          return shownArr.indexOf(key(r)) === -1 && !LR.ids[key(r)];
+        });
+        if (fresh.length > 0 || visible()) {
+          render(d.requests);
+        }
+      })
+      .catch(function () { /* тихо */ });
+  }
+
+  document.getElementById('ft-linkreq-later').addEventListener('click', function () {
+    hide();
+  });
+
+  // Возврат к отложенным запросам со страницы анкеты.
+  var _b = badgeEl();
+  if (_b) _b.addEventListener('click', function () {
+    if (LR.lastRequests && LR.lastRequests.length) {
+      render(LR.lastRequests);
+      show();
+    }
+  });
+
+  setTimeout(check, 4000);
+  setInterval(check, 45000);
+})();
+</script>

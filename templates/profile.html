@@ -227,6 +227,45 @@
     {% endfor %}
     {% endif %}
 
+    <!-- Входящие приглашения от учителя в группу -->
+    {% if teacher_group_requests %}
+    {% for req in teacher_group_requests %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 26px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(244, 185, 66, 0.45); box-shadow: 0 8px 32px rgba(244, 185, 66, 0.15); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 12px; font-size: 1.35em;">
+            👨‍🏫 Приглашение от учителя
+        </h2>
+        <p style="color: var(--text-soft); margin-bottom: 18px; line-height: 1.5;">
+            <strong style="color: var(--text-main);">{{ req.teacher_name }}{% if req.teacher_nickname %} (@{{ req.teacher_nickname }}){% endif %}</strong>
+            хочет добавить вас в группу <strong style="color: var(--text-main);">«{{ req.group_name }}»</strong>.
+            Пока вы не подтвердите, учитель не видит вашу статистику. Решение принимаете вы:
+        </p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <form method="POST" action="{{ url_for('parent_teacher.teacher_link_respond', member_id=req.id) }}" style="margin: 0;">
+                <input type="hidden" name="action" value="accept">
+                <input type="hidden" name="next" value="/profile">
+                <button type="submit"
+                        style="padding: 14px 34px; min-height: 48px; background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; border: none; border-radius: 12px; font-size: 1.05em; font-weight: 700; cursor: pointer; box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35); transition: transform 0.15s ease;"
+                        onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    ✓ Подтвердить
+                </button>
+            </form>
+            <form method="POST" action="{{ url_for('parent_teacher.teacher_link_respond', member_id=req.id) }}" style="margin: 0;">
+                <input type="hidden" name="action" value="reject">
+                <input type="hidden" name="next" value="/profile">
+                <button type="submit"
+                        style="padding: 14px 26px; min-height: 48px; background: rgba(148, 163, 184, 0.08); color: var(--text-soft); border: 1px solid var(--border-soft); border-radius: 12px; font-size: 1em; font-weight: 600; cursor: pointer;"
+                        title="Отклонить приглашение — учитель сможет отправить его повторно">
+                    Отклонить
+                </button>
+            </form>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.82em; margin-top: 14px; margin-bottom: 0;">
+            «Отклонить» — разовый отказ, учитель сможет отправить приглашение повторно.
+        </p>
+    </div>
+    {% endfor %}
+    {% endif %}
+
     <!-- Информация об аккаунте -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">

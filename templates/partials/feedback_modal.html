@@ -70,6 +70,14 @@ window.ftFbPick = function (n, ev) {
 
 window.ftFbShow = function () {
   if (ftFb.shown) return;
+  // CONFIRM_LINK_V1: не накрываем уведомление о запросах учителя/родителя.
+  // Ответ фидбек-опроса может прийти уже после открытия приглашения —
+  // поэтому guard стоит здесь, в самом показе, а не только в check().
+  var lr = document.getElementById('ft-linkreq-overlay');
+  if (lr && lr.style.display === 'flex') {
+    setTimeout(window.ftFbShow, 1000);
+    return;
+  }
   ftFb.shown = true;
   var o = document.getElementById('ft-feedback-overlay');
   o.style.display = 'flex';
@@ -124,6 +132,10 @@ window.ftFbSubmit = function (ev) {
   // Проверяем раз в минуту — появился ли обязательный вопрос.
   function check() {
     if (ftFb.shown) return;
+    // Не выскакиваем поверх уведомления о запросах привязки —
+    // попробуем снова на следующем тике (см. link_request_modal.html).
+    var lr = document.getElementById('ft-linkreq-overlay');
+    if (lr && lr.style.display === 'flex') return;
     fetch('/api/site-feedback/pending', { credentials: 'include' })
       .then(function (r) { return r.json(); })
       .then(function (d) { if (d && d.pending) window.ftFbShow(); })
@@ -142,3 +154,7 @@ window.ftFbSubmit = function (ev) {
    пользователей из RETAKE_INTAKE_TARGETS (routes/site_notices.py). Остальным сервер
    отвечает pending=false, и модалка не появляется. #}
 {% include 'partials/retake_intake_notice_modal.html' %}
+
+{# CONFIRM_LINK_V1: модальное уведомление ученику о запросах привязки
+   (учитель по нику / родитель). Показывается только при наличии запросов. #}
+{% include 'partials/link_request_modal.html' %}

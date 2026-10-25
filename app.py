@@ -1003,6 +1003,35 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] group_chats Warning: {e}")
 
+# AUTO-MIGRATION: столбцы teacher_group_members.status / responded_at —
+# приглашение ученика в группу теперь требует подтверждения учеником.
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_tgm
+        _ins_tgm = _inspect_tgm(db.engine)
+        if 'teacher_group_members' in set(_ins_tgm.get_table_names()):
+            _cols_tgm = {c['name'] for c in _ins_tgm.get_columns('teacher_group_members')}
+            # TIMESTAMP для PostgreSQL, DATETIME для SQLite — иначе на проде
+            # (PostgreSQL) миграция молча падает и ORM бьётся об отсутствие столбца.
+            _ts_type = 'TIMESTAMP' if _ins_tgm.dialect.name == 'postgresql' else 'DATETIME'
+            for _col, _ddl in (
+                ('status', "VARCHAR(16) NOT NULL DEFAULT 'accepted'"),
+                ('responded_at', _ts_type),
+            ):
+                if _col not in _cols_tgm:
+                    try:
+                        db.session.execute(db.text(
+                            f"ALTER TABLE teacher_group_members ADD COLUMN {_col} {_ddl}"))
+                        db.session.commit()
+                        print(f"[AUTO-MIGRATION] OK Added {_col} to teacher_group_members")
+                    except Exception as _e_tgm:
+                        db.session.rollback()
+                        print(f"[AUTO-MIGRATION] teacher_group_members.{_col} Warning: {_e_tgm}")
+        else:
+            print("[AUTO-MIGRATION] teacher_group_members not found yet — create_all will handle it")
+except Exception as _e_tgm_outer:
+    print(f"[AUTO-MIGRATION] teacher_group_members Warning: {_e_tgm_outer}")
+
 # AUTO-MIGRATION: таблица parent_child_links — запросы привязки
 # родитель→ребёнок с подтверждением учеником. Создаём на проде, если нет.
 try:
@@ -3282,6 +3311,12 @@ def force_intake_completion():
         '/olympiad-start',
         '/articles',      # Раздел «Статьи» — публичные материалы
         '/api/track/page-time',
+        # CONFIRM_LINK_V1: подтверждение запросов учителя/родителя доступно
+        # даже до завершения анкеты — иначе новый ученик не может подтвердить
+        # добавление (модалка и формы молча не работают за гейтом).
+        '/api/link-requests',
+        '/teacher-link/',
+        '/parent-link/',
     ):
         if path == _p or path.startswith(_p):
             return
@@ -6959,11 +6994,38 @@ def profile():
     except Exception:
         parent_link_requests = []
 
+    # ── Входящие приглашения от учителей в группы ─────────────────────
+    # Учитель добавляет по никнейму → статус pending; ученик подтверждает.
+    teacher_group_requests = []
+    try:
+        from models import T10GroupMember as _TGM, T10Group as _TGrp
+        _pending_invites = (
+            _TGM.query.join(_TGrp, _TGM.group_id == _TGrp.id)
+            .filter(_TGM.user_id == current_user.id, _TGM.status == 'pending')
+            .order_by(_TGM.joined_at.desc())
+            .all()
+        )
+        for _m in _pending_invites:
+            _grp = _TGrp.query.get(_m.group_id)
+            if not _grp:
+                continue
+            _t = User.query.get(_grp.teacher_id)
+            teacher_group_requests.append({
+                'id': _m.id,
+                'group_name': _grp.name,
+                'teacher_name': (_t.display_name if _t else 'Учитель'),
+                'teacher_nickname': (_t.nickname if _t else None),
+                'created_at': _m.joined_at,
+            })
+    except Exception:
+        teacher_group_requests = []
+
     return render_template('profile.html',
                          user=current_user,
                          user_role=_user_role,
                          is_teacher_or_parent=False,
                          parent_link_requests=parent_link_requests,
+                         teacher_group_requests=teacher_group_requests,
                          progress_dict=progress_dict,
                          recent_tests=recent_tests,
                          test_stats=test_stats,
