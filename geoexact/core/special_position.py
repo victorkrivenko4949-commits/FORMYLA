@@ -30,7 +30,7 @@ import numpy as np
 ENABLED = (os.environ.get("GEOEXACT_SPECIAL_POSITION") or "1").strip().lower() not in ("0", "no", "off")
 
 # Суффикс версии движка: новая проверка текста меняет приёмку чертежей.
-CACHE_SUFFIX = "+specialPos1"
+CACHE_SUFFIX = "+specialPos2"
 
 EXTRA_RULES = """
 44. SPECIAL_POSITION_RULE («докажите, что ...» / «точка пересечения
