@@ -401,6 +401,23 @@ def maybe_complete_probnik(user_id: int, probnik_code: str) -> bool:
     return False
 
 
+def current_practice_theme(user_id: int) -> Optional[str]:
+    """Тема текущего занятия-практики (для привязки сета дня к ротации).
+
+    Возвращает тему, если текущее занятие ротации — практика с темой;
+    во всех остальных случаях (метод, пробник, нет занятия) — None,
+    чтобы генерация сета работала как раньше (по слабым местам).
+    Занятие НЕ создаёт (только читает уже назначенное).
+    """
+    try:
+        lesson = _current_assigned(user_id)
+        if lesson and lesson['lesson_type'] == 'practice' and lesson.get('theme'):
+            return str(lesson['theme'])
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[session_plan] practice theme lookup failed: %r', e)
+    return None
+
+
 # ── Публичная сводка (дашборд задач дня + план куратора) ─────────────────
 
 CTA_FOR_TYPE = {

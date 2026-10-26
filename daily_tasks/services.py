@@ -1330,6 +1330,24 @@ async def _run_pipeline_async(
             len(profile.get("strong_topics", [])),
             len(profile.get("calibration_topics", [])),
         )
+        # ── Привязка сета к ротации 1-из-6 (26.10.2026): тема занятия-практики.
+        # Для пилотов: сет дня выдаётся по теме, назначенной ротацией, —
+        # «практика = задачи по теме занятия», а не просто по слабым местам.
+        # Метод/пробник/нет занятия — как раньше (по слабым местам).
+        if not forced_topic:
+            try:
+                from curator.session_plan import current_practice_theme
+                rotation_topic = current_practice_theme(user_id)
+                if rotation_topic:
+                    forced_topic = rotation_topic
+                    logger.info(
+                        "[user=%d] сет дня по теме занятия ротации: %r",
+                        user_id, rotation_topic,
+                    )
+            except Exception as e:  # noqa: BLE001
+                logger.warning(
+                    "[user=%d] rotation topic lookup failed: %r", user_id, e)
+
         # ── forced_topic override: «сегодня день <темы>» ─────────────
         if forced_topic:
             ft = forced_topic.strip().lower()

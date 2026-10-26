@@ -162,3 +162,34 @@ def test_pick_probnik_skips_empty(pilot_user):
     picked = session_plan._pick_probnik(uid, 'vsosh', set())
     assert picked is not None
     assert picked['code'] == 'full_p', 'выбран пробник без задач'
+
+
+def test_current_practice_theme(pilot_user):
+    """Тема берётся только с текущего занятия-практики."""
+    uid = pilot_user.id
+    # занятие 1 — метод: темы нет
+    lesson = session_plan.current_lesson(uid)
+    assert lesson['lesson_type'] == 'method'
+    assert session_plan.current_practice_theme(uid) is None
+    assert session_plan.complete_current_lesson(uid, 'method')
+
+    # занятие 2 — практика с темой
+    lesson = session_plan.current_lesson(uid)
+    assert lesson['lesson_type'] == 'practice'
+    db.session.execute(db.text(
+        "UPDATE curator_lessons SET theme = 'Делимость' WHERE id = :lid"),
+        {'lid': lesson['id']})
+    db.session.commit()
+    assert session_plan.current_practice_theme(uid) == 'Делимость'
+
+    # завершённая практика не отдаёт тему (нет назначенного занятия)
+    db.session.add(DailyTaskSet(user_id=uid, target_date=date.today(),
+                                status='ready'))
+    db.session.commit()
+    s = DailyTaskSet.query.filter_by(user_id=uid).order_by(
+        DailyTaskSet.id.desc()).first()
+    db.session.add(DailyTaskItem(
+        daily_set_id=s.id, position=1, task_text='Задача', user_answer='1'))
+    db.session.commit()
+    assert session_plan.maybe_complete_practice(uid, s.id) is True
+    assert session_plan.current_practice_theme(uid) is None
