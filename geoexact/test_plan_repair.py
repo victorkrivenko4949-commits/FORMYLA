@@ -213,3 +213,53 @@ def test_sanitize_target_keeps_valid_and_fatal():
     })
     assert _sanitize_target(bad) is False
     assert bad.target.kind == "ratio"
+
+
+def test_sanitize_draw_drops_bad_circles():
+    """Битый circles (3 точки) не роняет задачу: элемент удаляется."""
+    from geoexact.core.plan_repair import _sanitize_draw
+    from geoexact.core.schema import FigurePlan
+    plan = FigurePlan.from_dict({
+        "points": ["A", "B", "C"],
+        "constructions": [{"op": "free_point", "out": t} for t in "ABC"],
+        "constraints": [],
+        "draw": {"segments": [["A", "B"]],
+                 "circles": [["A", "B"], ["A", "B", "C"]]},  # второй битый
+        "target": {"kind": "none", "args": []},
+        "scale_free": True,
+    })
+    assert _sanitize_draw(plan) is True
+    assert plan.draw.circles == [["A", "B"]]
+
+
+def test_sanitize_draw_keeps_valid():
+    from geoexact.core.plan_repair import _sanitize_draw
+    from geoexact.core.schema import FigurePlan
+    plan = FigurePlan.from_dict({
+        "points": ["A", "B", "C"],
+        "constructions": [{"op": "free_point", "out": t} for t in "ABC"],
+        "constraints": [],
+        "draw": {"segments": [["A", "B"]], "circles": [["A", "B"]]},
+        "target": {"kind": "none", "args": []},
+        "scale_free": True,
+    })
+    assert _sanitize_draw(plan) is False
+    assert plan.draw.circles == [["A", "B"]]
+
+
+def test_sanitize_draw_noop_on_forward_ref():
+    """FORWARD_REF не в draw — санитайзер не спасает и не мешает."""
+    from geoexact.core.plan_repair import _sanitize_draw
+    from geoexact.core.schema import FigurePlan
+    plan = FigurePlan.from_dict({
+        "points": ["A", "B"],
+        "constructions": [
+            {"op": "free_point", "out": "A"},
+            {"op": "midpoint", "args": ["A", "Q"], "out": "B"},
+        ],
+        "constraints": [],
+        "draw": {"segments": [["A", "B"]]},
+        "target": {"kind": "none", "args": []},
+        "scale_free": True,
+    })
+    assert _sanitize_draw(plan) is False

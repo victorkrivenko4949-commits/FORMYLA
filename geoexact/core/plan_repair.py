@@ -153,6 +153,75 @@ def _sanitize_target(plan) -> bool:
         return False
 
 
+def _sanitize_draw(plan) -> bool:
+    """Битые элементы отрисовки (DRAW_ARITY/DRAW_REF) не должны ронять задачу
+    в схему: отрисовка — украшение, а не условие. Некорректные элементы
+    удаляются, чертёж строится без них. Остальные ошибки валидации не
+    трогаем — ими занимается цикл повторов с обратной связью.
+
+    Прод-кейс (26.10.2026, BX=XD с LaTeX): формализатор выдал circles с
+    элементом не из 2 точек — весь план отклонён, задача упала в эскиз.
+    """
+    try:
+        from .schema import validate_plan, PlanError
+        try:
+            validate_plan(plan)
+            return False
+        except PlanError as e:
+            if e.code not in ("DRAW_ARITY", "DRAW_REF", "BAD_MARK"):
+                return False
+        known = set(plan.points)
+        dropped = 0
+        pair_lists = ("segments", "aux_segments", "lines", "rays", "aux_lines",
+                      "aux_rays", "extensions", "aux_extensions",
+                      "circles", "aux_circles")
+        for name in pair_lists:
+            items = getattr(plan.draw, name, None)
+            if not isinstance(items, list):
+                continue
+            kept = [it for it in items
+                    if isinstance(it, list) and len(it) == 2
+                    and all(isinstance(a, str) and a in known for a in it)]
+            dropped += len(items) - len(kept)
+            setattr(plan.draw, name, kept)
+        ra = plan.draw.right_angles
+        if isinstance(ra, list):
+            kept = [it for it in ra
+                    if isinstance(it, list) and len(it) == 3
+                    and all(isinstance(a, str) and a in known for a in it)]
+            dropped += len(ra) - len(kept)
+            plan.draw.right_angles = kept
+        for name, arity in (("angle_marks", 3), ("length_marks", 2),
+                            ("equal_marks", 2)):
+            marks = getattr(plan.draw, name, None)
+            if not isinstance(marks, list):
+                continue
+            kept = [m for m in marks
+                    if isinstance(m, dict) and isinstance(m.get("pts"), list)
+                    and len(m["pts"]) == arity
+                    and all(isinstance(p, str) and p in known for p in m["pts"])]
+            dropped += len(marks) - len(kept)
+            setattr(plan.draw, name, kept)
+        for name in ("aux_points", "hide_labels"):
+            pts = getattr(plan.draw, name, None)
+            if not isinstance(pts, list):
+                continue
+            kept = [p for p in pts if isinstance(p, str) and p in known]
+            dropped += len(pts) - len(kept)
+            setattr(plan.draw, name, kept)
+        if dropped == 0:
+            return False                      # не в draw — обычный путь
+        try:
+            validate_plan(plan)
+        except PlanError as e:
+            if e.code in ("DRAW_ARITY", "DRAW_REF", "BAD_MARK"):
+                return False                  # не помогло — не портим план
+            return True                       # draw починен, остальное — повторам
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def _wrap_coerce_formalized(orig):
     @functools.wraps(orig)
     def _coerce_formalized(res):
@@ -167,6 +236,13 @@ def _wrap_coerce_formalized(orig):
                     "TARGET_DROPPED: цель измерения некорректна (неверное "
                     "число точек); чертёж построен без измерения — ответ "
                     "смотрите в полном решении"])
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            if _sanitize_draw(plan):
+                warn = (list(warn or []) + [
+                    "DRAW_SANITIZED: некорректные элементы отрисовки удалены "
+                    "(чертёж построен без них)"])
         except Exception:  # noqa: BLE001
             pass
         return plan, warn

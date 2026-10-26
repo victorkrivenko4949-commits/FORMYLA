@@ -147,7 +147,7 @@ def median_parallel_plan(text: str, with_aux: bool) -> "FigurePlan | None":  # n
         "points": points + ["X_"],
         "constructions": constructions,
         "constraints": constraints,
-        "draw": {"segments": segments},
+        "draw": {"segments": segments, "hide_labels": ["X_"]},
         "target": {"kind": "none", "args": []},
         "scale_free": True,
         "notes": (f"K делит медиану {v_v}{m_v} в отношении {m_num}:{n_num}; "
