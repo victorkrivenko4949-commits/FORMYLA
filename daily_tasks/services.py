@@ -1376,8 +1376,14 @@ async def _run_pipeline_async(
                 )
 
         # ── Bank check: пробуем банк готовых задач перед LLM ─────────
-        if skip_bank:
-            logger.info("[user=%d] skip_bank=True — пропускаем банк, запускаем полный LLM-пайплайн", user_id)
+        # При forced_topic (тема занятия ротации или ручная тема) банк
+        # ПРОПУСКАЕМ: у банка свои 7 фиксированных тем, он бы проигнорировал
+        # тему занятия. Сет генерируется LLM-пайплайном по теме (~$0.85).
+        if skip_bank or forced_topic:
+            logger.info(
+                "[user=%d] forced_topic=%r — пропускаем банк, тематический сет через LLM",
+                user_id, forced_topic,
+            )
             bank_hit = False
         else:
             try:
