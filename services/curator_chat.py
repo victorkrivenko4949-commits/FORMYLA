@@ -137,13 +137,20 @@ def _earliest_subscription_started(user_id: int) -> Optional[datetime]:
             {'u': user_id},
         ).first()
         if row and row[0]:
-            return row[0] if isinstance(row[0], datetime) else None
+            v = row[0]
+            if isinstance(v, datetime):
+                return v
+            try:
+                return datetime.fromisoformat(str(v))
+            except (ValueError, TypeError):
+                return None
     except Exception as e:  # noqa: BLE001
         logger.warning('[curator_chat] earliest sub lookup failed: %s', e)
     return None
 
 
-def build_context(user_id: int) -> Dict[str, Any]:
+def build_context(user_id: int, since: Optional[datetime] = None,
+                 until: Optional[datetime] = None) -> Dict[str, Any]:
     """Собрать контекст куратора: анкета + неделя + тариф.
 
     Разделяем «нет данных» и «нулевая активность»: если запрос упал —
@@ -152,6 +159,16 @@ def build_context(user_id: int) -> Dict[str, Any]:
     данных недоступна.
     """
     ctx: Dict[str, Any] = {'user_id': user_id}
+    now = datetime.utcnow()
+    started_sub = _earliest_subscription_started(user_id)
+    if since is None:
+        since = now - timedelta(days=7)  # по умолчанию — последние 7 дней
+    if until is None or until > now:
+        until = now
+    if started_sub:
+        week_n = int((now - started_sub).total_seconds() // (7 * 86400)) + 1
+        ctx['week_number'] = week_n
+    ctx['window_label'] = f"{since:%d.%m}–{until:%d.%m}"
 
     # Тариф
     try:
@@ -197,15 +214,9 @@ def build_context(user_id: int) -> Dict[str, Any]:
     ctx['intake'] = intake
     ctx['olympiads'] = olympiads
 
-    # Задачи за первые 7 дней ОБУЧЕНИЯ (не «последние 7 дней от сейчас»):
-    # считаем от старта первой подписки, чтобы видеть именно первую неделю.
+    # Задачи за окно статистики (по умолчанию последние 7 дней от сейчас;
+    # недельная оценка передаёт окно своей недели явно).
     # Попытки и верные ответы раздельно; data_ok=False если запрос упал.
-    started_sub = _earliest_subscription_started(user_id)
-    since = (started_sub or datetime.utcnow() - timedelta(days=7))
-    until = since + timedelta(days=7)
-    now = datetime.utcnow()
-    if now < until:
-        until = now  # первая неделя ещё идёт — берём что есть
     attempted = correct = 0
     data_ok = True
     try:
@@ -254,6 +265,22 @@ def build_context(user_id: int) -> Dict[str, Any]:
     ctx['correct_7d'] = correct
     ctx['tasks_data_ok'] = data_ok
 
+    # Прогресс ротации занятий 1-из-6 (для пилотов; остальным не активна)
+    try:
+        from curator.session_plan import session_info
+        s = session_info(user_id)
+        if s.get('active'):
+            ctx['rotation'] = {
+                'completed': s.get('completed_lessons', 0),
+                'position': s.get('position_in_block'),
+                'current_type': s.get('lesson_label'),
+                'theme': s.get('theme'),
+                'method_name': s.get('method_name'),
+                'probnik_title': s.get('probnik_title'),
+            }
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[curator_chat] rotation ctx failed: %r', e)
+
     # Заходы за первую неделю (логины — прокси; отдельный флаг доступности)
     visits = 0
     visits_ok = True
@@ -297,14 +324,28 @@ def _context_block(ctx: Dict[str, Any]) -> str:
             lines.append(f"- целевые олимпиады (из анкеты): {olympiads}")
     if ctx.get('tasks_data_ok'):
         lines.append(
-            f"- за последние 7 дней: попыток задач {ctx.get('attempted_7d', 0)}, "
+            f"- за период {ctx.get('window_label', '—')}: "
+            f"попыток задач {ctx.get('attempted_7d', 0)}, "
             f"верных ответов {ctx.get('correct_7d', 0)} (попытка ≠ верно)")
     else:
         lines.append("- данных о решённых задачах за неделю НЕТ — не делай выводов о занятости ученика")
     if ctx.get('visits_data_ok'):
-        lines.append(f"- заходов на сайт за 7 дней: {ctx.get('logins_7d', 0)}")
+        lines.append(f"- заходов на сайт за период: {ctx.get('logins_7d', 0)}")
     else:
         lines.append("- данных о заходах нет")
+    rot = ctx.get('rotation')
+    if rot:
+        lines.append(
+            f"- ротация занятий: завершено {rot.get('completed', 0)}; "
+            f"сейчас занятие {rot.get('position')} из 6 — {rot.get('current_type')}")
+        if rot.get('theme'):
+            lines.append(f"- тема текущей практики: {rot['theme']}")
+        if rot.get('method_name'):
+            lines.append(f"- текущий метод: {rot['method_name']}")
+        if rot.get('probnik_title'):
+            lines.append(f"- назначенный пробник: {rot['probnik_title']}")
+    if ctx.get('week_number'):
+        lines.append(f"- сейчас идёт неделя {ctx['week_number']} подписки")
     if ctx.get('inactive'):
         lines.append("- ВАЖНО: ученик был малоактивен (заходил 1–2 раза) — не обвиняй, мягко предложи маленький первый шаг.")
     return '\n'.join(lines)
@@ -487,63 +528,97 @@ def _subscription_started_at(user_id: int) -> Optional[datetime]:
             {'u': user_id, 's': 'active'},
         ).first()
         if row and row[0]:
-            return row[0] if isinstance(row[0], datetime) else None
+            v = row[0]
+            if isinstance(v, datetime):
+                return v
+            try:
+                return datetime.fromisoformat(str(v))
+            except (ValueError, TypeError):
+                return None
     except Exception as e:  # noqa: BLE001
         logger.warning('[curator_chat] sub lookup failed: %s', e)
     return None
 
 
-def _has_week1_message(user_id: int) -> bool:
-    return CuratorChatMessage.query.filter_by(
-        user_id=user_id, role='system',
-    ).count() > 0
+def _has_weekly_message(user_id: int, week_n: int) -> bool:
+    """Уже отправлена оценка недели week_n? (kind='weekly' или старый week1)."""
+    rows = CuratorChatMessage.query.filter_by(
+        user_id=user_id, role='system').all()
+    for r in rows:
+        try:
+            meta = json.loads(r.meta_json or '{}')
+        except Exception:  # noqa: BLE001
+            meta = {}
+        kind = (meta or {}).get('kind')
+        if kind == 'weekly' and int((meta or {}).get('week', 0) or 0) == week_n:
+            return True
+        if kind == 'week1' and week_n == 1:
+            return True
+    return False
 
 
-WEEK1_PROMPT_INSTRUCTION = (
-    "Напиши ученику первое сообщение от куратора по итогам его первой недели "
-    "подписки. Используй ТОЛЬКО данные из блока «Данные ученика». Если активности "
-    "мало или её нет — мягко, без обвинений предложи маленький первый шаг "
-    "(например, завтра один блок задач дня, 20–30 минут). Если данных нет — "
-    "напиши, что статистика пока не видна, и предложи просто начать. "
-    "В конце — короткий вопрос или конкретный следующий шаг. До 90 слов."
+WEEKLY_PROMPT_INSTRUCTION = (
+    "Напиши ученику сообщение куратора — оценку недели обучения. "
+    "Используй ТОЛЬКО данные из блока «Данные ученика». Структура: "
+    "(1) короткая оценка — что на этой неделе получилось хорошо "
+    "(конкретно: сколько решено верно, прогресс ротации занятий), "
+    "(2) что просело или отстаёт — мягко, без обвинений, "
+    "(3) конкретный следующий шаг на завтра (одно действие). "
+    "Если активности мало или её нет — предложи маленький первый шаг "
+    "(например, завтра один блок задач дня, 20–30 минут). "
+    "Если данных нет — напиши, что статистика пока не видна. "
+    "В конце — короткий вопрос. До 100 слов. На «ты», живо, без списков "
+    "и заголовков — как сообщение в чате."
 )
 
 
 def send_week1_message(user_id: int) -> bool:
-    """Системное недельное сообщение куратора (пишет первым, без вопроса ученика).
+    """Совместимость: оценка первой недели = недельная оценка (week=1)."""
+    return send_weekly_message(user_id)
 
-    Вызывается фоновым планировщиком (раз в час) и лениво при открытии чата.
-    Генерируется DeepSeek по контексту недели; при любом сбое — шаблонное
-    сообщение (пользователь никогда не встречает тишину). Идемпотентно:
-    одно системное сообщение на пользователя (замок защищает от гонки
-    «планировщик + открытие чата»). Никогда не бросает.
+
+def send_weekly_message(user_id: int) -> bool:
+    """Системная недельная оценка куратора (пишет первым, без вопроса ученика).
+
+    Одна оценка на каждую неделю подписки (неделя 1, 2, 3, ...); окно
+    статистики — именно та неделя. Вызывается фоновым планировщиком
+    (раз в час) и лениво при открытии чата. Генерируется DeepSeek по
+    контексту недели; при любом сбое — шаблонное сообщение (пользователь
+    никогда не встречает тишину). Идемпотентно: замок защищает от гонки
+    «планировщик + открытие чата». Никогда не бросает.
     """
     with _week1_lock:
-        return _send_week1_message_locked(user_id)
+        return _send_weekly_message_locked(user_id)
 
 
-def _send_week1_message_locked(user_id: int) -> bool:
+def _send_weekly_message_locked(user_id: int) -> bool:
     try:
-        if _has_week1_message(user_id):
-            return False
         started = _earliest_subscription_started(user_id)
         if started is None:
             return False
-        if datetime.utcnow() - started < timedelta(days=7):
-            return False  # первая неделя обучения ещё не прошла
+        now = datetime.utcnow()
+        # оцениваем ПОСЛЕДНЮЮ ЗАВЕРШЁННУЮ неделю: возраст 7-13 дней = неделя 1
+        week_n = int((now - started).total_seconds() // (7 * 86400))
+        if week_n < 1:
+            return False  # первая неделя ещё идёт — оценивать нечего
+        if _has_weekly_message(user_id, week_n):
+            return False
 
-        ctx = build_context(user_id)
+        # окно оцениваемой (завершённой) недели подписки
+        since = started + timedelta(days=7 * (week_n - 1))
+        until = min(started + timedelta(days=7 * week_n), now)
+        ctx = build_context(user_id, since=since, until=until)
 
         text = None
         try:
             messages: List[Dict[str, str]] = [
                 {'role': 'system', 'content': SYSTEM_PROMPT},
                 {'role': 'system', 'content': _context_block(ctx)},
-                {'role': 'user', 'content': WEEK1_PROMPT_INSTRUCTION},
+                {'role': 'user', 'content': WEEKLY_PROMPT_INSTRUCTION},
             ]
             text = _call_deepseek(messages).strip()
         except Exception as e:  # noqa: BLE001
-            logger.warning('[curator_chat] week1 generation failed: %s', e)
+            logger.warning('[curator_chat] weekly generation failed: %s', e)
 
         if not text:
             # Шаблонный фолбэк по уровню активности
@@ -560,11 +635,12 @@ def _send_week1_message_locked(user_id: int) -> bool:
                     activity = WEEK1_ACTIVITY_ZERO.format(solved=0)
             text = WEEK1_SYSTEM_MESSAGE_TEMPLATE.format(activity_line=activity)
 
-        add_message(user_id, 'system', text, meta={'kind': 'week1'})
+        add_message(user_id, 'system', text,
+                    meta={'kind': 'weekly', 'week': week_n})
         db.session.commit()
         return True
     except Exception as e:  # noqa: BLE001
-        logger.warning('[curator_chat] week1 trigger failed: %s', e)
+        logger.warning('[curator_chat] weekly trigger failed: %s', e)
         try:
             db.session.rollback()
         except Exception:
@@ -580,9 +656,9 @@ def maybe_send_week1_message(user_id: int) -> bool:
 def sweep_pilot_week1() -> int:
     """Фоновый обход пилотных аккаунтов (вызывается планировщиком раз в час).
 
-    Отправляет: приветствие (если куратор ещё не писал) и недельный отчёт
-    (через 7 дней после старта пилотной подписки). Возвращает число
-    отправленных сообщений. Никогда не бросает.
+    Отправляет: приветствие (если куратор ещё не писал) и недельную
+    оценку (по одной на каждую неделю пилотной подписки). Возвращает
+    число отправленных сообщений. Никогда не бросает.
     """
     sent = 0
     try:
@@ -591,7 +667,7 @@ def sweep_pilot_week1() -> int:
             try:
                 if send_welcome_message(user_id):
                     sent += 1
-                if send_week1_message(user_id):
+                if send_weekly_message(user_id):
                     sent += 1
             except Exception as e:  # noqa: BLE001
                 logger.warning('[curator_chat] sweep user %s failed: %s', user_id, e)
