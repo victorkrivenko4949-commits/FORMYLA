@@ -266,52 +266,73 @@ def _activate_diamond_for_user(user_id: int, payment_id: str | None = None, orde
 @yookassa_pay_bp.route("/payments/yookassa/save-config", methods=["POST"])
 @login_required
 def save_config():
+    """Сохранение Shop ID и Секретного ключа ЮKassa (только для админов)."""
     try:
         if not is_diamond_admin(current_user):
-            abort(403)
+            return jsonify({"ok": False, "error": "forbidden"}), 403
     except Exception as ae:
         logger.exception("[yookassa_pay] is_diamond_admin failed: %r", ae)
-        abort(403)
+        return jsonify({"ok": False, "error": "forbidden"}), 403
 
     from models import db
-
-    # Убедимся, что таблица существует (безопасно, идемпотентно)
-    try:
-        _ensure_tables()
-    except Exception as te:
-        logger.warning("[yookassa_pay] _ensure_tables warning: %r", te)
-        try:
-            db.session.rollback()
-        except Exception:
-            pass
 
     shop_id = (request.form.get("shop_id") or "").strip()
     secret_key = (request.form.get("secret_key") or "").strip()
     send_receipt = "1" if request.form.get("send_receipt") in ("1", "on", "true") else "0"
 
     if not shop_id or not secret_key:
-        flash("Укажите и Shop ID, и Секретный ключ ЮKassa.", "error")
-        return redirect(url_for("profile"))
+        return jsonify({"ok": False, "error": "missing_shop_id_or_secret"}), 400
 
-    from datetime import datetime as _dt
-    now = _dt.utcnow()
-    for k, v in (("shop_id", shop_id), ("secret_key", secret_key), ("send_receipt", send_receipt)):
-        existing = db.session.execute(
-            text("SELECT config_key FROM yookassa_config WHERE config_key = :k"), {"k": k}
-        ).fetchone()
-        if existing:
-            db.session.execute(
-                text("UPDATE yookassa_config SET config_value = :v, updated_at = :u WHERE config_key = :k"),
-                {"v": v, "u": now, "k": k},
-            )
-        else:
-            db.session.execute(
-                text("INSERT INTO yookassa_config (config_key, config_value, updated_at) VALUES (:k, :v, :u)"),
-                {"k": k, "v": v, "u": now},
-            )
-    db.session.commit()
+    # ORM: используем db.engine напрямую (autocommit для DDL и DML)
+    try:
+        with db.engine.begin() as conn:
+            # Убедимся, что таблица существует
+            conn.execute(text(
+                "CREATE TABLE IF NOT EXISTS yookassa_config ("
+                "config_key VARCHAR(64) PRIMARY KEY, "
+                "config_value TEXT, "
+                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+            ))
+            # Upsert через INSERT ... ON CONFLICT (PostgreSQL)
+            try:
+                conn.execute(text(
+                    "INSERT INTO yookassa_config (config_key, config_value, updated_at) "
+                    "VALUES (:k, :v, NOW()) "
+                    "ON CONFLICT (config_key) DO UPDATE SET config_value = :v, updated_at = NOW()"
+                ), {"k": "shop_id", "v": shop_id})
+                conn.execute(text(
+                    "INSERT INTO yookassa_config (config_key, config_value, updated_at) "
+                    "VALUES (:k, :v, NOW()) "
+                    "ON CONFLICT (config_key) DO UPDATE SET config_value = :v, updated_at = NOW()"
+                ), {"k": "secret_key", "v": secret_key})
+                conn.execute(text(
+                    "INSERT INTO yookassa_config (config_key, config_value, updated_at) "
+                    "VALUES (:k, :v, NOW()) "
+                    "ON CONFLICT (config_key) DO UPDATE SET config_value = :v, updated_at = NOW()"
+                ), {"k": "send_receipt", "v": send_receipt})
+            except Exception:
+                # Fallback для SQLite (без ON CONFLICT)
+                for k, v in (("shop_id", shop_id), ("secret_key", secret_key), ("send_receipt", send_receipt)):
+                    existing = conn.execute(
+                        text("SELECT config_key FROM yookassa_config WHERE config_key = :k"),
+                        {"k": k}
+                    ).fetchone()
+                    if existing:
+                        conn.execute(
+                            text("UPDATE yookassa_config SET config_value = :v WHERE config_key = :k"),
+                            {"v": v, "k": k}
+                        )
+                    else:
+                        conn.execute(
+                            text("INSERT INTO yookassa_config (config_key, config_value) VALUES (:k, :v)"),
+                            {"k": k, "v": v}
+                        )
+    except Exception as de:
+        logger.exception("[yookassa_pay] DB write failed: %r", de)
+        return jsonify({"ok": False, "error": str(de)}), 500
 
     # Проверим ключи через GET /v3/me
+    verify_status = "not_checked"
     try:
         resp = requests.get(
             f"{YOOKASSA_API_BASE}/me",
@@ -320,17 +341,13 @@ def save_config():
         )
         if resp.status_code == 200:
             me_data = resp.json() or {}
-            mode = "Тестовый магазин" if me_data.get("test") else "Боевой магазин"
-            flash(f"✅ Ключи ЮKassa успешно проверены и сохранены ({mode}, Shop ID: {shop_id}). Теперь можно оплачивать!", "success")
+            verify_status = "test_shop" if me_data.get("test") else "live_shop"
         else:
-            flash(
-                f"⚠️ Ключи сохранены, но ЮKassa вернула код {resp.status_code}. Проверьте правильность Shop ID и Секретного ключа.",
-                "warning",
-            )
+            verify_status = f"http_{resp.status_code}"
     except Exception as e:
-        flash(f"✅ Ключи сохранены (проверка соединения: {e}).", "info")
+        verify_status = f"error: {e}"
 
-    return redirect(url_for("profile"))
+    return jsonify({"ok": True, "status": verify_status, "shop_id": shop_id}), 200
 
 
 @yookassa_pay_bp.route("/payments/yookassa/buy-diamond", methods=["POST"])
