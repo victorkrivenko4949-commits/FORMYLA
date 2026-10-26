@@ -109,6 +109,9 @@ class User(UserMixin, db.Model):
     kimi_review_daily = db.Column(db.Boolean, default=False, server_default='0')
     kimi_review_method = db.Column(db.Boolean, default=False, server_default='0')
 
+    # YOOKASSA_PAY_V1: флаг платной покупки (для будущих платных товаров)
+    has_diamond = db.Column(db.Boolean, default=False, server_default='0')
+
     @property
     def is_admin(self):
         """Админ — user_id == 1 (Victor), email в whitelist или nickname в whitelist.
