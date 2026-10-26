@@ -77,8 +77,8 @@ def _ensure_tables() -> None:
             text(
                 """
                 CREATE TABLE IF NOT EXISTS yookassa_config (
-                    key VARCHAR(64) PRIMARY KEY,
-                    value TEXT,
+                    config_key VARCHAR(64) PRIMARY KEY,
+                    config_value TEXT,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
                 """
@@ -132,7 +132,7 @@ def get_yookassa_config() -> dict:
     try:
         from models import db
 
-        rows = db.session.execute(text("SELECT key, value FROM yookassa_config")).fetchall()
+        rows = db.session.execute(text("SELECT config_key, config_value FROM yookassa_config")).fetchall()
         for k, v in rows:
             if v is not None and str(v).strip():
                 db_vals[str(k)] = str(v).strip()
@@ -289,16 +289,16 @@ def save_config():
     now = datetime.utcnow()
     for k, v in (("shop_id", shop_id), ("secret_key", secret_key), ("send_receipt", send_receipt)):
         existing = db.session.execute(
-            text("SELECT key FROM yookassa_config WHERE key = :k"), {"k": k}
+            text("SELECT config_key FROM yookassa_config WHERE config_key = :k"), {"k": k}
         ).fetchone()
         if existing:
             db.session.execute(
-                text("UPDATE yookassa_config SET value = :v, updated_at = :u WHERE key = :k"),
+                text("UPDATE yookassa_config SET config_value = :v, updated_at = :u WHERE config_key = :k"),
                 {"v": v, "u": now, "k": k},
             )
         else:
             db.session.execute(
-                text("INSERT INTO yookassa_config (key, value, updated_at) VALUES (:k, :v, :u)"),
+                text("INSERT INTO yookassa_config (config_key, config_value, updated_at) VALUES (:k, :v, :u)"),
                 {"k": k, "v": v, "u": now},
             )
     db.session.commit()
