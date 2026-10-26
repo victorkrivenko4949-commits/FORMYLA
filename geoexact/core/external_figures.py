@@ -159,32 +159,58 @@ def external_figure_failures(text: str, coords) -> list[str]:
 # «треугольника ABC» — цикл вершин задаёт знак поворота внешности.
 _TRI_STRICT = re.compile(rf"треугольник\w*\s+({_L})({_L})({_L})(?![A-Za-z0-9_])", re.I)
 
-# «BG = CE» / «BG и CE равны» — заявленные равенства отрезков.
+# «BG = CE» — заявленные равенства отрезков.
 _EQ_CLAIM = re.compile(rf"({_L})({_L})\s*=\s*({_L})({_L})(?![A-Za-z0-9_])")
 # «BG перпендикулярно CE» / «BG и CE перпендикулярны».
 _PERP_CLAIM = re.compile(
     rf"({_L})({_L})\s+(?:и\s+)?перпендикулярн\w*\s+(?:и\s+)?({_L})({_L})(?![A-Za-z0-9_])", re.I)
 
+# Данные, которые спец-план не умеет учитывать: длины/углы и дополнительные
+# условия. Классическая формулировка теоремы о двух квадратах — без них.
+_EXTRA_DATA = re.compile(
+    r"\d|равнобедренн|равносторонн|медиан|биссектрис|высот|середин|\bугл|∠", re.I)
+
+
+def _parse_claims(statement: str, known: set) -> list[tuple[str, dict]]:
+    """Заявленные равенства/перпендикулярности между ИЗВЕСТНЫМИ точками."""
+    out: list[tuple[str, dict]] = []
+    for m in _EQ_CLAIM.finditer(statement):
+        a, b, c, d = (m[i].upper() for i in range(1, 5))
+        if {a, b, c, d} <= known:
+            out.append(("dist_eq", {"type": "dist_eq", "args": [a, b, c, d]}))
+    for m in _PERP_CLAIM.finditer(statement):
+        a, b, c, d = (m[i].upper() for i in range(1, 5))
+        if {a, b, c, d} <= known:
+            out.append(("perp", {"type": "perpendicular", "args": [a, b, c, d]}))
+    return out
+
 
 def external_squares_plan(text: str, with_aux: bool) -> "FigurePlan | None":  # noqa: F821
     """Канонический план внешних квадратов на сторонах треугольника.
 
-    Срабатывает, когда в тексте есть:
+    Спец-план узкий и берёт только разобранную классическую конфигурацию:
       • «внешнюю сторону / внешним образом» (заявлена внешность);
       • «треугольника ABC»;
-      • хотя бы один «квадрат PQRS», чья сторона PQ — сторона этого
-        треугольника (все квадраты текста должны быть на его сторонах).
+      • РОВНО два квадрата на двух сторонах треугольника, выходящих из
+        одной общей вершины (как ABDE и ACFG из A);
+      • без данных, которых план не умеет учитывать: длин/углов (цифр),
+        медиан, биссектрис, середин и т. п.;
+      • все упомянутые в тексте точки принадлежат плану;
+      • заявленные равенства/перпендикулярности — следствия построения
+        (проверяется численно на свободном семействе): ложное «докажите»
+        (навязывающее частное положение) даёт отказ плана — задача уходит
+        обычным путём к формализатору.
 
     Вершины строятся поворотами: для стороны XY, записанной в порядке
     обхода треугольника, вершина при X — rotate([Y, X], -90), при Y —
     rotate([X, Y], +90); если сторона записана против обхода — знаки
     меняются. Внешность фиксируется ограничениями opposite_side.
-    Заявленные равенства/перпендикулярности добавляются как ограничения —
-    для классической задачи о двух квадратах это и есть теорема.
     """
     statement = _plain(text or "")
     if not _EXTERNAL.search(statement):
         return None
+    if _EXTRA_DATA.search(statement):
+        return None                           # длины/углы/доп.условия — LLM
     m_tri = _TRI_STRICT.search(statement)
     if m_tri is None:
         return None
@@ -203,8 +229,16 @@ def external_squares_plan(text: str, with_aux: bool) -> "FigurePlan | None":  # 
         if frozenset((v[0], v[1])) not in tri_sides:
             return None                      # сторона не треугольника — LLM
         squares.append(v)
-    if not squares:
-        return None
+    if len(squares) != 2:
+        return None                          # только классическая пара
+    s1, s2 = (frozenset((v[0], v[1])) for v in squares)
+    if s1 == s2:
+        return None                          # два квадрата на одной стороне
+    if len(s1 & s2) != 1:
+        return None                          # стороны не из общей вершины
+    new_pts = [p for v in squares for p in (v[2], v[3])]
+    if any(p in tri for p in new_pts) or len(set(new_pts)) != 4:
+        return None                          # имена вершин конфликтуют
 
     from .schema import FigurePlan
     points = list(tri)
@@ -223,17 +257,44 @@ def external_squares_plan(text: str, with_aux: bool) -> "FigurePlan | None":  # 
         segments += [[x, y], [y, adj_y], [adj_y, adj_x], [adj_x, x]]
     points = list(dict.fromkeys(points))
 
-    known = set(points)
-    for m in _EQ_CLAIM.finditer(statement):
-        a, b, c, d = (m[i].upper() for i in range(1, 5))
-        if {a, b, c, d} <= known:
-            constraints.append({"type": "dist_eq", "args": [a, b, c, d]})
-            segments.append([a, b])
-            segments.append([c, d])
-    for m in _PERP_CLAIM.finditer(statement):
-        a, b, c, d = (m[i].upper() for i in range(1, 5))
-        if {a, b, c, d} <= known:
-            constraints.append({"type": "perpendicular", "args": [a, b, c, d]})
+    # Все упомянутые точки должны принадлежать плану: чужая буква (M —
+    # середина BG и т. п.) значит, что текст сложнее конфигурации.
+    if not set(re.findall(r"[A-Z]", statement)) <= set(points):
+        return None
+
+    claims = _parse_claims(statement, set(points))
+    if claims:
+        # Ложное «докажите» не должно подменять условие частным положением:
+        # проверяем утверждения на СВОБОДНОМ семействе (без них). Не держатся
+        # — значит это не теорема данной конфигурации, отдаём задачу LLM.
+        from .solver import solve as _solve
+        base = FigurePlan.from_dict({
+            "points": points, "constructions": constructions,
+            "constraints": constraints,
+            "draw": {"segments": segments},
+            "target": {"kind": "none", "args": []}, "scale_free": True})
+        sols = [s for s in _solve(base) if s.ok]
+        if len(sols) < 2:
+            return None
+        import numpy as _np
+        for kind, c in claims:
+            a, b, d, e = c["args"]
+            held = True
+            for s in sols[:3]:
+                P = {k: _np.asarray(v, dtype=float) for k, v in s.coords.items()}
+                if kind == "dist_eq":
+                    held = held and abs(_np.linalg.norm(P[b] - P[a])
+                                        - _np.linalg.norm(P[e] - P[d])) < 1e-6
+                else:
+                    held = held and abs(float(_np.dot(P[b] - P[a], P[e] - P[d]))) < 1e-6
+            if not held:
+                return None
+        for kind, c in claims:
+            constraints.append(c)
+            if kind == "dist_eq":
+                a, b, d, e = c["args"]
+                segments.append([a, b])
+                segments.append([d, e])
 
     return FigurePlan.from_dict({
         "points": points,

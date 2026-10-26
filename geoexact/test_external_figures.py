@@ -192,23 +192,50 @@ def test_special_plan_rejects_non_triangle_side():
     assert external_squares_plan(text, True) is None
 
 
-def test_special_plan_single_square():
+def test_special_plan_single_square_rejected():
+    """Одиночный квадрат — не разобранная конфигурация: отказ, путь LLM."""
     text = ("На стороне AB треугольника ABC во внешнюю сторону построен "
             "квадрат ABDE.")
+    assert external_squares_plan(text, True) is None
+
+
+def test_special_plan_rejects_extra_data():
+    """Заданные длины/медианы/чужие точки — не берёмся: план их не учтёт."""
+    with_len = ("На сторонах AB и AC треугольника ABC во внешнюю сторону "
+                "построены квадраты ABDE и ACFG, AB = 3. Докажите, что BG = CE.")
+    with_mid = ("На сторонах AB и AC треугольника ABC во внешнюю сторону "
+                "построены квадраты ABDE и ACFG, M — середина BG. "
+                "Докажите, что BG = CE.")
+    assert external_squares_plan(with_len, True) is None
+    assert external_squares_plan(with_mid, True) is None
+
+
+def test_special_plan_rejects_false_claim():
+    """Ложное для конфигурации «докажите» не должно подменять условие
+    частным положением (AG = AE верно только при AB = AC) — отказ."""
+    text = ("На сторонах AB и AC треугольника ABC во внешнюю сторону "
+            "построены квадраты ABDE и ACFG. Докажите, что AG = AE.")
+    assert external_squares_plan(text, True) is None
+
+
+def test_theorem_holds_without_claim_constraints():
+    """Теорема — следствие построения: без ограничений-утверждений BG = CE
+    и BG ⟂ CE выполняются на свободном семействе (частное положение
+    не подмешивается)."""
+    text = ("На сторонах AB и AC треугольника ABC во внешнюю сторону "
+            "построены квадраты ABDE и ACFG.")
     plan = external_squares_plan(text, True)
     assert plan is not None
+    assert not any(c.type in ("dist_eq", "perpendicular") for c in plan.constraints)
     sols = solve(plan)
     good = [s for s in sols if s.ok]
     assert len(good) >= 5
-    P = {k: np.asarray(v, dtype=float) for k, v in good[0].coords.items()}
-    cr = lambda o, a, b: float(np.cross(P[a] - P[o], P[b] - P[o]))
-    assert (cr("A", "B", "D") > 0) != (cr("A", "B", "C") > 0)
-    assert (cr("A", "B", "E") > 0) != (cr("A", "B", "C") > 0)
-    # стороны квадрата равны — это действительно квадрат
-    d = lambda a, b: float(np.hypot(*(P[b] - P[a])))
-    assert abs(d("A", "B") - d("B", "D")) < 1e-9
-    assert abs(d("A", "B") - d("D", "E")) < 1e-9
-    assert abs(d("A", "B") - d("E", "A")) < 1e-9
+    for s in good[:3]:
+        P = {k: np.asarray(v, dtype=float) for k, v in s.coords.items()}
+        bg = float(np.hypot(*(P["G"] - P["B"])))
+        ce = float(np.hypot(*(P["E"] - P["C"])))
+        assert abs(bg - ce) < 1e-9 * max(1.0, bg)
+        assert abs(float(np.dot(P["G"] - P["B"], P["E"] - P["C"]))) < 1e-9
 
 
 def test_special_plan_does_not_hijack_simson():
