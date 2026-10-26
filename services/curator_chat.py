@@ -280,6 +280,7 @@ def build_context(user_id: int, since: Optional[datetime] = None,
                 'theme': s.get('theme'),
                 'method_name': s.get('method_name'),
                 'probnik_title': s.get('probnik_title'),
+                'debts_count': s.get('debts_count', 0),
             }
     except Exception as e:  # noqa: BLE001
         logger.warning('[curator_chat] rotation ctx failed: %r', e)
@@ -347,6 +348,10 @@ def _context_block(ctx: Dict[str, Any]) -> str:
             lines.append(f"- текущий метод: {rot['method_name']}")
         if rot.get('probnik_title'):
             lines.append(f"- назначенный пробник: {rot['probnik_title']}")
+        if rot.get('debts_count'):
+            lines.append(
+                f"- ПРОПУЩЕННЫЕ ЗАНЯТИЯ (записаны в долг): {rot['debts_count']} — "
+                f"упомяни мягко, без давления и без требований закрыть: план уже идёт дальше")
     if ctx.get('week_number'):
         lines.append(f"- сейчас идёт неделя {ctx['week_number']} подписки")
     if ctx.get('inactive'):
