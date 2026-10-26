@@ -466,7 +466,7 @@ def methods_atlas():
 # в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/methods/<method_code>')
 def method_detail(method_code):
-    """РџРѕРґСЂРѕР±РЅР°СЏ СЃС‚СЂР°РЅРёС†Р° РјРµС‚РѕРґР° (РѕРїСЂРµРґРµР»РµРЅРёРµ, С‚РµРѕСЂРµРјС‹, Р·Р°РґР°С‡Рё)."""
+    """Подробная страница метода (определение, теоремы, задачи)."""
     block = TheoryBlock.query.filter_by(method_code=method_code).first_or_404()
     # РЎРІСЏР·Р°РЅРЅС‹Рµ РјРµС‚РѕРґС‹
     related_codes = []
@@ -527,6 +527,24 @@ def method_detail(method_code):
     # Also rename kwargs to what the template expects:
     #   block (was detail_block), related (was related_blocks),
     #   linked_tasks (was tasks_for_method).
+    # ПИЛОТЫ: 3 дипсиковые задачи по методу на странице метода (виджет
+    # method_week в режиме «только задачи»). Только если это метод
+    # текущей недели — сет метода создаётся один на неделю (владелец, 26.10).
+    mw_inject = False
+    try:
+        from flask_login import current_user
+        if getattr(current_user, "is_authenticated", False):
+            from services.pilot import is_pilot_user
+            if is_pilot_user(current_user.id):
+                # эффективный метод недели: существующий сет (источник задач)
+                # либо метод недели по плану
+                from method_week.catalog import method_for_week, week_set_method
+                _mw_code = week_set_method(current_user.id) or \
+                    (method_for_week(current_user.id) or {}).get('method_code')
+                if _mw_code and _mw_code == method_code:
+                    mw_inject = True
+    except Exception:
+        pass
     return render_template('olympiad/method.html',
                            sections=None,
                            block=block,
@@ -539,7 +557,8 @@ def method_detail(method_code):
                            blocks=all_blocks,
                            detail_block=block,
                            related_blocks=related_blocks,
-                           tasks_for_method=tasks_for_method)
+                           tasks_for_method=tasks_for_method,
+                           mw_inject=mw_inject)
 
 
 # в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ

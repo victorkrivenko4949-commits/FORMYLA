@@ -585,6 +585,30 @@ def get_daily_tasks():
             data={**data, "session": data.get("session") or _session_ctx, "theme_today": real_theme_title},
         )
 
+    # ── День метода (пилоты): задачи дня НЕ выдаются и не генерируются —
+    # занятие дня = разбор метода + 3 дипсиковые задачи на странице
+    # метода, куда ведёт кнопка «Изучить метод» (владелец, 26.10).
+    # Ветку держим ДО блока банка и pick_daily_set, чтобы сет не создавался.
+    if _method_day:
+        data = {
+            "status": "method_day",
+            "daily_set_id": None,
+            "target_date": today.isoformat(),
+            "message": "Сегодня — день метода: разбор и 3 задачи по методу.",
+            "class_level": None,
+            "summary": None,
+            "generated_at": None,
+            "total_cost_usd": None,
+            "progress": {"completed": 0, "total": 0},
+            "items": [],
+        }
+        # wants_html захардкожен True выше по файлу (браузеры шлют Accept: */*)
+        return render_template(
+            "daily_tasks/daily_tasks_dashboard.html",
+            data={**data, "session": _session_ctx,
+                  "theme_today": _theme_for_day(today, None)},
+        )
+
     # ── BANK: задачи дня выдаются из предзаполненного банка ─────────
     # build_daily_set сам пишет выданное в bank_issues и идемпотентен
     # по (user_id, issued_date). Флаги plan_missing/bank_exhausted/

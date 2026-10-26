@@ -6,6 +6,11 @@
   var root = document.getElementById('mw-root');
   if (!root) return;
 
+  // Режим виджета: '' — весь блок (куратор + метод), 'method' — только метод
+  // (страница /method_week), 'tasks' — только 3 задачи, без разбора
+  // (страница метода из базы 102: разбор уже есть в статике).
+  var MODE = (root.getAttribute('data-mw-only') || '').toLowerCase();
+
   var css = document.createElement('style');
   css.textContent = [
     '.mw-card{max-width:960px;margin:14px auto;padding:16px 18px;border-radius:14px;background:#1c1d22;color:#e8e8ea;border:1px solid #2e3038;line-height:1.5;font-size:15px}',
@@ -48,6 +53,13 @@
     try {
       if (window.renderMathInElement) {
         window.renderMathInElement(el, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false});
+      } else if (window.MathJax) {
+        // страница метода (база 102) использует MathJax, а не KaTeX;
+        // ждём готовности MathJax (defer не гарантирует завершения startup)
+        var p = window.MathJax.startup && window.MathJax.startup.promise
+          ? window.MathJax.startup.promise : Promise.resolve();
+        p.then(function () { return window.MathJax.typesetPromise([el]); })
+         .catch(function () {});
       }
     } catch (e) {}
   }
@@ -59,13 +71,18 @@
   var anchor = document.querySelector('[data-mw-anchor]') || document.querySelector('main') || document.body;
   var wrap = document.createElement('div');
   wrap.id = 'mw-wrap';
-  anchor.insertBefore(wrap, anchor.firstChild);
+  if (MODE) {
+    // отдельная страница (метод/метод-102): виджет сразу после #mw-root
+    root.parentNode.insertBefore(wrap, root.nextSibling);
+  } else {
+    anchor.insertBefore(wrap, anchor.firstChild);
+  }
 
   var curatorCard = document.createElement('div'); curatorCard.className = 'mw-card';
   var methodCard = document.createElement('div'); methodCard.className = 'mw-card';
   wrap.appendChild(curatorCard); wrap.appendChild(methodCard);
-  // отдельная страница метода (/method_week): только карточка метода, без куратора
-  if (root.getAttribute('data-mw-only') === 'method') curatorCard.style.display = 'none';
+  // без блока куратора в отдельных режимах (владелец, 22.10/26.10)
+  if (MODE) curatorCard.style.display = 'none';
 
   function paywallHtml(title, d) {
     return '<h3>' + title + '</h3><p class="mw-muted">Доступно по подписке Premium. <a href="' + esc(d.upgrade_url || '/subscribe') + '">Оформить</a></p>';
@@ -115,8 +132,11 @@
     }
     if (d.status !== 'ready') { methodCard.innerHTML = '<h3>Метод недели</h3><p class="mw-muted">' + esc(d.message || 'временно недоступен') + '</p>'; return; }
 
-    var html = '<h3>Метод недели: ' + esc(d.method_code) + ' «' + esc(d.method_name) + '»<span class="mw-badge">' + d.progress.completed + '/' + d.progress.total + '</span></h3>';
-    html += '<details open class="mw-lesson"><summary><b>Разбор метода</b></summary>' + md(d.lesson_md || '') + '</details>';
+    var html = '<h3>' + (MODE === 'tasks' ? '3 задачи по методу: ' : 'Метод недели: ') + esc(d.method_code) + ' «' + esc(d.method_name) + '»<span class="mw-badge">' + d.progress.completed + '/' + d.progress.total + '</span></h3>';
+    if (MODE !== 'tasks') {
+      // разбор — только когда на странице нет статичной теории метода
+      html += '<details open class="mw-lesson"><summary><b>Разбор метода</b></summary>' + md(d.lesson_md || '') + '</details>';
+    }
     (d.tasks || []).forEach(function (t) {
       html += '<div class="mw-task" data-pos="' + t.position + '"><b>Задача ' + t.position + '</b>' +
         (t.difficulty ? '<span class="mw-badge">сложность ' + esc(t.difficulty) + '</span>' : '') +

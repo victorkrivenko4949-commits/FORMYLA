@@ -265,6 +265,26 @@ def get_or_build_month_plan(user_id: int, today: Optional[date] = None, force: b
     return new_plan
 
 
+def week_set_method(user_id: int, today: Optional[date] = None) -> Optional[str]:
+    """Код метода уже сохранённого недельного сета (если он есть).
+
+    Сет — источник 3 дипсиковых задач: когда он создан, кнопка и блок
+    задач на странице метода должны вести на его метод (на неделе,
+    пересекающей границу месяца, план мог смениться после создания
+    сета — задачи при этом остаются прежние).
+    """
+    try:
+        from datetime import timedelta
+        from method_week.models import MethodWeekSet
+        today = today or date.today()
+        ws = today - timedelta(days=today.weekday())
+        s = MethodWeekSet.query.filter_by(user_id=user_id, week_start=ws).first()
+        return (s.method_code if s and s.method_code else None)
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[method_week] week_set_method failed: %r', e)
+        return None
+
+
 def method_for_week(user_id: int, today: Optional[date] = None) -> Optional[Dict[str, Any]]:
     """Метод текущей недели по плану куратора (+ описание из каталога)."""
     today = today or date.today()

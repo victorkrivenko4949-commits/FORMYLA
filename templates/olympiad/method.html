@@ -296,5 +296,45 @@ function filterMethods() {
 
 renderMethodList();
 </script>
+{% if mw_inject %}
+<!-- ПИЛОТЫ: 3 дипсиковые задачи по этому методу (метод текущей недели) -->
+<div id="mw-root" data-mw-only="tasks" data-mw-method="{{ block.method_code if block else '' }}"></div>
+<script>
+// ПИЛОТЫ (владелец, 26.10): /olympiads/methods/<код> сразу открывает этот метод.
+// Блок задач показываем ТОЛЬКО когда открыт именно он — под чужой теорией
+// задачи этого метода не висят (владелец, 26.10).
+(function () {
+  var root = document.getElementById('mw-root');
+  var myCode = (root && root.getAttribute('data-mw-method') || '').toUpperCase();
+  function syncTasks() {
+    var wrap = document.getElementById('mw-wrap');
+    if (!wrap) return;
+    var open = document.querySelector('.method-item.active');
+    var cur = open ? (open.dataset.code || '') : '';
+    wrap.style.display = (cur && cur.toUpperCase() === myCode) ? '' : 'none';
+  }
+  var origSelect = window.selectMethod;
+  window.selectMethod = function (code) {
+    var r = origSelect && origSelect.apply(null, arguments);
+    syncTasks();
+    return r;
+  };
+  document.addEventListener('click', function (e) {
+    var b = e.target && e.target.closest && e.target.closest('#backToList');
+    if (b) setTimeout(syncTasks, 0);
+  }, false);
+  // автооткрытие метода из URL — только для пилота на его методе недели
+  var m = location.pathname.match(/\/methods\/([A-Za-z0-9_-]+)\/?$/);
+  if (m) {
+    var code = decodeURIComponent(m[1]).toUpperCase();
+    if (code === myCode && window.selectMethod) window.selectMethod(code);
+  }
+  if (window.MutationObserver) {
+    new MutationObserver(syncTasks).observe(document.getElementById('content'), {childList: true});
+  }
+})();
+</script>
+<script src="/static/method_week.js?v=3" defer></script>
+{% endif %}
 </body>
 </html>

@@ -381,7 +381,7 @@ def test_no_active_probe_blocked_cycle_method_day(pilot_client, monkeypatch):
     assert d.get('status') != 'blocked'          # требования теста нет
     assert d.get('session', {}).get('active') is True
     html = rv.get_data(as_text=True)
-    assert '/method_week' in html                 # CTA на страницу метода
+    assert '/olympiads/methods/' in html         # CTA на страницу метода (база 102)
     assert 'id="dt-blocked-state" class="dt-hidden"' in html
     assert 'probeResumeBanner' not in html
 
@@ -426,3 +426,311 @@ def test_no_active_probe_blocked_cycle_practice_day(pilot_client, monkeypatch):
     html = rv.get_data(as_text=True)
     assert 'Сначала — тест' in html
     assert 'id="dt-blocked-state" class="' in html
+
+
+def test_method_day_no_daily_set(pilot_client):
+    """День метода: задачи дня НЕ выдаются и не создаются —
+    статус method_day, сета на сегодня нет (владелец, 26.10)."""
+    from models import db
+    from daily_tasks.models import DailyTaskSet
+    from flask import template_rendered
+    captured = []
+    def _capture(sender, template, context, **extra):
+        captured.append(context)
+    template_rendered.connect(_capture)
+    try:
+        rv = pilot_client.get('/daily_tasks')
+    finally:
+        template_rendered.disconnect(_capture)
+    d = captured[-1].get('data') or {}
+    assert d.get('status') == 'method_day'
+    with __import__('app', fromlist=['app']).app.app_context():
+        assert DailyTaskSet.query.filter_by(
+            user_id=1, target_date=__import__('datetime', fromlist=['date']).date.today()
+        ).count() == 0
+
+
+def test_method_page_shows_deepseek_tasks(pilot_client):
+    """Страница метода из базы 102 (метод текущей недели) содержит
+    блок 3 дипсиковых задач (виджет method_week, режим tasks)."""
+    from curator import session_plan as sp
+    from method_week.catalog import method_for_week
+    m = method_for_week(1)
+    assert m and m.get('method_code'), 'метод недели должен быть определён'
+    rv = pilot_client.get(f"/olympiads/methods/{m['method_code']}")
+    assert rv.status_code == 200
+    html = rv.get_data(as_text=True)
+    assert 'mw-root' in html and 'method_week.js' in html
+    assert 'data-mw-only="tasks"' in html
+
+
+def test_other_method_page_no_tasks_injection(pilot_client):
+    """Другая страница метода (не метод текущей недели) — без блока задач."""
+    from method_week.catalog import method_for_week
+    m = method_for_week(1)
+    other = 'A1' if (not m or m['method_code'] != 'A1') else 'A2'
+    rv = pilot_client.get(f'/olympiads/methods/{other}')
+    assert rv.status_code == 200
+    html = rv.get_data(as_text=True)
+    assert 'mw-root' not in html
+
+
+def test_non_pilot_method_page_no_tasks():
+    """Не-пилот: страница метода без блока задач (как раньше)."""
+    from app import app
+    from models import db, User
+    with app.app_context():
+        u = User.query.get(2) or User.query.filter_by(email='nonpilot@test.local').first()
+        _uid = u.id
+    with app.test_client() as c:
+        c.get(f'/dev_login?uid={_uid}')
+        rv = c.get('/olympiads/methods/B2')
+        assert rv.status_code == 200
+        assert 'mw-root' not in rv.get_data(as_text=True)
+
+
+def test_method_day_no_bank_no_pick(monkeypatch, pilot_client):
+    """День метода: ни банк (build_daily_set), ни pick_daily_set не вызываются."""
+    from app import app
+    calls = {'bank': 0, 'pick': 0}
+    import services.bank_daily as _bd
+    import services.daily_task_rotation as _dtr
+    monkeypatch.setattr(_bd, 'build_daily_set', lambda *a, **k: calls.__setitem__('bank', calls['bank'] + 1))
+    monkeypatch.setattr(_dtr, 'pick_daily_set', lambda *a, **k: calls.__setitem__('pick', calls['pick'] + 1))
+    rv = pilot_client.get('/daily_tasks')
+    assert rv.status_code == 200
+    assert calls == {'bank': 0, 'pick': 0}
+
+
+def test_lavrik_method_page_tasks_injection():
+    """Лаврик (id 5, пилот): страница его метода недели — с блоком задач."""
+    from app import app
+    from models import db, User
+    from models_curator import CuratorState
+    import json as _json
+    with app.app_context():
+        u = User.query.get(5)
+        if not u:
+            # чистим возможный дубль по email (id != 5 не проходит пилот-гейт)
+            for stray in User.query.filter_by(email='lavrik@test.local').all():
+                db.session.delete(stray)
+            db.session.commit()
+            u = User(id=5, email='lavrik@test.local')
+            db.session.add(u)
+            db.session.commit()
+        if getattr(u, 'nickname', None) != 'lavrik':
+            u.nickname = 'lavrik'
+        cs = CuratorState.query.filter_by(user_id=u.id).first()
+        if cs is None:
+            cs = CuratorState(user_id=u.id)
+            db.session.add(cs)
+        cs.grade = 9
+        cs.prep_state = _json.dumps({'intake': {'completed': True}})
+        db.session.commit()
+    with app.test_client() as c:
+        c.get('/dev_login?uid=5')
+        rv = c.get('/daily_tasks')
+        assert rv.status_code == 200
+        from method_week.catalog import method_for_week
+        m = method_for_week(5)
+        assert m and m.get('method_code'), 'метод недели Лаврика должен быть определён'
+        rv = c.get(f"/olympiads/methods/{m['method_code']}")
+        assert rv.status_code == 200
+        html = rv.get_data(as_text=True)
+        assert 'data-mw-only="tasks"' in html
+
+
+def test_non_pilot_no_injection_on_pilot_method():
+    """Не-пилот: на том же методе недели (что у пилота) блока задач нет."""
+    from app import app
+    from method_week.catalog import method_for_week
+    with app.app_context():
+        m = method_for_week(1)
+    assert m and m.get('method_code')
+    code = m['method_code']
+    uid = 1000  # nonpilot@test.local — не-пилот
+    with app.test_client() as c:
+        c.get(f'/dev_login?uid={uid}')
+        with app.app_context():
+            pass  # контекст для method_for_week выше уже не нужен
+        rv = c.get(f'/olympiads/methods/{code}')
+        assert rv.status_code == 200
+        assert 'mw-root' not in rv.get_data(as_text=True)
+
+
+def test_method_day_cta_leads_to_method_page(pilot_client):
+    """Сквозная: кнопка «Изучить метод» ведёт на страницу метода из базы 102,
+    и там же рендерится блок 3 задач (тот же метод, что в CTA)."""
+    from flask import template_rendered
+    import re
+    captured = []
+    def _cap(sender, template, context, **extra):
+        captured.append(context)
+    template_rendered.connect(_cap)
+    try:
+        rv = pilot_client.get('/daily_tasks')
+    finally:
+        template_rendered.disconnect(_cap)
+    html = rv.get_data(as_text=True)
+    m = re.search(r'href="(/olympiads/methods/[A-Za-z0-9_-]+)"', html)
+    assert m, 'на дне метода должна быть кнопка на страницу метода'
+    code = m.group(1).rsplit('/', 1)[-1]
+    rv2 = pilot_client.get(m.group(1))
+    assert rv2.status_code == 200
+    html2 = rv2.get_data(as_text=True)
+    assert 'data-mw-only="tasks"' in html2
+    assert 'mw-root' in html2
+
+
+def test_method_day_lesson_code_matches_week(pilot_client):
+    """Инвариант: сегодняшний урок-метод всегда берётся из method_for_week
+    (создаётся в свой день), поэтому CTA и блок задач ведут на один метод."""
+    from curator import session_plan as sp
+    from method_week.catalog import method_for_week
+    rv = pilot_client.get('/daily_tasks')  # синхронизирует расписание
+    assert rv.status_code == 200
+    lessons = sp._lessons(1)
+    today_lesson = None
+    for l in reversed(lessons):
+        if sp._to_date(l.get('assigned_date')) == __import__('datetime', fromlist=['date']).date.today():
+            today_lesson = l
+            break
+    assert today_lesson and today_lesson['lesson_type'] == 'method'
+    m = method_for_week(1)
+    assert m and m.get('method_code')
+    assert today_lesson.get('method_code') == m['method_code']
+
+
+def test_non_pilot_no_autoopen_script():
+    """Не-пилот: на странице метода нет скрипта автооткрытия из URL."""
+    from app import app
+    with app.test_client() as c:
+        c.get('/dev_login?uid=1000')
+        rv = c.get('/olympiads/methods/B2')
+        assert rv.status_code == 200
+        html = rv.get_data(as_text=True)
+        assert 'mw-root' not in html
+        assert 'data-mw-method' not in html
+
+
+def test_method_page_marks_injected_code(pilot_client):
+    """Блок задач помечен кодом метода — задачи следуют за открытым методом."""
+    from method_week.catalog import method_for_week
+    from app import app
+    with app.app_context():
+        m = method_for_week(1)
+    # используем уже залогиненный client фикстуры (повторный dev_login
+    # в новом клиенте после app_context даёт DetachedInstanceError)
+    rv = pilot_client.get(f"/olympiads/methods/{m['method_code']}")
+    assert rv.status_code == 200
+    html = rv.get_data(as_text=True)
+    assert f'data-mw-method="{m["method_code"]}"' in html
+
+
+def test_saved_set_overrides_week_method_cta(pilot_client):
+    """Рассинхрон (неделя пересекла границу месяца после создания сета):
+    сет сохранён с методом A, план недели уже даёт B — кнопка и блок задач
+    ведут на A (источник задач — сет), под теорией B задач нет."""
+    import json as _json
+    import datetime as _dt
+    from app import app
+    from models import db
+    from method_week.models import MethodWeekSet
+    from method_week.catalog import method_for_week, week_set_method
+    from sqlalchemy import text
+
+    with app.app_context():
+        m = method_for_week(1)
+        other = 'A1' if m['method_code'] != 'A1' else 'A2'
+        today = _dt.date.today()
+        ws = today - _dt.timedelta(days=today.weekday())
+        db.session.execute(text("DELETE FROM method_week_sets WHERE user_id = 1"))
+        db.session.commit()
+        s = MethodWeekSet(
+            user_id=1, week_start=ws, method_code=other,
+            method_name='тестовый метод', status='ready',
+            tasks_json=_json.dumps([], ensure_ascii=False),
+        )
+        db.session.add(s)
+        db.session.commit()
+
+    try:
+        # кнопка на дашборде → страница метода сета
+        rv = pilot_client.get('/daily_tasks')
+        assert rv.status_code == 200
+        html = rv.get_data(as_text=True)
+        assert f'/olympiads/methods/{other}' in html
+        assert f"/olympiads/methods/{m['method_code']}" not in html
+
+        # страница метода сета — с блоком задач; метод плана — без
+        rv2 = pilot_client.get(f'/olympiads/methods/{other}')
+        assert rv2.status_code == 200
+        assert 'data-mw-only="tasks"' in rv2.get_data(as_text=True)
+        rv3 = pilot_client.get(f"/olympiads/methods/{m['method_code']}")
+        assert rv3.status_code == 200
+        assert 'mw-root' not in rv3.get_data(as_text=True)
+    finally:
+        with app.app_context():
+            db.session.execute(text("DELETE FROM method_week_sets WHERE user_id = 1"))
+            db.session.commit()
+
+
+def test_saved_set_mismatch_lesson_completes(pilot_client):
+    """Рассинхрон сета и плана (граница месяца): все 3 задачи сета решены —
+    занятие-метод закрывается, метод занятия переуказан на метод сета."""
+    import json as _json
+    import datetime as _dt
+    from app import app
+    from models import db
+    from method_week.models import MethodWeekSet, MethodWeekAnswer
+    from curator import session_plan as sp
+    from method_week.catalog import method_for_week
+    from sqlalchemy import text
+
+    with app.app_context():
+        m = method_for_week(1)
+        other = 'A1' if m['method_code'] != 'A1' else 'A2'
+        today = _dt.date.today()
+        ws = today - _dt.timedelta(days=today.weekday())
+        db.session.execute(text("DELETE FROM method_week_sets WHERE user_id = 1"))
+        # sqlite переиспользует id сетов — чистим и ответы
+        db.session.execute(text("DELETE FROM method_week_answers"))
+        db.session.commit()
+        s = MethodWeekSet(
+            user_id=1, week_start=ws, method_code=other,
+            method_name='тестовый метод', status='ready',
+            tasks_json=_json.dumps([
+                {'position': 1, 'statement': 'a', 'answer': '1'},
+                {'position': 2, 'statement': 'b', 'answer': '2'},
+                {'position': 3, 'statement': 'c', 'answer': '3'},
+            ], ensure_ascii=False),
+        )
+        db.session.add(s)
+        db.session.commit()
+        for pos in (1, 2, 3):
+            db.session.add(MethodWeekAnswer(
+                set_id=s.id, user_id=1, position=pos,
+                user_answer=str(pos), is_correct=True))
+        db.session.commit()
+        sid = s.id
+
+    try:
+        # занятие-метод сегодня, метод по плану
+        with app.app_context():
+            done = sp.maybe_complete_method(1)
+        assert done is True, 'занятие должно закрыться по решённому сету'
+        with app.app_context():
+            lesson = sp._current_assigned(1)
+            assert lesson is None or lesson['lesson_type'] != 'method' or \
+                lesson.get('method_code') == other
+            row = db.session.execute(text(
+                "SELECT status, method_code, completed_set_id FROM curator_lessons "
+                "WHERE user_id = 1 AND lesson_type = 'method' "
+                "ORDER BY id DESC LIMIT 1")).fetchone()
+        assert row[0] == 'completed'
+        assert row[1] == other, 'метод занятия должен стать методом сета'
+        assert row[2] == sid
+    finally:
+        with app.app_context():
+            db.session.execute(text("DELETE FROM method_week_sets WHERE user_id = 1"))
+            db.session.commit()

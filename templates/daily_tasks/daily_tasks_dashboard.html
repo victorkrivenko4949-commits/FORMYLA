@@ -997,6 +997,14 @@
   {% include 'partials/limit_reached.html' %}
   {% endif %}
 
+  <!-- Method-day state (ПИЛОТЫ): задачи дня не выдаются — занятие = метод -->
+  <div id="dt-method-day-state" class="{{ 'dt-hidden' if not (data and data.status == 'method_day') }}">
+    <div class="dt-empty-card">
+      <div class="dt-empty-title">Сегодня — день метода</div>
+      <div class="dt-empty-sub">Задач дня нет: разбор метода и 3 задачи — на странице метода, кнопка в карточке плана выше.</div>
+    </div>
+  </div>
+
   <!-- Generating state -->
   <div id="dt-generating-state" class="dt-hidden">
     <div class="dt-generating-card">

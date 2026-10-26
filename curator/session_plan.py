@@ -593,7 +593,25 @@ def maybe_complete_method(user_id: int) -> bool:
             return False
         set_method = getattr(s, 'method_code', None)
         if lesson['method_code'] and set_method and lesson['method_code'] != set_method:
-            return False  # отвечен другой метод — занятие не закрываем
+            # сет ДРУГОЙ недели не закрывает занятие (прошлая неделя и т.п.)
+            _ws = date.today() - timedelta(days=date.today().weekday())
+            if not s.week_start or s.week_start != _ws:
+                return False
+            # Неделя пересекла границу месяца после создания сета: кнопка и
+            # задачи указывают на метод сета — переуказываем метод занятия
+            # на фактический (прогресс и ответы не трогаем), иначе занятие
+            # никогда не закроется (владелец, 26.10).
+            try:
+                db.session.execute(text(
+                    f"UPDATE {TABLE_NAME} SET method_code = :mc, "
+                    f"method_name = :mn WHERE id = :lid"),
+                    {'mc': set_method, 'mn': (getattr(s, 'method_name', None) or ''),
+                     'lid': lesson['id']})
+                db.session.commit()
+                lesson['method_code'] = set_method
+            except Exception as e:  # noqa: BLE001
+                logger.warning('[session_plan] method re-point failed: %r', e)
+                return False
         import json as _json
         tasks = _json.loads(s.tasks_json) if isinstance(s.tasks_json, str) else (s.tasks_json or [])
         if not tasks:
@@ -657,11 +675,12 @@ def current_practice_theme(user_id: int) -> Optional[str]:
 # ── Публичная сводка (дашборд задач дня + план куратора) ─────────────────
 
 CTA_FOR_TYPE = {
-    # Метод ведёт на отдельную страницу «Метод недели» (/method_week):
-    # разбор метода + ровно 3 задачи по нему с проверкой (владелец, 26.10).
-    'method': '/method_week',
+    # Метод — на страницу метода из базы 102 (/olympiads/methods/<код>):
+    # статичный разбор + 3 дипсиковые задачи по методу (владелец, 26.10).
+    # ВАЖНО: старые ссылки /olympiad/methods (без «s») вели в 404.
+    'method': '/olympiads/methods',
     'practice': '/daily_tasks',
-    'probnik': '/olympiad/course-probnik',
+    'probnik': '/olympiads/probniks',
 }
 
 
@@ -704,7 +723,19 @@ def session_info(user_id: int) -> Dict[str, Any]:
         cta = CTA_FOR_TYPE.get(t, '/daily_tasks')
         if not today_done:
             if t == 'probnik' and lesson['probnik_code']:
-                cta = f"/olympiad/probnik/{lesson['probnik_code']}"
+                cta = f"/olympiads/probnik/{lesson['probnik_code']}"
+            elif t == 'method':
+                # если недельный сет уже создан — задачи в нём по его методу
+                # (неделя может пересечь границу месяца после создания сета)
+                eff = None
+                try:
+                    from method_week.catalog import week_set_method
+                    eff = week_set_method(user_id)
+                except Exception:
+                    eff = None
+                eff = eff or lesson.get('method_code')
+                if eff:
+                    cta = f"/olympiads/methods/{eff}"
         # ── План: текущее занятие + 5 следующих слотов ──────────────────
         plan = []
         for i in range(BLOCK_SIZE):
