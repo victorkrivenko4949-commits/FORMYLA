@@ -130,7 +130,8 @@ def test_wrapper_installed_and_rule44_present():
     assert getattr(semantics.semantic_failures, "_special_position", False)
     assert "44." in L.SYS_FORMALIZE and "SPECIAL_POSITION_RULE" in L.SYS_FORMALIZE
     # повторная установка — no-op, суффикс не дублируется
-    assert pipeline.ENGINE_VERSION.count("+specialPos1") == 1
+    from geoexact.core.special_position import CACHE_SUFFIX as _SP_SUFFIX
+    assert pipeline.ENGINE_VERSION.count(_SP_SUFFIX) == 1
 
 
 def test_canonical_plan_general_solution_passes():
