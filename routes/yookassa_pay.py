@@ -284,7 +284,7 @@ def save_config():
 
     if not shop_id or not secret_key:
         flash("Укажите и Shop ID, и Секретный ключ ЮKassa.", "error")
-        return redirect(url_for("profile") + "#yookassa-card")
+        return redirect(url_for("profile"))
 
     now = datetime.utcnow()
     for k, v in (("shop_id", shop_id), ("secret_key", secret_key), ("send_receipt", send_receipt)):
@@ -322,7 +322,7 @@ def save_config():
     except Exception as e:
         flash(f"✅ Ключи сохранены (проверка соединения: {e}).", "info")
 
-    return redirect(url_for("profile") + "#yookassa-card")
+    return redirect(url_for("profile"))
 
 
 @yookassa_pay_bp.route("/payments/yookassa/buy-diamond", methods=["POST"])
@@ -334,7 +334,7 @@ def buy_diamond():
     cfg = get_yookassa_config()
     if not cfg["configured"]:
         flash("Сначала укажите Shop ID и Секретный ключ ЮKassa в блоке настройки ниже.", "warning")
-        return redirect(url_for("profile") + "#yookassa-card")
+        return redirect(url_for("profile"))
 
     order_id = uuid.uuid4().hex
     return_url = url_for("yookassa_pay.payment_return", order_id=order_id, _external=True)
@@ -389,12 +389,12 @@ def buy_diamond():
     except Exception as e:
         logger.exception("[yookassa_pay] request to YooKassa failed: %r", e)
         flash(f"Ошибка соединения с ЮKassa: {e}", "error")
-        return redirect(url_for("profile") + "#yookassa-card")
+        return redirect(url_for("profile"))
 
     if resp.status_code not in (200, 201):
         err_desc = data.get("description") or data.get("code") or resp.text[:200]
         flash(f"ЮKassa отклонила создание платежа ({resp.status_code}): {err_desc}", "error")
-        return redirect(url_for("profile") + "#yookassa-card")
+        return redirect(url_for("profile"))
 
     payment_id = data.get("id")
     status = data.get("status", "pending")
@@ -431,7 +431,7 @@ def buy_diamond():
 
     if not confirmation_url:
         flash("ЮKassa не вернула ссылку на оплату.", "error")
-        return redirect(url_for("profile") + "#yookassa-card")
+        return redirect(url_for("profile"))
 
     return redirect(confirmation_url, code=302)
 
@@ -462,13 +462,13 @@ def payment_return():
 
     if not row:
         flash("Платёж не найден.", "warning")
-        return redirect(url_for("profile") + "#yookassa-card")
+        return redirect(url_for("profile"))
 
     ord_id, payment_id, user_id, local_status = row[0], row[1], row[2], row[3]
     if local_status == "succeeded":
         _activate_diamond_for_user(user_id=user_id, payment_id=payment_id, order_id=ord_id)
         flash("💎 Оплата 10 ₽ прошла успешно! Значок алмаза после вашего ника активирован.", "success")
-        return redirect(url_for("profile") + "#yookassa-card")
+        return redirect(url_for("profile"))
 
     cfg = get_yookassa_config()
     if cfg["configured"] and payment_id:
@@ -484,7 +484,7 @@ def payment_return():
                 if remote_status == "succeeded" or pdata.get("paid") is True:
                     _activate_diamond_for_user(user_id=user_id, payment_id=payment_id, order_id=ord_id)
                     flash("💎 Оплата 10 ₽ прошла успешно! Значок алмаза после вашего ника активирован.", "success")
-                    return redirect(url_for("profile") + "#yookassa-card")
+                    return redirect(url_for("profile"))
                 elif remote_status == "canceled":
                     db.session.execute(
                         text("UPDATE yookassa_payments SET status = 'canceled' WHERE order_id = :oid"),
@@ -492,12 +492,12 @@ def payment_return():
                     )
                     db.session.commit()
                     flash("Платёж был отменён.", "warning")
-                    return redirect(url_for("profile") + "#yookassa-card")
+                    return redirect(url_for("profile"))
         except Exception as e:
             logger.warning("[yookassa_pay] return check failed: %r", e)
 
     flash("⏳ Платёж проверяется ЮKassa. Если вы уже оплатили, обновите страницу через несколько секунд.", "info")
-    return redirect(url_for("profile") + "#yookassa-card")
+    return redirect(url_for("profile"))
 
 
 @yookassa_pay_bp.route("/api/payments/yookassa/webhook", methods=["POST"])
@@ -609,7 +609,7 @@ def toggle_diamond():
         else:
             flash("Значок 💎 снят.", "info")
     db.session.commit()
-    return redirect(url_for("profile") + "#yookassa-card")
+    return redirect(url_for("profile"))
 
 
 def install_yookassa_pay(app, register=None) -> None:
