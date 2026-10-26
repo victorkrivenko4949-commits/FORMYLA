@@ -268,7 +268,16 @@ def _activate_diamond_for_user(user_id: int, payment_id: str | None = None, orde
 def save_config():
     if not is_diamond_admin(current_user):
         abort(403)
-    _ensure_tables()
+
+    from models import db
+
+    # Убедимся, что таблица существует (безопасно, идемпотентно)
+    try:
+        _ensure_tables()
+    except Exception as te:
+        logger.warning("[yookassa_pay] _ensure_tables warning: %r", te)
+        db.session.rollback()
+
     shop_id = (request.form.get("shop_id") or "").strip()
     secret_key = (request.form.get("secret_key") or "").strip()
     send_receipt = "1" if request.form.get("send_receipt") in ("1", "on", "true") else "0"
@@ -276,8 +285,6 @@ def save_config():
     if not shop_id or not secret_key:
         flash("Укажите и Shop ID, и Секретный ключ ЮKassa.", "error")
         return redirect(url_for("profile") + "#yookassa-card")
-
-    from models import db
 
     now = datetime.utcnow()
     for k, v in (("shop_id", shop_id), ("secret_key", secret_key), ("send_receipt", send_receipt)):
