@@ -71,8 +71,9 @@ def test_trapezoid_equal_legs_fail():
     assert any("AB" in f and "CD" in f for f in fails), fails
 
 
-def test_plan_dist_eq_allowed():
-    """Равенство из ограничений плана (dist_eq) — не частное положение."""
+def test_plan_dist_eq_not_laundering():
+    """Равенство из ограничений плана НЕ заявлено в тексте — частное положение
+    (прод-дельтоид возник именно из добавленной формализатором симметрии)."""
     plan = FigurePlan.from_dict({
         "points": ["A", "B", "C", "D"],
         "constructions": [{"op": "free_point", "out": n} for n in "ABCD"],
@@ -83,7 +84,23 @@ def test_plan_dist_eq_allowed():
     })
     # AD = CD = 5, остальные стороны различны
     coords = {"A": (0, 0), "B": (1, 0), "C": (8, 4), "D": (3, 4)}
-    assert special_position_failures("В четырёхугольнике ABCD O — точка.", plan, coords) == []
+    fails = special_position_failures("В четырёхугольнике ABCD O — точка.", plan, coords)
+    assert len(fails) == 1 and "CD" in fails[0] and "AD" in fails[0], fails
+
+
+def test_equal_numbers_stated_pass():
+    """«AB = 5 и BC = 5» — равные числа заявляют равенство."""
+    text = "В четырёхугольнике ABCD известно, что AB = 5 и BC = 5, CD = 3."
+    coords = {"A": (0, 0), "B": (5, 0), "C": (9, 3), "D": (2, 4)}  # AB=BC=5
+    assert special_position_failures(text, None, coords) == []
+
+
+def test_different_numbers_not_equal():
+    """BC = 6, AD = 16 — числа разные, равенство не заявлено."""
+    text = "В трапеции ABCD с основаниями BC и AD известно, что BC = 6, AD = 16."
+    coords = {"A": (-8, 0), "B": (-3, 12), "C": (3, 12), "D": (8, 0)}
+    fails = special_position_failures(text, None, coords)
+    assert not any("BC" in f and "AD" in f for f in fails), fails
 
 
 def test_parallelogram_opposite_sides_skipped():

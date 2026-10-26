@@ -30,7 +30,7 @@ import numpy as np
 ENABLED = (os.environ.get("GEOEXACT_SPECIAL_POSITION") or "1").strip().lower() not in ("0", "no", "off")
 
 # Суффикс версии движка: новая проверка текста меняет приёмку чертежей.
-CACHE_SUFFIX = "+specialPos1"
+CACHE_SUFFIX = "+specialPos2"
 
 EXTRA_RULES = """
 44. SPECIAL_POSITION_RULE («докажите, что ...» / «точка пересечения
@@ -49,15 +49,23 @@ _NAME = r"[A-Z](?:_?\d{1,2})?"
 _QUAD = re.compile(
     rf"(?:четырёхугольник\w*|четырехугольник\w*|трапец\w*)\s+({_NAME})({_NAME})({_NAME})({_NAME})(?![A-Za-z0-9_])",
     re.I)
-# Заявленные равенства: «AB = BC», «AB и BC равны», «стороны AB и BC равны».
+# Заявленные равенства: «AB = BC», «AB и BC равны», «AB равна BC»,
+# «равные стороны AB и BC», «AB = 5 ... BC = 5» (равные числа).
 _EQ_DIRECT = re.compile(
     rf"({_NAME})({_NAME})\s*=\s*({_NAME})({_NAME})(?![A-Za-z0-9_])")
 _EQ_WORDS = re.compile(
     rf"({_NAME})({_NAME})\s+и\s+({_NAME})({_NAME})\s+(?:равны|равные|одинаковы)(?![A-Za-z0-9_])")
+_EQ_VERB = re.compile(
+    rf"({_NAME})({_NAME})\s+равн[а-яё]*\s+(?:стороне\s+|отрезку\s+)?({_NAME})({_NAME})(?![A-Za-z0-9_])")
+_EQ_ADJ = re.compile(
+    rf"равн\w*\s+(?:стороны|сторону|отрезки|отрезка)\s+({_NAME})({_NAME})\s+и\s+({_NAME})({_NAME})")
+_EQ_NUM = re.compile(
+    rf"({_NAME})({_NAME})\s*=\s*(\d+(?:[.,]\d+)?)")
 # Слова, после которых равенство сторон может следовать из условия неявно
 # (равнобедренность, ромб, медиана...) — такие предложения пропускаем.
+# «равны и параллельны» — пара противоположных сторон задаёт параллелограмм.
 _IMPLICIT = re.compile(
-    r"равнобедренн\w*|равнобок\w*|равносторонн\w*|ромб\w*|квадрат\w*|правильн\w*|медиан\w*|середин\w*|симметрич\w*|параллелограмм\w*|прямоугольник\w*",
+    r"равнобедренн\w*|равнобок\w*|равносторонн\w*|ромб\w*|квадрат\w*|правильн\w*|медиан\w*|середин\w*|симметрич\w*|параллелограмм\w*|прямоугольник\w*|все\s+стороны\s+равны|равн\w*\s+и\s+параллельн\w*|параллельн\w*\s+и\s+равн\w*",
     re.I)
 
 _TOL_REL = 3e-4        # относительный допуск равенства сторон на чертеже
@@ -89,44 +97,32 @@ def _side_len(P: dict, side: frozenset) -> float | None:
 
 
 def _stated_pairs(text: str) -> set[frozenset]:
-    """Пары сторон, равенство которых заявлено в тексте."""
+    """Пары сторон, равенство которых заявлено в тексте (слова или равные числа).
+
+    Ограничения плана НЕ считаются заявлением: формализатор мог добавить
+    симметрию, которой нет в условии (прод-дельтоид) — план не отмывает
+    незаявленное равенство."""
     out: set[frozenset] = set()
-    for rx in (_EQ_DIRECT, _EQ_WORDS):
+    for rx in (_EQ_DIRECT, _EQ_WORDS, _EQ_VERB, _EQ_ADJ):
         for m in rx.finditer(text):
             s1 = frozenset((m[1].upper(), m[2].upper()))
             s2 = frozenset((m[3].upper(), m[4].upper()))
             out.add(frozenset((s1, s2)))
-    return out
-
-
-def _plan_pairs(plan) -> set[frozenset]:
-    """Пары сторон, равенство которых следует из ограничений плана."""
-    out: set[frozenset] = set()
-    if plan is None:
-        return out
-    distvals: dict[float, list[frozenset]] = {}
-    for c in (getattr(plan, "constraints", None) or []):
-        ctype = c.get("type") if isinstance(c, dict) else getattr(c, "type", None)
-        args = (c.get("args") if isinstance(c, dict) else getattr(c, "args", None)) or []
-        value = c.get("value") if isinstance(c, dict) else getattr(c, "value", None)
-        try:
-            if ctype == "dist_eq" and len(args) == 4:
-                s1 = frozenset(map(str, args[:2]))
-                s2 = frozenset(map(str, args[2:]))
-                out.add(frozenset((s1, s2)))
-            elif ctype == "dist" and len(args) == 2 and isinstance(value, (int, float)):
-                distvals.setdefault(round(float(value), 6), []).append(
-                    frozenset(map(str, args)))
-        except Exception:  # noqa: BLE001
-            continue
-    for segs in distvals.values():
+    by_num: dict[float, list[frozenset]] = {}
+    for m in _EQ_NUM.finditer(text):
+        by_num.setdefault(round(float(m[3].replace(",", ".")), 6), []).append(
+            frozenset((m[1].upper(), m[2].upper())))
+    for segs in by_num.values():
         for s1, s2 in itertools.combinations(segs, 2):
             out.add(frozenset((s1, s2)))
     return out
 
 
 def special_position_failures(text: str, plan, coords: dict) -> list[str]:
-    """Незаявленные равенства сторон названного четырёхугольника/трапеции."""
+    """Незаявленные равенства сторон названного четырёхугольника/трапеции.
+
+    Равенство должно быть заявлено в ТЕКСТЕ: ограничения плана не в счёт
+    (прод-дельтоид возник именно из добавленной формализатором симметрии)."""
     fails: list[str] = []
     if not isinstance(coords, dict) or not coords:
         return fails
@@ -136,7 +132,7 @@ def special_position_failures(text: str, plan, coords: dict) -> list[str]:
     if len(P) < 4:
         return fails
     plain = _plain(text or "")
-    stated = _stated_pairs(plain) | _plan_pairs(plan)
+    stated = _stated_pairs(plain)
     for sentence in re.split(r"(?<=[.;!?])\s+", plain):
         if _IMPLICIT.search(sentence):
             continue          # равенство может следовать из условия неявно
