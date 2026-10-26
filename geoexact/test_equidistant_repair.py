@@ -16,6 +16,7 @@ from geoexact.core import llm as L
 from geoexact.core import pipeline
 from geoexact.core.equidistant_repair import repair
 from geoexact.core.schema import FigurePlan
+from geoexact.core import diametral_plan as DP
 from geoexact.test_acute_triangle import PROBLEM, _plan
 
 # План с прод-инцидента (журнал сервера, WORKER_PLAN 21:57:39).
@@ -141,7 +142,8 @@ def test_wrapper_fixes_pro_plan_through_real_formalize():
     def chat(sess, model, system, user, max_out, stage, budget, **kw):
         return json.dumps(PRO_PLAN), None
     with patch.object(L, "_chat", chat), \
-         patch.object(L, "classify", lambda *a, **k: {"ok": True, "class": "O", "space": "plane"}):
+         patch.object(L, "classify", lambda *a, **k: {"ok": True, "class": "O", "space": "plane"}), \
+         patch.object(DP, "diametral_plan", lambda t, a: None):  # спец-план выключен — проверяем ремонт
         result = pipeline.generate(PROBLEM, use_cache=False)
     assert result.ok and result.stage == "9-render", (result.stage, result.detail)
     assert result.verification == "constraints_only", result.warnings
@@ -300,7 +302,8 @@ def test_wrapper_fixes_pro_plan2_through_real_formalize():
     def chat(sess, model, system, user, max_out, stage, budget, **kw):
         return json.dumps(PRO_PLAN2), None
     with patch.object(L, "_chat", chat), \
-         patch.object(L, "classify", lambda *a, **k: {"ok": True, "class": "O", "space": "plane"}):
+         patch.object(L, "classify", lambda *a, **k: {"ok": True, "class": "O", "space": "plane"}), \
+         patch.object(DP, "diametral_plan", lambda t, a: None):  # спец-план выключен — проверяем ремонт
         result = pipeline.generate(PROBLEM, use_cache=False)
     assert result.ok and result.stage == "9-render", (result.stage, result.detail)
     assert result.verification == "constraints_only", result.warnings
@@ -336,7 +339,8 @@ def test_formalize_plan_journal(capsys):
     def chat(sess, model, system, user, max_out, stage, budget, **kw):
         return json.dumps(PRO_PLAN2), None
     with patch.object(L, "_chat", chat), \
-         patch.object(L, "classify", lambda *a, **k: {"ok": True, "class": "O", "space": "plane"}):
+         patch.object(L, "classify", lambda *a, **k: {"ok": True, "class": "O", "space": "plane"}), \
+         patch.object(DP, "diametral_plan", lambda t, a: None):  # спец-план выключен — проверяем ремонт
         result = pipeline.generate(PROBLEM, use_cache=False)
     assert result.ok and result.stage == "9-render", result.stage
     err = capsys.readouterr().err

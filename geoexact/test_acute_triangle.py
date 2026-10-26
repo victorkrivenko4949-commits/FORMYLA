@@ -17,6 +17,7 @@ from geoexact.core.acute_triangle import (
 from geoexact.core.schema import FigurePlan
 from geoexact.core.solver import solve
 from geoexact.core.gates import rank_solutions
+from geoexact.core import diametral_plan as DP
 
 PROBLEM = ("Задача 2. Дан остроугольный треугольник \\(ABC\\). На его описанной окружности "
            "отмечена точка \\(D\\), диаметрально противоположная вершине \\(A\\). "
@@ -231,7 +232,8 @@ def test_controlled_candidates_selection(monkeypatch):
     monkeypatch.setattr(solver_module, "solve", fake_solve)
 
     with patch.object(L, "formalize", lambda *a, **k: (_plan(), [])), \
-         patch.object(L, "classify", lambda *a, **k: {"ok": True, "class": "O", "space": "plane"}):
+         patch.object(L, "classify", lambda *a, **k: {"ok": True, "class": "O", "space": "plane"}), \
+         patch.object(DP, "diametral_plan", lambda t, a: None):  # спец-план выключен — тестируем выбор кандидатов
         result = pipeline.generate(PROBLEM, use_cache=False)
 
     # оба кандидата дошли до семантической фильтрации
