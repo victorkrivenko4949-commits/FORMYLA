@@ -144,13 +144,11 @@ def test_dashboard_today_done_and_debt(pilot_client):
 
 
 def test_method_week_page_pilot_only(pilot_client):
-    """/method_week: пилоту — 200 (виджет разбор + 3 задачи), остальным — 404."""
+    """/method_week: старой страницы нет — пилота редиректит на настоящую
+    страницу метода из базы 102 (владелец, 26.10)."""
     rv = pilot_client.get('/method_week')
-    assert rv.status_code == 200
-    html = rv.get_data(as_text=True)
-    assert 'Метод недели' in html
-    assert 'mw-root' in html
-    assert 'method_week.js' in html
+    assert rv.status_code == 302
+    assert rv.headers['Location'].startswith('/olympiads/methods/')
 
 
 def test_daily_tasks_no_method_week_widget(pilot_client, monkeypatch):
@@ -164,9 +162,10 @@ def test_daily_tasks_no_method_week_widget(pilot_client, monkeypatch):
     html = rv.get_data(as_text=True)
     assert 'mw-root' not in html
     assert 'method_week.js' not in html
-    # а страница метода работает
+    # а /method_week больше не отдаёт старую страницу — редирект на метод
     rv = pilot_client.get('/method_week')
-    assert rv.status_code == 200
+    assert rv.status_code == 302
+    assert rv.headers['Location'].startswith('/olympiads/methods/')
 
 
 def _seed_probe(uid=1, answered=0):
@@ -730,6 +729,48 @@ def test_saved_set_mismatch_lesson_completes(pilot_client):
         assert row[0] == 'completed'
         assert row[1] == other, 'метод занятия должен стать методом сета'
         assert row[2] == sid
+    finally:
+        with app.app_context():
+            db.session.execute(text("DELETE FROM method_week_sets WHERE user_id = 1"))
+            db.session.commit()
+
+
+def test_method_week_page_redirects_to_real_method(pilot_client):
+    """/method_week (старая страница) больше не отдаётся: редирект на
+    настоящую страницу метода из базы 102 (владелец, 26.10)."""
+    from method_week.catalog import method_for_week
+    from app import app
+    with app.app_context():
+        m = method_for_week(1)
+    rv = pilot_client.get('/method_week')
+    assert rv.status_code == 302
+    assert rv.headers['Location'].startswith(
+        f"/olympiads/methods/{m['method_code']}")
+
+    # и со слэшем на конце
+    rv2 = pilot_client.get('/method_week/')
+    assert rv2.status_code == 302
+    assert rv2.headers['Location'].startswith('/olympiads/methods/')
+
+    # API живой (виджет на странице метода ходит в него); готовый сет —
+    # чтобы /api/today не запускал генерацию в общей тестовой базе
+    from app import app
+    from models import db
+    from method_week.models import MethodWeekSet
+    from method_week.routes import week_start, _today
+    from sqlalchemy import text
+    with app.app_context():
+        db.session.execute(text("DELETE FROM method_week_sets WHERE user_id = 1"))
+        db.session.commit()
+        s = MethodWeekSet(user_id=1, week_start=week_start(_today()), method_code='B2',
+                          method_name='тест', status='ready',
+                          tasks_json='[]')
+        db.session.add(s)
+        db.session.commit()
+    try:
+        rv3 = pilot_client.get('/method_week/api/today')
+        assert rv3.status_code == 200
+        assert rv3.get_json().get('status') == 'ready'
     finally:
         with app.app_context():
             db.session.execute(text("DELETE FROM method_week_sets WHERE user_id = 1"))

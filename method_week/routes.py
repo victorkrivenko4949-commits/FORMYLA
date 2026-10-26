@@ -59,12 +59,21 @@ def _current_set(user_id: int):
 @method_week_bp.route('/', methods=['GET'])
 @login_required
 def method_week_page():
-    """Отдельная страница «Метод недели»: разбор + 3 задачи (пилоты).
-
-    Кнопка «сегодня изучаешь этот метод» с дашборда ведёт прямо сюда
-    (владелец, 26.10). Гейт — before_request (METHOD_WEEK_ALLOWED_USERS).
+    """Старой отдельной страницы больше нет (владелец, 26.10):
+    кидаем на настоящую страницу метода из базы 102 — там статичный
+    разбор и те же 3 дипсиковые задачи ниже. Гейт — before_request
+    (METHOD_WEEK_ALLOWED_USERS).
     """
-    return render_template('method_week/page.html')
+    from flask import redirect
+    try:
+        from .catalog import week_set_method
+        code = week_set_method(current_user.id) or \
+            (method_for_week(current_user.id) or {}).get('method_code')
+    except Exception:  # noqa: BLE001
+        code = None
+    if code:
+        return redirect(f'/olympiads/methods/{code}')
+    return redirect('/daily_tasks')
 
 
 def _get_or_create_set(user_id: int):
