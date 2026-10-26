@@ -36,8 +36,8 @@ import numpy as np
 
 ENABLED = (os.environ.get("GEOEXACT_EXTERNAL_FIGURES") or "1").strip().lower() not in ("0", "no", "off")
 
-# Суффикс версии движка: новая проверка меняет приёмку чертежей.
-CACHE_SUFFIX = "+extFig1"
+# Суффикс версии движка: спец-план и проверка меняют приёмку чертежей.
+CACHE_SUFFIX = "+extFig2"
 
 EXTRA_RULES = """
 46. EXTERNAL_FIGURE_RULE («на стороне AB построен квадрат ABDE (внешним
@@ -60,9 +60,31 @@ _L = r"[A-Z](?:_?\d{1,2})?"
 _TRI = re.compile(rf"треугольник\w*\s+({_L})({_L})({_L})", re.I)
 
 # «квадрат ABDE» / «равносторонний треугольник ABE»
-_SQUARE = re.compile(rf"квадрат\w*\s+({_L})({_L})({_L})({_L})", re.I)
+_SQUARE = re.compile(rf"квадрат\w*\s+({_L})({_L})({_L})({_L})(?![A-Za-z0-9_])", re.I)
 _EQUILATERAL = re.compile(
-    rf"равносторонн\w*\s+треугольник\w*\s+({_L})({_L})({_L})", re.I)
+    rf"равносторонн\w*\s+треугольник\w*\s+({_L})({_L})({_L})(?![A-Za-z0-9_])", re.I)
+# «квадраты ABDE и ACFG» — второе имя без слова «квадрат».
+_SQUARE_PAIR = re.compile(
+    rf"квадрат\w*\s+({_L})({_L})({_L})({_L})\s*(?:,|\sи\s)\s*"
+    rf"(?:квадрат\w*\s+)?({_L})({_L})({_L})({_L})(?![A-Za-z0-9_])", re.I)
+
+
+def _collect_squares(statement: str) -> list[tuple[str, str, str, str]]:
+    """Все имена квадратов текста (без повторов), включая пары «ABDE и ACFG»."""
+    names: list[tuple[str, str, str, str]] = []
+    seen: set[tuple[str, str, str, str]] = set()
+    for m in _SQUARE_PAIR.finditer(statement):
+        for v in (tuple(m[i].upper() for i in range(1, 5)),
+                  tuple(m[i].upper() for i in range(5, 9))):
+            if v not in seen:
+                seen.add(v)
+                names.append(v)
+    for m in _SQUARE.finditer(statement):
+        v = tuple(m[i].upper() for i in range(1, 5))
+        if v not in seen:
+            seen.add(v)
+            names.append(v)
+    return names
 
 _EXTERNAL = re.compile(r"внешн\w*\s+(?:образом|сторону|стороне)|вне\s+треугольник", re.I)
 
@@ -124,11 +146,126 @@ def external_figure_failures(text: str, coords) -> list[str]:
                     f"построен с внутренней стороны прямой {side_a}{side_b} — "
                     f"в условии сказано «внешним образом»")
 
-    for m in _SQUARE.finditer(statement):
-        check_figure(m[1], m[2], [m[3], m[4]], "квадрат")
+    for v in _collect_squares(statement):
+        check_figure(v[0], v[1], [v[2], v[3]], "квадрат")
     for m in _EQUILATERAL.finditer(statement):
         check_figure(m[1], m[2], [m[3]], "равносторонний треугольник")
-    return fails
+    return list(dict.fromkeys(fails))
+
+
+# ---------------------------------------------------------------------
+# Спец-план: внешние квадраты на сторонах треугольника, без LLM.
+
+# «треугольника ABC» — цикл вершин задаёт знак поворота внешности.
+_TRI_STRICT = re.compile(rf"треугольник\w*\s+({_L})({_L})({_L})(?![A-Za-z0-9_])", re.I)
+
+# «BG = CE» / «BG и CE равны» — заявленные равенства отрезков.
+_EQ_CLAIM = re.compile(rf"({_L})({_L})\s*=\s*({_L})({_L})(?![A-Za-z0-9_])")
+# «BG перпендикулярно CE» / «BG и CE перпендикулярны».
+_PERP_CLAIM = re.compile(
+    rf"({_L})({_L})\s+(?:и\s+)?перпендикулярн\w*\s+(?:и\s+)?({_L})({_L})(?![A-Za-z0-9_])", re.I)
+
+
+def external_squares_plan(text: str, with_aux: bool) -> "FigurePlan | None":  # noqa: F821
+    """Канонический план внешних квадратов на сторонах треугольника.
+
+    Срабатывает, когда в тексте есть:
+      • «внешнюю сторону / внешним образом» (заявлена внешность);
+      • «треугольника ABC»;
+      • хотя бы один «квадрат PQRS», чья сторона PQ — сторона этого
+        треугольника (все квадраты текста должны быть на его сторонах).
+
+    Вершины строятся поворотами: для стороны XY, записанной в порядке
+    обхода треугольника, вершина при X — rotate([Y, X], -90), при Y —
+    rotate([X, Y], +90); если сторона записана против обхода — знаки
+    меняются. Внешность фиксируется ограничениями opposite_side.
+    Заявленные равенства/перпендикулярности добавляются как ограничения —
+    для классической задачи о двух квадратах это и есть теорема.
+    """
+    statement = _plain(text or "")
+    if not _EXTERNAL.search(statement):
+        return None
+    m_tri = _TRI_STRICT.search(statement)
+    if m_tri is None:
+        return None
+    tri = [m_tri[i].upper() for i in range(1, 4)]
+    if len(set(tri)) != 3:
+        return None
+    tri_sides = {frozenset((tri[0], tri[1])), frozenset((tri[1], tri[2])),
+                 frozenset((tri[2], tri[0]))}
+    # циклический порядок: AB, BC, CA — «по обходу»
+    cyclic = {(tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])}
+
+    squares = []
+    for v in _collect_squares(statement):
+        if len(set(v)) != 4:
+            return None                      # не квадрат — не берёмся
+        if frozenset((v[0], v[1])) not in tri_sides:
+            return None                      # сторона не треугольника — LLM
+        squares.append(v)
+    if not squares:
+        return None
+
+    from .schema import FigurePlan
+    points = list(tri)
+    constructions = [{"op": "free_point", "out": t} for t in tri]
+    constraints: list[dict] = []
+    segments = [[tri[0], tri[1]], [tri[1], tri[2]], [tri[2], tri[0]]]
+    for v in squares:
+        x, y, adj_y, adj_x = v          # PQRS: R при Q, S при P
+        z = next(t for t in tri if t not in (x, y))
+        s = -90 if (x, y) in cyclic else 90
+        constructions.append({"op": "rotate", "args": [y, x], "out": adj_x, "value": s})
+        constructions.append({"op": "rotate", "args": [x, y], "out": adj_y, "value": -s})
+        constraints.append({"type": "opposite_side", "args": [adj_y, z, x, y]})
+        constraints.append({"type": "opposite_side", "args": [adj_x, z, x, y]})
+        points += [adj_x, adj_y]
+        segments += [[x, y], [y, adj_y], [adj_y, adj_x], [adj_x, x]]
+    points = list(dict.fromkeys(points))
+
+    known = set(points)
+    for m in _EQ_CLAIM.finditer(statement):
+        a, b, c, d = (m[i].upper() for i in range(1, 5))
+        if {a, b, c, d} <= known:
+            constraints.append({"type": "dist_eq", "args": [a, b, c, d]})
+            segments.append([a, b])
+            segments.append([c, d])
+    for m in _PERP_CLAIM.finditer(statement):
+        a, b, c, d = (m[i].upper() for i in range(1, 5))
+        if {a, b, c, d} <= known:
+            constraints.append({"type": "perpendicular", "args": [a, b, c, d]})
+
+    return FigurePlan.from_dict({
+        "points": points,
+        "constructions": constructions,
+        "constraints": constraints,
+        "draw": {"segments": segments},
+        "target": {"kind": "none", "args": []},
+        "scale_free": True,
+        "notes": (
+            "Квадраты на сторонах треугольника построены поворотами на 90° "
+            "с внешней стороны (opposite_side фиксирует внешность)."),
+    })
+
+
+def _wrap_trisected(orig):
+    """Расширение цепочки спец-планов: сначала прежняя цепь (Симсон и др.),
+    затем — внешние квадраты на сторонах треугольника."""
+    @functools.wraps(orig)
+    def trisected_parallel_plan(text, with_aux):
+        try:
+            plan = orig(text, with_aux)
+            if plan is not None:
+                return plan
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            return external_squares_plan(text, with_aux)
+        except Exception:  # noqa: BLE001
+            return None
+    trisected_parallel_plan._external_figures = True
+    trisected_parallel_plan._original = orig
+    return trisected_parallel_plan
 
 
 def _wrap_semantic_failures(orig):
@@ -160,10 +297,13 @@ def _install_llm_rules(llm_module) -> bool:
 
 
 def install(semantics_module, llm_module, pipeline_module=None) -> bool:
-    """Подключение: проверка внешности + правило 46 + суффикс кэша."""
+    """Подключение: спец-план + проверка внешности + правило 46 + суффикс."""
     if not ENABLED:
         return False
     try:
+        if not getattr(semantics_module.trisected_parallel_plan, "_external_figures", False):
+            semantics_module.trisected_parallel_plan = _wrap_trisected(
+                semantics_module.trisected_parallel_plan)
         if not getattr(semantics_module.semantic_failures, "_external_figures", False):
             semantics_module.semantic_failures = _wrap_semantic_failures(
                 semantics_module.semantic_failures)

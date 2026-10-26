@@ -14,7 +14,8 @@ import geoexact.core                       # обёртки устанавлив
 from geoexact.core import llm, semantics, pipeline
 from geoexact.core.schema import FigurePlan
 from geoexact.core.solver import solve
-from geoexact.core.external_figures import external_figure_failures
+from geoexact.core.external_figures import (external_figure_failures,
+                                             external_squares_plan)
 
 PROD_TEXT = (
     "На сторонах AB и AC треугольника ABC во внешнюю сторону построены "
@@ -27,7 +28,7 @@ def test_rule_46_installed():
 
 
 def test_engine_suffix():
-    assert "+extFig1" in pipeline.ENGINE_VERSION
+    assert "+extFig2" in pipeline.ENGINE_VERSION
 
 
 def _sq(A, B, out=1.0):
@@ -149,3 +150,73 @@ def test_same_sign_trap_is_unsolvable():
 
 def test_semantic_wrapper_carries_check():
     assert getattr(semantics.semantic_failures, "_external_figures", False)
+
+
+def test_special_plan_wrapped_into_chain():
+    """Обёртка в цепочке спец-планов: прод-фраза даёт канонический план."""
+    assert getattr(semantics.trisected_parallel_plan, "_external_figures", False)
+    plan = semantics.trisected_parallel_plan(PROD_TEXT, True)
+    assert plan is not None
+    assert {"dist_eq", "perpendicular"} <= {c.type for c in plan.constraints}
+
+
+def test_special_plan_solves_prod_problem():
+    """Прод-фраза целиком: план решается точно, квадраты внешние, теорема
+    выполнена (BG = CE и BG ⟂ CE)."""
+    plan = external_squares_plan(PROD_TEXT, True)
+    assert plan is not None
+    sols = solve(plan)
+    good = [s for s in sols if s.ok]
+    assert len(good) >= 5, [str(getattr(s, "reason", "")) for s in sols[:3]]
+    P = {k: np.asarray(v, dtype=float) for k, v in good[0].coords.items()}
+    cr = lambda o, a, b: float(np.cross(P[a] - P[o], P[b] - P[o]))
+    assert (cr("A", "B", "D") > 0) != (cr("A", "B", "C") > 0)
+    assert (cr("A", "B", "E") > 0) != (cr("A", "B", "C") > 0)
+    assert (cr("A", "C", "F") > 0) != (cr("A", "C", "B") > 0)
+    assert (cr("A", "C", "G") > 0) != (cr("A", "C", "B") > 0)
+    bg = float(np.hypot(*(P["G"] - P["B"])))
+    ce = float(np.hypot(*(P["E"] - P["C"])))
+    assert abs(bg - ce) < 1e-9 * max(1.0, bg)
+    assert abs(float(np.dot(P["G"] - P["B"], P["E"] - P["C"]))) < 1e-9
+
+
+def test_special_plan_requires_external_word():
+    text = ("На сторонах AB и AC треугольника ABC построены квадраты "
+            "ABDE и ACFG. Докажите, что BG = CE.")
+    assert external_squares_plan(text, True) is None
+
+
+def test_special_plan_rejects_non_triangle_side():
+    text = ("Во внешнюю сторону треугольника ABC на сторонах AB и AC "
+            "построены квадраты ABDE и ACFG, а на отрезке DE — квадрат DEFG.")
+    assert external_squares_plan(text, True) is None
+
+
+def test_special_plan_single_square():
+    text = ("На стороне AB треугольника ABC во внешнюю сторону построен "
+            "квадрат ABDE.")
+    plan = external_squares_plan(text, True)
+    assert plan is not None
+    sols = solve(plan)
+    good = [s for s in sols if s.ok]
+    assert len(good) >= 5
+    P = {k: np.asarray(v, dtype=float) for k, v in good[0].coords.items()}
+    cr = lambda o, a, b: float(np.cross(P[a] - P[o], P[b] - P[o]))
+    assert (cr("A", "B", "D") > 0) != (cr("A", "B", "C") > 0)
+    assert (cr("A", "B", "E") > 0) != (cr("A", "B", "C") > 0)
+    # стороны квадрата равны — это действительно квадрат
+    d = lambda a, b: float(np.hypot(*(P[b] - P[a])))
+    assert abs(d("A", "B") - d("B", "D")) < 1e-9
+    assert abs(d("A", "B") - d("D", "E")) < 1e-9
+    assert abs(d("A", "B") - d("E", "A")) < 1e-9
+
+
+def test_special_plan_does_not_hijack_simson():
+    """Фраза Симсона проходит прежнюю цепочку, а не новый план."""
+    simson_text = (
+        "Точка P лежит на описанной окружности треугольника ABC. X, Y и Z — "
+        "основания перпендикуляров, опущенных из точки P на прямые AB, BC "
+        "и CA соответственно. Докажите, что точки X, Y и Z лежат на одной прямой.")
+    plan = semantics.trisected_parallel_plan(simson_text, True)
+    assert plan is not None
+    assert "P" in plan.points and "O" in plan.points
