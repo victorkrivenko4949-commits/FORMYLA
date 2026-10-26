@@ -97,6 +97,8 @@ from . import named_labels as _named_labels
 from . import trapezoid as _trapezoid
 from . import isosceles as _isosceles
 from . import special_position as _special_position
+from . import simson_line as _simson_line
+from . import external_figures as _external_figures
 
 _difficulty.install(_llm)
 _general_position.install(_solver, _gates)
@@ -119,3 +121,5 @@ _named_labels.install(_pipeline, _llm)       # после bisector_angle: наз
 _trapezoid.install(_semantics, _llm, _pipeline)  # после named_labels: основания трапеции параллельны + суффикс кэша
 _isosceles.install(_semantics, _llm, _pipeline)     # после trapezoid: боковые равнобедренного равны + суффикс кэша
 _special_position.install(_semantics, _llm, _pipeline)  # после isosceles: незаявленные равенства сторон + суффикс кэша
+_simson_line.install(_semantics, _llm, _pipeline)      # после special_position: прямая Симсона — спец-план без LLM, хорда line_circle — отказ + суффикс кэша
+_external_figures.install(_semantics, _llm, _pipeline)  # после simson_line: внешние квадраты — правило 46 + проверка стороны + суффикс кэша
