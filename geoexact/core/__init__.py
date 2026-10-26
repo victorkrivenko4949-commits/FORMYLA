@@ -99,6 +99,8 @@ from . import isosceles as _isosceles
 from . import special_position as _special_position
 from . import simson_line as _simson_line
 from . import external_figures as _external_figures
+from . import plan_repair as _plan_repair
+from . import median_parallel as _median_parallel
 
 _difficulty.install(_llm)
 _general_position.install(_solver, _gates)
@@ -123,3 +125,5 @@ _isosceles.install(_semantics, _llm, _pipeline)     # после trapezoid: бо
 _special_position.install(_semantics, _llm, _pipeline)  # после isosceles: незаявленные равенства сторон + суффикс кэша
 _simson_line.install(_semantics, _llm, _pipeline)      # после special_position: прямая Симсона — спец-план без LLM, хорда line_circle — отказ + суффикс кэша
 _external_figures.install(_semantics, _llm, _pipeline)  # после simson_line: внешние квадраты — правило 46 + проверка стороны + суффикс кэша
+_plan_repair.install(_semantics, _llm, _pipeline)       # после external_figures: порядок конструкций (FORWARD_REF) + якорь line_circle_other + правила 47/48 + суффикс
+_median_parallel.install(_semantics, _llm, _pipeline)    # после plan_repair: точка с отношением на медиане + параллель — спец-план без LLM + суффикс
