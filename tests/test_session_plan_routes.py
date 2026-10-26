@@ -152,16 +152,17 @@ def test_method_week_page_pilot_only(pilot_client):
 
 
 def test_daily_tasks_no_method_week_widget(pilot_client, monkeypatch):
-    """Дашборд задач дня НЕ содержит виджет «Метод недели» (разбор + 3 задачи):
-    владелец 26.10 — метод живёт на отдельной странице /method_week,
-    кнопка «Изучить метод» на карточке плана ведёт туда.
-    Даже если env METHOD_WEEK_UI_ENABLED=1 — инжектор выключен навсегда."""
+    """Дашборд задач дня НЕ содержит СТАРЫЙ виджет (куратор + разбор сверху),
+    даже если env METHOD_WEEK_UI_ENABLED=1 — инжектор выключен навсегда.
+    Вместо него (владелец, 26.10, итерация 4): в карточке метод-дня —
+    только 3 задачи (data-mw-only="tasks"), без AI-разбора и куратора."""
     monkeypatch.setenv('METHOD_WEEK_UI_ENABLED', '1')
     rv = pilot_client.get('/daily_tasks')
     assert rv.status_code == 200
     html = rv.get_data(as_text=True)
-    assert 'mw-root' not in html
-    assert 'method_week.js' not in html
+    # старый инжект (голый mw-root без режима) — исчез
+    assert '<div id="mw-root">' not in html
+    assert 'data-mw-anchor' not in html
     # а /method_week больше не отдаёт старую страницу — редирект на метод
     rv = pilot_client.get('/method_week')
     assert rv.status_code == 302
@@ -201,7 +202,9 @@ def test_method_day_hides_probe_banner_and_block(pilot_client):
     # карточка «Сначала — тест» в DOM, но скрыта (dt-hidden)
     assert 'id="dt-blocked-state" class="dt-hidden"' in html
     assert 'Изучить метод' in html                    # карточка плана на месте
-    assert 'mw-root' not in html                      # виджет метода не инжектится
+    # 3 задачи метода — прямо на месте задач дня, только задачи (без разбора)
+    assert '<div id="mw-root" data-mw-only="tasks">' in html
+    assert 'ОБЯЗАТЕЛЬНО изучи метод' in html
     # и срез с 0 ответов (просто открыли) тоже не напоминает о себе
     _seed_probe(answered=0)
     rv = pilot_client.get('/daily_tasks')
