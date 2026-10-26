@@ -633,10 +633,9 @@ def current_practice_theme(user_id: int) -> Optional[str]:
 # ── Публичная сводка (дашборд задач дня + план куратора) ─────────────────
 
 CTA_FOR_TYPE = {
-    # Страница «Метод недели» на /daily_tasks отключена по просьбе владельца
-    # (2026-10-22, METHOD_WEEK_UI_ENABLED=0), поэтому метод ведёт на страницу
-    # метода в атласе 102 методов (/olympiad/methods/<код> — если код известен).
-    'method': '/olympiad/methods',
+    # Метод ведёт на отдельную страницу «Метод недели» (/method_week):
+    # разбор метода + ровно 3 задачи по нему с проверкой (владелец, 26.10).
+    'method': '/method_week',
     'practice': '/daily_tasks',
     'probnik': '/olympiad/course-probnik',
 }
@@ -680,8 +679,6 @@ def session_info(user_id: int) -> Dict[str, Any]:
         t = lesson['lesson_type']
         cta = CTA_FOR_TYPE.get(t, '/daily_tasks')
         if not today_done:
-            if t == 'method' and lesson['method_code']:
-                cta = f"/olympiad/methods/{lesson['method_code']}"
             if t == 'probnik' and lesson['probnik_code']:
                 cta = f"/olympiad/probnik/{lesson['probnik_code']}"
         # ── План: текущее занятие + 5 следующих слотов ──────────────────

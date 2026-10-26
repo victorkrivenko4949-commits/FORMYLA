@@ -14,7 +14,7 @@ import logging
 import os
 from datetime import date, datetime
 
-from flask import current_app, jsonify, request
+from flask import current_app, jsonify, render_template, request
 from flask_login import current_user, login_required
 
 from models import db
@@ -53,6 +53,18 @@ def _is_admin() -> bool:
 def _current_set(user_id: int):
     ensure_tables()
     return MethodWeekSet.query.filter_by(user_id=user_id, week_start=week_start(_today())).first()
+
+
+@method_week_bp.route('', methods=['GET'])
+@method_week_bp.route('/', methods=['GET'])
+@login_required
+def method_week_page():
+    """Отдельная страница «Метод недели»: разбор + 3 задачи (пилоты).
+
+    Кнопка «сегодня изучаешь этот метод» с дашборда ведёт прямо сюда
+    (владелец, 26.10). Гейт — before_request (METHOD_WEEK_ALLOWED_USERS).
+    """
+    return render_template('method_week/page.html')
 
 
 def _get_or_create_set(user_id: int):

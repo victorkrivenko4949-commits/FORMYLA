@@ -37,10 +37,14 @@ def pilot_client():
     from models import db, User
 
     with app.app_context():
-        if not User.query.get(1):
-            u = User(email='victor@test.local', nickname='victor')
+        u = User.query.get(1)
+        if not u:
+            u = User(email='victor@test.local')
             db.session.add(u)
-            db.session.commit()
+        # nickname «victor»: локальный юзер должен проходить гейт METHOD_WEEK_ALLOWED_USERS
+        if getattr(u, 'nickname', None) != 'victor':
+            u.nickname = 'victor'
+        db.session.commit()
         # анкета «пройдена» — иначе before_request гоняет на /intake
         from models_curator import CuratorState
         import json as _json
@@ -87,8 +91,10 @@ def test_dashboard_shows_six_lesson_plan(pilot_client):
     # типы в полосе: метод, практики, пробник
     assert 'пробник' in html
     assert 'практика' in html
-    # CTA текущего занятия
-    assert 'К методу' in html
+    # CTA текущего занятия — кнопка ведёт на страницу метода с 3 задачами
+    assert 'Изучить метод' in html
+    assert 'Сегодня изучаешь метод' in html
+    assert 'Разбор метода + 3 задачи' in html
     # долгов пока нет — строка не показывается
     assert 'В долгу' not in html
 
@@ -135,3 +141,13 @@ def test_dashboard_today_done_and_debt(pilot_client):
     assert 'В долгу: 1' in html
     # план пошёл дальше — следующий слот (практика) текущий
     assert 'сейчас' in html
+
+
+def test_method_week_page_pilot_only(pilot_client):
+    """/method_week: пилоту — 200 (виджет разбор + 3 задачи), остальным — 404."""
+    rv = pilot_client.get('/method_week')
+    assert rv.status_code == 200
+    html = rv.get_data(as_text=True)
+    assert 'Метод недели' in html
+    assert 'mw-root' in html
+    assert 'method_week.js' in html
