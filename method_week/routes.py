@@ -60,8 +60,8 @@ def _current_set(user_id: int):
 @login_required
 def method_week_page():
     """Старой отдельной страницы больше нет (владелец, 26.10):
-    кидаем на настоящую страницу метода из базы 102 — там статичный
-    разбор и те же 3 дипсиковые задачи ниже. Гейт — before_request
+    кидаем в раздел «Олимпиады» — 102 метода в новом дизайне (атлас),
+    открывается нужный метод. Гейт — before_request
     (METHOD_WEEK_ALLOWED_USERS).
     """
     from flask import redirect
@@ -72,7 +72,9 @@ def method_week_page():
     except Exception:  # noqa: BLE001
         code = None
     if code:
-        return redirect(f'/olympiads/methods/{code}')
+        # новый дизайн каталога (атлас, раздел «Олимпиады»): обёртка
+        # передаёт #/methods/<код> в iframe и открывает нужный метод
+        return redirect(f'/olympiads/methods#/methods/{code}')
     return redirect('/daily_tasks')
 
 

@@ -148,7 +148,7 @@ def test_method_week_page_pilot_only(pilot_client):
     страницу метода из базы 102 (владелец, 26.10)."""
     rv = pilot_client.get('/method_week')
     assert rv.status_code == 302
-    assert rv.headers['Location'].startswith('/olympiads/methods/')
+    assert rv.headers['Location'].startswith('/olympiads/methods#/methods/')
 
 
 def test_daily_tasks_no_method_week_widget(pilot_client, monkeypatch):
@@ -166,7 +166,7 @@ def test_daily_tasks_no_method_week_widget(pilot_client, monkeypatch):
     # а /method_week больше не отдаёт старую страницу — редирект на метод
     rv = pilot_client.get('/method_week')
     assert rv.status_code == 302
-    assert rv.headers['Location'].startswith('/olympiads/methods/')
+    assert rv.headers['Location'].startswith('/olympiads/methods#/methods/')
 
 
 def _seed_probe(uid=1, answered=0):
@@ -383,7 +383,7 @@ def test_no_active_probe_blocked_cycle_method_day(pilot_client, monkeypatch):
     assert d.get('status') != 'blocked'          # требования теста нет
     assert d.get('session', {}).get('active') is True
     html = rv.get_data(as_text=True)
-    assert '/olympiads/methods/' in html         # CTA на страницу метода (база 102)
+    assert '/olympiads/methods#/methods/' in html  # CTA в атлас (новый дизайн)
     assert 'id="dt-blocked-state" class="dt-hidden"' in html
     assert 'probeResumeBanner' not in html
 
@@ -574,14 +574,53 @@ def test_method_day_cta_leads_to_method_page(pilot_client):
     finally:
         template_rendered.disconnect(_cap)
     html = rv.get_data(as_text=True)
-    m = re.search(r'href="(/olympiads/methods/[A-Za-z0-9_-]+)"', html)
-    assert m, 'на дне метода должна быть кнопка на страницу метода'
+    m = re.search(r'href="(/olympiads/methods#/methods/[A-Za-z0-9_-]+)"', html)
+    assert m, 'на дне метода должна быть кнопка на метод в атласе'
     code = m.group(1).rsplit('/', 1)[-1]
-    rv2 = pilot_client.get(m.group(1))
+    # фрагмент #/... не уходит на сервер: проверяем обёртку атласа
+    rv2 = pilot_client.get(m.group(1).split('#')[0])
     assert rv2.status_code == 200
     html2 = rv2.get_data(as_text=True)
-    assert 'data-mw-only="tasks"' in html2
-    assert 'mw-root' in html2
+    assert 'atlas' in html2  # обёртка атласа с передачей hash в iframe
+
+
+def test_method_cta_pilot_gate(pilot_client):
+    """Кнопка «Изучить метод» (и весь блок плана) — только пилотам
+    (victor=1, Lavrik=5): session_info закрыт ВХОДНЫМ пилот-гейтом,
+    не-пилот получает прежнее {'active': False} (ранний выход до _sync —
+    состояние БД не нужно). Пилоты с методом-уроком получают deep-link
+    в атлас (владелец, 27.10)."""
+    from app import app
+    from models import db
+    from curator import session_plan as sp
+    from sqlalchemy import text
+    import datetime as _dt
+
+    # не-пилот: ранний выход, никаких записей в БД
+    assert sp.session_info(999) == {'active': False}
+
+    added = []
+    try:
+        with app.app_context():
+            for uid in (1, 5):
+                lessons = sp._lessons(uid)
+                seq = max([l['seq'] for l in lessons], default=0) + 1
+                sp._insert_lesson(uid, seq, 'method',
+                                  assigned=_dt.date.today())
+                added.append((uid, seq))
+            s1 = sp.session_info(1)
+            s5 = sp.session_info(5)
+    finally:
+        # убираем добавленные уроки — повторные прогоны не накапливают
+        with app.app_context():
+            for uid, seq in added:
+                db.session.execute(text(
+                    'DELETE FROM curator_lessons '
+                    'WHERE user_id = :uid AND seq = :seq'),
+                    {'uid': uid, 'seq': seq})
+            db.session.commit()
+    assert s1['cta_url'].startswith('/olympiads/methods#/methods/')
+    assert s5['cta_url'].startswith('/olympiads/methods#/methods/')
 
 
 def test_method_day_lesson_code_matches_week(pilot_client):
@@ -661,8 +700,8 @@ def test_saved_set_overrides_week_method_cta(pilot_client):
         rv = pilot_client.get('/daily_tasks')
         assert rv.status_code == 200
         html = rv.get_data(as_text=True)
-        assert f'/olympiads/methods/{other}' in html
-        assert f"/olympiads/methods/{m['method_code']}" not in html
+        assert f'/olympiads/methods#/methods/{other}' in html
+        assert f"/olympiads/methods#/methods/{m['method_code']}" not in html
 
         # страница метода сета — с блоком задач; метод плана — без
         rv2 = pilot_client.get(f'/olympiads/methods/{other}')
@@ -748,12 +787,12 @@ def test_method_week_page_redirects_to_real_method(pilot_client):
     rv = pilot_client.get('/method_week')
     assert rv.status_code == 302
     assert rv.headers['Location'].startswith(
-        f"/olympiads/methods/{m['method_code']}")
+        f"/olympiads/methods#/methods/{m['method_code']}")
 
     # и со слэшем на конце
     rv2 = pilot_client.get('/method_week/')
     assert rv2.status_code == 302
-    assert rv2.headers['Location'].startswith('/olympiads/methods/')
+    assert rv2.headers['Location'].startswith('/olympiads/methods#/methods/')
 
     # API живой (виджет на странице метода ходит в него); готовый сет —
     # чтобы /api/today не запускал генерацию в общей тестовой базе

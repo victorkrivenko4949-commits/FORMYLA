@@ -725,6 +725,8 @@ def session_info(user_id: int) -> Dict[str, Any]:
             if t == 'probnik' and lesson['probnik_code']:
                 cta = f"/olympiads/probnik/{lesson['probnik_code']}"
             elif t == 'method':
+                # сюда попадают только пилоты: session_info целиком за
+                # входным пилот-гейтом (не-пилоты получают {'active': False}).
                 # если недельный сет уже создан — задачи в нём по его методу
                 # (неделя может пересечь границу месяца после создания сета)
                 eff = None
@@ -735,7 +737,9 @@ def session_info(user_id: int) -> Dict[str, Any]:
                     eff = None
                 eff = eff or lesson.get('method_code')
                 if eff:
-                    cta = f"/olympiads/methods/{eff}"
+                    # новый дизайн каталога 102 методов — атлас (раздел
+                    # «Олимпиады»); обёртка передаёт #/methods/<код> в iframe
+                    cta = f"/olympiads/methods#/methods/{eff}"
         # ── План: текущее занятие + 5 следующих слотов ──────────────────
         plan = []
         for i in range(BLOCK_SIZE):
