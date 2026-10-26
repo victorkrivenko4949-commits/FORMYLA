@@ -64,6 +64,8 @@
   var curatorCard = document.createElement('div'); curatorCard.className = 'mw-card';
   var methodCard = document.createElement('div'); methodCard.className = 'mw-card';
   wrap.appendChild(curatorCard); wrap.appendChild(methodCard);
+  // отдельная страница метода (/method_week): только карточка метода, без куратора
+  if (root.getAttribute('data-mw-only') === 'method') curatorCard.style.display = 'none';
 
   function paywallHtml(title, d) {
     return '<h3>' + title + '</h3><p class="mw-muted">Доступно по подписке Premium. <a href="' + esc(d.upgrade_url || '/subscribe') + '">Оформить</a></p>';

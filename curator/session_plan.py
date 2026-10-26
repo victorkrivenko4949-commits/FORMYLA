@@ -11,19 +11,24 @@ curator/session_plan.py — SESSION_PLAN_V1 (26.10.2026): план заняти�
 Для «Работяги» (6 занятий/нед) блок = 1 неделя: метод + 4 практики +
 пробник каждую неделю. Для «Спокойного» (3 занятия/нед) блок = 2 недели.
 
-Правила (см. ревью 26.10.2026):
-  * прогресс считается только по ЗАВЕРШЁННЫМ занятиям — открытие страницы,
-    сообщения в чате и пропущенные дни ничего не двигают;
+Правила (см. ревью 26.10.2026, обновление «план на 6 занятий» того же дня):
+  * ПЛАН СДВИГАЕТСЯ КАЖДЫЙ ДЕНЬ: тип занятия определяется слотом по счёту
+    СОЗДАННЫХ уроков (завершённых и пропущенных), а не только завершённых;
+  * ПРОПУЩЕННОЕ ЗАНЯТИЕ — В ДОЛГ: если день прошёл без завершения,
+    занятие помечается 'skipped' и показывается в списке долгов; система
+    идёт дальше (следующий день — следующий слот);
   * завершение занятия — серверная транзиция: практика — отвечены все
     задачи сета дня; метод — отвечены все задачи метод-сета; пробник —
     сдан пробник (stage_submit). Повторный вызов не двигает прогресс;
+  * синхронизация долгов не зависит от захода на дашборд: её вызывают и
+    хуки завершения (maybe_complete_*), и чтение плана (session_info);
   * расписание доступно только пилотным аккаунтам (victor, lavrik);
     остальным всё остаётся как было (функции возвращают inactive);
   * тема практики — та, что назначает куратор (ротация цикла
     monthly_cycle), привязанная к выбранной олимпиаде пользователя.
 """
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import text
@@ -64,6 +69,11 @@ def ensure_tables() -> None:
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """))
+    # защита от дублей при параллельной синхронизации долгов (user_id, seq)
+    db.session.execute(text(
+        f"CREATE UNIQUE INDEX IF NOT EXISTS {TABLE_NAME}_user_seq "
+        f"ON {TABLE_NAME} (user_id, seq)"
+    ))
     # старые установки (до 26.10.2026) могут быть без колонки completed_set_id
     try:
         if _is_pg():
@@ -238,7 +248,9 @@ def _lesson_type_for_position(completed: int) -> str:
     return 'practice'
 
 
-def _insert_lesson(user_id: int, seq: int, lesson_type: str) -> None:
+def _insert_lesson(user_id: int, seq: int, lesson_type: str,
+                    status: str = 'assigned',
+                    assigned: Optional[date] = None) -> None:
     theme = method_code = method_name = probnik_code = probnik_title = None
     olympiad_slug = _user_olympiad(user_id)
     if lesson_type == 'practice':
@@ -255,15 +267,156 @@ def _insert_lesson(user_id: int, seq: int, lesson_type: str) -> None:
         f"INSERT INTO {TABLE_NAME} "
         f"(user_id, seq, lesson_type, status, theme, method_code, method_name, "
         f"probnik_code, probnik_title, olympiad_slug, assigned_date) "
-        f"VALUES (:uid, :seq, :lt, 'assigned', :theme, :mc, :mn, :pc, :pt, :os, :ad)"
+        f"VALUES (:uid, :seq, :lt, :st, :theme, :mc, :mn, :pc, :pt, :os, :ad) "
+        f"ON CONFLICT (user_id, seq) DO NOTHING"
     ), {
-        'uid': user_id, 'seq': seq, 'lt': lesson_type, 'theme': theme,
+        'uid': user_id, 'seq': seq, 'lt': lesson_type, 'st': status,
+        'theme': theme,
         'mc': method_code, 'mn': method_name, 'pc': probnik_code,
-        'pt': probnik_title, 'os': olympiad_slug, 'ad': date.today(),
+        'pt': probnik_title, 'os': olympiad_slug,
+        'ad': assigned or date.today(),
     })
     db.session.commit()
-    logger.info('[session_plan] assigned lesson #%s type=%s user=%s',
-                seq, lesson_type, user_id)
+    logger.info('[session_plan] inserted lesson #%s type=%s status=%s user=%s',
+                seq, lesson_type, status, user_id)
+
+
+def _slot_of(seq: int) -> int:
+    """Слот занятия в блоке 1-из-6: каждый созданный урок занимает
+    следующий слот (завершён он или пропущен) — поэтому план сдвигается
+    каждый день, а пропуски уходят в долг."""
+    return ((seq - 1) % BLOCK_SIZE) + 1
+
+
+def _to_date(v) -> Optional[date]:
+    """assigned_date может прийти строкой (SQLite) или date (PostgreSQL)."""
+    if isinstance(v, datetime):
+        return v.date()
+    if isinstance(v, date):
+        return v
+    if isinstance(v, str):
+        try:
+            return date.fromisoformat(v[:10])
+        except (ValueError, TypeError):
+            return None
+    return None
+
+
+def _sync(user_id: int) -> None:
+    """Безопасная синхронизация расписания с календарём (никогда не бросает).
+
+    При ошибке откатываем транзакцию: в PostgreSQL упавший стейтмент
+    «отравляет» транзакцию — без rollback все последующие запросы тоже падали бы.
+    """
+    try:
+        _advance_stale(user_id)
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[session_plan] advance_stale failed: %r', e)
+        try:
+            db.session.rollback()
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def _ensure_today_lesson(user_id: int) -> None:
+    """Создать сегодняшнее занятие, если его ещё нет.
+
+    Нужно для хуков завершения (метод/пробник сдаются мимо дашборда):
+    после синхронизации долгов назначенного занятия может не быть —
+    создаём сегодняшнее, НО только если сегодняшний день ещё не закрыт
+    (одно занятие в день: повторная сдача не порождает новое занятие).
+    """
+    try:
+        if not _pilot(user_id):
+            return
+        lessons = _lessons(user_id)
+        if lessons and _to_date(lessons[-1].get('assigned_date')) == date.today():
+            return  # сегодняшний урок уже создан (или день уже закрыт)
+        current_lesson(user_id)
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[session_plan] ensure_today_lesson failed: %r', e)
+        try:
+            db.session.rollback()
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def _advance_stale(user_id: int) -> None:
+    """Пропущенные занятия — в долг; система идёт дальше (владелец, 26.10).
+
+    Только для пилотов (гейт в начале): не-пилоту нельзя менять его записи.
+
+    Считаем по ДАТЕ последнего созданного урока (любого статуса — назначенного,
+    завершённого или пропущенного), а не только по «открытому» занятию:
+    если ученик завершил занятие и не заходил несколько дней, пропущенные
+    дни всё равно набегают в долг.
+
+    Правила:
+      * последний урок назначен на прошлый день и ещё открыт ('assigned')
+        → он сам становится долгом;
+      * каждый ПОЛНОСТЬЮ пропущенный день между датой последнего урока
+        и сегодня → ещё одно занятие в долг (слот по счёту, дата — тот
+        пропущенный день);
+      * все записи и пометки выполняются ОДНОЙ транзакцией — при обрыве
+        ничего не «наполовину начисляется»;
+      * INSERT ... ON CONFLICT DO NOTHING + уникальный индекс (user_id, seq)
+        защищают от дублей при параллельных запросах;
+      * повторный вызов в тот же день — no-op (идемпотентно).
+
+    Сегодняшнее занятие затем создаётся как обычно (current_lesson) —
+    план двигается ежедневно.
+    """
+    if not _pilot(user_id):
+        return
+    ensure_tables()
+    lessons = _lessons(user_id)
+    if not lessons:
+        return
+    last = lessons[-1]
+    assigned = _to_date(last.get('assigned_date'))
+    if assigned is None or assigned >= date.today():
+        return  # урок назначен на сегодня (или дата битая) — синхронизировать нечего
+    today = date.today()
+    missed = (today - assigned).days  # сколько дней прошло с последнего урока
+    # 1) незакрытый урок прошлого дня — сам становится долгом
+    db.session.execute(text(
+        f"UPDATE {TABLE_NAME} SET status = 'skipped' "
+        f"WHERE user_id = :uid AND status = 'assigned' AND assigned_date < :today"
+    ), {'uid': user_id, 'today': today})
+    # 2) полностью пропущенные дни (между последним уроком и сегодня) — по занятию в долг;
+    #    незакрытый урок прошлого дня уже посчитан пометкой выше (это день `assigned`),
+    #    поэтому долги-вставки — только за дни ПОСЛЕ него
+    olympiad_slug = _user_olympiad(user_id)
+    for i in range(1, missed):
+        day = assigned + timedelta(days=i)
+        seq = last['seq'] + i
+        lesson_type = _lesson_type_for_position(_slot_of(seq) - 1)
+        # тема прошлого дня не восстанавливается — не подставляем сегодняшнюю;
+        # метод/пробник — детерминированный выбор (как в _insert_lesson)
+        theme = method_code = method_name = probnik_code = probnik_title = None
+        if lesson_type == 'method':
+            m = _pick_method(user_id)
+            method_code, method_name = m['code'], m['name']
+        elif lesson_type == 'probnik':
+            used = {l['probnik_code'] for l in lessons if l['probnik_code']}
+            p = _pick_probnik(user_id, olympiad_slug, used)
+            if p:
+                probnik_code, probnik_title = p['code'], p['title']
+        db.session.execute(text(
+            f"INSERT INTO {TABLE_NAME} "
+            f"(user_id, seq, lesson_type, status, theme, method_code, method_name, "
+            f"probnik_code, probnik_title, olympiad_slug, assigned_date) "
+            f"VALUES (:uid, :seq, :lt, 'skipped', :theme, :mc, :mn, :pc, :pt, :os, :ad) "
+            f"ON CONFLICT (user_id, seq) DO NOTHING"
+        ), {
+            'uid': user_id, 'seq': seq, 'lt': lesson_type,
+            'theme': theme, 'mc': method_code, 'mn': method_name,
+            'pc': probnik_code, 'pt': probnik_title, 'os': olympiad_slug,
+            'ad': day,
+        })
+    db.session.commit()  # одна транзакция на всё начисление долгов
+    logger.info('[session_plan] user=%s: начислено долгов за %d дн(я/ей)',
+                user_id, missed)
 
 
 def _current_assigned(user_id: int) -> Optional[Dict[str, Any]]:
@@ -282,17 +435,31 @@ def _current_assigned(user_id: int) -> Optional[Dict[str, Any]]:
 
 
 def current_lesson(user_id: int) -> Optional[Dict[str, Any]]:
-    """Текущее (незавершённое) занятие. Создаёт следующее, если все готовы."""
+    """Текущее (незавершённое) занятие. Создаёт следующее, если все готовы.
+
+    Тип следующего занятия — по СЛОТУ (счёт созданных уроков), а не по
+    завершённым: пропущенные занятия не тормозят план (уходят в долг).
+
+    ОДНО ЗАНЯТИЕ В ДЕНЬ: если сегодняшний урок уже создан (завершён или
+    пропущен), новый НЕ создаётся — иначе простой рефреш дашборда порождал
+    бы лишний «обязательный» урок, который завтра ушёл бы в долг. Следующий
+    урок создаётся только на следующий день (или при полном отсутствии
+    истории). Ревью 26.10.2026.
+    """
     if not _pilot(user_id):
         return None
     ensure_tables()
+    _sync(user_id)  # перед созданием занятия — начислить долги за пропущенные дни
     lessons = _lessons(user_id)
     assigned = [l for l in lessons if l['status'] == 'assigned']
     if assigned:
         return assigned[0]
-    # все завершены — создаём следующее по ротации
+    # сегодняшний урок уже создан (завершён/пропущен) — нового не создаём
+    if lessons and _to_date(lessons[-1].get('assigned_date')) == date.today():
+        return None
+    # история пуста или последний урок датирован прошлым — создаём следующий по слоту
     seq = (lessons[-1]['seq'] if lessons else 0) + 1
-    lesson_type = _lesson_type_for_position(_completed_count(user_id))
+    lesson_type = _lesson_type_for_position(_slot_of(seq) - 1)
     _insert_lesson(user_id, seq, lesson_type)
     lessons = _lessons(user_id)
     assigned = [l for l in lessons if l['status'] == 'assigned']
@@ -343,13 +510,36 @@ def maybe_complete_practice(user_id: int, daily_set_id: int) -> bool:
     по тому же сету (повторы, ретраи) не двигают прогресс дальше.
     """
     try:
-        from daily_tasks.models import DailyTaskItem
+        if not _pilot(user_id):
+            return False
+        _sync(user_id)  # завершение не должно зависеть от захода на дашборд
+        from daily_tasks.models import DailyTaskItem, DailyTaskSet
+        # сет должен принадлежать этому ученику и быть СЕГОДНЯШНИМ:
+        # старый неучтённый сет или чужой сет не закрывают текущую практику
+        s = DailyTaskSet.query.get(daily_set_id)
+        if not s or s.user_id != user_id:
+            return False
+        if s.target_date != date.today():
+            return False
         items = DailyTaskItem.query.filter_by(daily_set_id=daily_set_id).all()
         if not items:
             return False
-        if all(it.user_answer is not None for it in items):
-            return complete_current_lesson(user_id, lesson_type='practice',
-                                          completed_set_id=daily_set_id)
+        if not all(it.user_answer is not None for it in items):
+            return False
+        # этот сет уже закрывал ПРАКТИКУ — повторно не считаем
+        # (lesson_type в проверке обязателен: id практик и метод-сетов независимы)
+        used = db.session.execute(text(
+            f"SELECT 1 FROM {TABLE_NAME} "
+            f"WHERE user_id = :uid AND lesson_type = 'practice' "
+            f"AND completed_set_id = :sid"
+        ), {'uid': user_id, 'sid': daily_set_id}).fetchone()
+        if used:
+            return False
+        # после отсутствия назначенного может не быть — создаём сегодняшнее
+        if not _current_assigned(user_id):
+            _ensure_today_lesson(user_id)
+        return complete_current_lesson(user_id, lesson_type='practice',
+                                       completed_set_id=daily_set_id)
     except Exception as e:  # noqa: BLE001
         logger.warning('[session_plan] practice hook failed: %r', e)
     return False
@@ -363,6 +553,12 @@ def maybe_complete_method(user_id: int) -> bool:
     закрывать назначенное занятие.
     """
     try:
+        if not _pilot(user_id):
+            return False
+        _sync(user_id)  # завершение не должно зависеть от захода на дашборд
+        # после отсутствия назначенного может не быть — создаём сегодняшнее
+        if not _current_assigned(user_id):
+            _ensure_today_lesson(user_id)
         from method_week.models import MethodWeekSet, MethodWeekAnswer
         s = MethodWeekSet.query.filter_by(user_id=user_id).order_by(
             MethodWeekSet.id.desc()).first()
@@ -381,7 +577,17 @@ def maybe_complete_method(user_id: int) -> bool:
         answered = {a.position for a in MethodWeekAnswer.query.filter_by(
             set_id=s.id).all() if a.user_answer}
         if all(int(t.get('position') or 0) in answered for t in tasks):
-            return complete_current_lesson(user_id, lesson_type='method')
+            # этот метод-сет уже закрывал ЗАНЯТИЕ-МЕТОД — повторно не считаем
+            # (lesson_type в проверке обязателен: id метод-сетов и практик независимы)
+            used = db.session.execute(text(
+                f"SELECT 1 FROM {TABLE_NAME} "
+                f"WHERE user_id = :uid AND lesson_type = 'method' "
+                f"AND completed_set_id = :sid"
+            ), {'uid': user_id, 'sid': s.id}).fetchone()
+            if used:
+                return False
+            return complete_current_lesson(user_id, lesson_type='method',
+                                           completed_set_id=s.id)
     except Exception as e:  # noqa: BLE001
         logger.warning('[session_plan] method hook failed: %r', e)
     return False
@@ -390,6 +596,12 @@ def maybe_complete_method(user_id: int) -> bool:
 def maybe_complete_probnik(user_id: int, probnik_code: str) -> bool:
     """Пробник сдан — завершаем занятие-пробник."""
     try:
+        if not _pilot(user_id):
+            return False
+        _sync(user_id)  # завершение не должно зависеть от захода на дашборд
+        # после отсутствия назначенного может не быть — создаём сегодняшнее
+        if not _current_assigned(user_id):
+            _ensure_today_lesson(user_id)
         lesson = _current_assigned(user_id)
         if not lesson or lesson['lesson_type'] != 'probnik':
             return False
@@ -421,37 +633,88 @@ def current_practice_theme(user_id: int) -> Optional[str]:
 # ── Публичная сводка (дашборд задач дня + план куратора) ─────────────────
 
 CTA_FOR_TYPE = {
-    # Страница «Метод недели» на /daily_tasks отключена по просьбе владельца
-    # (2026-10-22, METHOD_WEEK_UI_ENABLED=0), поэтому метод ведёт на страницу
-    # метода в атласе 102 методов (/olympiad/methods/<код> — если код известен).
-    'method': '/olympiad/methods',
+    # Метод ведёт на отдельную страницу «Метод недели» (/method_week):
+    # разбор метода + ровно 3 задачи по нему с проверкой (владелец, 26.10).
+    'method': '/method_week',
     'practice': '/daily_tasks',
     'probnik': '/olympiad/course-probnik',
 }
 
 
 def session_info(user_id: int) -> Dict[str, Any]:
-    """Сводка текущего занятия для интерфейса. Никогда не бросает."""
+    """Сводка текущего занятия и плана для интерфейса. Никогда не бросает.
+
+    Сначала — ролловер пропущенных дней (занятия уходят в долг, план
+    двигается дальше), затем текущее занятие + план на 6 слотов вперёд
+    (текущее + 5 следующих) и список долгов (skipped).
+    """
     if not _pilot(user_id):
         return {'active': False}
     try:
+        _sync(user_id)
         lesson = current_lesson(user_id)
+        lessons = _lessons(user_id)
+        today_done = False
         if not lesson:
-            return {'active': False}
+            # назначенного нет: либо сегодняшний урок уже завершён (молодец,
+            # следующий — завтра), либо истории нет вовсе
+            if not lessons:
+                return {'active': False}
+            last = lessons[-1]
+            if _to_date(last.get('assigned_date')) != date.today():
+                return {'active': False}  # битое состояние — не показываем
+            today_done = True
+            # «текущий» слот для превью — СЛЕДУЮЩИЙ за завершённым
+            next_seq = last['seq'] + 1
+            cur_slot = _slot_of(next_seq)
+            t = _lesson_type_for_position(cur_slot - 1)
+            lesson = {'seq': next_seq, 'lesson_type': t,
+                      'theme': None, 'method_name': None,
+                      'probnik_title': None, 'method_code': None,
+                      'probnik_code': None, 'olympiad_slug': None,
+                      'status': 'done_today'}
         completed = _completed_count(user_id)
-        pos_in_block = (completed % BLOCK_SIZE) + 1
+        if not today_done:
+            cur_slot = _slot_of(lesson['seq'])
         t = lesson['lesson_type']
         cta = CTA_FOR_TYPE.get(t, '/daily_tasks')
-        if t == 'method' and lesson['method_code']:
-            cta = f"/olympiad/methods/{lesson['method_code']}"
-        if t == 'probnik' and lesson['probnik_code']:
-            cta = f"/olympiad/probnik/{lesson['probnik_code']}"
+        if not today_done:
+            if t == 'probnik' and lesson['probnik_code']:
+                cta = f"/olympiad/probnik/{lesson['probnik_code']}"
+        # ── План: текущее занятие + 5 следующих слотов ──────────────────
+        plan = []
+        for i in range(BLOCK_SIZE):
+            slot = ((cur_slot - 1 + i) % BLOCK_SIZE) + 1
+            lt = _lesson_type_for_position(slot - 1)
+            entry = {
+                'slot': slot,
+                'lesson_type': lt,
+                'lesson_label': LESSON_LABELS.get(lt, lt),
+                'state': ('tomorrow' if today_done else 'current') if i == 0 else 'upcoming',
+            }
+            if i == 0 and not today_done:
+                entry['theme'] = lesson['theme']
+                entry['method_name'] = lesson['method_name']
+                entry['probnik_title'] = lesson['probnik_title']
+            plan.append(entry)
+        # ── Долги: пропущенные занятия ────────────────────────────────
+        debts = [{
+            'seq': l['seq'],
+            'lesson_type': l['lesson_type'],
+            'lesson_label': LESSON_LABELS.get(l['lesson_type'], l['lesson_type']),
+            'theme': l['theme'],
+            'method_name': l['method_name'],
+            'probnik_title': l['probnik_title'],
+            'assigned_date': (l['assigned_date'].isoformat()
+                              if hasattr(l['assigned_date'], 'isoformat')
+                              else str(l['assigned_date'] or '')),
+        } for l in lessons if l['status'] == 'skipped']
         return {
             'active': True,
             'seq': lesson['seq'],
             'lesson_type': t,
             'lesson_label': LESSON_LABELS.get(t, t),
-            'position_in_block': pos_in_block,
+            'position_in_block': cur_slot,
             'block_size': BLOCK_SIZE,
             'completed_lessons': completed,
             'theme': lesson['theme'],
@@ -461,6 +724,10 @@ def session_info(user_id: int) -> Dict[str, Any]:
             'olympiad_slug': lesson['olympiad_slug'],
             'cta_url': cta,
             'status': lesson['status'],
+            'today_done': today_done,
+            'plan': plan,
+            'debts': debts,
+            'debts_count': len(debts),
         }
     except Exception as e:  # noqa: BLE001
         logger.warning('[session_plan] session_info failed: %r', e)

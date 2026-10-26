@@ -815,31 +815,68 @@
   </label>
   <script>(function(){var c=document.getElementById('dt-pledge'),k='dt_pledge';try{c.checked=localStorage.getItem(k)==='1';c.addEventListener('change',function(){localStorage.setItem(k,c.checked?'1':'0');if(c.checked){try{fetch('/daily_tasks/pledge',{method:'POST',credentials:'include'}).catch(function(){});}catch(e){}}});}catch(e){}})();</script>
 
-  <!-- SESSION_PLAN_V1: текущее занятие ротации 1-из-6 (только пилоты) -->
+  <!-- SESSION_PLAN_V1: план на 6 занятий (сдвигается ежедневно; пропуски — в долг). Только пилоты -->
   {% if data.session and data.session.active %}
   {% set _s = data.session %}
-  <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;margin-bottom:16px;border-radius:14px;border:1px solid rgba(79,108,255,0.35);background:linear-gradient(135deg,rgba(79,108,255,0.10),rgba(94,234,212,0.08));">
-    <span style="font-size:1.6em;">{% if _s.lesson_type == 'method' %}📘{% elif _s.lesson_type == 'probnik' %}🏆{% else %}✏️{% endif %}</span>
-    <div style="flex:1;">
-      <div style="font-weight:700;color:var(--text);font-size:15px;">
-        Занятие {{ _s.position_in_block }} из {{ _s.block_size }} —
-        {% if _s.lesson_type == 'method' %}
-          изучение метода{% if _s.method_name %}: «{{ _s.method_name }}»{% endif %}
-        {% elif _s.lesson_type == 'probnik' %}
-          реальный пробник{% if _s.probnik_title %}: {{ _s.probnik_title }}{% endif %}
+  <div style="padding:16px;margin-bottom:16px;border-radius:14px;border:1px solid rgba(79,108,255,0.35);background:linear-gradient(135deg,rgba(79,108,255,0.10),rgba(94,234,212,0.08));">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
+      <div style="font-weight:800;color:var(--text);font-size:15px;">План на 6 занятий</div>
+      <div style="color:var(--muted);font-size:12px;">сдвигается каждый день · завершено: {{ _s.completed_lessons }}</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      {% for p in _s.plan %}
+      <div style="flex:1;min-width:130px;padding:10px 12px;border-radius:12px;border:1px solid {{ 'rgba(79,108,255,0.55)' if p.state == 'current' else 'var(--border)' }};background:{{ 'var(--surface)' if p.state == 'current' else 'transparent' }};{{ '' if p.state == 'current' else 'opacity:0.55;' }}">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:1.1em;">{% if p.lesson_type == 'method' %}📘{% elif p.lesson_type == 'probnik' %}🏆{% else %}✏️{% endif %}</span>
+          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">{% if p.state == 'current' %}сейчас{% elif p.state == 'tomorrow' %}завтра{% else %}занятие {{ p.slot }}{% endif %}</span>
+        </div>
+        <div style="font-weight:700;color:var(--text);font-size:13px;margin-top:4px;">
+          {{ p.lesson_label }}{% if p.lesson_type == 'practice' and p.theme %}<span style="color:var(--muted);font-weight:500;"> · {{ p.theme }}</span>{% endif %}{% if p.lesson_type == 'method' and p.method_name %}<span style="color:var(--muted);font-weight:500;"> · {{ p.method_name }}</span>{% endif %}{% if p.lesson_type == 'probnik' and p.probnik_title %}<span style="color:var(--muted);font-weight:500;"> · {{ p.probnik_title }}</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% if _s.debts_count %}
+    <div style="display:flex;align-items:flex-start;gap:8px;margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(255,179,71,0.12);border:1px solid rgba(255,179,71,0.4);">
+      <div style="font-size:13px;color:var(--text);line-height:1.5;">
+        <b>В долгу: {{ _s.debts_count }} {{ 'занятие' if _s.debts_count == 1 else 'занятий' }}</b> — план уже идёт дальше, пропуски записаны:
+        <span style="color:var(--muted);">{% for d in _s.debts %}{{ d.lesson_label }}{% if d.theme %} ({{ d.theme }}){% elif d.method_name %} ({{ d.method_name }}){% elif d.probnik_title %} ({{ d.probnik_title }}){% endif %}{{ '; ' if not loop.last }}{% endfor %}</span>
+      </div>
+    </div>
+    {% endif %}
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+      <span style="font-size:1.6em;">{% if _s.today_done %}✅{% elif _s.lesson_type == 'method' %}📘{% elif _s.lesson_type == 'probnik' %}🏆{% else %}✏️{% endif %}</span>
+      <div style="flex:1;">
+        {% if _s.today_done %}
+        <div style="font-weight:700;color:var(--text);font-size:15px;">Сегодняшнее занятие выполнено — отличная работа.</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:2px;">Следующее занятие — завтра: {{ _s.lesson_label }}. Заходи завтра, план продолжается.</div>
         {% else %}
-          практика{% if _s.theme %} по теме куратора{% endif %}
+        {% if _s.lesson_type == 'method' %}
+        <div style="font-weight:700;color:var(--text);font-size:15px;">
+          Сегодня изучаешь метод{% if _s.method_name %}: «{{ _s.method_name }}»{% endif %}
+        </div>
+        <div style="color:var(--muted);font-size:13px;margin-top:2px;">Разбор метода + 3 задачи по нему</div>
+        {% else %}
+        <div style="font-weight:700;color:var(--text);font-size:15px;">
+          Сегодня — занятие {{ _s.position_in_block }} из {{ _s.block_size }}:
+          {% if _s.lesson_type == 'probnik' %}
+            реальный пробник{% if _s.probnik_title %}: {{ _s.probnik_title }}{% endif %}
+          {% else %}
+            практика{% if _s.theme %} по теме куратора{% endif %}
+          {% endif %}
+        </div>
+        <div style="color:var(--muted);font-size:13px;margin-top:2px;">
+          {% if _s.lesson_type == 'probnik' %}Полный вариант прошлых лет, длительность по регламенту
+          {% else %}Задачи дня по теме, которую назначил куратор{% endif %}</div>
+        {% endif %}
         {% endif %}
       </div>
-      <div style="color:var(--muted);font-size:13px;margin-top:2px;">
-        {% if _s.lesson_type == 'method' %}70% разбор метода + 3 задачи по методу
-        {% elif _s.lesson_type == 'probnik' %}Полный вариант прошлых лет, длительность по регламенту
-        {% else %}Задачи дня по теме, которую назначил куратор{% endif %}
-         · завершено занятий: {{ _s.completed_lessons }}</div>
+      {% if not _s.today_done %}
+      <a href="{{ _s.cta_url }}" style="flex:none;padding:10px 18px;border-radius:10px;background:linear-gradient(135deg,#4f6cff,#5eead4);color:#fff;font-weight:700;font-size:13px;text-decoration:none;">
+        {% if _s.lesson_type == 'method' %}Изучить метод{% elif _s.lesson_type == 'probnik' %}К пробнику{% else %}Начать{% endif %}
+      </a>
+      {% endif %}
     </div>
-    <a href="{{ _s.cta_url }}" style="flex:none;padding:10px 18px;border-radius:10px;background:linear-gradient(135deg,#4f6cff,#5eead4);color:#fff;font-weight:700;font-size:13px;text-decoration:none;">
-      {% if _s.lesson_type == 'method' %}К методу{% elif _s.lesson_type == 'probnik' %}К пробнику{% else %}Начать{% endif %}
-    </a>
   </div>
   {% endif %}
 

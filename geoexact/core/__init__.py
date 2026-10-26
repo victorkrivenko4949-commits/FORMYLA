@@ -102,6 +102,7 @@ from . import external_figures as _external_figures
 from . import plan_repair as _plan_repair
 from . import median_parallel as _median_parallel
 from . import diametral_plan as _diametral_plan
+from . import claim_arms as _claim_arms
 
 _difficulty.install(_llm)
 _general_position.install(_solver, _gates)
@@ -129,3 +130,4 @@ _external_figures.install(_semantics, _llm, _pipeline)  # после simson_line
 _plan_repair.install(_semantics, _llm, _pipeline)       # после external_figures: порядок конструкций (FORWARD_REF) + якорь line_circle_other + правила 47/48 + суффикс
 _median_parallel.install(_semantics, _llm, _pipeline)    # после plan_repair: точка с отношением на медиане + параллель — спец-план без LLM + суффикс
 _diametral_plan.install(_semantics, _llm, _pipeline)   # после median_parallel: диаметральная D + равноудалённые X/Y — канонический план без LLM + суффикс
+_claim_arms.install(_semantics, _llm, _pipeline)      # после diametral_plan: плечи и дуги углов из утверждения — на чертёж + суффикс

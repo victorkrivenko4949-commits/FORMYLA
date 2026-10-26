@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Метод недели — FORMYLA{% endblock %}
+{% block content %}
+<div class="page-daily-tasks" style="max-width:960px;margin:0 auto;padding:24px 16px 60px;">
+  <div style="font-size:20px;font-weight:800;margin:0 0 6px;display:inline-block;background:linear-gradient(90deg,#8ea2ff,#5eead4,#ffc36b);-webkit-background-clip:text;background-clip:text;color:transparent;">Разбор метода и 3 задачи</div>
+  <h2 style="font-size:26px;font-weight:700;margin-bottom:12px;color:var(--text);">Метод недели</h2>
+  <div id="mw-root" data-mw-only="method"></div>
+</div>
+<script src="/static/method_week.js?v=2" defer></script>
+{% endblock %}

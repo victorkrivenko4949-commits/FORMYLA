@@ -383,6 +383,11 @@ def get_daily_tasks():
     user_id = current_user.id
     today = today_in_user_tz()
 
+    # ── SESSION_PLAN_V1: план 6 занятий и долги — на ЛЮБОМ варианте
+    # дашборда (ранние возвраты ниже тоже рендерят этот шаблон).
+    # Не-пилотам — {'active': False}, карточка не показывается.
+    _session_ctx = _session_plan_ctx(user_id)
+
     # ── TEACHER: задачи дня — практика учеников; учителю набор не выдаётся,
     # лимиты и цикл куратора для роли teacher не трогаем вообще. ──────────
     if getattr(current_user, "role", "student") == "teacher":
@@ -403,7 +408,7 @@ def get_daily_tasks():
         }
         return render_template(
             "daily_tasks/daily_tasks_dashboard.html",
-            data={**data, "theme_today": _theme_for_day(today, None)},
+            data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, None)},
         )
 
     # ── LIMITS_V1: мягкие лимиты Free (3 задачи / 1 ИИ-разбор в день, МСК) ──
@@ -439,7 +444,7 @@ def get_daily_tasks():
         }
         return render_template(
             "daily_tasks/daily_tasks_dashboard.html",
-            data={**data, "theme_today": _theme_for_day(today, None)},
+            data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, None)},
         ), 402
 
     def _limit_cap_for_new_set():
@@ -568,7 +573,7 @@ def get_daily_tasks():
         }
         return render_template(
             "daily_tasks/daily_tasks_dashboard.html",
-            data={**data, "theme_today": real_theme_title},
+            data={**data, "session": data.get("session") or _session_ctx, "theme_today": real_theme_title},
         )
 
     # ── BANK: задачи дня выдаются из предзаполненного банка ─────────
@@ -621,7 +626,7 @@ def get_daily_tasks():
                 }
                 return render_template(
                     "daily_tasks/daily_tasks_dashboard.html",
-                    data={**_bank_data, "theme_today": real_theme_title},
+                    data={**_bank_data, "session": _session_ctx, "theme_today": real_theme_title},
                 )
     except Exception as _bank_err:
         logger.exception("daily_tasks: build_daily_set failed for user=%d: %s", user_id, _bank_err)
@@ -705,7 +710,7 @@ def get_daily_tasks():
             "probe_url": "/prep/probe",
         }
         if wants_html:
-            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
+            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level"))})
         return jsonify({
             "status": "blocked",
             "message": data["message"],
@@ -757,7 +762,7 @@ def get_daily_tasks():
             "items": [],
         }
         if wants_html:
-            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
+            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level"))})
         return jsonify({
             "status": "no_set",
             "message": data["message"],
@@ -825,7 +830,7 @@ def get_daily_tasks():
                 "items": [],
             }
             if wants_html:
-                return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
+                return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level"))})
             return jsonify({
                 "status": "generating",
                 "daily_set_id": daily_set.id,
@@ -927,7 +932,8 @@ def get_daily_tasks():
 
     # ── SESSION_PLAN_V1 (26.10.2026): текущее занятие ротации 1-из-6
     # (пилоты: метод → 4 практики → пробник). Неактивно для остальных.
-    data["session"] = _session_plan_ctx(user_id)
+    data["bank_progress"] = _bank_progress(user_id, bank_items)
+    data["session"] = _session_ctx
 
     if wants_html:
         return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": real_theme_title})
