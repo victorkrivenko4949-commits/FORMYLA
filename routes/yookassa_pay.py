@@ -266,7 +266,11 @@ def _activate_diamond_for_user(user_id: int, payment_id: str | None = None, orde
 @yookassa_pay_bp.route("/payments/yookassa/save-config", methods=["POST"])
 @login_required
 def save_config():
-    if not is_diamond_admin(current_user):
+    try:
+        if not is_diamond_admin(current_user):
+            abort(403)
+    except Exception as ae:
+        logger.exception("[yookassa_pay] is_diamond_admin failed: %r", ae)
         abort(403)
 
     from models import db
@@ -276,7 +280,10 @@ def save_config():
         _ensure_tables()
     except Exception as te:
         logger.warning("[yookassa_pay] _ensure_tables warning: %r", te)
-        db.session.rollback()
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
 
     shop_id = (request.form.get("shop_id") or "").strip()
     secret_key = (request.form.get("secret_key") or "").strip()
@@ -286,7 +293,8 @@ def save_config():
         flash("Укажите и Shop ID, и Секретный ключ ЮKassa.", "error")
         return redirect(url_for("profile"))
 
-    now = datetime.utcnow()
+    from datetime import datetime as _dt
+    now = _dt.utcnow()
     for k, v in (("shop_id", shop_id), ("secret_key", secret_key), ("send_receipt", send_receipt)):
         existing = db.session.execute(
             text("SELECT config_key FROM yookassa_config WHERE config_key = :k"), {"k": k}
