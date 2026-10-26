@@ -154,6 +154,10 @@ def _row_to_notice(row) -> dict:
         'sender': key,
         'sender_label': SENDERS[key],
         'body': row['body'],
+        # NOTICE_LINK_V1 (26.10.2026): кнопка-ссылка в карточке
+        # (например, «Посмотреть тарифы» → /subscribe для анонса Premium).
+        'link_url': row.get('link_url') if hasattr(row, 'get') else None,
+        'link_text': row.get('link_text') if hasattr(row, 'get') else None,
     }
 
 
@@ -166,7 +170,7 @@ def admin_page():
         abort(403)
     _ensure_table()
     rows = db.session.execute(text(
-        'SELECT id, title, body, active, activate_at, created_at '
+        'SELECT id, title, body, active, activate_at, created_at, link_url, link_text '
         'FROM admin_notices ORDER BY id DESC LIMIT 200'
     )).mappings().all()
     seen_counts = {}
@@ -211,6 +215,9 @@ def admin_create():
     body = (request.form.get('body') or '').strip()[:MAX_BODY]
     if not body:
         abort(400)
+    # NOTICE_LINK_V1: ссылка-кнопка в карточке (необязательно)
+    link_url = (request.form.get('link_url') or '').strip()[:300] or None
+    link_text = (request.form.get('link_text') or '').strip()[:60] or None
     _ensure_table()
     try:
         activate_at = None
@@ -223,13 +230,53 @@ def admin_create():
             activate_at = datetime.fromisoformat(raw_dt) - _td(hours=3)
         db.session.execute(text(
             'INSERT INTO admin_notices (title, body, link_url, link_text, targets, active, activate_at, created_by, created_at) '
-            'VALUES (:t, :b, NULL, NULL, NULL, :a, :aa, :cb, :ca)'
-        ), {'t': SENDERS[sender], 'b': body, 'a': True, 'aa': activate_at,
+            'VALUES (:t, :b, :lu, :lt, NULL, :a, :aa, :cb, :ca)'
+        ), {'t': SENDERS[sender], 'b': body, 'lu': link_url, 'lt': link_text,
+            'a': True, 'aa': activate_at,
             'cb': current_user.id, 'ca': datetime.utcnow()})
         db.session.commit()
     except Exception as e:  # noqa: BLE001
         db.session.rollback()
         logger.exception('[admin_notices] create failed: %r', e)
+        abort(503)
+    return redirect(url_for('admin_notices.admin_page', ok=1))
+
+
+@admin_notices_bp.route('/admin/notices/<int:nid>/update', methods=['POST'])
+@login_required
+def admin_update(nid: int):
+    """NOTICE_EDIT_V1 (26.10.2026): редактирование уведомления.
+
+    Позволяет поправить текст/ссылку/время показа существующего
+    анонса (например, анонс Premium от 3 ноября) без пересоздания —
+    отметки «увидено» при этом сохраняются.
+    """
+    if not _is_admin():
+        abort(403)
+    _check_csrf()
+    _ensure_table()
+    body = (request.form.get('body') or '').strip()[:MAX_BODY]
+    if not body:
+        abort(400)
+    link_url = (request.form.get('link_url') or '').strip()[:300] or None
+    link_text = (request.form.get('link_text') or '').strip()[:60] or None
+    activate_at = None
+    raw_dt = (request.form.get('activate_at') or '').strip()
+    if raw_dt:
+        from datetime import timedelta as _td
+        try:
+            activate_at = datetime.fromisoformat(raw_dt) - _td(hours=3)
+        except ValueError:
+            abort(400)
+    try:
+        db.session.execute(text(
+            'UPDATE admin_notices SET body = :b, link_url = :lu, link_text = :lt, '
+            'activate_at = COALESCE(:aa, activate_at) WHERE id = :id'
+        ), {'b': body, 'lu': link_url, 'lt': link_text, 'aa': activate_at, 'id': nid})
+        db.session.commit()
+    except Exception as e:  # noqa: BLE001
+        db.session.rollback()
+        logger.exception('[admin_notices] update failed: %r', e)
         abort(503)
     return redirect(url_for('admin_notices.admin_page', ok=1))
 
@@ -287,7 +334,7 @@ def api_pending():
         dialect = db.engine.dialect.name
         if dialect == 'postgresql':
             row = db.session.execute(text(
-                "SELECT n.id, n.title, n.body FROM admin_notices n "
+                "SELECT n.id, n.title, n.body, n.link_url, n.link_text FROM admin_notices n "
                 "WHERE ("
                 "  (n.active = :a AND (n.activate_at IS NULL OR n.activate_at <= NOW()))"
                 "  OR (:pilot AND n.active = FALSE AND n.activate_at IS NOT NULL)"
@@ -299,7 +346,7 @@ def api_pending():
             ), {'u': current_user.id, 'a': True, 'pilot': _pilot}).mappings().first()
         else:
             row = db.session.execute(text(
-                "SELECT n.id, n.title, n.body FROM admin_notices n "
+                "SELECT n.id, n.title, n.body, n.link_url, n.link_text FROM admin_notices n "
                 "WHERE ("
                 "  (n.active = :a AND (n.activate_at IS NULL OR n.activate_at <= :now))"
                 "  OR (:pilot AND n.active = 0 AND n.activate_at IS NOT NULL)"

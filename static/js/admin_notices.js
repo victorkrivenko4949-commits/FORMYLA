@@ -38,6 +38,9 @@
       '#ft-notice .ft-n-sub{font-size:11px;color:rgba(255,255,255,.45)}' +
       '#ft-notice .ft-n-x{margin-left:auto;background:none;border:0;color:rgba(255,255,255,.45);font-size:18px;line-height:1;cursor:pointer;padding:2px 4px}' +
       '#ft-notice .ft-n-body{white-space:pre-wrap;color:var(--text,#e2e8f0);margin:2px 0 10px}' +
+      '#ft-notice .ft-n-link{display:block;width:100%;padding:11px 0;margin:2px 0 6px;border:0;border-radius:10px;font-weight:800;cursor:pointer;text-decoration:none;text-align:center;font-size:14px;background:linear-gradient(135deg,#38bdf8,#8b5cf6);color:#fff}' +
+      '#ft-notice .ft-n-link:hover{filter:brightness(1.1)}' +
+      '#ft-notice.ft-n-premium{border-color:rgba(139,92,246,.7);box-shadow:0 14px 46px rgba(139,92,246,.35)}' +
       '#ft-notice .ft-n-ok{display:block;width:100%;padding:9px 0;border:0;border-radius:9px;font-weight:700;cursor:pointer;' +
       'background:rgba(255,255,255,.08);color:#e2e8f0}' +
       '#ft-notice .ft-n-ok:hover{background:rgba(255,255,255,.14)}' +
@@ -49,9 +52,17 @@
     if (document.getElementById('ft-notice')) return;
     injectCss();
     var isCurator = n.sender === 'curator';
+    // NOTICE_PREMIUM_V1: анонс со словом «Premium» получает премиальный акцент
+    var isPremium = /premium/i.test(String(n.body || ''));
     var box = document.createElement('div');
     box.id = 'ft-notice';
+    if (isPremium) box.className = 'ft-n-premium';
     box.setAttribute('role', 'status');
+    var linkHtml = '';
+    if (n.link_url) {
+      linkHtml = '<a class="ft-n-link" href="' + esc(n.link_url) + '">' +
+                esc(n.link_text || 'Открыть') + '</a>';
+    }
     box.innerHTML =
       '<div class="ft-n-head">' +
         '<div class="ft-n-ico ' + (isCurator ? 'curator' : 'support') + '">' + (isCurator ? '\uD83C\uDF93' : '\uD83D\uDCAC') + '</div>' +
@@ -60,9 +71,13 @@
         '<button type="button" class="ft-n-x" aria-label="Закрыть">×</button>' +
       '</div>' +
       '<div class="ft-n-body">' + esc(n.body) + '</div>' +
+      linkHtml +
       '<button type="button" class="ft-n-ok">Ок</button>';
     document.body.appendChild(box);
     requestAnimationFrame(function () { box.classList.add('is-in'); });
+    // Клик по кнопке-ссылке тоже отмечает уведомление увиденным
+    var linkEl = box.querySelector('.ft-n-link');
+    if (linkEl) linkEl.addEventListener('click', function () { markSeen(n.id); });
     function close() {
       box.classList.remove('is-in');
       markSeen(n.id).catch(function () {}).then(function () {

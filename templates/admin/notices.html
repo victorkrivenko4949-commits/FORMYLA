@@ -36,6 +36,7 @@
         <label class="ntc-sender"><input type="radio" name="sender" value="curator"> 🎓 Куратор</label>
       </div>
       <textarea name="body" maxlength="1000" required placeholder="Текст уведомления…"></textarea>
+      <p class="ntc-muted" style="margin-top:10px">Кнопка-ссылка (необязательно): <input name="link_text" placeholder="Посмотреть тарифы" style="background:rgba(255,255,255,.04);color:inherit;border:1px solid #334155;border-radius:8px;padding:8px 10px;width:180px"> → <input name="link_url" placeholder="/subscribe" style="background:rgba(255,255,255,.04);color:inherit;border:1px solid #334155;border-radius:8px;padding:8px 10px;width:180px"></p>
       <p class="ntc-muted" style="margin-top:10px">Показать после (МСК, необязательно): <input type="datetime-local" name="activate_at" style="background:rgba(255,255,255,.04);color:inherit;border:1px solid #334155;border-radius:8px;padding:8px 10px"> — пусто = сразу.</p>
       <button type="submit" class="ntc-btn">Отправить</button>
     </form>
@@ -55,6 +56,16 @@
         <td>{% if n.active %}<span class="ntc-badge on">активно</span>{% else %}<span class="ntc-badge off">выключено</span>{% endif %}</td>
         <td>{{ n.created_at }}</td>
         <td style="white-space:nowrap">
+          <details style="display:inline">
+            <summary class="ntc-mini" style="display:inline-block;cursor:pointer;list-style:none;padding:6px 10px;border-radius:8px;border:1px solid var(--border,#334155)">Изменить</summary>
+            <form method="post" action="/admin/notices/{{ n.id }}/update" style="margin-top:10px">
+              <input type="hidden" name="csrf" value="{{ csrf }}">
+              <textarea name="body" maxlength="1000" required style="width:320px;min-height:110px;background:rgba(255,255,255,.04);color:inherit;border:1px solid #334155;border-radius:8px;padding:8px 10px;font:inherit">{{ n.body }}</textarea>
+              <p class="ntc-muted" style="margin-top:6px">Кнопка: <input name="link_text" value="{{ n.link_text or '' }}" placeholder="Посмотреть тарифы" style="width:130px;background:rgba(255,255,255,.04);color:inherit;border:1px solid #334155;border-radius:8px;padding:6px 8px"> → <input name="link_url" value="{{ n.link_url or '' }}" placeholder="/subscribe" style="width:110px;background:rgba(255,255,255,.04);color:inherit;border:1px solid #334155;border-radius:8px;padding:6px 8px"></p>
+              <p class="ntc-muted" style="margin-top:6px">Показать после (МСК): <input type="datetime-local" name="activate_at" value="" style="background:rgba(255,255,255,.04);color:inherit;border:1px solid #334155;border-radius:8px;padding:6px 8px"> — пусто = не менять</p>
+              <button class="ntc-mini" type="submit" style="margin-top:6px">Сохранить</button>
+            </form>
+          </details>
           <form method="post" action="/admin/notices/{{ n.id }}/toggle" style="display:inline"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="ntc-mini" type="submit">{{ 'Выключить' if n.active else 'Включить' }}</button></form>
           <form method="post" action="/admin/notices/{{ n.id }}/delete" style="display:inline" onsubmit="return confirm('Удалить уведомление #{{ n.id }}?')"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="ntc-mini danger" type="submit">Удалить</button></form>
         </td>
