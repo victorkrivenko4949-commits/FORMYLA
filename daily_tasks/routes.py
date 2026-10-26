@@ -388,6 +388,15 @@ def get_daily_tasks():
     # Не-пилотам — {'active': False}, карточка не показывается.
     _session_ctx = _session_plan_ctx(user_id)
 
+    # День метода по плану 6 занятий (пилоты): срез-тест не требуется,
+    # задачи дня не блокируем «Сначала — тест» (владелец, 26.10).
+    _method_day = False
+    try:
+        from curator.session_plan import is_method_day as _ismd
+        _method_day = bool(_ismd(user_id))
+    except Exception:
+        logger.exception("is_method_day failed")
+
     # ── TEACHER: задачи дня — практика учеников; учителю набор не выдаётся,
     # лимиты и цикл куратора для роли teacher не трогаем вообще. ──────────
     if getattr(current_user, "role", "student") == "teacher":
@@ -551,7 +560,7 @@ def get_daily_tasks():
     # ── BLOCKED: если в первую неделю срез не пройден — блокируем
     # выдачу задач дня ДО обращения к банку (иначе банк вернёт
     # plan_missing/empty и пользователь не увидит требование среза). ──
-    if blocked:
+    if blocked and not _method_day:
         data = {
             "status": "blocked",
             "daily_set_id": None,
@@ -689,7 +698,7 @@ def get_daily_tasks():
     except Exception:
         pass
 
-    if blocked:
+    if blocked and not _method_day:
         data = {
             "status": "blocked",
             "daily_set_id": None,
@@ -751,8 +760,12 @@ def get_daily_tasks():
             "daily_set_id": None,
             "target_date": today.isoformat(),
             "message": (
-                "Пройди адаптивный тест, чтобы получить персональные задачи на день. "
-                "Или нажми «Сгенерировать» вручную."
+                # день метода (пилоты): не дёргаем адаптивным тестом — занятие
+                # дня на /method_week (владелец, 26.10)
+                ("Сегодня — день метода: разбор и 3 задачи по методу на странице метода.")
+                if _method_day else
+                ("Пройди адаптивный тест, чтобы получить персональные задачи на день. "
+                 "Или нажми «Сгенерировать» вручную.")
             ),
             "class_level": None,
             "summary": None,
@@ -932,7 +945,6 @@ def get_daily_tasks():
 
     # ── SESSION_PLAN_V1 (26.10.2026): текущее занятие ротации 1-из-6
     # (пилоты: метод → 4 практики → пробник). Неактивно для остальных.
-    data["bank_progress"] = _bank_progress(user_id, bank_items)
     data["session"] = _session_ctx
 
     if wants_html:

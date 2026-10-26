@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import logging
-import os
 
 from flask import request
 
@@ -14,11 +13,12 @@ logger = logging.getLogger(__name__)
 
 
 def _ui_enabled() -> bool:
-    # Временно выключено (2026-10-22): по просьбе владельца блок «Куратор» +
-    # «Метод недели» с 3 задачами убран со страницы задач дня даже для
-    # тестовых аккаунтов. Вернуть: METHOD_WEEK_UI_ENABLED=1.
-    # API /method_week/* продолжает работать.
-    return os.environ.get('METHOD_WEEK_UI_ENABLED', '0') == '1'
+    # 2026-10-26 (владелец): блок «Куратор» + «Метод недели» убран со страницы
+    # задач дня НАВСЕГДА — виджет дублировал отдельную страницу /method_week
+    # (разбор + 3 задачи) и выводил огромный разбор сверху дашборда.
+    # Кнопка «Изучить метод» на карточке плана ведёт на /method_week.
+    # API /method_week/* и страница /method_week продолжают работать.
+    return False
 
 _SNIPPET = ('<div id="mw-root"></div>'
             '<script src="/static/method_week.js?v=1" defer></script></body>')

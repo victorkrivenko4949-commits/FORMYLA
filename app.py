@@ -13327,12 +13327,34 @@ def _inject_user_helpers():
     from services.user_helpers import display_name_from_email
     helpers = dict(display_name_from_email=display_name_from_email)
     # Флаг «есть незавершённый тест» — для глобального баннера «Вернуться в тест».
-    # 2026-10-23: тест снова включён — берём реальное состояние.
+    # 2026-10-26 (только пилоты 1/5, остальным — прежнее поведение):
+    # баннер только если срез РЕАЛЬНО начат (min_answered=1 — просто открыли
+    # и закрыли = не напоминаем) И сегодня не день метода (в день метода
+    # срез не дёргаем: занятие дня — /method_week).
     try:
         from services.theme_probe import has_active_probe
         from flask_login import current_user as _cu
         if getattr(_cu, 'is_authenticated', False):
-            helpers['has_active_probe'] = bool(has_active_probe(_cu.id))
+            _uid = int(_cu.id)
+            _is_pilot = False
+            try:
+                from services.pilot import is_pilot_user
+                _is_pilot = bool(is_pilot_user(_uid))
+            except Exception:
+                pass
+            if _is_pilot:
+                _probe_active = bool(has_active_probe(_uid, min_answered=1))
+                if _probe_active:
+                    try:
+                        from curator.session_plan import is_method_day
+                        if is_method_day(_uid):
+                            _probe_active = False
+                    except Exception:
+                        pass
+            else:
+                # не-пилот: прежнее поведение без изменений
+                _probe_active = bool(has_active_probe(_uid))
+            helpers['has_active_probe'] = _probe_active
         else:
             helpers['has_active_probe'] = False
     except Exception:

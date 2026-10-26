@@ -434,6 +434,30 @@ def _current_assigned(user_id: int) -> Optional[Dict[str, Any]]:
     return assigned[0] if assigned else None
 
 
+def is_method_day(user_id: int) -> bool:
+    """Сегодняшнее занятие по плану — изучение метода? Пилот-гейт, не бросает.
+
+    ЧИТАЮЩАЯ проверка: не создаёт занятия и не начисляет долги — безопасна
+    для вызова из глобального контекст-процессора баннера на любой странице.
+    Расписание синхронизируется на /daily_tasks (session_info), поэтому там
+    сегодняшний урок уже назначен. В день метода ученика не дёргаем тестом
+    по теме (срезом): занятие дня — разбор метода + 3 задачи на /method_week
+    (владелец, 26.10.2026). Проверяем урок, датированный сегодня, ЛЮБОГО статуса.
+    """
+    if not _pilot(user_id):
+        return False
+    try:
+        lessons = _lessons(user_id)
+        for l in reversed(lessons):
+            if _to_date(l.get('assigned_date')) == date.today():
+                return l.get('lesson_type') == 'method'
+            return False
+        return False
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[session_plan] is_method_day failed: %r', e)
+        return False
+
+
 def current_lesson(user_id: int) -> Optional[Dict[str, Any]]:
     """Текущее (незавершённое) занятие. Создаёт следующее, если все готовы.
 
