@@ -108,16 +108,22 @@ class DeepSeekClient:
     async def chat(self, model: str, messages: List[Dict[str, str]],
                    temperature: float = 0.3, max_tokens: int = 4096,
                    response_format: Optional[Dict[str, str]] = None,
-                   thinking: bool = False,
+                   thinking: Optional[bool] = None,
                    **kwargs: Any) -> Tuple[str, TokenUsage]:
-        """Sync-compatible async chat.  Same signature as OpenRouterClient.chat."""
+        """Sync-compatible async chat.  Same signature as OpenRouterClient.chat.
+
+        thinking: None (по умолчанию) — параметр не отправляется (поведение
+        провайдера по умолчанию, как было); True — рассуждение включено
+        (thinking: enabled); False — явно ВЫКЛЮЧЕНО (thinking: disabled) —
+        для reasoning-моделей, у которых рассуждение включено по умолчанию.
+        """
         return await self.async_chat(model, messages, temperature, max_tokens,
                                       response_format, thinking=thinking, **kwargs)
 
     async def async_chat(self, model: str, messages: List[Dict[str, str]],
                          temperature: float = 0.3, max_tokens: int = 4096,
                          response_format: Optional[Dict[str, str]] = None,
-                         thinking: bool = False,
+                         thinking: Optional[bool] = None,
                          **kwargs: Any) -> Tuple[str, TokenUsage]:
         """Call DeepSeek API and return (text, TokenUsage)."""
         # Глобальный семафор — только 5 одновременных API-вызовов
@@ -133,7 +139,7 @@ class DeepSeekClient:
     async def _async_chat_impl(self, model: str, messages: List[Dict[str, str]],
                                 temperature: float, max_tokens: int,
                                 response_format: Optional[Dict[str, str]],
-                                thinking: bool = False,
+                                thinking: Optional[bool] = None,
                                 **kwargs: Any) -> Tuple[str, TokenUsage]:
         """Реализация вызова API (вызывается после захвата семафора)."""
         self._ensure_session()
@@ -148,8 +154,11 @@ class DeepSeekClient:
             "temperature": temperature,
             "max_tokens": max_tokens,
         }
-        if thinking:
+        if thinking is True:
             payload["thinking"] = {"type": "enabled"}
+        elif thinking is False:
+            payload["thinking"] = {"type": "disabled"}
+        # thinking=None — параметр не отправляем (поведение по умолчанию)
         if response_format is not None:
             payload["response_format"] = response_format
 

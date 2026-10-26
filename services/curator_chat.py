@@ -356,21 +356,26 @@ def _context_block(ctx: Dict[str, Any]) -> str:
 
 # ── Генерация ответа (DeepSeek, асинхронно, с fallback) ──────────────────────
 
-def _call_deepseek(messages: List[Dict[str, str]], thinking: bool = False) -> str:
+def _call_deepseek(messages: List[Dict[str, str]], thinking: bool = False,
+                   max_tokens: int = 1200) -> str:
     """Синхронная обёртка: async-вызов с таймаутом. Бросает при ошибке.
 
-    thinking=True — режим с рассуждением (для анализа недели),
-    по умолчанию False — быстрый ответ без рассуждения.
+    thinking=True — режим с рассуждением (анализ недели; берём больше
+    max_tokens, чтобы рассуждение не съело весь ответ),
+    thinking=False — явно БЕЗ рассуждения (быстрые ответы в чате).
+    Модель форсируем на v4-pro независимо от DEEPSEEK_MODEL
+    (как method_week) — прод-логи подтверждают v4-pro и так.
     """
     from daily_tasks.pipeline.deepseek_client import DeepSeekClient
 
     async def _run() -> str:
         async with DeepSeekClient() as client:
+            client._model = MODEL
             text, _usage = await client.chat(
                 MODEL,
                 messages,
                 temperature=0.5,
-                max_tokens=1200,
+                max_tokens=max_tokens,
                 thinking=thinking,
             )
             return text
@@ -624,7 +629,7 @@ def _send_weekly_message_locked(user_id: int) -> bool:
                 {'role': 'system', 'content': _context_block(ctx)},
                 {'role': 'user', 'content': WEEKLY_PROMPT_INSTRUCTION},
             ]
-            text = _call_deepseek(messages, thinking=True).strip()
+            text = _call_deepseek(messages, thinking=True, max_tokens=3000).strip()
         except Exception as e:  # noqa: BLE001
             logger.warning('[curator_chat] weekly generation failed: %s', e)
 

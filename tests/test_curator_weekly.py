@@ -148,7 +148,7 @@ def test_weekly_uses_reasoning_chat_does_not(sub_user, monkeypatch):
 
     thinking_flags = []
 
-    def _spy(msgs, thinking=False):
+    def _spy(msgs, thinking=False, max_tokens=1200, **kwargs):
         thinking_flags.append(thinking)
         return 'Ок.'
 
