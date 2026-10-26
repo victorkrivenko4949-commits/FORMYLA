@@ -1,0 +1,632 @@
+{"ts": "2026-10-25T23:32:52", "uid": "u1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "u2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "u1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "u1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение, требует проверки", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:32:52", "uid": "u1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "u2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "d4e38d61f4eb5dd5418f793840d23d4db98092a66e42dd0ee85cd342d4d9bd5f", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "u1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "u2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "u1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "u2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "u1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "u1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение, требует проверки", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:32:52", "uid": "u1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "u2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/amb1.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:32:52", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "alpha", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "y1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "y2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "y1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks5.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "y1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:32:52", "uid": "y1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "y2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks5.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "y2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "разбор случаев по параметру"}
+{"ts": "2026-10-25T23:32:52", "uid": "y2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "z1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "z2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "z1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/full.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "z1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:32:52", "uid": "z1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "z2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/full.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "z2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-25T23:32:52", "uid": "z2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "z1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "z2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "z1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks6.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "z1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:32:52", "uid": "z1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "z2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks6.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "z2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "разбор случаев по параметру"}
+{"ts": "2026-10-25T23:32:52", "uid": "z2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "w1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "w2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "w1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/two-vars.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "w1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:32:52", "uid": "w1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "w2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/two-vars.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "w2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-25T23:32:52", "uid": "w2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "faa72363fbdee68c6e0ddbdff659efe6245831e4b23f82c94dae4cd2d714bc8a", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "g1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "g1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "g1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:32:52", "uid": "g1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "654f63bd94fc3a76e7e4ccac2d94e021ce594291b119ebaf30fa798f03550123", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "6af5d15c5615959b8929fbf12f40c434d079b1e0f25079a6fc6d94941b00cabd", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "g1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "g1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "g1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:32:52", "uid": "g1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "654f63bd94fc3a76e7e4ccac2d94e021ce594291b119ebaf30fa798f03550123", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "6af5d15c5615959b8929fbf12f40c434d079b1e0f25079a6fc6d94941b00cabd", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "2d1e16d4d026f23efc4f252b03e03ea74e94a731e26ccd4ae261289d7a6e3733", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "2d1e16d4d026f23efc4f252b03e03ea74e94a731e26ccd4ae261289d7a6e3733", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "208f09c0fdea56a20632b2b51f5cbf12fc41e0876c1fcc1c3dde670fdf8cb9ff", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "d8f80b3519f3a2df4cce9aa45916b7e79b73a378006b4b88c0ecc117456f23c3", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "208f09c0fdea56a20632b2b51f5cbf12fc41e0876c1fcc1c3dde670fdf8cb9ff", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "d8f80b3519f3a2df4cce9aa45916b7e79b73a378006b4b88c0ecc117456f23c3", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "k1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "k1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "k1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:32:52", "uid": "k1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-25T23:32:52", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-25T23:32:52", "uid": "n1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "n1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:32:52", "uid": "n1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "881d1cff14bc0164bf1d9dc964086c39c56be563b60e4c681d854362b39a3978", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "n3", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "n3", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-25T23:32:52", "uid": "n3", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "c1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "c1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "c1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:32:52", "uid": "c1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-25T23:32:52", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-25T23:32:52", "uid": "m1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "m3", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "m1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "m1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:32:52", "uid": "m1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "m3", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "m3", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-25T23:32:52", "uid": "m3", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "q1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "q1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "q1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:32:52", "uid": "q1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-25T23:32:52", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-25T23:32:52", "uid": "e1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "e1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "e1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:32:52", "uid": "e1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-25T23:32:52", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-25T23:32:52", "uid": "s1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "s1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "s1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "sa1"}
+{"ts": "2026-10-25T23:32:52", "uid": "s1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "e720513ee02429442fab8c9e82c811fe7783795744cc50a2b0021f55cd77253f", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "4211e68dfa33e341f5fbf1545c082dd1a914ba6681521677ed4c1b5b235bd307", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "sa1"}
+{"ts": "2026-10-25T23:32:52", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "e720513ee02429442fab8c9e82c811fe7783795744cc50a2b0021f55cd77253f", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "4211e68dfa33e341f5fbf1545c082dd1a914ba6681521677ed4c1b5b235bd307", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:32:52", "uid": "m1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:32:52", "uid": "m1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:32:52", "uid": "m1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "sm1"}
+{"ts": "2026-10-25T23:32:52", "uid": "m1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:32:52", "uid": "097cc95854dfe5ff5b1ac4d23fa67dd2350677d9c89e717967b41380dc441ac7", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-25T23:33:08", "uid": "u1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "u2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "u1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "u1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение, требует проверки", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:33:08", "uid": "u1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "u2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "d4e38d61f4eb5dd5418f793840d23d4db98092a66e42dd0ee85cd342d4d9bd5f", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "u1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "u2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "u1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "u2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "u1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "u1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение, требует проверки", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:33:08", "uid": "u1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "u2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/amb1.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:33:08", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "alpha", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "y1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "y2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "y1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks5.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "y1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:33:08", "uid": "y1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "y2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks5.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "y2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "разбор случаев по параметру"}
+{"ts": "2026-10-25T23:33:08", "uid": "y2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "z1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "z2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "z1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/full.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "z1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:33:08", "uid": "z1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "z2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/full.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "z2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-25T23:33:08", "uid": "z2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "z1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "z2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "z1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks6.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "z1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-25T23:33:08", "uid": "z1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "z2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks6.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "z2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "разбор случаев по параметру"}
+{"ts": "2026-10-25T23:33:08", "uid": "z2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "w1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "w2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "w1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/two-vars.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "w1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:33:08", "uid": "w1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "w2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/two-vars.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "w2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-25T23:33:08", "uid": "w2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "faa72363fbdee68c6e0ddbdff659efe6245831e4b23f82c94dae4cd2d714bc8a", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "g1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "g1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "g1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:33:08", "uid": "g1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "654f63bd94fc3a76e7e4ccac2d94e021ce594291b119ebaf30fa798f03550123", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "6af5d15c5615959b8929fbf12f40c434d079b1e0f25079a6fc6d94941b00cabd", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "g1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "g1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "g1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:33:08", "uid": "g1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "654f63bd94fc3a76e7e4ccac2d94e021ce594291b119ebaf30fa798f03550123", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "6af5d15c5615959b8929fbf12f40c434d079b1e0f25079a6fc6d94941b00cabd", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "2d1e16d4d026f23efc4f252b03e03ea74e94a731e26ccd4ae261289d7a6e3733", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "2d1e16d4d026f23efc4f252b03e03ea74e94a731e26ccd4ae261289d7a6e3733", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "208f09c0fdea56a20632b2b51f5cbf12fc41e0876c1fcc1c3dde670fdf8cb9ff", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "d8f80b3519f3a2df4cce9aa45916b7e79b73a378006b4b88c0ecc117456f23c3", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "208f09c0fdea56a20632b2b51f5cbf12fc41e0876c1fcc1c3dde670fdf8cb9ff", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "d8f80b3519f3a2df4cce9aa45916b7e79b73a378006b4b88c0ecc117456f23c3", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "k1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "k1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "k1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:33:08", "uid": "k1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-25T23:33:08", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-25T23:33:08", "uid": "n1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "n1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:33:08", "uid": "n1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "881d1cff14bc0164bf1d9dc964086c39c56be563b60e4c681d854362b39a3978", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "n3", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "n3", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-25T23:33:08", "uid": "n3", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "c1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "c1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "c1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:33:08", "uid": "c1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-25T23:33:08", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-25T23:33:08", "uid": "m1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "m3", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "m1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "m1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:33:08", "uid": "m1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "m3", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "m3", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-25T23:33:08", "uid": "m3", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "q1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "q1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "q1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:33:08", "uid": "q1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-25T23:33:08", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-25T23:33:08", "uid": "e1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "e1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "e1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-25T23:33:08", "uid": "e1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-25T23:33:08", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-25T23:33:08", "uid": "s1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "s1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "s1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "sa1"}
+{"ts": "2026-10-25T23:33:08", "uid": "s1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "e720513ee02429442fab8c9e82c811fe7783795744cc50a2b0021f55cd77253f", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "4211e68dfa33e341f5fbf1545c082dd1a914ba6681521677ed4c1b5b235bd307", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "sa1"}
+{"ts": "2026-10-25T23:33:08", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "e720513ee02429442fab8c9e82c811fe7783795744cc50a2b0021f55cd77253f", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "4211e68dfa33e341f5fbf1545c082dd1a914ba6681521677ed4c1b5b235bd307", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-25T23:33:08", "uid": "m1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-25T23:33:08", "uid": "m1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-25T23:33:08", "uid": "m1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "sm1"}
+{"ts": "2026-10-25T23:33:08", "uid": "m1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-25T23:33:08", "uid": "097cc95854dfe5ff5b1ac4d23fa67dd2350677d9c89e717967b41380dc441ac7", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-26T06:51:00", "uid": "u1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "u2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "u1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "u1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение, требует проверки", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:00", "uid": "u1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "u2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "d4e38d61f4eb5dd5418f793840d23d4db98092a66e42dd0ee85cd342d4d9bd5f", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "u1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "u2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "u1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "u2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "u1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "u1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение, требует проверки", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:00", "uid": "u1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "u2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/amb1.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:00", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "alpha", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "y1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "y2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "y1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks5.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "y1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:00", "uid": "y1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "y2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks5.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "y2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "разбор случаев по параметру"}
+{"ts": "2026-10-26T06:51:00", "uid": "y2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "z1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "z2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "z1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/full.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "z1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:00", "uid": "z1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "z2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/full.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "z2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-26T06:51:00", "uid": "z2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "z1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "z2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "z1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks6.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "z1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:00", "uid": "z1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "z2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks6.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "z2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "разбор случаев по параметру"}
+{"ts": "2026-10-26T06:51:00", "uid": "z2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "w1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "w2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "w1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/two-vars.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "w1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:00", "uid": "w1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "w2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/two-vars.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "w2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-26T06:51:00", "uid": "w2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "faa72363fbdee68c6e0ddbdff659efe6245831e4b23f82c94dae4cd2d714bc8a", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "g1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "g1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "g1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:00", "uid": "g1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "654f63bd94fc3a76e7e4ccac2d94e021ce594291b119ebaf30fa798f03550123", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "6af5d15c5615959b8929fbf12f40c434d079b1e0f25079a6fc6d94941b00cabd", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "g1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "g1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "g1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:00", "uid": "g1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "654f63bd94fc3a76e7e4ccac2d94e021ce594291b119ebaf30fa798f03550123", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "6af5d15c5615959b8929fbf12f40c434d079b1e0f25079a6fc6d94941b00cabd", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "2d1e16d4d026f23efc4f252b03e03ea74e94a731e26ccd4ae261289d7a6e3733", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "2d1e16d4d026f23efc4f252b03e03ea74e94a731e26ccd4ae261289d7a6e3733", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "208f09c0fdea56a20632b2b51f5cbf12fc41e0876c1fcc1c3dde670fdf8cb9ff", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "d8f80b3519f3a2df4cce9aa45916b7e79b73a378006b4b88c0ecc117456f23c3", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "208f09c0fdea56a20632b2b51f5cbf12fc41e0876c1fcc1c3dde670fdf8cb9ff", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "d8f80b3519f3a2df4cce9aa45916b7e79b73a378006b4b88c0ecc117456f23c3", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "k1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "k1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "k1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:00", "uid": "k1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-26T06:51:00", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-26T06:51:00", "uid": "n1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "n1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:00", "uid": "n1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "881d1cff14bc0164bf1d9dc964086c39c56be563b60e4c681d854362b39a3978", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "n3", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "n3", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-26T06:51:00", "uid": "n3", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "c1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "c1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "c1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:00", "uid": "c1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-26T06:51:00", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-26T06:51:00", "uid": "m1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "m3", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "m1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "m1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:00", "uid": "m1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "m3", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "m3", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-26T06:51:00", "uid": "m3", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "q1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "q1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "q1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:00", "uid": "q1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-26T06:51:00", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-26T06:51:00", "uid": "e1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "e1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "e1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:00", "uid": "e1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-26T06:51:00", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-26T06:51:00", "uid": "s1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "s1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "s1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "sa1"}
+{"ts": "2026-10-26T06:51:00", "uid": "s1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "e720513ee02429442fab8c9e82c811fe7783795744cc50a2b0021f55cd77253f", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "4211e68dfa33e341f5fbf1545c082dd1a914ba6681521677ed4c1b5b235bd307", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "sa1"}
+{"ts": "2026-10-26T06:51:00", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "e720513ee02429442fab8c9e82c811fe7783795744cc50a2b0021f55cd77253f", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "4211e68dfa33e341f5fbf1545c082dd1a914ba6681521677ed4c1b5b235bd307", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:00", "uid": "m1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:00", "uid": "m1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:00", "uid": "m1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "sm1"}
+{"ts": "2026-10-26T06:51:00", "uid": "m1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:00", "uid": "097cc95854dfe5ff5b1ac4d23fa67dd2350677d9c89e717967b41380dc441ac7", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-26T06:51:09", "uid": "u1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "u2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "u1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "u1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение, требует проверки", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:09", "uid": "u1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "u2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "d4e38d61f4eb5dd5418f793840d23d4db98092a66e42dd0ee85cd342d4d9bd5f", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "u1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "u2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "u1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "u2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "u1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "u1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение, требует проверки", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:09", "uid": "u1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "u2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/zadachi-2025.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/amb1.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "x2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:09", "uid": "x1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "x2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "alpha", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "y1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "y2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "y1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks5.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "y1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:09", "uid": "y1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "y2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks5.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "y2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI-решение", "new": "разбор случаев по параметру"}
+{"ts": "2026-10-26T06:51:09", "uid": "y2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "z1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "z2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "z1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/full.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "z1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:09", "uid": "z1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "76e0cba419f7ddf1a331bd825f73b729ed1a4f3d61efaabe772c14b5b2723b41", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "z2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/full.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "z2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-26T06:51:09", "uid": "z2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "z1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "z2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "z1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks6.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "z1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "сумма арифметической прогрессии"}
+{"ts": "2026-10-26T06:51:09", "uid": "z1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "z2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/tasks6.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "z2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "разбор случаев по параметру"}
+{"ts": "2026-10-26T06:51:09", "uid": "z2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "w1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "w2", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "w1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/two-vars.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "w1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:09", "uid": "w1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "w2", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/two-vars.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "w2", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-26T06:51:09", "uid": "w2", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "faa72363fbdee68c6e0ddbdff659efe6245831e4b23f82c94dae4cd2d714bc8a", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "g1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "g1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "g1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:09", "uid": "g1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "654f63bd94fc3a76e7e4ccac2d94e021ce594291b119ebaf30fa798f03550123", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "6af5d15c5615959b8929fbf12f40c434d079b1e0f25079a6fc6d94941b00cabd", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "g1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "g1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "g1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:09", "uid": "g1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "654f63bd94fc3a76e7e4ccac2d94e021ce594291b119ebaf30fa798f03550123", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "6af5d15c5615959b8929fbf12f40c434d079b1e0f25079a6fc6d94941b00cabd", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "2d1e16d4d026f23efc4f252b03e03ea74e94a731e26ccd4ae261289d7a6e3733", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "2d1e16d4d026f23efc4f252b03e03ea74e94a731e26ccd4ae261289d7a6e3733", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "208f09c0fdea56a20632b2b51f5cbf12fc41e0876c1fcc1c3dde670fdf8cb9ff", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "d8f80b3519f3a2df4cce9aa45916b7e79b73a378006b4b88c0ecc117456f23c3", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "208f09c0fdea56a20632b2b51f5cbf12fc41e0876c1fcc1c3dde670fdf8cb9ff", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "d8f80b3519f3a2df4cce9aa45916b7e79b73a378006b4b88c0ecc117456f23c3", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "k1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "k1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "k1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:09", "uid": "k1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-26T06:51:09", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-26T06:51:09", "uid": "n1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "n1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:09", "uid": "n1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "881d1cff14bc0164bf1d9dc964086c39c56be563b60e4c681d854362b39a3978", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "n3", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "n3", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-26T06:51:09", "uid": "n3", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "c1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "c1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "c1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:09", "uid": "c1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-26T06:51:09", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-26T06:51:09", "uid": "m1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "m3", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "m1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "m1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:09", "uid": "m1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "m3", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "m3", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s3"}
+{"ts": "2026-10-26T06:51:09", "uid": "m3", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "q1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "q1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "q1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:09", "uid": "q1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-26T06:51:09", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-26T06:51:09", "uid": "e1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "e1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "e1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "s1"}
+{"ts": "2026-10-26T06:51:09", "uid": "e1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "ae088fe137c8f6d585b49210155ec54258a469b4993e3da410f4c163d676c06e", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "cd2ab5ea971f6df8f955522617a95d90afc8d441a64419edaff51d55fef19872", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №3"}
+{"ts": "2026-10-26T06:51:09", "uid": "4a2914aac3a61b841e10a6a43fec2ea272dcdafe26464dbeba652b91af7b455c", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}
+{"ts": "2026-10-26T06:51:09", "uid": "s1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "s1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "s1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "sa1"}
+{"ts": "2026-10-26T06:51:09", "uid": "s1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "e720513ee02429442fab8c9e82c811fe7783795744cc50a2b0021f55cd77253f", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "4211e68dfa33e341f5fbf1545c082dd1a914ba6681521677ed4c1b5b235bd307", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "sa1"}
+{"ts": "2026-10-26T06:51:09", "uid": "s1w", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "e720513ee02429442fab8c9e82c811fe7783795744cc50a2b0021f55cd77253f", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "4211e68dfa33e341f5fbf1545c082dd1a914ba6681521677ed4c1b5b235bd307", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №2"}
+{"ts": "2026-10-26T06:51:09", "uid": "m1", "slug": "phystech", "stage": 21, "field": "variant", "old": null, "new": "1"}
+{"ts": "2026-10-26T06:51:09", "uid": "m1", "slug": "phystech", "stage": 21, "field": "source", "old": "", "new": "https://olymp.mipt.ru/nohdr.pdf"}
+{"ts": "2026-10-26T06:51:09", "uid": "m1", "slug": "phystech", "stage": 21, "field": "solution", "old": "AI", "new": "sm1"}
+{"ts": "2026-10-26T06:51:09", "uid": "m1", "slug": "phystech", "stage": 21, "field": "status", "old": "AI_generated", "new": "official_found"}
+{"ts": "2026-10-26T06:51:09", "uid": "097cc95854dfe5ff5b1ac4d23fa67dd2350677d9c89e717967b41380dc441ac7", "slug": "phystech", "stage": 21, "field": "__record__", "old": "missing", "new": "добавлена задача №4"}

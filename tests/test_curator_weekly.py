@@ -46,7 +46,7 @@ def test_weekly_message_once_per_week(sub_user, monkeypatch):
     started = datetime.utcnow() - timedelta(days=8)  # 8 дней = завершена неделя 1
     _add_sub(uid, started)
     monkeypatch.setattr(curator_chat, '_call_deepseek',
-                        lambda msgs: 'Оценка недели: отличное начало!')
+                        lambda msgs, thinking=False: 'Оценка недели: отличное начало!')
 
     assert curator_chat.send_weekly_message(uid) is True
     msgs = _system_msgs(uid)
@@ -75,7 +75,7 @@ def test_weekly_not_sent_during_first_week(sub_user, monkeypatch):
     uid = sub_user.id
     _add_sub(uid, datetime.utcnow() - timedelta(days=3))
     monkeypatch.setattr(curator_chat, '_call_deepseek',
-                        lambda msgs: 'не должно отправиться')
+                        lambda msgs, thinking=False: 'не должно отправиться')
     assert curator_chat.send_weekly_message(uid) is False
     assert len(_system_msgs(uid)) == 0
 
@@ -85,7 +85,7 @@ def test_weekly_fallback_when_llm_fails(sub_user, monkeypatch):
     uid = sub_user.id
     _add_sub(uid, datetime.utcnow() - timedelta(days=9))
 
-    def _boom(msgs):
+    def _boom(msgs, thinking=False):
         raise RuntimeError('llm down')
     monkeypatch.setattr(curator_chat, '_call_deepseek', _boom)
 
@@ -138,3 +138,27 @@ def test_build_context_default_recent_window(sub_user):
     ctx = curator_chat.build_context(uid)
     assert ctx['week_number'] == 5
     assert ctx['attempted_7d'] == 1  # свежая задача видна в дефолтном окне
+
+
+def test_weekly_uses_reasoning_chat_does_not(sub_user, monkeypatch):
+    """Анализ недели — С рассуждением (thinking=True); ответ в чате — БЕЗ."""
+    uid = sub_user.id
+    started = datetime.utcnow() - timedelta(days=8)
+    _add_sub(uid, started)
+
+    thinking_flags = []
+
+    def _spy(msgs, thinking=False):
+        thinking_flags.append(thinking)
+        return 'Ок.'
+
+    monkeypatch.setattr(curator_chat, '_call_deepseek', _spy)
+
+    # недельный анализ — с рассуждением
+    assert curator_chat.send_weekly_message(uid) is True
+    assert thinking_flags[-1] is True
+
+    # обычный ответ куратора в чате — без рассуждения
+    reply = curator_chat.generate_reply(uid, 'как дела?')
+    assert reply['fallback'] is False
+    assert thinking_flags[-1] is False

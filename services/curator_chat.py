@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """services/curator_chat.py — ИИ-куратор для пилота Premium.
 
-Чат с куратором-экспертом по олимпиадам (DeepSeek v4-pro reasoning).
+Чат с куратором-экспертом по олимпиадам (DeepSeek v4-pro).
+
+Модель одна, режимы разные: анализ недели — С рассуждением (thinking),
+обычные ответы в чате — БЕЗ рассуждения (быстрее и дешевле).
 Контекст куратора узкий и проверенный: анкета ученика, результаты
 первой недели, факт бездействия, тариф. Никакой выдуманной информации
 о льготах вузов — только данные из контекста.
@@ -353,8 +356,12 @@ def _context_block(ctx: Dict[str, Any]) -> str:
 
 # ── Генерация ответа (DeepSeek, асинхронно, с fallback) ──────────────────────
 
-def _call_deepseek(messages: List[Dict[str, str]]) -> str:
-    """Синхронная обёртка: async-вызов с таймаутом. Бросает при ошибке."""
+def _call_deepseek(messages: List[Dict[str, str]], thinking: bool = False) -> str:
+    """Синхронная обёртка: async-вызов с таймаутом. Бросает при ошибке.
+
+    thinking=True — режим с рассуждением (для анализа недели),
+    по умолчанию False — быстрый ответ без рассуждения.
+    """
     from daily_tasks.pipeline.deepseek_client import DeepSeekClient
 
     async def _run() -> str:
@@ -364,6 +371,7 @@ def _call_deepseek(messages: List[Dict[str, str]]) -> str:
                 messages,
                 temperature=0.5,
                 max_tokens=1200,
+                thinking=thinking,
             )
             return text
 
@@ -616,7 +624,7 @@ def _send_weekly_message_locked(user_id: int) -> bool:
                 {'role': 'system', 'content': _context_block(ctx)},
                 {'role': 'user', 'content': WEEKLY_PROMPT_INSTRUCTION},
             ]
-            text = _call_deepseek(messages).strip()
+            text = _call_deepseek(messages, thinking=True).strip()
         except Exception as e:  # noqa: BLE001
             logger.warning('[curator_chat] weekly generation failed: %s', e)
 
