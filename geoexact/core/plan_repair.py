@@ -119,12 +119,54 @@ def line_circle_anchor_failures(plan, coords) -> list:
     return fails
 
 
+def _sanitize_target(plan) -> bool:
+    """Невалидная цель (ARITY/UNKNOWN_TARGET) не должна ронять задачу в
+    схему: чертим точный чертёж без измерения. Остальные ошибки валидации
+    не трогаем — ими занимается цикл повторов с обратной связью.
+
+    Прод-кейс (26.10.2026, медиана BK:KM=3:1 с доп. построением): цель
+    ratio с неверным числом точек — 3 повтора формализатора не исправили,
+    конвейер упал в 9-render-sketch. Измерение — украшение, а не условие:
+    чертёж важнее ответа в подписи.
+    """
+    try:
+        from .schema import validate_plan, PlanError
+        try:
+            validate_plan(plan)
+            return False
+        except PlanError as e:
+            if e.code not in ("ARITY", "UNKNOWN_TARGET"):
+                return False
+            if "цель" not in str(e):
+                return False
+        if getattr(plan.target, "kind", "none") == "none":
+            return False
+        dropped = f"{plan.target.kind}({', '.join(plan.target.args)})"
+        plan.target.kind = "none"
+        plan.target.args = []
+        try:
+            validate_plan(plan)
+        except Exception:  # noqa: BLE001
+            return False                      # не помогло — обычный путь
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def _wrap_coerce_formalized(orig):
     @functools.wraps(orig)
     def _coerce_formalized(res):
         plan, warn = orig(res)
         try:
             repair_construction_order(plan)
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            if _sanitize_target(plan):
+                warn = (list(warn or []) + [
+                    "TARGET_DROPPED: цель измерения некорректна (неверное "
+                    "число точек); чертёж построен без измерения — ответ "
+                    "смотрите в полном решении"])
         except Exception:  # noqa: BLE001
             pass
         return plan, warn

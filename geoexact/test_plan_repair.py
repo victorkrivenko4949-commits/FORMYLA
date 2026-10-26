@@ -167,3 +167,49 @@ def test_line_circle_anchor_silent_on_correct():
         "constraints": [], "draw": {"segments": []},
         "target": {"kind": "none", "args": []}, "scale_free": True})
     assert line_circle_anchor_failures(plan, coords) == []
+
+
+def test_sanitize_target_drops_bad_ratio():
+    """Цель ratio с неверным числом точек не роняет задачу в схему."""
+    from geoexact.core.plan_repair import _sanitize_target
+    from geoexact.core.schema import FigurePlan
+    plan = FigurePlan.from_dict({
+        "points": ["A", "B", "C"],
+        "constructions": [{"op": "free_point", "out": t} for t in "ABC"],
+        "constraints": [],
+        "draw": {"segments": [["A", "B"]]},
+        "target": {"kind": "ratio", "args": ["A", "B", "C"]},  # 3 точки — ошибка
+        "scale_free": True,
+    })
+    assert _sanitize_target(plan) is True
+    assert plan.target.kind == "none" and plan.target.args == []
+
+
+def test_sanitize_target_keeps_valid_and_fatal():
+    """Валидная цель не трогается; чужие ошибки валидации — тоже."""
+    from geoexact.core.plan_repair import _sanitize_target
+    from geoexact.core.schema import FigurePlan
+    good = FigurePlan.from_dict({
+        "points": ["A", "B", "C", "D"],
+        "constructions": [{"op": "free_point", "out": t} for t in "ABCD"],
+        "constraints": [],
+        "draw": {"segments": [["A", "B"]]},
+        "target": {"kind": "ratio", "args": ["A", "B", "C", "D"]},
+        "scale_free": True,
+    })
+    assert _sanitize_target(good) is False
+    assert good.target.kind == "ratio"
+    # FORWARD_REF в конструкциях — не цель, санитайзер не спасает и не мешает
+    bad = FigurePlan.from_dict({
+        "points": ["A", "B"],
+        "constructions": [
+            {"op": "free_point", "out": "A"},
+            {"op": "midpoint", "args": ["A", "Q"], "out": "B"},  # Q нет
+        ],
+        "constraints": [],
+        "draw": {"segments": [["A", "B"]]},
+        "target": {"kind": "ratio", "args": ["A", "B"]},
+        "scale_free": True,
+    })
+    assert _sanitize_target(bad) is False
+    assert bad.target.kind == "ratio"
