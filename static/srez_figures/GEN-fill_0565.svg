@@ -1,257 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="426" height="426" viewBox="0 0 426 426" style="background-color: #0F1729;">
-<rect x="0" y="0" width="426" height="426" fill="#0F1729" />
-<rect x="45.00" y="45.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="45.00" y="87.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="45.00" y="129.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="45.00" y="171.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="45.00" y="213.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="45.00" y="255.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="45.00" y="297.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="45.00" y="339.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="87.00" y="45.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="87.00" y="87.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="87.00" y="129.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="87.00" y="171.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="87.00" y="213.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="87.00" y="255.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="87.00" y="297.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="87.00" y="339.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="129.00" y="45.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="129.00" y="87.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="129.00" y="129.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="129.00" y="171.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="129.00" y="213.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="129.00" y="255.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="129.00" y="297.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="129.00" y="339.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="171.00" y="45.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="171.00" y="87.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="171.00" y="129.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="171.00" y="171.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="171.00" y="213.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="171.00" y="255.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="171.00" y="297.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="171.00" y="339.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="213.00" y="45.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="213.00" y="87.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="213.00" y="129.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="213.00" y="171.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="213.00" y="213.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="213.00" y="255.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="213.00" y="297.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="213.00" y="339.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="255.00" y="45.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="255.00" y="87.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="255.00" y="129.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="255.00" y="171.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="255.00" y="213.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="255.00" y="255.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="255.00" y="297.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="255.00" y="339.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="297.00" y="45.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="297.00" y="87.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="297.00" y="129.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="297.00" y="171.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="297.00" y="213.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="297.00" y="255.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="297.00" y="297.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="297.00" y="339.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="339.00" y="45.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="339.00" y="87.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="339.00" y="129.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="339.00" y="171.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="339.00" y="213.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="339.00" y="255.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="339.00" y="297.00" width="42.00" height="42.00" fill="#0F1729" />
-<rect x="339.00" y="339.00" width="42.00" height="42.00" fill="#0F1729" />
-<line x1="45.00" y1="45.00" x2="45.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="87.00" y1="45.00" x2="87.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="129.00" y1="45.00" x2="129.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="171.00" y1="45.00" x2="171.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="213.00" y1="45.00" x2="213.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="255.00" y1="45.00" x2="255.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="297.00" y1="45.00" x2="297.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="339.00" y1="45.00" x2="339.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="381.00" y1="45.00" x2="381.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="45.00" x2="381.00" y2="45.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="87.00" x2="381.00" y2="87.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="129.00" x2="381.00" y2="129.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="171.00" x2="381.00" y2="171.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="213.00" x2="381.00" y2="213.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="255.00" x2="381.00" y2="255.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="297.00" x2="381.00" y2="297.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="339.00" x2="381.00" y2="339.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="381.00" x2="381.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<rect x="214.50" y="172.50" width="39.00" height="39.00" fill="#0F1729" />
-<line x1="218.00" y1="176.00" x2="250.00" y2="208.00" stroke="#C46A5A" stroke-width="2.0" stroke-linecap="round" />
-<line x1="250.00" y1="176.00" x2="218.00" y2="208.00" stroke="#C46A5A" stroke-width="2.0" stroke-linecap="round" />
-<line x1="45.00" y1="45.00" x2="45.00" y2="87.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="45.00" x2="87.00" y2="87.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="45.00" x2="87.00" y2="45.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="87.00" x2="45.00" y2="129.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="129.00" x2="87.00" y2="129.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="87.00" x2="129.00" y2="129.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="87.00" x2="129.00" y2="87.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="129.00" x2="129.00" y2="129.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="45.00" x2="87.00" y2="87.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="45.00" x2="129.00" y2="45.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="87.00" x2="129.00" y2="87.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="45.00" x2="171.00" y2="87.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="45.00" x2="171.00" y2="45.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="87.00" x2="129.00" y2="129.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="87.00" x2="171.00" y2="129.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="129.00" x2="171.00" y2="129.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="45.00" x2="171.00" y2="87.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="45.00" x2="213.00" y2="87.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="45.00" x2="213.00" y2="45.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="87.00" x2="171.00" y2="129.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="129.00" x2="213.00" y2="129.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="87.00" x2="255.00" y2="129.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="87.00" x2="255.00" y2="87.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="129.00" x2="255.00" y2="129.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="45.00" x2="213.00" y2="87.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="45.00" x2="255.00" y2="45.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="87.00" x2="255.00" y2="87.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="45.00" x2="297.00" y2="87.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="45.00" x2="297.00" y2="45.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="87.00" x2="255.00" y2="129.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="87.00" x2="297.00" y2="129.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="129.00" x2="297.00" y2="129.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="45.00" x2="297.00" y2="87.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="45.00" x2="339.00" y2="45.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="87.00" x2="339.00" y2="87.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="381.00" y1="45.00" x2="381.00" y2="87.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="45.00" x2="381.00" y2="45.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="87.00" x2="339.00" y2="129.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="381.00" y1="87.00" x2="381.00" y2="129.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="129.00" x2="381.00" y2="129.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="87.00" x2="297.00" y2="129.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="87.00" x2="339.00" y2="129.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="87.00" x2="339.00" y2="87.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="129.00" x2="297.00" y2="171.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="171.00" x2="339.00" y2="171.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="381.00" y1="129.00" x2="381.00" y2="171.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="129.00" x2="381.00" y2="129.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="171.00" x2="381.00" y2="171.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="129.00" x2="45.00" y2="171.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="129.00" x2="87.00" y2="129.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="129.00" x2="129.00" y2="171.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="129.00" x2="129.00" y2="129.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="171.00" x2="129.00" y2="171.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="171.00" x2="45.00" y2="213.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="171.00" x2="87.00" y2="213.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="213.00" x2="87.00" y2="213.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="129.00" x2="129.00" y2="171.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="129.00" x2="171.00" y2="129.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="171.00" x2="171.00" y2="171.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="129.00" x2="213.00" y2="171.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="129.00" x2="213.00" y2="129.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="171.00" x2="171.00" y2="213.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="171.00" x2="213.00" y2="213.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="213.00" x2="213.00" y2="213.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="129.00" x2="213.00" y2="171.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="129.00" x2="255.00" y2="129.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="171.00" x2="255.00" y2="171.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="129.00" x2="297.00" y2="171.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="129.00" x2="297.00" y2="129.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="171.00" x2="255.00" y2="213.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="171.00" x2="297.00" y2="213.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="213.00" x2="297.00" y2="213.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="171.00" x2="87.00" y2="213.00" stroke="#B4B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="171.00" x2="129.00" y2="171.00" stroke="#B4B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="213.00" x2="129.00" y2="213.00" stroke="#B4B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="171.00" x2="171.00" y2="213.00" stroke="#B4B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="171.00" x2="171.00" y2="171.00" stroke="#B4B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="213.00" x2="129.00" y2="255.00" stroke="#B4B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="213.00" x2="171.00" y2="255.00" stroke="#B4B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="255.00" x2="171.00" y2="255.00" stroke="#B4B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="171.00" x2="297.00" y2="213.00" stroke="#E8E8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="171.00" x2="339.00" y2="171.00" stroke="#E8E8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="213.00" x2="339.00" y2="213.00" stroke="#E8E8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="381.00" y1="171.00" x2="381.00" y2="213.00" stroke="#E8E8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="171.00" x2="381.00" y2="171.00" stroke="#E8E8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="213.00" x2="339.00" y2="255.00" stroke="#E8E8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="381.00" y1="213.00" x2="381.00" y2="255.00" stroke="#E8E8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="255.00" x2="381.00" y2="255.00" stroke="#E8E8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="213.00" x2="45.00" y2="255.00" stroke="#A8D8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="213.00" x2="87.00" y2="213.00" stroke="#A8D8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="213.00" x2="129.00" y2="255.00" stroke="#A8D8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="213.00" x2="129.00" y2="213.00" stroke="#A8D8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="255.00" x2="129.00" y2="255.00" stroke="#A8D8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="255.00" x2="45.00" y2="297.00" stroke="#A8D8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="255.00" x2="87.00" y2="297.00" stroke="#A8D8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="297.00" x2="87.00" y2="297.00" stroke="#A8D8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="213.00" x2="171.00" y2="255.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="213.00" x2="213.00" y2="255.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="213.00" x2="213.00" y2="213.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="255.00" x2="171.00" y2="297.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="297.00" x2="213.00" y2="297.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="255.00" x2="255.00" y2="297.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="255.00" x2="255.00" y2="255.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="297.00" x2="255.00" y2="297.00" stroke="#E8B4B8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="213.00" x2="213.00" y2="255.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="213.00" x2="255.00" y2="213.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="255.00" x2="255.00" y2="255.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="213.00" x2="297.00" y2="255.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="213.00" x2="297.00" y2="213.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="255.00" x2="255.00" y2="297.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="255.00" x2="297.00" y2="297.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="297.00" x2="297.00" y2="297.00" stroke="#A8C8E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="213.00" x2="297.00" y2="255.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="213.00" x2="339.00" y2="255.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="213.00" x2="339.00" y2="213.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="255.00" x2="297.00" y2="297.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="297.00" x2="339.00" y2="297.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="381.00" y1="255.00" x2="381.00" y2="297.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="255.00" x2="381.00" y2="255.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="297.00" x2="381.00" y2="297.00" stroke="#C8E8B4" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="255.00" x2="87.00" y2="297.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="255.00" x2="129.00" y2="255.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="255.00" x2="171.00" y2="297.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="255.00" x2="171.00" y2="255.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="297.00" x2="171.00" y2="297.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="297.00" x2="87.00" y2="339.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="297.00" x2="129.00" y2="339.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="339.00" x2="129.00" y2="339.00" stroke="#E8D8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="297.00" x2="45.00" y2="339.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="297.00" x2="87.00" y2="339.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="297.00" x2="87.00" y2="297.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="339.00" x2="45.00" y2="381.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="45.00" y1="381.00" x2="87.00" y2="381.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="339.00" x2="129.00" y2="381.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="339.00" x2="129.00" y2="339.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="87.00" y1="381.00" x2="129.00" y2="381.00" stroke="#D8B4E8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="297.00" x2="129.00" y2="339.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="297.00" x2="171.00" y2="339.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="297.00" x2="171.00" y2="297.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="339.00" x2="129.00" y2="381.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="129.00" y1="381.00" x2="171.00" y2="381.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="339.00" x2="213.00" y2="381.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="339.00" x2="213.00" y2="339.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="381.00" x2="213.00" y2="381.00" stroke="#B4E8E0" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="297.00" x2="171.00" y2="339.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="297.00" x2="213.00" y2="297.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="171.00" y1="339.00" x2="213.00" y2="339.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="297.00" x2="255.00" y2="339.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="297.00" x2="255.00" y2="297.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="339.00" x2="213.00" y2="381.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="339.00" x2="255.00" y2="381.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="213.00" y1="381.00" x2="255.00" y2="381.00" stroke="#E8A8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="297.00" x2="255.00" y2="339.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="297.00" x2="297.00" y2="339.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="297.00" x2="297.00" y2="297.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="339.00" x2="255.00" y2="381.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="255.00" y1="381.00" x2="297.00" y2="381.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="339.00" x2="339.00" y2="381.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="339.00" x2="339.00" y2="339.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="381.00" x2="339.00" y2="381.00" stroke="#A8E8D8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="297.00" x2="297.00" y2="339.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="297.00" x2="339.00" y2="297.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="297.00" y1="339.00" x2="339.00" y2="339.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="381.00" y1="297.00" x2="381.00" y2="339.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="297.00" x2="381.00" y2="297.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="339.00" x2="339.00" y2="381.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="381.00" y1="339.00" x2="381.00" y2="381.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
-<line x1="339.00" y1="381.00" x2="381.00" y2="381.00" stroke="#E8C8A8" stroke-width="2.4" stroke-linecap="round" />
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="500" viewBox="0 0 600 500" style="background-color: #0F1729;">
+<rect x="0" y="0" width="600" height="500" fill="#0F1729" />
+<line x1="160.00" y1="80.00" x2="160.00" y2="400.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<line x1="160.00" y1="80.00" x2="480.00" y2="80.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<line x1="224.00" y1="80.00" x2="224.00" y2="400.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="160.00" y1="144.00" x2="480.00" y2="144.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="288.00" y1="80.00" x2="288.00" y2="400.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="160.00" y1="208.00" x2="480.00" y2="208.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="352.00" y1="80.00" x2="352.00" y2="400.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="160.00" y1="272.00" x2="480.00" y2="272.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="416.00" y1="80.00" x2="416.00" y2="400.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="160.00" y1="336.00" x2="480.00" y2="336.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="480.00" y1="80.00" x2="480.00" y2="400.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<line x1="160.00" y1="400.00" x2="480.00" y2="400.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<rect x="224.00" y="80.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.55" />
+<rect x="416.00" y="336.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.55" />
+<rect x="160.00" y="336.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.55" />
+<rect x="416.00" y="80.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.55" />
+<rect x="224.00" y="144.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.55" />
+<rect x="352.00" y="80.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.55" />
+<rect x="160.00" y="208.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.55" />
+<rect x="160.00" y="272.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.55" />
+<rect x="288.00" y="80.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.55" />
+<rect x="352.00" y="272.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.55" />
+<rect x="288.00" y="208.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.55" />
+<rect x="160.00" y="144.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.55" />
+<text x="300.00" y="55.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central">5×5</text>
+<text x="300.00" y="440.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central">12 отмеченных клеток, прямоугольников нет</text>
 </svg>

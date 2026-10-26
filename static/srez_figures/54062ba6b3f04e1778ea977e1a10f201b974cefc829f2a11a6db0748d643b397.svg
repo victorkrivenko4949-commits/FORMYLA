@@ -1,90 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="426" height="426" viewBox="0 0 426 426" style="background-color: #0F1729;">
-<rect x="0" y="0" width="426" height="426" fill="#0F1729" />
-<rect x="45.00" y="45.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="45.00" y="87.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="45.00" y="129.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="45.00" y="171.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="45.00" y="213.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="45.00" y="255.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="45.00" y="297.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="45.00" y="339.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="87.00" y="45.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="87.00" y="87.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="87.00" y="129.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="87.00" y="171.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="87.00" y="213.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="87.00" y="255.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="87.00" y="297.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="87.00" y="339.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="129.00" y="45.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="129.00" y="87.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="129.00" y="129.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="129.00" y="171.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="129.00" y="213.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="129.00" y="255.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="129.00" y="297.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="129.00" y="339.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="171.00" y="45.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="171.00" y="87.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="171.00" y="129.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="171.00" y="171.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="171.00" y="213.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="171.00" y="255.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="171.00" y="297.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="171.00" y="339.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="213.00" y="45.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="213.00" y="87.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="213.00" y="129.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="213.00" y="171.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="213.00" y="213.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="213.00" y="255.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="213.00" y="297.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="213.00" y="339.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="255.00" y="45.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="255.00" y="87.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="255.00" y="129.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="255.00" y="171.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="255.00" y="213.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="255.00" y="255.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="255.00" y="297.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="255.00" y="339.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="297.00" y="45.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="297.00" y="87.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="297.00" y="129.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="297.00" y="171.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="297.00" y="213.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="297.00" y="255.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="297.00" y="297.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="297.00" y="339.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="339.00" y="45.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="339.00" y="87.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="339.00" y="129.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="339.00" y="171.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="339.00" y="213.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="339.00" y="255.00" width="42.00" height="42.00" fill="#2A3A55" />
-<rect x="339.00" y="297.00" width="42.00" height="42.00" fill="#1B2740" />
-<rect x="339.00" y="339.00" width="42.00" height="42.00" fill="#2A3A55" />
-<line x1="45.00" y1="45.00" x2="45.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="87.00" y1="45.00" x2="87.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="129.00" y1="45.00" x2="129.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="171.00" y1="45.00" x2="171.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="213.00" y1="45.00" x2="213.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="255.00" y1="45.00" x2="255.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="297.00" y1="45.00" x2="297.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="339.00" y1="45.00" x2="339.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="381.00" y1="45.00" x2="381.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="45.00" x2="381.00" y2="45.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="87.00" x2="381.00" y2="87.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="129.00" x2="381.00" y2="129.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="171.00" x2="381.00" y2="171.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="213.00" x2="381.00" y2="213.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="255.00" x2="381.00" y2="255.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="297.00" x2="381.00" y2="297.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="339.00" x2="381.00" y2="339.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="381.00" x2="381.00" y2="381.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="135.00" y1="177.00" x2="165.00" y2="207.00" stroke="#F6B44C" stroke-width="2.2" stroke-linecap="round" />
-<line x1="165.00" y1="177.00" x2="135.00" y2="207.00" stroke="#F6B44C" stroke-width="2.2" stroke-linecap="round" />
-<line x1="261.00" y1="177.00" x2="291.00" y2="207.00" stroke="#F6B44C" stroke-width="2.2" stroke-linecap="round" />
-<line x1="291.00" y1="177.00" x2="261.00" y2="207.00" stroke="#F6B44C" stroke-width="2.2" stroke-linecap="round" />
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="500" viewBox="0 0 600 500" style="background-color: #0F1729;">
+<rect x="0" y="0" width="600" height="500" fill="#0F1729" />
+<line x1="130.00" y1="70.00" x2="130.00" y2="406.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<line x1="130.00" y1="70.00" x2="466.00" y2="70.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<line x1="186.00" y1="70.00" x2="186.00" y2="406.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="130.00" y1="126.00" x2="466.00" y2="126.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="242.00" y1="70.00" x2="242.00" y2="406.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="130.00" y1="182.00" x2="466.00" y2="182.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="298.00" y1="70.00" x2="298.00" y2="406.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="130.00" y1="238.00" x2="466.00" y2="238.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="354.00" y1="70.00" x2="354.00" y2="406.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="130.00" y1="294.00" x2="466.00" y2="294.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="410.00" y1="70.00" x2="410.00" y2="406.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="130.00" y1="350.00" x2="466.00" y2="350.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="466.00" y1="70.00" x2="466.00" y2="406.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<line x1="130.00" y1="406.00" x2="466.00" y2="406.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<rect x="130.00" y="70.00" width="224.00" height="112.00" fill="none" stroke="#F6B44C" stroke-width="2.2" />
+<text x="242.00" y="126.00" fill="#F6B44C" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">2×4</text>
+<rect x="130.00" y="182.00" width="224.00" height="112.00" fill="none" stroke="#73B6E6" stroke-width="2.2" />
+<text x="242.00" y="238.00" fill="#73B6E6" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">2×4</text>
+<rect x="130.00" y="294.00" width="224.00" height="112.00" fill="none" stroke="#7FD18A" stroke-width="2.2" />
+<text x="242.00" y="350.00" fill="#7FD18A" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">2×4</text>
+<rect x="354.00" y="70.00" width="112.00" height="56.00" fill="none" stroke="#C79BE8" stroke-width="2.0" />
+<text x="410.00" y="98.00" fill="#C79BE8" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central">1×2</text>
+<rect x="354.00" y="126.00" width="112.00" height="56.00" fill="none" stroke="#E88AA0" stroke-width="2.0" />
+<text x="410.00" y="154.00" fill="#E88AA0" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central">1×2</text>
+<rect x="354.00" y="182.00" width="112.00" height="56.00" fill="none" stroke="#8AE8D8" stroke-width="2.0" />
+<text x="410.00" y="210.00" fill="#8AE8D8" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central">1×2</text>
+<rect x="354.00" y="238.00" width="112.00" height="56.00" fill="none" stroke="#E8C98A" stroke-width="2.0" />
+<text x="410.00" y="266.00" fill="#E8C98A" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central">1×2</text>
+<rect x="354.00" y="294.00" width="112.00" height="56.00" fill="none" stroke="#A0E88A" stroke-width="2.0" />
+<text x="410.00" y="322.00" fill="#A0E88A" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central">1×2</text>
+<rect x="354.00" y="350.00" width="112.00" height="56.00" fill="none" stroke="#E8A08A" stroke-width="2.0" />
+<text x="410.00" y="378.00" fill="#E8A08A" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central">1×2</text>
+<text x="300.00" y="42.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central">6×6 → 9 прямоугольников (стороны 2:1)</text>
 </svg>

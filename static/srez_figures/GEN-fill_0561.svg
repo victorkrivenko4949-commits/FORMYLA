@@ -1,85 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="412" height="412" viewBox="0 0 412 412" style="background-color: #0F1729;">
-<rect x="0" y="0" width="412" height="412" fill="#0F1729" />
-<rect x="45.00" y="45.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="45.00" y="91.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="45.00" y="137.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="45.00" y="183.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="45.00" y="229.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="45.00" y="275.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="45.00" y="321.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="91.00" y="45.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="91.00" y="91.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="91.00" y="137.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="91.00" y="183.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="91.00" y="229.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="91.00" y="275.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="91.00" y="321.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="137.00" y="45.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="137.00" y="91.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="137.00" y="137.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="137.00" y="183.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="137.00" y="229.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="137.00" y="275.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="137.00" y="321.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="183.00" y="45.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="183.00" y="91.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="183.00" y="137.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="183.00" y="183.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="183.00" y="229.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="183.00" y="275.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="183.00" y="321.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="229.00" y="45.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="229.00" y="91.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="229.00" y="137.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="229.00" y="183.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="229.00" y="229.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="229.00" y="275.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="229.00" y="321.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="275.00" y="45.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="275.00" y="91.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="275.00" y="137.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="275.00" y="183.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="275.00" y="229.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="275.00" y="275.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="275.00" y="321.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="321.00" y="45.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="321.00" y="91.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="321.00" y="137.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="321.00" y="183.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="321.00" y="229.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="321.00" y="275.00" width="46.00" height="46.00" fill="#0F1729" />
-<rect x="321.00" y="321.00" width="46.00" height="46.00" fill="#0F1729" />
-<line x1="45.00" y1="45.00" x2="45.00" y2="367.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="91.00" y1="45.00" x2="91.00" y2="367.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="137.00" y1="45.00" x2="137.00" y2="367.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="183.00" y1="45.00" x2="183.00" y2="367.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="229.00" y1="45.00" x2="229.00" y2="367.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="275.00" y1="45.00" x2="275.00" y2="367.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="321.00" y1="45.00" x2="321.00" y2="367.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="367.00" y1="45.00" x2="367.00" y2="367.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="45.00" x2="367.00" y2="45.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="91.00" x2="367.00" y2="91.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="137.00" x2="367.00" y2="137.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="183.00" x2="367.00" y2="183.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="229.00" x2="367.00" y2="229.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="275.00" x2="367.00" y2="275.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="321.00" x2="367.00" y2="321.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="45.00" y1="367.00" x2="367.00" y2="367.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<rect x="48.00" y="48.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="140.00" y="48.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="232.00" y="48.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="324.00" y="48.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="48.00" y="140.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="140.00" y="140.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="232.00" y="140.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="324.00" y="140.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="48.00" y="232.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="140.00" y="232.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="232.00" y="232.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="324.00" y="232.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="48.00" y="324.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="140.00" y="324.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="232.00" y="324.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
-<rect x="324.00" y="324.00" width="40.00" height="40.00" fill="#F6B44C" fill-opacity="0.85" />
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="500" viewBox="0 0 600 500" style="background-color: #0F1729;">
+<rect x="0" y="0" width="600" height="500" fill="#0F1729" />
+<line x1="180.00" y1="100.00" x2="180.00" y2="356.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<line x1="180.00" y1="100.00" x2="436.00" y2="100.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<line x1="244.00" y1="100.00" x2="244.00" y2="356.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="180.00" y1="164.00" x2="436.00" y2="164.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="308.00" y1="100.00" x2="308.00" y2="356.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="180.00" y1="228.00" x2="436.00" y2="228.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="372.00" y1="100.00" x2="372.00" y2="356.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="180.00" y1="292.00" x2="436.00" y2="292.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
+<line x1="436.00" y1="100.00" x2="436.00" y2="356.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<line x1="180.00" y1="356.00" x2="436.00" y2="356.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
+<rect x="180.00" y="100.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.5" />
+<text x="212.00" y="137.00" fill="#0F1729" font-family="Arial, Helvetica, sans-serif" font-size="20" text-anchor="middle" dominant-baseline="central">К</text>
+<rect x="308.00" y="100.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.5" />
+<text x="340.00" y="137.00" fill="#0F1729" font-family="Arial, Helvetica, sans-serif" font-size="20" text-anchor="middle" dominant-baseline="central">К</text>
+<rect x="244.00" y="164.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.5" />
+<text x="276.00" y="201.00" fill="#0F1729" font-family="Arial, Helvetica, sans-serif" font-size="20" text-anchor="middle" dominant-baseline="central">К</text>
+<rect x="372.00" y="164.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.5" />
+<text x="404.00" y="201.00" fill="#0F1729" font-family="Arial, Helvetica, sans-serif" font-size="20" text-anchor="middle" dominant-baseline="central">К</text>
+<rect x="180.00" y="228.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.5" />
+<text x="212.00" y="265.00" fill="#0F1729" font-family="Arial, Helvetica, sans-serif" font-size="20" text-anchor="middle" dominant-baseline="central">К</text>
+<rect x="308.00" y="228.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.5" />
+<text x="340.00" y="265.00" fill="#0F1729" font-family="Arial, Helvetica, sans-serif" font-size="20" text-anchor="middle" dominant-baseline="central">К</text>
+<rect x="244.00" y="292.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.5" />
+<text x="276.00" y="329.00" fill="#0F1729" font-family="Arial, Helvetica, sans-serif" font-size="20" text-anchor="middle" dominant-baseline="central">К</text>
+<rect x="372.00" y="292.00" width="64.00" height="64.00" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.4" fill-opacity="0.5" />
+<text x="404.00" y="329.00" fill="#0F1729" font-family="Arial, Helvetica, sans-serif" font-size="20" text-anchor="middle" dominant-baseline="central">К</text>
+<text x="300.00" y="460.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central">8 коней, никакие два не бьют друг друга</text>
 </svg>

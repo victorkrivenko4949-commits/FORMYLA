@@ -1,20 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="500" viewBox="0 0 600 500" style="background-color: #0F1729;">
 <rect x="0" y="0" width="600" height="500" fill="#0F1729" />
-<polygon points="70.00,422.50 70.00,77.50 530.00,422.50" fill="none" stroke="#D9E5F5" stroke-width="2.0" stroke-linejoin="round" stroke-linecap="round" />
-<line x1="70.00" y1="422.50" x2="235.60" y2="201.70" stroke="#F6B44C" stroke-width="1.6" stroke-linecap="round" />
-<polyline points="70.00,408.50 84.00,408.50 84.00,422.50" fill="none" stroke="#F6B44C" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" />
-<polyline points="229.60,209.70 237.60,215.70 243.60,207.70" fill="none" stroke="#A6B7CC" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" />
-<path d="M 70.00 400.50 A 22 22 0 0 1 83.20 404.90" fill="none" stroke="#A6B7CC" stroke-width="1.4" />
-<path d="M 508.00 422.50 A 22 22 0 0 1 512.40 409.30" fill="none" stroke="#A6B7CC" stroke-width="1.4" />
-<path d="M 89.20 396.90 A 32 32 0 0 1 102.00 422.50" fill="none" stroke="#A6B7CC" stroke-width="1.4" />
-<path d="M 87.60 90.70 A 22 22 0 0 1 70.00 99.50" fill="none" stroke="#A6B7CC" stroke-width="1.4" />
-<circle cx="70.00" cy="422.50" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="56.00" y="418.50" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">A</text>
-<circle cx="70.00" cy="77.50" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="56.00" y="73.50" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">B</text>
-<circle cx="530.00" cy="422.50" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="544.00" y="428.50" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">C</text>
-<circle cx="235.60" cy="201.70" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="247.60" y="195.70" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">D</text>
+<line x1="170.00" y1="200.00" x2="170.00" y2="95.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="170.00" y1="95.00" x2="260.93" y2="147.50" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="260.93" y1="147.50" x2="170.00" y2="200.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="170.00" y1="200.00" x2="260.93" y2="147.50" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="260.93" y1="147.50" x2="260.93" y2="252.50" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="260.93" y1="252.50" x2="170.00" y2="200.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="170.00" y1="200.00" x2="260.93" y2="252.50" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="260.93" y1="252.50" x2="170.00" y2="305.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="170.00" y1="305.00" x2="170.00" y2="200.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="170.00" y1="200.00" x2="170.00" y2="305.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="170.00" y1="305.00" x2="79.07" y2="252.50" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="79.07" y1="252.50" x2="170.00" y2="200.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="170.00" y1="200.00" x2="200.31" y2="147.50" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" />
+<line x1="260.93" y1="147.50" x2="200.31" y2="147.50" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" />
+<line x1="260.93" y1="252.50" x2="200.31" y2="252.50" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" />
+<line x1="170.00" y1="200.00" x2="200.31" y2="252.50" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" />
+<path d="M 170.00 200.00 L 200.31 147.50 L 260.93 147.50 L 291.38 200.00 L 260.93 252.50 L 200.31 252.50 Z" fill="#F6B44C" fill-opacity="0.18" stroke="none" />
+<line x1="170.00" y1="200.00" x2="200.31" y2="147.50" stroke="#F6B44C" stroke-width="1.8" stroke-linecap="round" />
+<line x1="200.31" y1="147.50" x2="260.93" y2="147.50" stroke="#F6B44C" stroke-width="1.8" stroke-linecap="round" />
+<line x1="260.93" y1="252.50" x2="200.31" y2="252.50" stroke="#F6B44C" stroke-width="1.8" stroke-linecap="round" />
+<line x1="200.31" y1="252.50" x2="170.00" y2="200.00" stroke="#F6B44C" stroke-width="1.8" stroke-linecap="round" />
+<line x1="260.93" y1="147.50" x2="291.38" y2="200.00" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="5 4" />
+<line x1="260.93" y1="252.50" x2="291.38" y2="200.00" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="5 4" />
+<circle cx="200.31" cy="147.50" r="3.0" stroke="#73B6E6" stroke-width="1.8" fill="#73B6E6" />
+<circle cx="230.62" cy="200.00" r="3.0" stroke="#73B6E6" stroke-width="1.8" fill="#73B6E6" />
+<circle cx="200.31" cy="252.50" r="3.0" stroke="#73B6E6" stroke-width="1.8" fill="#73B6E6" />
+<circle cx="139.69" cy="252.50" r="3.0" stroke="#73B6E6" stroke-width="1.8" fill="#73B6E6" />
+<line x1="430.00" y1="200.00" x2="430.00" y2="95.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="430.00" y1="95.00" x2="520.93" y2="147.50" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="520.93" y1="147.50" x2="430.00" y2="200.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="430.00" y1="200.00" x2="520.93" y2="147.50" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="520.93" y1="147.50" x2="520.93" y2="252.50" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="520.93" y1="252.50" x2="430.00" y2="200.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="430.00" y1="200.00" x2="520.93" y2="252.50" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="520.93" y1="252.50" x2="430.00" y2="305.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="430.00" y1="305.00" x2="430.00" y2="200.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="430.00" y1="200.00" x2="430.00" y2="305.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="430.00" y1="305.00" x2="339.07" y2="252.50" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="339.07" y1="252.50" x2="430.00" y2="200.00" stroke="#D9E5F5" stroke-width="1.3" stroke-linecap="round" />
+<line x1="430.00" y1="200.00" x2="490.62" y2="200.00" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" />
+<line x1="520.93" y1="252.50" x2="490.62" y2="200.00" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" />
+<line x1="430.00" y1="305.00" x2="399.69" y2="252.50" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" />
+<line x1="430.00" y1="200.00" x2="399.69" y2="252.50" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" />
+<path d="M 430.00 200.00 L 490.62 200.00 L 520.93 252.50 L 490.69 305.12 L 430.00 305.00 L 399.69 252.50 Z" fill="#F6B44C" fill-opacity="0.18" stroke="none" />
+<line x1="430.00" y1="200.00" x2="490.62" y2="200.00" stroke="#F6B44C" stroke-width="1.8" stroke-linecap="round" />
+<line x1="490.62" y1="200.00" x2="520.93" y2="252.50" stroke="#F6B44C" stroke-width="1.8" stroke-linecap="round" />
+<line x1="430.00" y1="305.00" x2="399.69" y2="252.50" stroke="#F6B44C" stroke-width="1.8" stroke-linecap="round" />
+<line x1="399.69" y1="252.50" x2="430.00" y2="200.00" stroke="#F6B44C" stroke-width="1.8" stroke-linecap="round" />
+<line x1="520.93" y1="252.50" x2="490.69" y2="305.12" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="5 4" />
+<line x1="430.00" y1="305.00" x2="490.69" y2="305.12" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="5 4" />
+<circle cx="460.31" cy="147.50" r="3.0" stroke="#73B6E6" stroke-width="1.8" fill="#73B6E6" />
+<circle cx="490.62" cy="200.00" r="3.0" stroke="#73B6E6" stroke-width="1.8" fill="#73B6E6" />
+<circle cx="460.31" cy="252.50" r="3.0" stroke="#73B6E6" stroke-width="1.8" fill="#73B6E6" />
+<circle cx="399.69" cy="252.50" r="3.0" stroke="#73B6E6" stroke-width="1.8" fill="#73B6E6" />
+<text x="170.00" y="60.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="11" text-anchor="middle" dominant-baseline="central">верхушка октаэдра</text>
+<text x="430.00" y="60.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="11" text-anchor="middle" dominant-baseline="central">нижняя половина</text>
+<line x1="300.00" y1="350.40" x2="237.60" y2="440.00" stroke="#D9E5F5" stroke-width="1.5" stroke-linecap="round" />
+<line x1="237.60" y1="440.00" x2="362.40" y2="440.00" stroke="#D9E5F5" stroke-width="1.5" stroke-linecap="round" />
+<line x1="362.40" y1="440.00" x2="300.00" y2="350.40" stroke="#D9E5F5" stroke-width="1.5" stroke-linecap="round" />
+<line x1="300.00" y1="410.13" x2="300.00" y2="350.40" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4 3" />
+<line x1="300.00" y1="410.13" x2="237.60" y2="440.00" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4 3" />
+<line x1="300.00" y1="410.13" x2="362.40" y2="440.00" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4 3" />
+<circle cx="300.00" cy="410.13" r="3.0" stroke="#73B6E6" stroke-width="1.8" fill="#73B6E6" />
+<text x="300.00" y="486.00" fill="#F6B44C" font-family="Arial, Helvetica, sans-serif" font-size="11" text-anchor="middle" dominant-baseline="central">Δ-грань собирается из 3 клапанов — по одному от соседних шестиугольников</text>
+<text x="300.00" y="452.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="11" text-anchor="middle" dominant-baseline="central">каждая половина: шестиугольник = Γ-грань + 3 клапана до центроидов (·)</text>
 </svg>
