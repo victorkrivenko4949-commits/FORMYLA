@@ -22,6 +22,7 @@ import services.curator_chat as curator_chat
 def sub_user(app, monkeypatch):
     """Пилотный пользователь с пилотной подпиской (старт — days назад)."""
     monkeypatch.setattr(pilot_mod, 'is_pilot_user', lambda u=None, **k: True)
+    monkeypatch.setattr(pilot_mod, 'is_pilot_id', lambda uid=None, **k: True)
     u = User(email='weekly@test.ru', nickname='weekly')
     db.session.add(u)
     db.session.commit()
@@ -162,3 +163,20 @@ def test_weekly_uses_reasoning_chat_does_not(sub_user, monkeypatch):
     reply = curator_chat.generate_reply(uid, 'как дела?')
     assert reply['fallback'] is False
     assert thinking_flags[-1] is False
+
+
+def test_weekly_not_sent_for_non_pilot(app, monkeypatch):
+    """НЕ-пилоту недельная оценка не отправляется (только victor + lavrik)."""
+    u = User(id=42, email='regular@test.ru', nickname='regular')  # id вне PILOT_USER_IDS
+    db.session.add(u)
+    db.session.commit()
+    uid = u.id
+    # is_pilot_id остаётся реальным: id не входит в PILOT_USER_IDS (1, 5)
+    monkeypatch.setattr(pilot_mod, 'is_pilot_user', lambda usr=None, **k: False)
+    _add_sub(uid, datetime.utcnow() - timedelta(days=8))
+
+    monkeypatch.setattr(curator_chat, '_call_deepseek',
+                        lambda msgs, thinking=False, max_tokens=1200, **kw:
+                        'не должно отправиться')
+    assert curator_chat.send_weekly_message(uid) is False
+    assert len(_system_msgs(uid)) == 0

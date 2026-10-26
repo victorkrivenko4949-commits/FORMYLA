@@ -599,7 +599,18 @@ def send_weekly_message(user_id: int) -> bool:
     контексту недели; при любом сбое — шаблонное сообщение (пользователь
     никогда не встречает тишину). Идемпотентно: замок защищает от гонки
     «планировщик + открытие чата». Никогда не бросает.
+
+    ТОЛЬКО для пилотов-админов (victor + lavrik) — по требованию владельца:
+    обычным пользователям недельные оценки не отправляются (до запуска).
     """
+    try:
+        from services.pilot import is_pilot_id
+        if not is_pilot_id(user_id):
+            return False
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[curator_chat] pilot check failed: %s', e)
+        return False
+
     with _week1_lock:
         return _send_weekly_message_locked(user_id)
 
