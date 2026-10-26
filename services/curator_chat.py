@@ -453,7 +453,9 @@ def daily_plan_block(user_id: int) -> str:
         from curator.session_plan import session_info
         s = session_info(user_id)
         if s.get('active'):
-            if s['lesson_type'] == 'method':
+            if s.get('week_one'):
+                plan = 'диагностическая неделя: тест (5 задач, ~15 мин) + задачи дня по уровню'
+            elif s['lesson_type'] == 'method':
                 plan = ('изучение метода'
                         + (f" «{s['method_name']}»" if s.get('method_name') else '')
                         + ': 70% разбор метода + 3 задачи на закрепление (~45 мин)')
@@ -462,6 +464,8 @@ def daily_plan_block(user_id: int) -> str:
                         + (f" ({s['probnik_title']})" if s.get('probnik_title') else ''))
             else:
                 plan = 'задачи дня по теме, назначенной куратором'
+            if s.get('week_one'):
+                return f"- план на сегодня (неделя 1): {plan}"
             return (f"- план на сегодня (занятие {s['position_in_block']} из "
                     f"{s['block_size']}): {plan}")
     except Exception as e:  # noqa: BLE001

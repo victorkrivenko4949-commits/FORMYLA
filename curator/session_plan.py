@@ -238,8 +238,51 @@ def _completed_count(user_id: int) -> int:
     return int(row[0]) if row else 0
 
 
-def _lesson_type_for_position(completed: int) -> str:
-    """Занятие 1 блока — метод, занятие 6 — пробник, остальные — практика."""
+def _premium_started_at(user_id: int):
+    """Дата начала активной premium-подписки (для правила «неделя 1»)."""
+    try:
+        row = db.session.execute(text(
+            "SELECT started_at FROM subscriptions "
+            "WHERE user_id = :uid AND status = 'active' "
+            "AND plan IN ('premium_intense', 'premium_calm') "
+            "ORDER BY id DESC LIMIT 1"
+        ), {'uid': user_id}).fetchone()
+        if row and row[0]:
+            return row[0]
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[session_plan] started_at lookup failed: %r', e)
+    return None
+
+
+def _in_week_one(user_id: int) -> bool:
+    """Правило премиума: первая неделя — диагностическая.
+
+    7 дней с начала premium-подписки — только тест и задачи дня,
+    без методов и пробников (см. services/pilot.py, «неделя 1»). Пробный
+    день тоже попадает в «неделю 1»: ученик видит диагностику (тест +
+    задачи дня), а не метод — это же показывает календарный план куратора.
+    """
+    started = _premium_started_at(user_id)
+    if not started:
+        return False
+    try:
+        s = started if isinstance(started, datetime) else datetime.fromisoformat(
+            str(started).replace('Z', '').replace(' ', 'T'))
+        if s.tzinfo:
+            s = s.replace(tzinfo=None)
+        return (datetime.utcnow() - s).days < 7
+    except Exception:
+        return False
+
+
+def _lesson_type_for_position(user_id: int, completed: int) -> str:
+    """Занятие 1 блока — метод, занятие 6 — пробник, остальные — практика.
+
+    НЕДЕЛЯ 1 (диагностическая, 7 дней с начала premium): без методов
+    и пробников — только практика (тест + задачи дня).
+    """
+    if _in_week_one(user_id):
+        return 'practice'
     pos = (completed % BLOCK_SIZE) + 1
     if pos == 1:
         return 'method'
@@ -390,7 +433,7 @@ def _advance_stale(user_id: int) -> None:
     for i in range(1, missed):
         day = assigned + timedelta(days=i)
         seq = last['seq'] + i
-        lesson_type = _lesson_type_for_position(_slot_of(seq) - 1)
+        lesson_type = _lesson_type_for_position(user_id, _slot_of(seq) - 1)
         # тема прошлого дня не восстанавливается — не подставляем сегодняшнюю;
         # метод/пробник — детерминированный выбор (как в _insert_lesson)
         theme = method_code = method_name = probnik_code = probnik_title = None
@@ -483,7 +526,7 @@ def current_lesson(user_id: int) -> Optional[Dict[str, Any]]:
         return None
     # история пуста или последний урок датирован прошлым — создаём следующий по слоту
     seq = (lessons[-1]['seq'] if lessons else 0) + 1
-    lesson_type = _lesson_type_for_position(_slot_of(seq) - 1)
+    lesson_type = _lesson_type_for_position(user_id, _slot_of(seq) - 1)
     _insert_lesson(user_id, seq, lesson_type)
     lessons = _lessons(user_id)
     assigned = [l for l in lessons if l['status'] == 'assigned']
@@ -710,13 +753,14 @@ def session_info(user_id: int) -> Dict[str, Any]:
             # «текущий» слот для превью — СЛЕДУЮЩИЙ за завершённым
             next_seq = last['seq'] + 1
             cur_slot = _slot_of(next_seq)
-            t = _lesson_type_for_position(cur_slot - 1)
+            t = _lesson_type_for_position(user_id, cur_slot - 1)
             lesson = {'seq': next_seq, 'lesson_type': t,
                       'theme': None, 'method_name': None,
                       'probnik_title': None, 'method_code': None,
                       'probnik_code': None, 'olympiad_slug': None,
                       'status': 'done_today'}
         completed = _completed_count(user_id)
+        week_one = _in_week_one(user_id)
         if not today_done:
             cur_slot = _slot_of(lesson['seq'])
         t = lesson['lesson_type']
@@ -744,7 +788,7 @@ def session_info(user_id: int) -> Dict[str, Any]:
         plan = []
         for i in range(BLOCK_SIZE):
             slot = ((cur_slot - 1 + i) % BLOCK_SIZE) + 1
-            lt = _lesson_type_for_position(slot - 1)
+            lt = _lesson_type_for_position(user_id, slot - 1)
             entry = {
                 'slot': slot,
                 'lesson_type': lt,
@@ -776,6 +820,7 @@ def session_info(user_id: int) -> Dict[str, Any]:
             'position_in_block': cur_slot,
             'block_size': BLOCK_SIZE,
             'completed_lessons': completed,
+            'week_one': week_one,
             'theme': lesson['theme'],
             'method_name': lesson['method_name'],
             'probnik_code': lesson['probnik_code'],
