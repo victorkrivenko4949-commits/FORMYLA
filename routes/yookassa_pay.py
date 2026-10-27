@@ -464,6 +464,28 @@ def buy_diamond():
 @yookassa_pay_bp.route("/payments/yookassa/return", methods=["GET"])
 @login_required
 def payment_return():
+    import traceback
+    from werkzeug.exceptions import HTTPException
+    try:
+        return _payment_return_inner()
+    except HTTPException:
+        # abort(403) и подобные — пробрасываем как есть, не превращаем в redirect
+        raise
+    except Exception as e:
+        # Фиксируем ошибку в Render Logs (stdout) и отвечаем мягко, чтобы юзер не видел 500
+        tb = traceback.format_exc()
+        print(f"\n{'='*70}\n[yookassa_pay.payment_return] EXCEPTION\n{tb}\n{'='*70}\n", flush=True)
+        logger.exception("[yookassa_pay.payment_return] failed: %r", e)
+        try:
+            from models import db
+            db.session.rollback()
+        except Exception:
+            pass
+        flash(f"⚠️ Техническая ошибка при проверке оплаты: {type(e).__name__}. Мы уже работаем над исправлением — обновите страницу через 10 секунд.", "error")
+        return redirect(url_for("profile"))
+
+
+def _payment_return_inner():
     if not is_diamond_buyer(current_user):
         abort(403)
     _ensure_tables()
