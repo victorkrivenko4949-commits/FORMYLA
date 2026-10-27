@@ -492,3 +492,73 @@
         font-size:16px !important;
     }
 }
+
+
+/* ---------- 10. Subscribe page: paid-items table -> cards on phones --- */
+/* Таблица «Платные товары и услуги» (templates/subscribe.html) имеет 5
+   колонок и инлайновые стили, а mobile.css принудительно ставит таблицам
+   white-space:nowrap — на телефоне она обрезалась. Здесь на узких экранах
+   каждая строка таблицы становится карточкой с подписями полей. */
+@media (max-width: 768px) {
+    .subscribe-page { padding: 16px 12px 40px !important; }
+    .subscribe-page > div[style*="padding"] { padding: 16px 14px !important; }
+
+    .subscribe-page table,
+    .subscribe-page table tbody,
+    .subscribe-page table tr,
+    .subscribe-page table td {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        white-space: normal !important;
+        overflow: visible !important;
+    }
+    .subscribe-page table thead { display: none !important; }
+
+    .subscribe-page table tr {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        border-radius: 12px;
+        padding: 12px 14px !important;
+        margin-bottom: 12px;
+    }
+    .subscribe-page table tr:last-child { margin-bottom: 0; }
+
+    .subscribe-page table td {
+        padding: 6px 0 !important;
+        border: none !important;
+        font-size: 14px !important;
+        line-height: 1.45 !important;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+    .subscribe-page table td::before {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: #64748b;
+        margin-bottom: 2px;
+    }
+
+    /* Название товара — заголовок карточки */
+    .subscribe-page table td:nth-child(1) {
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        color: #38bdf8 !important;
+        padding: 0 0 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+    }
+    .subscribe-page table td:nth-child(2)::before { content: "Описание"; }
+    .subscribe-page table td:nth-child(3)::before { content: "Цена"; }
+    .subscribe-page table td:nth-child(3) {
+        font-size: 18px !important;
+        font-weight: 800 !important;
+        color: #38ef7d !important;
+    }
+    .subscribe-page table td:nth-child(4)::before { content: "Получение"; }
+    .subscribe-page table td:nth-child(5)::before { content: "Возврат"; }
+    .subscribe-page table td:empty { display: none !important; }
+}
