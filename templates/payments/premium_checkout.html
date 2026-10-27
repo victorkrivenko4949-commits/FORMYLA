@@ -54,6 +54,80 @@
   background: rgba(244,185,66,0.1); border: 1px solid rgba(244,185,66,0.35);
   border-radius: 10px; padding: 8px 12px;
 }
+
+/* ── «Premium уже активен»: оплата недоступна ───────────────────────── */
+.pm-have-badge {
+  width: 92px; height: 92px; margin: 0 auto 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 2.4em;
+  background: linear-gradient(135deg, rgba(56,239,125,0.16), rgba(56,189,248,0.16));
+  border: 1px solid rgba(56,239,125,0.45);
+  box-shadow: 0 0 44px rgba(56,239,125,0.18);
+  animation: pmHavePop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes pmHavePop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+.pm-have-premium {
+  font-size: 1.25em; font-weight: 800; letter-spacing: 0.4px;
+  background: linear-gradient(135deg, #38ef7d, #38bdf8);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.pm-have-sub { color: #8fa3c0; margin: 6px 0 0; font-size: .95em; }
+.pm-have-feats { list-style: none; margin: 16px 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.pm-have-feats li { display: flex; align-items: flex-start; gap: 10px; color: #b9c8de; font-size: .94em; line-height: 1.5; }
+.pm-have-feats .chk {
+  flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center; font-size: .72em; font-weight: 800;
+  color: #0f172a; background: linear-gradient(135deg, #38ef7d, #11998e);
+}
+.pm-have-feats b { color: #e2ecfa; }
+.pm-have-note {
+  margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.09);
+  color: #8fa3c0; font-size: .85em; line-height: 1.6;
+}
+.pm-have-actions { margin-top: 22px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.pm-have-secondary { color: #64748b; font-size: .9em; text-decoration: none; }
+.pm-have-secondary:hover { color: #94a3b8; }
+
+/* ── Автопродление ────────────────────────────────────────────────────── */
+.pm-ar-box {
+  margin-top: 16px; padding: 14px 16px; border-radius: 14px; text-align: left;
+  background: rgba(56,239,125,0.07); border: 1px solid rgba(56,239,125,0.25);
+}
+.pm-ar-box.off { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1); }
+.pm-ar-title { font-size: .95em; font-weight: 700; color: #eaf3ff; margin-bottom: 4px; }
+.pm-ar-title .dot { color: #38ef7d; }
+.pm-ar-box.off .pm-ar-title .dot { color: #8fa3c0; }
+.pm-ar-sub { color: #8fa3c0; font-size: .84em; line-height: 1.5; }
+.pm-ar-btn {
+  margin-top: 10px; display: inline-block; padding: 9px 18px; border-radius: 10px;
+  border: 1px solid rgba(56,189,248,0.4); background: transparent; cursor: pointer;
+  font-size: .86em; font-weight: 600; color: #7dd3fc;
+}
+.pm-ar-btn:hover { background: rgba(56,189,248,0.1); }
+.pm-ar-btn:disabled { opacity: .5; cursor: wait; }
+.pm-ar-consent {
+  margin-top: 14px; padding: 12px 14px; border-radius: 12px; text-align: left;
+  font-size: .82em; color: #8fa3c0; line-height: 1.55;
+  background: rgba(56,189,248,0.05); border: 1px dashed rgba(56,189,248,0.3);
+}
+.pm-ar-none { margin-top: 16px; padding: 12px 14px; border-radius: 12px; text-align: left; font-size: .82em; color: #8fa3c0; line-height: 1.55; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); }
+
+/* ── Мобильная версия (телефон) ──────────────────────────────────────── */
+@media (max-width: 560px) {
+  .pm-pay-wrap { padding: 14px 10px 36px; }
+  .pm-pay-card { padding: 20px 14px 18px; border-radius: 18px; }
+  .pm-pay-head { gap: 10px; }
+  .pm-pay-icon { width: 46px; height: 46px; font-size: 1.4em; border-radius: 13px; }
+  .pm-pay-title h1 { font-size: 1.12em; }
+  .pm-pay-title p { font-size: .82em; }
+  .pm-price-row { padding: 10px 12px; margin: 12px 0 4px; }
+  .pm-price { font-size: 1.7em; }
+  .pm-price-note { font-size: .78em; }
+  .pm-feats li { font-size: .88em; padding-left: 24px; }
+  .pm-pay-btn { padding: 14px; font-size: 1em; border-radius: 12px; }
+  .pm-have-badge { width: 76px; height: 76px; font-size: 2em; }
+  .pm-have-feats li { font-size: .88em; }
+  .pm-pay-notes div { font-size: .78em; }
+}
 </style>
 {% endblock %}
 
@@ -61,6 +135,45 @@
 <div class="pm-pay-wrap">
   <a class="pm-back" href="/subscribe">‹ Все тарифы</a>
 
+  {% if already_premium %}
+  <div class="pm-pay-card" style="text-align:center;">
+    <div class="pm-have-badge">✓</div>
+    <h1 style="margin:0 0 8px;font-size:1.6em;color:#eaf3ff;">Premium уже активен</h1>
+    <div class="pm-have-premium">{{ active_title }}</div>
+    <p class="pm-have-sub">Повторная оплата не требуется — полный доступ уже открыт{% if premium_until %} до {{ premium_until }} UTC{% endif %}</p>
+
+    <ul class="pm-have-feats" style="text-align:left;">
+      {% for f in info.features %}
+      <li><span class="chk">✓</span><span>{{ f }}</span></li>
+      {% endfor %}
+      <li><span class="chk">✓</span><span><b>Задачи дня под твою олимпиаду</b> — выбор из 12 в каталоге</span></li>
+      <li><span class="chk">✓</span><span><b>102 олимпиадных метода</b> — ключ к успеху</span></li>
+    </ul>
+    <div class="pm-have-note">⚡ Оплачивать снова не нужно · 🛡 Когда срок подойдёт к концу, тариф можно оформить снова</div>
+
+    {% if auto_renew %}
+    <div class="pm-ar-box {% if not auto_renew.enabled %}off{% endif %}">
+      <div class="pm-ar-title"><span class="dot">●</span> {% if auto_renew.enabled %}Автопродление включено{% else %}Автопродление отключено{% endif %}</div>
+      <div class="pm-ar-sub">
+        {% if auto_renew.enabled %}
+          Каждые 30 дней {{ auto_renew.price_rub | int }} ₽ списываются автоматически.{% if premium_until %} Следующий платёж: {{ premium_until }} (списание проходит в день окончания, в течение пары часов до него).{% endif %}
+        {% else %}
+          Premium закончится {{ premium_until or 'в конце оплаченного периода' }}. Включите автопродление — и доступ будет продлеваться сам.
+        {% endif %}
+      </div>
+      <button class="pm-ar-btn" data-ar-enabled="{% if auto_renew.enabled %}1{% else %}0{% endif %}" onclick="pmAutoRenew(this)">{% if auto_renew.enabled %}Отключить автопродление{% else %}Включить автопродление{% endif %}</button>
+    </div>
+    {% else %}
+    <div class="pm-ar-none">🔁 Автопродление не подключено — способ оплаты сохранится при следующей оплате тарифа, и продление можно будет включить.</div>
+    {% endif %}
+
+    <div class="pm-have-actions">
+      <a class="pm-pay-btn" style="text-decoration:none;display:block;width:auto;" href="/daily_tasks">Перейти к задачам дня →</a>
+      <a class="pm-have-secondary" href="/subscribe">Вернуться к тарифам</a>
+    </div>
+  </div>
+
+  {% else %}
   <div class="pm-pay-card">
     <div class="pm-pay-head">
       <div class="pm-pay-icon">{{ info.icon }}</div>
@@ -100,11 +213,15 @@
     <div class="pm-pay-notes">
       <div>💳 Оплата через ЮKassa: Мир, Visa, Mastercard, СБП</div>
       <div>⚡ Premium открывается сразу после оплаты</div>
-      <div>🛡 Отменить можно в любой момент — доступ сохранится до конца оплаченного периода</div>
+      <div>🛡 Отменить можно в любой момент</div>
     </div>
+
+    <div class="pm-ar-consent">🔁 <b>Подписка с автопродлением:</b> каждые 30 дней {{ info.price_rub }} ₽ будут списываться автоматически тем же способом оплаты. Отключить можно в любой момент одним нажатием — доступ сохранится до конца оплаченного периода.</div>
   </div>
+  {% endif %}
 </div>
 
+{% if not already_premium %}
 <script>
 function pmPay() {
   var btn = document.getElementById('pmPayBtn');
@@ -128,6 +245,23 @@ function pmPay() {
       btn.disabled = false;
       btn.textContent = 'Оплатить {{ info.price_rub }} ₽';
     });
+}
+</script>
+{% endif %}
+<script>
+function pmAutoRenew(btn) {
+  btn.disabled = true;
+  var want = (btn.dataset.arEnabled === '1') ? false : true;
+  fetch('/payments/premium/auto-renew', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ enabled: want })
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.ok) { location.reload(); }
+      else { alert(d.error || 'Не удалось изменить настройку'); btn.disabled = false; }
+    }).catch(function () { alert('Ошибка сети'); btn.disabled = false; });
 }
 </script>
 {% endblock %}

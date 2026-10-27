@@ -2487,6 +2487,21 @@ def daily_streak_reset_job():
         except Exception as e:
             app.logger.error(f" Daily streak reset failed: {e}")
 
+# Premium Auto-Renewal Job (runs hourly at :13)
+@scheduler.task('cron', id='premium_auto_renew', hour='*', minute=13)
+def premium_auto_renew_job():
+    """Автопродление Premium: безакцептное списание сохранённым способом
+    оплаты, когда оплаченный период подходит к концу (окно 2 часа).
+    В демо-режиме (ЮKassa не настроена) ничего не делает.
+    """
+    with app.app_context():
+        from services.auto_renew import run_renewal_job
+        try:
+            stats = run_renewal_job()
+            app.logger.info("[OK] Premium auto-renew job: %s", stats)
+        except Exception as e:
+            app.logger.error("Premium auto-renew job failed: %s", e)
+
 # Daily Quest Deadline Reminder (runs at 19:00 and 21:00 MSK)
 @scheduler.task('cron', id='daily_quest_deadline_reminder', hour='19,21', minute=0)
 def daily_quest_deadline_reminder_job():
@@ -13503,6 +13518,18 @@ def api_cancel_subscription():
     """API отмены подписки Premium."""
     if not current_user.current_plan or current_user.current_plan == 'free':
         return jsonify({'error': 'У вас нет активной подписки'}), 400
+
+    # Отмена подписки выключает автопродление (без него списаний не будет).
+    # Если выключить не удалось — честно сообщаем об этом, а не молчим.
+    ar_disabled = True
+    try:
+        from services.auto_renew import set_enabled as _ar_off
+        ar_disabled = _ar_off(current_user.id, False)
+    except Exception as e:
+        app.logger.error("[cancel_subscription] auto-renew disable failed: %s", e)
+        ar_disabled = False
+    if not ar_disabled:
+        return jsonify({'error': 'Не удалось отключить автопродление — повторите отмену, иначе подписка продлится автоматически.'}), 500
 
     # Синхронизируем таблицу subscriptions (mark superseded), чтобы
     # users.current_plan и subscriptions не расходились.

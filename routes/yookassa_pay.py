@@ -585,6 +585,7 @@ def _yookassa_webhook_inner():
     cfg = get_yookassa_config()
     verified_status = obj.get("status")
     verified_paid = bool(obj.get("paid"))
+    verified_by_api = False
     if cfg["configured"]:
         try:
             resp = requests.get(
@@ -597,8 +598,12 @@ def _yookassa_webhook_inner():
                 verified_status = remote.get("status")
                 verified_paid = bool(remote.get("paid"))
                 remote_meta = remote.get("metadata") or {}
-                order_id = order_id or remote_meta.get("order_id")
-                user_id_raw = user_id_raw or remote_meta.get("user_id")
+                # авторитетные данные ЗАМЕНЯЮТ, а не дополняют входящие
+                if remote_meta.get("order_id"):
+                    order_id = remote_meta.get("order_id")
+                if remote_meta.get("user_id"):
+                    user_id_raw = remote_meta.get("user_id")
+                verified_by_api = True
         except Exception as e:
             logger.warning("[yookassa_pay] webhook verification warning: %r", e)
 
@@ -623,6 +628,7 @@ def _yookassa_webhook_inner():
         # PREMIUM_PAY_V1: по item_code решаем, что активировать —
         # premium_intense/premium_calm (30 дней Premium) или значок-алмаз.
         item_code = "diamond_badge"
+        item_code_row_found = False
         try:
             _row = db.session.execute(
                 text("SELECT item_code FROM yookassa_payments WHERE payment_id = :pid OR order_id = :oid LIMIT 1"),
@@ -630,13 +636,45 @@ def _yookassa_webhook_inner():
             ).fetchone()
             if _row and _row[0]:
                 item_code = str(_row[0])
+                item_code_row_found = True
         except Exception:
             pass
         if item_code.startswith("premium_"):
-            from routes.premium_pay import activate_premium_for_payment
-            activate_premium_for_payment(
-                user_id=int(user_id_raw), plan=item_code,
-                payment_id=payment_id, order_id=order_id)
+            # FAIL-CLOSED: выдача Premium и сохранение способа оплаты — только
+            # по платежу, подтверждённому прямым запросом в API ЮKassa,
+            # в статусе succeeded/paid, и по ЛОКАЛЬНОМУ заказу с тем же
+            # item_code (подделанное уведомление или чужой платёж доступ
+            # не выдаёт). Активацию подтвердит страница возврата пользователя.
+            if not verified_by_api or verified_status != "succeeded" or not verified_paid:
+                logger.warning(
+                    "[yookassa_pay] premium payment %s NOT verified via API — activation skipped",
+                    payment_id)
+                return jsonify({"ok": True, "status": "unverified"}), 200
+            if not item_code_row_found:
+                logger.warning(
+                    "[yookassa_pay] premium payment %s has no local order — activation skipped",
+                    payment_id)
+                return jsonify({"ok": True, "status": "unknown_order"}), 200
+            from services.auto_renew import handle_succeeded_payment, upsert_from_payment
+            # Автосписание продлевает подписку через свой контур (идемпотентно:
+            # одна попытка на период). Первый платёж — обычная активация +
+            # сохранение способа оплаты для автопродления.
+            handled = False
+            try:
+                handled = handle_succeeded_payment(
+                    order_id=order_id, payment_id=payment_id,
+                    user_id=int(user_id_raw), plan=item_code)
+            except Exception as e:  # noqa: BLE001
+                logger.warning("[yookassa_pay] auto_renew handle failed: %r", e)
+            if not handled:
+                from routes.premium_pay import activate_premium_for_payment
+                activate_premium_for_payment(
+                    user_id=int(user_id_raw), plan=item_code,
+                    payment_id=payment_id, order_id=order_id)
+            try:
+                upsert_from_payment(int(user_id_raw), payment_id, item_code)
+            except Exception as e:  # noqa: BLE001
+                logger.warning("[yookassa_pay] save payment method failed: %r", e)
         else:
             _activate_diamond_for_user(user_id=int(user_id_raw), payment_id=payment_id, order_id=order_id)
         return jsonify({"ok": True, "status": "succeeded"}), 200
