@@ -13258,6 +13258,7 @@ def subscribe_page():
         plan_expires_at = str(plan_expires_at)[:10]
     # Состояние пробного дня: активен / использован
     trial_active_until = None
+    trial_active_until_iso = None
     trial_used = False
     try:
         from sqlalchemy import text as _text
@@ -13269,6 +13270,7 @@ def subscribe_page():
         ), {'u': current_user.id}).first()
         if row and row[0]:
             trial_active_until = str(row[0])[:16]
+            trial_active_until_iso = str(row[0])
         used = db.session.execute(_text(
             "SELECT 1 FROM subscriptions WHERE user_id = :u "
             "AND plan IN ('premium_intense','premium_calm') "
@@ -13281,6 +13283,7 @@ def subscribe_page():
                            current_plan=current_plan,
                            plan_expires_at=plan_expires_at,
                            trial_active_until=trial_active_until,
+                           trial_active_until_iso=trial_active_until_iso,
                            trial_used=trial_used,
                            paid_items=paid_items)
 

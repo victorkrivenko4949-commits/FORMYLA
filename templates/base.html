@@ -428,7 +428,7 @@
             {% if current_user.is_authenticated %}
             {% set dq_bottom = current_user.today_quest() %}
             {% if dq_bottom and dq_bottom.completed_count >= dq_bottom.total_count %}
-              <span class="bottom-nav-badge done">[OK]</span>
+              <span class="bottom-nav-badge done">✓</span>
             {% elif dq_bottom and dq_bottom.completed_count > 0 %}
               <span class="bottom-nav-badge">{{ dq_bottom.completed_count }}</span>
             {% endif %}
@@ -644,7 +644,7 @@
             console.log("========================");
             
             if (data.correct) {
-                feedbackEl.innerHTML = '<span style="color: #10b981; font-weight: 600;">[OK] Верно! Отличная работа!</span>';
+                feedbackEl.innerHTML = '<span style="color: #10b981; font-weight: 600;">✓ Верно! Отличная работа!</span>';
                 
                 // Показываем решение
                 if (solutionEl) {
@@ -656,7 +656,7 @@
                     location.reload();
                 }, 1500);
             } else {
-                feedbackEl.innerHTML = `<span style="color: #ef4444; font-weight: 600;">[ERROR] Неверно. Попробуйте еще раз!</span>`;
+                feedbackEl.innerHTML = `<span style="color: #ef4444; font-weight: 600;">✗ Неверно. Попробуйте еще раз!</span>`;
                 inputEl.value = '';
                 inputEl.focus();
             }

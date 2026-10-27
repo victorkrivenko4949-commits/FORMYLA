@@ -467,8 +467,10 @@
     </style>
 
     {% if trial_active_until %}
-    <div class="pm-trial-banner active">
-        ⏳ <strong>Пробный день активен</strong> — полный доступ до {{ trial_active_until }} UTC. После этого тариф снова станет бесплатным (3 задачи в день), и здесь можно оформить Premium.
+    <div class="pm-trial-banner active" id="pmTrialBanner" data-until="{{ trial_active_until_iso }}">
+        ⏳ <strong>Пробный день активен</strong> — полный доступ ещё
+        <span id="pmTrialTimer" style="font-weight:700; font-variant-numeric: tabular-nums;">…</span>.
+        После этого тариф снова станет бесплатным (3 задачи в день), и здесь можно оформить Premium.
     </div>
     {% elif trial_used %}
     <div class="pm-trial-banner used">
@@ -498,18 +500,22 @@
             <!-- Карточка 2: как работает обучение -->
             <div class="pm-card">
                 <div class="pm-card-tag">КАК РАБОТАЕТ ОБУЧЕНИЕ</div>
-                <h2>📈 План на 3 месяца</h2>
+                <h2>📈 План по месяцам</h2>
                 <div class="pm-step">
-                    <b>Неделя 1 — старт</b>
-                    <p>Каждое утро — <b>тест из 5 задач</b> по теме дня, после него — задачи дня твоего уровня. Без методов и пробников: система узнаёт твой реальный уровень.</p>
+                    <b>Месяц 1 — диагностика и ритм</b>
+                    <p><b>Неделя 1</b>: каждое утро — <b>тест из 5 задач</b> по теме дня + задачи дня твоего уровня. Без методов и пробников: система узнаёт твой реальный уровень. <b>Недели 2–4</b>: из 6 занятий в неделю — <b>1 пробник</b>, <b>1 метод</b>, <b>4 занятия</b> — задачи дня.</p>
                 </div>
                 <div class="pm-step">
-                    <b>Недели 2–4 — ритм</b>
-                    <p>Из 6 занятий в неделю: <b>1 пробник</b> (реальный вариант прошлых лет), <b>1 метод</b> (70% разбор + 3 задачи), <b>4 занятия</b> — задачи дня.</p>
+                    <b>Месяц 2 — закрепление и рост</b>
+                    <p>Тот же ритм (1 пробник + 1 метод + 4 занятия в неделю), но темы усложняются по результатам. Куратор видит слабые места и подбирает задачи прицельно. Пробники — реальные варианты прошлых лет.</p>
+                </div>
+                <div class="pm-step">
+                    <b>Месяц 3 — выход на цель</b>
+                    <p>Темы повторяются уровнем выше, пробники приближаются к формату твоей олимпиады. Итог — готовность к региональному/заключительному этапу.</p>
                 </div>
                 <div class="pm-step">
                     <b>После курса</b>
-                    <p>Через 3 месяца — <b>те же темы уровнем выше</b>. И так до цели. Куратор с тобой на каждом шаге.</p>
+                    <p>Курс можно продлить — те же темы уровнем выше. И так до цели. Куратор с тобой на каждом шаге.</p>
                 </div>
             </div>
 
@@ -554,6 +560,35 @@
     </div>
     <div class="pm-dots" id="pmDots"></div>
     <p class="pm-free-note">Бесплатный тариф: 3 задачи в день. Пробный день — 1 день полного Premium, один раз на аккаунт.</p>
+
+    <script>
+    /* Таймер обратного отсчёта пробного дня */
+    (function () {
+        var banner = document.getElementById('pmTrialBanner');
+        var timer = document.getElementById('pmTrialTimer');
+        if (!banner || !timer) return;
+        var untilRaw = banner.getAttribute('data-until') || '';
+        if (!untilRaw) return;
+        // naive UTC → aware: добавляем Z, чтобы JS распознал как UTC
+        var target = new Date(untilRaw.replace(' ', 'T') + 'Z');
+        if (isNaN(target.getTime())) { timer.textContent = '—'; return; }
+        function pad(n) { return (n < 10 ? '0' : '') + n; }
+        function tick() {
+            var ms = target - Date.now();
+            if (ms <= 0) {
+                timer.textContent = 'истёк';
+                banner.classList.remove('active');
+                banner.classList.add('used');
+                return;
+            }
+            var s = Math.floor(ms / 1000);
+            var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+            timer.textContent = pad(h) + ':' + pad(m) + ':' + pad(sec);
+            setTimeout(tick, 1000);
+        }
+        tick();
+    })();
+    </script>
 
     <script>
     /* Карусель: точки + стрелки */
@@ -623,146 +658,8 @@
     </script>
     {% endif %}
 
-    <!-- Plan cards (pilots only до запуска 3 ноября) -->
+    <!-- FAQ (pilots only до запуска 3 ноября) -->
     {% if is_pilot %}
-    <div class="plans-grid">
-
-    <!-- Free plan -->
-    <div class="plan-card">
-        <div class="plan-name">Бесплатный</div>
-        <div class="plan-price free-price">
-            <span class="amount">0</span><span class="currency">₽</span>
-            <span class="period">навсегда</span>
-        </div>
-        <ul class="plan-features">
-            <li>
-                <span class="feat-icon">[OK]</span>
-                <span>AI-разборы — до 300 в день</span>
-            </li>
-            <li>
-                <span class="feat-icon">[OK]</span>
-                <span>Все темы, 5–11 класс</span>
-            </li>
-            <li>
-                <span class="feat-icon">[OK]</span>
-                <span>Курсы на основе глубокого анализа методов решения ВсОШ — под задачи 2027 года</span>
-            </li>
-            <li>
-                <span class="feat-icon">[OK]</span>
-                <span>102 понятно расписанных метода</span>
-            </li>
-            <li>
-                <span class="feat-icon">[OK]</span>
-                <span>Каталог топ-11 олимпиад России</span>
-            </li>
-            <li>
-                <span class="feat-icon">[OK]</span>
-                <span>Интерактивная доска</span>
-            </li>
-        </ul>
-
-        {% if current_plan == 'free' %}
-        <button class="btn-plan btn-plan-current" disabled>
-            [OK] Текущий план
-        </button>
-        {% else %}
-        <button class="btn-plan btn-plan-free" disabled>
-            Бесплатный
-        </button>
-        {% endif %}
-    </div>
-
-    <!-- Premium plan -->
-    <div class="plan-card premium">
-        <div class="plan-badge">⭐ РЕКОМЕНДУЕМ</div>
-        <div class="plan-name">Premium</div>
-        <div class="plan-price premium-price">
-            <span class="amount" style="text-decoration: line-through; opacity: 0.55; color:#94a3b8;">390</span><span class="currency" style="text-decoration: line-through; opacity: 0.55; color:#94a3b8;">₽</span>
-            <span class="amount" style="margin-left:10px;color:#38ef7d;">0</span><span class="currency" style="color:#38ef7d;">₽</span>
-            <span class="period">Сейчас всё доступно бесплатно</span>
-        </div>
-        <ul class="plan-features">
-
-            <!-- Всё из бесплатного -->
-            <li>
-                <span class="feat-icon">[OK]</span>
-                <span>Все темы, 5–11 класс</span>
-            </li>
-            <li>
-                <span class="feat-icon">[OK]</span>
-                <span>Курсы на основе глубокого анализа методов решения ВсОШ — под задачи 2027 года</span>
-            </li>
-            <li>
-                <span class="feat-icon">[OK]</span>
-                <span>102 понятно расписанных метода</span>
-            </li>
-            <li>
-                <span class="feat-icon">[OK]</span>
-                <span>Каталог топ-11 олимпиад России</span>
-            </li>
-            <li>
-                <span class="feat-icon">[OK]</span>
-                <span>Интерактивная доска</span>
-            </li>
-
-            <!-- Дополнительно в Premium -->
-            <li class="highlight">
-                <span class="feat-icon"></span>
-                <span>Безлимитные AI-разборы (без дневного лимита)</span>
-            </li>
-            <li class="highlight">
-                <span class="feat-icon"></span>
-                <span>Расширенные AI-разборы (до 8000 токенов)</span>
-            </li>
-            <li class="highlight">
-                <span class="feat-icon"></span>
-                <span>Адаптивный тест для определения проблемных тем</span>
-            </li>
-            <li class="highlight">
-                <span class="feat-icon"></span>
-                <span>История тестов — навсегда</span>
-            </li>
-            <li class="highlight">
-                <span class="feat-icon"></span>
-                <span>Полная статистика прогресса</span>
-            </li>
-            <li class="highlight">
-                <span class="feat-icon"></span>
-                <span>Приоритетный AI (быстрее ответы)</span>
-            </li>
-        </ul>
-
-        {% if current_plan == 'premium' %}
-        <button class="btn-plan btn-plan-current" disabled>
-            [OK] Текущий план
-        </button>
-        {% else %}
-        <button class="btn-plan btn-plan-premium" id="activateBtn"
-                onclick="activatePremium('premium_monthly')">
-             Попробовать Premium бесплатно
-        </button>
-        {% endif %}
-    </div>
-
-</div>
-
-    <!-- Yearly block -->
-    <div class="yearly-block">
-        <div class="yearly-info">
-            <h3> Годовой тариф — сейчас бесплатно</h3>
-            <p>Сейчас всё доступно бесплатно. После беты — 12 месяцев по цене 10.</p>
-        </div>
-        <div class="yearly-price">
-            <span class="price-main"><del style="opacity:0.55;color:#94a3b8;">2790₽</del> <span style="color:#38ef7d;">0₽</span></span>
-            <span class="price-sub"><del style="opacity:0.55;">232₽/мес</del> · сейчас бесплатно</span>
-        </div>
-        {% if current_user.is_authenticated and current_plan == 'free' %}
-        <button class="btn-yearly" onclick="activatePremium('premium_yearly')">
-            Выбрать годовой
-        </button>
-        {% endif %}
-    </div>
-
     <!-- FAQ -->
     <div class="faq-section">
         <h2>Частые вопросы</h2>
@@ -773,9 +670,8 @@
                 <span class="faq-arrow">▼</span>
             </div>
             <div class="faq-answer">
-                Мы запускаем оплату через ЮKassa в ближайшее время. Пока платформа в бета-режиме —
-                Premium доступен бесплатно всем пользователям. После запуска оплаты у тебя будет
-                время перейти на платный тариф.
+                Оплата через ЮKassa уже подключена: карты Visa, Mastercard, МИР и СБП.
+                Можно оформить Premium в один клик или начать с бесплатного пробного дня.
             </div>
         </div>
 
