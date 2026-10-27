@@ -174,13 +174,26 @@ def _pick_probnik(user_id: int, olympiad_slug: Optional[str],
                   used_codes: set) -> Optional[Dict[str, str]]:
     """Реальный пробник: опубликованный, с задачами, под олимпиаду и класс.
 
-    Требование 26.10.2026 (ревью ротации): пробник без задач — пустая
-    страница, занятие-пробник застрянет. Поэтому:
-      * берём ТОЛЬКО пробники, у которых есть задачи;
-      * ищем точное совпадение по олимпиаде и классу; если нет — пробник
-        подходящего класса; если и их нет — любой опубликованный с задачами;
-      * если задач нет ни у одного пробника — None (CTA ведёт в список).
+    REAL_PROBNIK_V1 (28.10.2026): сначала — реальный вариант выбранной
+    олимпиады из каталога задач олимпиад (data/olymp_catalog): свежий год
+    → старый, внутри года этапы от простого к сложному, без повторов.
+    Если каталога по олимпиаде нет — прежняя логика (опубликованные
+    пробники с задачами). Требование 26.10.2026 в силе: пробник без
+    задач — пустая страница, занятие-пробник застрянет.
     """
+    # ── 1) Реальный вариант из каталога олимпиад (владелец, 28.10) ─────
+    if olympiad_slug:
+        grade = _user_grade(user_id)
+        if grade:
+            try:
+                from services.real_probnik import next_real_probnik
+                real = next_real_probnik(olympiad_slug, grade, used_codes)
+                if real:
+                    return real
+            except Exception as e:  # noqa: BLE001
+                logger.warning('[session_plan] real probnik pick failed: %r', e)
+
+    # ── 2) Фолбэк: опубликованные пробники с задачами ───────────────────
     grade = _user_grade(user_id)
     competition = _OLYMP_COMPETITION.get(olympiad_slug or '', '') if olympiad_slug else ''
     try:
@@ -723,7 +736,9 @@ CTA_FOR_TYPE = {
     # ВАЖНО: старые ссылки /olympiad/methods (без «s») вели в 404.
     'method': '/olympiads/methods',
     'practice': '/daily_tasks',
-    'probnik': '/olympiads/probniks',
+    # Списка /olympiads/probniks не существует (404) — ведём на курс
+    # пробников; точная ссылка на пробник подставляется в session_info.
+    'probnik': '/olympiads/course-probnik',
 }
 
 

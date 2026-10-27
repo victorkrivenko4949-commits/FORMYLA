@@ -24,9 +24,12 @@ Public API:
 """
 
 import json
+import logging
 import os
 import re
 from collections import defaultdict
+
+logger = logging.getLogger(__name__)
 
 _MANIFEST_PATH = os.path.join(
     os.path.dirname(__file__), '..', 'static', 'figures', 'MANIFEST.json'
@@ -181,6 +184,19 @@ def get_figures_for_probnik_task(probnik, task) -> dict:
 
     Returns {'condition': [...], 'solution': [...]} (possibly empty).
     """
+    # REAL_PROBNIK_V1 (28.10.2026): для реальных вариантов из каталога
+    # чертежи берём прямо из данных каталога (fig_statement/fig_solution).
+    code = getattr(probnik, 'code', '') or ''
+    if code.startswith('real-'):
+        try:
+            from services.real_probnik import figures_for_task
+            figs = figures_for_task(code, task.number)
+            if figs and (figs.get('condition') or figs.get('solution')):
+                return figs
+        except Exception as _real_err:  # noqa: BLE001
+            logger.warning('real probnik figures failed: %r', _real_err)
+        return {'condition': [], 'solution': []}
+
     # 1) Determine year: prefer task.year (more specific) over probnik.season_year.
     year = task.year if task.year is not None else getattr(probnik, 'season_year', None)
     grade = getattr(probnik, 'grade', None)
