@@ -63,6 +63,11 @@ def is_diamond_buyer(user) -> bool:
 
 
 def _ensure_tables() -> None:
+    """Создаёт таблицы yookassa_config и yookassa_payments (идемпотентно).
+    FIX: используем db.engine.begin() напрямую — session.execute внутри транзакции,
+    где ALTER TABLE users падает, откатывает ВСЮ транзакцию, включая CREATE TABLE.
+    На PostgreSQL это давало 'relation yookassa_payments does not exist' → 500.
+    """
     global _TABLES_ENSURED
     if _TABLES_ENSURED:
         return
@@ -72,56 +77,51 @@ def _ensure_tables() -> None:
         engine_name = db.engine.dialect.name
         is_pg = engine_name == "postgresql"
 
-        # 1. Таблица настроек ЮKassa (позволяет задать shop_id и secret_key прямо из профиля админа)
-        db.session.execute(
-            text(
-                """
-                CREATE TABLE IF NOT EXISTS yookassa_config (
-                    config_key VARCHAR(64) PRIMARY KEY,
-                    config_value TEXT,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        with db.engine.begin() as conn:
+            # 1. Таблица настроек ЮKassa
+            conn.execute(
+                text(
+                    """
+                    CREATE TABLE IF NOT EXISTS yookassa_config (
+                        config_key VARCHAR(64) PRIMARY KEY,
+                        config_value TEXT,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """
                 )
-                """
             )
-        )
 
-        # 2. Таблица платежей ЮKassa
-        id_col = "SERIAL PRIMARY KEY" if is_pg else "INTEGER PRIMARY KEY AUTOINCREMENT"
-        db.session.execute(
-            text(
-                f"""
-                CREATE TABLE IF NOT EXISTS yookassa_payments (
-                    id {id_col},
-                    order_id VARCHAR(64) UNIQUE NOT NULL,
-                    payment_id VARCHAR(128),
-                    user_id INTEGER NOT NULL,
-                    item_code VARCHAR(64) NOT NULL DEFAULT 'diamond_badge',
-                    amount_rub NUMERIC(10, 2) NOT NULL DEFAULT 10.00,
-                    status VARCHAR(32) NOT NULL DEFAULT 'pending',
-                    confirmation_url TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    paid_at TIMESTAMP
+            # 2. Таблица платежей ЮKassa
+            id_col = "SERIAL PRIMARY KEY" if is_pg else "INTEGER PRIMARY KEY AUTOINCREMENT"
+            conn.execute(
+                text(
+                    f"""
+                    CREATE TABLE IF NOT EXISTS yookassa_payments (
+                        id {id_col},
+                        order_id VARCHAR(64) UNIQUE NOT NULL,
+                        payment_id VARCHAR(128),
+                        user_id INTEGER NOT NULL,
+                        item_code VARCHAR(64) NOT NULL DEFAULT 'diamond_badge',
+                        amount_rub NUMERIC(10, 2) NOT NULL DEFAULT 10.00,
+                        status VARCHAR(32) NOT NULL DEFAULT 'pending',
+                        confirmation_url TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        paid_at TIMESTAMP
+                    )
+                    """
                 )
-                """
             )
-        )
 
-        # 3. Колонка has_diamond в users (на случай если автомиграция при старте ещё не прошла)
-        bool_default = "BOOLEAN NOT NULL DEFAULT FALSE" if is_pg else "BOOLEAN NOT NULL DEFAULT 0"
-        try:
-            db.session.execute(text(f"ALTER TABLE users ADD COLUMN has_diamond {bool_default}"))
-        except Exception:
-            db.session.rollback()
+            # 3. Колонка has_diamond в users (если колонки ещё нет)
+            # В отдельной вложенной транзакции не сработает, поэтому ловим ошибку на уровне try
+            bool_default = "BOOLEAN NOT NULL DEFAULT FALSE" if is_pg else "BOOLEAN NOT NULL DEFAULT 0"
+            try:
+                conn.execute(text(f"ALTER TABLE users ADD COLUMN has_diamond {bool_default}"))
+            except Exception:
+                pass
 
-        db.session.commit()
         _TABLES_ENSURED = True
     except Exception as e:
-        try:
-            from models import db
-
-            db.session.rollback()
-        except Exception:
-            pass
         logger.warning("[yookassa_pay] _ensure_tables warning: %r", e)
 
 
