@@ -74,7 +74,7 @@ def test_impossible_model_plan_is_drawn_as_approximate(model):
     # A squeezed approximate drawing gives way to the keyword sketch.
     assert r.ok and r.verification in ("approximate", "sketch")
     assert r.stage in ("9-render-fallback", "9-render-sketch") and r.measured is None
-    assert r.warnings[0].startswith(("APPROXIMATE:", "SKETCH:"))
+    assert r.warnings[0].startswith(("Автопроверка подтвердила не всё", "Показан схематичный чертёж"))
     assert "<svg" in r.svg
 
 
@@ -91,7 +91,7 @@ def test_last_resort_simplified_attempt(model):
     r = generate(RATIO, sess=object(), use_cache=False, max_retries=1)
     assert seen[-1] == "SIMPLIFY" and len(seen) == 3
     assert r.ok and r.verification == "simplified" and r.measured is None
-    assert r.warnings[0].startswith("SIMPLIFIED:")
+    assert r.warnings[0].startswith("Чертёж построен по упрощённой схеме")
 
 
 @pytest.mark.parametrize("code", ["UNSUPPORTED_CONSTRUCTION", "NETWORK_UNCERTAIN"])

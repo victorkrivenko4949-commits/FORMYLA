@@ -147,7 +147,7 @@ def test_wrapper_fixes_pro_plan_through_real_formalize():
         result = pipeline.generate(PROBLEM, use_cache=False)
     assert result.ok and result.stage == "9-render", (result.stage, result.detail)
     assert result.verification == "constraints_only", result.warnings
-    assert any("EQUIDISTANT_FIXED" in w for w in result.warnings)
+    assert not any("EQUIDISTANT" in w for w in result.warnings)
 
     pts = _svg_points(result.svg)
     assert {"A", "B", "C", "D", "X", "Y", "O"} <= set(pts)
@@ -307,7 +307,7 @@ def test_wrapper_fixes_pro_plan2_through_real_formalize():
         result = pipeline.generate(PROBLEM, use_cache=False)
     assert result.ok and result.stage == "9-render", (result.stage, result.detail)
     assert result.verification == "constraints_only", result.warnings
-    assert any("EQUIDISTANT_FIXED" in w for w in result.warnings)
+    assert not any("EQUIDISTANT" in w for w in result.warnings)
 
     pts = _svg_points(result.svg)
     assert {"A", "B", "C", "D", "X", "Y", "O"} <= set(pts)

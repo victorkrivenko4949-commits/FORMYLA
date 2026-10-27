@@ -109,4 +109,4 @@ def test_pipeline_never_reports_model_figure_as_verified(monkeypatch):
     r = generate(TEXT, sess=object(), use_cache=False, max_retries=0)
     assert r.ok
     assert r.verification == "approximate"
-    assert any(rc.PREFIX in w for w in r.warnings)
+    assert any("радиус" in w for w in r.warnings)

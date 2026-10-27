@@ -236,7 +236,7 @@ def test_claim_about_original_figure_is_advice_but_claim_about_new_point_vetoes(
     monkeypatch.setattr(llm, "aux_plan_from_text", lambda *a, **k: dict(steps, _expert_text="Докажем, что AB = AD."))
     r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False, aux_history=first.expert_history)
     assert ["B", "G"] in r.plan["draw"]["aux_segments"] and r.expert_status == "OK"
-    assert any(w.startswith("AUX_CLAIM:") and "AB = AD" in w for w in r.warnings)
+    assert any("AB = AD" in w and "не выполняется" in w for w in r.warnings)
     # about the new point G (false): the translation is wrong, not drawn, reason shown
     monkeypatch.setattr(llm, "aux_plan_from_text", lambda *a, **k: dict(steps, _expert_text="Отложим G так, что DG = AB."))
     r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False, aux_history=first.expert_history)

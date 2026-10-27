@@ -33,7 +33,7 @@ def test_bare_negative_angle_is_diagnosed_before_model(monkeypatch):
     # and never used as a constraint.
     assert result.ok and result.verification == "sketch"
     assert result.measured is None
-    assert result.warnings[0].startswith("INVALID_CONDITION:")
+    assert result.warnings[0].startswith("Условие задачи противоречиво")
     assert "возможно, перед скобкой пропущено cos" in result.warnings[0]
     assert {"M", "N"} <= set(result.plan["points"])
     assert preflight_condition_error(VALID) is None

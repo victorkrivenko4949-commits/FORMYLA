@@ -104,6 +104,7 @@ from . import median_parallel as _median_parallel
 from . import diametral_plan as _diametral_plan
 from . import claim_arms as _claim_arms
 from . import aux_safety as _aux_safety
+from . import warnings_polish as _warnings_polish
 
 _difficulty.install(_llm)
 _general_position.install(_solver, _gates)
@@ -133,3 +134,4 @@ _median_parallel.install(_semantics, _llm, _pipeline)    # после plan_repai
 _diametral_plan.install(_semantics, _llm, _pipeline)   # после median_parallel: диаметральная D + равноудалённые X/Y — канонический план без LLM + суффикс
 _claim_arms.install(_semantics, _llm, _pipeline)      # после diametral_plan: плечи и дуги углов из утверждения — на чертёж + суффикс
 _aux_safety.install(_pipeline)   # подстраховка aux-режима: провал со схемой -> базовый чертёж с объяснением
+_warnings_polish.install(_pipeline)   # самый внешний слой: предупреждения — без кодов, нормальным языком

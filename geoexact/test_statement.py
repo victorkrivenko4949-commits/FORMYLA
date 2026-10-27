@@ -220,8 +220,8 @@ def test_pipeline_draws_and_marks_the_statement(model):
     assert frozenset(("A", "M")) in segs
     halves = {frozenset(m["pts"]) for m in r.plan["draw"]["equal_marks"]}
     assert {frozenset(("B", "M")), frozenset(("M", "C"))} <= halves
-    assert any(w.startswith("STATEMENT_DRAW: проведён отрезок AM") for w in r.warnings)
-    assert any("половины стороны" in w for w in r.warnings)
+    # подтверждения statement-проверок — внутренние, пользователю не показываются
+    assert r.warnings == []
     assert 'data-point="M"' in r.svg
 
 
@@ -237,7 +237,7 @@ def test_pipeline_missing_point_is_reported_not_hidden(model):
                  sess=object(), use_cache=False)
     assert r.ok                                    # чертёж есть
     assert r.verification == "approximate"          # но не полностью проверен
-    assert any("STATEMENT_MISSING" in w and "AM" in w for w in r.warnings)
+    assert any("не хватает" in w and "AM" in w for w in r.warnings)
 
 
 def test_missing_named_point_costs_at_most_one_retry(model):
@@ -262,4 +262,4 @@ def test_missing_named_point_costs_at_most_one_retry(model):
         assert len(calls) == 2, calls            # первый ответ и одна целевая подсказка
         assert "M=midpoint" in calls[1]          # подсказка про недостающую точку
         assert r.verification == "approximate"   # честно: условие показано не полностью
-        assert any("STATEMENT_MISSING" in w and "AM" in w for w in r.warnings)
+        assert any("не хватает" in w and "AM" in w for w in r.warnings)

@@ -341,5 +341,5 @@ def test_pipeline_retries_then_survives_bad_target():
         result = pipeline.generate(text, with_aux=True, use_cache=False)
     assert calls["n"] >= 2                       # был строгий первый + повтор
     assert result.ok and result.stage == "9-render", (result.stage, result.detail)
-    assert any("TARGET_DROPPED" in w for w in (result.warnings or []))
+    assert any("искомую величину не удалось" in w for w in (result.warnings or []))
     assert result.verification == "constraints_only"  # измерение сброшено

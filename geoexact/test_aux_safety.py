@@ -152,4 +152,4 @@ def test_pipeline_e2e_aux_failure_shows_base_drawing():
         result = pipeline.generate(TEXT, with_aux=True, use_cache=False)
     assert calls == [True, False]
     assert result.ok and result.stage == "9-render"
-    assert any("AUX_FALLBACK" in w for w in (result.warnings or []))
+    assert any("основной чертёж" in w for w in (result.warnings or []))

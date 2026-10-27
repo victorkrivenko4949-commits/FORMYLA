@@ -25,9 +25,8 @@ def test_exact_proof_is_fast_verified_and_labelled(aux, monkeypatch):
     assert result.ok, (result.reason, result.detail)
     assert result.usage == []
     # биссектриса CD названа в условии: её половины угла отмечены равными дугами
-    assert result.warnings == [
-        "STATEMENT_MARK: биссектриса CD — половины угла ACD и DCB "
-        "отмечены равными дугами"]
+    # подтверждение statement-проверки — внутреннее, пользователю не показывается
+    assert result.warnings == []
     assert result.plan["target"] == {"kind": "none", "args": []}
     assert {tuple(m["pts"]) for m in result.plan["draw"]["equal_marks"]} == {
         ("A", "B"), ("B", "C"), ("B", "D"), ("C", "F"),

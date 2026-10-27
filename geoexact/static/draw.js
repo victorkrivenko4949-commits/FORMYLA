@@ -149,25 +149,21 @@
     el("expert-note").hidden = !fail;
     const rejected = fail && String(data.expert_status).startsWith("REJECTED:");
     el("expert-note").textContent = !fail ? "" : rejected
-      ? "ИИ-тьютор предложил построение, но его не удалось нарисовать (" + data.expert_status.slice(9).trim() +
-        "). Кнопка ниже попросит другое."
-      : "ИИ-тьютор не дал доп. построение (код " + data.expert_status + "). Кнопка ниже отправит запрос заново.";
+      ? "ИИ-тьютор предложил построение, но нарисовать его не удалось. Кнопка ниже попросит другое."
+      : "ИИ-тьютор не успел предложить доп. построение. Кнопка ниже отправит запрос заново.";
     el("result").hidden = false;
     const value = data.measured;
     el("measured").textContent = value == null ? "" :
       "Измерено на чертеже: " + Number(value).toLocaleString("ru-RU", {maximumSignificantDigits: 8}) +
       ". Это не доказанный ответ.";
     el("warnings").replaceChildren();
-    // Технические коды (SKETCH:, INTERNAL:, INVALID_CONDITION:, TIME_LIMIT:, …) раньше
-    // прятались — пользователь видел эскиз без объяснения, а причину можно было
-    // узнать только из JSON /jobs/<id>. Теперь текст показывается, а код — в скобках.
+    // Предупреждения приходят с сервера уже пользовательским языком (без
+    // внутренних кодов). Подстраховка на случай старого кэша: технический
+    // код в начале строки отрезаем, текст — показываем как есть.
     const warnings = (data.warnings || []).map(w => {
       const m = String(w).match(/^([A-Z_]+):\s*([\s\S]*)$/);
-      return m ? m[2] + " [" + m[1] + "]" : String(w);
+      return m ? m[2] : String(w);
     });
-    if (["sketch", "approximate", "simplified"].includes(data.verification) && data.stage)
-      warnings.push("Этап конвейера: " + data.stage + (data.reason ? ", код " + data.reason : "")
-        + (data.detail ? " — " + data.detail : ""));
     const notice = {
       approximate: "Чертёж построен, но автоматическая проверка подтвердила не всё условие. Сверьте его с текстом задачи.",
       simplified: "Чертёж построен по упрощённой схеме: часть условий могла быть не учтена.",
@@ -255,8 +251,7 @@
               renderSolution(data.result);
               status("Полное решение готово.");
             }
-            else status((data.result.detail || "Не удалось получить полное решение.") +
-              (data.result.reason ? " Код: " + data.result.reason : ""));
+            else status(data.result.detail || "Не удалось получить полное решение. Попробуйте ещё раз.");
             return;
           }
           lastJob = activeJob;

@@ -118,7 +118,7 @@ def test_named_triangle_cannot_be_a_segment(monkeypatch, text="Дан треуг
     assert result.ok                      # чертёж показан
     assert result.verification != "constraints_only"
     assert result.verification == "approximate"
-    assert any("NAMED_FIGURE" in w for w in result.warnings)
+    assert any("вырожден" in w for w in result.warnings)
 
 
 @pytest.mark.parametrize("text", ["Треугольник ABC. Постройте чертёж.",
@@ -156,7 +156,7 @@ def test_constructed_point_on_free_vertex_is_caught_by_text(monkeypatch):
     result = pipeline.generate(text, sess=object(), use_cache=False, max_retries=1)
     assert result.ok
     assert result.verification != "constraints_only"
-    assert any("CEVIAN" in w for w in result.warnings)
+    assert any("не является серединой" in w for w in result.warnings)
 
 
 def test_median_and_height_checks_unit():
@@ -350,4 +350,4 @@ def test_parallelogram_claim_end_to_end_status(monkeypatch):
     result = pipeline.generate(_PARA_TEXT, sess=object(), use_cache=False, max_retries=1)
     assert result.ok
     assert result.verification != "constraints_only"
-    assert any("PARALLELOGRAM" in w for w in result.warnings)
+    assert any("параллелограмм" in w for w in result.warnings)
