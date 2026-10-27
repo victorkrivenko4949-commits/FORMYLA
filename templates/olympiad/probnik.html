@@ -90,14 +90,15 @@
             <div class="task-figures-block">
                 {% for fig in figs.condition %}
                 {% set fname = fig.file | replace('figures/', '') %}
+            {% set fpath = fig.url if fig.url is defined and fig.url else '/static/figures/' + fname %}
                 <figure class="task-figure" data-file="{{ fname }}">
-                    <img src="/static/figures/{{ fname }}" alt="Рисунок к условию задачи {{ t.number }}"
+                    <img src="{{ fpath }}" alt="Рисунок к условию задачи {{ t.number }}"
                          loading="lazy" class="task-figure__img"
-                         onclick="openOnBoard('/static/figures/{{ fname }}')"
+                         onclick="openOnBoard('{{ fpath }}')"
                          onerror="this.closest('figure').remove()" />
                     <figcaption class="task-figure__cap">
-                        <a class="task-figure__download" href="/static/figures/{{ fname }}" download="{{ fname }}">⬇ Скачать</a>
-                        <button class="task-figure__board-btn" onclick="openOnBoard('/static/figures/{{ fname }}')"> На доску</button>
+                        <a class="task-figure__download" href="{{ fpath }}" download="{{ fname }}">⬇ Скачать</a>
+                        <button class="task-figure__board-btn" onclick="openOnBoard('{{ fpath }}')"> На доску</button>
                     </figcaption>
                 </figure>
                 {% endfor %}
@@ -107,14 +108,15 @@
             <div class="task-figures-block">
                 {% for fig in figs.solution %}
                 {% set fname = fig.file | replace('figures/', '') %}
+            {% set fpath = fig.url if fig.url is defined and fig.url else '/static/figures/' + fname %}
                 <figure class="task-figure" data-file="{{ fname }}">
-                    <img src="/static/figures/{{ fname }}" alt="Рисунок к решению задачи {{ t.number }}"
+                    <img src="{{ fpath }}" alt="Рисунок к решению задачи {{ t.number }}"
                          loading="lazy" class="task-figure__img"
-                         onclick="openOnBoard('/static/figures/{{ fname }}')"
+                         onclick="openOnBoard('{{ fpath }}')"
                          onerror="this.closest('figure').remove()" />
                     <figcaption class="task-figure__cap">
-                        <a class="task-figure__download" href="/static/figures/{{ fname }}" download="{{ fname }}">⬇ Скачать</a>
-                        <button class="task-figure__board-btn" onclick="openOnBoard('/static/figures/{{ fname }}')"> На доску</button>
+                        <a class="task-figure__download" href="{{ fpath }}" download="{{ fname }}">⬇ Скачать</a>
+                        <button class="task-figure__board-btn" onclick="openOnBoard('{{ fpath }}')"> На доску</button>
                     </figcaption>
                 </figure>
                 {% endfor %}

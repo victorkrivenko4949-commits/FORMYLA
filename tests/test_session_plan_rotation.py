@@ -155,11 +155,17 @@ def test_method_code_mismatch_does_not_complete(pilot_user):
     assert session_plan.maybe_complete_method(uid) is True
 
 
-def test_pick_probnik_skips_empty(pilot_user):
-    """Пробник без задач не выбирается."""
+def test_pick_probnik_real_catalog_only_no_db_fallback(pilot_user, app):
+    """REAL_PROBNIK_V1 (28.10.2026): пробник — ТОЛЬКО из реального каталога.
+
+    Раньше _pick_probnik мог упасть в SQL-фолбэк по таблице
+    olympiad_probniks и выбрать заглушку. Теперь контракт:
+    заглушки из БД НЕ выбираются никогда — либо реальный вариант
+    выбранной олимпиады (real-*), либо None (без подмен).
+    """
     from sqlalchemy import text
     uid = pilot_user.id
-    # олимпиада не важна: создаём два пробника, у первого задач нет
+    # олимпиада не важна: создаём две заглушки в БД, у первой задач нет
     db.session.execute(text(
         "INSERT INTO olympiad_probniks (code, title, competition, grade, type, number, is_published, sort_order, created_at) "
         "VALUES ('empty_p', 'Пустой', 'ВсОШ', 9, 'topic', 1, TRUE, 1, CURRENT_TIMESTAMP), "
@@ -169,11 +175,24 @@ def test_pick_probnik_skips_empty(pilot_user):
     db.session.add(OlympiadTask(
         probnik_id=full[0], number='1.1', condition_md='условие',
         idea_md='идея', solution_md='решение', method_primary='M1'))
+    # класс ученика — 9 (ВсОШ в каталоге имеет варианты 9 класса)
+    from models_curator import CuratorState
+    cs = CuratorState.query.filter_by(user_id=uid).first()
+    if cs is None:
+        cs = CuratorState(user_id=uid)
+        db.session.add(cs)
+    cs.grade = 9
     db.session.commit()
 
     picked = session_plan._pick_probnik(uid, 'vsosh', set())
     assert picked is not None
-    assert picked['code'] == 'full_p', 'выбран пробник без задач'
+    assert picked['code'].startswith('real-vsosh-'), (
+        f'ожидался реальный вариант каталога, получено: {picked["code"]!r}')
+    assert picked['code'] not in ('full_p', 'empty_p'), (
+        'выбрана заглушка из БД — подмены запрещены (REAL_PROBNIK_V1)')
+
+    # а олимпиада без реальных вариантов даёт None — без подмен заглушками
+    assert session_plan._pick_probnik(uid, 'itmo', set()) is None
 
 
 def test_current_practice_theme(pilot_user):
@@ -509,3 +528,80 @@ def test_same_set_id_method_and_practice_both_count(pilot_user):
     assert session_plan.maybe_complete_practice(uid, s.id) is True
     # и повтор каждого сета отклоняется
     assert session_plan.maybe_complete_practice(uid, s.id) is False
+
+
+# ── REAL_PROBNIK_V1 (28.10.2026): атомарность начисления долгов ──────────
+
+
+class _BombSession:
+    """Обёртка сессии: рвётся на N-м INSERT INTO curator_lessons."""
+
+    def __init__(self, real, bomb_on):
+        self._real = real
+        self._bomb_on = bomb_on
+        self.inserts = 0
+
+    def execute(self, stmt, *a, **k):
+        if 'INSERT INTO curator_lessons' in str(stmt):
+            self.inserts += 1
+            if self.inserts == self._bomb_on:
+                raise RuntimeError(
+                    f'bomb: отказ после {self.inserts}-го INSERT долгов')
+        return self._real.execute(stmt, *a, **k)
+
+    def __getattr__(self, name):
+        return getattr(self._real, name)
+
+
+class _BombDB:
+    """db-шим: session.execute проходит через бомбу, остальное — как есть."""
+
+    def __init__(self, real, bomb_on):
+        self._real = real
+        self.bomb = _BombSession(real.session, bomb_on)
+
+    @property
+    def session(self):
+        return self.bomb
+
+    def __getattr__(self, name):
+        return getattr(self._real, name)
+
+
+def test_debt_accrual_is_atomic_on_failure(pilot_user, monkeypatch):
+    """Сбой ПОСЛЕ первого INSERT долгов откатывает ВСЁ начисление.
+
+    REAL_PROBNIK_V1 (ревью 28.10.2026): _advance_stale пишет статус
+    «пропущено» и вставки долгов ОДНОЙ транзакцией. Проверяем: если
+    вставка рвётся на середине, в базе НЕ остаётся ни одного долга,
+    а исходное занятие сохраняет статус 'assigned'. Повторный вызов
+    (уже без сбоя) начисляет долги корректно — восстановление работает.
+    """
+    uid = pilot_user.id
+    lesson = session_plan.current_lesson(uid)  # seq 1, assigned сегодня
+    _backdate(uid, lesson['id'], days=4)       # 4 дня пропуска
+
+    # бомба: первый INSERT долгов проходит, второй — отказ.
+    # _sync НЕ бросает наружу (прод-инвариант), но ловит исключение
+    # и откатывает транзакцию целиком.
+    with pytest.MonkeyPatch.context() as mp:          # локальный undo,
+        bomb = _BombDB(db, bomb_on=2)                # не трогает пилот-гейт
+        mp.setattr(session_plan, 'db', bomb)
+        session_plan._sync(uid)                      # прод-путь: catch + rollback
+    # бомба реально сработала: ДОСТИГНУТЫ 2 INSERT'а долгов,
+    # первый успешно выполнен (откат — уже ПОСЛЕ записи в транзакции)
+    assert bomb.bomb.inserts == 2, (
+        f'бомба должна рваться на 2-м INSERT, достигнуто {bomb.bomb.inserts}')
+
+    # откатилось ВСЁ: ни одного долга, исходное занятие всё ещё 'assigned'
+    lessons = _all_lessons(uid)
+    assert len(lessons) == 1, lessons
+    assert lessons[0]['status'] == 'assigned', lessons[0]
+
+    # восстановление: без бомбы долги начисляются полностью
+    info = session_plan.session_info(uid)
+    assert info['debts_count'] == 4, (
+        f'ожидалось 4 долга (исходный + 3 дня), получено '
+        f'{info["debts_count"]}')
+    row = [l for l in _all_lessons(uid) if l['seq'] == 1][0]
+    assert row['status'] == 'skipped'

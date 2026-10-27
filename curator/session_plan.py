@@ -163,68 +163,30 @@ def _pick_method(user_id: int) -> Dict[str, str]:
     return {'code': '', 'name': ''}
 
 
-_OLYMP_COMPETITION = {
-    'vsosh': 'ВсОШ',
-    'euler': 'Европейская олимпиада «Эйлер»',
-    'lomonosov': 'Ломоносов',
-}
-
-
 def _pick_probnik(user_id: int, olympiad_slug: Optional[str],
                   used_codes: set) -> Optional[Dict[str, str]]:
-    """Реальный пробник: опубликованный, с задачами, под олимпиаду и класс.
+    """Реальный пробник: вариант выбранной олимпиады из каталога.
 
-    REAL_PROBNIK_V1 (28.10.2026): сначала — реальный вариант выбранной
-    олимпиады из каталога задач олимпиад (data/olymp_catalog): свежий год
-    → старый, внутри года этапы от простого к сложному, без повторов.
-    Если каталога по олимпиаде нет — прежняя логика (опубликованные
-    пробники с задачами). Требование 26.10.2026 в силе: пробник без
-    задач — пустая страница, занятие-пробник застрянет.
+    REAL_PROBNIK_V1 (28.10.2026): занятие-пробник — ТОЛЬКО реальный
+    вариант выбранной олимпиады из каталога задач олимпиад
+    (data/olymp_catalog): свежий год -> старый, внутри года этапы от
+    простого к сложному, без повторов. Замещений больше нет: если
+    олимпиада не выбрана или в каталоге нет вариантов — возвращаем
+    None (занятие-пробник остаётся без кода и закрывается сдачей
+    любого пробника через maybe_complete_probnik).
     """
-    # ── 1) Реальный вариант из каталога олимпиад (владелец, 28.10) ─────
-    if olympiad_slug:
-        grade = _user_grade(user_id)
-        if grade:
-            try:
-                from services.real_probnik import next_real_probnik
-                real = next_real_probnik(olympiad_slug, grade, used_codes)
-                if real:
-                    return real
-            except Exception as e:  # noqa: BLE001
-                logger.warning('[session_plan] real probnik pick failed: %r', e)
-
-    # ── 2) Фолбэк: опубликованные пробники с задачами ───────────────────
+    if not olympiad_slug:
+        return None
     grade = _user_grade(user_id)
-    competition = _OLYMP_COMPETITION.get(olympiad_slug or '', '') if olympiad_slug else ''
+    if not grade:
+        return None
     try:
-        rows = db.session.execute(text(
-            "SELECT p.code, p.title, p.competition, p.grade, "
-            "count(t.id) AS task_count FROM olympiad_probniks p "
-            "LEFT JOIN olympiad_tasks t ON t.probnik_id = p.id "
-            "WHERE p.is_published = TRUE "
-            "GROUP BY p.id, p.code, p.title, p.competition, p.grade, p.sort_order "
-            "HAVING count(t.id) > 0 "
-            "ORDER BY p.sort_order NULLS LAST, p.id"
-        )).fetchall()
+        from services.real_probnik import next_real_probnik
+        return next_real_probnik(olympiad_slug, grade, used_codes)
     except Exception as e:  # noqa: BLE001
-        logger.warning('[session_plan] probnik query failed: %r', e)
+        logger.warning('[session_plan] real probnik pick failed: %r', e)
         return None
 
-    def match(r) -> int:
-        score = 0
-        if competition and (competition.lower() in str(r[2] or '').lower()):
-            score += 4
-        if grade and str(r[3]) == str(grade):
-            score += 2
-        return score
-
-    candidates = [r for r in rows if r[0] not in used_codes]
-    if not candidates:
-        candidates = list(rows)  # все пройдены — разрешаем повторный прогон
-    if not candidates:
-        return None
-    best = sorted(candidates, key=match, reverse=True)[0]
-    return {'code': best[0], 'title': best[1] or best[0]}
 
 
 # ── Ротация и запись занятий ──────────────────────────────────────────────
@@ -275,26 +237,76 @@ def _in_week_one(user_id: int) -> bool:
     день тоже попадает в «неделю 1»: ученик видит диагностику (тест +
     задачи дня), а не метод — это же показывает календарный план куратора.
     """
+    # Календарное правило (ревью 28.10.2026): «неделя 1» — 7 календарных
+    # дней от ДАТЫ начала premium; время суток не влияет. Единый критерий
+    # для типа занятия, долгов и отображения (см. _is_diag_date).
+    return _is_diag_date(user_id, date.today())
+
+
+def _week1_end_date(user_id: int) -> Optional[date]:
+    """Первый ПОСТдиагностический день или None (premium нет).
+
+    Дата (а не момент времени): правило «неделя 1» — 7 календарных
+    дней от ДАТЫ начала premium. Единый критерий для назначения
+    занятий, долгов и отображения — независимо от времени суток
+    начала подписки (ревью 28.10.2026).
+    """
     started = _premium_started_at(user_id)
     if not started:
-        return False
+        return None
     try:
         s = started if isinstance(started, datetime) else datetime.fromisoformat(
             str(started).replace('Z', '').replace(' ', 'T'))
-        if s.tzinfo:
-            s = s.replace(tzinfo=None)
-        return (datetime.utcnow() - s).days < 7
+        return (s + timedelta(days=7)).date()
     except Exception:
-        return False
+        return None
+
+
+def _is_diag_date(user_id: int, d: date) -> bool:
+    """Диагностический день «недели 1»? (только тест и задачи дня)"""
+    w1e = _week1_end_date(user_id)
+    return bool(w1e and d < w1e)
+
+
+def _diag_count(lessons: List[Dict[str, Any]], week1_end: Optional[date]) -> int:
+    """Сколько уроков — диагностика «недели 1».
+
+    Диагностические уроки (тест + задачи дня, без методов и пробников)
+    НЕ занимают слоты блока 1-из-6: первый урок после недели 1 —
+    слот 1 (метод), пробник — слот 6. Без premium-подписки все уроки
+    считаются в блоке как раньше.
+    """
+    if not week1_end:
+        return 0
+    n = 0
+    for l in lessons:
+        d = _to_date(l.get('assigned_date'))
+        if d is not None and d < week1_end:
+            n += 1
+    return n
+
+
+def _eff_slot(user_id: int, lessons: List[Dict[str, Any]], seq: int) -> int:
+    """Слот занятия в блоке 1-из-6 с учётом недели диагностики.
+
+    До 2026-10-28 слот считался от seq напрямую: после 7 диагностических
+    уроков недели 1 блок «съезжал» (первый пост-диагностический урок
+    получал слот 2 — практика, а не метод). Теперь диагностика недели 1
+    исключается из счёта слотов (REAL_PROBNIK_V1).
+    """
+    diag = _diag_count(lessons, _week1_end_date(user_id))
+    return ((seq - diag - 1) % BLOCK_SIZE) + 1
 
 
 def _lesson_type_for_position(user_id: int, completed: int) -> str:
     """Занятие 1 блока — метод, занятие 6 — пробник, остальные — практика.
 
-    НЕДЕЛЯ 1 (диагностическая, 7 дней с начала premium): без методов
-    и пробников — только практика (тест + задачи дня).
+    НЕДЕЛЯ 1 (диагностическая, 7 календарных дней от ДАТЫ начала
+    premium): без методов и пробников — только практика (тест +
+    задачи дня). Критерий — дата, а не момент: единый для назначения,
+    долгов и отображения (ревью 28.10.2026).
     """
-    if _in_week_one(user_id):
+    if _is_diag_date(user_id, date.today()):
         return 'practice'
     pos = (completed % BLOCK_SIZE) + 1
     if pos == 1:
@@ -443,10 +455,24 @@ def _advance_stale(user_id: int) -> None:
     #    незакрытый урок прошлого дня уже посчитан пометкой выше (это день `assigned`),
     #    поэтому долги-вставки — только за дни ПОСЛЕ него
     olympiad_slug = _user_olympiad(user_id)
+    # выданные пробники не повторяются: если за пропущенные дни несколько
+    # занятий-пробников, каждый получает СВОЙ вариант (без подмен)
+    used_codes = {l['probnik_code'] for l in lessons if l['probnik_code']}
+    # тип занятия-долга определяется по ДНЮ пропуска (неделя диагностики
+    # не занимает слоты блока): если пропуск пришёлся на «неделю 1» —
+    # практика, иначе — слот блока 1-из-6
+    w1e = _week1_end_date(user_id)
+    diag = _diag_count(lessons, w1e)
     for i in range(1, missed):
         day = assigned + timedelta(days=i)
         seq = last['seq'] + i
-        lesson_type = _lesson_type_for_position(user_id, _slot_of(seq) - 1)
+        if w1e and day < w1e:
+            lesson_type = 'practice'  # диагностический день недели 1
+            diag += 1
+        else:
+            pos = ((seq - diag - 1) % BLOCK_SIZE) + 1
+            lesson_type = ('method' if pos == 1 else
+                          'probnik' if pos == BLOCK_SIZE else 'practice')
         # тема прошлого дня не восстанавливается — не подставляем сегодняшнюю;
         # метод/пробник — детерминированный выбор (как в _insert_lesson)
         theme = method_code = method_name = probnik_code = probnik_title = None
@@ -454,10 +480,10 @@ def _advance_stale(user_id: int) -> None:
             m = _pick_method(user_id)
             method_code, method_name = m['code'], m['name']
         elif lesson_type == 'probnik':
-            used = {l['probnik_code'] for l in lessons if l['probnik_code']}
-            p = _pick_probnik(user_id, olympiad_slug, used)
+            p = _pick_probnik(user_id, olympiad_slug, used_codes)
             if p:
                 probnik_code, probnik_title = p['code'], p['title']
+                used_codes.add(probnik_code)
         db.session.execute(text(
             f"INSERT INTO {TABLE_NAME} "
             f"(user_id, seq, lesson_type, status, theme, method_code, method_name, "
@@ -539,7 +565,7 @@ def current_lesson(user_id: int) -> Optional[Dict[str, Any]]:
         return None
     # история пуста или последний урок датирован прошлым — создаём следующий по слоту
     seq = (lessons[-1]['seq'] if lessons else 0) + 1
-    lesson_type = _lesson_type_for_position(user_id, _slot_of(seq) - 1)
+    lesson_type = _lesson_type_for_position(user_id, _eff_slot(user_id, lessons, seq) - 1)
     _insert_lesson(user_id, seq, lesson_type)
     lessons = _lessons(user_id)
     assigned = [l for l in lessons if l['status'] == 'assigned']
@@ -703,7 +729,12 @@ def maybe_complete_probnik(user_id: int, probnik_code: str) -> bool:
         lesson = _current_assigned(user_id)
         if not lesson or lesson['lesson_type'] != 'probnik':
             return False
-        if lesson['probnik_code'] and lesson['probnik_code'] != probnik_code:
+        # REAL_PROBNIK_V1: занятие-пробник закрывается только сдачей
+        # НАЗНАЧЕННОГО реального варианта. Кода нет (олимпиада не выбрана
+        # или вариант недоступен) — занятие не закрывается «любым»
+        # пробником: уходит в долг на следующий день, а CTA ведёт на
+        # выбор олимпиады (/olympiads/course-probnik). Никаких подмен.
+        if not lesson['probnik_code'] or lesson['probnik_code'] != probnik_code:
             return False
         return complete_current_lesson(user_id, lesson_type='probnik')
     except Exception as e:  # noqa: BLE001
@@ -767,7 +798,7 @@ def session_info(user_id: int) -> Dict[str, Any]:
             today_done = True
             # «текущий» слот для превью — СЛЕДУЮЩИЙ за завершённым
             next_seq = last['seq'] + 1
-            cur_slot = _slot_of(next_seq)
+            cur_slot = _eff_slot(user_id, lessons, next_seq)
             t = _lesson_type_for_position(user_id, cur_slot - 1)
             lesson = {'seq': next_seq, 'lesson_type': t,
                       'theme': None, 'method_name': None,
@@ -777,7 +808,7 @@ def session_info(user_id: int) -> Dict[str, Any]:
         completed = _completed_count(user_id)
         week_one = _in_week_one(user_id)
         if not today_done:
-            cur_slot = _slot_of(lesson['seq'])
+            cur_slot = _eff_slot(user_id, lessons, lesson['seq'])
         t = lesson['lesson_type']
         cta = CTA_FOR_TYPE.get(t, '/daily_tasks')
         if not today_done:
@@ -851,3 +882,28 @@ def session_info(user_id: int) -> Dict[str, Any]:
     except Exception as e:  # noqa: BLE001
         logger.warning('[session_plan] session_info failed: %r', e)
         return {'active': False}
+
+
+def upcoming_probnik_preview(user_id: int) -> Optional[Dict[str, str]]:
+    """Какой реальный пробник ждёт ученика следующим (БЕЗ записи в БД).
+
+    Для контекста куратора (services/curator_chat.py): WeeklyAI видит
+    заранее, какой вариант выбранной олимпиады будет на занятии-пробнике,
+    и упоминает его в недельном сообщении — даже если занятие ещё
+    не создано. Пилот-гейт, не бросает.
+    """
+    try:
+        if not _pilot(user_id):
+            return None
+        slug = _user_olympiad(user_id)
+        if not slug:
+            return None
+        grade = _user_grade(user_id)
+        if not grade:
+            return None
+        used = {l['probnik_code'] for l in _lessons(user_id) if l['probnik_code']}
+        from services.real_probnik import peek_next_probnik
+        return peek_next_probnik(slug, grade, used)
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[session_plan] probnik preview failed: %r', e)
+        return None

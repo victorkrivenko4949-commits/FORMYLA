@@ -9,7 +9,7 @@
         probnikCode: '{{ probnik.code }}',
         attemptId: {{ attempt.id }},
         startedAt: '{{ attempt.started_at.isoformat() }}Z',
-        durationMinutes: {{ probnik.duration_minutes }},
+        durationMinutes: {{ probnik.duration_minutes if probnik.duration_minutes is not none else 'null' }},
         submitUrl: '{{ url_for('olympiad.stage_submit', code=probnik.code) }}',
         taskNumbers: {{ tasks|map(attribute='number')|list|tojson }}
      })"
@@ -20,7 +20,7 @@
             <strong>{{ probnik.title }}</strong>
             <div style="color: var(--text-muted); font-size: .88em;">Этап #{{ probnik.number }} · макс. {{ probnik.max_score }} баллов</div>
         </div>
-        <div>
+        <div x-show="hasTimer">
             <div class="oly-timer-time" :class="{ danger: remaining < 60 }" x-text="formatTime(remaining)"></div>
             <div style="color: var(--text-muted); font-size: .82em; text-align: right;">осталось</div>
         </div>
@@ -64,11 +64,13 @@ function olympiadStage(cfg) {
         submitUrl: cfg.submitUrl,
         taskNumbers: cfg.taskNumbers,
 
-        remaining: cfg.durationMinutes * 60,
+        remaining: (cfg.durationMinutes || 0) * 60,
+        hasTimer: cfg.durationMinutes != null,
         _tid: null,
         submitting: false,
 
         startTicker() {
+            if (!this.hasTimer) return;  // без подтв. регламента: без таймера
             this.tick();
             this._tid = setInterval(() => this.tick(), 1000);
             // Beforeunload guard
@@ -80,6 +82,7 @@ function olympiadStage(cfg) {
             });
         },
         tick() {
+            if (!this.hasTimer) return;
             const ms = (new Date() - this.startedAt);
             const left = Math.round(cfg.durationMinutes * 60 - ms / 1000);
             this.remaining = Math.max(0, left);

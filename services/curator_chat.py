@@ -282,6 +282,16 @@ def build_context(user_id: int, since: Optional[datetime] = None,
                 'probnik_title': s.get('probnik_title'),
                 'debts_count': s.get('debts_count', 0),
             }
+            # ближайший реальный пробник (вариант олимпиады из каталога):
+            # куратор видит заранее, что ждёт ученика на занятии-пробнике,
+            # даже если само занятие ещё не создано
+            try:
+                from curator.session_plan import upcoming_probnik_preview
+                nxt = upcoming_probnik_preview(user_id)
+                if nxt:
+                    ctx['rotation']['next_probnik_title'] = nxt.get('title')
+            except Exception as e:  # noqa: BLE001
+                logger.warning('[curator_chat] probnik preview failed: %r', e)
     except Exception as e:  # noqa: BLE001
         logger.warning('[curator_chat] rotation ctx failed: %r', e)
 
@@ -348,6 +358,9 @@ def _context_block(ctx: Dict[str, Any]) -> str:
             lines.append(f"- текущий метод: {rot['method_name']}")
         if rot.get('probnik_title'):
             lines.append(f"- назначенный пробник: {rot['probnik_title']}")
+        elif rot.get('next_probnik_title'):
+            lines.append(
+                f"- ближайший пробник (по плану): {rot['next_probnik_title']}")
         if rot.get('debts_count'):
             lines.append(
                 f"- ПРОПУЩЕННЫЕ ЗАНЯТИЯ (записаны в долг): {rot['debts_count']} — "
@@ -586,9 +599,9 @@ WEEKLY_PROMPT_INSTRUCTION = (
     "(конкретно: сколько решено верно, прогресс ротации занятий), "
     "(2) что просело или отстаёт — мягко, без обвинений, "
     "(3) конкретный следующий шаг на завтра (одно действие). "
-    "Если в данных указан назначенный пробник — ровно одним предложением "
-    "скажи, какой реальный вариант олимпиады его ждёт (олимпиада, год, "
-    "этап) и почему полезно сдать его целиком. "
+    "Если в данных указан назначенный или ближайший пробник — ровно одним "
+    "предложением скажи, какой реальный вариант олимпиады его ждёт "
+    "(олимпиада, год, этап) и почему полезно сдать его целиком. "
     "Если активности мало или её нет — предложи маленький первый шаг "
     "(например, завтра один блок задач дня, 20–30 минут). "
     "Если данных нет — напиши, что статистика пока не видна. "

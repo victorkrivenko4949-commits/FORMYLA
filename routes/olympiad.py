@@ -151,11 +151,18 @@ def task(task_id):
         attempt = (TaskAttempt.query
                    .filter_by(user_id=current_user.id, task_id=task_id)
                    .first())
-    condition_figures = get_figures_for_probnik_task(p, t)
+    figs = get_figures_for_probnik_task(p, t)
+    # REAL_PROBNIK_V1 (28.10.2026): get_figures_for_probnik_task возвращает
+    # {'condition': [...], 'solution': [...]}, а шаблон задачи ждёт СПИСКИ —
+    # раньше сюда попадал весь словарь, итерация по нему давала ключи,
+    # и чертежи на странице задачи не рендерились никогда.
+    condition_figures = figs.get('condition') or []
+    solution_figures = figs.get('solution') or []
     return render_template('olympiad/task.html',
                            task=t, probnik=p,
                            attempt=attempt,
-                           condition_figures=condition_figures)
+                           condition_figures=condition_figures,
+                           solution_figures=solution_figures)
 
 
 # в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
