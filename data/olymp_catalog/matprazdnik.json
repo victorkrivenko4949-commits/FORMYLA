@@ -3235,8 +3235,7 @@
   "solution": "б) Из второго рис. видно, что у каждого из колес не более 3 спиц. Но из первого рисунка видно, что всего у колеc не менее 7 спиц. Но  3·2 < 7. \n\nа) См. рисунок.\n\n [рис.]",
   "geo": false,
   "fig_statement": [
-   "FINAL_FIGURES/4204f44ce11e50c63aec1bca406afabb932017ed5aae0b4f7e35d79c2c47fd1b_statement.png",
-   "FINAL_FIGURES/4204f44ce11e50c63aec1bca406afabb932017ed5aae0b4f7e35d79c2c47fd1b_statement_2.png"
+   "FINAL_FIGURES/4204f44ce11e50c63aec1bca406afabb932017ed5aae0b4f7e35d79c2c47fd1b_statement.png"
   ],
   "fig_solution": []
  },
