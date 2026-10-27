@@ -279,7 +279,7 @@
                     <span style="color: var(--text-muted);">Никнейм:</span>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span id="nickname-current-value" style="color: var(--accent-2); font-weight: 600; word-break: break-word; max-width: 60vw;">
-                            {% if user.nickname %}@{{ user.nickname }}{% else %}Не установлен{% endif %}
+                            {% if user.nickname %}@{{ user.nickname }}{% if user.has_diamond %} <span title="Алмазный статус FORMYLA" style="filter:drop-shadow(0 0 6px rgba(56,189,248,0.65));">💎</span>{% endif %}{% else %}Не установлен{% endif %}
                         </span>
                         <button type="button" onclick="showNicknameForm()" aria-label="Изменить никнейм"
                                 style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); color: var(--accent-2); cursor: pointer; font-size: 15px; padding: 8px 12px; min-width: 40px; min-height: 40px; border-radius: 8px; transition: transform 0.2s, background 0.2s;"
@@ -334,7 +334,7 @@
             🔐 Аккаунт поддержки
         </h2>
         <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 14px;">
-            Вы вошли как <strong>@{{ current_user.nickname }}</strong> — это служебный аккаунт поддержки.
+            Вы вошли как <strong>@{{ current_user.nickname }}{% if current_user.has_diamond %} 💎{% endif %}</strong> — это служебный аккаунт поддержки.
             Вам доступны все функции обычного пользователя и дополнительные админ-разделы ниже.
         </p>
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
@@ -382,6 +382,64 @@
         </div>
     </div>
     {% endif %}
+    {% endif %}
+
+    <!-- ── YOOKASSA_DIAMOND_V2: значок алмаза 💎 за 10 ₽ (только админам victor/lavrik) ── -->
+    {% set diamond_admin_nicks = ['victor', 'victorkrivenko', 'lavrik'] %}
+    {% set is_diamond_admin = current_user.is_authenticated and ((current_user.nickname or '')|lower in diamond_admin_nicks) %}
+    {% if is_diamond_admin %}
+    <div id="yookassa-card" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.92)); backdrop-filter: blur(12px); padding: 26px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(56, 189, 248, 0.45); box-shadow: 0 10px 36px rgba(56, 189, 248, 0.15); margin-bottom: 30px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+            <h2 style="color: #38bdf8; margin: 0; font-size: 1.45em; display: flex; align-items: center; gap: 10px;">
+                <span>💎 Значок алмаза после ника</span>
+                <span style="font-size: 0.65em; padding: 4px 10px; border-radius: 999px; background: rgba(56, 189, 248, 0.16); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 700;">10 ₽ · ЮKassa</span>
+            </h2>
+            <span style="font-size: 12px; padding: 4px 10px; border-radius: 8px; background: rgba(251, 191, 36, 0.14); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3);">
+                Видно только админам (victor и lavrik)
+            </span>
+        </div>
+
+        <p style="color: var(--text-soft); margin: 0 0 16px; font-size: 14.5px; line-height: 1.5;">
+            Покупка добавляет персональный цифровой значок <strong style="color: #38bdf8;">💎</strong> сразу после вашего ника в профиле, шапке, рейтинге и списке друзей.
+            Пример: <span style="display: inline-block; margin-left: 6px; padding: 3px 10px; border-radius: 8px; background: rgba(56, 189, 248, 0.12); color: #e0f2fe; font-weight: 700;">@{{ user.nickname or 'victor' }} 💎</span>
+        </p>
+
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px;">
+            {% if user.has_diamond %}
+            <span style="padding: 8px 14px; border-radius: 10px; background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); font-weight: 700; font-size: 14px;">
+                ✅ Значок 💎 активен на вашем аккаунте
+            </span>
+            {% else %}
+            <span style="padding: 8px 14px; border-radius: 10px; background: rgba(148, 163, 184, 0.12); color: var(--text-muted); border: 1px solid var(--border-soft); font-size: 14px;">
+                Статус: пока не куплен
+            </span>
+            {% endif %}
+        </div>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 0;">
+            <form method="POST" action="{{ url_for('yookassa_pay.buy_diamond') }}" style="margin: 0;">
+                <button type="submit"
+                        style="padding: 13px 26px; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 6px 20px rgba(14, 165, 233, 0.35); transition: transform 0.15s ease;"
+                        onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    💎 {% if user.has_diamond %}Купить ещё раз за 10 ₽ (тест оплаты){% else %}Купить значок алмаза за 10 ₽{% endif %}
+                </button>
+            </form>
+
+            {% if user.has_diamond %}
+            <form method="POST" action="{{ url_for('yookassa_pay.toggle_diamond') }}" style="margin: 0;">
+                <input type="hidden" name="action" value="off">
+                <button type="submit"
+                        style="padding: 12px 18px; background: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.35); border-radius: 10px; font-weight: 600; font-size: 13.5px; cursor: pointer;">
+                    Снять 💎 (для проверки с нуля)
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        <p style="color: var(--text-muted); font-size: 12px; margin: 12px 0 0; line-height: 1.5;">
+            ⚠️ Платёж по 10 ₽ проходит через ЮKassa (Shop ID: 1504813). Оплата сразу активирует значок автоматически.
+        </p>
+    </div>
     {% endif %}
 
     <!-- ── Выбор класса / Роль ── -->

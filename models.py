@@ -140,15 +140,19 @@ class User(UserMixin, db.Model):
         """Отображаемое имя: nickname (если не Гость-*) -> name -> email username -> Аноним"""
         # If user has a real nickname (not auto-generated guest)
         if self.nickname and not self.nickname.startswith('Гость-'):
-            return self.nickname
+            base = self.nickname
         # Yandex display name or real name
-        if self.name:
-            return self.name
+        elif self.name:
+            base = self.name
         # Email username (before @)
-        if self.email and '@' in self.email and not self.email.startswith('guest_'):
-            return self.email.split('@')[0]
-        # Fallback to nickname (Гость-XXXX) or Аноним
-        return self.nickname or 'Аноним'
+        elif self.email and '@' in self.email and not self.email.startswith('guest_'):
+            base = self.email.split('@')[0]
+        else:
+            base = self.nickname or 'Аноним'
+        # YOOKASSA_DIAMOND_V2: платный значок 💎 после ника (10 ₽, только админы victor/lavrik)
+        if getattr(self, 'has_diamond', False) and '💎' not in base:
+            return f"{base} 💎"
+        return base
     
     def generate_auth_code(self):
         """Генерировать 6-значный код авторизации"""

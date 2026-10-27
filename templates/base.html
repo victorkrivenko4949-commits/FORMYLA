@@ -268,7 +268,7 @@
                        style="padding: 8px 16px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.2s;"
                        onmouseover="this.style.background='rgba(56, 189, 248, 0.2)'"
                        onmouseout="this.style.background='rgba(56, 189, 248, 0.1)'">
-                        👤 Профиль
+                        👤 Профиль{% if current_user.has_diamond %} 💎{% endif %}
                     </a>
                     <button type="button" class="nav-unpin-btn"
                             title="Открепить" aria-label="Открепить профиль"
