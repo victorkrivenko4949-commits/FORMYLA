@@ -32,7 +32,7 @@ import os
 ENABLED = (os.environ.get("GEOEXACT_PLAN_REPAIR") or "1").strip().lower() not in ("0", "no", "off")
 
 # Суффикс версии движка: починка планов меняет приёмку чертежей.
-CACHE_SUFFIX = "+planFix1"
+CACHE_SUFFIX = "+planFix2"
 
 EXTRA_RULES = """
 47. ORDER_RULE: конструкции упорядочивай по зависимостям — каждая операция
@@ -222,6 +222,71 @@ def _sanitize_draw(plan) -> bool:
         return False
 
 
+# Контекст повторной формализации: сброс цели разрешён ТОЛЬКО на повторе —
+# первая попытка обязана упасть строго (PlanError -> feedback), чтобы LLM
+# успел исправить цель; иначе молча теряем измерение и на исправимых планах
+# (proof_fidelity: alias-цели обязаны оставаться жёсткой ошибкой).
+_RETRY_CONTEXT = {"in_retry": False}
+
+
+def _wrap_formalize(orig):
+    """Отметить попытку формализации как повторную (feedback/prev_code)."""
+    @functools.wraps(orig)
+    def formalize(*args, **kwargs):
+        feedback = kwargs.get("feedback") or (args[5] if len(args) > 5 else "")
+        old = _RETRY_CONTEXT["in_retry"]
+        _RETRY_CONTEXT["in_retry"] = old or bool(feedback)
+        try:
+            return orig(*args, **kwargs)
+        finally:
+            _RETRY_CONTEXT["in_retry"] = old
+    formalize._target_retry_ctx = True
+    formalize._original = orig
+    return formalize
+
+
+def _tolerant_target_validate(orig_validate):
+    """Валидация цели внутри formalize (llm.py, «этап 5») не должна ронять
+    формализацию целиком НА ПОВТОРЕ: PlanError(ARITY/UNKNOWN_TARGET) по
+    target raised ДО того, как план дойдёт до _coerce_formalized и
+    _sanitize_target — объект плана теряется в исключении, конвейер после
+    3 повторов падает в схему. Здесь неверная цель отбрасывается на месте:
+    измерение — украшение, чертёж важнее.
+
+    Первая попытка строгая (см. _RETRY_CONTEXT): LLM получает feedback и
+    шанс исправить цель; сброс — только если повтор снова ошибается.
+
+    Прод-кейс (трапеция с доп. построением, 27.10.2026): ratio с 3 точками
+    вместо 4 — «цель ratio ждёт 4 точек» на каждом повторе, 9-render-sketch.
+    """
+    @functools.wraps(orig_validate)
+    def validate_plan(plan):
+        try:
+            return orig_validate(plan)
+        except Exception as e:  # noqa: BLE001
+            try:
+                from .schema import PlanError
+            except Exception:  # noqa: BLE001
+                raise e
+            if (not isinstance(e, PlanError)
+                    or e.code not in ("ARITY", "UNKNOWN_TARGET")
+                    or "цель" not in str(e)
+                    or getattr(plan.target, "kind", "none") == "none"
+                    or not _RETRY_CONTEXT["in_retry"]):
+                raise e
+            plan.target.kind = "none"
+            plan.target.args = []
+            warn = orig_validate(plan)      # снова плохой план — обычный путь
+            base = list(warn) if isinstance(warn, list) else []
+            return base + [
+                "TARGET_DROPPED: цель измерения некорректна (неверное "
+                "число точек); чертёж построен без измерения — ответ "
+                "смотрите в полном решении"]
+    validate_plan._target_tolerant = True
+    validate_plan._original = orig_validate
+    return validate_plan
+
+
 def _wrap_coerce_formalized(orig):
     @functools.wraps(orig)
     def _coerce_formalized(res):
@@ -294,6 +359,19 @@ def install(semantics_module, llm_module, pipeline_module=None) -> bool:
             semantics_module.semantic_failures = _wrap_semantic_failures(
                 semantics_module.semantic_failures)
         ok = _install_llm_rules(llm_module)
+        try:
+            if not getattr(llm_module.validate_plan, "_target_tolerant", False):
+                llm_module.validate_plan = _tolerant_target_validate(
+                    llm_module.validate_plan)
+            ok = ok and getattr(llm_module.validate_plan, "_target_tolerant", False)
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            fn = getattr(llm_module, "formalize", None)
+            if fn is not None and not getattr(fn, "_target_retry_ctx", False):
+                llm_module.formalize = _wrap_formalize(fn)
+        except Exception:  # noqa: BLE001
+            pass
         if pipeline_module is not None:
             ver = getattr(pipeline_module, "ENGINE_VERSION", None)
             if ver is not None and CACHE_SUFFIX not in ver:

@@ -63,7 +63,7 @@ import re
 import numpy as np
 
 ENABLED = (os.environ.get("GEOEXACT_DEGENERATE_POLICY") or "1").strip().lower() not in ("0", "no", "off")
-CACHE_SUFFIX = "+dgp2"
+CACHE_SUFFIX = "+dgp3"
 _EPS = 1e-12
 # точное совпадение построенных точек — факт геометрии, а не дефект
 # (гейт: CONSTRUCTED_COINCIDENCE / совпадение с скрытым псевдонимом)
@@ -124,10 +124,14 @@ def _cevians(text: str) -> list[tuple[str, str, str]]:
 def cevian_failures(text: str, plan, coords: dict) -> list[str]:
     """«Медиана BD» — D середина противоположной стороны; «высота BD» — ⟂ и не вершина.
 
-    Основание проверяется относительно названного в условии треугольника:
-    без него (или без точки на чертеже) проверка пропускается — отсутствие
-    точек ловят statement-проверки. Совпадение основания с вершиной — жёсткая
-    ошибка: «медиана BD» с D≡A не медиана, как бы ни был устроен план.
+    Основание проверяется относительно названных в условии треугольников.
+    Семантика — «существует сторона»: чевиана валидна, если она является
+    медианой/высотой ХОТЯ БЫ ОДНОЙ из них. Раньше требовалось совпадение
+    со всеми сторонами — ложное «приближённо» на текстах вида «в треугольнике
+    ABC проведена медиана BM … площади треугольников ABM и MBC» (M — конец,
+    а не середина стороны AM треугольника ABM). Без названного треугольника
+    (или без точки на чертеже) проверка пропускается — отсутствие точек ловят
+    statement-проверки. Вырожденные стороны (P≈Q) пропускаются.
     """
     fails: list[str] = []
     triangles = [t for t in named_polygons(text) if len(t) == 3]
@@ -139,28 +143,39 @@ def cevian_failures(text: str, plan, coords: dict) -> list[str]:
         if not sides:
             continue
         V, F = np.asarray(coords[vertex], dtype=float), np.asarray(coords[foot], dtype=float)
+        matched, checked = False, False
         for p, q in sides:
             P, Q = np.asarray(coords[p], dtype=float), np.asarray(coords[q], dtype=float)
+            if float(np.linalg.norm(Q - P)) <= 1e-6:      # вырожденная сторона
+                continue
+            checked = True
             scale = max(float(np.linalg.norm(Q - P)), float(np.linalg.norm(V - P)),
                         float(np.linalg.norm(V - Q)), 1e-9)
             cross = abs(float(np.linalg.det(np.array([Q - P, F - P]))))
             if kind == "медиана":
-                if cross > 1e-5 * scale * scale or \
-                        abs(float(np.linalg.norm(F - P)) - float(np.linalg.norm(F - Q))) \
-                        > 1e-4 * scale:
-                    fails.append(
-                        f"CEVIAN: медиана {vertex}{foot} — {foot} не является серединой "
-                        f"стороны {p}{q}. Строй {foot}=midpoint({p},{q}) и рисуй "
-                        f"[{vertex},{foot}] в draw.segments")
+                ok = cross <= 1e-5 * scale * scale and \
+                    abs(float(np.linalg.norm(F - P)) - float(np.linalg.norm(F - Q))) \
+                    <= 1e-4 * scale
             else:
                 along = abs(float((F - V) @ (Q - P)))
                 near = min(float(np.linalg.norm(F - P)), float(np.linalg.norm(F - Q)))
-                if cross > 1e-5 * scale * scale or along > 1e-4 * scale * scale \
-                        or near <= 1e-5 * scale:
-                    fails.append(
-                        f"CEVIAN: высота {vertex}{foot} не перпендикулярна стороне {p}{q} "
-                        f"или её основание совпало с вершиной. Строй "
-                        f"{foot}=foot({vertex},{p},{q}) и рисуй [{vertex},{foot}]")
+                ok = cross <= 1e-5 * scale * scale and along <= 1e-4 * scale * scale \
+                    and near > 1e-5 * scale
+            if ok:
+                matched = True
+                break
+        if checked and not matched:
+            side_names = ", ".join(f"{p}{q}" for p, q in sides)
+            if kind == "медиана":
+                fails.append(
+                    f"CEVIAN: медиана {vertex}{foot} — {foot} не является серединой "
+                    f"ни одной из сторон ({side_names}). Строй {foot}=midpoint(p,q) "
+                    f"подходящей стороны и рисуй [{vertex},{foot}] в draw.segments")
+            else:
+                fails.append(
+                    f"CEVIAN: высота {vertex}{foot} не перпендикулярна сторонам "
+                    f"({side_names}) или её основание совпало с вершиной. Строй "
+                    f"{foot}=foot({vertex},p,q) и рисуй [{vertex},{foot}]")
     return list(dict.fromkeys(fails))
 
 

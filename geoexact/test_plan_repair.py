@@ -72,7 +72,7 @@ def test_rules_installed():
 
 
 def test_engine_suffix():
-    assert "+planFix1" in pipeline.ENGINE_VERSION
+    assert "+planFix2" in pipeline.ENGINE_VERSION
 
 
 def test_wrappers_installed():
@@ -263,3 +263,83 @@ def test_sanitize_draw_noop_on_forward_ref():
         "scale_free": True,
     })
     assert _sanitize_draw(plan) is False
+
+
+def test_tolerant_validate_drops_bad_target_on_retry():
+    """На повторной формализации валидация внутри formalize (llm.validate_plan)
+    отбрасывает неверную цель вместо исключения — план выживает (прод-кейс:
+    трапеция с aux, 27.10.2026: «цель ratio ждёт 4 точек» на каждом повторе)."""
+    from geoexact.core.schema import PlanError
+    from geoexact.core import plan_repair as PR
+    assert getattr(llm.validate_plan, "_target_tolerant", False)
+    assert getattr(llm.formalize, "_target_retry_ctx", False)
+    plan = FigurePlan.from_dict({
+        "points": ["A", "B", "C"],
+        "constructions": [{"op": "free_point", "out": t} for t in "ABC"],
+        "constraints": [],
+        "draw": {"segments": [["A", "B"]]},
+        "target": {"kind": "ratio", "args": ["A", "B", "C"]},  # 3 вместо 4
+        "scale_free": True,
+    })
+    with pytest.raises(PlanError):
+        validate_plan(plan)               # строгая schema-валидация падает
+    with pytest.raises(PlanError):
+        llm.validate_plan(plan)           # и толерантная — на ПЕРВОЙ попытке
+    PR._RETRY_CONTEXT["in_retry"] = True   # повтор: feedback уже был
+    try:
+        warn = llm.validate_plan(plan)    # теперь — сброс вместо исключения
+    finally:
+        PR._RETRY_CONTEXT["in_retry"] = False
+    assert plan.target.kind == "none" and plan.target.args == []
+    assert any("TARGET_DROPPED" in w for w in warn)
+
+
+def test_tolerant_validate_passthrough_fatal():
+    """Чужие ошибки валидации проходят наверх как раньше."""
+    plan = FigurePlan.from_dict({
+        "points": ["A", "B", "C"],
+        "constructions": [{"op": "free_point", "out": t} for t in "ABC"],
+        "constraints": [],
+        "draw": {"segments": [["A", "B"]], "circles": [["A"]]},  # DRAW_ARITY
+        "target": {"kind": "none", "args": []},
+        "scale_free": True,
+    })
+    with pytest.raises(Exception):
+        llm.validate_plan(plan)
+
+
+def test_pipeline_retries_then_survives_bad_target():
+    """E2E полного цикла повтора: первая формализация падает строго
+    (PlanError ARITY) -> конвейер повторяет с feedback -> повтор сбрасывает
+    неверную цель (как настоящий llm.formalize на «этапе 5» в контексте
+    повтора) -> чертёж точный, не схема, TARGET_DROPPED в варнингах."""
+    from unittest.mock import patch
+    from geoexact.core.schema import PlanError
+    from geoexact.core import plan_repair as PR
+
+    calls = {"n": 0}
+
+    def formalize(sess, text, cls, with_aux, budget, feedback="", prev_code=""):
+        calls["n"] += 1
+        plan = _median_plan()
+        plan.target.kind = "ratio"
+        plan.target.args = ["A", "B", "C"]       # 3 точки — ошибка ARITY
+        if calls["n"] == 1 and not feedback:
+            llm.validate_plan(plan)             # строго — PlanError наружу
+            raise AssertionError("должно было упасть PlanError")
+        PR._RETRY_CONTEXT["in_retry"] = True    # как обёртка _wrap_formalize
+        try:
+            warn = llm.validate_plan(plan)      # повтор — сброс цели
+        finally:
+            PR._RETRY_CONTEXT["in_retry"] = False
+        return plan, warn
+
+    text = ("В треугольнике ABC проведена медиана BM. Найдите отношение "
+            "площадей треугольников ABM и MBC.")
+    with patch.object(llm, "classify", lambda *a, **k: {"ok": True, "class": "O", "space": "plane"}), \
+         patch.object(llm, "formalize", formalize):
+        result = pipeline.generate(text, with_aux=True, use_cache=False)
+    assert calls["n"] >= 2                       # был строгий первый + повтор
+    assert result.ok and result.stage == "9-render", (result.stage, result.detail)
+    assert any("TARGET_DROPPED" in w for w in (result.warnings or []))
+    assert result.verification == "constraints_only"  # измерение сброшено
