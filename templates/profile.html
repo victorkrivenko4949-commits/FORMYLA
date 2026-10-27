@@ -425,6 +425,14 @@
                 </button>
             </form>
 
+            <!-- FIX: если платёж уже прошёл, но 💎 не активировался (вебхук не дошёл) -->
+            {% if not user.has_diamond %}
+            <a href="{{ url_for('yookassa_pay.diamond_self') }}"
+               style="padding: 12px 18px; background: rgba(250, 204, 21, 0.1); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.35); border-radius: 10px; font-weight: 600; font-size: 13.5px; text-decoration: none;">
+                ⚡ Активировать 💎 (платёж уже прошёл)
+            </a>
+            {% endif %}
+
             {% if user.has_diamond %}
             <form method="POST" action="{{ url_for('yookassa_pay.toggle_diamond') }}" style="margin: 0;">
                 <input type="hidden" name="action" value="off">

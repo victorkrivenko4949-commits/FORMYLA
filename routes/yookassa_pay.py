@@ -49,7 +49,9 @@ def is_diamond_admin(user) -> bool:
     if email in ("kr1venkovictor@yandex.ru", "victor.krivenko.4949@gmail.com"):
         return True
     nick = (getattr(user, "nickname", None) or "").strip().lower()
-    return nick in ("victor", "victorkrivenko", "lavrik")
+    if nick in ("victor", "victorkrivenko", "lavrik", "damian.pakhonin.13"):
+        return True
+    return False
 
 
 def is_diamond_buyer(user) -> bool:
@@ -676,6 +678,47 @@ def toggle_diamond():
         else:
             flash("Значок 💎 снят.", "info")
     db.session.commit()
+    return redirect(url_for("profile"))
+
+
+@yookassa_pay_bp.route("/payments/yookassa/diamond-self", methods=["GET"])
+@login_required
+def diamond_self():
+    """FIX: юзер купил 💎 (10 ₽), но вебхук от ЮKassa не дошёл до исправления 500.
+    Этот роут проверяет наличие записи в yookassa_payments и активирует 💎 для
+    текущего юзера. Безопасно: если платежа нет — ничего не активирует.
+    """
+    if not is_diamond_admin(current_user):
+        abort(403)
+    _ensure_tables()
+    from models import db
+
+    uid = int(current_user.id)
+    try:
+        row = db.session.execute(
+            text(
+                "SELECT order_id, payment_id, status FROM yookassa_payments WHERE user_id = :uid ORDER BY id DESC LIMIT 1"
+            ),
+            {"uid": uid},
+        ).fetchone()
+    except Exception as e:
+        logger.warning("[yookassa_pay] diamond_self lookup warning: %r", e)
+        row = None
+
+    if not row:
+        flash("Платёж не найден — напишите в поддержку, мы активируем 💎 вручную.", "warning")
+        return redirect(url_for("profile"))
+
+    ord_id, payment_id, status = row[0], row[1], row[2]
+    if status == "canceled":
+        flash("Этот платёж был отменён — 💎 активировать нельзя.", "warning")
+        return redirect(url_for("profile"))
+
+    ok = _activate_diamond_for_user(user_id=uid, payment_id=payment_id, order_id=ord_id)
+    if ok:
+        flash("💎 Значок алмаза активирован! (ожидающий вебхук заменён ручной активацией)", "success")
+    else:
+        flash("⚠️ Не удалось активировать 💎 — напишите в поддержку.", "error")
     return redirect(url_for("profile"))
 
 
