@@ -551,6 +551,22 @@ def _payment_return_inner():
 @yookassa_pay_bp.route("/webhooks/yookassa", methods=["POST"])
 def yookassa_webhook():
     """HTTP-уведомление от ЮKassa (payment.succeeded / payment.canceled)."""
+    import traceback
+    try:
+        return _yookassa_webhook_inner()
+    except Exception as e:
+        tb = traceback.format_exc()
+        print(f"\n{'='*70}\n[yookassa_pay.yookassa_webhook] EXCEPTION\n{tb}\n{'='*70}\n", flush=True)
+        logger.exception("[yookassa_pay.yookassa_webhook] failed: %r", e)
+        try:
+            from models import db
+            db.session.rollback()
+        except Exception:
+            pass
+        return jsonify({"ok": True, "status": "error_internal", "error": type(e).__name__}), 200
+
+
+def _yookassa_webhook_inner():
     _ensure_tables()
     payload = request.get_json(silent=True) or {}
     event = payload.get("event") or ""
@@ -587,15 +603,19 @@ def yookassa_webhook():
     from models import db
 
     if not user_id_raw and (order_id or payment_id):
-        row = db.session.execute(
-            text(
-                "SELECT user_id, order_id FROM yookassa_payments WHERE order_id = :oid OR payment_id = :pid LIMIT 1"
-            ),
-            {"oid": order_id or "", "pid": payment_id},
-        ).fetchone()
-        if row:
-            user_id_raw = row[0]
-            order_id = order_id or row[1]
+        try:
+            with db.engine.begin() as conn:
+                row = conn.execute(
+                    text(
+                        "SELECT user_id, order_id FROM yookassa_payments WHERE order_id = :oid OR payment_id = :pid LIMIT 1"
+                    ),
+                    {"oid": order_id or "", "pid": payment_id},
+                ).fetchone()
+            if row:
+                user_id_raw = row[0]
+                order_id = order_id or row[1]
+        except Exception as e:
+            logger.warning("[yookassa_pay] webhook user lookup warning: %r", e)
 
     if (event == "payment.succeeded" or verified_status == "succeeded") and verified_paid and user_id_raw:
         # PREMIUM_PAY_V1: по item_code решаем, что активировать —
