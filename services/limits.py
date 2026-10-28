@@ -46,10 +46,11 @@ FEATURE_COLUMN = {
 # ─────────────────────────── env ───────────────────────────
 
 def free_tasks_per_day() -> int:
+    # Free = 1 задача в день (28.10.2026). FREE_TASKS_PER_DAY в env — переопределить.
     try:
-        return max(0, int(os.environ.get('FREE_TASKS_PER_DAY', '3')))
+        return max(0, int(os.environ.get('FREE_TASKS_PER_DAY', '1')))
     except ValueError:
-        return 3
+        return 1
 
 
 def free_ai_per_day() -> int:
@@ -85,16 +86,23 @@ def resets_at_iso(now: Optional[datetime] = None) -> str:
 
 # ─────────────────────────── активность ───────────────────────────
 
-# 2026-10-24: ГЛАВНЫЙ ВЫКЛЮЧАТЕЛЬ лимитов Free. Лимиты (3 задачи и
-# 1 ИИ-разбор в день) не должны показываться пользователям до
-# официального запуска платной версии 3 ноября — без анонса это
-# выглядит как поломка сайта. Вернуть лимиты: поставить False.
-FREE_LIMITS_DISABLED = True
+# 2026-10-24: ГЛАВНЫЙ ВЫКЛЮЧАТЕЛЬ лимитов Free. 28.10.2026: лимиты
+# ВКЛЮЧЕНЫ по умолчанию (Free = 1 задача и 1 ИИ-разбор в день).
+# Аварийно выключить без деплоя: FREE_LIMITS_DISABLED=1 в env.
+FREE_LIMITS_DISABLED = False  # read per-call in limits_active()
+
+
+def _disabled_env() -> bool:
+    """FREE_LIMITS_DISABLED проверяется на каждый вызов (не при импорте)."""
+    v = os.environ.get('FREE_LIMITS_DISABLED', '')
+    if not v:
+        return False
+    return v.strip().lower() in ('1', 'true', 'yes', 'on')
 
 
 def limits_active(user, now: Optional[datetime] = None) -> bool:
     """Лимит действует: доступ free И эксперимент включил лимиты."""
-    if FREE_LIMITS_DISABLED:
+    if _disabled_env():
         return False
     try:
         from services.access import resolve_access

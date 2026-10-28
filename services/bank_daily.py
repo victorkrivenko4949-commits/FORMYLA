@@ -214,7 +214,7 @@ def build_daily_set(user_id: int, target_date: date, max_items: Optional[int] = 
     """Собрать набор задач дня для ученика и даты.
 
     max_items: LIMITS_V1 — ограничение набора для лимитированного Free
-    (3 задачи в день). None — без ограничения (прежнее поведение).
+    (1 задача в день с 28.10.2026). None — без ограничения (прежнее поведение).
 
     Возвращает dict с ключами:
         items: list[DailyTaskBank],

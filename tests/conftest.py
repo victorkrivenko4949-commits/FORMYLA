@@ -20,6 +20,14 @@ import os
 import sqlite3
 import pytest
 
+# FREE_TIER_V2 (28.10.2026): в проде paywall и лимиты Free включены по
+# умолчанию (см. method_week/paywall.py и services/limits.py). В тестах они
+# по умолчанию ВЫКЛЮЧЕНЫ, чтобы не ломать существующие сценарии; отдельные
+# тесты включают их сами через monkeypatch.setenv (см. test_free_tier_gating.py).
+os.environ.setdefault('PAYWALL_ENABLED', '0')
+os.environ.setdefault('PAYWALL_MODE', 'off')
+os.environ.setdefault('FREE_LIMITS_DISABLED', '1')
+
 import app as _real_app_module
 
 
