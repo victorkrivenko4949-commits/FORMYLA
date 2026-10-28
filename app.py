@@ -3332,6 +3332,11 @@ def force_intake_completion():
         '/api/link-requests',
         '/teacher-link/',
         '/parent-link/',
+        # Удаление аккаунта — неотъемлемое право пользователя (GDPR):
+        # доступно независимо от прохождения анкеты, иначе «удалить аккаунт»
+        # молча редиректило на /intake и не работало вовсе.
+        '/account/delete',
+        '/account/reintake',
     ):
         if path == _p or path.startswith(_p):
             return
@@ -6161,12 +6166,23 @@ def verify_code():
 @app.route("/logout")
 def logout():
     """Выход пользователя."""
-    logout_user()
+    # ВАЖНО: сначала чистим сессию, ПОТОМ logout_user(). logout_user()
+    # ставит в сессию маркер session['_remember'] = 'clear', по которому
+    # Flask-Login в after_request сам удаляет remember_token cookie
+    # с правильными атрибутами (secure/samesite из REMEMBER_COOKIE_*).
+    # Раньше session.clear() вызывался ПОСЛЕ logout_user() и стирал маркер —
+    # cookie не удалялась, Flask-Login автоматически логинил пользователя
+    # обратно по выжившему remember_token («выход кидает обратно»).
     session.clear()
+    logout_user()
     resp = redirect(url_for('login'))
-    # Удаляем remember_me cookie (с учётом secure/samesite флагов для production)
-    resp.delete_cookie('remember_token', path='/', samesite='Lax')
-    resp.delete_cookie('formyla_device_id', path='/', samesite='Lax')
+    # Дополнительно удаляем cookie вручную — с теми же атрибутами, с которыми
+    # они ставятся (secure/httponly): браузеры (Chrome «Strict Secure Cookies»,
+    # см. https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis)
+    # игнорируют Set-Cookie без Secure при удалении Secure-cookie.
+    _secure = request.is_secure or bool(app.config.get('REMEMBER_COOKIE_SECURE', False))
+    resp.delete_cookie('remember_token', path='/', secure=_secure, httponly=True, samesite='Lax')
+    resp.delete_cookie('formyla_device_id', path='/', secure=_secure, httponly=True, samesite='Lax')
     return resp
 
 
