@@ -52,7 +52,7 @@
         <div class="misc-row">
             <a href="javascript:void(0)" class="misc-link"
                onclick="event.preventDefault(); var b=document.getElementById('tutorBtn'); if(b){b.click();} return false;">
-                <span class="misc-link-label">🤖 AI Тьютор</span>
+                <span class="misc-link-label">🤖 AI Тьютор{% with feature='ИИ-тьютор', badge_linked=False %}{% include 'partials/premium_badge.html' %}{% endwith %}</span>
                 <span class="misc-link-desc">Персональный разбор задач</span>
             </a>
         </div>
@@ -63,7 +63,7 @@
         </div>
         {% if current_user.is_authenticated and not current_user.is_guest %}
         <div class="misc-row">
-            <a href="/geometry/draw/" class="misc-link"><span class="misc-link-label">📐 Генерация чертежей</span><span class="misc-link-desc">Введи условие задачи по геометрии — получи чертёж: с доп. построением или без</span></a>
+            <a href="/geometry/draw/" class="misc-link"><span class="misc-link-label">📐 Генерация чертежей{% with feature='Генератор чертежей', badge_linked=False %}{% include 'partials/premium_badge.html' %}{% endwith %}</span><span class="misc-link-desc">Введи условие задачи по геометрии — получи чертёж: с доп. построением или без</span></a>
             <button class="pin-btn" data-pin-id="geoexact" data-pin-label="📐 Генерация чертежей" data-pin-href="/geometry/draw/" data-pin-desc="Чертёж по условию задачи: с доп. построением или без" title="На главную">📌</button>
         </div>
         {% endif %}

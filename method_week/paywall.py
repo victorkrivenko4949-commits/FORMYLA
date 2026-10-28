@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 # Префиксы платных разделов. Задачи дня сюда НЕ входят: в бесплатной
 # версии они доступны с дневным лимитом (services.limits, 1 задача/день).
 # /prep/probe не гейтим: срез-тест завязан на цикл задач дня.
-DEFAULT_PREFIXES = '/method_week,/geometry/draw,/figures/generate,/api/tutor,/probniks,/olympiads/methods,/olympiad-test'
+DEFAULT_PREFIXES = '/method_week,/geometry/draw,/figures/generate,/api/tutor,/probniks,/olympiads/methods,/olympiad-test,/olymp-catalog/api/tutor'
 
 # Понятные названия разделов — для сообщения «недоступно в бесплатной версии»
 FEATURE_LABELS = {
@@ -39,6 +39,7 @@ FEATURE_LABELS = {
     '/geometry/draw': 'Генератор чертежей',
     '/figures/generate': 'Генератор чертежей',
     '/api/tutor': 'ИИ-тьютор',
+    '/olymp-catalog/api/tutor': 'ИИ-тьютор',
     '/method_week': 'Метод недели',
 }
 

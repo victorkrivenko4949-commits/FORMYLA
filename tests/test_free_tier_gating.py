@@ -212,3 +212,82 @@ def test_daily_tasks_limit_screen_one_task(free_tier_app):
     assert 'Дневной лимит' in txt
     # сообщение отражает текущий лимит — 1 задача
     assert '1 задача' in txt
+
+
+# ─────────────────────────── FREE_TIER_UPSELL: бейджи Premium ───────────────────────────
+
+def _badge_app(is_free):
+    """Мини-приложение с настоящими шаблонами: рендерит partial бейджа
+    с is_free_user из context processor (как в реальном app)."""
+    import os
+    from flask import Flask, render_template
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    a = Flask('badge_test', template_folder=os.path.join(here, 'templates'))
+
+    @a.context_processor
+    def _ctx():
+        return {'is_free_user': is_free}
+
+    @a.route('/badge')
+    def badge():
+        return render_template('partials/premium_badge.html', feature='ИИ-тьютор')
+    return a
+
+
+def test_premium_badge_visible_for_free_user():
+    """Бейдж «🔒 Premium» показывается бесплатнику и ведёт на /subscribe."""
+    c = _badge_app(is_free=True).test_client()
+    txt = c.get('/badge').get_data(as_text=True)
+    assert '🔒 Premium' in txt
+    assert '/subscribe?feature=' in txt
+
+
+def test_premium_badge_hidden_for_paid_user():
+    """Premium-подписчик бейдж НЕ видит."""
+    c = _badge_app(is_free=False).test_client()
+    txt = c.get('/badge').get_data(as_text=True)
+    assert '🔒 Premium' not in txt
+    assert 'pm-upsell-badge' not in txt
+
+
+def test_olymp_tutor_api_gated(free_tier_app):
+    """ИИ-тьютор олимпиадного каталога (JSON API) закрыт для бесплатников: 402."""
+    _mk_root(free_tier_app)
+    u = _mk_user(free_tier_app, 'upsell3@x.invalid')
+    c = _client(free_tier_app, u)
+    r = c.get('/olymp-catalog/api/tutor/prepare',
+              headers={'Accept': 'application/json'})
+    assert r.status_code == 402
+    body = r.get_json()
+    assert body.get('error') == 'payment_required'
+    assert 'недоступен' in body.get('message', '')
+
+
+def test_olymp_task_template_parses(free_tier_app):
+    """Регрессия: CSS шаблона задачи каталога содержит «){#…» — Jinja считал
+    это началом комментария и страница падала с 500. Шаблон должен парситься."""
+    free_tier_app.jinja_env.get_template('olymp_catalog/task.html')
+
+
+def test_context_processor_is_free_user(monkeypatch):
+    """Настоящий _inject_subscription_flags: бесплатник — True,
+    платный (Premium/триал/founder) — False."""
+    import app as appmod
+    import method_week.paywall as pw
+    import services.pilot as pilot_mod
+
+    class FakeUser:
+        is_authenticated = True
+        current_plan = 'free'
+        id = 42
+
+    monkeypatch.setattr(appmod, 'current_user', FakeUser(), raising=False)
+    monkeypatch.setattr(pilot_mod, 'is_pilot_user', lambda u: False)
+    # бесплатник: платного доступа нет
+    monkeypatch.setattr(pw, 'user_has_paid_access', lambda u: False)
+    ctx = appmod._inject_subscription_flags()
+    assert ctx.get('is_free_user') is True
+    # платный доступ (Premium/триал/founder) — бейджи не показываем
+    monkeypatch.setattr(pw, 'user_has_paid_access', lambda u: True)
+    ctx = appmod._inject_subscription_flags()
+    assert ctx.get('is_free_user') is False

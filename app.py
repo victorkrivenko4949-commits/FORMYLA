@@ -13323,20 +13323,29 @@ def _is_premium_plan(plan_value):
 
 @app.context_processor
 def _inject_subscription_flags():
-    """Глобальные флаги is_premium / is_pilot / pilot_session для шаблонов."""
+    """Глобальные флаги is_premium / is_pilot / pilot_session / is_free_user
+    для шаблонов. is_free_user — бесплатник (видит предложения Premium)."""
     try:
         if current_user.is_authenticated:
             from services.pilot import is_pilot_user, pilot_session_today
             is_pilot = is_pilot_user(current_user)
             session = pilot_session_today(current_user.id) if is_pilot else None
+            # платный доступ: Premium/триал/founder/админ/whitelist — как в paywall
+            try:
+                from method_week.paywall import user_has_paid_access
+                has_paid = bool(user_has_paid_access(current_user))
+            except Exception:
+                has_paid = False
             return {
                 'is_premium': _is_premium_plan(current_user.current_plan),
                 'is_pilot': is_pilot,
                 'pilot_session': session,
+                'is_free_user': not has_paid,
             }
     except Exception:
         pass
-    return {'is_premium': False, 'is_pilot': False, 'pilot_session': None}
+    return {'is_premium': False, 'is_pilot': False, 'pilot_session': None,
+            'is_free_user': False}
 
 
 @app.context_processor

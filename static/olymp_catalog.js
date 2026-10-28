@@ -118,8 +118,17 @@
   async function api(path, body) {
     const r = await fetch(apiBase + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), credentials: 'same-origin' });
     let data = null; try { data = await r.json(); } catch (e) {}
-    if (!r.ok || !data || !data.ok) { const err = new Error((data && (data.detail || data.error)) || ('HTTP ' + r.status)); err.code = data && data.error; throw err; }
+    if (!r.ok || !data || !data.ok) { const err = new Error((data && (data.detail || data.error)) || ('HTTP ' + r.status)); err.code = data && data.error; err.status = r.status; throw err; }
     return data;
+  }
+
+  /* FREE_TIER_UPSELL: 402 от paywall → предложение Premium в чате тьютора */
+  function paywallMsg(e) {
+    if (e && (e.status === 402 || e.code === 'payment_required')) {
+      addMsg('a', '🔒 ИИ-тьютор сейчас недоступен в бесплатной версии. <a href="/subscribe?feature=%D0%98%D0%98-%D1%82%D1%8C%D1%8E%D1%82%D0%BE%D1%80" style="color:#7ecbff;font-weight:700;">Открыть с Premium →</a>');
+      return true;
+    }
+    return false;
   }
 
   async function prepare(force) {
@@ -136,6 +145,7 @@
       send.disabled = false;
     } catch (e) {
       ready = false;
+      if (paywallMsg(e)) { setStatus('err', 'Premium'); send.disabled = false; return; }
       setStatus('err', 'Не удалось подготовиться');
       addMsg('err', 'Ошибка подготовки: ' + e.message + '. Можно всё равно задать вопрос — тьютор разберёт задачу по ходу.');
       send.disabled = false;
@@ -156,7 +166,7 @@
     } catch (e) {
       typing.remove();
       history.pop(); save();
-      addMsg('err', 'Ошибка: ' + e.message);
+      if (!paywallMsg(e)) addMsg('err', 'Ошибка: ' + e.message);
     } finally { busy = false; send.disabled = false; ta.focus(); }
   }
 

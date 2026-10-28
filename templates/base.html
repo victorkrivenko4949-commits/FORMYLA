@@ -214,7 +214,7 @@
                     🏆 Олимпиады <span class="chev">▾</span>
                 </button>
                 <div class="nav-menu">
-                    <a href="{{ url_for('olympiad.methods') }}">📚 Каталог методов (102)</a>
+                    <a href="{{ url_for('olympiad.methods') }}">📚 Каталог методов (102){% with feature='Каталог методов', badge_linked=False %}{% include 'partials/premium_badge.html' %}{% endwith %}</a>
                     <a href="{{ url_for('olympiad_prep.calendar') }}">📅 Календарь олимпиад</a>
                 </div>
             </div>
@@ -223,6 +223,8 @@
             <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="nav-item">📅 Задачи дня</a>
             {% if is_pilot %}
             <a href="/curator" class="nav-item" style="color:#f4b942;">💬 Куратор</a>
+            {% elif is_free_user is defined and is_free_user %}
+            <a href="/subscribe?feature=%D0%9A%D1%83%D1%80%D0%B0%D1%82%D0%BE%D1%80" class="nav-item" style="color:#f4b942;">💬 Куратор 🔒</a>
             {% endif %}
             <a href="/olympiad-start" class="nav-item">📖 С чего начать</a>
             <a href="/articles" class="nav-item">📰 Статьи</a>
@@ -442,6 +444,11 @@
         <a href="/curator" class="bottom-nav-item" data-path="/curator*">
             <span class="bottom-nav-icon">🎓</span>
             <span class="bottom-nav-label">Куратор</span>
+        </a>
+        {% elif is_free_user is defined and is_free_user %}
+        <a href="/subscribe?feature=%D0%9A%D1%83%D1%80%D0%B0%D1%82%D0%BE%D1%80" class="bottom-nav-item">
+            <span class="bottom-nav-icon">🎓</span>
+            <span class="bottom-nav-label">Куратор 🔒</span>
         </a>
         {% endif %}
         <a href="/misc" class="bottom-nav-item" data-path="/misc*,/profile*,/friends*,/leaderboard*,/chat*,/about*,/probniks*,/secrets*,/problems*,/matstat*,/index*,/prep/coach*">
