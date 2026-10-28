@@ -417,6 +417,23 @@ def _map_canonical_to_bank_level(canonical_level: int) -> int:
     return max(1, min(4, canonical_level))
 
 
+def _current_context(user_id: int):
+    """OLYMPIAD_DAILY_V1: текущий контекст выдачи (или None — олимпиада
+    не выбрана; тогда сверки не делаем, прежнее поведение)."""
+    try:
+        from services.daily_olympiad import context_key
+        return context_key(user_id)
+    except Exception:
+        return None
+
+
+def _context_json(user_id: int) -> Optional[str]:
+    ctx = _current_context(user_id)
+    if ctx is None:
+        return None
+    return json.dumps(ctx, ensure_ascii=False)
+
+
 def pick_daily_set(user_id: int, force_regenerate: bool = False,
                    max_tasks: Optional[int] = None) -> Dict[str, Any]:
     """Подобрать набор задач дня в соответствии с анкетой и level_engine.
@@ -452,11 +469,20 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False,
                 probe_active = has_active_probe(user_id)
                 probe_theme = get_active_probe_theme(user_id)
                 if not probe_active or probe_theme != current_theme:
+                    # Латентный баг (обнаружен в OLYMPIAD_DAILY_V1): `grade`
+                    # определяется ниже по коду, а probe_required возвращался
+                    # раньше — UnboundLocalError глотался except и срез
+                    # НЕ блокировал выдачу. Чиним: безопасное разрешение класса.
+                    try:
+                        from services.daily_olympiad import user_cycle_grade as _ucg_probe
+                        _probe_grade = int(_ucg_probe(user_id) or 9)
+                    except Exception:
+                        _probe_grade = 9
                     return {
                         'probe_required': True,
                         'theme_id': current_theme,
                         'theme_name': current_theme,
-                        'grade': grade,
+                        'grade': _probe_grade,
                         'day_index': day_idx,
                         'shown_date': today.isoformat(),
                     }
@@ -469,30 +495,52 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False,
             user_id=user_id, target_date=today,
         ).first()
         if existing:
-            # Возвращаем уже существующие задачи
-            items = (
-                DailyTaskItem.query
-                .filter_by(daily_set_id=existing.id)
-                .order_by(DailyTaskItem.position)
-                .all()
-            )
-            tasks_out = []
-            for it in items:
-                tasks_out.append({
-                    'task_id': it.id,
-                    'task_text': it.task_text,
-                    'solution': it.solution,
-                    'correct_answer': it.correct_answer,
-                    'subject': it.subject,
-                    'topic': it.topic,
-                    'difficulty_level': it.difficulty_level,
-                })
-            return {
-                'tasks': tasks_out,
-                'subject': tasks_out[0]['subject'] if tasks_out else 'math',
-                'shown_date': today.isoformat(),
-                'count': len(tasks_out),
-            }
+            # OLYMPIAD_DAILY_V1: сет выдан под другой контекст (смена
+            # олимпиады/класса/профиля). Недеструктивно (ревью раунда 4):
+            # сегодняшний выданный набор СОХРАНЯЕТСЯ с честной пометкой
+            # прежнего контекста (stale_context=True — UI покажет «выдано
+            # под прежнюю олимпиаду»), новый профиль действует со
+            # следующей выдачи. История и ответы не трогаются вовсе.
+            _ctx = _current_context(user_id)
+            _stale = False
+            if _ctx is not None:
+                try:
+                    _stored = json.loads(existing.olympiad_context) if existing.olympiad_context else None
+                except (json.JSONDecodeError, TypeError):
+                    _stored = None
+                _stale = _stored != _ctx
+            if _stale:
+                logger.info(
+                    "daily_rotation: сет #%s под прежний контекст — оставляем с пометкой, "
+                    "новый профиль со следующей выдачи, user=%d", existing.id, user_id,
+                )
+            if existing and not force_regenerate:
+                # Возвращаем уже существующие задачи
+                items = (
+                    DailyTaskItem.query
+                    .filter_by(daily_set_id=existing.id)
+                    .order_by(DailyTaskItem.position)
+                    .all()
+                )
+                tasks_out = []
+                for it in items:
+                    tasks_out.append({
+                        'task_id': it.id,
+                        'task_text': it.task_text,
+                        'solution': it.solution,
+                        'correct_answer': it.correct_answer,
+                        'subject': it.subject,
+                        'topic': it.topic,
+                        'difficulty_level': it.difficulty_level,
+                    })
+                return {
+                    'tasks': tasks_out,
+                    'subject': tasks_out[0]['subject'] if tasks_out else 'math',
+                    'shown_date': today.isoformat(),
+                    'count': len(tasks_out),
+                    # честная пометка: набор выдан под прежний контекст
+                    'stale_context': bool(_stale),
+                }
 
     # ── Сбор параметров ───────────────────────────────────────────
     count = _get_daily_tasks_count(user_id)
@@ -507,8 +555,19 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False,
 
     # Класс ученика
     onboard = _get_onboarding(user_id)
+    # OLYMPIAD_DAILY_V1: единый effective_grade (как в профиле олимпиады
+    # и контексте): PrepPlan.target_grade → CuratorState.grade → анкета →
+    # пользователь. Дефолт 9 — прежнее поведение.
     grade = 9  # дефолт
-    if onboard and onboard.get('grade'):
+    _eff_grade = None
+    try:
+        from services.daily_olympiad import user_cycle_grade as _ucg
+        _eff_grade = _ucg(user_id)
+    except Exception:
+        _eff_grade = None
+    if _eff_grade:
+        grade = int(_eff_grade)
+    elif onboard and onboard.get('grade'):
         try:
             grade = int(onboard['grade'])
         except (ValueError, TypeError):
@@ -603,6 +662,7 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False,
                         user_id=user_id, target_date=today, status='ready',
                         triggered_by='formyla_bank', generated_at=datetime.utcnow(),
                         class_level=grade,
+                        olympiad_context=_context_json(user_id),
                         reason_summary=f'Подобрано {len(tasks)} задач по теме «{_bank_topic}» (уровень {_bank_level})',
                     )
                     db.session.add(daily_set); db.session.flush()

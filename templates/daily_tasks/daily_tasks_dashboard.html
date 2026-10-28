@@ -809,6 +809,26 @@
   <!-- Page header -->
   <div style="font-size:20px;font-weight:800;margin:0 0 6px;display:inline-block;background:linear-gradient(90deg,#8ea2ff,#5eead4,#ffc36b);-webkit-background-clip:text;background-clip:text;color:transparent;">Главное — возвращаться каждый день</div>
   <h2 style="font-size:26px;font-weight:700;margin-bottom:12px;color:var(--text);">Задачи дня</h2>
+  <!-- OLYMPIAD_DAILY_V1: задачи дня — под выбранную олимпиаду -->
+  {% if data.daily_context %}
+    {% if data.daily_context.status == 'applied' %}
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;margin:0 0 14px;border-radius:999px;border:1px solid rgba(94,234,212,0.45);background:rgba(94,234,212,0.10);color:var(--text);font-size:13px;font-weight:600;">
+        🏅 Задачи дня — подготовка к олимпиаде «{{ data.daily_context.name }}»
+      </div>
+    {% elif data.daily_context.status == 'stale_set' %}
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;margin:0 0 14px;border-radius:999px;border:1px solid rgba(255,195,107,0.5);background:rgba(255,195,107,0.10);color:var(--text);font-size:13px;">
+        {% if data.daily_context.former_name %}
+        ⚠️ Сегодняшний набор выдан под олимпиаду «{{ data.daily_context.former_name }}»; подготовка к «{{ data.daily_context.name }}» начнётся со следующей выдачи
+        {% else %}
+        ⚠️ Олимпиадный профиль сегодняшнего набора не сохранён; подготовка к «{{ data.daily_context.name }}» начнётся со следующей выдачи
+        {% endif %}
+      </div>
+    {% elif data.daily_context.status == 'no_profile' %}
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;margin:0 0 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;">
+        Олимпиада «{{ data.daily_context.name }}»: профиль задач дня для неё или вашего класса пока не готов — выдаём общую подготовку
+      </div>
+    {% endif %}
+  {% endif %}
   <label class="dt-pledge" style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;margin-bottom:16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:14px;line-height:1.45;cursor:pointer;">
     <input type="checkbox" id="dt-pledge" style="width:18px;height:18px;margin-top:2px;flex:none;accent-color:#4f6cff;cursor:pointer;">
     <span>Согласен: постараюсь заходить как можно чаще, ведь успех — в стабильности.</span>

@@ -327,6 +327,14 @@ def build_daily_set(user_id: int, target_date: date, max_items: Optional[int] = 
         items = items[:max_items]
 
     # Записываем выданное в bank_issues.
+    # OLYMPIAD_DAILY_V1: штампуем контекст олимпиады на момент выдачи —
+    # бан-поток маршрута не создаёт DailyTaskSet, без штампа смена
+    # олимпиады осталась бы незамеченной (нет honest stale_set).
+    try:
+        from services.daily_task_rotation import _context_json as _ctx_json
+        _bank_ctx = _ctx_json(user_id)
+    except Exception:
+        _bank_ctx = None
     for task in items:
         db.session.add(BankIssue(
             user_id=user_id,
@@ -334,6 +342,7 @@ def build_daily_set(user_id: int, target_date: date, max_items: Optional[int] = 
             subtopic=task.subtopic,
             level=task.level,
             issued_date=target_date,
+            olympiad_context=_bank_ctx,
         ))
     db.session.commit()
 

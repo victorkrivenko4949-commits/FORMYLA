@@ -2268,6 +2268,10 @@ class BankIssue(db.Model):
     # никуда не сохранялись — после перезахода можно было ответить заново.
     user_answer = db.Column(db.Text, nullable=True)
     is_correct = db.Column(db.Boolean, nullable=True)
+    # OLYMPIAD_DAILY_V1: контекст олимпиады на момент выдачи (для честной
+    # пометки stale_set в бан-потоке маршрута, где сет DailyTaskSet
+    # не создаётся). None — олимпиада не выбрана (сверки нет).
+    olympiad_context = db.Column(db.Text, nullable=True)
     answered_at = db.Column(db.DateTime, nullable=True)
     time_spent_seconds = db.Column(db.Integer, nullable=True)
     # 2026-09-15: сохраняем итог ИИ-проверки, чтобы после перезахода

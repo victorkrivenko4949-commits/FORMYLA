@@ -397,6 +397,17 @@ def get_daily_tasks():
     except Exception:
         logger.exception("is_method_day failed")
 
+    # ── OLYMPIAD_DAILY_V1: задачи дня — под выбранную олимпиаду. Контекст
+    # (только чтение) собираем рано — он нужен всем веткам рендера, включая
+    # учителя. МУТАЦИЯ (применение профиля к циклу) — строго после
+    # teacher-guard ниже: цикл куратора учителя не трогаем.
+    _daily_ctx = {'status': 'no_olympiad'}
+    try:
+        from services.daily_olympiad import daily_context as _dc
+        _daily_ctx = _dc(user_id)
+    except Exception:
+        logger.exception("daily_tasks: olympiad daily context failed")
+
     # ── TEACHER: задачи дня — практика учеников; учителю набор не выдаётся,
     # лимиты и цикл куратора для роли teacher не трогаем вообще. ──────────
     if getattr(current_user, "role", "student") == "teacher":
@@ -417,8 +428,20 @@ def get_daily_tasks():
         }
         return render_template(
             "daily_tasks/daily_tasks_dashboard.html",
-            data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, None)},
+            data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, None), "daily_context": _daily_ctx},
         )
+
+    # ── OLYMPIAD_DAILY_V1 (мутация): применяем профиль олимпиады к циклу
+    # лениво — идемпотентно, после teacher-guard. Ошибка применения не
+    # ломает страницу: статус честно отразится как pending/no_profile.
+    try:
+        from curator.monthly_cycle import apply_olympiad_cycle as _aoc
+        _aoc(current_user.id)
+        # контекст мог измениться (профиль применился) — перечитываем
+        from services.daily_olympiad import daily_context as _dc2
+        _daily_ctx = _dc2(current_user.id)
+    except Exception:
+        logger.exception("daily_tasks: apply_olympiad_cycle failed")
 
     # ── LIMITS_V1: мягкие лимиты Free (3 задачи / 1 ИИ-разбор в день, МСК) ──
     # Лимит действует только при resolve_access=free И apply_limits=True;
@@ -453,7 +476,7 @@ def get_daily_tasks():
         }
         return render_template(
             "daily_tasks/daily_tasks_dashboard.html",
-            data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, None)},
+            data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, None), "daily_context": _daily_ctx},
         ), 402
 
     def _limit_cap_for_new_set():
@@ -582,7 +605,7 @@ def get_daily_tasks():
         }
         return render_template(
             "daily_tasks/daily_tasks_dashboard.html",
-            data={**data, "session": data.get("session") or _session_ctx, "theme_today": real_theme_title},
+            data={**data, "session": data.get("session") or _session_ctx, "theme_today": real_theme_title, "daily_context": _daily_ctx},
         )
 
     # ── День метода (пилоты): задачи дня НЕ выдаются и не генерируются —
@@ -606,7 +629,7 @@ def get_daily_tasks():
         return render_template(
             "daily_tasks/daily_tasks_dashboard.html",
             data={**data, "session": _session_ctx,
-                  "theme_today": _theme_for_day(today, None)},
+                  "theme_today": _theme_for_day(today, None), "daily_context": _daily_ctx},
         )
 
     # ── BANK: задачи дня выдаются из предзаполненного банка ─────────
@@ -659,7 +682,7 @@ def get_daily_tasks():
                 }
                 return render_template(
                     "daily_tasks/daily_tasks_dashboard.html",
-                    data={**_bank_data, "session": _session_ctx, "theme_today": real_theme_title},
+                    data={**_bank_data, "session": _session_ctx, "theme_today": real_theme_title, "daily_context": _daily_ctx},
                 )
     except Exception as _bank_err:
         logger.exception("daily_tasks: build_daily_set failed for user=%d: %s", user_id, _bank_err)
@@ -743,7 +766,7 @@ def get_daily_tasks():
             "probe_url": "/prep/probe",
         }
         if wants_html:
-            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level"))})
+            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level")), "daily_context": _daily_ctx})
         return jsonify({
             "status": "blocked",
             "message": data["message"],
@@ -799,7 +822,7 @@ def get_daily_tasks():
             "items": [],
         }
         if wants_html:
-            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level"))})
+            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level")), "daily_context": _daily_ctx})
         return jsonify({
             "status": "no_set",
             "message": data["message"],
@@ -867,7 +890,7 @@ def get_daily_tasks():
                 "items": [],
             }
             if wants_html:
-                return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level"))})
+                return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level")), "daily_context": _daily_ctx})
             return jsonify({
                 "status": "generating",
                 "daily_set_id": daily_set.id,
@@ -972,7 +995,7 @@ def get_daily_tasks():
     data["session"] = _session_ctx
 
     if wants_html:
-        return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": real_theme_title})
+        return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": real_theme_title, "daily_context": _daily_ctx})
     return jsonify(data), 200
 
 
@@ -1351,6 +1374,8 @@ def daily_tasks_pool_status():
             "status": "no_pool",
             "pool_id": None,
             "message": "Пул ещё не создан",
+            # OLYMPIAD_DAILY_V1: контекст олимпиады задач дня (для клиентов API)
+            "daily_context": _daily_tasks_context(current_user.id),
         }), 404
 
     return jsonify({
@@ -1364,7 +1389,18 @@ def daily_tasks_pool_status():
             "failed": "Генерация не удалась",
         }.get(pool.status, "Неизвестный статус"),
         "valid_count": pool.valid_count,
+        # OLYMPIAD_DAILY_V1: контекст олимпиады задач дня (для клиентов API)
+        "daily_context": _daily_tasks_context(current_user.id),
     }), 200
+
+
+def _daily_tasks_context(user_id: int):
+    """Контекст олимпиады задач дня (никогда не бросает)."""
+    try:
+        from services.daily_olympiad import daily_context
+        return daily_context(user_id)
+    except Exception:
+        return {"status": "no_olympiad"}
 
 
 # ──────────────────────────────────────────────────────────────────────

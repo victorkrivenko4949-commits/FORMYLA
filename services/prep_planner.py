@@ -11,11 +11,15 @@
 """
 
 import json
+import logging
 import random
 from datetime import date, datetime, time, timedelta
 from typing import List, Dict, Optional
 
 from models import db, AdaptiveTask, PrepPlan, PrepDay, BrokenTaskLog
+
+logger = logging.getLogger(__name__)
+
 from services.adaptive_topic_mapping import get_keywords_for_grade_topic
 from services.latex_validator import is_task_text_renderable
 
@@ -117,6 +121,15 @@ def generate_prep_plan(user, olympiad, target_stage_name, target_date,
         db.session.add(prep_day)
 
     db.session.commit()
+
+    # OLYMPIAD_DAILY_V1: задачи дня — под выбранную олимпиаду: применяем
+    # профиль к месячному циклу сразу при создании плана (идемпотентно).
+    try:
+        from curator.monthly_cycle import apply_olympiad_cycle
+        apply_olympiad_cycle(user_id)
+    except Exception:
+        logger.exception('prep_planner: apply_olympiad_cycle failed user=%s', user_id)
+
     return plan
 
 

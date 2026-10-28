@@ -299,8 +299,282 @@ def _safe_next_themes(user_id: int, grade: int, covered: set) -> List[str]:
         return sorted(remaining, key=_t_number)[:7]
 
 
-def _next_month_themes(user_id: int, grade: int, covered: set) -> List[str]:
+def _next_month_themes(user_id: int, grade: int, covered: set,
+                       mc: Optional[Dict[str, Any]] = None) -> List[str]:
+    # OLYMPIAD_DAILY_V1: сначала профиль олимпиады ученика (если задан) —
+    # затем общий алгоритм. Никогда не бросает.
+    olympiad = _olympiad_cycle_themes(user_id, grade, covered, mc=mc)
+    if olympiad:
+        return olympiad[0]
     return _safe_next_themes(user_id, grade, covered)
+
+
+# ─── OLYMPIAD_DAILY_V1: темы месяца из профиля олимпиады ────────────────
+
+
+def _measured_themes_for_user(user_id: int) -> Dict[str, float]:
+    """mu по темам из level_by_theme куратора (тема → mu)."""
+    try:
+        cs = CuratorState.query.filter_by(user_id=user_id).first()
+        if cs and cs.level_by_theme:
+            lbt = json.loads(cs.level_by_theme) if isinstance(cs.level_by_theme, str) else cs.level_by_theme
+            return {k: float(v.get('mu', 3)) for k, v in lbt.items() if isinstance(v, dict)}
+    except Exception:
+        pass
+    return {}
+
+
+def _olympiad_cycle_themes(user_id: int, grade: int, covered: set, mc: Optional[Dict[str, Any]] = None):
+    """Темы месяца из профиля олимпиады ученика. Никогда не бросает.
+
+    Возвращает (themes, mark) или None (профиль не задан/не покрывает
+    класс/ошибка — тогда вызывающая сторона использует общий алгоритм,
+    а статус no_profile отдаётся явно через daily_context).
+
+    Правила (согласованы с ревью 2026-10-28, раунд 4):
+    * РОТАЦИЯ ПО ОФСЕТУ: месяц берёт «окно» из 7 тем профиля со сдвигом
+      olympiad_offset (растёт каждый месяц на размер окна), поэтому хвост
+      профиля ротируется между месяцами и «залипшей» семёрки не бывает;
+    * слабость первична: измеренная тема сортируется по своему mu,
+      неизмеренная — по mu СВОЕГО РАЗДЕЛА (level_engine.by_section)
+      как резерв, полностью неизмеренная — редакционный порядок;
+      сильная измеренная тема не опережает темы слабого раздела;
+    * точные theme_id: профиль обязан целиком состоять из тем реестра
+      этого класса, иначе ошибка в лог и None (не молча пропускать);
+    * MAX_PER_SECTION действует строго (как в общем алгоритме),
+      без безусловного добора; если окно даёт меньше 7 тем — так тому
+      и быть: ротация месяца корректна при любом числе тем.
+    """
+    try:
+        from services.daily_olympiad import user_olympiad, profile_for
+        uo = user_olympiad(user_id)
+        if not uo:
+            return None
+        prof = profile_for(uo['slug'], grade)
+        if not prof or not prof['themes']:
+            return None
+        pool = list(prof['themes'])
+        try:
+            from services.theme_registry import themes_of_grade
+            valid = set(themes_of_grade(grade))
+        except Exception:
+            logger.exception('monthly_cycle: themes_of_grade failed grade=%s', grade)
+            return None
+        unknown = [t for t in pool if t not in valid]
+        if unknown:
+            logger.error(
+                'daily_olympiad: профиль %s (класс %s) содержит темы вне реестра: %s',
+                uo['slug'], grade, unknown,
+            )
+            return None
+
+        # ── окно ротации ─────────────────────────────────────────
+        # Берём темы по порядку от offset, ПОКА не наберём 7 с соблюдением
+        # MAX_PER_SECTION (строго): если очередная тема превышает лимит
+        # своей секции — пропускаем и берём следующую по порядку (окно
+        # растёт). Так хвост профиля ротируется между месяцами и
+        # «залипшей» семёрки не бывает, а лимит секций не ослабляется.
+        try:
+            offset = int((mc or {}).get('olympiad_offset') or 0)
+        except (TypeError, ValueError):
+            offset = 0
+        offset %= len(pool)
+        rotated = pool[offset:] + pool[:offset]
+
+        # ── слабость: тема → свой mu → mu раздела → редакция ──────
+        measured = _measured_themes_for_user(user_id)
+        section_mus: Dict[str, float] = {}
+        try:
+            from services.level_engine import get_state as _lvl_state
+            by_section = (_lvl_state(user_id).get('by_section', {}) or {})
+        except Exception:
+            by_section = {}
+        if isinstance(by_section, dict):
+            for sec, sec_data in by_section.items():
+                try:
+                    section_mus[str(sec)] = float((sec_data or {}).get('mu', 3.0))
+                except (TypeError, ValueError, AttributeError):
+                    pass
+        try:
+            from services.theme_registry import section_of_theme
+        except Exception:
+            section_of_theme = None  # type: ignore
+        idx = {t: i for i, t in enumerate(pool)}
+
+        def _weakness(t: str) -> float:
+            m = measured.get(t)
+            if m is not None:
+                return float(m)
+            if section_of_theme:
+                sec = section_of_theme(t)
+                if sec and sec in section_mus:
+                    return section_mus[sec]
+            return 3.0
+
+        def _key(t: str):
+            return (_weakness(t), idx.get(t, 99))
+
+        # позиционное окно с соблюдением лимита секций (порядок — ротация)
+        window: List[str] = []
+        counts: Dict[str, int] = {}
+        for t in rotated:
+            if len(window) >= 7:
+                break
+            sec = (section_of_theme(t) if section_of_theme else '') or '?'
+            if counts.get(sec, 0) >= MAX_PER_SECTION:
+                continue
+            window.append(t)
+            counts[sec] = counts.get(sec, 0) + 1
+        if not window:
+            return None
+        # слабость упорядочивает темы ВНУТРИ месяца (день 1 — слабейшая)
+        selected = sorted(window, key=_key)
+        new_offset = (offset + len(window)) % len(pool)
+        mark = {
+            'olympiad_slug': prof['slug'],
+            'olympiad_profile_version': prof['version'],
+            'olympiad_grade': int(grade),
+            'olympiad_offset': new_offset,
+        }
+        return selected, mark
+    except Exception:
+        logger.exception('monthly_cycle._olympiad_cycle_themes failed user=%s', user_id)
+        return None
+
+
+def _rotate_themes_to_day(themes: List[str], cur: str, day_idx: int) -> List[str]:
+    """Циклический сдвиг списка тем, чтобы тема дня cur оказалась на
+    позиции (day_idx-1) % len (текущий день не ломаем при пересборке)."""
+    if cur not in themes:
+        return themes
+    i = themes.index(cur)
+    k = (day_idx - 1) % len(themes)
+    shift = (i - k) % len(themes)
+    return themes[shift:] + themes[:shift]
+
+
+def apply_olympiad_cycle(user_id: int) -> Dict[str, Any]:
+    """Применить профиль олимпиады к месячному циклу ученика.
+
+    Вызывается при создании/смене плана подготовки и лениво со страницы
+    задач дня (ПОСЛЕ teacher-guard). Идемпотентно. Месячный цикл
+    перестраивается С УЧЁТОМ ТЕМЫ ДНЯ (если она в новом списке — день не
+    ломаем: проба и выданные задачи сохраняются). История выдач не
+    трогается вовсе.
+
+    Полный жизненный цикл (ревью 2026-10-28, раунд 4):
+    * нет цикла → штатное создание (учтёт профиль автоматически);
+    * олимпиада не выбрана / профиль не покрывает, а цикл был профильным
+      → восстанавливается ОБЩИЙ цикл (UI обещание «общая подготовка»
+      соответствует действительности);
+    * неподдерживаемая олимпиада при общем цикле → пометка
+      olympiad_unsupported (честный no_profile, без тихой подмены).
+    """
+    try:
+        cs = CuratorState.query.filter_by(user_id=user_id).first()
+        if not cs or not getattr(cs, 'grade', None):
+            return {'applied': False, 'reason': 'no_grade'}
+        grade = int(cs.grade)
+        from services.daily_olympiad import user_olympiad, profile_for
+        uo = user_olympiad(user_id)
+        mc = _get_monthly_cycle(cs)
+
+        if uo:
+            prof = profile_for(uo['slug'], grade)
+        else:
+            prof = None
+
+        # ── нет полноценного цикла → штатное создание ─────────────
+        if not mc.get('themes') or not mc.get('started_at'):
+            built = build_or_get_cycle(user_id, grade)
+            ok = bool(built.get('themes'))
+            return {
+                'applied': ok and bool(prof),
+                'reason': 'created' if ok else 'no_cycle',
+            }
+
+        day_idx = _compute_day_index(mc.get('started_at'))
+        cur = mc['themes'][(day_idx - 1) % len(mc['themes'])] if mc.get('themes') else None
+
+        # ── олимпиада выбрана и профиль поддерживается ──────────
+        if prof:
+            mark = {
+                'olympiad_slug': prof['slug'],
+                'olympiad_profile_version': prof['version'],
+                'olympiad_grade': grade,
+            }
+            same = all(mc.get(k) == v for k, v in mark.items())
+            if same:
+                return {'applied': True, 'reason': 'already'}
+            res = _olympiad_cycle_themes(user_id, grade, covered=set(), mc=mc)
+            if res:
+                themes, res_mark = res
+                # тема дня: если она в пуле нового профиля, но не попала в
+                # окно месяца — включаем её вместо последней темы окна
+                # (сохранение дня приоритетнее лимита секций в момент
+                # пересборки; сам месяц уже пересобран)
+                if cur and cur in prof['themes'] and cur not in themes:
+                    themes = [cur] + themes[:len(themes) - 1]
+                if cur:
+                    themes = _rotate_themes_to_day(themes, cur, day_idx)
+                new_mc = dict(mc)
+                new_mc['themes'] = themes
+                new_mc.update(res_mark)
+                new_mc.pop('olympiad_unsupported', None)
+                _save_monthly_cycle(cs, new_mc)
+                db.session.commit()
+                return {'applied': True, 'reason': 'rebuilt', 'themes': themes}
+
+        # ── олимпиады нет ИЛИ профиль не поддерживается ─────────
+        had_profile = any(
+            mc.get(k) is not None
+            for k in ('olympiad_slug', 'olympiad_profile_version', 'olympiad_grade', 'olympiad_offset')
+        )
+        if had_profile:
+            # цикл был профильным, а профиль больше не действует —
+            # восстанавливаем общий цикл (как и обещает UI)
+            generic = None
+            try:
+                generic = _safe_next_themes(user_id, grade, covered=set())
+            except Exception:
+                generic = None
+            if not generic:
+                try:
+                    generic = _select_first_cycle_themes(grade)
+                except Exception:
+                    generic = None
+            if generic:
+                themes = list(generic)
+                if cur and cur in themes:
+                    themes = _rotate_themes_to_day(themes, cur, day_idx)
+                new_mc = dict(mc)
+                new_mc['themes'] = themes
+                for k in ('olympiad_slug', 'olympiad_profile_version',
+                          'olympiad_grade', 'olympiad_offset', 'olympiad_unsupported'):
+                    new_mc.pop(k, None)
+                _save_monthly_cycle(cs, new_mc)
+                db.session.commit()
+                reason = 'no_profile' if uo else 'no_olympiad'
+                return {'applied': False, 'reason': reason, 'restored_generic': True}
+
+        # общий цикл остаётся общим; помечаем статус явно, не молча
+        if mc.get('themes'):
+            if uo and not prof:
+                new_mc = dict(mc)
+                new_mc['olympiad_unsupported'] = True
+                if new_mc != mc:
+                    _save_monthly_cycle(cs, new_mc)
+                    db.session.commit()
+                return {'applied': False, 'reason': 'no_profile', 'slug': uo['slug']}
+            return {'applied': False, 'reason': 'no_olympiad'}
+        return {'applied': False, 'reason': 'no_cycle'}
+    except Exception:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        logger.exception('monthly_cycle.apply_olympiad_cycle failed user=%s', user_id)
+        return {'applied': False, 'reason': 'error'}
 
 
 def build_or_get_cycle(user_id: int, grade: int, force_new: bool = False) -> Dict[str, Any]:
@@ -315,7 +589,8 @@ def build_or_get_cycle(user_id: int, grade: int, force_new: bool = False) -> Dic
 
     if mc.get('themes') and mc.get('finished_at') and not force_new:
         covered |= set(mc.get('themes') or [])
-        next_themes = _safe_next_themes(user_id, grade, covered)
+        olympiad = _olympiad_cycle_themes(user_id, grade, covered, mc=mc)
+        next_themes = olympiad[0] if olympiad else _safe_next_themes(user_id, grade, covered)
         if next_themes:
             mc = {
                 'started_at': datetime.now(timezone.utc).isoformat(),
@@ -325,6 +600,8 @@ def build_or_get_cycle(user_id: int, grade: int, force_new: bool = False) -> Dic
                 'finished_at': None,
                 'covered_themes': sorted(covered),
             }
+            if olympiad:
+                mc.update(olympiad[1])
             _save_monthly_cycle(cs, mc)
             db.session.commit()
             return mc
@@ -335,7 +612,10 @@ def build_or_get_cycle(user_id: int, grade: int, force_new: bool = False) -> Dic
 
     had_prev = bool(mc.get('finished_at')) or bool(mc.get('done_themes')) or bool(covered)
     themes: List[str] = []
-    if had_prev:
+    olympiad = _olympiad_cycle_themes(user_id, grade, covered, mc=mc)
+    if olympiad:
+        themes = olympiad[0]
+    elif had_prev:
         themes = _safe_next_themes(user_id, grade, covered)
     if not themes:
         try:
@@ -352,6 +632,8 @@ def build_or_get_cycle(user_id: int, grade: int, force_new: bool = False) -> Dic
         'finished_at': None,
         'covered_themes': sorted(covered),
     }
+    if olympiad:
+        mc.update(olympiad[1])
     _save_monthly_cycle(cs, mc)
     db.session.commit()
 
@@ -470,7 +752,9 @@ def get_cycle_info(user_id: int) -> Dict[str, Any]:
     if day_idx > MONTH_DAYS:
         grade = _grade_for_user(user_id, cs)
         covered = set(mc.get('covered_themes') or []) | set(themes)
-        next_themes = _safe_next_themes(user_id, grade, covered) if grade else []
+        olympiad = _olympiad_cycle_themes(user_id, grade, covered, mc=mc) if grade else None
+        next_themes = (olympiad[0] if olympiad else
+                       _safe_next_themes(user_id, grade, covered)) if grade else []
         if next_themes:
             try:
                 mc = {
@@ -481,6 +765,8 @@ def get_cycle_info(user_id: int) -> Dict[str, Any]:
                     'finished_at': None,
                     'covered_themes': sorted(covered),
                 }
+                if olympiad:
+                    mc.update(olympiad[1])
                 _save_monthly_cycle(cs, mc)
                 db.session.commit()
                 themes, done, day_idx = next_themes, [], 1
