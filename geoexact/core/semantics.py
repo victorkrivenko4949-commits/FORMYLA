@@ -624,12 +624,33 @@ def _statement_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
         if cross > 1e-5 * den or not 1e-5 < t < 1 - 1e-5:
             fails.append(f"точка {point} не лежит внутри стороны {side}")
 
-    triangle = re.search(r"\bтреугольник\w*\s+([A-Z]{3})\b", text, re.I)
-    triangle_names = triangle[1].upper() if triangle else ""
-    bisector = re.search(r"\bбиссектрис\w*\s+([A-Z])([A-Z])\b", text, re.I)
-    if bisector and triangle_names:
+    # «Свой» треугольник чевианы: ближайшее упоминание треугольника в том же
+    # предложении («в треугольнике BHC — биссектрису CL»), иначе первый
+    # треугольник текста. Раньше брался только первый треугольник условия:
+    # для биссектрисы CL треугольника BHC проверка ошибочно требовала L на AB.
+    # Текст — без LaTeX-обёрток \(BM\) (см. _math_text).
+    cev_text = _math_text(text)
+    first_triangle = re.search(r"\bтреугольник\w*\s+([A-Z]{3})\b", cev_text, re.I)
+    first_triangle = first_triangle[1].upper() if first_triangle else ""
+
+    def cevian_triangle(pos: int) -> str:
+        start = max((m.end() for m in re.finditer(r"[.;!?]", cev_text[:pos])), default=0)
+        end_m = re.search(r"[.;!?]", cev_text[start:])
+        end = start + (end_m.start() if end_m else len(cev_text) - start)
+        sentence = cev_text[start:end]
+        nearest = None
+        for tm in re.finditer(r"\bтреугольник\w*\s+([A-Z]{3})\b", sentence, re.I):
+            # чевиана относится к уже названному треугольнику: только упоминания
+            # слева от чевианы («в треугольнике BHC — биссектрису CL»); ближайшее из них
+            if tm.start() <= pos - start:
+                if nearest is None or tm.start() > nearest[0]:
+                    nearest = (tm.start(), tm[1].upper())
+        return nearest[1] if nearest else first_triangle
+
+    for bisector in re.finditer(r"\bбиссектрис\w*\s+([A-Z])([A-Z])\b", cev_text, re.I):
         vertex, foot = bisector[1].upper(), bisector[2].upper()
-        if vertex in triangle_names:
+        triangle_names = cevian_triangle(bisector.start())
+        if triangle_names and vertex in triangle_names:
             others = [n for n in triangle_names if n != vertex]
             if len(others) == 2:
                 refs = {vertex, foot, *others}
@@ -655,6 +676,23 @@ def _statement_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
                     if frozenset((vertex, foot)) not in {
                             frozenset(s) for s in plan.draw.segments}:
                         fails.append(f"биссектриса {vertex}{foot} не показана на основном чертеже")
+
+    # Медиана VM треугольника XYZ: M обязана быть серединой стороны, противоположной V.
+    # Модель путала сторону («в треугольнике BLC — медиану BM» строилась как
+    # середина BL, а не LC): фигура получалась переопределённой и разваливалась.
+    for median in re.finditer(r"\bмедиан\w*\s+([A-Z])([A-Z])\b", cev_text, re.I):
+        vertex, foot = median[1].upper(), median[2].upper()
+        triangle_names = cevian_triangle(median.start())
+        if not triangle_names or vertex not in triangle_names or foot in triangle_names:
+            continue
+        x, y = [n for n in triangle_names if n != vertex]
+        if len({x, y}) != 2 or not {x, y, foot} <= P.keys():
+            continue
+        mid = (P[x] + P[y]) / 2
+        side = float(np.linalg.norm(P[y] - P[x]))
+        if float(np.linalg.norm(P[foot] - mid)) > 1e-4 * max(side, 1e-9):
+            fails.append(f"медиана {vertex}{foot}: точка {foot} не середина "
+                         f"{x}{y} (треугольник {triangle_names})")
 
     figure = re.search(
         r"\b(?:четырёхугольник|четырехугольник)\s+([A-Z]{4})\s*"
