@@ -6,7 +6,10 @@
      style="border-color: rgba(99,102,241,0.35); text-align: center;">
   <div class="dt-empty-title" style="color:#8c9abc;">Дневной лимит бесплатного плана</div>
   <div class="dt-empty-sub">
-    На бесплатном плане — <strong>3 задачи и 1 ИИ-разбор в день</strong>.
+    {% set _lt = (data.limit_ctx and data.limit_ctx.tasks_limit) or 1 %}
+    {% set _la = (data.limit_ctx and data.limit_ctx.ai_limit) or 1 %}
+    На бесплатном плане — <strong>{{ _lt }} {{ 'задача' if _lt == 1 else 'задачи' }}
+    и {{ _la }} {{ 'ИИ-разбор' if _la == 1 else 'ИИ-разбора' }} в день</strong>.
     {% if data.limit_ctx and data.limit_ctx.resets_at %}
     Доступ восстановится в <strong>{{ data.limit_ctx.resets_at[:16] }} по Москве</strong>.
     {% else %}

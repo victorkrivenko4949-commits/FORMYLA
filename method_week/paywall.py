@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
-"""Paywall платных разделов FORMYLA (запуск — начало ноября 2026).
+"""Paywall платных разделов FORMYLA (включён 28.10.2026).
 
-Платные: задачи дня, метод недели, генератор чертежей, ИИ-тьютор, куратор.
+Платные: метод недели, генератор чертежей, ИИ-тьютор, адаптивный тест
+(/probniks), каталог методов (/olympiads/methods).
+Задачи дня остаются открытыми в бесплатной версии, но с лимитом
+(по умолчанию 1 задача в день — services.limits).
 Доступ есть у: Premium-подписки (services.subscription), активного триала
 (User.is_trial_active), администраторов (id=1 / ADMIN_EMAILS), а также у
 e-mail из PAYWALL_WHITELIST. Переменные окружения:
 
-  PAYWALL_ENABLED=1|0            (по умолчанию 0 — ВЫКЛЮЧЕН; включить вручную к ноябрю)
-  PAYWALL_START_DATE=2026-11-01  (до этой даты всё бесплатно даже при ENABLED=1)
-  PAYWALL_PREFIXES=/daily_tasks,/method_week,/geometry/draw,/figures/generate,/api/tutor,/prep
+  PAYWALL_ENABLED=1|0            (по умолчанию 1 — ВКЛЮЧЁН; 0 = всё открыть)
+  PAYWALL_START_DATE=2026-10-01  (до этой даты всё бесплатно даже при ENABLED=1)
+  PAYWALL_PREFIXES=/method_week,/geometry/draw,/figures/generate,/api/tutor,/probniks,/olympiads/methods
   PAYWALL_WHITELIST=a@b.ru,c@d.ru
   PAYWALL_UPGRADE_URL=/subscribe
 """
@@ -23,7 +26,31 @@ from flask import jsonify, redirect, request
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_PREFIXES = '/daily_tasks,/method_week,/geometry/draw,/figures/generate,/api/tutor,/prep'
+# Префиксы платных разделов. Задачи дня сюда НЕ входят: в бесплатной
+# версии они доступны с дневным лимитом (services.limits, 1 задача/день).
+# /prep/probe не гейтим: срез-тест завязан на цикл задач дня.
+DEFAULT_PREFIXES = '/method_week,/geometry/draw,/figures/generate,/api/tutor,/probniks,/olympiads/methods,/olympiad-test'
+
+# Понятные названия разделов — для сообщения «недоступно в бесплатной версии»
+FEATURE_LABELS = {
+    '/probniks': 'Адаптивный тест',
+    '/olympiad-test': 'Адаптивный тест',
+    '/olympiads/methods': 'Каталог методов',
+    '/geometry/draw': 'Генератор чертежей',
+    '/figures/generate': 'Генератор чертежей',
+    '/api/tutor': 'ИИ-тьютор',
+    '/method_week': 'Метод недели',
+}
+
+
+def _feature_label(path: str) -> str:
+    """Человекочитаемое название раздела по пути (для баннера на /subscribe)."""
+    for prefix, label in FEATURE_LABELS.items():
+        if path == prefix or path.startswith(prefix + '/') or path.startswith(prefix + '?'):
+            return label
+    return ''
+
+
 # служебные пути внутри платных разделов, которые нужны фронту для показа paywall
 ALWAYS_OPEN_SUFFIXES = ('/job_status',)
 
@@ -36,13 +63,16 @@ def _env_bool(name: str, default: bool) -> bool:
 
 
 def paywall_active(today: Optional[date] = None) -> bool:
-    if not _env_bool('PAYWALL_ENABLED', False):
+    # ВКЛЮЧЁН по умолчанию (28.10.2026): бесплатные пользователи видят
+    # закрытые разделы и лимит задач дня. PAYWALL_ENABLED=0 — аварийное
+    # отключение без деплоя.
+    if not _env_bool('PAYWALL_ENABLED', True):
         return False
-    start = os.environ.get('PAYWALL_START_DATE', '2026-11-01').strip()
+    start = os.environ.get('PAYWALL_START_DATE', '2026-10-01').strip()
     try:
         start_d = date.fromisoformat(start)
     except ValueError:
-        start_d = date(2026, 11, 1)
+        start_d = date(2026, 10, 1)
     return (today or date.today()) >= start_d
 
 
@@ -119,18 +149,30 @@ def install_paywall(app) -> None:
             if user_has_paid_access(current_user):
                 return None
             upgrade = os.environ.get('PAYWALL_UPGRADE_URL', '/subscribe')
+            label = _feature_label(path)
+            msg = ('Раздел «%s» сейчас недоступен в бесплатной версии — откройте его с Premium.' % label
+                   if label else 'Этот раздел доступен по подписке Premium.')
             if _wants_json() or request.method != 'GET':
                 return jsonify({
                     'error': 'payment_required',
-                    'message': 'Этот раздел доступен по подписке Premium.',
+                    'message': msg,
                     'upgrade_url': upgrade,
                     'upgrade_price': _upgrade_price_label(current_user),
                 }), 402
-            return redirect("%s?from=%s" % (upgrade, path))
-        except Exception as exc:  # pragma: no cover — paywall никогда не роняет сайт
-            logger.error("paywall: guard error: %s (fail open)", exc)
-            return None
+            sep = '&' if '?' in upgrade else '?'
+            url = "%s%sfrom=%s" % (upgrade, sep, path)
+            if label:
+                url += "&feature=%s" % label
+            return redirect(url)
+        except Exception as exc:  # pragma: no cover — граница доступа
+            # fail-CLOSED: платный раздел при сбое guard'а не открывается
+            # «на всякий случай». Лог + 503, доступ не выдаём.
+            logger.error("paywall: guard error: %s (fail closed)", exc)
+            try:
+                return ("Раздел временно недоступен, попробуйте позже.", 503)
+            except Exception:
+                return None
 
     logger.info("paywall installed: enabled=%s start=%s prefixes=%s",
-                _env_bool('PAYWALL_ENABLED', False),
-                os.environ.get('PAYWALL_START_DATE', '2026-11-01'), paid_prefixes())
+                _env_bool('PAYWALL_ENABLED', True),
+                os.environ.get('PAYWALL_START_DATE', '2026-10-01'), paid_prefixes())

@@ -457,12 +457,15 @@ def get_daily_tasks():
             log_limit_shown(current_user)
         except Exception:
             pass
+        _ntasks = _limits_svc.free_tasks_per_day()
+        _nai = _limits_svc.free_ai_per_day()
+        _tasks_word = 'задача' if _ntasks == 1 else 'задачи'
         data = {
             "status": "limit_reached",
             "daily_set_id": None,
             "target_date": today.isoformat(),
             "message": (
-                "Бесплатный план: 3 задачи и 1 ИИ-разбор в день. "
+                f"Бесплатный план: {_ntasks} {_tasks_word} и {_nai} ИИ-разбор в день. "
                 "Доступ восстановится в 00:00 по Москве."
             ),
             "class_level": None,
