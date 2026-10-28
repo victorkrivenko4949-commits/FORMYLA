@@ -20,16 +20,16 @@ de0ee33ce9846d7d940d5fff4f5777a72024f3fa2646839a1219bd0716011301,2025,Отбор
 6789a8c87d59c80b2d2d99d78e6e5477e4aad233527df428f7708891ed68574b,2025,Отборочный этап,8,4,official_found,,,
 17fefefa5f1b1c1718f8ae2debf18febbfc7f1e0da907960627b2e50026d41fd,2025,Отборочный этап,8,5,official_found,,,
 74237753a9413477752509832b3b4854504cb9b2f2c256fbcc1b49a974e3f46b,2025,Отборочный этап,9,1,official_found,,,
-161b52f53f38e66db646e3237fe3448dc1f5db92e8993e1318d680f06ca2d85d,2025,Отборочный этап,9,2,official_found,solution,,
+161b52f53f38e66db646e3237fe3448dc1f5db92e8993e1318d680f06ca2d85d,2025,Отборочный этап,9,2,official_found,,,
 423bd74ba2b3357cb76777961a0738c7ee5a331e73dc496e93086962c30972d8,2025,Отборочный этап,9,3,official_found,,,
 385874166da89f1e899e8f43a552a5612bec805adee6e9b6fa9b97970c939b97,2025,Отборочный этап,9,4,official_found,,,
 1f7f222c659d3b35a8f5dac8c895e4f8ca52365dc59a4204938249604e5b14f1,2025,Отборочный этап,9,5,official_found,,,
-1a6f78c3928f345035641301dede636c4af95f9f97128d88507fc6194d85ce95,2025,Отборочный этап,10,1,official_found,solution,solution: юникод-математика вне формул,
+1a6f78c3928f345035641301dede636c4af95f9f97128d88507fc6194d85ce95,2025,Отборочный этап,10,1,official_found,,,
 d9b1be10533d4bb5664d6fc05b5e5a331f6d905ed720f2783a2e7b7053e08683,2025,Отборочный этап,10,2,official_found,,,
-54a82d659c7e133fdd4ae7c19cc5c5559e554e166ce88f59cd69244ffcd1a71d,2025,Отборочный этап,10,4,official_found,solution,solution: юникод-математика вне формул,
+54a82d659c7e133fdd4ae7c19cc5c5559e554e166ce88f59cd69244ffcd1a71d,2025,Отборочный этап,10,4,official_found,,,
 b46338ff4135965f6ffdcdc750da10af48d2c539395cc92f11c536276cf8ac36,2025,Отборочный этап,10,5,official_found,,,
-7acb25945b294785f212a139b6902ec5bfc661e95b1a738748734023d6b4a610,2025,Отборочный этап,11,1,official_found,solution,solution: юникод-математика вне формул,
-187fa2ab0797019cb83cb544a63febc7782e093d91b5add9d75537be91faa899,2025,Отборочный этап,11,2,official_found,solution,solution: юникод-математика вне формул,
+7acb25945b294785f212a139b6902ec5bfc661e95b1a738748734023d6b4a610,2025,Отборочный этап,11,1,official_found,,,
+187fa2ab0797019cb83cb544a63febc7782e093d91b5add9d75537be91faa899,2025,Отборочный этап,11,2,official_found,,,
 9634f64d5333a80c0eaa6d242260d5fb9feea53dbe89ec0654cef2d6bc0e2517,2025,Отборочный этап,11,3,official_found,,,
 530fb1188b56db41d830d381317047862aacce410d3387792936e3c4e0c9262f,2025,Отборочный этап,11,4,official_found,,,
 560ff2b639928873ed3e13e4990d1034151cc7f5a9661f65671a05d7b3b1e3a3,2025,Отборочный этап,11,5,official_found,,,
@@ -61,7 +61,7 @@ b2c1b1e9a0cad07a085ca1381ab4c947fbc48f4ad7e8665ce23103fcdf40e29e,2024,Отбор
 8efbf82ea677c4b67954a79a5f688a6202ebe4c0b60b2c97ec409587ad971850,2024,Отборочный этап,10,4,official_found,,,
 b7b85fba01aaa7d8ec53695ffded2243d11bcdc235f45e6ec9baa2e833067f95,2024,Отборочный этап,10,5,official_found,,,
 65db16cd229f2d58d872e63e818156ee75d014dc94abd230f392dd5ce1684681,2024,Отборочный этап,11,1,official_found,,,
-64f9056728b8fc0993bc5eb77dd126d516c6be5c190a9fb035cf7b889e733f6a,2024,Отборочный этап,11,3,official_found,solution,solution: юникод-математика вне формул,
+64f9056728b8fc0993bc5eb77dd126d516c6be5c190a9fb035cf7b889e733f6a,2024,Отборочный этап,11,3,official_found,,,
 8b6748b98b5769829e7d44eb55012112e7b7fe50221d4e9e130bdbf802e33b94,2024,Отборочный этап,11,4,official_found,,,
 f8043462e72bbf2cb328b915c862ba1317b367179a8273fefd6bd7686a3c8221,2024,Отборочный этап,11,5,official_found,,,
 a8fc9d9a265b27a69b45f112c34ea10c423d6ce404d6a35e86b8855a0031e4b5,2023,1 тур,7,1,official_found,,,
@@ -88,7 +88,7 @@ aa5d2136de28c0951f9fc785b1eea5cbcfd1a4a3f87ba3beb207983d24e9555c,2023,2 тур,9
 dc7b3aba592c1a76bb0b13d929c91d6eecfc3c869ed005e3a213d8b9a41c2c27,2023,2 тур,9,6,gemini_solved,,нет источника,нет источника
 76e54a07882791e2f3ef4a59f16d92f8c9a1abaa9a1b30f0b2d63100607b757b,2023,2 тур,9,7,official_found,,условие обрывается (нет конечной пунктуации),условие обрывается (нет конечной пунктуации)
 9a3a4b2895f339ebd1345e2ee3c24a13f4b6d97826160c0dec93cf9eeebe0ac8,2023,2 тур,9,7,official_found,,,
-6bffe75ff9e860b2684e5026cc105c6e7e8af977edc396a723bdb90591bb2e13,2023,2 тур,9,8,official_found,solution,solution: юникод-математика вне формул,
+6bffe75ff9e860b2684e5026cc105c6e7e8af977edc396a723bdb90591bb2e13,2023,2 тур,9,8,official_found,,,
 62d9ce9b0c797e2ad41dfb91a684773265396679b11fda03df6a1567218040df,2023,Отборочный этап,7,3,gemini_solved,,источник неофициальный,источник неофициальный
 5f06a5185f2e621dda4163eea14bf44cb0a359c75d13ccabb7eadd92de4a1efa,2023,Отборочный этап,7,5,gemini_solved,,,
 ebb1a4639496aa14f18b23d78ecfb77e267660a2fde4891f006d1387eaab6294,2023,Отборочный этап,8,5,gemini_solved,,,
@@ -130,7 +130,7 @@ a68bbade3f53fc9fcc5ad6f444d9b889c484b442ec756fb57f36323950f4a42a,2022,Отбор
 8b6eaa497dca22bc911c1d2796dc8fda05609a731d6c2b87ed248eab19d565bb,2022,Отборочный этап,9,3,gemini_solved,,,
 1bc106aade8c5ac3cba35ee6ecf71f989563ed0a3025a6a9c1369bf2cc2755b8,2022,Отборочный этап,9,4,gemini_solved,,источник неофициальный,источник неофициальный
 175849186ac46627f320bc95d989220d396d128efab7ffcdec46211329c2ff7b,2022,Отборочный этап,9,5,gemini_solved,,,
-ee660a9c1702b707ae6bec6667f1d44e1d73d98a60a85b2e370ad8a96a897637,2022,Отборочный этап,10,1,official_found,solution,solution: юникод-математика вне формул,
+ee660a9c1702b707ae6bec6667f1d44e1d73d98a60a85b2e370ad8a96a897637,2022,Отборочный этап,10,1,official_found,,,
 53ad523ab4607d2c5bc0d8871b83bdfc8a77e2279defb7f76bdd19f748b9ce1c,2022,Отборочный этап,10,3,gemini_solved,,,
 756fa72bc79e70be2b205efacd1c5dd97f66e1991073526b423f39d6615afdec,2022,Отборочный этап,10,4,official_found,,,
 7152789821108b9baca964407122687e194e208535cbb6bba1b88bb7cc5da6a7,2022,Отборочный этап,10,5,official_found,,,
@@ -161,16 +161,16 @@ cc13184777ec1642a4c2c8405f8822ce5e82164810c16ecc2473bd83ac5ddf12,2021,Отбор
 e34710fbad55260520bd93e131945d70f99a38471047836cd3c9c04627725073,2021,Отборочный этап,8,4,official_found,,,
 b760cfd7b8e31179f013ad245a017a9ff3ebaede362b0b2d61dd4ce1ec890ad3,2021,Отборочный этап,8,4,official_found,,,
 e1eba3e0ede6b4c8f1da5f479e63a3e6b2af2523318360525da1a8e7f1fe8613,2021,Отборочный этап,9,2,official_found,,,
-aa37e9305f3a2917b58569e1d3a04ca516f78dc8d3e403f89b32d4c87ca4ace7,2021,Отборочный этап,9,3,official_found,solution,solution: юникод-математика вне формул,
+aa37e9305f3a2917b58569e1d3a04ca516f78dc8d3e403f89b32d4c87ca4ace7,2021,Отборочный этап,9,3,official_found,,,
 8f649c4296e4cd0ef7f170c1c35ccd8511f958334ff884ad7df8eaa1577807ce,2021,Отборочный этап,9,4,official_found,,,
 fc42b7171cec1ff81640619478c0bba8909882e7fd06383f6fdcea156d280d9b,2021,Отборочный этап,9,5,gemini_solved,,источник неофициальный,источник неофициальный
 de5d81f3c1a24d49297021c99a7b37b6638a02a45b440631aba97981dd993412,2021,Отборочный этап,10,2,gemini_solved,,,
 c37ba0ff7c231ddda856b0092ac198d513ce1a4188aac6179ae619587e79eb01,2021,Отборочный этап,10,3,gemini_solved,,нет источника,нет источника
-53551bc383134b9a115be96c73a735da4a7393377dace70b77338d591fbdc05b,2021,Отборочный этап,10,4,official_found,solution,solution: юникод-математика вне формул,
-c6de4cfda485d04784e7a122a484d3add05a95264a85f2990d6fdc7bd5360344,2021,Отборочный этап,10,5,official_found,solution,solution: юникод-математика вне формул,
+53551bc383134b9a115be96c73a735da4a7393377dace70b77338d591fbdc05b,2021,Отборочный этап,10,4,official_found,,,
+c6de4cfda485d04784e7a122a484d3add05a95264a85f2990d6fdc7bd5360344,2021,Отборочный этап,10,5,official_found,,,
 63ce02e9e1b9db83ba46635161853798081006939dd5fc2b14f4587689d42ec5,2021,Отборочный этап,11,2,gemini_solved,,,
 b601f05755b2583faeffc7d8ceedf2d65bfbc0347b3fec8f7e259bc98e636e47,2021,Отборочный этап,11,3,gemini_solved,,нет источника,нет источника
-2d3d68c454d69512e81e51f836d438d7783d93b9b7b353bed2330718b227e559,2021,Отборочный этап,11,5,official_found,solution,solution: юникод-математика вне формул,
+2d3d68c454d69512e81e51f836d438d7783d93b9b7b353bed2330718b227e559,2021,Отборочный этап,11,5,official_found,,,
 ce9dc5753134dd7b83b1bb0b79aee08be75966fbf2d8c93523a2dcc263076c74,2020,1 тур,7,1,official_found,,,
 442288cc8fa93ec22a07f1a1c17c7a2085a25955a4c0d7621bd847f931961413,2020,1 тур,7,2,official_found,,,
 212f2786eac6319285c7aae2240ad17d75578cf3b9c37fbd15ae284bdcc6b8fe,2020,1 тур,7,2,gemini_solved,,источник неофициальный,источник неофициальный
@@ -206,23 +206,23 @@ ec8cd32ad2d1d185b94c23fff58d1a54658b3bd855986b59da9805232497b45f,2020,2 тур,8
 ddb5028546812990016572003f6804fed5a1368b99291372d63ba2c6fdd8f1ec,2020,2 тур,9,1,official_found,,,
 83dd91a6e6aac554479f01ad9cce5764715c767753d9b99cb79622b3ede3d189,2020,2 тур,9,2,official_found,,,
 d70ad8bf3db084750cce2d7922277c351d50ea69af5c40f71b703c25e02104ab,2020,2 тур,9,2,gemini_solved,,источник неофициальный,источник неофициальный
-b1faa9108d9b4d02379926c1f87f5e20499d7308291a80e9aa26c4f6b8ca08a5,2020,2 тур,9,3,official_found,solution,solution: юникод-математика вне формул,
+b1faa9108d9b4d02379926c1f87f5e20499d7308291a80e9aa26c4f6b8ca08a5,2020,2 тур,9,3,official_found,,,
 6c55ac2b41d5fb3d39f906f91828b474146fb820cf92c2f125c74008f0591146,2020,2 тур,9,3,official_found,,,
 ed9b7c6f01a58aab94a04a9b941fa64f4538dbba0d58334bf03436b7c3f1ca00,2020,2 тур,9,3,official_found,,,
 9722a0df697c0c89e608c15e3aef6c586e67928fd3663b48242ef412d17f83e2,2020,2 тур,9,4,official_found,,,
 4ae9db5e0b9095d9b14323ba0d8b9987c2af5a2a856eef16221a546895ce9ec8,2020,2 тур,9,4,official_found,,,
-bf80b2cf8f6b2cd0369c08af6fa20f85aab4c7cae80cbf4b0670c64add3dfe46,2020,2 тур,9,5,official_found,solution,solution: юникод-математика вне формул,
+bf80b2cf8f6b2cd0369c08af6fa20f85aab4c7cae80cbf4b0670c64add3dfe46,2020,2 тур,9,5,official_found,,,
 ed0930abc0afef148b140992529807d5e31dd2bb1d8c85a1d24ff489f04de264,2020,2 тур,9,5,official_found,,,
 0756b2a7f7aba5161e48d270b4e2802660f52d2c612cae8cd21e9d136f136fb1,2020,2 тур,9,6,official_found,,,
 6380a811b2b48d00f588c3909c73412cd8524cf49ed72369ecf99ee7cf9d7146,2020,2 тур,9,6,official_found,,"упомянут рисунок, файла нет","упомянут рисунок, файла нет"
 13091882541fdd9f1f81096e1ae88a708851d7d12b3d68f0099058be8584a65b,2020,2 тур,9,7,gemini_solved,,нет источника,нет источника
 b83f48d5d8070895f82d399384ef1fa7cb27cdf634905ae942576969088ce461,2020,Отборочный этап,5,1,official_found,,,
 c470109eb3338f45ec153e09e9a5819180430398a78887cd411d1dc34a0f7738,2020,Отборочный этап,6,1,official_found,,,
-115f13816ae8b1f8a50c2b21ace64b9c09662f6c58cad6f2743b7dfc71530d2d,2020,Отборочный этап,7,1,official_found,solution,solution: юникод-математика вне формул,
+115f13816ae8b1f8a50c2b21ace64b9c09662f6c58cad6f2743b7dfc71530d2d,2020,Отборочный этап,7,1,official_found,,,
 fed85f6da17b51a5bffbfa9c9cc7cec94819153fad0fdb11f411407477f78e01,2020,Отборочный этап,7,3,gemini_solved,,,
 216c6f47718ea3a16c50f6178b782c86a3a336cff84846a8da3208e5e6c503e2,2020,Отборочный этап,7,4,gemini_solved,,,
 c434921c0008dcc4e80971cac228f09d47f78c118e795ca52a84b2c17d9764ff,2020,Отборочный этап,7,5,gemini_solved,,источник неофициальный,источник неофициальный
-5f7fa198fa35600ffa51a416d1e39c8b841fc3d730f07ac051adada7bb4c3de1,2020,Отборочный этап,8,1,official_found,solution,solution: юникод-математика вне формул,
+5f7fa198fa35600ffa51a416d1e39c8b841fc3d730f07ac051adada7bb4c3de1,2020,Отборочный этап,8,1,official_found,,,
 55ea1a13e993122f6648f1e0004831011a02f34bc1b00cdde98042ea4fbabb0b,2020,Отборочный этап,8,5,gemini_solved,,источник неофициальный,источник неофициальный
 9cdcfb515ea3f8d76bddaafec236b74de8d092fed58d7a9fdeb90aa16a77177d,2020,Отборочный этап,9,2,gemini_solved,,нет источника,нет источника
 dd17bb1759da62ce1222b5ebf73f851f289f8d240c31dee89478a5531a5d79e8,2020,Отборочный этап,9,3,gemini_solved,,нет источника,нет источника
@@ -232,7 +232,7 @@ dd17bb1759da62ce1222b5ebf73f851f289f8d240c31dee89478a5531a5d79e8,2020,Отбор
 8f93b91a852b719f6966fe6619107a6eb9d8372dae232c9049ea17f9cf427de6,2020,Отборочный этап,10,5,gemini_solved,,источник неофициальный,источник неофициальный
 c9fc4bb9070b4f56cdc5777d3f371ab13c3d97e4f1ad28d27ae5457ae2ab36a8,2020,Отборочный этап,11,1,official_found,,,
 f45734612985a6a40ab16626269988a9cf0a3566bb6284691371ab1881548efd,2020,Отборочный этап,11,2,official_found,,,
-d1ba7510d7618fa9b5bc673a529abfe69e875bd85799c206b38c78ee01f0dd1a,2020,Отборочный этап,11,3,official_found,solution,solution: юникод-математика вне формул,
+d1ba7510d7618fa9b5bc673a529abfe69e875bd85799c206b38c78ee01f0dd1a,2020,Отборочный этап,11,3,official_found,,,
 a6a41339b7ae56554dd0396780f3000231c3ac969b272e5f3768d4e6c5a01283,2020,Отборочный этап,11,4,official_found,,,
 2cbb5c93a6a932f3b4b07b0e434b29ba77516e7d3683a5fc45dea3059ece0df1,2020,Отборочный этап,11,5,official_found,,,
 f382e901cbab54e6b57c121d49373d768e30049b9da6c7282c855953e41b4614,2019,1 тур,7,3,gemini_solved,,нет источника,нет источника
@@ -241,21 +241,21 @@ b3f950ed059a2ff01b9bc70732af9003b3f1f2ea94145a41233e9da2cf08f63c,2019,1 тур,8
 cbc3098609e8a655324703ba6d537fe5a1243a9136f2833c327d736557e4b5cb,2019,2 тур,8,3,gemini_solved,,нет источника,нет источника
 ca3c070657a1362046600de3969d1050b1e9de75dcc87b22bc96af184cb877fe,2019,2 тур,9,2,gemini_solved,,нет источника,нет источника
 718dbd2e4beab1ea01db8d2cb3660573b43a2cfdd06e657a15b7e41d44c4c2f0,2019,Отборочный этап,5,1,official_found,,,
-1135c7e7ad56cfaa28385c60c4d60ee0464e20b0b0538cd262be863414b39dc3,2019,Отборочный этап,5,2,official_found,solution,solution: юникод-математика вне формул,
+1135c7e7ad56cfaa28385c60c4d60ee0464e20b0b0538cd262be863414b39dc3,2019,Отборочный этап,5,2,official_found,,,
 2402557dc6b00c70720d8c6e088efe01c92db93c44fb7f38f3f445ebfa045fae,2019,Отборочный этап,5,3,official_found,,,
 dfcffa7d58c2ad2287b0c1e867f0028b0932653855c8b23b4988d054521e35e8,2019,Отборочный этап,5,4,official_found,,,
 d8798927608a441e50d7bcc8b3a16cd4f2cb0f374d2fb52d0105ab90246ac06f,2019,Отборочный этап,5,5,official_found,,,
 02f0d34f3dfc0b9a029a68ab409b4b5f12537f7cdac4855c2cd638e4615f77c1,2019,Отборочный этап,6,1,official_found,,,
-f2df88531538c7588e74c1ecff89a5faddad892e90886917d668483a19beeaba,2019,Отборочный этап,6,2,official_found,solution,solution: юникод-математика вне формул,
+f2df88531538c7588e74c1ecff89a5faddad892e90886917d668483a19beeaba,2019,Отборочный этап,6,2,official_found,,,
 c7abbfe20a77c017454026201c0d1ba546020a48578e5c1255da08468a25f7da,2019,Отборочный этап,6,3,official_found,,,
 e00faa869af158e9cf3f3d626b599e26290039962ba5188d99a8d9f2898a4d29,2019,Отборочный этап,6,4,official_found,,,
 0f3020077e6806cbf9ee991248f8122eaeca2c872f8109985685759fddcfc90a,2019,Отборочный этап,6,5,official_found,,,
-88fc194231fc46cbabcfedfa46ce7f27a323e2d93e8946db8a0277a15b367a62,2019,Отборочный этап,7,1,official_found,solution,solution: юникод-математика вне формул,
+88fc194231fc46cbabcfedfa46ce7f27a323e2d93e8946db8a0277a15b367a62,2019,Отборочный этап,7,1,official_found,,,
 d7941472be959ad3812522eec3f51d38a4f06adc61380406e046663542a93a85,2019,Отборочный этап,7,2,official_found,,,
 a03b43efbdf71f575448bce1e07b4ad598b3ceb9640d660289430bbd28a63b9a,2019,Отборочный этап,7,3,official_found,,,
 33425c201f5d3f7cc891c26dee3c737a9f1e6b3a4af5e17b1be5bbbcc4d2c6b8,2019,Отборочный этап,7,4,official_found,,,
 ffb122e2778ae737a9d6ee8d8ad1e41464d0251332af43bc80b2d429e27376f1,2019,Отборочный этап,7,5,official_found,,,
-7fed97b0bb7e8b708ea7a8849c0232ad2244c61c4197e402efb2f84a72f16f09,2019,Отборочный этап,8,1,official_found,solution,solution: юникод-математика вне формул,
+7fed97b0bb7e8b708ea7a8849c0232ad2244c61c4197e402efb2f84a72f16f09,2019,Отборочный этап,8,1,official_found,,,
 bbefeb8d15a5b37f6cf2ee59a8c20ffdfcb1bd27f7713692a44d62d10b731ace,2019,Отборочный этап,8,2,official_found,,,
 d6c8d0a2baba4374ee08d60a5325625e160881fd81b9dd7a35c05f734c56668c,2019,Отборочный этап,8,3,official_found,,,
 a74c96b171e7e33acc3b4dfde1fb7c76eaa474809a24d7575087ed983046a96b,2019,Отборочный этап,8,4,official_found,,,
@@ -267,18 +267,18 @@ f7e98fff7fb0cb4517f215d1f642a45809fa41c5df54d75d9a595e2ef22f6d16,2019,Отбор
 da00b71d275735489825a2ca865a50a51a2650626378ade9dd8edafd860621c8,2019,Отборочный этап,9,5,official_found,,"упомянут рисунок, файла нет","упомянут рисунок, файла нет"
 ca00ff85e5ff847e5e8c95c7f23f8bc1b3f4292abe86c37672f6be70c5d001d7,2019,Отборочный этап,10,2,gemini_solved,,,
 ed599e2af1a337876d3d6d7b08c42724f00a3809d99ad9f36ee85360e93503c4,2019,Отборочный этап,10,4,official_found,,,
-fa1a3511f13e04e0c9628777f300291cdc7982d8750dd6cf3cf74d9a49523a6d,2019,Отборочный этап,10,5,official_found,solution,solution: юникод-математика вне формул,
+fa1a3511f13e04e0c9628777f300291cdc7982d8750dd6cf3cf74d9a49523a6d,2019,Отборочный этап,10,5,official_found,,,
 d725ffdeda9616a7d07814f56a46e239c3015e17f148915fb9ea17888776cbcb,2019,Отборочный этап,11,2,gemini_solved,,,
 bdb35fc933c70004915d0f5224e1ba1315f22ee40395b0624dc8bd7b7a9a2d89,2019,Отборочный этап,11,4,official_found,,,
-408dc0e85f8a99a62616936545d78023a4b964cf96943fb92ec9509ad00d03cf,2019,Отборочный этап,11,5,official_found,solution,solution: юникод-математика вне формул,
+408dc0e85f8a99a62616936545d78023a4b964cf96943fb92ec9509ad00d03cf,2019,Отборочный этап,11,5,official_found,,,
 5a9336b502e9f2b7898f3cf008bc024c7177a73350337999c8506ea53a5c253c,2018,Отборочный этап,5,3,gemini_solved,,,
 734f3792338f58b306c672f11efc1bc9a245c416e0d634134235ae52c0d07387,2018,Отборочный этап,6,3,gemini_solved,,,
 48a195681d4500bf719dabf9a0b367e591a8bdcfb6f13f498d8b319e11596ce8,2018,Отборочный этап,9,2,gemini_solved,,нет источника,нет источника
 2dd861f9d81c0cd8606fea1d2efdd881ec06566429c7707deff09b94fd3774e4,2018,Отборочный этап,9,3,gemini_solved,,,
 be8031060ee4a46528b5e6fd4c2a800e281e3aec36c7fa53b7dd01db49e386f9,2018,Отборочный этап,10,2,gemini_solved,,нет источника,нет источника
-5771af55b44068de0f773a25af1d1ec3ecb24b46624c6c2b073724b1255e929a,2018,Отборочный этап,10,4,official_found,solution,,
+5771af55b44068de0f773a25af1d1ec3ecb24b46624c6c2b073724b1255e929a,2018,Отборочный этап,10,4,official_found,,,
 0125614ac2dcdf4648b0a28c464a079ac47059e4d09a802de874fd9459de21d4,2018,Отборочный этап,11,2,gemini_solved,,нет источника,нет источника
-cef04ca00c5f18c7fe5c2dd0938deb026b6ed41728d9bc44ed39404fff51a1e8,2018,Отборочный этап,11,4,official_found,solution,,
+cef04ca00c5f18c7fe5c2dd0938deb026b6ed41728d9bc44ed39404fff51a1e8,2018,Отборочный этап,11,4,official_found,,,
 722a54d24c5002d46b166a3eb91c778c9d8dc0847d1892092ae0f2b7e6400b7b,2018,Отборочный этап,11,5,gemini_solved,,источник неофициальный,источник неофициальный
 54f4cf6f4639b55da89733267e2d7224588775eb0b8246f46a00f4c166095c14,2017,Отборочный этап,5,2,gemini_solved,,,
 42e2e52b05af093af572f3a98ecb97f4ffad3f1ac2286cd426d2f799875b3385,2017,Отборочный этап,6,2,gemini_solved,,,
@@ -325,17 +325,17 @@ beceb49d365b42f0e8278014889a73fb9e1f7bda75431845025d914ec86717af,2015,Отбор
 84d711fc8bbf2cbefc301fb90f85aafc000a6bbb6a2601fe32d0c264acd10d75,2015,Отборочный этап,7,5,official_found,,,
 38c4250541e1d9083c54e3709bdefb123753b9c4fc444f0fdbdd251a3237f2b4,2015,Отборочный этап,8,1,official_found,,,
 c7efc8f5735117552892aa8a7447ff582562ec4d8318e28cdc5ac9d861d200f5,2015,Отборочный этап,8,2,official_found,,,
-998a7999bdf3b991b7c1c4a75f3d25f1d5417071774b2d1ed117ce34cb6987f4,2015,Отборочный этап,8,3,official_found,solution,solution: юникод-математика вне формул,
+998a7999bdf3b991b7c1c4a75f3d25f1d5417071774b2d1ed117ce34cb6987f4,2015,Отборочный этап,8,3,official_found,,,
 68ce9735a1d1b220bea87a5c14856bd8750731ee632a6a515e17d7e1ce8e7da4,2015,Отборочный этап,8,5,official_found,,,
 48b3549e8c4f7487234f9ab4ac396509f934479c0002208bbce87e5d603ca0f8,2015,Отборочный этап,9,1,official_found,,,
-690a9fab9606c499caaf9344628f5339f069c4bbc638a42e441a46e4d4b22a20,2015,Отборочный этап,9,4,official_found,solution,solution: юникод-математика вне формул,
-92e0b4b5c2f7a0be31a12127e64d6158801904b1191c1c1bcee36f45b9e54c90,2015,Отборочный этап,9,5,official_found,solution,solution: юникод-математика вне формул,
+690a9fab9606c499caaf9344628f5339f069c4bbc638a42e441a46e4d4b22a20,2015,Отборочный этап,9,4,official_found,,,
+92e0b4b5c2f7a0be31a12127e64d6158801904b1191c1c1bcee36f45b9e54c90,2015,Отборочный этап,9,5,official_found,,,
 c764e899652121481cdc5e1d225bc8027185ef09e9692d49bb756ccb8b6d0c9d,2015,Отборочный этап,10,3,gemini_solved,,источник неофициальный,источник неофициальный
 75e7f2add73de1bebe5404ea3ab8eb86caa0ab9f18adfb5cea4d2be413285367,2015,Отборочный этап,10,4,gemini_solved,,нет источника,нет источника
-001c2326dadf4528b50ecfea5902dc8761a5cfbae3a309355566a755e562ce7f,2015,Отборочный этап,10,5,official_found,solution,,
+001c2326dadf4528b50ecfea5902dc8761a5cfbae3a309355566a755e562ce7f,2015,Отборочный этап,10,5,official_found,,,
 26ebe466ed199644ecc975f2300d76866887e790b82134bef6b3c8a8eaf55139,2015,Отборочный этап,11,3,gemini_solved,,источник неофициальный,источник неофициальный
 9f98e8aef349c932ea07fdd101f92dcbb2a1458e04e406a925fc697ded980b9d,2015,Отборочный этап,11,4,gemini_solved,,нет источника,нет источника
-068716118e1c5e562c82a03021d1edb75d004d2900356555ea3e3be3dc066403,2015,Отборочный этап,11,5,official_found,solution,,
+068716118e1c5e562c82a03021d1edb75d004d2900356555ea3e3be3dc066403,2015,Отборочный этап,11,5,official_found,,,
 38e365cb220161d6766ad6c63a2262f0864196a8949c3ade1187db1cdf6a6bca,2014,Отборочный этап,8,2,gemini_solved,,источник неофициальный,источник неофициальный
 e643b89799431bcf39ecf63b9c3be3d9b133cd9faf1aedabc8490b216c8a69a9,2014,Отборочный этап,8,3,gemini_solved,,,
 f76b3cb2fa904a65a6b14cc46e2d8e91cd87748c494df18f100bb1f68ce7cd6a,2014,Отборочный этап,9,4,gemini_solved,,нет источника,нет источника
@@ -412,21 +412,21 @@ b03ded1a19fe8938f5fa3e23b0422d7f597e0da069ce549d282e146dee6b39a2,2011,Отбор
 07e21b786faa825af2873ed6a482bf8646e17b67e92d77d948557395b65a2e88,2011,Отборочный этап,7,2,gemini_solved,,,
 360c7e56be02be305ed558887e7e993b3c8812f25c63512b48610b77c0d6458b,2011,Отборочный этап,7,3,official_found,,solution: юникод-математика вне формул,solution: юникод-математика вне формул
 2ee4dc895398c3ebe0794ef7b05f2128f1874a904645679819e3a902eb6af9d9,2011,Отборочный этап,7,4,official_found,,,
-0bf36c60f5a8419ad164b6b8d0094a6625f569013d84582146c5c54bf3a84d95,2011,Отборочный этап,7,5,official_found,solution,,
+0bf36c60f5a8419ad164b6b8d0094a6625f569013d84582146c5c54bf3a84d95,2011,Отборочный этап,7,5,official_found,,,
 cb1733f02241a6b6e53125e4b6abceec9e8ec68d2893c5ecd3e241e19941a5a3,2011,Отборочный этап,8,1,official_found,,,
 af3da6365b573423b5e1952f77c6a4ad31a19884c9c7c970c52325457f5fcf06,2011,Отборочный этап,8,2,gemini_solved,,,
 e3eb6aff3308c2a1695ba2e94c80b70362d368c73eefd7cff83f180567df7377,2011,Отборочный этап,8,3,official_found,,solution: юникод-математика вне формул | условие обрывается (нет конечной пунктуации),solution: юникод-математика вне формул | условие обрывается (нет конечной пунктуации)
 03412f66e374beb5e82167f4afe09ba1118878e7dfb9caf8952aa3e02e495f75,2011,Отборочный этап,8,4,gemini_solved,,нет источника,нет источника
-a407e36f341662195dd9578b23ac62a7395ea2cf4d4b5b5e344019ad67464c76,2011,Отборочный этап,8,5,official_found,solution,,
+a407e36f341662195dd9578b23ac62a7395ea2cf4d4b5b5e344019ad67464c76,2011,Отборочный этап,8,5,official_found,,,
 7a4df776908ae1b847f431e84527540a4944f5952cd17fd79a0272aafbc9dd98,2011,Отборочный этап,9,1,official_found,,,
 f4506d964c3ee8d5ebe6bdc8c5a0e5516bcbaf8ea73d449497a75c128dd62203,2011,Отборочный этап,9,2,official_found,,solution: юникод-математика вне формул | условие обрывается (нет конечной пунктуации),solution: юникод-математика вне формул | условие обрывается (нет конечной пунктуации)
 f1f0bf0552953c5d8320e2a67f33de5af11bf4b382eded8635f3f263d6139e8e,2011,Отборочный этап,9,3,official_found,,,
-16a9a43f0d1fe422c28a401c3cfcf64c844518d7f19bf5052f328686add34d8a,2011,Отборочный этап,9,4,official_found,solution,,
+16a9a43f0d1fe422c28a401c3cfcf64c844518d7f19bf5052f328686add34d8a,2011,Отборочный этап,9,4,official_found,,,
 4f191f70f2b1006754a1499e42c69695549434f30dee242349e1276c94b872d3,2011,Отборочный этап,10,1,gemini_solved,,,
-f4aa05dad04635fc2bd6c6a3c6029027c5f762636fbfe0265877396c478bd6d6,2011,Отборочный этап,10,2,official_found,solution,solution: юникод-математика вне формул,
+f4aa05dad04635fc2bd6c6a3c6029027c5f762636fbfe0265877396c478bd6d6,2011,Отборочный этап,10,2,official_found,,,
 4587b3d8a620d3c925bde864f176b869c59c099c6760a1fa3b647cbb67f3fb7a,2011,Отборочный этап,10,5,gemini_solved,,,
 199c506ea4d99bdf2ebc831c9c46dc941a1432cfd844fbd63bc605e394068573,2011,Отборочный этап,11,1,gemini_solved,,,
-a86b0150e5a024fb3124e304aa85ff3747ff918f720da1615e8abddd58ea3394,2011,Отборочный этап,11,2,official_found,solution,solution: юникод-математика вне формул,
+a86b0150e5a024fb3124e304aa85ff3747ff918f720da1615e8abddd58ea3394,2011,Отборочный этап,11,2,official_found,,,
 56691f0a7412819d94311549426f8a618373361cbd23215f234a4f802f36b685,2011,Отборочный этап,11,5,gemini_solved,,,
 118391aee79390032230e7dce6c775be8d3cff189f5a6d0afe340702136eebcc,2010,1 тур,7,1,official_found,,,
 4751a4b729b6303eb91753a8c448a766a86ded3a917714bc6c93a7071e3e469c,2010,1 тур,7,3,gemini_solved,,нет источника,нет источника
@@ -440,25 +440,25 @@ fdaf030be51c02c07c60e131d2defb57ae2e8cd28938664e8e773ec0237667c3,2010,2 тур,7
 f80f2ddc2f69f685059c4a488e33bc621f40b756759cd231bbff1aa04a8e0e09,2010,2 тур,7,2,gemini_solved,,нет источника,нет источника
 d40cb2f856ea98fa4856839d93d9dfa1c7d7f6ba591cf38476d4e7b246fe8684,2010,2 тур,7,3,official_found,,solution: юникод-математика вне формул,solution: юникод-математика вне формул
 84d9f8184641bd3c01b6bdc277108381575d408325e9d1ebbd49744c229bf82f,2010,2 тур,7,4,official_found,,,
-d38367c3c7bb822d391c6a920f86202c4cada6b34da668a41a7dc0d8ceacd3d9,2010,2 тур,7,5,official_found,solution,,
+d38367c3c7bb822d391c6a920f86202c4cada6b34da668a41a7dc0d8ceacd3d9,2010,2 тур,7,5,official_found,,,
 0659896ca02930fce0be25e59bfeeb7674abe5b5e7703c20dab8839bdc5a60cd,2010,2 тур,8,1,official_found,,,
 0a4986bee458e817ec12daec1c76ad2acdf816108f31f0ab8c95a045854cdeb6,2010,2 тур,8,2,gemini_solved,,нет источника,нет источника
 62496305878f38c14289b865c13291a2ee11e6793d40f86e1fd56ffe3ba01459,2010,2 тур,8,3,official_found,,solution: юникод-математика вне формул,solution: юникод-математика вне формул
 b9189b465849a79f60d1bd975b455a0e8a373ab4b9a04bcc16de6d5792acb4ca,2010,2 тур,8,4,gemini_solved,,нет источника,нет источника
-ba94df01fe17003c47d28620737e1f6a5cb7e2e307d08794798bb832bbbe5ff4,2010,2 тур,8,5,official_found,solution,,
+ba94df01fe17003c47d28620737e1f6a5cb7e2e307d08794798bb832bbbe5ff4,2010,2 тур,8,5,official_found,,,
 db9319eee977a91b72d489aea2c32ec7f02c9bc6be78da96c3e38d6a3d0cf008,2010,2 тур,9,1,official_found,,,
 a1bf43a5153cf7f30d6713a4b111b4d4c1d693738d254d0841d46a27c2b47a4c,2010,2 тур,9,2,official_found,,solution: юникод-математика вне формул,solution: юникод-математика вне формул
 385a9a13eac86c470e2e6bf1ad364ff9846a194d0b9003def526e92391bca8c9,2010,2 тур,9,3,official_found,,,
-779722af8fdb402cbfbccc10b8129b831e42a0b9fe54be0f3d019e4efab7dcc5,2010,2 тур,9,4,official_found,solution,,
+779722af8fdb402cbfbccc10b8129b831e42a0b9fe54be0f3d019e4efab7dcc5,2010,2 тур,9,4,official_found,,,
 63cd7f70cb932fa0db7d716825f873c1126a7273b81204de98ba624d23b3ba11,2010,Отборочный этап,7,1,official_found,,,
 d3572a536bc1028db7d74957c0430f81f071f8d0466efc297b064bfe9ca95f79,2010,Отборочный этап,7,2,official_found,,,
 fb5596b215cd4d2608c3b0af7345fd936f00fe6d5499afaf5de0050990b4daf1,2010,Отборочный этап,7,3,official_found,,,
-7bc4027c7365fd2b9a7db8ad358a6ef3fc1cf222fa86dcc71210b37e4467a8db,2010,Отборочный этап,7,4,official_found,solution,solution: юникод-математика вне формул,
+7bc4027c7365fd2b9a7db8ad358a6ef3fc1cf222fa86dcc71210b37e4467a8db,2010,Отборочный этап,7,4,official_found,,,
 3eee72cfa7687dc60d6c7517d526c4f8552c0efef1a294f3c23af6f50b3ffc1b,2010,Отборочный этап,7,5,official_found,,,
 28d35dec7f75bda828d01de6d0ca7cefbae2a6d4ec1725d7746141a899c95ef8,2010,Отборочный этап,7,7,official_found,,,
 d54f1bb82490f884bf2efa8b70b26f0d0135b711dd7633bb81cac58f58a85493,2010,Отборочный этап,7,8,official_found,,,
 2173089b3941e0b711001eabcdf37f90fbc5a8f6ed2d28ce083cd3f258dcd589,2010,Отборочный этап,8,1,official_found,,,
-f38384645404abdfe2f6e56a6b0a93c6b896ac5756560269a10c5f23cf04e3d5,2010,Отборочный этап,8,2,official_found,solution,,
+f38384645404abdfe2f6e56a6b0a93c6b896ac5756560269a10c5f23cf04e3d5,2010,Отборочный этап,8,2,official_found,,,
 4719708f0c1a83c7dbe595da785a378d57b215941e3d2f8c4764a923424dbe30,2010,Отборочный этап,8,3,official_found,,,
 cb953779c5ed222d1ed3d76aa5c7fab89ca1aa2a0c2aa7f2b7b296314312cb32,2010,Отборочный этап,8,5,official_found,,,
 800941dba7ac1124119f5e3fde561ddb4f88c7e6537d15f3c2cb6ac087559d7c,2010,Отборочный этап,8,6,official_found,,,
@@ -471,5 +471,5 @@ d354033aa9c6d42ddf70c429576c1cda2cdf9b5a6140a08b82a1860a064768be,2010,Отбор
 61f06a2d6365c7d940376a22193147fa10b97ba7253fb8e0a065f32d6af84915,2010,Отборочный этап,10,5,gemini_solved,,источник неофициальный,источник неофициальный
 c94ed2f66ef4c03b482547d3bf6cfd04ff8b60f5b8937dad44a898249162fe9a,2010,Отборочный этап,11,1,gemini_solved,,нет источника,нет источника
 660d43aa417a42ebd9a3afd5053cf8cfe415a6f839c83c49ba2bf4669ef253b6,2010,Отборочный этап,11,2,gemini_solved,,,
-107da4f04b890157f26499714a6aab29023be964304afaee9733b449ba48eba3,2010,Отборочный этап,11,4,official_found,solution,,
+107da4f04b890157f26499714a6aab29023be964304afaee9733b449ba48eba3,2010,Отборочный этап,11,4,official_found,,,
 14dc95135211a328679b05c1a3ffdce7289ec5f78f5cf3550019a99831d98bb6,2010,Отборочный этап,11,5,gemini_solved,,источник неофициальный,источник неофициальный
