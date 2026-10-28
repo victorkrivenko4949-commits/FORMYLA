@@ -5,7 +5,10 @@ on:
     branches: [lomonosov-audit]
     paths:
       - 'data/olymp_catalog/lomonosov.json'
+      - 'data/olymp_catalog/_patches/lomonosov/**'
       - 'scripts/lomonosov_audit.py'
+      - 'scripts/lomonosov_apply_patch.py'
+      - 'scripts/lomonosov_index.py'
       - 'scripts/olymp_fix_rules.py'
       - '.github/workflows/lomonosov_audit.yml'
   workflow_dispatch:
@@ -28,9 +31,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Apply patches
+        run: |
+          mkdir -p reports data/olymp_catalog/_patches/lomonosov
+          python scripts/lomonosov_apply_patch.py
       - name: Run audit
         run: |
-          mkdir -p reports
           WRITE="${{ github.event.inputs.write || 'true' }}"
           MODE="${{ github.event.inputs.year_mode || 'season_end' }}"
           if [ "$WRITE" = "true" ]; then
@@ -38,10 +44,12 @@ jobs:
           else
             python scripts/lomonosov_audit.py --year-mode "$MODE"
           fi
+      - name: Build index
+        run: python scripts/lomonosov_index.py
       - name: Commit results
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add data/olymp_catalog/lomonosov.json reports/lomonosov_audit.md reports/lomonosov_audit_tasks.csv reports/lomonosov_audit_diff.jsonl
-          git diff --cached --quiet || git commit -m "lomonosov: LaTeX fix + audit report [skip ci]"
+          git add data/olymp_catalog/lomonosov.json reports/lomonosov_audit.md reports/lomonosov_audit_tasks.csv reports/lomonosov_audit_diff.jsonl reports/lomonosov_patch_log.md reports/lomonosov_index
+          git diff --cached --quiet || git commit -m "lomonosov: patches + LaTeX fix + audit + index [skip ci]"
           git push
