@@ -7,7 +7,7 @@ lomonosov_audit.py — полная проработка каталога оли
      отчёт «было/стало» по uid.
   2. Дыры: (а) варианты год×этап×класс, которых нет совсем (официальная сетка);
      (б) варианты короче нормы (отбор = 10 задач, финал = 7–8);
-     (в) пропуски номеров внутри варианта.
+     (в) пропуски номеров внутри варианта (поле `num`, как в routes/olymp_catalog_gaps.py).
   3. Окончательная сверка: повторный прогон детекторов после починки,
      сводка до/после, список задач, оставшихся «красными».
 
@@ -55,6 +55,7 @@ OFFICIAL_GRID = {
 EXPECTED_LEN = {"qual": 10, "final": 8}
 SOFT_MIN = {"qual": 10, "final": 7}
 ROUND_TITLE = {"qual": "Отборочный этап", "final": "Заключительный этап"}
+_NUM_RE = re.compile(r"\d+")
 
 
 def normalize_unicode(text: str) -> str:
@@ -100,6 +101,18 @@ def norm_grade(g):
     return None
 
 
+def task_num(rec: dict):
+    """Номер задачи: поле `num` («3», «№3», 3), запасные — `number`, `n`."""
+    for key in ("num", "number", "n"):
+        v = rec.get(key)
+        if v is None or v == "":
+            continue
+        m = _NUM_RE.search(str(v))
+        if m:
+            return int(m.group())
+    return None
+
+
 # ---------------------------------------------------------------- 1. LaTeX
 MATH_SEG_RE = re.compile(r"(\\\((?:[^\\]|\\(?!\\))*?\\\)|\\\[[\s\S]*?\\\])")
 LOST_BACKSLASH = [
@@ -113,15 +126,15 @@ LOST_BACKSLASH = [
 ]
 _LOST_RE = re.compile(r"(?<![\\A-Za-z])(" + "|".join(sorted(LOST_BACKSLASH, key=len, reverse=True)) + r")(?=[\s{(\[0-9]|$)")
 UNICODE_IN_MATH = {
-    "≤": r"\le ", "≥": r"\ge ", "≠": r"\ne ", "×": r"\times ", "⋅": r"\cdot ", "·": r"\cdot ",
+    "≤": r"\le ", "≥": r"\ge ", "⩽": r"\le ", "⩾": r"\ge ", "≠": r"\ne ", "×": r"\times ", "⋅": r"\cdot ", "·": r"\cdot ",
     "∞": r"\infty ", "±": r"\pm ", "∓": r"\mp ", "∈": r"\in ", "∉": r"\notin ", "∠": r"\angle ",
     "△": r"\triangle ", "∥": r"\parallel ", "⊥": r"\perp ", "≈": r"\approx ", "≡": r"\equiv ",
     "→": r"\to ", "⇒": r"\Rightarrow ", "⇔": r"\Leftrightarrow ", "π": r"\pi ", "α": r"\alpha ",
-    "β": r"\beta ", "γ": r"\gamma ", "φ": r"\varphi ", "λ": r"\lambda ", "°": r"^\circ ",
+    "β": r"\beta ", "γ": r"\gamma ", "φ": r"\varphi ", "λ": r"\lambda ", "°": r"^\circ ", "◦": r"^\circ ",
     "…": r"\ldots ", "∅": r"\varnothing ", "√": r"\sqrt ", "−": "-", "–": "-", "—": "-",
 }
-RAW_SYMS = "≤≥≠×⋅∞±∈∉∠√"
-_TOK = r"A-Za-z0-9()\[\]{}+\-*/=^_.,|!<>" + RAW_SYMS + "·°…"
+RAW_SYMS = "≤≥⩽⩾≠×⋅∞±∈∉∠√"
+_TOK = r"A-Za-z0-9()\[\]{}+\-*/=^_.,|!<>" + RAW_SYMS + "·°◦…"
 RAW_MATH_OUTSIDE_RE = re.compile(r"(?<![\\\w])([" + _TOK + r"]*[" + RAW_SYMS + r"][" + _TOK + r"]*)")
 TRIG_RU_RE = re.compile(r"(?<![\\A-Za-z])(tg|ctg|arctg|arcctg)(?=[\s(\^0-9a-zA-Z\\])")
 _LOST_OUTSIDE_RE = re.compile(r"(?<![\\A-Za-zА-Яа-яЁё])(frac|sqrt|cdot|cdots|ldots|leq|geq|neq|infty|dfrac|binom)(?=[\s{(\d])")
@@ -137,7 +150,7 @@ def _fix_math_inner(body: str) -> str:
     s = re.sub(r"\\([cd]?frac)\s*([0-9A-Za-z])\s*([0-9A-Za-z])(?![A-Za-z0-9])", r"\\\1{\2}{\3}", s)
     s = re.sub(r"\\([cd]?frac)\s*\{([^{}]*)\}\s*([0-9A-Za-z])(?![A-Za-z0-9{])", r"\\\1{\2}{\3}", s)
     s = re.sub(r"\\([cd]?frac)\s*([0-9A-Za-z])\s*\{", r"\\\1{\2}{", s)
-    s = re.sub(r"\\sqrt\s+([0-9A-Za-z])(?![A-Za-z0-9])", r"\\sqrt{\1}", s)
+    s = re.sub(r"\\sqrt\s+([0-9]+(?:[.,][0-9]+)?|[A-Za-z])(?![A-Za-z0-9])", r"\\sqrt{\1}", s)
     s = re.sub(r"\\sqrt\s*\(([^()]*)\)", r"\\sqrt{\1}", s)
     s = re.sub(r"([\^_])\s+(?=[{(\w\\])", r"\1", s)
     s = re.sub(r"(\\[A-Za-z]+)\s+(?=[\^_])", r"\1", s)
@@ -233,6 +246,8 @@ def fix_latex(text: str) -> str:
     t = re.sub(r"\\begin\{(align\*?|gather\*?|eqnarray\*?)\}", lambda m: "\\[\\begin{aligned}", t)
     t = re.sub(r"\\end\{(align\*?|gather\*?|eqnarray\*?)\}", lambda m: "\\end{aligned}\\]", t)
     t = convert_dollars(t)
+    # √ 6, √ x -> √{6}: чтобы подкоренное не оторвалось от знака
+    t = re.sub(r"√\s*([0-9]+(?:[.,][0-9]+)?|[A-Za-z])(?![\w.])", r"√{\1}", t)
     # разорванные функции из PDF: co \(s^2 x\) -> \(\cos^2 x\), si \(n x\) -> \(\sin x\)
     t = re.sub(r"\bco\s*\\\(\s*s", lambda m: "\\(\\cos ", t)
     t = re.sub(r"\b(?:si|s)\s*\\\(\s*(?:n|in)", lambda m: "\\(\\sin ", t)
@@ -254,8 +269,9 @@ def fix_latex(text: str) -> str:
         pos = m.end()
     parts.append(_wrap_raw_math(t[pos:]))
     t = "".join(parts)
-    # соседние формулы через знак: \(a\) = \(b\) -> \(a = b\)
-    t = re.sub(r"\\\)\s*([+\-=<>]|\\(?:le|ge|ne|cdot|times)\b)\s*\\\(", r" \1 ", t)
+    # соседние формулы: \(a\) = \(b\) -> \(a = b\);  \(a\) \(b\) -> \(a b\)
+    t = re.sub(r"\\\)\s*([+\-=<>]|\\(?:le|ge|ne|cdot|times|pm)\b)\s*\\\(", r" \1 ", t)
+    t = re.sub(r"\\\)\s+\\\(", " ", t)
     t = re.sub(r"\\\)(?=[A-Za-zА-Яа-яЁё0-9])", lambda m: "\\) ", t)
     t = re.sub(r"(?<=[A-Za-zА-Яа-яЁё0-9])\\\(", lambda m: " \\(", t)
     t = re.sub(r"[ \t]{2,}", " ", t)
@@ -304,7 +320,7 @@ def task_issues(rec: dict) -> list[str]:
     issues += ["answer: " + i for i in latex_issues(ans)]
     if len(text.strip()) < 40:
         issues.append("условие слишком короткое/пустое")
-    elif text.strip()[-1] not in ".?!:;»\"')":
+    elif text.strip()[-1] not in ".?!:;»\"')]":
         issues.append("условие обрывается (нет конечной пунктуации)")
     rk = canon_round(rec.get("round"))
     if rk is None:
@@ -312,9 +328,9 @@ def task_issues(rec: dict) -> list[str]:
     g = norm_grade(rec.get("grade"))
     if not isinstance(g, int) or not (5 <= g <= 11):
         issues.append(f"класс не точный: {rec.get('grade')!r}")
-    n = rec.get("number")
-    if not isinstance(n, int) or n < 1:
-        issues.append(f"номер задачи не задан: {n!r}")
+    n = task_num(rec)
+    if n is None or n < 1:
+        issues.append(f"номер задачи не задан: {rec.get('num')!r}")
     if not isinstance(rec.get("year"), int):
         issues.append("год не задан")
     if rk == "qual" and not ans.strip():
@@ -360,10 +376,11 @@ def find_gaps(recs: list[dict], year_mode: str) -> dict:
     numbering = []
     for k in sorted(by_var, key=sort_key):
         items = by_var[k]
-        nums = sorted({r.get("number") for r in items if isinstance(r.get("number"), int)})
+        all_nums = [task_num(r) for r in items]
+        nums = sorted({n for n in all_nums if n is not None})
         upto = max([EXPECTED_LEN.get(k[1], 0)] + nums)
         missing = [n for n in range(1, upto + 1) if n not in nums]
-        dup = sorted(n for n, c in Counter(r.get("number") for r in items).items() if c > 1 and n is not None)
+        dup = sorted(n for n, c in Counter(all_nums).items() if c > 1 and n is not None)
         numbering.append((k, nums, missing, len(items), dup))
     present = set(by_var)
     years_in = {k[0] for k in by_var if isinstance(k[0], int)}
@@ -442,10 +459,10 @@ def main() -> int:
             fh.write(json.dumps(row, ensure_ascii=False) + "\n")
     with open(os.path.join(args.reports, "lomonosov_audit_tasks.csv"), "w", encoding="utf-8", newline="") as fh:
         w = csv.writer(fh)
-        w.writerow(["uid", "year", "round", "grade", "number", "status", "changed_fields", "issues_before", "issues_after"])
+        w.writerow(["uid", "year", "round", "grade", "num", "status", "changed_fields", "issues_before", "issues_after"])
         for r in recs:
             u = r.get("uid")
-            w.writerow([u, r.get("year"), r.get("round"), r.get("grade"), r.get("number"), r.get("status"),
+            w.writerow([u, r.get("year"), r.get("round"), r.get("grade"), r.get("num"), r.get("status"),
                         ",".join(diff_by_uid.get(u, {}).keys()), " | ".join(before[u]), " | ".join(after[u])])
 
     L = [f"# Аудит каталога «Ломоносов» — {datetime.now():%Y-%m-%d %H:%M}\n",
@@ -489,7 +506,7 @@ def main() -> int:
           f"Задач с замечаниями: **{len(red)}**. Построчно — `reports/lomonosov_audit_tasks.csv`.\n",
           "| uid | Год / этап / класс / № | Замечания |\n|---|---|---|"]
     for r, iss in red[:150]:
-        L.append(f"| `{r.get('uid')}` | {r.get('year')} / {r.get('round')} / {r.get('grade')} / {r.get('number')} | {'; '.join(iss)} |")
+        L.append(f"| `{r.get('uid')}` | {r.get('year')} / {r.get('round')} / {r.get('grade')} / {r.get('num')} | {'; '.join(iss)} |")
     if len(red) > 150:
         L.append(f"| … | ещё {len(red) - 150} | см. CSV |")
     hard = [r for r, iss in red if any(x in " ".join(iss) for x in
