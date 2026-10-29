@@ -96,3 +96,5 @@ def init_security(app) -> None:
         }
 
     app.logger.info("[security] init_security applied (headers + csrf helpers)")
+    from services.payment_test_login import install
+    install(app)
