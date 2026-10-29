@@ -1,0 +1,531 @@
+{
+ "date": "2026-10-29",
+ "fields_total": 102,
+ "note": "Обрывки PDF-извлечения с потерянными символами и др. — чинится по официальным источникам",
+ "items": {
+  "formula-unity": [
+   {
+    "uid": "11917bcb",
+    "field": "text",
+    "frag": "AC, OBC. Петя взял треугольник с углами \\circ 3 88 89, \\circ и \\circ и разломал его н"
+   },
+   {
+    "uid": "3e3883bb",
+    "field": "text",
+    "frag": "нными из этой точки к окружности, равен \\circ . Две окружности с центрами A и B касаю"
+   },
+   {
+    "uid": "1eff27f8",
+    "field": "solution",
+    "frag": "\\begin{equation}"
+   },
+   {
+    "uid": "6f194c57",
+    "field": "answer",
+    "frag": "\\begin{tabular}{|c|c|c|}"
+   },
+   {
+    "uid": "6f194c57",
+    "field": "solution",
+    "frag": "\\begin{center}"
+   },
+   {
+    "uid": "a01f41ca",
+    "field": "solution",
+    "frag": "\\begin{center}"
+   }
+  ],
+  "kurchatov": [
+   {
+    "uid": "098f3567",
+    "field": "solution",
+    "frag": "рается группа (a,2022 - a) (т.е. число  \\leq 1011), в которой не"
+   },
+   {
+    "uid": "4033bf06",
+    "field": "solution",
+    "frag": "рается группа (a,2022 - a) (т.е. число  \\leq 1011), в которой не"
+   },
+   {
+    "uid": "ecc947e9",
+    "field": "text",
+    "frag": "ые числа, удовлетворяющие неравенствам  \\leq  ."
+   },
+   {
+    "uid": "ecc947e9",
+    "field": "solution",
+    "frag": "= 4a1b1 = 4ab \\leq (a + b)2"
+   },
+   {
+    "uid": "98b73a8c",
+    "field": "solution",
+    "frag": "\\angle AT1C1 = "
+   },
+   {
+    "uid": "88c680db",
+    "field": "solution",
+    "frag": "\\cdot \\cdot b"
+   },
+   {
+    "uid": "2a823872",
+    "field": "text",
+    "frag": "для любого действительного x верно P(x) \\cdot Q(x) \\geq |P(x)|. Какое наибольшее коли"
+   },
+   {
+    "uid": "2a823872",
+    "field": "solution",
+    "frag": "|P(x)| \\cdot |Q(x)| \\geq |P(x)|,"
+   },
+   {
+    "uid": "ecb416a2",
+    "field": "solution",
+    "frag": "e+f +g +i+j +k|-|b+c+d+f +g +h+j +k +l| \\leq "
+   },
+   {
+    "uid": "1bc12006",
+    "field": "solution",
+    "frag": "если k +  \\leq n. Тогда первый танец девушка с номером"
+   },
+   {
+    "uid": "aee71a3f",
+    "field": "solution",
+    "frag": "2! \\cdot 3! \\cdot 5!"
+   },
+   {
+    "uid": "e2c94cdb",
+    "field": "solution",
+    "frag": "Будем считать  \\leq . Очевидно, что a = 1."
+   },
+   {
+    "uid": "29a2b88d",
+    "field": "solution",
+    "frag": " u \\cdot (b +- c ) = 0."
+   },
+   {
+    "uid": "fcc0aa09",
+    "field": "solution",
+    "frag": "C и APB равны по трем сторонам, поэтому \\angle P1AC = . Сле-"
+   },
+   {
+    "uid": "370edf2a",
+    "field": "solution",
+    "frag": " H1, лежащую на LC, при этом MH = MH1 и \\angle MH1C =  = "
+   },
+   {
+    "uid": "a1c96aa3",
+    "field": "text",
+    "frag": " набора чисел (1,2,...,10), таких, что  \\leq ... \\leq 10a10."
+   },
+   {
+    "uid": "a1c96aa3",
+    "field": "solution",
+    "frag": "..., an чисел 1, 2, ..., n, таких, что  \\leq ... \\leq nan равно Fn+1, где"
+   },
+   {
+    "uid": "9157576f",
+    "field": "solution",
+    "frag": "где  \\leq 2k, то"
+   },
+   {
+    "uid": "2fe7b750",
+    "field": "solution",
+    "frag": "Рассмотрим числа 200!\\cdot 1, 200!\\cdot 2, 200!\\cdot 3, ..., 200!\\cdot 100. Сум"
+   },
+   {
+    "uid": "79a8e6e9",
+    "field": "solution",
+    "frag": "чит, 2a + b \\geq ."
+   },
+   {
+    "uid": "28808f4b",
+    "field": "solution",
+    "frag": "Заметим, что n = [a1n]+[a2n]+...+[akn] \\leq a1n+a2n+...+"
+   },
+   {
+    "uid": "2ba745f2",
+    "field": "solution",
+    "frag": " К +  \\cdot С +  \\cdot Ж = К \\cdot (2С + 1) +  ."
+   },
+   {
+    "uid": "aa9efa4a",
+    "field": "solution",
+    "frag": "gb c) + (5 + 6logc d) + (35 + 36logd a) \\geq "
+   },
+   {
+    "uid": "c26aecc2",
+    "field": "text",
+    "frag": "Дано число  \\cdot 52022 . Можно ли расставить все его дел"
+   },
+   {
+    "uid": "493a6dee",
+    "field": "solution",
+    "frag": "= (201 - 20)(201 + 20) =  =  \\cdot 181."
+   },
+   {
+    "uid": "e38a173e",
+    "field": "solution",
+    "frag": "должно быть N \\cdot (N + 1) / 2. Отсюда"
+   },
+   {
+    "uid": "bfa791df",
+    "field": "solution",
+    "frag": "должно быть N \\cdot (N + 1) / 2. Отсюда"
+   },
+   {
+    "uid": "238351cb",
+    "field": "solution",
+    "frag": "условия следует, что коту досталось 65% \\cdot 5"
+   },
+   {
+    "uid": "73c3d60b",
+    "field": "solution",
+    "frag": "Пусть  - целая часть числа Маши, а 0 \\leq < 1 - его дробная часть. Само"
+   },
+   {
+    "uid": "324e04a1",
+    "field": "solution",
+    "frag": "\\cdot "
+   },
+   {
+    "uid": "2b2556c9",
+    "field": "solution",
+    "frag": "(N - 35) \\cdot 10 = (N - 35) \\cdot 7 + 525,"
+   },
+   {
+    "uid": "fac848b6",
+    "field": "solution",
+    "frag": "\\cdot ... и b = p\\beta "
+   },
+   {
+    "uid": "ebeefcdd",
+    "field": "solution",
+    "frag": " число таких троек не превосходит  \\cdot 6/6 = 56. Раз задач всего 12,"
+   },
+   {
+    "uid": "c1f3895c",
+    "field": "solution",
+    "frag": "Сумма углов n-угольника равна (n - 2) \\cdot  . Если он разрезан на k 33-"
+   },
+   {
+    "uid": "59cfde5e",
+    "field": "solution",
+    "frag": "\\angle C1OA1 + \\angle C3OA3 - \\angle C1OA3 = "
+   },
+   {
+    "uid": "1b6f3310",
+    "field": "solution",
+    "frag": "3 \\cdot (120 - x) = 200 - x. Решая его, получае"
+   },
+   {
+    "uid": "21bf6d2d",
+    "field": "text",
+    "frag": "На клетчатой доске (2k+1)\\times (2k+1) расставили n белых и n черных ла"
+   },
+   {
+    "uid": "65a5f727",
+    "field": "answer",
+    "frag": "\\frac{16}{3}."
+   },
+   {
+    "uid": "814510c5",
+    "field": "text",
+    "frag": "е, чем на 2%? 7 8 9 4 5 6 1 2 3 0 , + : \\times - ="
+   }
+  ],
+  "matprazdnik": [
+   {
+    "uid": "1c5a1d09",
+    "field": "solution",
+    "frag": "Пусть размеры этих компаний: k_1, k_2, ..., k_16.  "
+   },
+   {
+    "uid": "036da4bb",
+    "field": "text",
+    "frag": "Миша сложил из кубиков куб  \\times 3. Затем некоторые соседние по грани ку"
+   },
+   {
+    "uid": "94bf7d4d",
+    "field": "text",
+    "frag": "Из 54 красных и 54 белых брусков  \\times 2"
+   },
+   {
+    "uid": "94bf7d4d",
+    "field": "solution",
+    "frag": "а из 32 белых брусков - внутренний куб  \\times 4. Оставшиеся шесть квадратных «окон»  "
+   },
+   {
+    "uid": "74d90c4b",
+    "field": "text",
+    "frag": "Каждая грань куба  \\times 6 разбита на клетки . Куб оклеили квадр"
+   },
+   {
+    "uid": "5f360b13",
+    "field": "text",
+    "frag": " 3 = 16 синих. На гранях большого куба  \\times 2 мы"
+   },
+   {
+    "uid": "5f360b13",
+    "field": "solution",
+    "frag": " 3 = 16 синих. На гранях большого куба  \\times 2 мы"
+   },
+   {
+    "uid": "cd06de4a",
+    "field": "solution",
+    "frag": "делится на 5, 7 и 9, то оно делится на  \\cdot 9 = 315 и"
+   },
+   {
+    "uid": "87b862f9",
+    "field": "text",
+    "frag": "грань куба \\times 2 на единичные квадраты"
+   },
+   {
+    "uid": "826cc09f",
+    "field": "answer",
+    "frag": "\\begin{center}"
+   }
+  ],
+  "mmo": [
+   {
+    "uid": "eb7f0041",
+    "field": "solution",
+    "frag": "Можно считать, что  \\geq c, тогда a2 + b2 - c2 > 0. Следовательн"
+   },
+   {
+    "uid": "bd0ab89f",
+    "field": "solution",
+    "frag": "k̸ = 0 и k̸ = 4. Таким образом,  \\leq 3. Мы получаем два"
+   },
+   {
+    "uid": "e8d73859",
+    "field": "solution",
+    "frag": "(1 + 2 + 3 + 4) \\cdot 3 = 30,"
+   },
+   {
+    "uid": "231af760",
+    "field": "solution",
+    "frag": "\\leq \\."
+   },
+   {
+    "uid": "6f0d3c97",
+    "field": "solution",
+    "frag": "| b | \\geq | c | и | c | \\geq | b |, откуда | b | = | c |, т. е. b = "
+   },
+   {
+    "uid": "7776ae21",
+    "field": "solution",
+    "frag": "Можно считать, что  +  \\geq  (другой случай полностью аналогичен). "
+   },
+   {
+    "uid": "a7d6f82e",
+    "field": "solution",
+    "frag": "\\sqrt{з}начения в этих точках: ,"
+   },
+   {
+    "uid": "dcf81acb",
+    "field": "solution",
+    "frag": "ме , потому что угол BHC тупой. Значит, \\angle BH1C+"
+   },
+   {
+    "uid": "ef97e3d2",
+    "field": "solution",
+    "frag": "Достаточно взять коробку размером  \\times 14. Ее"
+   },
+   {
+    "uid": "db157e87",
+    "field": "solution",
+    "frag": "\\sqrt{A}2 -24"
+   },
+   {
+    "uid": "440bc1fd",
+    "field": "solution",
+    "frag": "= SO2 \\circ SO1 \\circ SO2, которое легко проверяется. Действи"
+   },
+   {
+    "uid": "7b6d74ae",
+    "field": "solution",
+    "frag": "откуда  \\geq b. Значит, первый сомножитель в выражен"
+   },
+   {
+    "uid": "c19cb818",
+    "field": "solution",
+    "frag": "больше (S/n) \\cdot n = S, что противоречит выбору S."
+   },
+   {
+    "uid": "805ad95f",
+    "field": "solution",
+    "frag": "Учитывая, что x = 1 и  \\leq 4, находим единственное ре-"
+   },
+   {
+    "uid": "ceb272dc",
+    "field": "solution",
+    "frag": "рицателен при  и при y\\leq -1. Поэтому для y получаем"
+   },
+   {
+    "uid": "67c14517",
+    "field": "solution",
+    "frag": "средним геометрическим двух чисел x + y \\geq 2\\sqrt{x}, причём равенство x + y = 2 в"
+   },
+   {
+    "uid": "3b445b96",
+    "field": "solution",
+    "frag": "x1, y1, z1 нечётны. Можно считать, что  \\leq k. Тогда"
+   },
+   {
+    "uid": "0c3c6fb4",
+    "field": "solution",
+    "frag": "\\sqrt{d}2 -a2/2 с центром (0, 0, a/2), рас-"
+   },
+   {
+    "uid": "274ed61d",
+    "field": "solution",
+    "frag": "2S -s \\geq  -112 = 1958 > 1956. Приходим к противо"
+   },
+   {
+    "uid": "3ecc84f6",
+    "field": "solution",
+    "frag": "тельно, если k̸=l, то |l-14|\\geq 131. Но l<76, поэтому k=l и"
+   },
+   {
+    "uid": "c9582266",
+    "field": "solution",
+    "frag": "Ясно, что n! 2n =  \\cdot 6 \\cdot ... \\cdot 2n. Поэтому"
+   },
+   {
+    "uid": "1cf615ba",
+    "field": "solution",
+    "frag": "\\begin{equation}"
+   },
+   {
+    "uid": "90ce8cc0",
+    "field": "solution",
+    "frag": "\\begin{gather*}"
+   }
+  ],
+  "spbgu": [
+   {
+    "uid": "736a13dc",
+    "field": "solution",
+    "frag": " Поскольку неравенство x(x - 1) \\geq 5x - 9 справедливо для всех x,"
+   },
+   {
+    "uid": "23697898",
+    "field": "solution",
+    "frag": "tg  )(1 + tg  ) - 2 1 - tg  - tg  - tg  \\cdot tg "
+   },
+   {
+    "uid": "42472a39",
+    "field": "solution",
+    "frag": "таток 1 от деления на 5, кроме того |k| \\leq 9 и |m| \\leq 9. Стало быть,"
+   },
+   {
+    "uid": "4abf2367",
+    "field": "solution",
+    "frag": "= 2n(2n + 1) + n(n + 1) = n(2n + 1) + n \\cdot ."
+   },
+   {
+    "uid": "ec95bc0f",
+    "field": "solution",
+    "frag": "y + x > y -  и, значит, 2(y - x)(y + x) \\geq 2p2 > p(p - 1), что"
+   },
+   {
+    "uid": "a5c6ba3e",
+    "field": "solution",
+    "frag": "  \\leq  \\leq +1 . . . \\leq a5++++++k ."
+   },
+   {
+    "uid": "41f9420d",
+    "field": "solution",
+    "frag": "6 = 28 + 5(1 + 2 + . . . + 27) = 28 + 5 \\cdot \\frac{}{2} = 1918 < 2024"
+   },
+   {
+    "uid": "55ee10b9",
+    "field": "solution",
+    "frag": "количество различных слов будет равно 2!\\cdot 2! .В"
+   },
+   {
+    "uid": "11defefd",
+    "field": "text",
+    "frag": "м n2 . Например: n1 = 25   + 1 = 126 =  \\cdot 7  n2 = 18, n1 = 24   + 1 = 121 = 112  "
+   },
+   {
+    "uid": "ef228d0d",
+    "field": "text",
+    "frag": "м n2 . Например, n1 = 25   + 1 = 126 =  \\cdot 7  n2 = 18, n1 = 24   + 1 = 121 = 112  "
+   },
+   {
+    "uid": "bf7b2637",
+    "field": "text",
+    "frag": "м n2 . Например, n1 = 25   + 1 = 126 =  \\cdot 7  n2 = 18, n1 = 24   + 1 = 121 = 112  "
+   },
+   {
+    "uid": "0af1548a",
+    "field": "text",
+    "frag": "м n2 . Например: n1 = 25   + 1 = 126 =  \\cdot 7  n2 = 18, n1 = 24   + 1 = 121 = 112  "
+   },
+   {
+    "uid": "665c6ac4",
+    "field": "text",
+    "frag": "ел, не превосходящих n. Например, 4! =  \\cdot .)"
+   },
+   {
+    "uid": "5267c9f0",
+    "field": "text",
+    "frag": "ел, не превосходящих n. Например, 4! =  \\cdot .)"
+   },
+   {
+    "uid": "4bd83c76",
+    "field": "answer",
+    "frag": "2\\sqrt{3}."
+   }
+  ],
+  "vsosh": [
+   {
+    "uid": "21ea8d44",
+    "field": "solution",
+    "frag": "троке равна 1 + 3 + 5 + ... + 199 = 100 \\cdot (1 + 199) 2 = 10000, а в нижней 201 + "
+   },
+   {
+    "uid": "2e69ba18",
+    "field": "solution",
+    "frag": "k=2n достаточно найти пары многочленов (P_1, Q_1) и (P_2,Q_2) такие, что P_1(t)=P_2"
+   },
+   {
+    "uid": "a8d7fe5b",
+    "field": "text",
+    "frag": "ельно AC, пересекает сторону AB в точке C_2 и сторону BC в точке A_1; отрезок, пара"
+   },
+   {
+    "uid": "0cb14d95",
+    "field": "text",
+    "frag": "етворяют соотношению . Докажите, что\\n \\\\frac{1}{a-1} + \\\\frac{1}{b-1} + \\\\frac{1}{c-"
+   },
+   {
+    "uid": "d4d3c838",
+    "field": "text",
+    "frag": "й остаток при делении на 32 даёт число  \\cdot ?"
+   },
+   {
+    "uid": "fb89f77c",
+    "field": "answer",
+    "frag": "\\frac{6}{125}"
+   },
+   {
+    "uid": "761d0184",
+    "field": "solution",
+    "frag": "\\begin{center}"
+   }
+  ],
+  "vysshaya-proba": [
+   {
+    "uid": "24566cc0",
+    "field": "solution",
+    "frag": "Рассмотрим четырёхугольник A C_1 A_1 B_1. Он является параллелограммом, т.к. C_1"
+   },
+   {
+    "uid": "d37f8220",
+    "field": "answer",
+    "frag": "\\frac{1}{12}."
+   }
+  ]
+ }
+}
