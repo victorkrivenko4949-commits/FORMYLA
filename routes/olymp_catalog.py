@@ -241,16 +241,21 @@ def olympiad(slug):
     # Каскадные фильтры: опции каждого списка зависят от остальных выборов,
     # поэтому выбрать комбинацию без задач («пустой пробник») нельзя.
     # Санитизация: пришедшие в URL несовместимые значения отбрасываем.
-    for _ in range(3):
+
+    def _options(_grade, _rnd, _year):
         grades = sorted({str(t["grade"]) for t in all_tasks
-                         if (not rnd or str(t.get("round", "")) == str(rnd))
-                         and (not year or str(t["year"]) == str(year))}, key=_grade_key)
+                         if (not _rnd or str(t.get("round", "")) == str(_rnd))
+                         and (not _year or str(t["year"]) == str(_year))}, key=_grade_key)
         rounds = _rounds([t for t in all_tasks
-                          if (not grade or str(t["grade"]) == str(grade))
-                          and (not year or str(t["year"]) == str(year))])
+                          if (not _grade or str(t["grade"]) == str(_grade))
+                          and (not _year or str(t["year"]) == str(_year))])
         years_all = sorted({t["year"] for t in all_tasks
-                            if (not grade or str(t["grade"]) == str(grade))
-                            and (not rnd or str(t.get("round", "")) == str(rnd))}, reverse=True)
+                            if (not _grade or str(t["grade"]) == str(_grade))
+                            and (not _rnd or str(t.get("round", "")) == str(_rnd))}, reverse=True)
+        return grades, rounds, years_all
+
+    for _ in range(3):
+        grades, rounds, years_all = _options(grade, rnd, year)
         if grade and grade not in grades:
             grade = ""
         elif rnd and rnd not in rounds:
@@ -259,6 +264,9 @@ def olympiad(slug):
             year = ""
         else:
             break
+    # Пересчёт по финальным (санитизированным) значениям — иначе при
+    # нескольких невалидных параметрах списки оставались пустыми.
+    grades, rounds, years_all = _options(grade, rnd, year)
     picked = bool(q or year or grade or rnd)
     tasks = _filter_tasks(all_tasks, q.lower(), year, grade, rnd) if picked else []
     return render_template("olymp_catalog/olympiad.html", slug=slug, meta=meta, years=_group(tasks, all_tasks),
