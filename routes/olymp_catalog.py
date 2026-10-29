@@ -239,11 +239,20 @@ def olympiad(slug):
     # список задач появляется после выбора (picked).
     picked = bool(q or year or grade or rnd)
     tasks = _filter_tasks(all_tasks, q.lower(), year, grade, rnd) if picked else []
-    grades = sorted({str(t["grade"]) for t in all_tasks}, key=_grade_key)
-    years_all = sorted({t["year"] for t in all_tasks}, reverse=True)
+    # Каскадные фильтры: опции каждого списка зависят от остальных выборов,
+    # поэтому выбрать комбинацию без задач («пустой пробник») нельзя.
+    grades = sorted({str(t["grade"]) for t in all_tasks
+                     if (not rnd or str(t.get("round", "")) == str(rnd))
+                     and (not year or str(t["year"]) == str(year))}, key=_grade_key)
+    rounds = _rounds([t for t in all_tasks
+                     if (not grade or str(t["grade"]) == str(grade))
+                     and (not year or str(t["year"]) == str(year))])
+    years_all = sorted({t["year"] for t in all_tasks
+                       if (not grade or str(t["grade"]) == str(grade))
+                       and (not rnd or str(t.get("round", "")) == str(rnd))}, reverse=True)
     return render_template("olymp_catalog/olympiad.html", slug=slug, meta=meta, years=_group(tasks, all_tasks),
                            count=len(tasks), total=len(all_tasks), q=q, year=year, grade=grade,
-                           round=rnd, rounds=_rounds(all_tasks), picked=picked,
+                           round=rnd, rounds=rounds, picked=picked,
                            grades=grades, years_all=years_all, labels=STATUS_LABEL)
 
 
