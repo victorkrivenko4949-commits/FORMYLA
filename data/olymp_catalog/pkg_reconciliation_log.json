@@ -1,0 +1,5025 @@
+{
+ "relabels": [
+  {
+   "uid8": "63c8e143",
+   "year": 2025,
+   "grade": "6",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "63c8e143d02238c95c2468bdc4524726b7092d82ed0e3fdfb6d94404ea4fabe9",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "26670721",
+   "year": 2025,
+   "grade": "6",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "266707218484ab9afdc264982de906f4cdc27e363bcad9f6f22cde9dc65bc0fa",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "2e292e62",
+   "year": 2025,
+   "grade": "6",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "2e292e62317b0e86541743c42e0eea58ba254fe8a14f9d2b20ac1e8c5b044241",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "8c0395d7",
+   "year": 2025,
+   "grade": "6",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "8c0395d7edbdba5b9301bcefbef58a765452c844ace410e33899d1537165f527",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "50feca2a",
+   "year": 2025,
+   "grade": "7",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "50feca2a1b09ec4e6ac591267a24ffa306889cc2d66f20010139249eb9c441c5",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "4434f301",
+   "year": 2025,
+   "grade": "7",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "4434f3014f9f42ee47c79c4b3752b9a8b25c060a3a4674dcdfd3fd048e01e727",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "983df70e",
+   "year": 2025,
+   "grade": "7",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "983df70ef2afa81c8a9ffc1e0dc55aea7fb6e136b28f6e9ca79b48e03f260431",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "fac848b6",
+   "year": 2025,
+   "grade": "7",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "fac848b66f43b8a77c50cac9848ebd16b1b9cb1d6120501ce9ad760362b8228c",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "5056e0c9",
+   "year": 2025,
+   "grade": "7",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "5056e0c907aba4de4fa01e05fdb440b9afe9a9cf4d5e2ff4fa5c92c155c086c1",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "11e696cc",
+   "year": 2025,
+   "grade": "8",
+   "num": "1",
+   "status": "quarantined: duplicate_final_task_2025_8_1: kept 470233d4 (fuller text)",
+   "kept_counterpart": "470233d4",
+   "pair_note": "действие: оставлена копия 470233d4, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "11e696cc8765bbfa271acefa9b753524642ba25247b43ba4bc543cc0c903d9c1",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ]
+  },
+  {
+   "uid8": "8dc1ea98",
+   "year": 2025,
+   "grade": "8",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "8dc1ea98d73b6ab1ee9cb3f21a1e6900c7595f62b4b58ca9251930cb87de7eed",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "fdc1f983",
+   "year": 2025,
+   "grade": "8",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "fdc1f983a44398ec99bfb33db9354b766bc605253a1ac630e861a081ad05386e",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "1d9ccccc",
+   "year": 2025,
+   "grade": "8",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "1d9ccccc415b232c8e5b9fda667939593b580ad49165e10f6c024dfd3b102da7",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "aedb8321",
+   "year": 2025,
+   "grade": "8",
+   "num": "5",
+   "status": "quarantined: duplicate_final_task_2025_8_5: kept 66b9a54a (fuller text)",
+   "kept_counterpart": "66b9a54a",
+   "pair_note": "действие: оставлена копия 66b9a54a, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "aedb83215db685c664250978b47c2a47bb4ac305a937c7b39ca1b7811aedf72c",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ]
+  },
+  {
+   "uid8": "c7d69c94",
+   "year": 2025,
+   "grade": "9",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "c7d69c9404d5f2ce4984a0622a61b1ed54e8f2a85372517004bcae7cfb81f331",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "69e7f83c",
+   "year": 2025,
+   "grade": "9",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "69e7f83cb361ac93cf664ca483cfb859b9db4acdf50bbd309e93e1e6034c6a73",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "2c8cbc68",
+   "year": 2025,
+   "grade": "9",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "2c8cbc6863bf6b5f7b63029b9b9e0a57452fcde5a46b70ccdcfc5cc1f611f472",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "28808f4b",
+   "year": 2025,
+   "grade": "9",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "28808f4bd61a7ca4719f28865bf8671d2e18f1ed700911514d11a18fa11bdea5",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "e6bf781e",
+   "year": 2025,
+   "grade": "9",
+   "num": "5",
+   "status": "quarantined: bad_status:AI_generated",
+   "uid": "e6bf781e94ada2fa3422ab4b34756bafa61453625bffd1fd9d5641246e748f50",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ]
+  },
+  {
+   "uid8": "2e47dc2b",
+   "year": 2025,
+   "grade": "10",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "2e47dc2b5727052576e31f125d0cc3536b13a2de3929074f7e9149a8893a49d6",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "62ea6802",
+   "year": 2025,
+   "grade": "10",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "62ea6802e1f2a4eb8d9c172dad6386e8fdc2e518eaa91a5e0c18ffe9dc0448c9",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "672b742d",
+   "year": 2025,
+   "grade": "10",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "672b742d089644f13ab55e562f48dc7abd9cebcbeeb42cbae8227bdf6dbac50d",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "52114854",
+   "year": 2025,
+   "grade": "10",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "521148544882e14c5520fd5b7916fe1cdccb79117fc1d7a65bd18e672bf41ead",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "a1c96aa3",
+   "year": 2025,
+   "grade": "10",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "a1c96aa370f318aa6f9f5a243efc373114e36edfbcb2e8537ab6d0046db95e2b",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "dacd4dae",
+   "year": 2025,
+   "grade": "11",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "dacd4dae393e898b6cef5e5bdd9bce4eda7dd1cfc4219d936d75291c0c972027",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "1973ca1a",
+   "year": 2025,
+   "grade": "11",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "1973ca1ab04ea4b4f4fbf1eff428395dc738db073f925c6a16c15dd826d35832",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "15b321c6",
+   "year": 2025,
+   "grade": "11",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "15b321c6da82e85e59d4933c57e8526d7b245df9db4624869afe7458a3ef8574",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "9157576f",
+   "year": 2025,
+   "grade": "11",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "9157576f112d8698bbfd9886e251a023e7b67d3a667f7eab7068817a24d4637a",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "212f0984",
+   "year": 2025,
+   "grade": "11",
+   "num": "5",
+   "status": "quarantined: duplicate_final_task_2025_11_5: kept f9f526be (fuller text)",
+   "kept_counterpart": "f9f526be",
+   "pair_note": "действие: оставлена копия f9f526be, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "212f09843d948139118c61d75d3d9d2436cd1ab43a1490d160d63f9094d53695",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/upload/files/2025/final_tasks/Kurchatov_Math_2025.pdf"
+   ]
+  },
+  {
+   "uid8": "d2a9a3cb",
+   "year": 2024,
+   "grade": "6",
+   "num": "2",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-6-final-23-24.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "d2a9a3cbb4a042b3adb4990300d9d655349c71eb7d457a2750e58f30e1cfd07b",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "3f513212",
+   "year": 2024,
+   "grade": "6",
+   "num": "3",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-6-final-23-24.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "3f513212b4491295d65acb5a38eab23dde17c27ec1f9950b63b4b85a35462a5c",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "6364e098",
+   "year": 2024,
+   "grade": "6",
+   "num": "5",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-6-final-23-24.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "6364e098dc199416a7a8a0c3975890f1a1d3067d256227686684703ad705c11e",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "b0a21236",
+   "year": 2024,
+   "grade": "7",
+   "num": "1",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-7-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "b0a2123670461841a28b0db5c672b97ac871e21a6758d951a5fb759e252a08ca",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "923b7622",
+   "year": 2024,
+   "grade": "7",
+   "num": "2",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-7-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "923b7622fabe44d1aa0000c4b0e0b5a47e2940e702384bd9594843fa0882d121",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "736b360f",
+   "year": 2024,
+   "grade": "7",
+   "num": "3",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-7-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "736b360f1e6908596a2f5ea783b09f866c44853b693e074995c96ad2d9581e4d",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "bf578914",
+   "year": 2024,
+   "grade": "7",
+   "num": "4",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-7-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "bf5789149cd2f6f3a595815aec37656bb6af74f04119074f5d334452ad72315e",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "814510c5",
+   "year": 2024,
+   "grade": "7",
+   "num": "5",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-7-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "814510c5304c627b1ba63b00d411249dc3846a416e628cd4415ab5ccf2d2e05b",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "88c680db",
+   "year": 2024,
+   "grade": "8",
+   "num": "1",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-8-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "88c680db566b0b9eb9204503f08cc3388bf5ebf01e30eeb26b38bdfae82ee17b",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "b1f0326e",
+   "year": 2024,
+   "grade": "8",
+   "num": "2",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-8-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "b1f0326e44017e5075dc4f6223f2d815e4a1799e6e50c0e1009a4329f2fc597d",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "adbe32ac",
+   "year": 2024,
+   "grade": "8",
+   "num": "3",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-8-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "adbe32ac51dcd10486066bcc1dc302e12aa14fcd9afd079b4e5ae4a2a0f26871",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "324e04a1",
+   "year": 2024,
+   "grade": "8",
+   "num": "4",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-8-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "324e04a1e8367b7853e036f86b57880c3e98a3143dc793efa477d1c5c9c74cb1",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "8f708aa7",
+   "year": 2024,
+   "grade": "8",
+   "num": "5",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-8-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "8f708aa7c0acd0e9349f64d302fd5b74837ddda5113fe58f34cd95f8205e464b",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "78d48553",
+   "year": 2024,
+   "grade": "9",
+   "num": "1",
+   "status": "quarantined: duplicate_final_task_2024_9_1: kept 6c76ee46 (fuller text)",
+   "kept_counterpart": "6c76ee46",
+   "pair_note": "действие: оставлена копия 6c76ee46, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "78d485531b5d731e02be53cd3af6d33dddcb23576e4a9bb6c2a3d3b5c13e451f",
+   "docs_searched": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-9-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_9.pdf"
+   ]
+  },
+  {
+   "uid8": "d4fd301c",
+   "year": 2024,
+   "grade": "9",
+   "num": "2",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-9-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "d4fd301c41d86c8c24a3eae790562e22bd488bb4d2e2d5d875ce36083d7e7bc8",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "0087580a",
+   "year": 2024,
+   "grade": "9",
+   "num": "3",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-9-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "0087580a3876e889a4f49060b9ba03e08cdf62a61feb7063a2ffa822ecb0128c",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "4f12a28f",
+   "year": 2024,
+   "grade": "9",
+   "num": "4",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-9-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "4f12a28f00e2d75d75e527ec75fe02ca2d32bd924f445ca24968676a06096ecc",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "cd44a108",
+   "year": 2024,
+   "grade": "9",
+   "num": "5",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-9-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "cd44a108088a45e9b34b3c8609a2c292e014e26fd9426902e04326093408168a",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "c26aecc2",
+   "year": 2024,
+   "grade": "10",
+   "num": "1",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-10-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "c26aecc2730fc832df04afaa0fa0b2493a61777cbc6ab4ccaf3c6074ea5e99dc",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "3ce572e8",
+   "year": 2024,
+   "grade": "10",
+   "num": "2",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-10-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "3ce572e8e205f57b77588ce37b2ff8134e9827b0b7c7b0c4d3c2922ceafc05ab",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "3dc2a6b6",
+   "year": 2024,
+   "grade": "10",
+   "num": "3",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-10-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "3dc2a6b6f00296f6265ebc467b2a6aa68d9bfe536c37873bee6f946558b677b2",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "04ea7942",
+   "year": 2024,
+   "grade": "10",
+   "num": "4",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-10-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "04ea79422f4251c35cc7af8b4b800856964fdf7d944271b4e18a909901d56ab7",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "93061bed",
+   "year": 2024,
+   "grade": "10",
+   "num": "5",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-10-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "93061bed82938a026fb8586d3820f0eb1c7a65155f78949ba6e221a9f32f13e3",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "dc17474a",
+   "year": 2024,
+   "grade": "11",
+   "num": "1",
+   "status": "quarantined: duplicate_final_task_2024_11_1: kept 7c965174 (fuller text)",
+   "kept_counterpart": "7c965174",
+   "pair_note": "действие: оставлена копия 7c965174, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "dc17474a52f4199be10bbfa41f8c1fb84d2ef67377a43e348aa103f802667933",
+   "docs_searched": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-11-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_11.pdf"
+   ]
+  },
+  {
+   "uid8": "102d42a7",
+   "year": 2024,
+   "grade": "11",
+   "num": "2",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-11-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_11.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "102d42a72d509454596a56a137a094866f367964f5360d32e55fa754f002ce1c",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "69a16bb7",
+   "year": 2024,
+   "grade": "11",
+   "num": "4",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-11-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_11.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "69a16bb73b082ac586512d924195619326f652842289caf60944fff50b352c70",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "7ac28a24",
+   "year": 2024,
+   "grade": "11",
+   "num": "5",
+   "doc": [
+    "https://tasks.olimpiada.ru/upload/files/tasks/389/2023/389-sol-math-11-final-23-24.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov_2024_math_sol_11.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "7ac28a24d1d34f2643995e4e898f7f8a601afb4f7fff23514673da58a14c31f4",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "f8f07b18",
+   "year": 2023,
+   "grade": "6",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "f8f07b18e400e9e7b67c2c17831c4f80f26a1ac793bba836e8e958bfcc05f06b"
+  },
+  {
+   "uid8": "9b99c563",
+   "year": 2023,
+   "grade": "6",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "9b99c563f9817b1029ab75f61528e5a0c1263f90659291d20670979885d00836"
+  },
+  {
+   "uid8": "1195606e",
+   "year": 2023,
+   "grade": "6",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "1195606e5619786fe137c4e5086933a6630d48bf126342e5e7f5e742b247d562"
+  },
+  {
+   "uid8": "9cc2e065",
+   "year": 2023,
+   "grade": "6",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "9cc2e0653a16ebc0afec264f3152ff385a01fac412cc0e995e8e752f62181b57"
+  },
+  {
+   "uid8": "d8789689",
+   "year": 2023,
+   "grade": "6",
+   "num": "5",
+   "status": "quarantined: same_text_mislabeled_round (заход 2023); запись без позиционного доказательства в журнале",
+   "uid": "d8789689509c9acd4e08493b26866269eca272b02cc70871cbd94360292fb717",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ]
+  },
+  {
+   "uid8": "2b2556c9",
+   "year": 2023,
+   "grade": "7",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "2b2556c90c8d474a126c8e3abb5574c462f71b60c69f263f7fef36c20e3ba029"
+  },
+  {
+   "uid8": "ed4a1e8f",
+   "year": 2023,
+   "grade": "7",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "ed4a1e8f7a2f1bca643da9baa5c9090b7a2090374852fc98474a4780733d691e"
+  },
+  {
+   "uid8": "0718d763",
+   "year": 2023,
+   "grade": "7",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "0718d763d44afcfcbae82b94413fcb6394cf92feeb8375d003ec9466343487a5"
+  },
+  {
+   "uid8": "8662dc46",
+   "year": 2023,
+   "grade": "7",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "8662dc468b63de9c01f666ac9e3a7b248620eb2c334217f7affa5f948ad9ad3e"
+  },
+  {
+   "uid8": "e38a173e",
+   "year": 2023,
+   "grade": "8",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "e38a173e18351071a6d72b98fdede0ee340b2c2eba60eca826b346b5aa73c0ba"
+  },
+  {
+   "uid8": "57e28401",
+   "year": 2023,
+   "grade": "8",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "57e28401c0f9a18d3997b302fc03744fb6128c6deb8d92a55d2346f074103ea9"
+  },
+  {
+   "uid8": "76d1ace5",
+   "year": 2023,
+   "grade": "8",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "76d1ace57fa54a81c8bd5dad1e1a423bb783a9910efaddb3d17025e83367d383"
+  },
+  {
+   "uid8": "e360052c",
+   "year": 2023,
+   "grade": "8",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "e360052cc5820bc5fa6146f6ec201af26255e2046f7299960ca6c84f46da6987"
+  },
+  {
+   "uid8": "e060951a",
+   "year": 2023,
+   "grade": "8",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "e060951a5f6f228571f01d60acc6c8cf3bfcb5df67faa8b13231058a5786503a"
+  },
+  {
+   "uid8": "bfa791df",
+   "year": 2023,
+   "grade": "9",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "bfa791df02538aca22f8505689395c8f33d9a02935b2b3b36c1fe8829721f27f"
+  },
+  {
+   "uid8": "73cd266a",
+   "year": 2023,
+   "grade": "9",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "73cd266a4c1c87d8bf1961d4b7f60f09058c4c8c117218d13a69d9460dc3658e"
+  },
+  {
+   "uid8": "e2c94cdb",
+   "year": 2023,
+   "grade": "9",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "e2c94cdb2a587b814d6ac72d9da621ceca13cecb107307e82bec02c07bbaf6df"
+  },
+  {
+   "uid8": "98a50f31",
+   "year": 2023,
+   "grade": "9",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "98a50f31dbcbe3d0cf2a2031d5dab6935010c19c913935f886c5015300b794db"
+  },
+  {
+   "uid8": "c4839d10",
+   "year": 2023,
+   "grade": "9",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "c4839d1097f1821db142a6ce77dbb409858b5958c3527ffac0e687709e7aeac5"
+  },
+  {
+   "uid8": "b6febb65",
+   "year": 2023,
+   "grade": "10",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "b6febb65ecabeec8874848bab4866546b8d057d4d70f033756ed4c87c1ad1a11"
+  },
+  {
+   "uid8": "51827b3b",
+   "year": 2023,
+   "grade": "10",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "51827b3b340b4add0248b99d3edb450063d966dba55bc4cf76381b0541efb400"
+  },
+  {
+   "uid8": "c2421b15",
+   "year": 2023,
+   "grade": "10",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "c2421b1558d2eade891b9f8b53e0ca7f18141dfc9743fc1c9ed458e58753b89e"
+  },
+  {
+   "uid8": "ab153af3",
+   "year": 2023,
+   "grade": "10",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "ab153af3fe142c8da6fea4862a1d064c31220947181e56e32811c17ea0e43347"
+  },
+  {
+   "uid8": "a51fada3",
+   "year": 2023,
+   "grade": "10",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "a51fada32405b74e9fb70a8b335308962de5fbadf5d065afb0b6d8135bf64c1e"
+  },
+  {
+   "uid8": "2fe7b750",
+   "year": 2023,
+   "grade": "11",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "2fe7b750d05c1df4d31e2bcaadf2df91ec3784e6668682f0d701e10db494abaa"
+  },
+  {
+   "uid8": "9596fa61",
+   "year": 2023,
+   "grade": "11",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "9596fa611bda630bdb9e8f5f1b29304bdff97a142586e746d6fa0466dc120204"
+  },
+  {
+   "uid8": "2a823872",
+   "year": 2023,
+   "grade": "11",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "2a823872e5b6898eeafdccde146d24efee0d2ee1113914ac609f7cd424f681dc"
+  },
+  {
+   "uid8": "496b5e57",
+   "year": 2023,
+   "grade": "11",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "496b5e57be27dd84a37efc40d3b81fbfda3546787a28216a0befa53a14f47a7b"
+  },
+  {
+   "uid8": "b95459b2",
+   "year": 2023,
+   "grade": "11",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_Math_2023.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; позиция и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён в этой сессии",
+   "round_now": "Заключительный этап",
+   "evidence_2023_log": "Kurchatov_Math_2023.pdf header: «Заключительный этап. Условия и решения задач»; позиция класса/номера сверена с текстом задачи в PDF",
+   "uid": "b95459b2433cc7f2a41bc9823a15932357f55f7e7a8c3296edd57b7c959ac8f1"
+  },
+  {
+   "uid8": "1b6f3310",
+   "year": 2022,
+   "grade": "6",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "1b6f33102ed599d4d30e9b2a462593308f195f34eaf7e8bf0b9e2614710c0e20",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "191aed49",
+   "year": 2022,
+   "grade": "6",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "191aed49e5094ce34a4285447ac2d0e5a38d81af5e2e3fc865d00972a4d228f2",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "076628d9",
+   "year": 2022,
+   "grade": "6",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "076628d9e8ebf51074b5f1d350e294c30e0775d9685f4c13afc2f75d718a506a",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "03609f80",
+   "year": 2022,
+   "grade": "6",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "03609f8023b35217eaae8e5be682ff7b0dd778bef58b15c39c0ebd711e873f65",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "1d15fc31",
+   "year": 2022,
+   "grade": "6",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "1d15fc31bdfe48a1b78f46dc55a178f33dce5411c98e73dfaf9522b65ed98a26",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "59cfde5e",
+   "year": 2022,
+   "grade": "7",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "59cfde5ec2a3f404f4edbd7b816d8840bea7d6a11b118123997da14703357889",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "0b667304",
+   "year": 2022,
+   "grade": "7",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "0b66730410ce80fb76c04bc3c4f60042cf749647f0c3e9f4e1084934cd915483",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "c454146d",
+   "year": 2022,
+   "grade": "7",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "c454146dc789c025f1375a775c2d3623692a6eb780c315514aa046b593444c0d",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "d80cd3cd",
+   "year": 2022,
+   "grade": "7",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "d80cd3cd581dcc44f7c7bbc0310738ae571076cc81e628355326e02e4145deb4",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "f2a4700a",
+   "year": 2022,
+   "grade": "7",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "f2a4700a211a5db27eecb7ee6c6f6c12db70b300eedf58c4d27adf282c302f86",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "28e0930c",
+   "year": 2022,
+   "grade": "8",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "28e0930ce3cddcff517c0e5202c19ae9e94f1063f20e743861aa85a05668f2ee",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "adcabc78",
+   "year": 2022,
+   "grade": "8",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "adcabc78cae53775f33ed3cdc2a7d49725f39787b060e9ce5b03335e6516b3fb",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "529379c4",
+   "year": 2022,
+   "grade": "8",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "529379c4b2be4530e189810f5a7b0377f99fc93bb49c7b681cf4eae212385b45",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "370edf2a",
+   "year": 2022,
+   "grade": "8",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "370edf2a45e1597353120cee1f3648c2d5fefe6a68e44193da591211f4388248",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "35e0c494",
+   "year": 2022,
+   "grade": "8",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "35e0c4945a7b795e5e4fc695f60f8abfe3f519e78bb1bafa12e5d5ac853d48de",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "27e48d12",
+   "year": 2022,
+   "grade": "9",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "27e48d12fa3afe5b953f0fbabf866329b442dcf4692237a4c979d766939d0325",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "b41711ca",
+   "year": 2022,
+   "grade": "9",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "b41711ca9c4e6a43d045200becf77c1976619fb79574c09d6f686fd3aa53ba60",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "0755fdd6",
+   "year": 2022,
+   "grade": "9",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "0755fdd69226eeca8079885a9ce934f60b8c301c436bd55795b5f71777c1e3f0",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "ecb416a2",
+   "year": 2022,
+   "grade": "9",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "ecb416a2e089413fc96a5fdcc64794316a75a879f85cfd4d50dfa4de494de7a3",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "df8d3466",
+   "year": 2022,
+   "grade": "9",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "df8d346612684a43d34c1c851e77554c1724e7a9954ff6e89b059589d2774671",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "725e9745",
+   "year": 2022,
+   "grade": "10",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "725e97453a993eafd563f3e13e4f867369a37f989ae47e2f65acb8e7c36c029c",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "f21c40ab",
+   "year": 2022,
+   "grade": "10",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "f21c40ab11e2191412d23c3eff25d323d915476c878f184f3363544cd54a3ddd",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "72c4d539",
+   "year": 2022,
+   "grade": "10",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "72c4d539644ea709a40e34209eab24f18fa391d3118e529ebff2e29877f45276",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "4bff7276",
+   "year": 2022,
+   "grade": "10",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "4bff7276422f4932e2e83eea53291a82b4669141d4afff13dd06305adc9d84ce",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "0a2d6eaf",
+   "year": 2022,
+   "grade": "10",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "0a2d6eaf345c2f3a169c35155d004f64ef294de859e17a71218316bd62170260",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "aee71a3f",
+   "year": 2022,
+   "grade": "11",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "aee71a3f8a01fbc916bb9e9e2a34f40422c5409ecefef0fcf49067d63dfddeae",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "2e4b6796",
+   "year": 2022,
+   "grade": "11",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "2e4b679679a5ec3158aec87fc88ec48f8bd934ca33cd8a1addae79710660003a",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "317a0f03",
+   "year": 2022,
+   "grade": "11",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "317a0f030ef1fd8d4432aeade1c0101597a18605d4d9a43a93bb62d7863ea8e1",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "aa9efa4a",
+   "year": 2022,
+   "grade": "11",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "aa9efa4af5ca7811f1aa18de401714f3f91335f0053b3b63d9b9371d02b485f2",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "690a2061",
+   "year": 2022,
+   "grade": "11",
+   "num": "5",
+   "status": "quarantined: duplicate_final_task_2022_11_5: kept fcf7f07c (longer text, same source)",
+   "kept_counterpart": "fcf7f07c",
+   "pair_note": "действие: оставлена копия fcf7f07c, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "690a2061ae386a71598a1dff7cc4cd576d5fc232f4c77c6f367a01c00efe21df",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Final_Kurchatov_2022_Math_11_6.pdf"
+   ]
+  },
+  {
+   "uid8": "c57822f7",
+   "year": 2021,
+   "grade": "6",
+   "num": "1",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-6-final-20-21.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "c57822f706791807f0a10834c234f1cd5d2af884907ab119762f540cecea6291",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "50766257",
+   "year": 2021,
+   "grade": "6",
+   "num": "2",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-6-final-20-21.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "50766257f53514d16bd9fd0f45f418a4ce52e436871d709a19d1e5dc3e813484",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "7f6f969f",
+   "year": 2021,
+   "grade": "6",
+   "num": "3",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-6-final-20-21.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "7f6f969f417dea6ad2821b06b30b243dc68938471c13f623d93a60309f294da6",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "8bd868c4",
+   "year": 2021,
+   "grade": "6",
+   "num": "4",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-6-final-20-21.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "8bd868c45733f0c15cd92ef12fcb2fe6a921eb98c94088ff2649b4ad99c60a04",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "180a4961",
+   "year": 2021,
+   "grade": "6",
+   "num": "5",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-6-final-20-21.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "180a496107757d4ab33266071cd6a51bc672e757a21b9582361e4f2d99e0f94c",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "301c9643",
+   "year": 2021,
+   "grade": "7",
+   "num": "1",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-7-final-20-21.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "301c9643fb6c756de173bb3352f96a06b20efcf6cac61a52a1421bc5be73974d",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "7e15b9ac",
+   "year": 2021,
+   "grade": "7",
+   "num": "2",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-7-final-20-21.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "7e15b9acb416d189af45a646055398827bd2f4af79f28922db0f12208bb2b215",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "72f8dbb4",
+   "year": 2021,
+   "grade": "7",
+   "num": "3",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-7-final-20-21.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "72f8dbb467aff186000c89475a565be6144b5d0b8cf5fb59c95af0517334ff65",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "09497359",
+   "year": 2021,
+   "grade": "7",
+   "num": "4",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-7-final-20-21.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "09497359391238ff95b6e2d77fa5f0759476b42573bbf24243a0395cebeaee96",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "efa3c294",
+   "year": 2021,
+   "grade": "7",
+   "num": "5",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-7-final-20-21.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "efa3c2941ead77caabbce6f190a94debd6c5d63678d3d92e8f3a5ce7e26a5d86",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "d452f354",
+   "year": 2021,
+   "grade": "8",
+   "num": "1",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-8-final-20-21.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "d452f354702b067907eb88ff1ed90c3c06ae472bd6d6c9d7a410e9654efbd86b",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "e222dd4a",
+   "year": 2021,
+   "grade": "8",
+   "num": "2",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-8-final-20-21.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "e222dd4a147ceeecf8c4d0de5a37bfd806bd408874f03005fa914d9cd1a02913",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "01d35cea",
+   "year": 2021,
+   "grade": "8",
+   "num": "3",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-8-final-20-21.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "01d35cea53ae5ead7f1879dacf4a07470a88387e07c7cb6b4a61d442593f2923",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "bb011740",
+   "year": 2021,
+   "grade": "8",
+   "num": "4",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-8-final-20-21.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "bb011740735dceded906c294417f16db4571886d6bfcecd3413dae19a0b47037",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "4033bf06",
+   "year": 2021,
+   "grade": "8",
+   "num": "5",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2020/18808024-sol-math-8-final-20-21.pdf",
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "4033bf063f531fa7f82bc8e73978fa0170a17ab07ebb0e3fc1c027d8c9db264e",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "197c8f65",
+   "year": 2021,
+   "grade": "9",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "197c8f65c681a162591f55cf447eff36dc0c494b180235065ba3bce56baf04da",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "da7bd56b",
+   "year": 2021,
+   "grade": "9",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "da7bd56b8ff63655dcaaf420a470f5c3ca10defa4bce691cf7106d64ff3a2c65",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "9754375e",
+   "year": 2021,
+   "grade": "9",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "9754375edbc4e398e3618d2c53715126ec88ba9913e162a5b1a9452741470b5d",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "3040efa4",
+   "year": 2021,
+   "grade": "9",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "3040efa49f61baffdcaa7d94dc651082dc06a9b50ae326287233123debab83ea",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "098f3567",
+   "year": 2021,
+   "grade": "9",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "098f35678a4778aace221f918ab7dbf2f9283c1818788f0fd171e701d07427aa",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "73c3d60b",
+   "year": 2021,
+   "grade": "10",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "73c3d60bb8ce57a24c12c7930f1fc7d8c1d6c9ba3d9c4e7b77248001d8995a1c",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "88c25647",
+   "year": 2021,
+   "grade": "10",
+   "num": "2",
+   "status": "quarantined: duplicate_final_task_2021_10_2: kept adc9fe98 (fuller text)",
+   "kept_counterpart": "adc9fe98",
+   "pair_note": "действие: оставлена копия adc9fe98, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "88c256472401dc957a6c682cc904f66faf7e05cb9df8aabe227786b4c8a8a574",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_10.pdf"
+   ]
+  },
+  {
+   "uid8": "f0c6c4a8",
+   "year": 2021,
+   "grade": "10",
+   "num": "3",
+   "status": "quarantined: duplicate_final_task_2021_10_3: kept df009f59 (fuller text)",
+   "kept_counterpart": "df009f59",
+   "pair_note": "действие: оставлена копия df009f59, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "f0c6c4a8a1c3d94a2acccedfca4954497aaeaaf7fabd95735853050c81d7a9d0",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_10.pdf"
+   ]
+  },
+  {
+   "uid8": "92815fc4",
+   "year": 2021,
+   "grade": "10",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "92815fc4e1fa17d7574b6c9d634a652ce50631929ddbb2d3e39ad6622aa838d1",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "ce84d702",
+   "year": 2021,
+   "grade": "10",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/Kurchatov_2021_solutions_10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "ce84d702a6427fc46629de9079e608941faaa6864d18680839afa9b159ef1f6c",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "a18def21",
+   "year": 2020,
+   "grade": "6",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "a18def219f29e25a5fe951d6604127425655d0b6208a998712fffacfa91ce57d",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "2d762617",
+   "year": 2020,
+   "grade": "6",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "2d76261790e1f3e68eb4a0b3e9d741e10c3a7a5245adf61842f5958dcf196ccc",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "0a6bce62",
+   "year": 2020,
+   "grade": "6",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "0a6bce627ed367a303ad1418e93a06172339382fa2bd37555e89ae7bcd15569c",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "f5cfafae",
+   "year": 2020,
+   "grade": "6",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "f5cfafae5c786e53ea7a4596e20d20de58a57ea38a17546d7d382291462a6a7d",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "41a74282",
+   "year": 2020,
+   "grade": "6",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "41a7428248927e69d79da09a881ff041cb3a359aafc2a5e7489a5f8793e5f4e4",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "7929f776",
+   "year": 2020,
+   "grade": "7",
+   "num": "1",
+   "status": "quarantined: duplicate_final_task_2020_7_1: kept e9244916 (fuller text)",
+   "kept_counterpart": "e9244916",
+   "pair_note": "действие: оставлена копия e9244916, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "7929f776a4d2abc4712fe3503ea8f2fad26ff236866370ccc8fd0f9719fbaf82",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ]
+  },
+  {
+   "uid8": "ee27fea7",
+   "year": 2020,
+   "grade": "7",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "ee27fea7260c4b4bdf1f300a09a2c91a409cebee775e5981febb43ffe6ad4eb7",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "6a205463",
+   "year": 2020,
+   "grade": "7",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "6a205463ce0bc6000aae7a9dfb071360c352f5780a6ce0d619e3108e7ce9b64e",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "d69afaab",
+   "year": 2020,
+   "grade": "7",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "d69afaabb150debc46b16a9bd5d64e87eb22d8c4d42c3396db25beeae072c1c8",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "8580e104",
+   "year": 2020,
+   "grade": "7",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "8580e104a0b37ffb369d34fe978e506e84d3ee34b437c3b56534df6f969e97f9",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "a30cfcd0",
+   "year": 2020,
+   "grade": "8",
+   "num": "1",
+   "status": "quarantined: duplicate_final_task_2020_8_1: kept b2b8234b (fuller text)",
+   "kept_counterpart": "b2b8234b",
+   "pair_note": "действие: оставлена копия b2b8234b, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "a30cfcd0d33877f7caa26677eddfd56130a4ecd4696f1fbb5885b88833fb2b53",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ]
+  },
+  {
+   "uid8": "a6243590",
+   "year": 2020,
+   "grade": "8",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "a62435909fe824f5b7cc3ac664561e26d69055d0926bf72be01f388d51b9b14f",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "cf4223d8",
+   "year": 2020,
+   "grade": "8",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "cf4223d8b1bb4675fdd8fdc930c70362d30b05f335707462bc3eb2b8c10979d8",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "c33578b5",
+   "year": 2020,
+   "grade": "8",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "c33578b5d4a6bd7acee51cbd49b53dbd2d2f4f03504853cb336b274a8bd31e83",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "07d05ca3",
+   "year": 2020,
+   "grade": "8",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "07d05ca3040fcd5c694d999640476261939f2e548bc5c434b78c9d1483bdaa17",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "60af3012",
+   "year": 2020,
+   "grade": "9",
+   "num": "1",
+   "status": "quarantined: duplicate_final_task_2020_9_1: kept 956a0a71 (fuller text)",
+   "kept_counterpart": "956a0a71",
+   "pair_note": "действие: оставлена копия 956a0a71, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "60af3012e9665b54f93bf579e595ab48e01effd5ec2e9247ff5716b0ac0fc166",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ]
+  },
+  {
+   "uid8": "a3da9a74",
+   "year": 2020,
+   "grade": "9",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "a3da9a7440fd6e1d9306cb3faaceb597f49302c0aa84055aef83d45a20b6162a",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "cac1bbad",
+   "year": 2020,
+   "grade": "9",
+   "num": "3",
+   "status": "quarantined: duplicate_final_task_2020_9_3: kept bc1ef0d1 (fuller text)",
+   "kept_counterpart": "bc1ef0d1",
+   "pair_note": "действие: оставлена копия bc1ef0d1, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "cac1bbad227cac991baab74e10230b71cd8913aa51442b0dca135bb408938bd2",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ]
+  },
+  {
+   "uid8": "ad1fc142",
+   "year": 2020,
+   "grade": "9",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "ad1fc14298b2e06ac25081c1b0c16396abc23984791588991bc843a9d1e8f909",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "783567d0",
+   "year": 2020,
+   "grade": "9",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "783567d04b6f87d82d3efdd9e34256f02c400d9f327229d065917b890fc85a6b",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "3d04bfee",
+   "year": 2020,
+   "grade": "10",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "3d04bfee7e43d6a9dfd44a458902f73b12d87c6492d506c0807074864ccd6014",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "5980d955",
+   "year": 2020,
+   "grade": "10",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "5980d955b12105fb12e077c856ed85b3b15bc3786eb13f478df1d9a0f2e2a039",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "fc93a318",
+   "year": 2020,
+   "grade": "10",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "fc93a31876f603f07c462def1c1132c3cac5cca7eb3e1a1f89a5f9092a5568be",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "95af4575",
+   "year": 2020,
+   "grade": "10",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/kurchatov-math-2020-6-10.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "95af457590c157897176cb47deabd088793575d9484450048071e37ba2dc95f6",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "671cc3ae",
+   "year": 2020,
+   "grade": "11",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/only_11.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "671cc3ae17a8e8245c4afddcbe010dfe62bd975d3f70066367dc99691d1575c8",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "578a716c",
+   "year": 2020,
+   "grade": "11",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/only_11.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "578a716cc885e375dd4509acd50cdf06a48fa3daf1f6572f7ada1b6d56e81116",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "0fd2f4ac",
+   "year": 2020,
+   "grade": "11",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/only_11.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "0fd2f4acefcdcaac6265f2c19c7d2a1396ca819f16a742835996f4c24814e77c",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "65141304",
+   "year": 2020,
+   "grade": "11",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/only_11.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "651413042dce58beaa5c5b1a855217f0430b4fa94c150b151caf8ef31991af48",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "a9a67436",
+   "year": 2020,
+   "grade": "11",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/upload/files/only_11.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "a9a67436581270a87e92ffa1f1f378166d91264be70bcda82bc95327f693870d",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "c76e2426",
+   "year": 2019,
+   "grade": "6",
+   "num": "1",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-6-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "c76e242626404e6f2e36216b557f0f3fb99431bc23f4ab8f4876eb233f23cbdb",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "63098166",
+   "year": 2019,
+   "grade": "6",
+   "num": "2",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-6-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "630981663016079937c512ccd50836e56d49cc3a99d83ad37147a556f6a90c0c",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "0ec9930c",
+   "year": 2019,
+   "grade": "6",
+   "num": "3",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-6-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "0ec9930c918b40a41112a350dcb560416a449ea863ab23a249d730019f01fe0a",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "b8aaa3ac",
+   "year": 2019,
+   "grade": "6",
+   "num": "4",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-6-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "b8aaa3ac5f5c36e0381839fcb1e14ba5532d94db66a8c9048f55cdc0f63aeb3e",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "167c54a6",
+   "year": 2019,
+   "grade": "6",
+   "num": "5",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-6-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "167c54a66bfd5b9e5560aa7461d005ffcde268520df61aa69b5cdc70762e1c47",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "8e35aeb0",
+   "year": 2019,
+   "grade": "7",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-7-sol.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "8e35aeb0abb5b3365694ecb9e1b3d70d3bb1fbff5989602d8658e8628a6878f6",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "aba4427a",
+   "year": 2019,
+   "grade": "7",
+   "num": "2",
+   "status": "quarantined: duplicate_final_task_2019_7_2: kept c3072d5a (fuller text)",
+   "kept_counterpart": "c3072d5a",
+   "pair_note": "действие: оставлена копия c3072d5a, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "aba4427a809d037b546a75200584e1518bc2614e1b3139f8ac9166470909d818",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-7-sol.pdf"
+   ]
+  },
+  {
+   "uid8": "e75b9894",
+   "year": 2019,
+   "grade": "7",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-7-sol.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "e75b98940f9b9d04bb0cda8d33ab6b178636b542321929bd35bfd87faf80cdfe",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "8431f238",
+   "year": 2019,
+   "grade": "7",
+   "num": "4",
+   "status": "quarantined: duplicate_final_task_2019_7_4: kept b50571fe (fuller text)",
+   "kept_counterpart": "b50571fe",
+   "pair_note": "действие: оставлена копия b50571fe, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "8431f23828d80408e3aee5da0523ee561a8fd743e49bf905302830130786f9bc",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-7-sol.pdf"
+   ]
+  },
+  {
+   "uid8": "8ff11ab6",
+   "year": 2019,
+   "grade": "7",
+   "num": "5",
+   "status": "quarantined: duplicate_final_task_2019_7_5: kept 5f7b65f9 (fuller text)",
+   "kept_counterpart": "5f7b65f9",
+   "pair_note": "действие: оставлена копия 5f7b65f9, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "8ff11ab6a12f76e9e9440f7980f780189ee3b2579426fcb3cc81efdc1165001b",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-7-sol.pdf"
+   ]
+  },
+  {
+   "uid8": "1ccc3ce2",
+   "year": 2019,
+   "grade": "8",
+   "num": "2",
+   "status": "quarantined: duplicate_final_task_2019_8_2: kept 057bbfa0 (fuller text)",
+   "kept_counterpart": "057bbfa0",
+   "pair_note": "действие: оставлена копия 057bbfa0, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "1ccc3ce21772f7990fa54de67ea91d8fc866eda18497b3614f6353b7fb9800c9",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-8-sol.pdf"
+   ]
+  },
+  {
+   "uid8": "7eabf93e",
+   "year": 2019,
+   "grade": "8",
+   "num": "3",
+   "status": "quarantined: duplicate_final_task_2019_8_3: kept 7685ff46 (fuller text)",
+   "kept_counterpart": "7685ff46",
+   "pair_note": "действие: оставлена копия 7685ff46, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "7eabf93e8f576155477d0bbb6e45a39952c3fa794056b8643356a718e1e0fe40",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-8-sol.pdf"
+   ]
+  },
+  {
+   "uid8": "fcc0aa09",
+   "year": 2019,
+   "grade": "8",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-8-sol.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "fcc0aa0912e6aac9c75bb75cd4a851d7e5c8292af9004b30f38e530add66ae2f",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "1bc12006",
+   "year": 2019,
+   "grade": "8",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-8-sol.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "1bc120063e29c942347d1578ec24dea5083495ec2a569454ff4f2863a0d63fb2",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "238351cb",
+   "year": 2019,
+   "grade": "9",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-9-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-9-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "238351cba421514d4d08dbbbde4d60c79376e33db81ee47e67552f260a3836d5",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "79a8e6e9",
+   "year": 2019,
+   "grade": "9",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-9-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-9-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "79a8e6e98b32607e58d19c41625d5964b69264985fd63de94eb90c1f38c77cc9",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "4a38055e",
+   "year": 2019,
+   "grade": "9",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-9-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-9-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "4a38055eaf900cc4b618a89845efcf491121ca4ef3d9c0c14fb3da1697c8a8f9",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "493a6dee",
+   "year": 2019,
+   "grade": "9",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-9-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-9-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "493a6deead2e07fa4260cad904bf6c548056c6ac0c25322b165395696d4f9a5b",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "98b73a8c",
+   "year": 2019,
+   "grade": "9",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-9-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-9-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "98b73a8c549b1f84433b1b3af4a08c1e0e4634f36a0ec9a37450389eaad9728c",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "d8093050",
+   "year": 2019,
+   "grade": "10",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-10-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-10-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "d8093050126b53816b1b2484b414477e8e1cda3310bb3d5b90356ce5eb1eaad5",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "395f7681",
+   "year": 2019,
+   "grade": "10",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-10-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-10-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "395f768133d17b7a37b99823adfe450f238b54fabab163d7dc21ac79ad064075",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "16367faa",
+   "year": 2019,
+   "grade": "10",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-10-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-10-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "16367faab28fa5c85e56066945a468d5b88b07f2147a8b0b7b6418b897fa07da",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "1a73949a",
+   "year": 2019,
+   "grade": "11",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-11-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-11-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "1a73949ad3aa1c649a4dc3b65e82e87001c01f921c79c6bfdb8433ec3e6034b9",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "92028651",
+   "year": 2019,
+   "grade": "11",
+   "num": "2",
+   "status": "quarantined: duplicate_final_task_2019_11_2: kept 1d612447 (fuller text)",
+   "kept_counterpart": "1d612447",
+   "pair_note": "действие: оставлена копия 1d612447, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "920286510866c17bae6fa0f54b6e5d13cdf1622c7fade528dde63c694a3709ca",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-11-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-11-final-18-9.pdf"
+   ]
+  },
+  {
+   "uid8": "5bcfac64",
+   "year": 2019,
+   "grade": "11",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-11-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-11-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "5bcfac64e8769cac221ce7cb0ad883be6ab33a06e887f49966b52081f8df1046",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "3e2ccb4f",
+   "year": 2019,
+   "grade": "11",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-11-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-11-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "3e2ccb4f239268fdd3afe21e216e11c39866edaddff1276b09d7c34c81377169",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "ecc947e9",
+   "year": 2019,
+   "grade": "11",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2019/final/kurchatov-2019-final-math-11-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2018/389-ans-math-11-final-18-9.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "ecc947e9683a73497513fcd2caa81add7fa83bb611fe9afc66a8cb97b4929e56",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "180a80aa",
+   "year": 2018,
+   "grade": "7",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-7-sol.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "180a80aab2d9dcb278f4ae019344bdcf52e7c5ad6a2c695c112015bd8702c350",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "ec33b18d",
+   "year": 2018,
+   "grade": "7",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-7-sol.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "ec33b18d7feb6ec4476a97276f1cd7d56813ff28ebe42a7779a261b07cdec2b9",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "c2821531",
+   "year": 2018,
+   "grade": "7",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-7-sol.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "c28215311a4119901a66ecc4d0e60f6999bc13457f41141654ee007b9f5fd8a2",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "32221f50",
+   "year": 2018,
+   "grade": "7",
+   "num": "5",
+   "status": "quarantined: duplicate_final_task_2018_7_5: kept 7e5a5e33 (fuller text)",
+   "kept_counterpart": "7e5a5e33",
+   "pair_note": "действие: оставлена копия 7e5a5e33, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "32221f50d982035c7bf8609269b6eeb50bae1e206855a8dc577c01f4f0042ecb",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-7-sol.pdf"
+   ]
+  },
+  {
+   "uid8": "970d5542",
+   "year": 2018,
+   "grade": "8",
+   "num": "1",
+   "status": "quarantined: duplicate_final_task_2018_8_1: kept e64f7764 (fuller text)",
+   "kept_counterpart": "e64f7764",
+   "pair_note": "действие: оставлена копия e64f7764, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "970d5542602eec5d94b3f102a2176d597752def11ef34b191773645811011777",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-8-sol.pdf"
+   ]
+  },
+  {
+   "uid8": "2ba745f2",
+   "year": 2018,
+   "grade": "8",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-8-sol.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "2ba745f20198df32385f05a00f2a74b56e930e48a8b8154a3e746cd2f3e943ae",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "da34c781",
+   "year": 2018,
+   "grade": "8",
+   "num": "3",
+   "status": "quarantined: duplicate_final_task_2018_8_3: kept 96a51a60 (fuller text)",
+   "kept_counterpart": "96a51a60",
+   "pair_note": "действие: оставлена копия 96a51a60, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "da34c7814d6eb9bbd58993a85d649ed12505b7fa1ccfcbe9e459849d9caa595c",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-8-sol.pdf"
+   ]
+  },
+  {
+   "uid8": "7b237102",
+   "year": 2018,
+   "grade": "8",
+   "num": "4",
+   "status": "quarantined: duplicate_final_task_2018_8_4: kept 2d2f8b64 (fuller text)",
+   "kept_counterpart": "2d2f8b64",
+   "pair_note": "действие: оставлена копия 2d2f8b64, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "7b23710222b130addd1f8ce3984b1f4edb23b260741e2978e8f80163a459ddbd",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-8-sol.pdf"
+   ]
+  },
+  {
+   "uid8": "c0269f8f",
+   "year": 2018,
+   "grade": "8",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-8-sol.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "c0269f8f3364bae7a367e98a4153ca5893d8091d4f8a91d5837c4695d8635cd1",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "e45af51d",
+   "year": 2018,
+   "grade": "9",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-9-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2017/389-ans-math-9-final-17-8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "e45af51d3fa271ff8683c3a2ee4c0266870c91cd1d63f946b72055fd19a288c4",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "7637d9fd",
+   "year": 2018,
+   "grade": "9",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-9-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2017/389-ans-math-9-final-17-8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "7637d9fd4420edf98dcce747a53b27924e9532b6543f79fc1f12267d1f0b29b4",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "6b523544",
+   "year": 2018,
+   "grade": "9",
+   "num": "3",
+   "status": "quarantined: unverifiable_attribution: labeled 2018 9кл№3 '2 тур', no source; text not found in any downloaded Kurchatov final document; official 2018 final 9.3 is a different task",
+   "uid": "6b5235442a11a8fc8f1270fa7e557407ccb6ea618b9778f5a4d2ece62aa6c842",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-9-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2017/389-ans-math-9-final-17-8.pdf"
+   ]
+  },
+  {
+   "uid8": "29a2b88d",
+   "year": 2018,
+   "grade": "9",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-9-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2017/389-ans-math-9-final-17-8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "29a2b88d4bba82f36c11670eec7ac064262ec72827716f2a31b0ae6a51ff59ea",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "2bb0b544",
+   "year": 2018,
+   "grade": "9",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-9-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2017/389-ans-math-9-final-17-8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "2bb0b5445b218013f611c5bbcc82a44a7ad707febaeab0b5e326f63c94a6c1d2",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "6f7730a6",
+   "year": 2018,
+   "grade": "10",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-10-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2017/389-ans-math-10-final-17-8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "6f7730a65ed03572f64cee7870746cbced3dfeff6cb5d49689e0de9933df4e2c",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "3c96058a",
+   "year": 2018,
+   "grade": "10",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-10-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2017/389-ans-math-10-final-17-8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "3c96058a66278a9af5790e070840cfdee22c5768105de139bb685432dc24a4a8",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "9bd51b0e",
+   "year": 2018,
+   "grade": "10",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-10-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2017/389-ans-math-10-final-17-8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "9bd51b0e240998d9c9c3a24015076115ad076094c197bd30945f1183a2a88541",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "ca57a3dc",
+   "year": 2018,
+   "grade": "11",
+   "num": "1",
+   "status": "quarantined: duplicate_final_task_2018_11_1: kept f6384997 (fuller text)",
+   "kept_counterpart": "f6384997",
+   "pair_note": "действие: оставлена копия f6384997, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "ca57a3dc6ea1c7731a30474cdada788cf78204d93eb799c79420e61eee755cf9",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-11-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2017/389-ans-math-11-final-17-8.pdf"
+   ]
+  },
+  {
+   "uid8": "975503ab",
+   "year": 2018,
+   "grade": "11",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-11-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2017/389-ans-math-11-final-17-8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "975503ab5acc1322bf7acf256b9df9aa48e4031605c4ee114e013fb14df3d040",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "8ec175c2",
+   "year": 2018,
+   "grade": "11",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-11-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2017/389-ans-math-11-final-17-8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "8ec175c2176e74766438b6ccc9a623d4ab173387c51405e463e455071b9adcf4",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "db761f89",
+   "year": 2018,
+   "grade": "11",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-11-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2017/389-ans-math-11-final-17-8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "db761f89a98bff118ba580a1b5197f977b18056407c7e31775f163ba1fca0aef",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "f865e494",
+   "year": 2018,
+   "grade": "11",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2018/final/kurchatov-2018-math-11-sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2017/389-ans-math-11-final-17-8.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "f865e494f5dc6e2f241d237f3fbcdfeee7918040b1193c8baa75180ddac8fede",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "0b5db579",
+   "year": 2017,
+   "grade": "6",
+   "num": "1",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-6-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "0b5db579b30b0a0ce1ce08c774ac4a84408a552e741ecf05748431de6537ef3c",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "cac2eade",
+   "year": 2017,
+   "grade": "6",
+   "num": "2",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-6-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "cac2eade45311a09279952f3c62fc450eb64d6399e1db1650241c522b03eb87f",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "28cb158d",
+   "year": 2017,
+   "grade": "6",
+   "num": "3",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-6-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "28cb158ded5d5cc6464f91c3ad3525a2c89a09d3edff906bca73471ce2f0d62a",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "d21a50d9",
+   "year": 2017,
+   "grade": "6",
+   "num": "4",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-6-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "d21a50d939dc971d2f28663242cc888883a8f472eccd5feca0c0905ac5a1ce1e",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "1c741fdb",
+   "year": 2017,
+   "grade": "6",
+   "num": "5",
+   "doc": [
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-6-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "1c741fdb5611722a03e7787b10f96f89c846ed108aa4122007e3807283d6441f",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "4de9e96e",
+   "year": 2017,
+   "grade": "7",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "4de9e96ec92e819f1b4ef76e1eae4a27d082ebdb1555052262808b537f6ca6e8",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "af9edf03",
+   "year": 2017,
+   "grade": "7",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "af9edf03ef905bb3732baf9b070bda8e8c7aabb6b64065eb5d30e300e71ff3ef",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "25f3e07c",
+   "year": 2017,
+   "grade": "7",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "25f3e07c1cc8a64b5755b428221af788690797388672f4aedc8832b7584b8000",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "a992952f",
+   "year": 2017,
+   "grade": "7",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "a992952f03f867ae895431894b6ef0b97aaf40300e1cecbedef0683b8031f28e",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "d1e80824",
+   "year": 2017,
+   "grade": "7",
+   "num": "5",
+   "status": "quarantined: truncated_text",
+   "uid": "d1e808245adbc9873fbdd4c192fbc4d9abbefd95e470317f101fa8aae0da2a41",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-7.pdf"
+   ]
+  },
+  {
+   "uid8": "b643a67e",
+   "year": 2017,
+   "grade": "8",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-8.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-8-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "b643a67ea1091e4f003bfffabebff86b0819cc6870e62e4b6f47db4530b71e15",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "d8c4b433",
+   "year": 2017,
+   "grade": "8",
+   "num": "2",
+   "status": "quarantined: duplicate_final_task_2017_8_2: kept 68978834 (fuller text)",
+   "kept_counterpart": "68978834",
+   "pair_note": "действие: оставлена копия 68978834, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "d8c4b433dc88c6030f5718e4eaa5ef76ed4d02a076f0dc5a03e499c99b984e90",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-8.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-8-final-16-7.pdf"
+   ]
+  },
+  {
+   "uid8": "d0ad6e28",
+   "year": 2017,
+   "grade": "8",
+   "num": "3",
+   "status": "quarantined: wrong_task_at_position: labeled 2017 8кл№3 '2 тур', no source; text (1/x+1/y=1/2025) is not the official 2017 final 8.3; restored b399523f as the correct task",
+   "uid": "d0ad6e288af41b014211a087a997b56f13aee403fef2357d429478ea44c3c21d",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-8.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-8-final-16-7.pdf"
+   ]
+  },
+  {
+   "uid8": "c1f3895c",
+   "year": 2017,
+   "grade": "8",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-8.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-8-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "c1f3895cd3d67e86d2a9aca74a2e6e3087e18c7b5f33f2228d46905c782360b5",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "373b666f",
+   "year": 2017,
+   "grade": "8",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-8.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-8-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "373b666f2d9320cbc815a6943e7ae264e384fd4950c7a9eb761fd50e869fa340",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "d16c4667",
+   "year": 2017,
+   "grade": "9",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-9.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-9-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "d16c4667f6579f0e029f48c3383f2535b49f8258cf004fb0f099219f3864098e",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "452063dd",
+   "year": 2017,
+   "grade": "9",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-9.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-9-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "452063dd01721b38c34c083c47422b2ff06791513150dc7283734e0695e0e28a",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "90c87609",
+   "year": 2017,
+   "grade": "9",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-9.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-9-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "90c87609d85cc25361e88f9b7191cef6dec7238a3f444a629422206e0deb66eb",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "e3049788",
+   "year": 2017,
+   "grade": "9",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-9.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-9-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "e3049788ec87d8a090a12b976b60ef32dd30a75071f682c177094bce6d58871b",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "ebeefcdd",
+   "year": 2017,
+   "grade": "9",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-9.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-9-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "ebeefcddbcf03df0cdae4ddb93cb385952ee40b31a275a4d7805210c163fad46",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "1d83e145",
+   "year": 2017,
+   "grade": "10",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-10.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-10-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "1d83e145dfcba108728ec2e69e52df8190535af92c79691ddb48edd691fe7fd1",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "2f14376e",
+   "year": 2017,
+   "grade": "10",
+   "num": "2",
+   "status": "quarantined: duplicate_final_task_2017_10_2: kept eeb781bd (fuller text)",
+   "kept_counterpart": "eeb781bd",
+   "pair_note": "действие: оставлена копия eeb781bd, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "2f14376ea6d97bb329e4824e690a4f40ba58c0af3ca232ca0fb2f55a05146db6",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-10.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-10-final-16-7.pdf"
+   ]
+  },
+  {
+   "uid8": "49702368",
+   "year": 2017,
+   "grade": "10",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-10.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-10-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "4970236872e4cbc98f173a8dafd62fc3e8f2417c6632898bbec4b511b4d3f502",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "f4f5c91b",
+   "year": 2017,
+   "grade": "10",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-10.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-10-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "f4f5c91b0a2ce067cc380534fdfde126a769814e4d1e135ed4c34a9e2c135388",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "a5dd7c57",
+   "year": 2017,
+   "grade": "11",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-11.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-11-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "a5dd7c5794a1751e94fb4db94ef6be967c36e38a85c38b7ef4d4dbff07151941",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "670647b9",
+   "year": 2017,
+   "grade": "11",
+   "num": "2",
+   "status": "quarantined: duplicate_final_task_2017_11_2: kept 5429412d (fuller text)",
+   "kept_counterpart": "5429412d",
+   "pair_note": "действие: оставлена копия 5429412d, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "670647b98480dbfc89ea1bf10f7b852d610d38e4c858ebf40f5a385961e1bc8e",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-11.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-11-final-16-7.pdf"
+   ]
+  },
+  {
+   "uid8": "99e8fc95",
+   "year": 2017,
+   "grade": "11",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-11.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-11-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "99e8fc958d1a1ef20c92fa3bdeb4c84314087d3366519ad4f58a0a5a9ae16c71",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "77905e88",
+   "year": 2017,
+   "grade": "11",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-11.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-11-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "77905e885d9005627f9486654a200a956bd52ad6e0416c5ae1623a37134f4857",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "1dbdfe69",
+   "year": 2017,
+   "grade": "11",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2017/math-2017-sol-11.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2016/7122068-ans-math-11-final-16-7.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "1dbdfe697a70a1e45fb4ac30680524641e32392bf3aef02264b94e3c6d292080",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "60d70b84",
+   "year": 2016,
+   "grade": "6",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2016/kurchatov_math_sol.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "60d70b847d6e82a87d037e3a840b613b7a152a141a5289229c7c68b0378b8f5e",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "15e781ec",
+   "year": 2016,
+   "grade": "7",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2016/kurchatov_math_sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2015/7122068-ans-math-7-final-15-6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "15e781ec82ab8eecd31cadf71ef91f119330a603e1301a678dbb9e650af5dfb8",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "d9ec664c",
+   "year": 2016,
+   "grade": "7",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2016/kurchatov_math_sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2015/7122068-ans-math-7-final-15-6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "d9ec664ca693654953cdaf0aaa685fe3158c00dd32d0295d2211c0eaaf7954ab",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "c0da2925",
+   "year": 2016,
+   "grade": "8",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2016/kurchatov_math_sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2015/7122068-ans-math-8-final-15-6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "c0da29250878dcf21aabd474552440349039143846b4bfcfd594c894236221a9",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "3d97d243",
+   "year": 2016,
+   "grade": "8",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2016/kurchatov_math_sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2015/7122068-ans-math-8-final-15-6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "3d97d243ecb0f363722685eb0c8774a0dc5457dce29874f66d3f8a3131d5d794",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "5b27e779",
+   "year": 2016,
+   "grade": "8",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2016/kurchatov_math_sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2015/7122068-ans-math-8-final-15-6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "5b27e779d647c255fb18160a94745d820be1c10ed7039561f7c458fd8fbcda73",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "8246d6db",
+   "year": 2016,
+   "grade": "9",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2016/kurchatov_math_sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2015/7122068-ans-math-9-final-15-6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "8246d6dbf9acf3bd459bbf38c87198bbd93d99950a8030e66e7d4349aa759e63",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "55a958f6",
+   "year": 2016,
+   "grade": "9",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2016/kurchatov_math_sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2015/7122068-ans-math-9-final-15-6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "55a958f6416df4fc332ad9a45f9f6c4d9de5ad53186a2d5d817e34e9db2351ca",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "5e00498b",
+   "year": 2016,
+   "grade": "10",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2016/kurchatov_math_sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2015/7122068-ans-math-10-final-15-6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "5e00498b6bba3f9cde067e9edc8260511f8a54b205b4a0d07b3936bbe517cbc5",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "492ac6b1",
+   "year": 2016,
+   "grade": "10",
+   "num": "3",
+   "status": "quarantined: duplicate_final_task_2016_10_3: kept 03bc5ef7 (fuller text)",
+   "kept_counterpart": "03bc5ef7",
+   "pair_note": "действие: оставлена копия 03bc5ef7, дубль в карантине; подробное доказательство идентичности не восстановлено в сохранённых материалах",
+   "uid": "492ac6b1ad268de71ca4b472b538fa843b57a64093a4bbbf5e36a15c76f52045",
+   "docs_searched": [
+    "https://old.olimpiadakurchatov.ru/2016/kurchatov_math_sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2015/7122068-ans-math-10-final-15-6.pdf"
+   ]
+  },
+  {
+   "uid8": "b00c9b67",
+   "year": 2016,
+   "grade": "10",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2016/kurchatov_math_sol.pdf",
+    "https://rsr-olymp.ru/upload/files/tasks/389/2015/7122068-ans-math-10-final-15-6.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "b00c9b67af7313bac2b65ab7e697a5cffc4c9aa89bf5303641250d25da5af6a3",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "81748c9d",
+   "year": 2014,
+   "grade": "7",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "81748c9d799186e084050217383c9531b80f71f9701e89652a869642119c649f",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "267dffa5",
+   "year": 2014,
+   "grade": "7",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "267dffa588aac4495c462c5ffac8a69f66cd12dc2b8141bcb4b227f9441614a8",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "77c426d1",
+   "year": 2014,
+   "grade": "8",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "77c426d16c3b5aad4079107ce34b321014827f0df3bd8e3d838b7738f9e93c07",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "d58dceb0",
+   "year": 2014,
+   "grade": "8",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "d58dceb0f83dca4c8167d4d571c1b94e9a7c10aaed411ab0240742c15a1d2a14",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "3925b291",
+   "year": 2014,
+   "grade": "9",
+   "num": "1",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "3925b2917cab4b009089198daccc768f022893fc3d3bf30ab3f5510247925238",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "e286163a",
+   "year": 2014,
+   "grade": "9",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "e286163a0d57affb72dd94b1f859c0ed3e4667636265473ba8b068e19af58206",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "465c847c",
+   "year": 2014,
+   "grade": "9",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "465c847c941655b3c71eee703ab01e45d95a53a7d9a3c3c77725b9222a1e7ffb",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "a4708fd5",
+   "year": 2014,
+   "grade": "10",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "a4708fd55603a91dbdee16507ccf63de6846cd6fa9a78d2fed8b6724c79ee34a",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "5a15f1ff",
+   "year": 2014,
+   "grade": "10",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "5a15f1ff9a80f7b133b0375c3b463dc927def060a0a1a817f22e99be498038ed",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "62ca1424",
+   "year": 2014,
+   "grade": "10",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "62ca1424930b67200539c57abead1cf8c79513c5161aa5c59ec3eef475d46f47",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "0bd001dd",
+   "year": 2014,
+   "grade": "10",
+   "num": "5",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "0bd001dd5088265dc3b6d559c2b1e47b47cac3fbb76a87b0a7e8f8a8e2542925",
+   "recheck_verdict": "manual_review_needed"
+  },
+  {
+   "uid8": "13ba89c5",
+   "year": 2014,
+   "grade": "11",
+   "num": "2",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "13ba89c5b0f6003e7e32f21c1385d193f1d2e258f8b6e1dd96dcfa8dd5a2358d",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "21bf6d2d",
+   "year": 2014,
+   "grade": "11",
+   "num": "3",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "21bf6d2d7d3db5ada9ea3be603afbb931ae59a0221092acaa65a61af51f29231",
+   "recheck_verdict": "text_found"
+  },
+  {
+   "uid8": "a62cc73a",
+   "year": 2014,
+   "grade": "11",
+   "num": "4",
+   "doc": [
+    "https://old.olimpiadakurchatov.ru/2014/math-final.pdf"
+   ],
+   "status": "relabeled -> 'Заключительный этап'; см. recheck_verdict (совпадение фрагментов — не подтверждение полного условия/позиции/формул)",
+   "round_now": "Заключительный этап",
+   "uid": "a62cc73aa3280c748a3eff822e4d4de8dd6cc79a26ab4e0a39d2e3966b6e4558",
+   "recheck_verdict": "text_found"
+  }
+ ],
+ "quarantines": [
+  {
+   "uid8": "aaae69f6",
+   "year": 2023,
+   "grade": "7",
+   "num": "4",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 7.4 (sim=0.82) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "0718d763",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "aaae69f67d991345993e570bef1ecce4484cec8a80f0e5b2e91c42720adf43f4",
+   "duplicate_of_uid": "0718d763d44afcfcbae82b94413fcb6394cf92feeb8375d003ec9466343487a5"
+  },
+  {
+   "uid8": "da71949c",
+   "year": 2023,
+   "grade": "10",
+   "num": "3",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 10.3 (sim=1.00) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "c2421b15",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "da71949ce3e94bd91ba0cccfaf7ce529146f91da745ab9721863eea02d000adc",
+   "duplicate_of_uid": "c2421b1558d2eade891b9f8b53e0ca7f18141dfc9743fc1c9ed458e58753b89e"
+  },
+  {
+   "uid8": "b0d320b0",
+   "year": 2023,
+   "grade": "8",
+   "num": "4",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 8.4 (sim=0.83) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "e360052c",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "b0d320b0610b739543dd571a12391dcabb317439c645272a4e3b916509166d7e",
+   "duplicate_of_uid": "e360052cc5820bc5fa6146f6ec201af26255e2046f7299960ca6c84f46da6987"
+  },
+  {
+   "uid8": "85b15012",
+   "year": 2023,
+   "grade": "6",
+   "num": "2",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 6.2 (sim=0.69) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "9b99c563",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "85b15012b15709c42e4fd9b54d236cb79e85283a9746e75d8b0813acd7fb4d46",
+   "duplicate_of_uid": "9b99c563f9817b1029ab75f61528e5a0c1263f90659291d20670979885d00836"
+  },
+  {
+   "uid8": "2016186e",
+   "year": 2023,
+   "grade": "9",
+   "num": "3",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 9.3 (sim=1.00) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "e2c94cdb",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "2016186ee4cb85c6233f9774f24601c688bcc183003c603820d750ee64fe8095",
+   "duplicate_of_uid": "e2c94cdb2a587b814d6ac72d9da621ceca13cecb107307e82bec02c07bbaf6df"
+  },
+  {
+   "uid8": "31d3c1f9",
+   "year": 2023,
+   "grade": "11",
+   "num": "4",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 11.4 (sim=1.00) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "496b5e57",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "31d3c1f9e6398476a66f05a36cbbc8e755e7dfde6fa61dab45df56f9ae9af917",
+   "duplicate_of_uid": "496b5e57be27dd84a37efc40d3b81fbfda3546787a28216a0befa53a14f47a7b"
+  },
+  {
+   "uid8": "cfd2e738",
+   "year": 2023,
+   "grade": "7",
+   "num": "5",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 7.5 (sim=0.65) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "8662dc46",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "cfd2e7380d30208f2accc31a1296ae10cf9abf879c47324cea69c03b54155e64",
+   "duplicate_of_uid": "8662dc468b63de9c01f666ac9e3a7b248620eb2c334217f7affa5f948ad9ad3e"
+  },
+  {
+   "uid8": "fdad8f23",
+   "year": 2023,
+   "grade": "9",
+   "num": "2",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 9.2 (sim=1.00) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "73cd266a",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "fdad8f23e8b2e610f4a36c7a864034cda1e32298f49982629d0cd3eeab24601c",
+   "duplicate_of_uid": "73cd266a4c1c87d8bf1961d4b7f60f09058c4c8c117218d13a69d9460dc3658e"
+  },
+  {
+   "uid8": "d821f6fe",
+   "year": 2023,
+   "grade": "9",
+   "num": "4",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 9.4 (sim=0.99) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "98a50f31",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "d821f6fe6ba7872d92ec9049f64d6bcfbf0967052ec7f9d4b05726da18667e8e",
+   "duplicate_of_uid": "98a50f31dbcbe3d0cf2a2031d5dab6935010c19c913935f886c5015300b794db"
+  },
+  {
+   "uid8": "7bb44d71",
+   "year": 2023,
+   "grade": "6",
+   "num": "4",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 6.4 (sim=0.75) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "9cc2e065",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "7bb44d716427896683d149b5e18fdbb3906d176614983c7fdfcec14283d21cc2",
+   "duplicate_of_uid": "9cc2e0653a16ebc0afec264f3152ff385a01fac412cc0e995e8e752f62181b57"
+  },
+  {
+   "uid8": "8d9aad78",
+   "year": 2023,
+   "grade": "10",
+   "num": "1",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 10.1 (sim=1.00) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "b6febb65",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "8d9aad785c911fe7ca38b11b1edff96bd4d53504aa580c7be35ce1acf2400d45",
+   "duplicate_of_uid": "b6febb65ecabeec8874848bab4866546b8d057d4d70f033756ed4c87c1ad1a11"
+  },
+  {
+   "uid8": "b0aa67b7",
+   "year": 2023,
+   "grade": "8",
+   "num": "3",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 8.3 (sim=1.00) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "76d1ace5",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "b0aa67b7e2fb7c08e00fae1f773d84d1422158dfab47141a60e24c1e79cea110",
+   "duplicate_of_uid": "76d1ace57fa54a81c8bd5dad1e1a423bb783a9910efaddb3d17025e83367d383"
+  },
+  {
+   "uid8": "3d894c32",
+   "year": 2023,
+   "grade": "8",
+   "num": "5",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 8.5 (sim=0.96) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "e060951a",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "3d894c326bdeb083dc3485f741c071730e202f12584f44f6b7384bf68c755f2b",
+   "duplicate_of_uid": "e060951a5f6f228571f01d60acc6c8cf3bfcb5df67faa8b13231058a5786503a"
+  },
+  {
+   "uid8": "2a9e1465",
+   "year": 2023,
+   "grade": "8",
+   "num": "1",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 8.1 (sim=0.80) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "e38a173e",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "2a9e14654d0a1a6f5ca9b16f8c90ae8a3e031fac44fe4c7bb5d5ab3191946096",
+   "duplicate_of_uid": "e38a173e18351071a6d72b98fdede0ee340b2c2eba60eca826b346b5aa73c0ba"
+  },
+  {
+   "uid8": "af11c7ab",
+   "year": 2023,
+   "grade": "7",
+   "num": "1",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "evidence_log": "текст совпадает с финальной задачей 7.1 (sim=0.74) официального PDF; собственного официального источника отбора нет",
+   "duplicate_of_uid8": "2b2556c9",
+   "evidence_source": "verify/pkg_kur2023_log.json",
+   "uid": "af11c7abc8c9545a3f4262a5ef11854344365afa84d1d31267a01e410e820b13",
+   "duplicate_of_uid": "2b2556c90c8d474a126c8e3abb5574c462f71b60c69f263f7fef36c20e3ba029"
+  },
+  {
+   "uid8": "d8789689",
+   "year": 2023,
+   "grade": "6",
+   "num": "5",
+   "reason": "same_text_mislabeled_round",
+   "kept_counterpart": null,
+   "uid": "d8789689509c9acd4e08493b26866269eca272b02cc70871cbd94360292fb717"
+  },
+  {
+   "uid8": "ceb06127",
+   "year": 2022,
+   "grade": "11",
+   "num": "1",
+   "reason": "duplicate_of_verified_final (aee71a3f, same code 2022/11/1; kept old.olimpiadakurchatov.ru copy verified by position)",
+   "kept_counterpart": null,
+   "evidence_source": "verify/pkg2020_2022_2025_dups.json",
+   "final_copies": [
+    "aee71a3f"
+   ],
+   "uid": "ceb06127e01e27d371dd9c318be7bb71d2620b218edc4b7e61dfd24f96c6629f",
+   "final_copies_uid": [
+    "aee71a3f8a01fbc916bb9e9e2a34f40422c5409ecefef0fcf49067d63dfddeae"
+   ]
+  },
+  {
+   "uid8": "78eeccab",
+   "year": 2022,
+   "grade": "11",
+   "num": "4",
+   "reason": "duplicate_of_verified_final (aa9efa4a, same code 2022/11/4; kept old.olimpiadakurchatov.ru copy verified by position)",
+   "kept_counterpart": null,
+   "evidence_source": "verify/pkg2020_2022_2025_dups.json",
+   "final_copies": [
+    "aa9efa4a"
+   ],
+   "uid": "78eeccabbe5f8301e12fdac380d565604438924e498b2079be0802bf34d21225",
+   "final_copies_uid": [
+    "aa9efa4af5ca7811f1aa18de401714f3f91335f0053b3b63d9b9371d02b485f2"
+   ]
+  },
+  {
+   "uid8": "92297ec2",
+   "year": 2025,
+   "grade": "6",
+   "num": "3",
+   "reason": "duplicate_of_verified_final (26670721, same code 2025/6/3; kept position-verified copy)",
+   "kept_counterpart": "position",
+   "evidence_source": "verify/pkg2020_2022_2025_dups.json",
+   "final_copies": [
+    "26670721"
+   ],
+   "uid": "92297ec22e426b0772fe57f741eef970bd54136074cbac494657e3e113d80bff",
+   "final_copies_uid": [
+    "266707218484ab9afdc264982de906f4cdc27e363bcad9f6f22cde9dc65bc0fa"
+   ]
+  },
+  {
+   "uid8": "f162c2ed",
+   "year": 2025,
+   "grade": "6",
+   "num": "1",
+   "reason": "duplicate_of_verified_final (63c8e143, same code 2025/6/1; kept position-verified copy)",
+   "kept_counterpart": "position",
+   "evidence_source": "verify/pkg2020_2022_2025_dups.json",
+   "final_copies": [
+    "63c8e143"
+   ],
+   "uid": "f162c2ed6f9446bdb2d647b3910f8dc8587b5a98467124d5c2fa6e5180ed8603",
+   "final_copies_uid": [
+    "63c8e143d02238c95c2468bdc4524726b7092d82ed0e3fdfb6d94404ea4fabe9"
+   ]
+  },
+  {
+   "uid8": "40f19b02",
+   "year": 2022,
+   "grade": "8",
+   "num": "5",
+   "reason": "not_the_official_task: same setup as 2022 final 8.5 (2022 монеты) but different question ('наименьшее число вопросов' vs official 'спустя 2021 ход останется настоящая'); official question verified in organizer PDF; kept 35e0c494",
+   "kept_counterpart": "35e0c494",
+   "uid": "40f19b0266ae460106fb402b3b1be018d3a11582ff991e5e9d2899f474b9f452",
+   "kept_uid": "35e0c4945a7b795e5e4fc695f60f8abfe3f519e78bb1bafa12e5d5ac853d48de"
+  },
+  {
+   "uid8": "50d39726",
+   "year": 2022,
+   "grade": "11",
+   "num": "3",
+   "reason": "duplicate_final_task_2022_11_3: kept 317a0f03 (fuller text)",
+   "kept_counterpart": "317a0f03",
+   "uid": "50d39726ce3f27c0bbea34ee80dbafa6bf3e026cd9d5791b5063694d31c24acb",
+   "kept_uid": "317a0f030ef1fd8d4432aeade1c0101597a18605d4d9a43a93bb62d7863ea8e1"
+  },
+  {
+   "uid8": "72ac0055",
+   "year": 2025,
+   "grade": "8",
+   "num": "4",
+   "reason": "duplicate_final_task_2025_8_4: kept 1d9ccccc (fuller text)",
+   "kept_counterpart": "1d9ccccc",
+   "uid": "72ac005590dbb1cf1a1b0bffcc5292ca02e3cabb05a1d219033a80c182e4aa21",
+   "kept_uid": "1d9ccccc415b232c8e5b9fda667939593b580ad49165e10f6c024dfd3b102da7"
+  },
+  {
+   "uid8": "619b5887",
+   "year": 2022,
+   "grade": "11",
+   "num": "2",
+   "reason": "duplicate_final_task_2022_11_2: kept 2e4b6796 (fuller text)",
+   "kept_counterpart": "2e4b6796",
+   "uid": "619b58879e41aaf4ac84001faf44b6f23aa28b8d373e9e5269f40a9686efdc91",
+   "kept_uid": "2e4b679679a5ec3158aec87fc88ec48f8bd934ca33cd8a1addae79710660003a"
+  },
+  {
+   "uid8": "a367ef9e",
+   "year": 2022,
+   "grade": "8",
+   "num": "4",
+   "reason": "duplicate_final_task_2022_8_4: kept 370edf2a (fuller text)",
+   "kept_counterpart": "370edf2a",
+   "uid": "a367ef9e99f200eda25fe0385ab9d2ac49c5535879cba94064565bbdaa44f9cf",
+   "kept_uid": "370edf2a45e1597353120cee1f3648c2d5fefe6a68e44193da591211f4388248"
+  },
+  {
+   "uid8": "d9f6af29",
+   "year": 2025,
+   "grade": "11",
+   "num": "4",
+   "reason": "duplicate_final_task_2025_11_4: kept 9157576f (fuller text)",
+   "kept_counterpart": "9157576f",
+   "uid": "d9f6af2944f4d586204a0ff9999697d4a1610bf347d4d8e5b541f1ff93a6047d",
+   "kept_uid": "9157576f112d8698bbfd9886e251a023e7b67d3a667f7eab7068817a24d4637a"
+  },
+  {
+   "uid8": "64c9238f",
+   "year": 2020,
+   "grade": "6",
+   "num": "5",
+   "reason": "duplicate_final_task_2020_6_5: kept 41a74282 (fuller text)",
+   "kept_counterpart": "41a74282",
+   "uid": "64c9238f13fe2c4c819c5054c351a886e6acc89c1aeb65d1aaef9e004210a852",
+   "kept_uid": "41a7428248927e69d79da09a881ff041cb3a359aafc2a5e7489a5f8793e5f4e4"
+  },
+  {
+   "uid8": "807c52e6",
+   "year": 2020,
+   "grade": "7",
+   "num": "5",
+   "reason": "duplicate_final_task_2020_7_5: kept 8580e104 (fuller text)",
+   "kept_counterpart": "8580e104",
+   "uid": "807c52e61d0a7cbcc894f33a1919505f507f223af62bbfd663dfa578a21eef15",
+   "kept_uid": "8580e104a0b37ffb369d34fe978e506e84d3ee34b437c3b56534df6f969e97f9"
+  },
+  {
+   "uid8": "0703bf3d",
+   "year": 2020,
+   "grade": "7",
+   "num": "2",
+   "reason": "duplicate_final_task_2020_7_2: kept ee27fea7 (fuller text)",
+   "kept_counterpart": "ee27fea7",
+   "uid": "0703bf3d933c41606c0ca088de5f6542851d49632b659fb23a3f8fda4274d415",
+   "kept_uid": "ee27fea7260c4b4bdf1f300a09a2c91a409cebee775e5981febb43ffe6ad4eb7"
+  },
+  {
+   "uid8": "2d898496",
+   "year": 2020,
+   "grade": "9",
+   "num": "5",
+   "reason": "duplicate_final_task_2020_9_5: kept 783567d0 (fuller text)",
+   "kept_counterpart": "783567d0",
+   "uid": "2d8984964b21c3d0b3502388e818d121cb1e460f676e2598ffab6f3d08e6f885",
+   "kept_uid": "783567d04b6f87d82d3efdd9e34256f02c400d9f327229d065917b890fc85a6b"
+  },
+  {
+   "uid8": "d5b6f016",
+   "year": 2025,
+   "grade": "11",
+   "num": "2",
+   "reason": "duplicate_final_task_2025_11_2: kept 1973ca1a (fuller text)",
+   "kept_counterpart": "1973ca1a",
+   "uid": "d5b6f0161eb3667fac18ce6a0d98fa5608306feb8abc07d2a09f1eb4fc4ac048",
+   "kept_uid": "1973ca1ab04ea4b4f4fbf1eff428395dc738db073f925c6a16c15dd826d35832"
+  },
+  {
+   "uid8": "e79af6ed",
+   "year": 2020,
+   "grade": "9",
+   "num": "4",
+   "reason": "duplicate_final_task_2020_9_4: kept ad1fc142 (fuller text)",
+   "kept_counterpart": "ad1fc142",
+   "uid": "e79af6ed5491395c7a424ca97731f412a9c7212481f2e30f38f4c59ff726d177",
+   "kept_uid": "ad1fc14298b2e06ac25081c1b0c16396abc23984791588991bc843a9d1e8f909"
+  },
+  {
+   "uid8": "08a65051",
+   "year": 2020,
+   "grade": "6",
+   "num": "3",
+   "reason": "duplicate_final_task_2020_6_3: kept 0a6bce62 (fuller text)",
+   "kept_counterpart": "0a6bce62",
+   "uid": "08a65051d45f355e2b803048d714359b5fbecacf0ec5a2fc3b43121a2f3ed5c9",
+   "kept_uid": "0a6bce627ed367a303ad1418e93a06172339382fa2bd37555e89ae7bcd15569c"
+  },
+  {
+   "uid8": "cac1bbad",
+   "year": 2020,
+   "grade": "9",
+   "num": "3",
+   "reason": "duplicate_final_task_2020_9_3: kept bc1ef0d1 (fuller text)",
+   "kept_counterpart": "bc1ef0d1",
+   "uid": "cac1bbad227cac991baab74e10230b71cd8913aa51442b0dca135bb408938bd2",
+   "kept_uid": "bc1ef0d12f4113c329be9df228cc68d3ef3ddfcbc6c2c424a4216da80c2fd01b"
+  },
+  {
+   "uid8": "6b79378a",
+   "year": 2020,
+   "grade": "9",
+   "num": "2",
+   "reason": "duplicate_final_task_2020_9_2: kept a3da9a74 (fuller text)",
+   "kept_counterpart": "a3da9a74",
+   "uid": "6b79378a32c0d074d068a316f475bf343e8f8848a397030c2b2c235f4ebb17c8",
+   "kept_uid": "a3da9a7440fd6e1d9306cb3faaceb597f49302c0aa84055aef83d45a20b6162a"
+  },
+  {
+   "uid8": "a48f4e9f",
+   "year": 2025,
+   "grade": "8",
+   "num": "2",
+   "reason": "duplicate_final_task_2025_8_2: kept 8dc1ea98 (fuller text)",
+   "kept_counterpart": "8dc1ea98",
+   "uid": "a48f4e9f1d6ca6d7efadc3cb98ce8aeac9c982a893c87daf37013ff3702a3f9f",
+   "kept_uid": "8dc1ea98d73b6ab1ee9cb3f21a1e6900c7595f62b4b58ca9251930cb87de7eed"
+  },
+  {
+   "uid8": "31695057",
+   "year": 2020,
+   "grade": "8",
+   "num": "4",
+   "reason": "duplicate_final_task_2020_8_4: kept c33578b5 (fuller text)",
+   "kept_counterpart": "c33578b5",
+   "uid": "316950578c491df185fbb5434f79c4706d98f2ece6be99e10a61b53096a14707",
+   "kept_uid": "c33578b5d4a6bd7acee51cbd49b53dbd2d2f4f03504853cb336b274a8bd31e83"
+  },
+  {
+   "uid8": "212f0984",
+   "year": 2025,
+   "grade": "11",
+   "num": "5",
+   "reason": "duplicate_final_task_2025_11_5: kept f9f526be (fuller text)",
+   "kept_counterpart": "f9f526be",
+   "uid": "212f09843d948139118c61d75d3d9d2436cd1ab43a1490d160d63f9094d53695",
+   "kept_uid": "f9f526beb40fddfd3153f4a444e5f026d080937058495131de98f3b67dc42957"
+  },
+  {
+   "uid8": "44ba8b59",
+   "year": 2020,
+   "grade": "6",
+   "num": "2",
+   "reason": "duplicate_final_task_2020_6_2: kept 2d762617 (fuller text)",
+   "kept_counterpart": "2d762617",
+   "uid": "44ba8b592908aed22a24f7a1b58a33475302c8375e99f4d6764a9c5a64bddd27",
+   "kept_uid": "2d76261790e1f3e68eb4a0b3e9d741e10c3a7a5245adf61842f5958dcf196ccc"
+  },
+  {
+   "uid8": "7929f776",
+   "year": 2020,
+   "grade": "7",
+   "num": "1",
+   "reason": "duplicate_final_task_2020_7_1: kept e9244916 (fuller text)",
+   "kept_counterpart": "e9244916",
+   "uid": "7929f776a4d2abc4712fe3503ea8f2fad26ff236866370ccc8fd0f9719fbaf82",
+   "kept_uid": "e9244916cae1613007c5ea993a880c5b3fbfd9322ca16cf065029c7da48a08d1"
+  },
+  {
+   "uid8": "11e696cc",
+   "year": 2025,
+   "grade": "8",
+   "num": "1",
+   "reason": "duplicate_final_task_2025_8_1: kept 470233d4 (fuller text)",
+   "kept_counterpart": "470233d4",
+   "uid": "11e696cc8765bbfa271acefa9b753524642ba25247b43ba4bc543cc0c903d9c1",
+   "kept_uid": "470233d4150ebc0f8f3961acfc951000a26458654d7de6c7f38cc986384391b5"
+  },
+  {
+   "uid8": "aedb8321",
+   "year": 2025,
+   "grade": "8",
+   "num": "5",
+   "reason": "duplicate_final_task_2025_8_5: kept 66b9a54a (fuller text)",
+   "kept_counterpart": "66b9a54a",
+   "uid": "aedb83215db685c664250978b47c2a47bb4ac305a937c7b39ca1b7811aedf72c",
+   "kept_uid": "66b9a54a9444f15cb3e82126a6cb9a32d03ae41adbf5935e3c62009723a024c2"
+  },
+  {
+   "uid8": "9f902ce3",
+   "year": 2020,
+   "grade": "7",
+   "num": "3",
+   "reason": "duplicate_final_task_2020_7_3: kept 6a205463 (fuller text)",
+   "kept_counterpart": "6a205463",
+   "uid": "9f902ce38578231b5c4132bd0a531154c31de33cd66c217fb18946dd05d45dba",
+   "kept_uid": "6a205463ce0bc6000aae7a9dfb071360c352f5780a6ce0d619e3108e7ce9b64e"
+  },
+  {
+   "uid8": "976ccd05",
+   "year": 2020,
+   "grade": "8",
+   "num": "2",
+   "reason": "duplicate_final_task_2020_8_2: kept a6243590 (fuller text)",
+   "kept_counterpart": "a6243590",
+   "uid": "976ccd05a6d95d7f375c28cd70d53dba8fa546d26705764ea0f020e64420e131",
+   "kept_uid": "a62435909fe824f5b7cc3ac664561e26d69055d0926bf72be01f388d51b9b14f"
+  },
+  {
+   "uid8": "ede77c39",
+   "year": 2022,
+   "grade": "8",
+   "num": "2",
+   "reason": "duplicate_final_task_2022_8_2: kept adcabc78 (fuller text)",
+   "kept_counterpart": "adcabc78",
+   "uid": "ede77c3952fb3f4da72334c5f8a7e75ccd4baff36470453e00106bbb31919913",
+   "kept_uid": "adcabc78cae53775f33ed3cdc2a7d49725f39787b060e9ce5b03335e6516b3fb"
+  },
+  {
+   "uid8": "a30cfcd0",
+   "year": 2020,
+   "grade": "8",
+   "num": "1",
+   "reason": "duplicate_final_task_2020_8_1: kept b2b8234b (fuller text)",
+   "kept_counterpart": "b2b8234b",
+   "uid": "a30cfcd0d33877f7caa26677eddfd56130a4ecd4696f1fbb5885b88833fb2b53",
+   "kept_uid": "b2b8234babe7a72d4a88b7ab7af11c8d45230f0f22268054dddb2956c35cc9bd"
+  },
+  {
+   "uid8": "60af3012",
+   "year": 2020,
+   "grade": "9",
+   "num": "1",
+   "reason": "duplicate_final_task_2020_9_1: kept 956a0a71 (fuller text)",
+   "kept_counterpart": "956a0a71",
+   "uid": "60af3012e9665b54f93bf579e595ab48e01effd5ec2e9247ff5716b0ac0fc166",
+   "kept_uid": "956a0a71168b637209c02354ef9392ce341f2ddf2dc0a270434bebf53fc2a9ad"
+  },
+  {
+   "uid8": "ae0f82f1",
+   "year": 2020,
+   "grade": "6",
+   "num": "1",
+   "reason": "duplicate_final_task_2020_6_1: kept a18def21 (fuller text)",
+   "kept_counterpart": "a18def21",
+   "uid": "ae0f82f10310f164ad1159097aba06c1d21e5e52793d6f4d0416ac2904ca8bac",
+   "kept_uid": "a18def219f29e25a5fe951d6604127425655d0b6208a998712fffacfa91ce57d"
+  },
+  {
+   "uid8": "690a2061",
+   "year": 2022,
+   "grade": "11",
+   "num": "5",
+   "reason": "duplicate_final_task_2022_11_5: kept fcf7f07c (longer text, same source)",
+   "kept_counterpart": "fcf7f07c",
+   "uid": "690a2061ae386a71598a1dff7cc4cd576d5fc232f4c77c6f367a01c00efe21df",
+   "kept_uid": "fcf7f07c789efb8b76f0da77b5c215eec777165feb00f461a4180804e0c6b446"
+  },
+  {
+   "uid8": "457a8064",
+   "year": 2020,
+   "grade": "11",
+   "num": "3",
+   "reason": "duplicate_final_task_2020_11_3: kept 0fd2f4ac (fuller)",
+   "kept_counterpart": "0fd2f4ac",
+   "uid": "457a80646d9d26680ae75014fd324fd3dc7dc3662462e3c4f3876adaae4058ff",
+   "kept_uid": "0fd2f4acefcdcaac6265f2c19c7d2a1396ca819f16a742835996f4c24814e77c"
+  },
+  {
+   "uid8": "25173fba",
+   "year": 2020,
+   "grade": "11",
+   "num": "4",
+   "reason": "duplicate_final_task_2020_11_4: kept 65141304 (fuller)",
+   "kept_counterpart": "65141304",
+   "uid": "25173fbac7b88cddfa4800fb6b00ab39703eb915bb6aa196c8a81aaa8b9a28e0",
+   "kept_uid": "651413042dce58beaa5c5b1a855217f0430b4fa94c150b151caf8ef31991af48"
+  },
+  {
+   "uid8": "96992c81",
+   "year": 2020,
+   "grade": "11",
+   "num": "1",
+   "reason": "duplicate_final_task_2020_11_1: kept 671cc3ae (fuller)",
+   "kept_counterpart": "671cc3ae",
+   "uid": "96992c81da6fae36bb5be0aba27affcd4be2cec8c54840d1db2c2f91f1e08c54",
+   "kept_uid": "671cc3ae17a8e8245c4afddcbe010dfe62bd975d3f70066367dc99691d1575c8"
+  },
+  {
+   "uid8": "4c1801c8",
+   "year": 2020,
+   "grade": "8",
+   "num": "5",
+   "reason": "duplicate_final_task_2020_8_5: kept 07d05ca3 (fuller)",
+   "kept_counterpart": "07d05ca3",
+   "uid": "4c1801c874cc667c53daa4c5f82cf6313ceab073075c9e7721e54f5d9fbb2a1c",
+   "kept_uid": "07d05ca3040fcd5c694d999640476261939f2e548bc5c434b78c9d1483bdaa17"
+  },
+  {
+   "uid8": "c337442f",
+   "year": 2020,
+   "grade": "11",
+   "num": "2",
+   "reason": "duplicate_final_task_2020_11_2: kept 578a716c (fuller)",
+   "kept_counterpart": "578a716c",
+   "uid": "c337442f0f9683f5a06f7aaa02ade92195229c772583b4ca95d76ae8a4ebc4b3",
+   "kept_uid": "578a716cc885e375dd4509acd50cdf06a48fa3daf1f6572f7ada1b6d56e81116"
+  },
+  {
+   "uid8": "78d48553",
+   "year": 2024,
+   "grade": "9",
+   "num": "1",
+   "reason": "duplicate_final_task_2024_9_1: kept 6c76ee46 (fuller text)",
+   "kept_counterpart": "6c76ee46",
+   "uid": "78d485531b5d731e02be53cd3af6d33dddcb23576e4a9bb6c2a3d3b5c13e451f",
+   "kept_uid": "6c76ee46343af59f110f770be94e2d0b61ae13561d2f8a444e4c1e06f8b376e6"
+  },
+  {
+   "uid8": "a6426c91",
+   "year": 2024,
+   "grade": "9",
+   "num": "2",
+   "reason": "duplicate_final_task_2024_9_2: kept d4fd301c (fuller text)",
+   "kept_counterpart": "d4fd301c",
+   "uid": "a6426c91c00a373ad113928fcec1c01dfffa79cd22cb2e4eb86b80b0b86d7c91",
+   "kept_uid": "d4fd301c41d86c8c24a3eae790562e22bd488bb4d2e2d5d875ce36083d7e7bc8"
+  },
+  {
+   "uid8": "b9345b18",
+   "year": 2024,
+   "grade": "11",
+   "num": "2",
+   "reason": "duplicate_final_task_2024_11_2: kept 102d42a7 (fuller text)",
+   "kept_counterpart": "102d42a7",
+   "uid": "b9345b18cf07d9bd92dfeead8098716f3c2216b8043e2ba08a70ef9b179ba4fa",
+   "kept_uid": "102d42a72d509454596a56a137a094866f367964f5360d32e55fa754f002ce1c"
+  },
+  {
+   "uid8": "dc17474a",
+   "year": 2024,
+   "grade": "11",
+   "num": "1",
+   "reason": "duplicate_final_task_2024_11_1: kept 7c965174 (fuller text)",
+   "kept_counterpart": "7c965174",
+   "uid": "dc17474a52f4199be10bbfa41f8c1fb84d2ef67377a43e348aa103f802667933",
+   "kept_uid": "7c9651747f956385a917b78e01d52ab3aa09e886d1b2b239bb814c299926ad8a"
+  },
+  {
+   "uid8": "4e03fa6c",
+   "year": 2024,
+   "grade": "11",
+   "num": "5",
+   "reason": "duplicate_final_task_2024_11_5: kept 7ac28a24 (fuller text)",
+   "kept_counterpart": "7ac28a24",
+   "uid": "4e03fa6c489d569114ad0a0c9803a2031eacf80936b47d321e29a2a129ca8288",
+   "kept_uid": "7ac28a24d1d34f2643995e4e898f7f8a601afb4f7fff23514673da58a14c31f4"
+  },
+  {
+   "uid8": "a4fc42c1",
+   "year": 2024,
+   "grade": "9",
+   "num": "5",
+   "reason": "duplicate_final_task_2024_9_5: kept cd44a108 (fuller text)",
+   "kept_counterpart": "cd44a108",
+   "uid": "a4fc42c105e9b101b7408d8c75436bd5de178aa91ddf0baf43b3c4066a08de9d",
+   "kept_uid": "cd44a108088a45e9b34b3c8609a2c292e014e26fd9426902e04326093408168a"
+  },
+  {
+   "uid8": "f6370f32",
+   "year": 2024,
+   "grade": "6",
+   "num": "2",
+   "reason": "duplicate_final_task_2024_6_2: kept d2a9a3cb (fuller text)",
+   "kept_counterpart": "d2a9a3cb",
+   "uid": "f6370f32a7ee2c4d11e19e19ef07bb78adb9fea9190ba3449f70d4cd209bc918",
+   "kept_uid": "d2a9a3cbb4a042b3adb4990300d9d655349c71eb7d457a2750e58f30e1cfd07b"
+  },
+  {
+   "uid8": "812f897b",
+   "year": 2024,
+   "grade": "9",
+   "num": "4",
+   "reason": "duplicate_final_task_2024_9_4: kept 4f12a28f (fuller text)",
+   "kept_counterpart": "4f12a28f",
+   "uid": "812f897b864199c478567d82d49892a67c0526d2bb97ccb2b4b545acdc863ae5",
+   "kept_uid": "4f12a28f00e2d75d75e527ec75fe02ca2d32bd924f445ca24968676a06096ecc"
+  },
+  {
+   "uid8": "7e89df40",
+   "year": 2021,
+   "grade": "10",
+   "num": "5",
+   "reason": "duplicate_final_task_2021_10_5: kept ce84d702 (fuller text)",
+   "kept_counterpart": "ce84d702",
+   "uid": "7e89df4034cecbbcac68d62fff74f45953acf7c4aad7c1bab477692cf1ab6d37",
+   "kept_uid": "ce84d702a6427fc46629de9079e608941faaa6864d18680839afa9b159ef1f6c"
+  },
+  {
+   "uid8": "9797e3c4",
+   "year": 2021,
+   "grade": "10",
+   "num": "4",
+   "reason": "duplicate_final_task_2021_10_4: kept 92815fc4 (fuller text)",
+   "kept_counterpart": "92815fc4",
+   "uid": "9797e3c463619fdf3ce40617cc2320da1e5780c1541c3fd6a91ce817c488adf7",
+   "kept_uid": "92815fc4e1fa17d7574b6c9d634a652ce50631929ddbb2d3e39ad6622aa838d1"
+  },
+  {
+   "uid8": "362826de",
+   "year": 2021,
+   "grade": "8",
+   "num": "3",
+   "reason": "duplicate_final_task_2021_8_3: kept 01d35cea (fuller text)",
+   "kept_counterpart": "01d35cea",
+   "uid": "362826de9a293dc58655a719946367c9c97ec64b438f31120ed5e64ff69b9668",
+   "kept_uid": "01d35cea53ae5ead7f1879dacf4a07470a88387e07c7cb6b4a61d442593f2923"
+  },
+  {
+   "uid8": "6f8214b3",
+   "year": 2021,
+   "grade": "10",
+   "num": "1",
+   "reason": "duplicate_final_task_2021_10_1: kept 73c3d60b (fuller text)",
+   "kept_counterpart": "73c3d60b",
+   "uid": "6f8214b3b86b60f951d5784f12e5316dfa1b1588d562da4242fc9f060162570d",
+   "kept_uid": "73c3d60bb8ce57a24c12c7930f1fc7d8c1d6c9ba3d9c4e7b77248001d8995a1c"
+  },
+  {
+   "uid8": "f0c6c4a8",
+   "year": 2021,
+   "grade": "10",
+   "num": "3",
+   "reason": "duplicate_final_task_2021_10_3: kept df009f59 (fuller text)",
+   "kept_counterpart": "df009f59",
+   "uid": "f0c6c4a8a1c3d94a2acccedfca4954497aaeaaf7fabd95735853050c81d7a9d0",
+   "kept_uid": "df009f59d1c77daa8541c62d90b2911fc80488e40773c9646ef75e958957029a"
+  },
+  {
+   "uid8": "c5a3d942",
+   "year": 2021,
+   "grade": "8",
+   "num": "2",
+   "reason": "duplicate_final_task_2021_8_2: kept e222dd4a (fuller text)",
+   "kept_counterpart": "e222dd4a",
+   "uid": "c5a3d942d69d24d810e4a7838d53b1119d76d0cbfe4dbc0c87bc75c41e8828a8",
+   "kept_uid": "e222dd4a147ceeecf8c4d0de5a37bfd806bd408874f03005fa914d9cd1a02913"
+  },
+  {
+   "uid8": "88c25647",
+   "year": 2021,
+   "grade": "10",
+   "num": "2",
+   "reason": "duplicate_final_task_2021_10_2: kept adc9fe98 (fuller text)",
+   "kept_counterpart": "adc9fe98",
+   "uid": "88c256472401dc957a6c682cc904f66faf7e05cb9df8aabe227786b4c8a8a574",
+   "kept_uid": "adc9fe98b9ab4c53b5ea4e3a587379d59301f0a351f99be917838e24bfda93a9"
+  },
+  {
+   "uid8": "1fbe5eb3",
+   "year": 2021,
+   "grade": "8",
+   "num": "4",
+   "reason": "duplicate_final_task_2021_8_4: kept bb011740 (fuller text)",
+   "kept_counterpart": "bb011740",
+   "uid": "1fbe5eb3ec84a27c6059bea5651c4dffa944dc8e2f638eb71b0f6ddd7b9ae044",
+   "kept_uid": "bb011740735dceded906c294417f16db4571886d6bfcecd3413dae19a0b47037"
+  },
+  {
+   "uid8": "020cb9f5",
+   "year": 2021,
+   "grade": "8",
+   "num": "1",
+   "reason": "duplicate_final_task_2021_8_1: kept d452f354 (fuller text)",
+   "kept_counterpart": "d452f354",
+   "uid": "020cb9f5c16ba24ec4054cd4bcfc3311043d54efb335339a35c8d193a4f2a63d",
+   "kept_uid": "d452f354702b067907eb88ff1ed90c3c06ae472bd6d6c9d7a410e9654efbd86b"
+  },
+  {
+   "uid8": "0c79ad56",
+   "year": 2019,
+   "grade": "11",
+   "num": "3",
+   "reason": "duplicate_final_task_2019_11_3: kept 5bcfac64 (fuller text)",
+   "kept_counterpart": "5bcfac64",
+   "uid": "0c79ad5622bd95ff929d89661a910d823c924093185612a29ab6188786a72849",
+   "kept_uid": "5bcfac64e8769cac221ce7cb0ad883be6ab33a06e887f49966b52081f8df1046"
+  },
+  {
+   "uid8": "3e4c2525",
+   "year": 2019,
+   "grade": "8",
+   "num": "5",
+   "reason": "duplicate_final_task_2019_8_5: kept 1bc12006 (fuller text)",
+   "kept_counterpart": "1bc12006",
+   "uid": "3e4c25255fc00eb91588190745119ede1b9337d4e54c4b296294f314d56a0ea4",
+   "kept_uid": "1bc120063e29c942347d1578ec24dea5083495ec2a569454ff4f2863a0d63fb2"
+  },
+  {
+   "uid8": "7eabf93e",
+   "year": 2019,
+   "grade": "8",
+   "num": "3",
+   "reason": "duplicate_final_task_2019_8_3: kept 7685ff46 (fuller text)",
+   "kept_counterpart": "7685ff46",
+   "uid": "7eabf93e8f576155477d0bbb6e45a39952c3fa794056b8643356a718e1e0fe40",
+   "kept_uid": "7685ff467fb7802c109eaa80635b5f197c64fb501fd6592e958c6c241971fdc8"
+  },
+  {
+   "uid8": "3bd1a9dd",
+   "year": 2019,
+   "grade": "9",
+   "num": "2",
+   "reason": "duplicate_final_task_2019_9_2: kept 79a8e6e9 (fuller text)",
+   "kept_counterpart": "79a8e6e9",
+   "uid": "3bd1a9dd18387b77c0a7305d5efd7b9cb33746ec39761e791adf65b1aa625ae7",
+   "kept_uid": "79a8e6e98b32607e58d19c41625d5964b69264985fd63de94eb90c1f38c77cc9"
+  },
+  {
+   "uid8": "1ccc3ce2",
+   "year": 2019,
+   "grade": "8",
+   "num": "2",
+   "reason": "duplicate_final_task_2019_8_2: kept 057bbfa0 (fuller text)",
+   "kept_counterpart": "057bbfa0",
+   "uid": "1ccc3ce21772f7990fa54de67ea91d8fc866eda18497b3614f6353b7fb9800c9",
+   "kept_uid": "057bbfa0e43d1af7799053d1ab977e4f717dc176a9e038b2f14f52a71aa4a6fd"
+  },
+  {
+   "uid8": "8ff11ab6",
+   "year": 2019,
+   "grade": "7",
+   "num": "5",
+   "reason": "duplicate_final_task_2019_7_5: kept 5f7b65f9 (fuller text)",
+   "kept_counterpart": "5f7b65f9",
+   "uid": "8ff11ab6a12f76e9e9440f7980f780189ee3b2579426fcb3cc81efdc1165001b",
+   "kept_uid": "5f7b65f9849b0d6e0260599647a835137e7207540a6159ea62e346576fc0e5d8"
+  },
+  {
+   "uid8": "8431f238",
+   "year": 2019,
+   "grade": "7",
+   "num": "4",
+   "reason": "duplicate_final_task_2019_7_4: kept b50571fe (fuller text)",
+   "kept_counterpart": "b50571fe",
+   "uid": "8431f23828d80408e3aee5da0523ee561a8fd743e49bf905302830130786f9bc",
+   "kept_uid": "b50571fec327690330a8aabf6194a7ce7c420accc571879e8f1b925f4c874584"
+  },
+  {
+   "uid8": "c1cb1e14",
+   "year": 2019,
+   "grade": "7",
+   "num": "3",
+   "reason": "duplicate_final_task_2019_7_3: kept e75b9894 (fuller text)",
+   "kept_counterpart": "e75b9894",
+   "uid": "c1cb1e14b29e1dfc3838198d83eb89f27d771d52c495914305b4e4ec0e578273",
+   "kept_uid": "e75b98940f9b9d04bb0cda8d33ab6b178636b542321929bd35bfd87faf80cdfe"
+  },
+  {
+   "uid8": "b4d79d39",
+   "year": 2019,
+   "grade": "9",
+   "num": "1",
+   "reason": "duplicate_final_task_2019_9_1: kept 238351cb (fuller text)",
+   "kept_counterpart": "238351cb",
+   "uid": "b4d79d39c7d9e89b56f258809677ad4b4f2989c8f8f9f72c777fd7e464bbdb14",
+   "kept_uid": "238351cba421514d4d08dbbbde4d60c79376e33db81ee47e67552f260a3836d5"
+  },
+  {
+   "uid8": "aba4427a",
+   "year": 2019,
+   "grade": "7",
+   "num": "2",
+   "reason": "duplicate_final_task_2019_7_2: kept c3072d5a (fuller text)",
+   "kept_counterpart": "c3072d5a",
+   "uid": "aba4427a809d037b546a75200584e1518bc2614e1b3139f8ac9166470909d818",
+   "kept_uid": "c3072d5a6798689cc6c192af61a35e5087207d177069ef5d43164cfb2a964441"
+  },
+  {
+   "uid8": "df990919",
+   "year": 2019,
+   "grade": "11",
+   "num": "4",
+   "reason": "duplicate_final_task_2019_11_4: kept 3e2ccb4f (fuller text)",
+   "kept_counterpart": "3e2ccb4f",
+   "uid": "df9909199bcb772839cdb5b8b9f5c61f9fa59c8a958d5180ebfa91d09f9d210f",
+   "kept_uid": "3e2ccb4f239268fdd3afe21e216e11c39866edaddff1276b09d7c34c81377169"
+  },
+  {
+   "uid8": "d85a61f4",
+   "year": 2019,
+   "grade": "11",
+   "num": "1",
+   "reason": "duplicate_final_task_2019_11_1: kept 1a73949a (fuller text)",
+   "kept_counterpart": "1a73949a",
+   "uid": "d85a61f49fb57f46266bee80801a7164087ac421fef711572e635c07e59cbafe",
+   "kept_uid": "1a73949ad3aa1c649a4dc3b65e82e87001c01f921c79c6bfdb8433ec3e6034b9"
+  },
+  {
+   "uid8": "a482646d",
+   "year": 2019,
+   "grade": "7",
+   "num": "1",
+   "reason": "duplicate_final_task_2019_7_1: kept 8e35aeb0 (fuller text)",
+   "kept_counterpart": "8e35aeb0",
+   "uid": "a482646ded31d9c92f5d4470db615bd11cf37cbc0940793e1c8cfa18a15208c4",
+   "kept_uid": "8e35aeb0abb5b3365694ecb9e1b3d70d3bb1fbff5989602d8658e8628a6878f6"
+  },
+  {
+   "uid8": "bbb3e163",
+   "year": 2019,
+   "grade": "9",
+   "num": "3",
+   "reason": "duplicate_final_task_2019_9_3: kept 4a38055e (fuller text)",
+   "kept_counterpart": "4a38055e",
+   "uid": "bbb3e163e3c89fa1a01f70cac0baf528573416480084e802ad1570d9afb91886",
+   "kept_uid": "4a38055eaf900cc4b618a89845efcf491121ca4ef3d9c0c14fb3da1697c8a8f9"
+  },
+  {
+   "uid8": "92028651",
+   "year": 2019,
+   "grade": "11",
+   "num": "2",
+   "reason": "duplicate_final_task_2019_11_2: kept 1d612447 (fuller text)",
+   "kept_counterpart": "1d612447",
+   "uid": "920286510866c17bae6fa0f54b6e5d13cdf1622c7fade528dde63c694a3709ca",
+   "kept_uid": "1d6124478b7dd8a9e21cf9bd40bb00e7f5caf3ae054d4c59bec86ab9e6b6259b"
+  },
+  {
+   "uid8": "6b523544",
+   "year": 2018,
+   "grade": "9",
+   "num": "3",
+   "reason": "unverifiable_attribution: labeled 2018 9кл№3 '2 тур', no source; text not found in any downloaded Kurchatov final document; official 2018 final 9.3 is a different task",
+   "kept_counterpart": null,
+   "uid": "6b5235442a11a8fc8f1270fa7e557407ccb6ea618b9778f5a4d2ece62aa6c842"
+  },
+  {
+   "uid8": "a2374243",
+   "year": 2018,
+   "grade": "8",
+   "num": "2",
+   "reason": "duplicate_final_task_2018_8_2: kept 2ba745f2 (fuller text)",
+   "kept_counterpart": "2ba745f2",
+   "uid": "a2374243c533609e6bb2b622ecabc33ab943a845e5f41aa484bf9811d0b302c8",
+   "kept_uid": "2ba745f20198df32385f05a00f2a74b56e930e48a8b8154a3e746cd2f3e943ae"
+  },
+  {
+   "uid8": "f11ad51c",
+   "year": 2018,
+   "grade": "11",
+   "num": "2",
+   "reason": "duplicate_final_task_2018_11_2: kept 975503ab (fuller text)",
+   "kept_counterpart": "975503ab",
+   "uid": "f11ad51c80fcddf7dd44eb0ca97c4a45749f9c6604815c296d1c8b673054e6bd",
+   "kept_uid": "975503ab5acc1322bf7acf256b9df9aa48e4031605c4ee114e013fb14df3d040"
+  },
+  {
+   "uid8": "7b237102",
+   "year": 2018,
+   "grade": "8",
+   "num": "4",
+   "reason": "duplicate_final_task_2018_8_4: kept 2d2f8b64 (fuller text)",
+   "kept_counterpart": "2d2f8b64",
+   "uid": "7b23710222b130addd1f8ce3984b1f4edb23b260741e2978e8f80163a459ddbd",
+   "kept_uid": "2d2f8b646f1276dcfe46d31408975c866bd58f3d76b96dc8903e8db337edc667"
+  },
+  {
+   "uid8": "32221f50",
+   "year": 2018,
+   "grade": "7",
+   "num": "5",
+   "reason": "duplicate_final_task_2018_7_5: kept 7e5a5e33 (fuller text)",
+   "kept_counterpart": "7e5a5e33",
+   "uid": "32221f50d982035c7bf8609269b6eeb50bae1e206855a8dc577c01f4f0042ecb",
+   "kept_uid": "7e5a5e33325558e282f45801d02e2670bb8a7eac8daf9897a0d1ee68b715d142"
+  },
+  {
+   "uid8": "da34c781",
+   "year": 2018,
+   "grade": "8",
+   "num": "3",
+   "reason": "duplicate_final_task_2018_8_3: kept 96a51a60 (fuller text)",
+   "kept_counterpart": "96a51a60",
+   "uid": "da34c7814d6eb9bbd58993a85d649ed12505b7fa1ccfcbe9e459849d9caa595c",
+   "kept_uid": "96a51a605d949ee90fcb35892aa8f7ef4e20fb850e2766880259676818d26dd2"
+  },
+  {
+   "uid8": "3f027cb0",
+   "year": 2018,
+   "grade": "7",
+   "num": "1",
+   "reason": "duplicate_final_task_2018_7_1: kept 180a80aa (fuller text)",
+   "kept_counterpart": "180a80aa",
+   "uid": "3f027cb02e93aee95b1d9965305b8a8b6d04759274586dcaae5d03abd5d9f3d4",
+   "kept_uid": "180a80aab2d9dcb278f4ae019344bdcf52e7c5ad6a2c695c112015bd8702c350"
+  },
+  {
+   "uid8": "970d5542",
+   "year": 2018,
+   "grade": "8",
+   "num": "1",
+   "reason": "duplicate_final_task_2018_8_1: kept e64f7764 (fuller text)",
+   "kept_counterpart": "e64f7764",
+   "uid": "970d5542602eec5d94b3f102a2176d597752def11ef34b191773645811011777",
+   "kept_uid": "e64f7764f6ba8a7ad1f7b7863e066244344cb3292785641147bbe3e64a815fd1"
+  },
+  {
+   "uid8": "ca57a3dc",
+   "year": 2018,
+   "grade": "11",
+   "num": "1",
+   "reason": "duplicate_final_task_2018_11_1: kept f6384997 (fuller text)",
+   "kept_counterpart": "f6384997",
+   "uid": "ca57a3dc6ea1c7731a30474cdada788cf78204d93eb799c79420e61eee755cf9",
+   "kept_uid": "f6384997c9b67e5095725370cf960fc157641298fb71fab67a41731739c604c7"
+  },
+  {
+   "uid8": "1ad62c40",
+   "year": 2017,
+   "grade": "10",
+   "num": "5",
+   "reason": "duplicate_final_task_2017_10_5: kept f4f5c91b (fuller text)",
+   "kept_counterpart": "f4f5c91b",
+   "uid": "1ad62c40b6f7197594ba10e658414019ce51cdbb98270079f91ff929e177519e",
+   "kept_uid": "f4f5c91b0a2ce067cc380534fdfde126a769814e4d1e135ed4c34a9e2c135388"
+  },
+  {
+   "uid8": "c033729c",
+   "year": 2017,
+   "grade": "11",
+   "num": "4",
+   "reason": "duplicate_final_task_2017_11_4: kept 77905e88 (fuller text)",
+   "kept_counterpart": "77905e88",
+   "uid": "c033729c18c67472d52c518d827da4e287ed7ffaf21eeda6599e58732f9d9d31",
+   "kept_uid": "77905e885d9005627f9486654a200a956bd52ad6e0416c5ae1623a37134f4857"
+  },
+  {
+   "uid8": "a69f7994",
+   "year": 2017,
+   "grade": "8",
+   "num": "5",
+   "reason": "duplicate_final_task_2017_8_5: kept 373b666f (fuller text)",
+   "kept_counterpart": "373b666f",
+   "uid": "a69f7994db78cc31ecf883a060da05e0207f3150cf4475647716bc429c67c68e",
+   "kept_uid": "373b666f2d9320cbc815a6943e7ae264e384fd4950c7a9eb761fd50e869fa340"
+  },
+  {
+   "uid8": "ae6d69fa",
+   "year": 2017,
+   "grade": "7",
+   "num": "4",
+   "reason": "duplicate_final_task_2017_7_4: kept a992952f (fuller text)",
+   "kept_counterpart": "a992952f",
+   "uid": "ae6d69fadf70fe77ae9c2b64aeb8a69d266cc9ee2166802db0507109df588a7b",
+   "kept_uid": "a992952f03f867ae895431894b6ef0b97aaf40300e1cecbedef0683b8031f28e"
+  },
+  {
+   "uid8": "d8c4b433",
+   "year": 2017,
+   "grade": "8",
+   "num": "2",
+   "reason": "duplicate_final_task_2017_8_2: kept 68978834 (fuller text)",
+   "kept_counterpart": "68978834",
+   "uid": "d8c4b433dc88c6030f5718e4eaa5ef76ed4d02a076f0dc5a03e499c99b984e90",
+   "kept_uid": "689788343264b083fb5fc76b96082ab3084ed7b2f25c8dfd2a31476519411188"
+  },
+  {
+   "uid8": "86d7e12d",
+   "year": 2017,
+   "grade": "9",
+   "num": "3",
+   "reason": "duplicate_final_task_2017_9_3: kept 90c87609 (fuller text)",
+   "kept_counterpart": "90c87609",
+   "uid": "86d7e12d450950c827050ac6d3c53a52f686c100fb43d871529bc75fc38efba1",
+   "kept_uid": "90c87609d85cc25361e88f9b7191cef6dec7238a3f444a629422206e0deb66eb"
+  },
+  {
+   "uid8": "ee82f5a9",
+   "year": 2017,
+   "grade": "9",
+   "num": "5",
+   "reason": "duplicate_final_task_2017_9_5: kept ebeefcdd (fuller text)",
+   "kept_counterpart": "ebeefcdd",
+   "uid": "ee82f5a9d1ef410f1b69fedf12393077094fccafdbbb3454b72bc136b4939c20",
+   "kept_uid": "ebeefcddbcf03df0cdae4ddb93cb385952ee40b31a275a4d7805210c163fad46"
+  },
+  {
+   "uid8": "86e8c2af",
+   "year": 2017,
+   "grade": "11",
+   "num": "3",
+   "reason": "duplicate_final_task_2017_11_3: kept 99e8fc95 (fuller text)",
+   "kept_counterpart": "99e8fc95",
+   "uid": "86e8c2afc143e3a72bebdbcae66a516906f3078d1e47c87b7fb052ef722c51f9",
+   "kept_uid": "99e8fc958d1a1ef20c92fa3bdeb4c84314087d3366519ad4f58a0a5a9ae16c71"
+  },
+  {
+   "uid8": "7407487f",
+   "year": 2017,
+   "grade": "10",
+   "num": "3",
+   "reason": "duplicate_final_task_2017_10_3: kept 49702368 (fuller text)",
+   "kept_counterpart": "49702368",
+   "uid": "7407487faaf45743cbc8f534dd4e2a8917ec39d5c25ce58a2989d89c33155915",
+   "kept_uid": "4970236872e4cbc98f173a8dafd62fc3e8f2417c6632898bbec4b511b4d3f502"
+  },
+  {
+   "uid8": "c947a5b7",
+   "year": 2017,
+   "grade": "8",
+   "num": "4",
+   "reason": "duplicate_final_task_2017_8_4: kept c1f3895c (fuller text)",
+   "kept_counterpart": "c1f3895c",
+   "uid": "c947a5b7c8560d1da2665f888c7af4749100f9adbc684d7b7580890705e73175",
+   "kept_uid": "c1f3895cd3d67e86d2a9aca74a2e6e3087e18c7b5f33f2228d46905c782360b5"
+  },
+  {
+   "uid8": "ba541055",
+   "year": 2017,
+   "grade": "9",
+   "num": "2",
+   "reason": "duplicate_final_task_2017_9_2: kept 452063dd (fuller text)",
+   "kept_counterpart": "452063dd",
+   "uid": "ba541055654288cf94edb34b2ebd124cd338bafbb78641c0a5a1cbc79a06cf14",
+   "kept_uid": "452063dd01721b38c34c083c47422b2ff06791513150dc7283734e0695e0e28a"
+  },
+  {
+   "uid8": "b47d34e7",
+   "year": 2017,
+   "grade": "7",
+   "num": "3",
+   "reason": "duplicate_final_task_2017_7_3: kept 25f3e07c (fuller text)",
+   "kept_counterpart": "25f3e07c",
+   "uid": "b47d34e7397685b12e22ba1595f2f8bf6fec8ec8ba856389883852ba35cd024a",
+   "kept_uid": "25f3e07c1cc8a64b5755b428221af788690797388672f4aedc8832b7584b8000"
+  },
+  {
+   "uid8": "723e3fb0",
+   "year": 2017,
+   "grade": "7",
+   "num": "2",
+   "reason": "duplicate_final_task_2017_7_2: kept af9edf03 (fuller text)",
+   "kept_counterpart": "af9edf03",
+   "uid": "723e3fb08a88e0da672e8b09641b819b1ebcb17766c620e6d06115372efc1a06",
+   "kept_uid": "af9edf03ef905bb3732baf9b070bda8e8c7aabb6b64065eb5d30e300e71ff3ef"
+  },
+  {
+   "uid8": "857acd2d",
+   "year": 2017,
+   "grade": "7",
+   "num": "1",
+   "reason": "duplicate_final_task_2017_7_1: kept 4de9e96e (fuller text)",
+   "kept_counterpart": "4de9e96e",
+   "uid": "857acd2d500b3cefa0dae4cd911b7073f765d4c6c8288118155580ace2879852",
+   "kept_uid": "4de9e96ec92e819f1b4ef76e1eae4a27d082ebdb1555052262808b537f6ca6e8"
+  },
+  {
+   "uid8": "089e322b",
+   "year": 2017,
+   "grade": "9",
+   "num": "4",
+   "reason": "duplicate_final_task_2017_9_4: kept e3049788 (fuller text)",
+   "kept_counterpart": "e3049788",
+   "uid": "089e322b60711c13c01bcd71d75560912fc0b7ff991870de2b424efbaf9af0e2",
+   "kept_uid": "e3049788ec87d8a090a12b976b60ef32dd30a75071f682c177094bce6d58871b"
+  },
+  {
+   "uid8": "a7da1b52",
+   "year": 2017,
+   "grade": "11",
+   "num": "1",
+   "reason": "duplicate_final_task_2017_11_1: kept a5dd7c57 (fuller text)",
+   "kept_counterpart": "a5dd7c57",
+   "uid": "a7da1b5229e6b0a27112cc7b397e1d760bc646b96f46b593127732414ee61ee8",
+   "kept_uid": "a5dd7c5794a1751e94fb4db94ef6be967c36e38a85c38b7ef4d4dbff07151941"
+  },
+  {
+   "uid8": "670647b9",
+   "year": 2017,
+   "grade": "11",
+   "num": "2",
+   "reason": "duplicate_final_task_2017_11_2: kept 5429412d (fuller text)",
+   "kept_counterpart": "5429412d",
+   "uid": "670647b98480dbfc89ea1bf10f7b852d610d38e4c858ebf40f5a385961e1bc8e",
+   "kept_uid": "5429412d34dc1609f07046dda3ec067bfdf39a36efb921fe6befc1cd5fc7c5ac"
+  },
+  {
+   "uid8": "2f14376e",
+   "year": 2017,
+   "grade": "10",
+   "num": "2",
+   "reason": "duplicate_final_task_2017_10_2: kept eeb781bd (fuller text)",
+   "kept_counterpart": "eeb781bd",
+   "uid": "2f14376ea6d97bb329e4824e690a4f40ba58c0af3ca232ca0fb2f55a05146db6",
+   "kept_uid": "eeb781bd0f213595ef4a1dac23f7e809deed029ca4873a8fc464c7ab35f6886d"
+  },
+  {
+   "uid8": "8ea1c76e",
+   "year": 2017,
+   "grade": "8",
+   "num": "1",
+   "reason": "duplicate_final_task_2017_8_1: kept b643a67e (fuller text)",
+   "kept_counterpart": "b643a67e",
+   "uid": "8ea1c76e4adc160e149b4afe611491e0e6c1e6c18e85ea5dfa70690db87a33c3",
+   "kept_uid": "b643a67ea1091e4f003bfffabebff86b0819cc6870e62e4b6f47db4530b71e15"
+  },
+  {
+   "uid8": "6643b43b",
+   "year": 2016,
+   "grade": "8",
+   "num": "2",
+   "reason": "duplicate_final_task_2016_8_2: kept c0da2925 (fuller text)",
+   "kept_counterpart": "c0da2925",
+   "uid": "6643b43bcd89964d521d688cfa34908e76716f44e1a00e67dc0d8537f373f514",
+   "kept_uid": "c0da29250878dcf21aabd474552440349039143846b4bfcfd594c894236221a9"
+  },
+  {
+   "uid8": "a9094beb",
+   "year": 2016,
+   "grade": "7",
+   "num": "4",
+   "reason": "duplicate_final_task_2016_7_4: kept d9ec664c (fuller text)",
+   "kept_counterpart": "d9ec664c",
+   "uid": "a9094beb5a3a8c3fd4157329fbc2d887431191be674b1b123df1090b7e949560",
+   "kept_uid": "d9ec664ca693654953cdaf0aaa685fe3158c00dd32d0295d2211c0eaaf7954ab"
+  },
+  {
+   "uid8": "4b967193",
+   "year": 2016,
+   "grade": "7",
+   "num": "2",
+   "reason": "duplicate_final_task_2016_7_2: kept 15e781ec (fuller text)",
+   "kept_counterpart": "15e781ec",
+   "uid": "4b9671938a2b0d63df310de2be55205186a76fe24e59416086244c2f3fe44fc2",
+   "kept_uid": "15e781ec82ab8eecd31cadf71ef91f119330a603e1301a678dbb9e650af5dfb8"
+  },
+  {
+   "uid8": "6c2deb7f",
+   "year": 2016,
+   "grade": "10",
+   "num": "5",
+   "reason": "duplicate_final_task_2016_10_5: kept b00c9b67 (fuller text)",
+   "kept_counterpart": "b00c9b67",
+   "uid": "6c2deb7fafadef0ff6504089840e3fedbd52579f31ccf30bfaafb9e4604b53fa",
+   "kept_uid": "b00c9b67af7313bac2b65ab7e697a5cffc4c9aa89bf5303641250d25da5af6a3"
+  },
+  {
+   "uid8": "7c8238d2",
+   "year": 2016,
+   "grade": "8",
+   "num": "4",
+   "reason": "duplicate_final_task_2016_8_4: kept 5b27e779 (fuller text)",
+   "kept_counterpart": "5b27e779",
+   "uid": "7c8238d25adc44ae96c4ab2b8d66b8eceeaf3af2be3b636393c9dabd8e69766f",
+   "kept_uid": "5b27e779d647c255fb18160a94745d820be1c10ed7039561f7c458fd8fbcda73"
+  },
+  {
+   "uid8": "63a5fc22",
+   "year": 2016,
+   "grade": "9",
+   "num": "5",
+   "reason": "duplicate_final_task_2016_9_5: kept 55a958f6 (fuller text)",
+   "kept_counterpart": "55a958f6",
+   "uid": "63a5fc221136a13a27807feb8d210037e19b73c4381d2da404ab97768e05eb05",
+   "kept_uid": "55a958f6416df4fc332ad9a45f9f6c4d9de5ad53186a2d5d817e34e9db2351ca"
+  },
+  {
+   "uid8": "b01f7caf",
+   "year": 2016,
+   "grade": "8",
+   "num": "3",
+   "reason": "duplicate_final_task_2016_8_3: kept 3d97d243 (fuller text)",
+   "kept_counterpart": "3d97d243",
+   "uid": "b01f7caf3eb8582918593589c23f479a971fda36c2d1068cca9f6e20246b0aac",
+   "kept_uid": "3d97d243ecb0f363722685eb0c8774a0dc5457dce29874f66d3f8a3131d5d794"
+  },
+  {
+   "uid8": "5ea68f4a",
+   "year": 2016,
+   "grade": "9",
+   "num": "3",
+   "reason": "duplicate_final_task_2016_9_3: kept 8246d6db (fuller text)",
+   "kept_counterpart": "8246d6db",
+   "uid": "5ea68f4a6aca92850a0dad47e6644fb9d06dddb984ed7cdd86a32e48aa205741",
+   "kept_uid": "8246d6dbf9acf3bd459bbf38c87198bbd93d99950a8030e66e7d4349aa759e63"
+  },
+  {
+   "uid8": "492ac6b1",
+   "year": 2016,
+   "grade": "10",
+   "num": "3",
+   "reason": "duplicate_final_task_2016_10_3: kept 03bc5ef7 (fuller text)",
+   "kept_counterpart": "03bc5ef7",
+   "uid": "492ac6b1ad268de71ca4b472b538fa843b57a64093a4bbbf5e36a15c76f52045",
+   "kept_uid": "03bc5ef7c83e53520977334f116163ec65671dab809cd715be986d4442e29772"
+  },
+  {
+   "uid8": "d0ad6e28",
+   "year": 2017,
+   "grade": "8",
+   "num": "3",
+   "reason": "wrong_task_at_position: labeled 2017 8кл№3 '2 тур', no source; text (1/x+1/y=1/2025) is not the official 2017 final 8.3; restored b399523f as the correct task",
+   "kept_counterpart": null,
+   "uid": "d0ad6e288af41b014211a087a997b56f13aee403fef2357d429478ea44c3c21d"
+  },
+  {
+   "uid8": "2b838f00",
+   "year": 2024,
+   "grade": "9",
+   "num": "3",
+   "reason": "wrong_formula: kept copy had 9/a_n instead of official 3/a_n (PDF: an+1·an = an·an-1 − 3); restored 0087580a",
+   "kept_counterpart": null,
+   "uid": "2b838f00e83a36a1796dd2656e1f27db8c710c1e763178e8e592872fe14d5d88"
+  }
+ ],
+ "text_fixes": [
+  {
+   "uid8": "b2b8234b",
+   "what": "2020 8кл№1: LaTeX-дроби a²+b³/a = b²+a³/b (по рендеру страницы PDF)"
+  },
+  {
+   "uid8": "956a0a71",
+   "what": "2020 9кл№1: восстановлен повреждённый текст (та же задача, что 8кл№1; по рендеру)"
+  },
+  {
+   "uid8": "e222dd4a",
+   "what": "2021 8кл№2: LaTeX-дроби 1/(a+x)=6, 1/(b+y)=3, 1/(c+x+y)=2 (по тексту PDF)"
+  },
+  {
+   "uid8": "e3049788",
+   "what": "2017 9кл№4: восстановлена потерянная дробь xy³/(x+y) (по тексту PDF)"
+  },
+  {
+   "uid8": "0bd001dd",
+   "what": "2014 10кл№5: LaTeX-дроби (x+3)/y+(y+3)/x и т.д. (по рендеру страницы PDF)"
+  },
+  {
+   "uid8": "f6384997",
+   "what": "2018 11кл№1: исправлена нотация {x}+2/5 (по тексту PDF)"
+  },
+  {
+   "uid8": "7685ff46",
+   "what": "2019 8кл№3: точка (0, 2019) — убран артефакт запятой (по тексту PDF)"
+  },
+  {
+   "uid8": "8ec175c2",
+   "what": "2018 11кл№3: восстановлена обрезанная формула (a²+a+1)/(b²+b+1) = 2018²+2018+1 (по рендеру страницы)"
+  },
+  {
+   "uid8": "b399523f",
+   "what": "2017 8кл№3: 20172017 -> 2017^2017 (по рендеру страницы)"
+  },
+  {
+   "uid8": "0087580a",
+   "what": "2024 9кл№3: формула an+1 = an−1 − 3/an в LaTeX (по тексту PDF и решению)"
+  },
+  {
+   "uids": "11 записей 2020 года",
+   "what": "моджибейк ј->ё"
+  }
+ ],
+ "swaps": [
+  {
+   "case": "2017 8кл№3",
+   "wrong_kept": "d0ad6e28",
+   "restored": "b399523f",
+   "basis": "официальная задача (2x+y)(2y+x)=2017^2017 по рендеру страницы"
+  },
+  {
+   "case": "2024 9кл№3",
+   "wrong_kept": "2b838f00",
+   "restored": "0087580a",
+   "basis": "рекуррентность an+1·an = an·an−1 − 3 (решение в PDF, ответ n=336 сходится)"
+  },
+  {
+   "case": "2022 8кл№5",
+   "kept": "35e0c494",
+   "quarantined": "40f19b02",
+   "basis": "вопросы задач различаются; официальный вопрос ('спустя 2021 ход') подтверждён в PDF организатора"
+  }
+ ],
+ "integrity": {},
+ "ledger_summary": {
+  "original_kurchatov_records": 504,
+  "original_rounds": {
+   "2 тур": 272,
+   "Отборочный этап": 232
+  },
+  "catalog_now": 368,
+  "catalog_rounds_now": {
+   "Заключительный этап": 293,
+   "Отборочный этап": 75
+  },
+  "quarantine_kurchatov": 136,
+  "tour_effort": "272 '2 тур' -> 240 relabeled to 'Заключительный этап' + 32 quarantined",
+  "note_53": "53 'Заключительный этап' записей происходят из записей, исходно имевших ярлык 'Отборочный этап'; переход зафиксирован леджером; когда и как именно выполнялись эти переименования, по сохранённым материалам не установлено",
+  "note_2023": "2023 package (28 relabels): позиции и текст сверены в предыдущем заходе (pkg_kur2023_log.json); текст переподтверждён по фрагментам в этой сессии",
+  "recheck_note": "verify/recheck_finals.json: 262 записи, 191 совпадение фрагментов текста (не подтверждение полного условия), 71 manual_review_needed — полный разбор этих 71 в сохранённых материалах отсутствует",
+  "unconfirmed_2023": [
+   "c3f3d56b21bbc8ade91472201fd6c1de418f8c5b264f704926485959168a2da1 (2023 6кл№5)",
+   "b68c252b6910934f4c82637f3074963e1866ce3a84202473545a1200c1c972be (2023 7кл№2)"
+  ],
+  "doc_semantics": "doc = документы, подтверждённые фактическими загрузками (проверенные URL); docs_searched = документы, в которых искали текст карантинной записи; null = URL не восстановлен"
+ }
+}
