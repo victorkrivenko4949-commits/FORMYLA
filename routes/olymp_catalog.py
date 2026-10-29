@@ -238,12 +238,40 @@ def olympiad(slug):
     # Баг Лаврика #27: пока ничего не выбрано — показываем только выбор класса и этапа,
     # список задач появляется после выбора (picked).
     picked = bool(q or year or grade or rnd)
+    # Каскадные фильтры: опции каждого списка зависят от остальных выборов,
+    # поэтому выбрать комбинацию без задач («пустой пробник») нельзя.
+    # Санитизация: пришедшие в URL несовместимые значения отбрасываем.
+
+    def _options(_grade, _rnd, _year):
+        grades = sorted({str(t["grade"]) for t in all_tasks
+                         if (not _rnd or str(t.get("round", "")) == str(_rnd))
+                         and (not _year or str(t["year"]) == str(_year))}, key=_grade_key)
+        rounds = _rounds([t for t in all_tasks
+                          if (not _grade or str(t["grade"]) == str(_grade))
+                          and (not _year or str(t["year"]) == str(_year))])
+        years_all = sorted({t["year"] for t in all_tasks
+                            if (not _grade or str(t["grade"]) == str(_grade))
+                            and (not _rnd or str(t.get("round", "")) == str(_rnd))}, reverse=True)
+        return grades, rounds, years_all
+
+    for _ in range(3):
+        grades, rounds, years_all = _options(grade, rnd, year)
+        if grade and grade not in grades:
+            grade = ""
+        elif rnd and rnd not in rounds:
+            rnd = ""
+        elif year and str(year) not in {str(y) for y in years_all}:
+            year = ""
+        else:
+            break
+    # Пересчёт по финальным (санитизированным) значениям — иначе при
+    # нескольких невалидных параметрах списки оставались пустыми.
+    grades, rounds, years_all = _options(grade, rnd, year)
+    picked = bool(q or year or grade or rnd)
     tasks = _filter_tasks(all_tasks, q.lower(), year, grade, rnd) if picked else []
-    grades = sorted({str(t["grade"]) for t in all_tasks}, key=_grade_key)
-    years_all = sorted({t["year"] for t in all_tasks}, reverse=True)
     return render_template("olymp_catalog/olympiad.html", slug=slug, meta=meta, years=_group(tasks, all_tasks),
                            count=len(tasks), total=len(all_tasks), q=q, year=year, grade=grade,
-                           round=rnd, rounds=_rounds(all_tasks), picked=picked,
+                           round=rnd, rounds=rounds, picked=picked,
                            grades=grades, years_all=years_all, labels=STATUS_LABEL)
 
 

@@ -11,10 +11,10 @@
   {# Баг Лаврика #27: после выбора олимпиады — только выбор класса и этапа; задачи показываем после выбора #}
   <div class="oc-toolbar" id="oc-filter">
     <form class="oc-search" method="get">
-      <select class="oc-select" name="grade"><option value="">Класс: все</option>{% for g in grades %}<option value="{{ g }}" {% if g == grade %}selected{% endif %}>{{ g }} класс</option>{% endfor %}</select>
-      <select class="oc-select" name="round"><option value="">Этап: все</option>{% for r in rounds %}<option value="{{ r }}" {% if r == round %}selected{% endif %}>{{ r }}</option>{% endfor %}</select>
+      <select class="oc-select" name="grade" onchange="this.form.submit()"><option value="">Класс: все</option>{% for g in grades %}<option value="{{ g }}" {% if g == grade %}selected{% endif %}>{{ g }} класс</option>{% endfor %}</select>
+      <select class="oc-select" name="round" onchange="this.form.submit()"><option value="">Этап: все</option>{% for r in rounds %}<option value="{{ r }}" {% if r == round %}selected{% endif %}>{{ r }}</option>{% endfor %}</select>
       {% if picked %}
-      <select class="oc-select" name="year"><option value="">Все годы</option>{% for y in years_all %}<option value="{{ y }}" {% if y|string == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select>
+      <select class="oc-select" name="year" onchange="this.form.submit()"><option value="">Все годы</option>{% for y in years_all %}<option value="{{ y }}" {% if y|string == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select>
       <input type="search" name="q" value="{{ q }}" placeholder="Поиск по условию, решению, ответу…">
       {% endif %}
       <button class="oc-btn pri" type="submit">Показать задачи</button>
