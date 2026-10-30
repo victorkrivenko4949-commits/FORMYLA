@@ -9,7 +9,7 @@ import html
 import re
 import secrets
 from typing import Any
-from flask import session, g
+from flask import session, g, request, redirect
 
 _CSRF_SESSION_KEY = "_csrf_token"
 _CONTROL_CHARS_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
@@ -72,6 +72,7 @@ def _security_headers(response):
 
 def init_security(app) -> None:
     """Wire security helpers into a Flask app.
+    - redirects www.formyla.net and *.onrender.com to https://formyla.net
     - adds security headers on every response
     - exposes get_csrf_token / csrf_token to Jinja templates
     - ensures a CSRF token exists for each session
@@ -80,6 +81,16 @@ def init_security(app) -> None:
     later via validate_csrf() in individual views.
     """
     app.after_request(_security_headers)
+
+    @app.before_request
+    def _redirect_to_canonical_domain():
+        if request.path == "/healthz":
+            return None
+        host = (request.host or "").split(":")[0].lower()
+        if host in ("www.formyla.net", "formyla-com.onrender.com"):
+            target = f"https://formyla.net{request.full_path.rstrip('?')}"
+            return redirect(target, code=301)
+        return None
 
     @app.before_request
     def _ensure_csrf_token():
