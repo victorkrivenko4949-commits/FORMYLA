@@ -1755,6 +1755,26 @@
   "fig_solution": []
  },
  {
+  "uid": "b1d0d1f5d3b045bb928adde3d903ea4c36d073441bb7b7f1ecedf9248864ad11",
+  "olymp": "Олимпиада «Курчатов»",
+  "year": 2022,
+  "round": "Отборочный этап",
+  "day": 0,
+  "grade": "6",
+  "num": "1",
+  "status": "official",
+  "answer": "Длина стороны квадрата B равна 48, длина стороны квадрата C равна 60.",
+  "source": "https://rsr-olymp.ru/upload/files/tasks/389/2021/389-ans-math-6-7-otbor-21-22.pdf#p1",
+  "text": "Прямоугольник разрезан на семь квадратов, как изображено на рисунке. Известно, что длина стороны квадрата D равна 24. Найдите длины сторон квадратов B и C.",
+  "solution": "",
+  "geo": false,
+  "fig_statement": [
+   "FINAL_FIGURES/76c8566e8d4bb13c3ce049aad134af3293f29a8f161e54e5b1a48a4bceef86d1_statement.png"
+  ],
+  "fig_solution": [],
+  "garbled": false
+ },
+ {
   "uid": "56e40f4c06a1bff6f931993768ea5b3cf19d6118eb4e27ae634ce692262becd3",
   "olymp": "Олимпиада «Курчатов»",
   "year": 2022,
