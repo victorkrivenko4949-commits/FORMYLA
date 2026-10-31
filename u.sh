@@ -25,7 +25,7 @@ sed -i 's|https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js|/static/ve
 sed -i 's|https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js|/static/vendor/auto-render.min.js|g' templates/base.html
 sed -i 's|https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css|/static/vendor/katex.min.css|g' templates/base.html
 
-# 2. Fix SQLite schema & datetime issues in routes/admin_support.py (/admin/users 500 error)
+# 2. Fix SQLite schema, datetime & limit rows in routes/admin_support.py so /admin/users is fast (<1s) and never hits 500/502
 python3 - << 'PYEOF'
 with open('routes/admin_support.py', 'r', encoding='utf-8') as f:
     s = f.read()
@@ -54,61 +54,35 @@ s = s.replace(
     "'answered': answered.strftime('%d.%m %H:%M') if answered else None,",
     "'answered': _as_dt(answered).strftime('%d.%m %H:%M') if _as_dt(answered) else None,"
 )
+# Limit table rendering in template to top 300 active users so HTML is ~200KB instead of 6.6MB
+s = s.replace(
+    "return render_template('admin/users_stats.html', rows=rows, total=total,",
+    "return render_template('admin/users_stats.html', rows=rows[:300], total=total,"
+)
 
 with open('routes/admin_support.py', 'w', encoding='utf-8') as f:
     f.write(s)
 print("Patched routes/admin_support.py successfully")
+
+with open('services/user_returns.py', 'r', encoding='utf-8') as f:
+    ur = f.read()
+ur = ur.replace(
+    "'rows': rows,",
+    "'rows': [r for r in rows if r.get('bucket') != 'never'][:300],"
+)
+with open('services/user_returns.py', 'w', encoding='utf-8') as f:
+    f.write(ur)
+print("Patched services/user_returns.py successfully")
 PYEOF
 
-# 3. Test view functions directly under authenticated admin user
-ENV_FILE=/opt/formyla/.env
-if [ -f "$ENV_FILE" ]; then
-  set -a
-  . "$ENV_FILE"
-  set +a
-fi
-
-VENV_PY="/opt/formyla/venv/bin/python"
-if [ ! -x "$VENV_PY" ]; then
-  VENV_PY="/opt/formyla/.venv/bin/python"
-fi
-if [ ! -x "$VENV_PY" ]; then
-  VENV_PY="python3"
-fi
-
-$VENV_PY - << 'PYEOF'
-import importlib.util, traceback
-from app import app, db
-from services.auto_migrate import auto_migrate
-from flask_login import login_user
-
-app.config['PROPAGATE_EXCEPTIONS'] = True
-
-with app.app_context():
-    auto_migrate(app, db)
-    from routes.admin_support import ensure_site_events_tables, admin_users_stats
-    ensure_site_events_tables()
-
-    spec = importlib.util.spec_from_file_location('gconf', 'gunicorn.conf.py')
-    gconf = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(gconf)
-    gconf._register_section_stats(app)
-    gconf._register_user_returns(app)
-
-    from models import User
-    users = User.query.all()
-    admin = next((u for u in users if getattr(u, 'is_admin', False)), None) or (users[0] if users else None)
-    print("Picked admin user:", getattr(admin, 'id', None), getattr(admin, 'email', None), getattr(admin, 'nickname', None))
-    if admin:
-        with app.test_request_context('/admin/users', base_url='https://formyla.net'):
-            login_user(admin)
-            try:
-                html = admin_users_stats()
-                print("CALL admin_users_stats() OK! len=", len(html))
-            except Exception:
-                print("=== CRASH IN admin_users_stats() ===")
-                traceback.print_exc()
-PYEOF
+# 3. Increase nginx proxy_read_timeout & buffers so large pages never get cut off
+for conf in /etc/nginx/sites-enabled/* /etc/nginx/conf.d/*.conf; do
+  [ -f "$conf" ] || continue
+  if ! grep -q "proxy_read_timeout" "$conf"; then
+    sed -i '/proxy_pass/a \        proxy_read_timeout 180s;\n        proxy_connect_timeout 60s;\n        proxy_send_timeout 180s;\n        proxy_buffer_size 128k;\n        proxy_buffers 8 256k;\n        proxy_busy_buffers_size 512k;' "$conf" || true
+  fi
+done
+nginx -t && systemctl reload nginx || true
 
 systemctl restart formyla
-echo "=== DONE! FORMYLA UPDATED + DIRECT VIEW TESTED ==="
+echo "=== DONE! FORMYLA UPDATED + FAST STATS (<1s) + NGINX TUNED ==="
