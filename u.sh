@@ -77,7 +77,7 @@ if [ ! -x "$VENV_PY" ]; then
 fi
 
 $VENV_PY - << 'PYEOF'
-import traceback
+import importlib.util, traceback
 from app import app, db
 from services.auto_migrate import auto_migrate
 from flask_login import login_user
@@ -89,24 +89,25 @@ with app.app_context():
     from routes.admin_support import ensure_site_events_tables, admin_users_stats
     ensure_site_events_tables()
 
-    from gunicorn.conf import _register_section_stats, _register_user_returns
-    _register_section_stats(app)
-    _register_user_returns(app)
+    spec = importlib.util.spec_from_file_location('gconf', 'gunicorn.conf.py')
+    gconf = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gconf)
+    gconf._register_section_stats(app)
+    gconf._register_user_returns(app)
 
     from models import User
     users = User.query.all()
     admin = next((u for u in users if getattr(u, 'is_admin', False)), None) or (users[0] if users else None)
     print("Picked admin user:", getattr(admin, 'id', None), getattr(admin, 'email', None), getattr(admin, 'nickname', None))
     if admin:
-        for url in ['/admin/users', '/admin/stats/overview', '/admin/users/sections', '/admin/users/returns', '/prep/coach']:
-            with app.test_request_context(url, base_url='https://formyla.net'):
-                login_user(admin)
-                try:
-                    rv = app.full_dispatch_request()
-                    print(f"DIRECT {url} -> {rv.status_code} loc={rv.headers.get('Location')} len={len(rv.get_data())}")
-                except Exception:
-                    print(f"=== CRASH ON {url} ===")
-                    traceback.print_exc()
+        with app.test_request_context('/admin/users', base_url='https://formyla.net'):
+            login_user(admin)
+            try:
+                html = admin_users_stats()
+                print("CALL admin_users_stats() OK! len=", len(html))
+            except Exception:
+                print("=== CRASH IN admin_users_stats() ===")
+                traceback.print_exc()
 PYEOF
 
 systemctl restart formyla
