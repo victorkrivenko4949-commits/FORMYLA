@@ -25,14 +25,25 @@ sed -i 's|https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js|/static/ve
 sed -i 's|https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js|/static/vendor/auto-render.min.js|g' templates/base.html
 sed -i 's|https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css|/static/vendor/katex.min.css|g' templates/base.html
 
-# 2. Fix SQLite datetime string crash in routes/admin_support.py (/admin/users 500 error)
+# 2. Fix SQLite schema & datetime issues in routes/admin_support.py (/admin/users 500 error)
 python3 - << 'PYEOF'
 with open('routes/admin_support.py', 'r', encoding='utf-8') as f:
     s = f.read()
 
+# Fix 2a: PRAGMA table_info column name is r[1], not r[0]
+s = s.replace(
+    "cols = [r[0] for r in db.session.execute(text(\n                        'PRAGMA table_info(site_events)')).fetchall()]",
+    "cols = [r[1] for r in db.session.execute(text(\n                        'PRAGMA table_info(site_events)')).fetchall()]"
+)
+
+# Fix 2b: SQLite raw SQL returns timestamps as strings in ev_rows
 s = s.replace(
     '_d = (_ts + _MSK).date().isoformat()',
     '_dt_ts = _as_dt(_ts)\n        if not _dt_ts:\n            continue\n        _d = (_dt_ts + _MSK).date().isoformat()'
+)
+s = s.replace(
+    'hour_sets[(_t + _MSK).hour].add(_uid)',
+    'hour_sets[(_as_dt(_t) + _MSK).hour].add(_uid)'
 )
 s = s.replace(
     "'when': when.strftime('%d.%m %H:%M') if when else '—',",
@@ -46,10 +57,62 @@ s = s.replace(
     "'answered': answered.strftime('%d.%m %H:%M') if answered else None,",
     "'answered': _as_dt(answered).strftime('%d.%m %H:%M') if _as_dt(answered) else None,"
 )
+
 with open('routes/admin_support.py', 'w', encoding='utf-8') as f:
     f.write(s)
 print("Patched routes/admin_support.py successfully")
 PYEOF
 
+# 3. Run auto_migrate and test /admin/users directly so we see any remaining DB issue
+ENV_FILE=/opt/formyla/.env
+if [ -f "$ENV_FILE" ]; then
+  set -a
+  . "$ENV_FILE"
+  set +a
+fi
+
+VENV_PY="/opt/formyla/venv/bin/python"
+if [ ! -x "$VENV_PY" ]; then
+  VENV_PY="/opt/formyla/.venv/bin/python"
+fi
+if [ ! -x "$VENV_PY" ]; then
+  VENV_PY="python3"
+fi
+
+$VENV_PY - << 'PYEOF'
+import traceback
+from app import app, db
+from services.auto_migrate import auto_migrate
+
+with app.app_context():
+    try:
+        created, added = auto_migrate(app, db)
+        print("auto_migrate OK:", len(created), "tables,", len(added), "columns")
+    except Exception as e:
+        print("auto_migrate err:", e)
+
+    try:
+        from routes.admin_support import ensure_site_events_tables
+        ensure_site_events_tables()
+        print("ensure_site_events_tables OK")
+    except Exception as e:
+        print("ensure_site_events_tables err:", e)
+
+    try:
+        from models import User
+        admin = User.query.filter_by(is_admin=True).first() or User.query.first()
+        if admin:
+            with app.test_client() as c:
+                with c.session_transaction() as sess:
+                    sess['_user_id'] = str(admin.id)
+                    sess['_fresh'] = True
+                r = c.get('/admin/users')
+                print("TEST /admin/users status:", r.status_code)
+                if r.status_code >= 500:
+                    print(r.get_data(as_text=True)[:1500])
+    except Exception:
+        traceback.print_exc()
+PYEOF
+
 systemctl restart formyla
-echo "=== DONE! FORMYLA UPDATED + VPN-FREE ASSETS + STATS FIXED ==="
+echo "=== DONE! FORMYLA UPDATED + AUTO-MIGRATED + STATS TESTED ==="
