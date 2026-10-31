@@ -118,16 +118,6 @@ def _advance(cs, intake, data):
 
 
 def attach(bp):
-    @bp.after_app_request
-    def redirect_completed_intake(response):
-        if request.endpoint in ('intake.start_intake', 'intake.answer_intake', 'intake.submit_intake_anchor') and response.is_json:
-            data = response.get_json(silent=True)
-            if response.status_code == 200 and isinstance(data, dict) and data.get('done') and data.get('result') and not data.get('error'):
-                data['redirect_url'] = '/daily_tasks/'
-                response.set_data(current_app.json.dumps(data))
-                response.headers['Cache-Control'] = 'no-store'
-        return response
-
     # The before_app_request gate that rendered daily_tasks/intake_probe.html
     # on /daily_tasks is intentionally gone: nobody who is already on the site
     # should see the test. New users get it inside the questionnaire.
