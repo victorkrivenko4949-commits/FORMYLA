@@ -60,7 +60,7 @@ with open('routes/admin_support.py', 'w', encoding='utf-8') as f:
 print("Patched routes/admin_support.py successfully")
 PYEOF
 
-# 3. Test all stats pages under real admin user and print exact traceback if any
+# 3. Test view functions directly under authenticated admin user
 ENV_FILE=/opt/formyla/.env
 if [ -f "$ENV_FILE" ]; then
   set -a
@@ -80,31 +80,34 @@ $VENV_PY - << 'PYEOF'
 import traceback
 from app import app, db
 from services.auto_migrate import auto_migrate
+from flask_login import login_user
 
 app.config['PROPAGATE_EXCEPTIONS'] = True
 
 with app.app_context():
     auto_migrate(app, db)
-    from routes.admin_support import ensure_site_events_tables
+    from routes.admin_support import ensure_site_events_tables, admin_users_stats
     ensure_site_events_tables()
+
+    from gunicorn.conf import _register_section_stats, _register_user_returns
+    _register_section_stats(app)
+    _register_user_returns(app)
 
     from models import User
     users = User.query.all()
     admin = next((u for u in users if getattr(u, 'is_admin', False)), None) or (users[0] if users else None)
-    print("Picked admin user:", getattr(admin, 'id', None), getattr(admin, 'nickname', None), "is_admin=", getattr(admin, 'is_admin', None))
+    print("Picked admin user:", getattr(admin, 'id', None), getattr(admin, 'email', None), getattr(admin, 'nickname', None))
     if admin:
-        with app.test_client() as c:
-            with c.session_transaction() as sess:
-                sess['_user_id'] = str(admin.id)
-                sess['_fresh'] = True
-            for url in ['/admin/users', '/admin/stats/overview', '/admin/users/sections', '/admin/users/returns', '/prep/coach']:
+        for url in ['/admin/users', '/admin/stats/overview', '/admin/users/sections', '/admin/users/returns', '/prep/coach']:
+            with app.test_request_context(url, base_url='https://formyla.net'):
+                login_user(admin)
                 try:
-                    r = c.get(url)
-                    print(f"TEST {url} -> {r.status_code} (len={len(r.data)})")
+                    rv = app.full_dispatch_request()
+                    print(f"DIRECT {url} -> {rv.status_code} loc={rv.headers.get('Location')} len={len(rv.get_data())}")
                 except Exception:
                     print(f"=== CRASH ON {url} ===")
                     traceback.print_exc()
 PYEOF
 
 systemctl restart formyla
-echo "=== DONE! FORMYLA UPDATED + ALL STATS ROUTES TESTED ==="
+echo "=== DONE! FORMYLA UPDATED + DIRECT VIEW TESTED ==="
