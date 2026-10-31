@@ -28,6 +28,11 @@ PILOT_ENABLED = True
 # (victor=1 временно исключён для проверки оплаты; вернуть: (1, 5, 7452))
 PILOT_USER_IDS = (5, 7452)
 
+# id, у которых на старте снимается ТОЛЬКО бесплатная бета-подписка
+# (is_beta_access = TRUE). Оплаченные подписки не трогаются.
+# После проверки оплаты — сделать пустым: ()
+PILOT_REVOKE_BETA_IDS = (1,)
+
 # Пилотные тарифы (см. services/subscription.py → PLAN_LIMITS)
 PILOT_PLANS = ('premium_intense', 'premium_calm')
 
@@ -77,6 +82,7 @@ def ensure_pilot_subscriptions() -> bool:
     Вызывается на старте приложения (после auto_migrate). Для каждого
     пилотного id: если нет активной подписки — активирует PILOT_DEFAULT_PLAN
     с is_beta=True (без оплаты). Существующие подписки не трогает.
+    Для id из PILOT_REVOKE_BETA_IDS — снимает активную бета-подписку (не оплаченную).
 
     Атомарность: успешный commit → True; любая ошибка → rollback и False.
     Никогда не бросает исключение наружу (пилот не должен ронять старт).
@@ -85,9 +91,32 @@ def ensure_pilot_subscriptions() -> bool:
         return False
     try:
         from models import db as _models_db
+        from sqlalchemy import text as _text
         from services.subscription import get_subscription_service
         svc = get_subscription_service()
         dirty = False
+        for rid in PILOT_REVOKE_BETA_IDS:
+            if rid in PILOT_USER_IDS:
+                continue
+            try:
+                res = _models_db.session.execute(_text(
+                    "UPDATE subscriptions SET status = 'cancelled' "
+                    "WHERE user_id = :u AND status = 'active' AND is_beta_access = TRUE"),
+                    {'u': rid})
+                if res.rowcount:
+                    still = svc.get_user_plan(rid)
+                    if not still.get('is_premium'):
+                        _models_db.session.execute(_text(
+                            "UPDATE users SET current_plan = 'free', plan_expires_at = NULL "
+                            "WHERE id = :u"), {'u': rid})
+                    dirty = True
+                    logger.info('[PILOT] user %s: beta subscription revoked', rid)
+            except Exception as e:
+                logger.warning('[PILOT] user %s: beta revoke failed: %s', rid, e)
+                try:
+                    _models_db.session.rollback()
+                except Exception:
+                    pass
         for user_id in PILOT_USER_IDS:
             try:
                 plan_info = svc.get_user_plan(user_id)
