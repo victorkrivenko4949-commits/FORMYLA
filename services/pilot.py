@@ -6,9 +6,9 @@
 как раньше — ничего не меняется.
 
 Пилотные аккаунты (по id в БД):
-  * victor  (id=1)  — владелец
   * Lavrik  (id=5)
   * Damian  (id=7452) — 3-й админ
+  (victor id=1 временно исключён — проверка оплаты как обычный пользователь)
 
 Включение/выключение пилота целиком — флагом PILOT_ENABLED ниже.
 """
@@ -24,9 +24,9 @@ logger = logging.getLogger('formyla.pilot')
 
 PILOT_ENABLED = True
 
-# id пилотных аккаунтов: victor=1, Lavrik=5, Damian=7452
-# (проверено в prod 27.10.2026; Damian — 3-й админ)
-PILOT_USER_IDS = (1, 5, 7452)
+# id пилотных аккаунтов: Lavrik=5, Damian=7452
+# (victor=1 временно исключён для проверки оплаты; вернуть: (1, 5, 7452))
+PILOT_USER_IDS = (5, 7452)
 
 # Пилотные тарифы (см. services/subscription.py → PLAN_LIMITS)
 PILOT_PLANS = ('premium_intense', 'premium_calm')
