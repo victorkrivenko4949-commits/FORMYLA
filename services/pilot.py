@@ -6,9 +6,9 @@
 как раньше — ничего не меняется.
 
 Пилотные аккаунты (по id в БД):
+  * victor  (id=1)  — владелец (без бесплатной беты — проверка оплаты)
   * Lavrik  (id=5)
   * Damian  (id=7452) — 3-й админ
-  (victor id=1 временно исключён — проверка оплаты как обычный пользователь)
 
 Включение/выключение пилота целиком — флагом PILOT_ENABLED ниже.
 """
@@ -24,12 +24,11 @@ logger = logging.getLogger('formyla.pilot')
 
 PILOT_ENABLED = True
 
-# id пилотных аккаунтов: Lavrik=5, Damian=7452
-# (victor=1 временно исключён для проверки оплаты; вернуть: (1, 5, 7452))
-PILOT_USER_IDS = (5, 7452)
+# id пилотных аккаунтов: victor=1, Lavrik=5, Damian=7452
+PILOT_USER_IDS = (1, 5, 7452)
 
-# id, у которых на старте снимается ТОЛЬКО бесплатная бета-подписка
-# (is_beta_access = TRUE). Оплаченные подписки не трогаются.
+# Пилотные id, которым НЕ выдаётся бесплатная бета, а активная бета
+# (is_beta_access = TRUE) снимается на старте. Оплаченные подписки не трогаются.
 # После проверки оплаты — сделать пустым: ()
 PILOT_REVOKE_BETA_IDS = (1,)
 
@@ -82,7 +81,8 @@ def ensure_pilot_subscriptions() -> bool:
     Вызывается на старте приложения (после auto_migrate). Для каждого
     пилотного id: если нет активной подписки — активирует PILOT_DEFAULT_PLAN
     с is_beta=True (без оплаты). Существующие подписки не трогает.
-    Для id из PILOT_REVOKE_BETA_IDS — снимает активную бета-подписку (не оплаченную).
+    Для id из PILOT_REVOKE_BETA_IDS — снимает активную бета-подписку (не оплаченную)
+    и бету им не выдаёт.
 
     Атомарность: успешный commit → True; любая ошибка → rollback и False.
     Никогда не бросает исключение наружу (пилот не должен ронять старт).
@@ -96,8 +96,6 @@ def ensure_pilot_subscriptions() -> bool:
         svc = get_subscription_service()
         dirty = False
         for rid in PILOT_REVOKE_BETA_IDS:
-            if rid in PILOT_USER_IDS:
-                continue
             try:
                 res = _models_db.session.execute(_text(
                     "UPDATE subscriptions SET status = 'cancelled' "
@@ -118,6 +116,8 @@ def ensure_pilot_subscriptions() -> bool:
                 except Exception:
                     pass
         for user_id in PILOT_USER_IDS:
+            if user_id in PILOT_REVOKE_BETA_IDS:
+                continue  # без бесплатной беты — доступ только после оплаты
             try:
                 plan_info = svc.get_user_plan(user_id)
                 if plan_info.get('is_premium'):
