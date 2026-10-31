@@ -30,13 +30,10 @@ python3 - << 'PYEOF'
 with open('routes/admin_support.py', 'r', encoding='utf-8') as f:
     s = f.read()
 
-# Fix 2a: PRAGMA table_info column name is r[1], not r[0]
 s = s.replace(
     "cols = [r[0] for r in db.session.execute(text(\n                        'PRAGMA table_info(site_events)')).fetchall()]",
     "cols = [r[1] for r in db.session.execute(text(\n                        'PRAGMA table_info(site_events)')).fetchall()]"
 )
-
-# Fix 2b: SQLite raw SQL returns timestamps as strings in ev_rows
 s = s.replace(
     '_d = (_ts + _MSK).date().isoformat()',
     '_dt_ts = _as_dt(_ts)\n        if not _dt_ts:\n            continue\n        _d = (_dt_ts + _MSK).date().isoformat()'
@@ -63,7 +60,7 @@ with open('routes/admin_support.py', 'w', encoding='utf-8') as f:
 print("Patched routes/admin_support.py successfully")
 PYEOF
 
-# 3. Run auto_migrate and test /admin/users directly so we see any remaining DB issue
+# 3. Test all stats pages under real admin user and print exact traceback if any
 ENV_FILE=/opt/formyla/.env
 if [ -f "$ENV_FILE" ]; then
   set -a
@@ -84,35 +81,30 @@ import traceback
 from app import app, db
 from services.auto_migrate import auto_migrate
 
+app.config['PROPAGATE_EXCEPTIONS'] = True
+
 with app.app_context():
-    try:
-        created, added = auto_migrate(app, db)
-        print("auto_migrate OK:", len(created), "tables,", len(added), "columns")
-    except Exception as e:
-        print("auto_migrate err:", e)
+    auto_migrate(app, db)
+    from routes.admin_support import ensure_site_events_tables
+    ensure_site_events_tables()
 
-    try:
-        from routes.admin_support import ensure_site_events_tables
-        ensure_site_events_tables()
-        print("ensure_site_events_tables OK")
-    except Exception as e:
-        print("ensure_site_events_tables err:", e)
-
-    try:
-        from models import User
-        admin = User.query.filter_by(is_admin=True).first() or User.query.first()
-        if admin:
-            with app.test_client() as c:
-                with c.session_transaction() as sess:
-                    sess['_user_id'] = str(admin.id)
-                    sess['_fresh'] = True
-                r = c.get('/admin/users')
-                print("TEST /admin/users status:", r.status_code)
-                if r.status_code >= 500:
-                    print(r.get_data(as_text=True)[:1500])
-    except Exception:
-        traceback.print_exc()
+    from models import User
+    users = User.query.all()
+    admin = next((u for u in users if getattr(u, 'is_admin', False)), None) or (users[0] if users else None)
+    print("Picked admin user:", getattr(admin, 'id', None), getattr(admin, 'nickname', None), "is_admin=", getattr(admin, 'is_admin', None))
+    if admin:
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['_user_id'] = str(admin.id)
+                sess['_fresh'] = True
+            for url in ['/admin/users', '/admin/stats/overview', '/admin/users/sections', '/admin/users/returns', '/prep/coach']:
+                try:
+                    r = c.get(url)
+                    print(f"TEST {url} -> {r.status_code} (len={len(r.data)})")
+                except Exception:
+                    print(f"=== CRASH ON {url} ===")
+                    traceback.print_exc()
 PYEOF
 
 systemctl restart formyla
-echo "=== DONE! FORMYLA UPDATED + AUTO-MIGRATED + STATS TESTED ==="
+echo "=== DONE! FORMYLA UPDATED + ALL STATS ROUTES TESTED ==="
