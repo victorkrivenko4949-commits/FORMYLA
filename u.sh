@@ -54,7 +54,6 @@ s = s.replace(
     "'answered': answered.strftime('%d.%m %H:%M') if answered else None,",
     "'answered': _as_dt(answered).strftime('%d.%m %H:%M') if _as_dt(answered) else None,"
 )
-# Limit table rendering in template to top 300 active users so HTML is ~200KB instead of 6.6MB
 s = s.replace(
     "return render_template('admin/users_stats.html', rows=rows, total=total,",
     "return render_template('admin/users_stats.html', rows=rows[:300], total=total,"
@@ -75,9 +74,12 @@ with open('services/user_returns.py', 'w', encoding='utf-8') as f:
 print("Patched services/user_returns.py successfully")
 PYEOF
 
-# 3. Increase nginx proxy_read_timeout & buffers so large pages never get cut off
+# 3. Fix Nginx Proxy Host header so Flask never redirects to 127.0.0.1!
 for conf in /etc/nginx/sites-enabled/* /etc/nginx/conf.d/*.conf; do
   [ -f "$conf" ] || continue
+  if ! grep -q "proxy_set_header Host" "$conf"; then
+    sed -i '/proxy_pass/a \        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;' "$conf" || true
+  fi
   if ! grep -q "proxy_read_timeout" "$conf"; then
     sed -i '/proxy_pass/a \        proxy_read_timeout 180s;\n        proxy_connect_timeout 60s;\n        proxy_send_timeout 180s;\n        proxy_buffer_size 128k;\n        proxy_buffers 8 256k;\n        proxy_busy_buffers_size 512k;' "$conf" || true
   fi
@@ -85,4 +87,4 @@ done
 nginx -t && systemctl reload nginx || true
 
 systemctl restart formyla
-echo "=== DONE! FORMYLA UPDATED + FAST STATS (<1s) + NGINX TUNED ==="
+echo "=== DONE! FORMYLA UPDATED + NGINX HOST HEADER FIXED ==="
