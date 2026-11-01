@@ -13395,8 +13395,16 @@ def _inject_user_helpers():
                     except Exception:
                         pass
             else:
-                # не-пилот: прежнее поведение без изменений
-                _probe_active = bool(has_active_probe(_uid))
+                # 2026-11-01 (владелец): тест — функция Premium. Не-пилотам
+                # без активной Premium-подписки/пробного дня баннер
+                # «Вернуться в тест» не показываем (тест им закрыт).
+                _probe_active = False
+                try:
+                    from services.pilot import can_take_theme_test
+                    if can_take_theme_test(_uid):
+                        _probe_active = bool(has_active_probe(_uid))
+                except Exception:
+                    pass
             helpers['has_active_probe'] = _probe_active
         else:
             helpers['has_active_probe'] = False
@@ -13417,13 +13425,9 @@ def api_subscribe_trial():
     """
     if getattr(current_user, 'is_guest', False):
         return jsonify({'error': 'Недоступно для гостей'}), 403
-    # 2026-10-24: пробный день — только пилотным аккаунтам (до запуска 3 ноября).
-    try:
-        from services.pilot import is_pilot_user as _is_pilot
-        if not _is_pilot(current_user.id):
-            return jsonify({'error': 'Недоступно'}), 403
-    except Exception:
-        return jsonify({'error': 'Недоступно'}), 403
+    # 2026-11-01 (владелец): пробный день открыт всем зарегистрированным —
+    # «1 день бесплатно» должен работать и давать доступ к тесту.
+    # Ограничение «только пилотным» (24.10, до запуска 3 ноября) снято.
     data = request.get_json() or {}
     plan = data.get('plan', 'premium_intense')
     if plan not in ('premium_intense', 'premium_calm'):

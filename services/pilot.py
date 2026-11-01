@@ -73,6 +73,25 @@ def is_pilot_id(user_id) -> bool:
         return False
 
 
+def can_take_theme_test(user) -> bool:
+    """True — пользователь может проходить тест по теме дня (срез).
+
+    Тест — функция Premium (владелец, 01.11.2026): доступен пилотным
+    аккаунтам и пользователям с активной Premium-подпиской — пилотной
+    бетой, оплаченной или бесплатным пробным днём на 24 часа.
+    Бесплатным аккаунтам тест закрыт; задачи дня при этом тестом
+    не блокируются (см. daily_tasks/routes.py, pick_daily_set).
+    """
+    if is_pilot_user(user):
+        return True
+    try:
+        if user is None:
+            return False
+        return bool(user.has_active_subscription())
+    except Exception:
+        return False
+
+
 # ── Активация бета-подписки для пилотных аккаунтов ─────────────────────────
 
 def ensure_pilot_subscriptions() -> bool:

@@ -1641,8 +1641,20 @@ def morning_probe():
 
 def _morning_probe_impl():
     """Страница теста подтемы (5 задач, лесенка)."""
-    if not current_user.has_access():
-        return render_template('trial_expired.html'), 402
+    # 2026-11-01 (владелец): тест — функция Premium. Доступен пилотным
+    # аккаунтам и пользователям с активной Premium-подпиской (включая
+    # бесплатный пробный день на 24 часа). Бесплатных отправляем на
+    # витрину тарифов. Раньше здесь был has_access(), но is_trial_active() —
+    # заглушка «всегда True» (до подключения оплат), поэтому тест был
+    # открыт вообще всем вошедшим.
+    from services.pilot import can_take_theme_test
+    if not can_take_theme_test(current_user):
+        if _wants_json():
+            return jsonify(
+                error='Тест доступен в Premium. Начните с бесплатного пробного дня.',
+                redirect='/subscribe',
+            ), 403
+        return redirect('/subscribe')
     from curator.monthly_cycle import get_cycle_info, build_or_get_cycle, advance_day
     from services.theme_probe import (
         has_active_probe, get_active_probe_theme, start_probe,
@@ -1941,6 +1953,14 @@ def probe_submit():
 
 
 def _probe_submit_impl():
+    # 2026-11-01 (владелец): тест — Premium (пилот или активная подписка,
+    # включая бесплатный пробный день). Бесплатным — отказ.
+    from services.pilot import can_take_theme_test
+    if not can_take_theme_test(current_user):
+        return jsonify(
+            error='Тест доступен в Premium. Начните с бесплатного пробного дня.',
+            redirect='/subscribe',
+        ), 403
     data = request.get_json(silent=True) or {}
     task_id = data.get('task_id')
     user_answer = (data.get('answer') or '').strip()

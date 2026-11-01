@@ -469,23 +469,41 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False,
                 probe_active = has_active_probe(user_id)
                 probe_theme = get_active_probe_theme(user_id)
                 if not probe_active or probe_theme != current_theme:
-                    # Латентный баг (обнаружен в OLYMPIAD_DAILY_V1): `grade`
-                    # определяется ниже по коду, а probe_required возвращался
-                    # раньше — UnboundLocalError глотался except и срез
-                    # НЕ блокировал выдачу. Чиним: безопасное разрешение класса.
+                    # 2026-11-01 (владелец): тест — функция Premium. Если
+                    # пользователю тест недоступен (не пилот, без активной
+                    # Premium-подписки/пробного дня) — срез НЕ блокирует
+                    # выдачу задач дня, генерируем сет как обычно.
+                    from services.pilot import can_take_theme_test as _can_test
                     try:
-                        from services.daily_olympiad import user_cycle_grade as _ucg_probe
-                        _probe_grade = int(_ucg_probe(user_id) or 9)
+                        _user_obj = None
+                        from models import User as _User
+                        _user_obj = _User.query.get(user_id)
                     except Exception:
-                        _probe_grade = 9
-                    return {
-                        'probe_required': True,
-                        'theme_id': current_theme,
-                        'theme_name': current_theme,
-                        'grade': _probe_grade,
-                        'day_index': day_idx,
-                        'shown_date': today.isoformat(),
-                    }
+                        _user_obj = None
+                    if _user_obj is not None and not _can_test(_user_obj):
+                        logger.info(
+                            "daily_rotation: срез пропущен для user=%d — тест недоступен "
+                            "(бесплатный аккаунт, задачи дня без среза)",
+                            user_id,
+                        )
+                    else:
+                        # Латентный баг (обнаружен в OLYMPIAD_DAILY_V1): `grade`
+                        # определяется ниже по коду, а probe_required возвращался
+                        # раньше — UnboundLocalError глотался except и срез
+                        # НЕ блокировал выдачу. Чиним: безопасное разрешение класса.
+                        try:
+                            from services.daily_olympiad import user_cycle_grade as _ucg_probe
+                            _probe_grade = int(_ucg_probe(user_id) or 9)
+                        except Exception:
+                            _probe_grade = 9
+                        return {
+                            'probe_required': True,
+                            'theme_id': current_theme,
+                            'theme_name': current_theme,
+                            'grade': _probe_grade,
+                            'day_index': day_idx,
+                            'shown_date': today.isoformat(),
+                        }
     except Exception as _pe:
         logger.warning("daily_rotation: probe check failed: %s", _pe)
 

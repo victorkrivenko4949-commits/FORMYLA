@@ -28,6 +28,7 @@ from . import daily_tasks_bp
 from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob, TaskPool
 from . import services
 from .services import today_in_user_tz
+from services.pilot import can_take_theme_test
 from .monthly_plan import get_or_build_plan, current_month_index, pick_day_subtopic, subtopic_title
 from utils.math_text_fixer import wrap_bare_math
 from services.streak_service import (
@@ -558,6 +559,10 @@ def get_daily_tasks():
         pass
 
     # ── Цикл месяца: реальная тема дня + блокировка срезом ──────────
+    # 2026-11-01 (владелец): тест — функция Premium. Пользователям, которым
+    # тест недоступен (не пилот, без активной Premium-подписки/пробного дня),
+    # задачи дня тестом НЕ блокируем — выдаём задачи как обычно.
+    _test_required = can_take_theme_test(current_user)
     cycle_info = {}
     blocked = False
     blocked_theme_title = None
@@ -586,7 +591,7 @@ def get_daily_tasks():
     # ── BLOCKED: если в первую неделю срез не пройден — блокируем
     # выдачу задач дня ДО обращения к банку (иначе банк вернёт
     # plan_missing/empty и пользователь не увидит требование среза). ──
-    if blocked and not _method_day:
+    if blocked and not _method_day and _test_required:
         data = {
             "status": "blocked",
             "daily_set_id": None,
@@ -748,7 +753,7 @@ def get_daily_tasks():
     except Exception:
         pass
 
-    if blocked and not _method_day:
+    if blocked and not _method_day and _test_required:
         data = {
             "status": "blocked",
             "daily_set_id": None,

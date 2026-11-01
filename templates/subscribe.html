@@ -402,7 +402,8 @@
 {% block content %}
 <div class="sub2" id="tariffs">
 
-  {% set trial_available = is_pilot and not trial_used %}
+  {# 2026-11-01: пробный день открыт всем (не только пилотам) #}
+  {% set trial_available = not trial_used %}
 
   <!-- ═══════════ СТАТУС ТАРИФА ═══════════ -->
   <div class="sp-status">
@@ -497,7 +498,7 @@
       <h2 class="sp-section__title">Тарифы</h2>
     </div>
 
-    {% if is_pilot %}
+    {# 2026-11-01: статус пробного дня — для всех, не только пилотов #}
     {% if trial_active_until %}
     <div class="sp-trial sp-trial--active" id="spTrialBanner" data-until="{{ trial_active_until_iso }}">
       ⏳ <strong>Пробный день активен</strong> — полный доступ ещё
@@ -508,7 +509,6 @@
     <div class="sp-trial sp-trial--used">
       Пробный день уже использован. Выбери тариф ниже — и полный доступ вернётся.
     </div>
-    {% endif %}
     {% endif %}
 
     <div class="sp-plans">
@@ -528,12 +528,13 @@
           <div><span>ИИ-тьютор · куратор · чертежи</span><b>✓</b></div>
         </div>
         <div class="sp-plan__btns">
-          {% if is_pilot %}
+          {# 2026-11-01: пробный день — для всех, не только пилотов #}
           {% if trial_used %}
           <button class="sp-btn sp-btn--trial" disabled>Пробный день уже использован</button>
           {% else %}
           <button class="sp-btn sp-btn--trial" onclick="startTrial('premium_intense', this)">Пробный день бесплатно</button>
           {% endif %}
+          {% if is_pilot %}
           <a class="sp-btn sp-btn--primary" href="/payments/premium/checkout?plan=premium_intense">Выбрать «Работяга» →</a>
           {% else %}
           <span class="sp-btn sp-btn--primary" style="opacity:.5;cursor:default">Покупка откроется 3 ноября 2026</span>
@@ -555,12 +556,13 @@
           <div><span>ИИ-тьютор · куратор · чертежи</span><b>✓</b></div>
         </div>
         <div class="sp-plan__btns">
-          {% if is_pilot %}
+          {# 2026-11-01: пробный день — для всех, не только пилотов #}
           {% if trial_used %}
           <button class="sp-btn sp-btn--trial" disabled>Пробный день уже использован</button>
           {% else %}
           <button class="sp-btn sp-btn--trial" onclick="startTrial('premium_calm', this)">Пробный день бесплатно</button>
           {% endif %}
+          {% if is_pilot %}
           <a class="sp-btn sp-btn--primary" href="/payments/premium/checkout?plan=premium_calm">Выбрать «Спокойный» →</a>
           {% else %}
           <span class="sp-btn sp-btn--primary" style="opacity:.5;cursor:default">Покупка откроется 3 ноября 2026</span>
@@ -571,9 +573,7 @@
 
     <div class="sp-free-row reveal">
       <p><b>Бесплатный тариф:</b> 1 задача в день — остаётся доступен всегда, карта не нужна; тест, методы, генератор чертежей и ИИ-тьютор — по Premium.</p>
-      {% if is_pilot %}
       <p class="sp-plan__note" style="margin:0">Пробный день — 1 день полного Premium, один раз на аккаунт.</p>
-      {% endif %}
     </div>
   </section>
 
@@ -718,16 +718,23 @@
         <button type="button" class="a2btn a2btn--primary" onclick="startTrial('premium_intense', this)">Пробный день бесплатно</button>
         <a class="a2btn a2btn--ghost" href="/about">Подробнее о платформе</a>
       </div>
-      {% elif is_pilot %}
+      {% elif trial_used %}
       <h2 class="reveal">Пробный день {{ 'активен' if trial_active_until else 'уже использован' }}</h2>
       <p class="reveal">Полный доступ возвращается с тарифом — выбери «Работяга» или «Спокойный».</p>
       <div class="sp-cta__row reveal">
         <a class="a2btn a2btn--primary" href="#plans">Выбрать тариф →</a>
         <a class="a2btn a2btn--ghost" href="/about">Подробнее о платформе</a>
       </div>
-      {% else %}
+      {% elif not is_pilot %}
       <h2 class="reveal">Платная версия — 3 ноября 2026</h2>
       <p class="reveal">Тарифы уже можно изучить и выбрать — покупка откроется вместе с запуском платной версии.</p>
+      <div class="sp-cta__row reveal">
+        <a class="a2btn a2btn--primary" href="#plans">Выбрать тариф →</a>
+        <a class="a2btn a2btn--ghost" href="/about">Подробнее о платформе</a>
+      </div>
+      {% else %}
+      <h2 class="reveal">Пробный день {{ 'активен' if trial_active_until else 'уже использован' }}</h2>
+      <p class="reveal">Полный доступ возвращается с тарифом — выбери «Работяга» или «Спокойный».</p>
       <div class="sp-cta__row reveal">
         <a class="a2btn a2btn--primary" href="#plans">Выбрать тариф →</a>
         <a class="a2btn a2btn--ghost" href="/about">Подробнее о платформе</a>
