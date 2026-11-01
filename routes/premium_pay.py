@@ -363,6 +363,15 @@ def create_payment():
     # падал, пользователю всё равно показывали ссылку на оплату: он платил,
     # а после возврата сайт не находил заказ («Платёж не найден») и доступ
     # не выдавался. Теперь без записи в БД платёж вообще не создаётся.
+    # FIX 01.11.2026 (прод-бага «Не удалось сохранить заказ»): таблицы
+    # yookassa_payments создаёт routes/yookassa_pay._ensure_tables; на
+    # PostgreSQL он ломался на ALTER users.has_diamond (колонка уже есть
+    # от auto_migrate) — транзакция абортировалась, таблицы не создавались
+    # либо оставались без beneficiary_user_id, и INSERT падал с 500 у
+    # каждого покупателя. _ensure_tables переписан (каждая DDL в своей
+    # транзакции), здесь дублируем вызов явно перед вставкой.
+    from routes.yookassa_pay import _ensure_tables
+    _ensure_tables()
     try:
         db.session.execute(text(
             "INSERT INTO yookassa_payments "
