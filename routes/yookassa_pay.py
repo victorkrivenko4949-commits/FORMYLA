@@ -66,9 +66,24 @@ def is_diamond_buyer(user) -> bool:
 
 def _ensure_tables() -> None:
     """Создаёт таблицы yookassa_config и yookassa_payments (идемпотентно).
-    FIX: используем db.engine.begin() напрямую — session.execute внутри транзакции,
-    где ALTER TABLE users падает, откатывает ВСЮ транзакцию, включая CREATE TABLE.
-    На PostgreSQL это давало 'relation yookassa_payments does not exist' → 500.
+
+    FIX 01.11.2026 (ошибка с прода «Не удалось сохранить заказ»): в
+    PostgreSQL ошибка любой команды абортирует ВСЮ транзакцию — команды
+    после сбоя (и сам COMMIT) падают с InFailedSqlTransaction, а CREATE
+    TABLE из неё откатываются. Прежняя версия держала CREATE TABLE и оба
+    ALTER в ОДНОМ engine.begin(): если users.has_diamond уже существовала
+    (её создаёт auto_migrate из модели), первый ALTER абортировал
+    транзакцию, таблицы платежей не создавались либо оставались без
+    beneficiary_user_id — и INSERT заказа в create_payment падал с 500
+    «Не удалось сохранить заказ» у каждого покупателя.
+
+    Теперь каждая команда DDL идёт в СВОЕЙ транзакции: сбой любой из них
+    (например, «объект уже существует») не влияет на остальные. Работает
+    одинаково на SQLite и PostgreSQL.
+
+    Без engine.begin() — SQLAlchemy raw SQL в PG неявно стартует
+    транзакцию в уже открытой сессии и rollback дергает всю сессию, а не
+    конкретную команду.
     """
     global _TABLES_ENSURED
     if _TABLES_ENSURED:
@@ -79,57 +94,56 @@ def _ensure_tables() -> None:
         engine_name = db.engine.dialect.name
         is_pg = engine_name == "postgresql"
 
-        with db.engine.begin() as conn:
-            # 1. Таблица настроек ЮKassa
-            conn.execute(
-                text(
-                    """
-                    CREATE TABLE IF NOT EXISTS yookassa_config (
-                        config_key VARCHAR(64) PRIMARY KEY,
-                        config_value TEXT,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                    """
-                )
-            )
-
-            # 2. Таблица платежей ЮKassa
-            id_col = "SERIAL PRIMARY KEY" if is_pg else "INTEGER PRIMARY KEY AUTOINCREMENT"
-            conn.execute(
-                text(
-                    f"""
-                    CREATE TABLE IF NOT EXISTS yookassa_payments (
-                        id {id_col},
-                        order_id VARCHAR(64) UNIQUE NOT NULL,
-                        payment_id VARCHAR(128),
-                        user_id INTEGER NOT NULL,
-                        item_code VARCHAR(64) NOT NULL DEFAULT 'diamond_badge',
-                        amount_rub NUMERIC(10, 2) NOT NULL DEFAULT 10.00,
-                        status VARCHAR(32) NOT NULL DEFAULT 'pending',
-                        confirmation_url TEXT,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        paid_at TIMESTAMP
-                    )
-                    """
-                )
-            )
-
-            # 3. Колонка has_diamond в users (если колонки ещё нет)
-            # В отдельной вложенной транзакции не сработает, поэтому ловим ошибку на уровне try
-            bool_default = "BOOLEAN NOT NULL DEFAULT FALSE" if is_pg else "BOOLEAN NOT NULL DEFAULT 0"
+        def _ddl(stmt: str, desc: str) -> None:
+            """Одна DDL-команда в своей транзакции: ошибка любой из них
+            (например, «объект уже существует») не абортирует остальные."""
             try:
-                conn.execute(text(f"ALTER TABLE users ADD COLUMN has_diamond {bool_default}"))
-            except Exception:
-                pass
+                with db.engine.begin() as conn:
+                    conn.execute(text(stmt))
+            except Exception as e:  # noqa: BLE001
+                # Самая частая причина — объект уже существует: штатно.
+                logger.debug("[yookassa_pay] _ensure_tables skip (%s): %r",
+                             desc, e)
 
-            # 4. PREMIUM_GIFT_V1: получатель Premium в подарочных заказах
-            # (родитель/учитель платит — Premium получает ребёнок).
-            try:
-                conn.execute(text(
-                    "ALTER TABLE yookassa_payments ADD COLUMN beneficiary_user_id INTEGER"
-                ))
-            except Exception:
-                pass
+        # 1. Таблица настроек ЮKassa
+        _ddl(
+            """
+            CREATE TABLE IF NOT EXISTS yookassa_config (
+                config_key VARCHAR(64) PRIMARY KEY,
+                config_value TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+            'yookassa_config')
+
+        # 2. Таблица платежей ЮKassa
+        id_col = "SERIAL PRIMARY KEY" if is_pg else "INTEGER PRIMARY KEY AUTOINCREMENT"
+        _ddl(
+            f"""
+            CREATE TABLE IF NOT EXISTS yookassa_payments (
+                id {id_col},
+                order_id VARCHAR(64) UNIQUE NOT NULL,
+                payment_id VARCHAR(128),
+                user_id INTEGER NOT NULL,
+                item_code VARCHAR(64) NOT NULL DEFAULT 'diamond_badge',
+                amount_rub NUMERIC(10, 2) NOT NULL DEFAULT 10.00,
+                status VARCHAR(32) NOT NULL DEFAULT 'pending',
+                confirmation_url TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                paid_at TIMESTAMP
+            )
+            """,
+            'yookassa_payments')
+
+        # 3. Колонка has_diamond в users (если колонки ещё нет)
+        bool_default = "BOOLEAN NOT NULL DEFAULT FALSE" if is_pg else "BOOLEAN NOT NULL DEFAULT 0"
+        _ddl(f"ALTER TABLE users ADD COLUMN has_diamond {bool_default}",
+             'users.has_diamond')
+
+        # 4. PREMIUM_GIFT_V1: получатель Premium в подарочных заказах
+        # (родитель/учитель платит — Premium получает ребёнок).
+        _ddl("ALTER TABLE yookassa_payments ADD COLUMN beneficiary_user_id "
+             "INTEGER", 'yookassa_payments.beneficiary_user_id')
 
         _TABLES_ENSURED = True
     except Exception as e:
