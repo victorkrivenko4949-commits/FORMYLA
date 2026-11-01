@@ -122,6 +122,15 @@ def _ensure_tables() -> None:
             except Exception:
                 pass
 
+            # 4. PREMIUM_GIFT_V1: получатель Premium в подарочных заказах
+            # (родитель/учитель платит — Premium получает ребёнок).
+            try:
+                conn.execute(text(
+                    "ALTER TABLE yookassa_payments ADD COLUMN beneficiary_user_id INTEGER"
+                ))
+            except Exception:
+                pass
+
         _TABLES_ENSURED = True
     except Exception as e:
         logger.warning("[yookassa_pay] _ensure_tables warning: %r", e)
@@ -671,10 +680,19 @@ def _yookassa_webhook_inner():
                 activate_premium_for_payment(
                     user_id=int(user_id_raw), plan=item_code,
                     payment_id=payment_id, order_id=order_id)
+            # PREMIUM_GIFT_V1: для подарочных заказов (beneficiary_user_id)
+            # автопродление не подключаем — взрослый платит разово, а Premium
+            # получает ребёнок; подписка со списаниями не создаётся.
             try:
-                upsert_from_payment(int(user_id_raw), payment_id, item_code)
-            except Exception as e:  # noqa: BLE001
-                logger.warning("[yookassa_pay] save payment method failed: %r", e)
+                from routes.premium_pay import _beneficiary_of_order
+                gift_beneficiary = _beneficiary_of_order(order_id, payment_id)
+            except Exception:  # noqa: BLE001
+                gift_beneficiary = None
+            if not gift_beneficiary:
+                try:
+                    upsert_from_payment(int(user_id_raw), payment_id, item_code)
+                except Exception as e:  # noqa: BLE001
+                    logger.warning("[yookassa_pay] save payment method failed: %r", e)
         else:
             _activate_diamond_for_user(user_id=int(user_id_raw), payment_id=payment_id, order_id=order_id)
         return jsonify({"ok": True, "status": "succeeded"}), 200

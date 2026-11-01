@@ -132,7 +132,7 @@
       <div class="pm-ok-badge">🎉</div>
       <h1>Оплата прошла!</h1>
       <div class="pm-ok-premium">Premium активирован</div>
-      <p class="pm-ok-sub">Полный доступ уже открыт{% if expires %} — до {{ expires }} UTC{% endif %}</p>
+      <p class="pm-ok-sub">{% if beneficiary %}Полный доступ открыт ученику <b style="color:#eaf3ff;">{{ beneficiary }}</b>{% else %}Полный доступ уже открыт{% endif %}{% if expires %} — до {{ expires }} UTC{% endif %}</p>
     </div>
 
     <div class="pm-ok-card">
@@ -150,7 +150,7 @@
       </div>
       {% endif %}
 
-      <div class="pm-ok-avail">Вам доступно</div>
+      <div class="pm-ok-avail">{% if beneficiary %}Ученику {{ beneficiary }} доступно{% else %}Вам доступно{% endif %}</div>
       <ul class="pm-ok-feats">
         {% if info %}
           {% for f in info.features %}
@@ -177,7 +177,7 @@
       {% else %}
       <div class="pm-ar-box off">
         <div class="pm-ar-title"><span class="dot">●</span> Автопродление не подключено</div>
-        <div class="pm-ar-sub">При оплате картой или СБП способ оплаты сохранится — и продление можно будет включить одним нажатием.</div>
+        <div class="pm-ar-sub">{% if beneficiary %}Подарочная покупка: автопродление не подключается — через 30 дней тариф можно оформить снова.{% else %}При оплате картой или СБП способ оплаты сохранится — и продление можно будет включить одним нажатием.{% endif %}</div>
       </div>
       {% endif %}
     </div>

@@ -208,27 +208,49 @@ def _latest_mu_sigma(user_id: int) -> dict:
     return {a: {'mu': None, 'sigma': None} for a in anchors_order}
 
 
+def _premium_brief(user_id: int):
+    """Активный Premium пользователя (для кнопки покупки родителем/учителем).
+
+    Возвращает {'plan': ..., 'expires_at': ...} или None. Кэш-запросов нет —
+    страниц с детьми/группами немного, запрос лёгкий.
+    """
+    try:
+        from services.subscription import get_subscription_service
+        plan = get_subscription_service().get_user_plan(user_id)
+        if plan.get('is_premium'):
+            return {
+                'plan': plan.get('plan'),
+                'expires_at': plan.get('expires_at'),
+            }
+    except Exception:
+        return None
+    return None
+
+
 def _student_row(s: User, today: date) -> dict:
     """Строка ученика для таблицы группы (только accepted, с учётом приватности)."""
+    row = {
+        'id': s.id,
+        'name': _display(s),
+        'premium': _premium_brief(s.id),
+    }
     if getattr(s, 'share_progress', True) in (False, 0):
-        return {
-            'id': s.id,
-            'name': _display(s),
+        row.update({
             'avg_tasks': None,
             'row_color': 'gray',
             'streak': None,
             'anchors': {},
             'progress_hidden': True,
-        }
-    return {
-        'id': s.id,
-        'name': _display(s),
+        })
+        return row
+    row.update({
         'avg_tasks': _week_avg_tasks(s, today),
         'row_color': 'green',
         'streak': student_streak(s.id),
         'anchors': _latest_mu_sigma(s.id),
         'progress_hidden': False,
-    }
+    })
+    return row
 
 
 # ---------------------------------------------------------------------------
@@ -544,7 +566,7 @@ def parent_dashboard():
     today = date.today()
     child_cards = []
     for child in children:
-        card = {'id': child.id, 'name': _display(child)}
+        card = {'id': child.id, 'name': _display(child), 'premium': _premium_brief(child.id)}
         if getattr(child, 'share_progress', True) in (False, 0):
             card['hidden'] = True
         else:

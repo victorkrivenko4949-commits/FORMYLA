@@ -55,6 +55,19 @@
   border-radius: 10px; padding: 8px 12px;
 }
 
+/* ── Подарочная покупка (для ребёнка) ───────────────────────────────── */
+.pm-gift-note {
+  margin: 14px 0 4px; padding: 12px 16px; border-radius: 12px;
+  font-size: .9em; color: #d8c9ff; line-height: 1.55;
+  background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.4);
+}
+.pm-gift-note b { color: #e9dfff; }
+.pm-plan-switch {
+  margin-top: 12px; text-align: center; font-size: .86em; color: #8fa3c0;
+}
+.pm-plan-switch a { color: #a78bfa; text-decoration: none; font-weight: 600; }
+.pm-plan-switch a:hover { text-decoration: underline; }
+
 /* ── «Premium уже активен»: оплата недоступна ───────────────────────── */
 .pm-have-badge {
   width: 92px; height: 92px; margin: 0 auto 18px; border-radius: 50%;
@@ -138,9 +151,9 @@
   {% if already_premium %}
   <div class="pm-pay-card" style="text-align:center;">
     <div class="pm-have-badge">✓</div>
-    <h1 style="margin:0 0 8px;font-size:1.6em;color:#eaf3ff;">Premium уже активен</h1>
+    <h1 style="margin:0 0 8px;font-size:1.6em;color:#eaf3ff;">{% if beneficiary %}У ученика уже активен Premium{% else %}Premium уже активен{% endif %}</h1>
     <div class="pm-have-premium">{{ active_title }}</div>
-    <p class="pm-have-sub">Повторная оплата не требуется — полный доступ уже открыт{% if premium_until %} до {{ premium_until }} UTC{% endif %}</p>
+    <p class="pm-have-sub">{% if beneficiary %}У {{ beneficiary }} полный доступ уже открыт{% if premium_until %} до {{ premium_until }} UTC{% endif %} — повторная оплата не требуется{% else %}Повторная оплата не требуется — полный доступ уже открыт{% if premium_until %} до {{ premium_until }} UTC{% endif %}{% endif %}</p>
 
     <ul class="pm-have-feats" style="text-align:left;">
       {% for f in info.features %}
@@ -183,6 +196,13 @@
       </div>
     </div>
 
+    {% if beneficiary %}
+    <div class="pm-gift-note">
+      🎁 Вы оформляете Premium для ученика <b>{{ beneficiary }}</b> —
+      оплата пройдёт с вашего счёта, а полный доступ откроется именно ему.
+    </div>
+    {% endif %}
+
     <div class="pm-price-row">
       <span class="pm-price">{{ info.price_rub }} ₽</span>
       <span class="pm-price-note">в месяц · 30 дней полного доступа</span>
@@ -197,8 +217,19 @@
     </ul>
 
     <button class="pm-pay-btn" id="pmPayBtn" onclick="pmPay()">
-      Оплатить {{ info.price_rub }} ₽
+      {% if beneficiary %}Оплатить {{ info.price_rub }} ₽ для {{ beneficiary }}{% else %}Оплатить {{ info.price_rub }} ₽{% endif %}
     </button>
+
+    {% if beneficiary %}
+    <div class="pm-plan-switch">
+      Другой тариф:
+      {% if plan == 'premium_intense' %}
+      <a href="/payments/premium/checkout?plan=premium_calm&for_user={{ for_user }}">🌿 «Спокойный» — 500 ₽</a>
+      {% else %}
+      <a href="/payments/premium/checkout?plan=premium_intense&for_user={{ for_user }}">⚡ «Работяга» — 800 ₽</a>
+      {% endif %}
+    </div>
+    {% endif %}
 
     {% if not cfg.configured %}
     <div class="pm-demo-badge">
@@ -212,11 +243,15 @@
 
     <div class="pm-pay-notes">
       <div>💳 Оплата через ЮKassa: Мир, Visa, Mastercard, СБП</div>
-      <div>⚡ Premium открывается сразу после оплаты</div>
+      <div>⚡ Premium открывается сразу после оплаты{% if beneficiary %} — у ученика {{ beneficiary }}{% endif %}</div>
       <div>🛡 Отменить можно в любой момент</div>
     </div>
 
+    {% if not beneficiary %}
     <div class="pm-ar-consent">🔁 <b>Подписка с автопродлением:</b> каждые 30 дней {{ info.price_rub }} ₽ будут списываться автоматически тем же способом оплаты. Отключить можно в любой момент одним нажатием — доступ сохранится до конца оплаченного периода.</div>
+    {% else %}
+    <div class="pm-ar-consent">🎁 <b>Подарочная покупка:</b> автопродление не подключается — по истечении 30 дней тариф можно оформить снова на этой же странице.</div>
+    {% endif %}
   </div>
   {% endif %}
 </div>
@@ -230,7 +265,7 @@ function pmPay() {
   fetch('/payments/premium/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ plan: {{ plan | tojson }} })
+    body: JSON.stringify({ plan: {{ plan | tojson }}, for_user: {{ for_user | tojson }} })
   }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
     .then(function (res) {
       if (res.d && res.d.redirect) {
@@ -238,12 +273,12 @@ function pmPay() {
       } else {
         alert((res.d && res.d.error) || 'Не удалось создать платёж');
         btn.disabled = false;
-        btn.textContent = 'Оплатить {{ info.price_rub }} ₽';
+        btn.textContent = {% if beneficiary %}'Оплатить {{ info.price_rub }} ₽ для {{ beneficiary }}'{% else %}'Оплатить {{ info.price_rub }} ₽'{% endif %};
       }
     }).catch(function () {
       alert('Ошибка сети');
       btn.disabled = false;
-      btn.textContent = 'Оплатить {{ info.price_rub }} ₽';
+      btn.textContent = {% if beneficiary %}'Оплатить {{ info.price_rub }} ₽ для {{ beneficiary }}'{% else %}'Оплатить {{ info.price_rub }} ₽'{% endif %};
     });
 }
 </script>
