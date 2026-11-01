@@ -606,6 +606,29 @@ def get_daily_tasks():
     if not real_theme_title:
         real_theme_title = _theme_for_day(today, None)
 
+    # ── PROBNIK_DAILY_V1 (02.11.2026, владелец): занятие-пробник выдаёт
+    # задачи НАЗНАЧЕННОГО варианта прямо в задачах дня — из каталога
+    # олимпиад, с условием, ответом и решением; сверху в сводке — что за
+    # пробник: олимпиада, год, класс. Ответы идут через конвейер банка
+    # (bank_issues). Занятие засчитывается, когда отвечены все задачи
+    # варианта. Не день пробника / вариант не назначен — обычная выдача.
+    # ВАЖНО: проверяем ДО блокировки «Сначала — тест» (владелец, 02.11):
+    # в день пробника срез-тест по теме дня не блокирует выдачу —
+    # ученик пишет олимпиаду, а не проходит тест.
+    try:
+        from services.probnik_daily import get_probnik_day_data
+        _probnik_day = get_probnik_day_data(user_id, today)
+    except Exception:
+        logger.exception("daily_tasks: probnik day failed")
+        _probnik_day = None
+    if _probnik_day:
+        return render_template(
+            "daily_tasks/daily_tasks_dashboard.html",
+            data={**_probnik_day, "session": _session_ctx,
+                  "theme_today": _theme_for_day(today, None),
+                  "daily_context": _daily_ctx},
+        )
+
     # ── BLOCKED: если в первую неделю срез не пройден — блокируем
     # выдачу задач дня ДО обращения к банку (иначе банк вернёт
     # plan_missing/empty и пользователь не увидит требование среза). ──
@@ -656,26 +679,6 @@ def get_daily_tasks():
             "daily_tasks/daily_tasks_dashboard.html",
             data={**data, "session": _session_ctx,
                   "theme_today": _theme_for_day(today, None), "daily_context": _daily_ctx},
-        )
-
-    # ── PROBNIK_DAILY_V1 (02.11.2026, владелец): занятие-пробник выдаёт
-    # задачи НАЗНАЧЕННОГО варианта прямо в задачах дня — из каталога
-    # олимпиад, с условием, ответом и решением; сверху в сводке — что за
-    # пробник: олимпиада, год, класс. Ответы идут через конвейер банка
-    # (bank_issues). Занятие засчитывается, когда отвечены все задачи
-    # варианта. Не день пробника / вариант не назначен — обычная выдача.
-    try:
-        from services.probnik_daily import get_probnik_day_data
-        _probnik_day = get_probnik_day_data(user_id, today)
-    except Exception:
-        logger.exception("daily_tasks: probnik day failed")
-        _probnik_day = None
-    if _probnik_day:
-        return render_template(
-            "daily_tasks/daily_tasks_dashboard.html",
-            data={**_probnik_day, "session": _session_ctx,
-                  "theme_today": _theme_for_day(today, None),
-                  "daily_context": _daily_ctx},
         )
 
     # ── BANK: задачи дня выдаются из предзаполненного банка ─────────
