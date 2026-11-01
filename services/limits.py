@@ -299,10 +299,15 @@ def install_limits_hooks(app) -> None:
                 return None
             from services.ab import log_limit_shown
             log_limit_shown(current_user)
+            upgrade_url = '/subscribe?from=ai_limit'
             return jsonify({
                 'error': 'limit',
-                'upgrade_url': '/subscribe?from=ai_limit',
+                'upgrade_url': upgrade_url,
                 'resets_at': resets_at_iso(),
+                # Виджет тьютора показывает ai_response.content раньше, чем error
+                'ai_response': {
+                    'content': f'ИИ-тьютор недоступен. [Оформить Премиум]({upgrade_url})',
+                },
             }), 402
         except Exception as exc:  # fail-open: запрос идёт дальше
             logger.error('limits: ai guard error: %r', exc)
