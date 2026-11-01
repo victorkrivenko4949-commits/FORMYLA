@@ -1990,172 +1990,185 @@ try:
 except Exception as _e_dates:
     print(f"[OLYMP-DATES] hook skipped: {_e_dates}")
 
-# ── Olympiad prep catalog seed (idempotent, без env-гейта) ───────────────────
-# Засевает olympiad_prep дефолтным набором олимпиад России, если таблица
-# пуста. Безопасно: ничего не пересоздаёт, если уже есть хотя бы одна запись.
-# Это решает проблему пустого «Календаря олимпиад» (/olympiad-prep/calendar)
-# на проде, где локальные скрипты вроде _add_10_olympiads.py не запускаются.
-# grades/stages в модели — db.Text, поэтому передаём JSON-строки.
+# ── Каталог олимпиад: список выбора = НЫНЕШНИЙ каталог ──────────────────────
+# Список олимпиад для выбора плана подготовки берётся из загружаемого
+# индекса каталога (data/olymp_catalog/_index.json; раздел «other» — не
+# олимпиада и в выбор не попадает). Синхронизация идемпотентна и выполняется
+# на каждом старте:
+#   • добавляет олимпиады, появившиеся в каталоге (is_active=True);
+#   • прячет из выбора (is_active=False) убранные из каталога — существующие
+#     планы учеников не трогаются, меняется только список выбора;
+#   • выравнивает порядок (sort_order) по индексу каталога.
+# Метаданные существующих строк не перезаписываются.
+_OLYMP_PREP_CATALOG_META = {
+    'vsosh': {
+        'short_name': 'ВсОШ',
+        'description': 'Всероссийская олимпиада школьников по математике: школьный, муниципальный, региональный и заключительный этапы.',
+        'grades': [9, 10, 11],
+        'official_url': 'https://vos.olimpiada.ru/',
+        'color_hex': '#22d3a6',
+        'stages': [
+            {'name': 'Школьный этап', 'date_range': 'Сентябрь – октябрь'},
+            {'name': 'Муниципальный этап', 'date_range': 'Ноябрь'},
+            {'name': 'Региональный этап', 'date_range': 'Январь – февраль'},
+            {'name': 'Заключительный этап', 'date_range': 'Март – апрель'},
+        ],
+    },
+    'mmo': {
+        'short_name': 'МОШ',
+        'description': 'Московская математическая олимпиада — старейшая математическая олимпиада школьников.',
+        'grades': [6, 7, 8, 9, 10, 11],
+        'official_url': 'https://olympiads.mccme.ru/mmo/',
+        'color_hex': '#f59e0b',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'Уточняется'},
+            {'name': 'Основной тур', 'date_range': 'Весна'},
+        ],
+    },
+    'kurchatov': {
+        'short_name': 'Курчатов',
+        'description': 'Олимпиада «Курчатов» по математике для школьников 6–11 классов (НИЦ «Курчатовский институт», МФТИ и другие вузы).',
+        'grades': [6, 7, 8, 9, 10, 11],
+        'official_url': 'https://olimpiadakurchatov.ru/',
+        'color_hex': '#a855f7',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'Февраль'},
+            {'name': 'Заключительный этап', 'date_range': 'Март'},
+        ],
+    },
+    'lomonosov': {
+        'short_name': 'Ломоносов',
+        'description': 'Олимпиада школьников «Ломоносов» по математике. Даёт льготы при поступлении в вузы.',
+        'grades': [5, 6, 7, 8, 9, 10, 11],
+        'official_url': None,
+        'color_hex': '#3b82f6',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'Уточняется'},
+            {'name': 'Заключительный этап', 'date_range': 'Уточняется'},
+        ],
+    },
+    'formula-unity': {
+        'short_name': 'Формула Единства',
+        'description': 'Объединённая международная олимпиада «Формула Единства» / «Третье тысячелетие» по математике для школьников 5–11 классов.',
+        'grades': [5, 6, 7, 8, 9, 10, 11],
+        'official_url': 'https://www.formulo.org/ru/olymp/',
+        'color_hex': '#06b6d4',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'Октябрь – ноябрь'},
+            {'name': 'Заключительный этап', 'date_range': 'Февраль – март'},
+        ],
+    },
+    'euler': {
+        'short_name': 'Эйлер',
+        'description': 'Олимпиада им. Леонарда Эйлера по математике для школьников 8 классов.',
+        'grades': [8],
+        'official_url': None,
+        'color_hex': '#84cc16',
+        'stages': [
+            {'name': 'Региональный этап', 'date_range': 'Уточняется'},
+        ],
+    },
+    'vysshaya-proba': {
+        'short_name': 'Высшая проба',
+        'description': 'Олимпиада «Высшая проба» по математике (НИУ ВШЭ) для школьников 7–11 классов.',
+        'grades': [7, 8, 9, 10, 11],
+        'official_url': None,
+        'color_hex': '#ef4444',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'Уточняется'},
+            {'name': 'Заключительный этап', 'date_range': 'Уточняется'},
+        ],
+    },
+    'matprazdnik': {
+        'short_name': 'Матпраздник',
+        'description': 'Математический праздник — олимпиада для школьников 6–7 классов.',
+        'grades': [6, 7],
+        'official_url': None,
+        'color_hex': '#f97316',
+        'stages': [
+            {'name': 'Основной тур', 'date_range': 'Уточняется'},
+        ],
+    },
+    'spbgu': {
+        'short_name': 'СПбГУ',
+        'description': 'Олимпиада школьников СПбГУ по математике для учащихся 6–11 классов.',
+        'grades': [6, 7, 8, 9, 10, 11],
+        'official_url': 'https://olympiada.spbu.ru/',
+        'color_hex': '#8b5cf6',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'До 1 декабря, заочно'},
+            {'name': 'Заключительный этап', 'date_range': 'Очно, по графику'},
+        ],
+    },
+    'phystech': {
+        'short_name': 'Физтех',
+        'description': 'Олимпиада «Физтех» по математике, проводится МФТИ. Победители и призёры получают льготы при поступлении.',
+        'grades': [9, 10, 11],
+        'official_url': 'https://olymp.mipt.ru/',
+        'color_hex': '#0ea5e9',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'Октябрь – январь'},
+            {'name': 'Заключительный этап', 'date_range': 'Февраль – март'},
+        ],
+    },
+}
 try:
-    import json as _json_seed
+    import json as _json_olymp_prep
     with app.app_context():
-        from models import OlympiadPrep as _OlympiadPrepSeed
-        if _OlympiadPrepSeed.query.count() == 0:
-            print("[OLYMP-PREP-SEED] olympiad_prep empty, seeding 10 defaults...")
-            _olymp_prep_defaults = [
-                {
-                    "slug": "fiztekh",
-                    "name": "Олимпиада «Физтех»",
-                    "short_name": "Физтех",
-                    "description": "Олимпиада «Физтех» по математике проводится Московским физико-техническим институтом. Победители и призёры получают льготы при поступлении в ведущие вузы России.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://olymp.mipt.ru/",
-                    "color_hex": "#06b6d4",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Октябрь 2025 – январь 2026"},
-                        {"name": "Заключительный этап", "date_range": "Февраль – март 2026"},
-                    ],
-                },
-                {
-                    "slug": "kurchatov",
-                    "name": "Олимпиада «Курчатов»",
-                    "short_name": "Курчатов",
-                    "description": "Олимпиада «Курчатов» по математике для школьников. Даёт льготы при поступлении в вузы.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://kurchatov.test.ru/",
-                    "color_hex": "#a855f7",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Уточняется"},
-                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
-                    ],
-                },
-                {
-                    "slug": "shag-v-budushchee",
-                    "name": "Шаг в будущее",
-                    "short_name": "Шаг в будущее",
-                    "description": "Олимпиада школьников «Шаг в будущее» по математике. Проводится МГТУ им. Н.Э. Баумана.",
-                    "grades": [8, 9, 10, 11],
-                    "official_url": "https://olymp.bmstu.ru/",
-                    "color_hex": "#f97316",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "2025"},
-                        {"name": "Заключительный этап — 11 кл.", "date_range": "7 марта 2026"},
-                        {"name": "Заключительный этап — 8–10 кл.", "date_range": "9 марта 2026"},
-                    ],
-                },
-                {
-                    "slug": "otkrytaya",
-                    "name": "Открытая олимпиада школьников",
-                    "short_name": "Открытая",
-                    "description": "Открытая олимпиада школьников по математике. Организатор — НИУ ИТМО и другие ведущие вузы.",
-                    "grades": [8, 9, 10, 11],
-                    "official_url": "https://openolymp.ru/",
-                    "color_hex": "#10b981",
-                    "stages": [
-                        {"name": "1-й отборочный онлайн-этап", "date_range": "3 декабря 2025 – 19 января 2026"},
-                        {"name": "Заключительный этап", "date_range": "Уточняется"},
-                    ],
-                },
-                {
-                    "slug": "vsesibirskaya",
-                    "name": "Всесибирская открытая олимпиада",
-                    "short_name": "Всесибирская",
-                    "description": "Всесибирская открытая олимпиада школьников по математике. Проводится НГУ и СО РАН.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://sesc.nsu.ru/olymp/",
-                    "color_hex": "#84cc16",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Уточняется"},
-                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
-                    ],
-                },
-                {
-                    "slug": "itmo",
-                    "name": "Олимпиада ИТМО",
-                    "short_name": "ИТМО",
-                    "description": "Олимпиада школьников по математике университета ИТМО. Входит в Перечень олимпиад РСОШ.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://olymp.itmo.ru/",
-                    "color_hex": "#eab308",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Осень 2025 – зима 2026"},
-                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
-                    ],
-                },
-                {
-                    "slug": "nadezhda-energetiki",
-                    "name": "Олимпиада «Надежда энергетики»",
-                    "short_name": "Надежда энергетики",
-                    "description": "Олимпиада «Надежда энергетики» по математике. Организаторы — ведущие энергетические вузы России.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://www.energy-hope.ru/",
-                    "color_hex": "#ec4899",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Уточняется"},
-                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
-                    ],
-                },
-                {
-                    "slug": "rosatom",
-                    "name": "Олимпиада «Росатом»",
-                    "short_name": "Росатом",
-                    "description": "Олимпиада «Росатом» по математике. Проводится НИЯУ МИФИ. Даёт льготы при поступлении.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://rosatomolymp.mephi.ru/",
-                    "color_hex": "#3b82f6",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Уточняется"},
-                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
-                    ],
-                },
-                {
-                    "slug": "inzhenernaya",
-                    "name": "Инженерная олимпиада школьников",
-                    "short_name": "Инженерная",
-                    "description": "Инженерная олимпиада школьников по математике. Входит в Перечень РСОШ, даёт льготы при поступлении.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://olymp.urfu.ru/",
-                    "color_hex": "#14b8a6",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Осень 2025 – зима 2026"},
-                        {"name": "Заключительный этап", "date_range": "Февраль – март 2026"},
-                    ],
-                },
-                {
-                    "slug": "plekhanovskaya",
-                    "name": "Плехановская олимпиада",
-                    "short_name": "Плехановская",
-                    "description": "Плехановская олимпиада школьников по математике. Проводится РЭУ им. Г.В. Плеханова.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://olymp.rea.ru/",
-                    "color_hex": "#d946ef",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Уточняется"},
-                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
-                    ],
-                },
-            ]
-            for _i, _o in enumerate(_olymp_prep_defaults):
-                db.session.add(_OlympiadPrepSeed(
-                    slug=_o["slug"],
-                    name=_o["name"],
-                    short_name=_o["short_name"],
-                    description=_o["description"],
-                    grades=_json_seed.dumps(_o["grades"]),
-                    stages=_json_seed.dumps(_o["stages"], ensure_ascii=False),
-                    official_url=_o["official_url"],
-                    color_hex=_o["color_hex"],
-                    sort_order=_i + 1,
-                    is_active=True,
-                ))
-            db.session.commit()
-            print(f"[OLYMP-PREP-SEED] [OK] Added {len(_olymp_prep_defaults)} olympiads to olympiad_prep")
+        from models import OlympiadPrep as _OlympiadPrepSync
+        _index_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'data', 'olymp_catalog', '_index.json')
+        _sync_added = _sync_reactivated = _sync_hidden = 0
+        _target = []  # [(slug, название из каталога)]
+        if os.path.exists(_index_path):
+            with open(_index_path, encoding='utf-8') as _f_olymp_index:
+                _catalog_index = _json_olymp_prep.load(_f_olymp_index)
+            for _row in _catalog_index:
+                _slug = str(_row.get('slug') or '').strip()
+                if not _slug or _slug == 'other':
+                    continue
+                _target.append((_slug, str(_row.get('name') or _slug)))
+        if not _target:
+            print('[OLYMP-PREP-SYNC] olymp catalog index not found, skipping')
         else:
-            # Idempotent: nothing to do; uncomment for verbose logs:
-            # print(f"[OLYMP-PREP-SEED] already populated ({_OlympiadPrepSeed.query.count()} rows), skipping")
-            pass
-except Exception as _e_olymp_prep_seed:
-    print(f"[OLYMP-PREP-SEED] hook skipped: {_e_olymp_prep_seed}")
+            _existing = {o.slug: o for o in _OlympiadPrepSync.query.all()}
+            for _pos, (_slug, _name) in enumerate(_target, start=1):
+                _meta = _OLYMP_PREP_CATALOG_META.get(_slug, {})
+                _row_db = _existing.get(_slug)
+                if _row_db is None:
+                    db.session.add(_OlympiadPrepSync(
+                        slug=_slug,
+                        name=_name,
+                        short_name=_meta.get('short_name') or _name,
+                        description=_meta.get('description'),
+                        grades=_json_olymp_prep.dumps(_meta.get('grades') or []),
+                        stages=_json_olymp_prep.dumps(
+                            _meta.get('stages') or [], ensure_ascii=False),
+                        official_url=_meta.get('official_url'),
+                        color_hex=_meta.get('color_hex') or '#22d3a6',
+                        sort_order=_pos,
+                        is_active=True,
+                    ))
+                    _sync_added += 1
+                else:
+                    _row_db.sort_order = _pos
+                    if not _row_db.is_active:
+                        _row_db.is_active = True
+                        _sync_reactivated += 1
+            _target_slugs = {_slug for _slug, _ in _target}
+            for _slug, _row_db in _existing.items():
+                if _slug not in _target_slugs and _row_db.is_active:
+                    _row_db.is_active = False
+                    _sync_hidden += 1
+            if _sync_added or _sync_reactivated or _sync_hidden:
+                db.session.commit()
+                print(f"[OLYMP-PREP-SYNC] +{_sync_added} added, "
+                      f"{_sync_reactivated} reactivated, {_sync_hidden} hidden "
+                      f"(list follows olymp catalog)")
+except Exception as _e_olymp_prep_sync:
+    print(f"[OLYMP-PREP-SYNC] hook skipped: {_e_olymp_prep_sync}")
+
 
 # ── Theory placeholder fix (idempotent) ──────────────────────────────────────
 # Перезаписывает названия методов вида «E14 (название ждёт текста)»

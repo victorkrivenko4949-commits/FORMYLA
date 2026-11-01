@@ -658,6 +658,26 @@ def get_daily_tasks():
                   "theme_today": _theme_for_day(today, None), "daily_context": _daily_ctx},
         )
 
+    # ── PROBNIK_DAILY_V1 (02.11.2026, владелец): занятие-пробник выдаёт
+    # задачи НАЗНАЧЕННОГО варианта прямо в задачах дня — из каталога
+    # олимпиад, с условием, ответом и решением; сверху в сводке — что за
+    # пробник: олимпиада, год, класс. Ответы идут через конвейер банка
+    # (bank_issues). Занятие засчитывается, когда отвечены все задачи
+    # варианта. Не день пробника / вариант не назначен — обычная выдача.
+    try:
+        from services.probnik_daily import get_probnik_day_data
+        _probnik_day = get_probnik_day_data(user_id, today)
+    except Exception:
+        logger.exception("daily_tasks: probnik day failed")
+        _probnik_day = None
+    if _probnik_day:
+        return render_template(
+            "daily_tasks/daily_tasks_dashboard.html",
+            data={**_probnik_day, "session": _session_ctx,
+                  "theme_today": _theme_for_day(today, None),
+                  "daily_context": _daily_ctx},
+        )
+
     # ── BANK: задачи дня выдаются из предзаполненного банка ─────────
     # build_daily_set сам пишет выданное в bank_issues и идемпотентен
     # по (user_id, issued_date). Флаги plan_missing/bank_exhausted/
@@ -1691,7 +1711,15 @@ def submit_answer_ai(item_id: int):
         user_id=current_user.id, task_id=item_id,
     ).first()
     if _bank_issue is not None:
-        return _submit_bank_answer(item_id, _bank_issue)
+        _resp = _submit_bank_answer(item_id, _bank_issue)
+        # PROBNIK_DAILY_V1: отвечены все задачи варианта пробника —
+        # завершаем занятие-пробник (идемпотентно, вне пилота — no-op).
+        try:
+            from services.probnik_daily import maybe_finish_probnik_day
+            maybe_finish_probnik_day(current_user.id)
+        except Exception:
+            logger.exception("probnik daily finish hook failed")
+        return _resp
 
     item = DailyTaskItem.query.get(item_id)
     if not item:
