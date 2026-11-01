@@ -10,11 +10,7 @@
     {% set _la = (data.limit_ctx and data.limit_ctx.ai_limit) or 1 %}
     На бесплатном плане — <strong>{{ _lt }} {{ 'задача' if _lt == 1 else 'задачи' }}
     и {{ _la }} {{ 'ИИ-разбор' if _la == 1 else 'ИИ-разбора' }} в день</strong>.
-    {% if data.limit_ctx and data.limit_ctx.resets_at %}
-    Доступ восстановится в <strong>{{ data.limit_ctx.resets_at[:16] }} по Москве</strong>.
-    {% else %}
-    Доступ восстановится в 00:00 по Москве.
-    {% endif %}
+    Доступ восстановится в <strong>{{ (data.limit_ctx and data.limit_ctx.resets_human) or '00:00 по Москве' }}</strong>.
     <br>Начатая задача никуда не исчезнет — реши её, а новые будут завтра.
   </div>
   <div style="margin-top: 18px;">

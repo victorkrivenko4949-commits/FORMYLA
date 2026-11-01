@@ -460,6 +460,14 @@ def get_daily_tasks():
             pass
         _ntasks = _limits_svc.free_tasks_per_day()
         _nai = _limits_svc.free_ai_per_day()
+        _resets_human = "00:00 по Москве"
+        try:
+            from datetime import datetime as _dt_l
+            _lctx["resets_human"] = _dt_l.fromisoformat(
+                _lctx.get("resets_at") or ""
+            ).strftime("%d.%m.%Y в %H:%M") + " МСК"
+        except Exception:
+            _lctx["resets_human"] = _resets_human
         _tasks_word = 'задача' if _ntasks == 1 else 'задачи'
         data = {
             "status": "limit_reached",
@@ -498,7 +506,15 @@ def get_daily_tasks():
         if already:
             return None  # повторное открытие не списывает
         if _lctx["tasks_remaining"] <= 0:
-            return -1
+            # Самовосстановление (LIMITS_V1): бюджет задач уже списан, но
+            # набора дня нет — выдача потерялась (сет удалён очисткой и т.п.).
+            # Бесплатник не должен видеть окно лимита ВМЕСТО своей задачи
+            # дня: возвращаем одну задачу и выдаём её (списание повторится).
+            try:
+                _limits_svc.refund(user_id, "free_tasks", 1)
+                _lctx["tasks_remaining"] = 1
+            except Exception:
+                return -1
         cap = _lctx["tasks_remaining"]
         if not _limits_svc.try_consume(user_id, "free_tasks", _lctx["tasks_limit"], n=cap):
             # конкурентный запрос списал одновременно: возможно, набор уже создан
