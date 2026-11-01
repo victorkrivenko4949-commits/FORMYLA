@@ -213,6 +213,24 @@ def _yk_config() -> dict:
                 'send_receipt': False, 'is_test': False}
 
 
+def _recurring_enabled() -> bool:
+    """Опция «Подписки (автоплатежи)» у магазина в ЮKassa.
+
+    Пока менеджер ЮKassa не включил её магазину, ЛЮБОЙ платёж с
+    save_payment_method=true отклоняется ошибкой
+    'This store can't make recurring payments' — у каждого покупателя
+    падала бы оплата. Поэтому по умолчанию платим разово (без
+    save_payment_method), автопродление не подключается.
+
+    Когда менеджер ЮKassa включит рекуррентные платежи магазину —
+    поставить YOOKASSA_RECURRING_PAYMENTS=1 в .env и перезапустить
+    сервис: вернётся save_payment_method, автопродление и копирайт
+    «списания каждые 30 дней» на странице оплаты.
+    """
+    return os.environ.get('YOOKASSA_RECURRING_PAYMENTS', '0').strip().lower() \
+        in ('1', 'true', 'yes', 'on')
+
+
 def activate_premium_for_payment(user_id: int, plan: str,
                                  payment_id=None, order_id=None) -> dict:
     """Активировать Premium после оплаты (30 дней, настоящий платный статус).
@@ -312,6 +330,7 @@ def checkout():
                                active_title=active_info['title'] if active_info else 'Premium',
                                active_icon=active_info['icon'] if active_info else '⭐',
                                auto_renew=auto_renew if not beneficiary_id else None,
+                               recurring_enabled=_recurring_enabled(),
                                for_user=beneficiary_id,
                                beneficiary=beneficiary)
 
@@ -319,6 +338,7 @@ def checkout():
     return render_template('payments/premium_checkout.html',
                            plan=plan, info=info, cfg=cfg,
                            auto_renew=_gar(current_user.id) if not beneficiary_id else None,
+                           recurring_enabled=_recurring_enabled(),
                            for_user=beneficiary_id,
                            beneficiary=beneficiary)
 
@@ -429,7 +449,10 @@ def create_payment():
             "amount": {"value": f"{info['price_rub']}.00", "currency": "RUB"},
             "capture": True,
             "confirmation": {"type": "redirect", "return_url": return_url},
-            "save_payment_method": True,  # автопродление: ЮKassa сохранит способ оплаты
+            # save_payment_method=True отклоняется ЮKassa с ошибкой
+            # 'This store can't make recurring payments', пока у магазина
+            # не включена опция рекуррентных платежей (см. _recurring_enabled).
+            "save_payment_method": _recurring_enabled(),  # автопродление: ЮKassa сохранит способ оплаты
             "description": f"{info['title']} на FORMYLA (30 дней) — @{nick_label}",
             "metadata": {
                 "order_id": order_id,
@@ -598,6 +621,7 @@ def payment_return():
                                status='succeeded', info=info, plan=plan, demo=True,
                                expires=str(expires)[:16] if expires else None,
                                auto_renew=get_auto_renewal(current_user.id) if not beneficiary_id else None,
+                               recurring_enabled=_recurring_enabled(),
                                beneficiary=beneficiary_name)
 
     # Реальный платёж: перепроверяем статус в API ЮKassa
@@ -635,6 +659,7 @@ def payment_return():
                                status='succeeded', info=info, plan=plan,
                                expires=str(expires)[:16] if expires else None,
                                auto_renew=get_auto_renewal(current_user.id) if not beneficiary_id else None,
+                               recurring_enabled=_recurring_enabled(),
                                beneficiary=beneficiary_name)
 
     if p_status == 'canceled':

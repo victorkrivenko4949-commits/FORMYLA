@@ -164,7 +164,7 @@
     </ul>
     <div class="pm-have-note">⚡ Оплачивать снова не нужно · 🛡 Когда срок подойдёт к концу, тариф можно оформить снова</div>
 
-    {% if auto_renew %}
+    {% if auto_renew and recurring_enabled %}
     <div class="pm-ar-box {% if not auto_renew.enabled %}off{% endif %}">
       <div class="pm-ar-title"><span class="dot">●</span> {% if auto_renew.enabled %}Автопродление включено{% else %}Автопродление отключено{% endif %}</div>
       <div class="pm-ar-sub">
@@ -176,8 +176,18 @@
       </div>
       <button class="pm-ar-btn" data-ar-enabled="{% if auto_renew.enabled %}1{% else %}0{% endif %}" onclick="pmAutoRenew(this)">{% if auto_renew.enabled %}Отключить автопродление{% else %}Включить автопродление{% endif %}</button>
     </div>
-    {% else %}
+    {% elif auto_renew and auto_renew.enabled %}
+    {# Рекуррентные платежи отключены флагом, но автопродление уже включено
+       раньше (сохранённый способ оплаты есть) — даём управлять как обычно. #}
+    <div class="pm-ar-box">
+      <div class="pm-ar-title"><span class="dot">●</span> Автопродление включено</div>
+      <div class="pm-ar-sub">Каждые 30 дней {{ auto_renew.price_rub | int }} ₽ списываются автоматически.{% if premium_until %} Следующий платёж: {{ premium_until }}.{% endif %}</div>
+      <button class="pm-ar-btn" data-ar-enabled="1" onclick="pmAutoRenew(this)">Отключить автопродление</button>
+    </div>
+    {% elif recurring_enabled %}
     <div class="pm-ar-none">🔁 Автопродление не подключено — способ оплаты сохранится при следующей оплате тарифа, и продление можно будет включить.</div>
+    {% else %}
+    <div class="pm-ar-none">🔁 Автопродление временно недоступно — по истечении 30 дней тариф можно оформить снова на этой странице.</div>
     {% endif %}
 
     <div class="pm-have-actions">
@@ -247,8 +257,10 @@
       <div>🛡 Отменить можно в любой момент</div>
     </div>
 
-    {% if not beneficiary %}
+    {% if not beneficiary and recurring_enabled %}
     <div class="pm-ar-consent">🔁 <b>Подписка с автопродлением:</b> каждые 30 дней {{ info.price_rub }} ₽ будут списываться автоматически тем же способом оплаты. Отключить можно в любой момент одним нажатием — доступ сохранится до конца оплаченного периода.</div>
+    {% elif not beneficiary %}
+    <div class="pm-ar-consent">🕐 <b>Оплата за 30 дней, разовая:</b> по истечении срока тариф можно продлить снова на этой странице. Автопродление подключим позже — тогда способ оплаты сохранится и списания будут проходить сами.</div>
     {% else %}
     <div class="pm-ar-consent">🎁 <b>Подарочная покупка:</b> автопродление не подключается — по истечении 30 дней тариф можно оформить снова на этой же странице.</div>
     {% endif %}
