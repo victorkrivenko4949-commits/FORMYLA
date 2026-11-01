@@ -8,7 +8,12 @@
 Пилотные аккаунты (по id в БД):
   * victor  (id=1)  — владелец (без бесплатной беты — проверка оплаты)
   * Lavrik  (id=5)
-  * Damian  (id=7452) — 3-й админ
+  * Damian  (id=7452)
+
+Дополнительно — email-пилоты (PILOT_EMAILS ниже): доступ по email, без знания
+id в БД. Используется, чтобы открыть покупку тарифов конкретному аккаунту
+до общего старта. Для email из PILOT_REVOKE_BETA_EMAILS бесплатная бета
+не выдаётся — доступ только после реальной оплаты.
 
 Включение/выключение пилота целиком — флагом PILOT_ENABLED ниже.
 """
@@ -27,10 +32,18 @@ PILOT_ENABLED = True
 # id пилотных аккаунтов: victor=1, Lavrik=5, Damian=7452
 PILOT_USER_IDS = (1, 5, 7452)
 
+# Email-пилоты: доступ по email (без знания id в БД) — для аккаунтов,
+# которым открываем покупку тарифов до 3 ноября. Проверка регистронезависимая.
+PILOT_EMAILS = ('viktorformulevitch@yandex.ru',)
+
 # Пилотные id, которым НЕ выдаётся бесплатная бета, а активная бета
 # (is_beta_access = TRUE) снимается на старте. Оплаченные подписки не трогаются.
 # После проверки оплаты — сделать пустым: ()
 PILOT_REVOKE_BETA_IDS = (1,)
+
+# Пилотные email без бесплатной беты (аналог PILOT_REVOKE_BETA_IDS):
+# доступ к Premium — только после реальной оплаты.
+PILOT_REVOKE_BETA_EMAILS = ('viktorformulevitch@yandex.ru',)
 
 # Пилотные тарифы (см. services/subscription.py → PLAN_LIMITS)
 PILOT_PLANS = ('premium_intense', 'premium_calm')
@@ -41,36 +54,100 @@ PILOT_DEFAULT_PLAN = 'premium_intense'
 
 # ── Хелперы ─────────────────────────────────────────────────────────────────
 
+def _norm_email(email) -> str:
+    return (email or '').strip().lower()
+
+
+def _pilot_emails() -> set:
+    return {e.strip().lower() for e in PILOT_EMAILS if e.strip()}
+
+
+def _revoke_beta_emails() -> set:
+    return {e.strip().lower() for e in PILOT_REVOKE_BETA_EMAILS if e.strip()}
+
+
+def _email_for_user_id(user_id) -> str:
+    """Email аккаунта по id. Ошибки БД / нет аккаунта → ''.
+
+    Нужен для email-пилотов, когда на входе только id (например,
+    current_user.id в маршрутах оплаты): без запроса email не проверить.
+    """
+    try:
+        from models import User
+        row = User.query.get(int(user_id))
+        return _norm_email(getattr(row, 'email', None))
+    except Exception:  # noqa: BLE001
+        return ''
+
+
+def _user_id_for_email(email) -> Optional[int]:
+    """id аккаунта по email (регистронезависимо). Ошибки БД / нет такого → None."""
+    if not email:
+        return None
+    try:
+        from sqlalchemy import func
+        from models import User
+        row = (User.query
+               .filter(func.lower(User.email) == _norm_email(email))
+               .first())
+        return int(row.id) if row is not None else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _is_pilot_email(email) -> bool:
+    """True, если email входит в PILOT_EMAILS (регистронезависимо)."""
+    if not PILOT_ENABLED:
+        return False
+    return _norm_email(email) in _pilot_emails()
+
+
 def is_pilot_user(user) -> bool:
     """True, если user (объект User или id) — пилотный аккаунт и пилот включён.
 
+    Пилот = id из PILOT_USER_IDS ИЛИ email из PILOT_EMAILS.
     Безопасен для анонимных пользователей (None → False).
     """
     if not PILOT_ENABLED:
         return False
-    user_id: Optional[int] = None
     try:
         if user is None:
             return False
-        # Объект User
+        # Объект User: проверяем id и email (email — без запроса в БД)
         user_id = getattr(user, 'id', None)
-        if user_id is None and isinstance(user, int):
-            user_id = user
+        if user_id is not None:
+            if int(user_id) in PILOT_USER_IDS:
+                return True
+            if _is_pilot_email(getattr(user, 'email', None)):
+                return True
+            if not _pilot_emails():
+                return False
+            # email на объекте пуст (аноним) — сверяем id по БД
+            return _email_for_user_id(user_id) in _pilot_emails()
+        if isinstance(user, int):
+            if user in PILOT_USER_IDS:
+                return True
+            if not _pilot_emails():
+                return False
+            return _email_for_user_id(user) in _pilot_emails()
     except Exception:
         return False
-    if not user_id:
-        return False
-    return int(user_id) in PILOT_USER_IDS
+    return False
 
 
 def is_pilot_id(user_id) -> bool:
-    """True, если user_id — пилотный id и пилот включён."""
+    """True, если user_id — пилотный id (или id email-пилота) и пилот включён."""
     if not PILOT_ENABLED:
         return False
     try:
-        return int(user_id) in PILOT_USER_IDS
+        uid = int(user_id)
     except (TypeError, ValueError):
         return False
+    if uid in PILOT_USER_IDS:
+        return True
+    if not _pilot_emails():
+        return False
+    return _email_for_user_id(uid) in _pilot_emails()
 
 
 def can_take_theme_test(user) -> bool:
@@ -114,7 +191,19 @@ def ensure_pilot_subscriptions() -> bool:
         from services.subscription import get_subscription_service
         svc = get_subscription_service()
         dirty = False
-        for rid in PILOT_REVOKE_BETA_IDS:
+        # id email-пилотов (по users.email); revoke-email — без бесплатной беты
+        email_pilot_ids: set = set()
+        revoke_ids = set(PILOT_REVOKE_BETA_IDS)
+        for email in _pilot_emails():
+            uid = _user_id_for_email(email)
+            if not uid:
+                logger.info('[PILOT] email %s: аккаунт не найден — пропускаем', email)
+                continue
+            email_pilot_ids.add(uid)
+            if email in _revoke_beta_emails():
+                revoke_ids.add(uid)
+        all_pilot_ids = set(PILOT_USER_IDS) | email_pilot_ids
+        for rid in sorted(revoke_ids):
             try:
                 res = _models_db.session.execute(_text(
                     "UPDATE subscriptions SET status = 'cancelled' "
@@ -134,8 +223,8 @@ def ensure_pilot_subscriptions() -> bool:
                     _models_db.session.rollback()
                 except Exception:
                     pass
-        for user_id in PILOT_USER_IDS:
-            if user_id in PILOT_REVOKE_BETA_IDS:
+        for user_id in sorted(all_pilot_ids):
+            if user_id in revoke_ids:
                 continue  # без бесплатной беты — доступ только после оплаты
             try:
                 plan_info = svc.get_user_plan(user_id)
