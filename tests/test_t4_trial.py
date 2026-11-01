@@ -26,7 +26,9 @@ def test_has_access_logic(request, user_fixture, expected):
 
 
 @pytest.mark.parametrize('user_fixture,trial_expected,sub_expected', [
-    ('user_trial_active', True, False),
+    # 2026-11-01: пробный день = premium-подписка на 24 часа, поэтому у
+    # активного trial-аккаунта has_active_subscription() тоже True.
+    ('user_trial_active', True, True),
     ('user_trial_expired', False, False),
     ('user_subscribed', False, True),
 ])
@@ -48,7 +50,7 @@ def test_trial_and_sub_methods(request, user_fixture,
 
 
 def test_trial_expired_blocked_on_probe(client, app, user_trial_expired):
-    """Expired trial + no sub: /prep/probe returns 402 with trial-expired text."""
+    """Expired trial + no sub: /prep/probe redirects to /subscribe (302)."""
     with client.session_transaction() as sess:
         sess['_user_id'] = str(user_trial_expired.id)
 
@@ -56,10 +58,11 @@ def test_trial_expired_blocked_on_probe(client, app, user_trial_expired):
     assert r.status_code != 500, (
         f'/prep/probe returned 500 (internal error)'
     )
-    body = r.data.decode('utf-8') if r.data else ''
-    assert 'Триальный период окончен' in body, (
-        f'/prep/probe blocked but missing "Триальный период окончен". '
-        f'Body[:300]: {body[:300]}'
+    # 2026-11-01: тест — функция Premium; бесплатника (в т.ч. с истёкшим
+    # пробным днём) отправляем на витрину тарифов, а не на 402-страницу.
+    assert r.status_code == 302 and '/subscribe' in (r.headers.get('Location') or ''), (
+        f'/prep/probe returned {r.status_code} '
+        f'({r.headers.get("Location")}), expected redirect to /subscribe'
     )
 
 

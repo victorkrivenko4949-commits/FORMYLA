@@ -304,13 +304,34 @@ class User(UserMixin, db.Model):
     # ── T4: trial & subscription helpers ──
 
     def is_trial_active(self):
-        """Return True — trial is always active until real payments are connected."""
-        # When real payments are connected, restore this logic:
-        # if self.trial_started_at is None:
-        #     return False
-        # elapsed = (datetime.utcnow() - self.trial_started_at).total_seconds()
-        # return elapsed < 86400
-        return True
+        """Пробный день ещё действует.
+
+        Пробный день — это просто premium-подписка на 24 часа с флагом
+        is_trial=1 (см. /api/subscribe/trial): «тупо премиум на 1 день».
+        Активен, пока её expires_at в будущем; после истечения — False.
+        Раньше здесь была заглушка «всегда True» (до подключения оплат),
+        которая пропускала всех через гейты has_access().
+        """
+        if self.id is None:
+            return False
+        try:
+            from sqlalchemy import text
+            pg = db.engine.dialect.name == 'postgresql'
+            cond = ("(started_at IS NULL OR started_at <= :now) AND expires_at > :now"
+                    if pg else
+                    "(started_at IS NULL OR datetime(started_at) <= datetime(:now)) "
+                    "AND datetime(expires_at) > datetime(:now)")
+            row = db.session.execute(text(f"""
+                SELECT 1 FROM subscriptions
+                WHERE user_id = :u AND status = 'active'
+                  AND plan LIKE 'premium%'
+                  AND COALESCE(CAST(is_trial AS INTEGER), 0) = 1
+                  AND {cond}
+                LIMIT 1
+            """), {'u': self.id, 'now': datetime.utcnow().isoformat(sep=' ')}).first()
+            return row is not None
+        except Exception:
+            return False
 
     def has_active_subscription(self):
         """Return True if plan_expires_at is set and still in the future."""
@@ -319,7 +340,7 @@ class User(UserMixin, db.Model):
         return self.plan_expires_at > datetime.utcnow()
 
     def has_access(self):
-        """Return True if trial is active OR subscription is active."""
+        """True, если пробный день или Premium активны (см. resolve_access)."""
         return self.is_trial_active() or self.has_active_subscription()
 
 

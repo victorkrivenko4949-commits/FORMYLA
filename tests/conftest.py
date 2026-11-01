@@ -482,11 +482,12 @@ def auth_client(client, test_user):
 
 @pytest.fixture
 def user_trial_active(app):
-    """User with trial_started_at = 1 hour ago, no subscription."""
+    """User with an ACTIVE trial-day subscription (24h premium, is_trial=1)."""
     from models import db, User
     from datetime import datetime, timedelta, timezone
 
     user = User(
+        id=9001,  # непилотный id: проверяем именно пробный день, не пилот
         email='trial_active@test.invalid',
         nickname='trial_active',
         is_guest=False,
@@ -494,22 +495,43 @@ def user_trial_active(app):
     )
     db.session.add(user)
     db.session.commit()
+    # Пробный день = premium-подписка на 24 часа (как /api/subscribe/trial)
+    from services.subscription import get_subscription_service
+    get_subscription_service().activate_premium(
+        user_id=user.id, plan='premium_intense', is_beta=True, is_trial=True,
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=23),
+    )
+    db.session.commit()
     return user
 
 
 @pytest.fixture
 def user_trial_expired(app):
-    """User with trial_started_at = 2 days ago, no subscription."""
+    """User whose trial day (24h premium) has already expired."""
     from models import db, User
     from datetime import datetime, timedelta, timezone
 
     user = User(
+        id=9002,  # непилотный id
         email='trial_expired@test.invalid',
         nickname='trial_expired',
         is_guest=False,
         trial_started_at=datetime.now(timezone.utc) - timedelta(days=2),
     )
     db.session.add(user)
+    db.session.commit()
+    # Истёкший пробный день: is_trial-подписка с expires_at в прошлом.
+    # activate_premium не принимает прошлое — вставляем строку напрямую.
+    from sqlalchemy import text
+    _past = (datetime.now(timezone.utc) - timedelta(days=1)).strftime(
+        '%Y-%m-%d %H:%M:%S')
+    db.session.execute(text("""
+        INSERT INTO subscriptions
+            (user_id, plan, status, started_at, expires_at, is_beta_access,
+             is_trial, created_at)
+        VALUES (:u, 'premium_intense', 'active', :started, :expires, 1, 1, :created)
+    """), {'u': user.id, 'started': _past, 'expires': _past, 'created': _past})
+    user.plan_expires_at = datetime.now(timezone.utc) - timedelta(days=1)
     db.session.commit()
     return user
 
@@ -521,6 +543,7 @@ def user_subscribed(app):
     from datetime import datetime, timedelta, timezone
 
     user = User(
+        id=9003,  # непилотный id
         email='subscribed@test.invalid',
         nickname='subscribed_user',
         is_guest=False,

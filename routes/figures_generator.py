@@ -2700,9 +2700,13 @@ def _ensure_queue_worker(app=None):
 @figures_gen_bp.route("", methods=["GET"])
 @login_required
 def generate_page():
-    """Render the figure generation page."""
-    if not current_user.has_access():
-        return render_template('trial_expired.html'), 402
+    """Render the figure generation page.
+
+    2026-11-01 (владелец): гейт «has_access() → 402 trial_expired» убран.
+    Раздел /figures/generate закрывается штатным paywall (method_week.paywall,
+    выключатель PAYWALL_ENABLED=0), а не отдельной проверкой. Пробный день
+    и Premium paywall пропускает: resolve_access видит их как платный доступ.
+    """
     return render_template("figures_generate.html")
 
 

@@ -124,8 +124,9 @@ def attach(bp):
 
     def run_probe(submit=False):
         from models import db
-        if not current_user.has_access():
-            return jsonify(error='Доступ к занятиям закончился.'), 402
+        # 2026-11-01 (владелец): гейт «has_access() → 402» убран. Вступительная
+        # анкета и пробный тест в ней — часть бесплатного онбординга;
+        # после истечения пробного дня аккаунт остаётся обычным бесплатником.
         try:
             cs, ps, intake = _load(current_user.id, lock=True)
             if not intake.get('completed') or intake.get('skipped'):

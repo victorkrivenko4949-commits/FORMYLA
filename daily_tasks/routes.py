@@ -379,8 +379,10 @@ def get_daily_tasks():
     * Генерация -> 202 ``{"status": "generating", "progress_pct": ..., ...}``
     * Готов / частично -> 200 с полным набором задач
     """
-    if not current_user.has_access():
-        return render_template('trial_expired.html'), 402
+    # 2026-11-01 (владелец): гейт «has_access() → 402 trial_expired» убран.
+    # Пробный день — это премиум на 1 день; после истечения аккаунт
+    # становится обычным бесплатником: задачи дня открыты по правилам
+    # Free (лимиты — services.limits), а не «доступ закончился».
     user_id = current_user.id
     today = today_in_user_tz()
 
