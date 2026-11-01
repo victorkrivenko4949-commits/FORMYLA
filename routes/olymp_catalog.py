@@ -17,9 +17,12 @@ Endpoints:
   POST /olymp-catalog/api/tutor/prepare                — v4-pro заранее разбирает задачу (кэш)
   POST /olymp-catalog/api/tutor/chat                   — диалог с тьютором по задаче
 
-Доступ: только авторизованные пользователи из белого списка OLYMP_CATALOG_USERS
-(по умолчанию "lavrik,victor"). Для них же after_request-хук добавляет пункт
-«🗂 Каталог задач олимпиад» в меню «Олимпиады» без правки base.html. OLYMP_CATALOG_NAV=0 отключает.
+Доступ: каталог открыт ВСЕМ авторизованным пользователям (OLYMP_CATALOG_USERS
+по умолчанию "*"). Чтобы вернуть закрытый белый список — задайте
+OLYMP_CATALOG_USERS="lavrik,victor" (перечисление логинов/email/ников через запятую).
+Пункт меню «🗂 Каталог задач олимпиад» теперь показывается всем авторизованным;
+OLYMP_CATALOG_NAV=0 отключает. ИИ-тьютор каталога по-прежнему закрыт paywall
+Premium (method_week/paywall.py) — это отдельная от доступа к задачам модель.
 Скрытые олимпиады: OLYMP_CATALOG_HIDE (по умолчанию "other"). Чистка данных: OLYMP_CATALOG_CLEAN=0 отключает.
 
 V3.5: «День N» показываем только там, где внутри одного (год, этап) реально больше одного дня
@@ -70,7 +73,9 @@ _CLEAN = os.environ.get("OLYMP_CATALOG_CLEAN", "1").strip() not in ("0", "false"
 # ----------------------------------------------------------------------------
 
 def _allowed_users() -> set:
-    raw = os.environ.get("OLYMP_CATALOG_USERS", "lavrik,victor")
+    # "*" (дефолт) — каталог открыт всем авторизованным пользователям.
+    # Явный список логинов/email/ников возвращает старое поведение белого списка.
+    raw = os.environ.get("OLYMP_CATALOG_USERS", "*")
     return {x.strip().lower() for x in raw.split(",") if x.strip()}
 
 
@@ -93,7 +98,10 @@ def is_catalog_user(user) -> bool:
     try:
         if not getattr(user, "is_authenticated", False):
             return False
-        return bool(_user_identities(user) & _allowed_users())
+        allowed = _allowed_users()
+        if "*" in allowed:
+            return True
+        return bool(_user_identities(user) & allowed)
     except Exception:  # noqa: BLE001
         return False
 
