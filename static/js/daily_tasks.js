@@ -169,11 +169,8 @@ function showReadyState(data) {
         }
     }
 
-    // Partial notice
-    if (data.status === 'partial') {
-        var notice = document.getElementById('dt-partial-notice');
-        if (notice) notice.classList.remove('dt-hidden');
-    }
+    // Partial notice: убран по просьбе владельца (01.11.2026) —
+    // баннер «Некоторые задачи не удалось сгенерировать» больше не показываем.
 
     // Date badge
     if (data.date) {

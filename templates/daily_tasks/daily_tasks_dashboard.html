@@ -317,13 +317,6 @@
   }
   .dt-summary-card strong { color: var(--accent-hi); }
 
-  .dt-partial-notice {
-    background: rgba(229,172,58,0.1);
-    border: 1px solid rgba(229,172,58,0.2);
-    border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;
-    font-size: 14px; color: var(--warn);
-  }
-
   /* ── Task Grid ────────────────────────────────────── */
   #dt-task-grid {
     display: grid;
@@ -1091,10 +1084,8 @@
       <span id="dt-summary-text"></span>
     </div>
 
-    <!-- Partial notice -->
-    <div id="dt-partial-notice" class="dt-partial-notice dt-hidden">
-      Некоторые задачи не удалось сгенерировать. Они отмечены флагом.
-    </div>
+    <!-- Partial notice: убран по просьбе владельца (01.11.2026) —
+         надпись «Некоторые задачи не удалось сгенерировать» не показываем -->
 
     {% if data and data.has_calibration %}
     <div class="dt-calibration-banner" role="status">

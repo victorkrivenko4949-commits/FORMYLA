@@ -261,23 +261,7 @@
     border-radius: 20px;
 }
 
-/* ── Partial Notice ── */
-.dt-partial-notice {
-    background: rgba(249,115,22,0.1);
-    border: 1px solid rgba(249,115,22,0.25);
-    border-radius: 12px;
-    padding: 14px 20px;
-    font-size: 14px;
-    color: var(--daily-flame);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.dt-partial-notice::before {
-    content: '[!]️';
-    font-size: 18px;
-}
+/* ── Partial Notice: убран по просьбе владельца (01.11.2026) ── */
 
 /* ── Regenerate Section ── */
 .dt-regenerate-section {

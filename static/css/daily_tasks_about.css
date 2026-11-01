@@ -100,25 +100,21 @@
 
 /* ── План · тема · серия — строки с тире, обычный поток текста ── */
 .page-daily-tasks .dt-plan-note,
-.page-daily-tasks .dt-summary-card,
-.page-daily-tasks .dt-partial-notice{
+.page-daily-tasks .dt-summary-card{
   display:block !important; position:relative;
   background:transparent !important; border:none !important; border-top:1px solid var(--hair) !important;
   border-radius:0 !important; padding:12px 0 12px 2.2em !important; margin:0 !important;
   font-family:var(--font-body) !important; font-size:.92rem !important; line-height:1.55 !important; color:var(--muted) !important;
 }
 .page-daily-tasks .dt-plan-note::before,
-.page-daily-tasks .dt-summary-card::before,
-.page-daily-tasks .dt-partial-notice::before{
+.page-daily-tasks .dt-summary-card::before{
   content:"—"; position:absolute; left:0; top:12px;
   font-family:var(--font-mono); font-size:.8rem; line-height:1.55; color:var(--gold);
 }
-.page-daily-tasks .dt-partial-notice::before{content:"!";color:var(--warn)}
 .page-daily-tasks .dt-plan-note strong,.page-daily-tasks .dt-summary-card strong{
   font-family:var(--font-body) !important; font-style:normal !important; font-size:inherit !important;
   color:var(--ink) !important; font-weight:600 !important;
 }
-.page-daily-tasks .dt-partial-notice{color:var(--warn) !important}
 
 /* серия: строка = прямой родитель кнопки «Как работает» */
 .page-daily-tasks div:has(> [data-streak-how]){
@@ -339,9 +335,9 @@
   .page-daily-tasks{padding:1.5rem 1rem 4rem !important}
   .page-daily-tasks .dt-pledge{align-items:flex-start !important}
   .page-daily-tasks .dt-pledge::before{display:none}
-  .page-daily-tasks .dt-plan-note,.page-daily-tasks .dt-summary-card,.page-daily-tasks .dt-partial-notice,
+  .page-daily-tasks .dt-plan-note,.page-daily-tasks .dt-summary-card,
   .page-daily-tasks div:has(> [data-streak-how]){padding-left:0 !important}
-  .page-daily-tasks .dt-plan-note::before,.page-daily-tasks .dt-summary-card::before,.page-daily-tasks .dt-partial-notice::before,
+  .page-daily-tasks .dt-plan-note::before,.page-daily-tasks .dt-summary-card::before,
   .page-daily-tasks div:has(> [data-streak-how])::before{display:none}
   .page-daily-tasks div:has(> [data-streak-how]){flex-wrap:wrap !important}
   .page-daily-tasks .dt-card{padding:18px 18px 16px !important}
