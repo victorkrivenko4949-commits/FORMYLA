@@ -732,8 +732,9 @@ def maybe_complete_probnik(user_id: int, probnik_code: str) -> bool:
         # REAL_PROBNIK_V1: занятие-пробник закрывается только сдачей
         # НАЗНАЧЕННОГО реального варианта. Кода нет (олимпиада не выбрана
         # или вариант недоступен) — занятие не закрывается «любым»
-        # пробником: уходит в долг на следующий день, а CTA ведёт на
-        # выбор олимпиады (/olympiads/course-probnik). Никаких подмен.
+        # пробником: уходит в долг на следующий день. PROBNIK_DAILY_V1:
+        # задачи варианта выдаются прямо в задачах дня, занятие
+        # завершается, когда на все задачи дан ответ. Никаких подмен.
         if not lesson['probnik_code'] or lesson['probnik_code'] != probnik_code:
             return False
         return complete_current_lesson(user_id, lesson_type='probnik')
@@ -767,9 +768,11 @@ CTA_FOR_TYPE = {
     # ВАЖНО: старые ссылки /olympiad/methods (без «s») вели в 404.
     'method': '/olympiads/methods',
     'practice': '/daily_tasks',
-    # Списка /olympiads/probniks не существует (404) — ведём на курс
-    # пробников; точная ссылка на пробник подставляется в session_info.
-    'probnik': '/olympiads/course-probnik',
+    # PROBNIK_DAILY_V1 (02.11.2026, владелец): задачи пробника выдаются
+    # прямо в задачах дня — кнопка ведёт на дашборд задач дня. Отдельная
+    # страница пробника и «страница курсов» (/olympiads/course-probnik)
+    # из маршрута выдачи убраны.
+    'probnik': '/daily_tasks',
 }
 
 
@@ -812,8 +815,10 @@ def session_info(user_id: int) -> Dict[str, Any]:
         t = lesson['lesson_type']
         cta = CTA_FOR_TYPE.get(t, '/daily_tasks')
         if not today_done:
-            if t == 'probnik' and lesson['probnik_code']:
-                cta = f"/olympiads/probnik/{lesson['probnik_code']}"
+            if t == 'probnik':
+                # PROBNIK_DAILY_V1: задачи варианта — прямо в задачах дня,
+                # отдельная ссылка на страницу пробника не нужна.
+                cta = '/daily_tasks'
             elif t == 'method':
                 # сюда попадают только пилоты: session_info целиком за
                 # входным пилот-гейтом (не-пилоты получают {'active': False}).

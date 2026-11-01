@@ -12,7 +12,7 @@ from flask_login import current_user, login_required
 from models import db, User
 from models_olympiad import (
     Probnik, OlympiadTask, TheoryBlock, ProbnikTheory,
-    TaskAttempt, StageAttempt, MethodTask, VserossCourseEntry,
+    TaskAttempt, StageAttempt, MethodTask,
     ATTEMPT_STATUSES, STAGE_RESULTS,
 )
 from services.figures_manifest import get_figures_for_probnik_task
@@ -31,70 +31,6 @@ _STAGE_ICONS = {
     'Региональный': '️',
     'Заключительный': '',
 }
-
-
-def _course_view(grade: int):
-    """РћР±С‰Р°СЏ Р»РѕРіРёРєР° РґР»СЏ course / course/10 / course/11."""
-    probniks = (Probnik.query
-                .filter_by(competition=_COMPETITION, grade=grade, season_year=_SEASON_YEAR)
-                .order_by(Probnik.sort_order).all())
-    # Р’РђР–РќРћ: TheoryBlock.grades вЂ” db.JSON (РЅР° РїСЂРѕРґРµ в†’ JSONB).
-    # .contains(str(grade)) РЅР° JSONB РіРµРЅРµСЂРёСЂСѓРµС‚ РѕРїРµСЂР°С‚РѕСЂ @> Рё РїР°РґР°РµС‚ СЃ
-    # InvalidParameterValue: invalid input syntax for type json.
-    # РСЃРїРѕР»СЊР·СѓРµРј cast РІ TEXT Рё LIKE (СЂР°Р±РѕС‚Р°РµС‚ Рё РЅР° SQLite, Рё РЅР° PostgreSQL).
-    # try/except + rollback: СЃРїРёСЃРѕРє СЂР°Р·РґРµР»РѕРІ РѕРїС†РёРѕРЅР°Р»РµРЅ вЂ” Р»СѓС‡С€Рµ РїСѓСЃС‚РѕР№
-    # СЃРїРёСЃРѕРє, С‡РµРј 500 РЅР° СЃС‚СЂР°РЅРёС†Рµ РєСѓСЂСЃР°.
-    method_sections = []
-    try:
-        from sqlalchemy import cast, String
-        sections_q = (db.session.query(TheoryBlock.section)
-                      .filter(cast(TheoryBlock.grades, String)
-                              .like(f'%{grade}%'),
-                              TheoryBlock.method_code.isnot(None))
-                      .distinct().order_by(TheoryBlock.section).all())
-        method_sections = [r[0] for r in sections_q if r[0]]
-    except Exception as _sec_err:
-        logger.warning(
-            '[_course_view] failed to load method_sections for grade=%s: %s',
-            grade, _sec_err,
-        )
-        try:
-            db.session.rollback()
-        except Exception:
-            pass
-        method_sections = []
-    progress_by_probnik = {}
-    if current_user.is_authenticated:
-        for p in probniks:
-            total = OlympiadTask.query.filter_by(probnik_id=p.id).count()
-            if total == 0:
-                continue
-            done = (TaskAttempt.query
-                    .filter_by(user_id=current_user.id, status='done')
-                    .join(OlympiadTask, OlympiadTask.id == TaskAttempt.task_id)
-                    .filter(OlympiadTask.probnik_id == p.id).count())
-            progress_by_probnik[p.code] = int(round(done / total * 100))
-    return render_template('olympiad/course.html',
-                           competition=_COMPETITION, grade=grade,
-                           season_year=_SEASON_YEAR,
-                           topic_probniks=probniks,
-                           progress_by_probnik=progress_by_probnik,
-                           method_sections=method_sections)
-
-
-@olympiad_bp.route('/course-probnik')
-def course_probnik():
-    return _course_view(9)
-
-
-@olympiad_bp.route('/course-probnik/10')
-def course_probnik_10():
-    return _course_view(10)
-
-
-@olympiad_bp.route('/course-probnik/11')
-def course_probnik_11():
-    return _course_view(11)
 
 
 # в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
@@ -609,5 +545,4 @@ def method_task(method_task_id):
     return render_template('olympiad/method_task.html', task=t,
                            has_aux=has_aux, aux_svg_path=aux_svg_path,
                            aux_reason=aux_reason)
-
 
