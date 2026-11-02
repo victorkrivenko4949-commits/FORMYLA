@@ -371,7 +371,7 @@
                     </a>
                     {% if s.premium %}
                     <div class="premium-active-badge" title="Premium уже активен">
-                        ⭐ Premium{% if s.premium.expires_at %} до {{ s.premium.expires_at[:10] }}{% endif %}
+                        ⭐ Premium{% if s.premium.expires_at %} до {{ s.premium.expires_at }}{% endif %}
                     </div>
                     {% else %}
                     <a class="buy-premium-btn"
