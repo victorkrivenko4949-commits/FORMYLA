@@ -26,6 +26,9 @@
 }
 .cur-msgs { height: 46vh; min-height: 320px; overflow-y: auto; padding: 18px 16px 8px; }
 .cur-msg { display: flex; gap: 10px; margin-bottom: 14px; }
+.cur-msg.user { flex-direction: row-reverse; }
+.cur-m-body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.cur-msg.user .cur-m-body { align-items: flex-end; }
 .cur-msg .cur-m-ava {
   width: 34px; height: 34px; border-radius: 50%; flex: none; font-size: 16px;
   display: flex; align-items: center; justify-content: center; margin-top: 2px;
@@ -34,16 +37,16 @@
 .cur-msg.user .cur-m-ava { background: rgba(56,239,125,.16); }
 .cur-msg.system .cur-m-ava { background: rgba(244,185,66,.15); }
 .cur-bubble {
-  max-width: 78%; padding: 10px 14px; border-radius: 14px; font-size: 14.5px;
-  line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere;
+  max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 14.5px;
+  line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; box-sizing: border-box;
 }
 .cur-msg.curator .cur-bubble { background: rgba(56,97,251,.14); border: 1px solid rgba(91,133,251,.25); color: #e2e8f0; border-top-left-radius: 4px; }
-.cur-msg.user .cur-bubble { background: rgba(56,239,125,.10); border: 1px solid rgba(56,239,125,.22); color: #e2e8f0; border-top-right-radius: 4px; margin-left: auto; }
+.cur-msg.user .cur-bubble { background: rgba(56,239,125,.10); border: 1px solid rgba(56,239,125,.22); color: #e2e8f0; border-top-right-radius: 4px; }
 .cur-msg.system .cur-bubble { background: rgba(244,185,66,.08); border: 1px dashed rgba(244,185,66,.35); color: #e2e8f0; width: 100%; max-width: 100%; border-radius: 10px; }
 .cur-msg .cur-m-time { display: block; font-size: 10.5px; color: #64748b; margin-top: 4px; }
 .cur-input { display: flex; gap: 10px; padding: 12px 14px 14px; border-top: 1px solid #1e293b; background: rgba(15,23,42,.5); }
 .cur-input textarea {
-  flex: 1; resize: none; min-height: 46px; max-height: 120px; padding: 12px 14px;
+  flex: 1; min-width: 0; resize: none; min-height: 46px; max-height: 120px; padding: 12px 14px;
   border-radius: 12px; border: 1px solid #334155; background: rgba(255,255,255,.04);
   color: #e2e8f0; font: inherit; font-size: 14.5px; line-height: 1.45;
 }
@@ -82,6 +85,29 @@
 .cur-progress { height: 4px; border-radius: 4px; background: rgba(255,255,255,.08); margin-top: 8px; overflow: hidden; }
 .cur-progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #F4B942, #e09a1f); transition: width 1s linear; }
 .cur-empty { color: #64748b; text-align: center; padding: 60px 20px; font-size: 14.5px; line-height: 1.6; }
+
+@media (max-width: 640px) {
+  .cur-wrap { margin: 8px auto 70px; padding: 0 6px; }
+  .cur-head { gap: 10px; margin: 8px 4px 4px; }
+  .cur-head .cur-ava { width: 40px; height: 40px; font-size: 20px; }
+  .cur-head h1 { font-size: 18px; }
+  .cur-head .cur-sub { font-size: 12px; }
+  .cur-tabs { margin-top: 10px; gap: 6px; }
+  .cur-tab { padding: 9px 6px; font-size: 13.5px; }
+  .cur-tab .cur-tab-sub { font-size: 10.5px; }
+  .cur-card { margin-top: 10px; border-radius: 12px; }
+  .cur-msgs { height: calc(100vh - 300px); height: calc(100dvh - 300px); min-height: 300px; padding: 12px 8px 4px; }
+  .cur-msg { gap: 6px; margin-bottom: 12px; }
+  .cur-msg .cur-m-ava { width: 26px; height: 26px; font-size: 13px; }
+  .cur-bubble { max-width: 94%; padding: 9px 12px; font-size: 15px; line-height: 1.45; }
+  .cur-input { gap: 8px; padding: 8px; }
+  .cur-input textarea { min-height: 44px; padding: 10px 12px; font-size: 16px; }
+  .cur-send { min-width: 0; padding: 0 14px; font-size: 14px; }
+  .cur-typing { margin: 4px 8px 10px; padding: 10px 12px; gap: 10px; font-size: 15px; }
+  .cur-typing .cur-t-ava { width: 30px; height: 30px; font-size: 15px; }
+  .cur-typing .cur-typing-sub { font-size: 12px; }
+  .cur-empty { padding: 40px 12px; }
+}
 </style>
 {% endblock %}
 
@@ -146,6 +172,7 @@
     ava.className = 'cur-m-ava';
     ava.textContent = role === 'user' ? '🧑' : (role === 'system' ? '⚡' : '🎓');
     var body = document.createElement('div');
+    body.className = 'cur-m-body';
     var bubble = document.createElement('div');
     bubble.className = 'cur-bubble';
     bubble.textContent = content || '';   // безопасно: без HTML-интерпретации
