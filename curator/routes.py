@@ -1197,6 +1197,9 @@ def curator_force_probnik_day():
     не ждать 6-го занятия блока. Перезаписывает сегодняшнее занятие
     (или создаёт новое) как пробник с реальным вариантом из каталога.
     user_id необязателен — по умолчанию сам админ.
+    olympiad_slug необязателен: если у занятия и prep-плана ученика
+    олимпиада не выбрана, админ может указать её явно (например,
+    'vsosh' для пилота без prep-плана).
     """
     if not current_user.is_admin:
         return jsonify({'error': 'forbidden'}), 403
@@ -1210,6 +1213,7 @@ def curator_force_probnik_day():
         from models import db
         from curator.session_plan import (
             TABLE_NAME, _lessons, _insert_lesson, _pick_probnik,
+            _user_olympiad,
         )
         from sqlalchemy import text
 
@@ -1220,9 +1224,14 @@ def curator_force_probnik_day():
         todays = [l for l in lessons if _to_date_safe(l.get('assigned_date')) == today]
         if todays:
             row = todays[-1]
-            # вариант: не повторяем уже выданные
+            # вариант: не повторяем уже выданные; олимпиада — из занятия,
+            # иначе из активного prep-плана, иначе явный olympiad_slug
+            # из запроса (пилот без prep-плана, владелец 03.11.2026)
             used = {l['probnik_code'] for l in lessons if l.get('probnik_code')}
-            var = _pick_probnik(user_id, row.get('olympiad_slug'), used)
+            slug = (row.get('olympiad_slug')
+                    or _user_olympiad(user_id)
+                    or str(data.get('olympiad_slug') or '').strip() or None)
+            var = _pick_probnik(user_id, slug, used)
             if not var:
                 return jsonify({'error': 'no variant available'}), 500
             db.session.execute(text(
