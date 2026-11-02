@@ -496,6 +496,17 @@
     .dt-cal-banner-btn { align-self: flex-start; }
   }
 
+  /* MOBILE_FULLBLEED_V1 (02.11.2026, владелец): «убери зазоры по бокам» —
+     на телефоне контент задач дня от края до края экрана, без боковых
+     полей. Инлайн-стил на .page-daily-tasks задаёт десктопные 16px,
+     поэтому здесь нужен !important. */
+  @media (max-width: 768px) {
+    .page-daily-tasks {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+  }
+
   /* Calibration badge on card */
   .dt-calibration-badge {
     display: inline-block; margin-left: 6px; padding: 2px 8px;
@@ -884,9 +895,11 @@
         {% endif %}
         {% endif %}
       </div>
-      {% if not _s.today_done %}
+      {# PROBNIK_DAILY_V1: в день пробника кнопка не нужна — задачи
+         варианта уже в задачах дня, отдельный переход лишний (владелец, 02.11) #}
+      {% if not _s.today_done and _s.lesson_type != 'probnik' %}
       <a href="{{ _s.cta_url }}" style="flex:none;padding:10px 18px;border-radius:10px;background:linear-gradient(135deg,#4f6cff,#5eead4);color:#fff;font-weight:700;font-size:13px;text-decoration:none;">
-        {% if _s.lesson_type == 'method' %}Изучить метод{% elif _s.lesson_type == 'probnik' %}К пробнику{% else %}Начать{% endif %}
+        {% if _s.lesson_type == 'method' %}Изучить метод{% else %}Начать{% endif %}
       </a>
       {% endif %}
     </div>
