@@ -496,6 +496,17 @@
     .dt-cal-banner-btn { align-self: flex-start; }
   }
 
+  /* MOBILE_FULLBLEED_V1 (02.11.2026, владелец): «убери зазоры по бокам» —
+     на телефоне контент задач дня от края до края экрана, без боковых
+     полей. Инлайн-стил на .page-daily-tasks задаёт десктопные 16px,
+     поэтому здесь нужен !important. */
+  @media (max-width: 768px) {
+    .page-daily-tasks {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+  }
+
   /* Calibration badge on card */
   .dt-calibration-badge {
     display: inline-block; margin-left: 6px; padding: 2px 8px;
