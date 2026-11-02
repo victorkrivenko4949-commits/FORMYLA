@@ -802,6 +802,17 @@
   <!-- Page header -->
   <div style="font-size:20px;font-weight:800;margin:0 0 6px;display:inline-block;background:linear-gradient(90deg,#8ea2ff,#5eead4,#ffc36b);-webkit-background-clip:text;background-clip:text;color:transparent;">Главное — возвращаться каждый день</div>
   <h2 style="font-size:26px;font-weight:700;margin-bottom:12px;color:var(--text);">Задачи дня</h2>
+  <!-- PARENT_CHILDREN_DAILY_V1: родителю — кнопка к задачам дня детей.
+       Один ребёнок — «ребёнка», несколько — «детей (N)»; страница открывает
+       задачи дня каждого ребёнка отдельным блоком. -->
+  {% if data.parent_children %}
+  <div style="margin:0 0 16px;">
+    <a href="/parent/children-daily"
+       style="display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#3b82f6);color:#fff;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 4px 18px rgba(56,189,248,0.25);">
+      👨‍👩‍👧 К задачам дня {% if data.parent_children|length > 1 %}детей ({{ data.parent_children|length }}){% else %}ребёнка{% endif %}
+    </a>
+  </div>
+  {% endif %}
   <!-- OLYMPIAD_DAILY_V1: задачи дня — под выбранную олимпиаду -->
   {% if data.daily_context %}
     {% if data.daily_context.status == 'applied' %}

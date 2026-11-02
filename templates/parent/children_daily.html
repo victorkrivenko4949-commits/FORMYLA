@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block title %}Задачи дня детей — FORMYLA.net{% endblock %}
+{% block extra_css %}
+<style>
+    .parent-page {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+    }
+    .parent-page h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 8px;
+    }
+    .page-sub {
+        color: var(--muted);
+        font-size: 14px;
+        margin-bottom: 28px;
+    }
+    .page-nav {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+    .page-nav a {
+        color: var(--accent-hi);
+        text-decoration: none;
+    }
+    .page-nav a:hover {
+        text-decoration: underline;
+    }
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .child-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+    .child-head h2 {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0;
+    }
+    .progress-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .meta-chip {
+        display: inline-block;
+        padding: 4px 12px;
+        margin: 0 6px 12px 0;
+        border-radius: 8px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 12px;
+    }
+    .state-note {
+        padding: 12px 16px;
+        border-radius: 10px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    .task-item {
+        padding: 14px 0;
+        border-top: 1px solid var(--border);
+    }
+    .task-item:first-of-type {
+        border-top: none;
+        padding-top: 4px;
+    }
+    .task-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 6px;
+    }
+    .task-pos {
+        font-weight: 700;
+        color: var(--accent-hi);
+        font-size: 13px;
+    }
+    .task-topic {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: var(--muted);
+    }
+    .task-diff {
+        font-size: 11px;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1px 7px;
+    }
+    .task-text {
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+    .task-status {
+        margin-top: 8px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .status-correct { color: var(--ok); }
+    .status-incorrect { color: var(--bad); }
+    .status-pending { color: var(--muted); }
+    .debt-badge {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 2px 10px;
+        border-radius: 999px;
+        background: rgba(255,179,71,0.12);
+        border: 1px solid rgba(255,179,71,0.4);
+        color: #ffb347;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .footer-note {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+        margin-top: 8px;
+    }
+    @media (max-width: 600px) {
+        .parent-page { padding: 24px 16px 100px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="parent-page">
+    <h1>Задачи дня детей</h1>
+    <div class="page-sub">Сегодня, {{ today.strftime('%d.%m.%Y') }} — по каждому ребёнку отдельно</div>
+    <div class="page-nav">
+        <a href="{{ url_for('parent_teacher.parent_dashboard') }}">&larr; Кабинет родителя</a>
+        <a href="/daily_tasks">&larr; Мои задачи дня</a>
+    </div>
+
+    {% for c in children %}
+    <div class="card">
+        <div class="child-head">
+            <h2>{{ c.name }}</h2>
+            {% if not c.hidden and c.set_status in ('ready', 'partial') %}
+            <span class="progress-chip">решено {{ c.solved }} из {{ c.total }}</span>
+            {% endif %}
+        </div>
+
+        {% if c.hidden %}
+        <div class="state-note">
+            🔒 Ученик закрыл доступ к своему прогрессу в настройках профиля — задачи дня не показываются.
+        </div>
+        {% elif c.set_status == 'no_set' %}
+        <div class="state-note">
+            {% if c.method_day %}
+            Сегодня у ребёнка день метода по плану куратора — занятие проходит на странице метода, набор задач дня не создаётся.
+            {% else %}
+            Задачи дня на сегодня ещё не сформированы — ребёнок пока не открывал их у себя.
+            {% endif %}
+        </div>
+        {% elif c.set_status == 'generating' %}
+        <div class="state-note">
+            ⏳ Набор задач дня сейчас генерируется — загляните сюда через пару минут.
+        </div>
+        {% else %}
+            {% if c.class_level %}
+            <span class="meta-chip">класс {{ c.class_level }}</span>
+            {% endif %}
+            {% if c.summary %}
+            <span class="meta-chip">{{ c.summary }}</span>
+            {% endif %}
+            {% for t in c.tasks %}
+            <div class="task-item">
+                <div class="task-head">
+                    <span class="task-pos">Задача {{ t.position }}</span>
+                    {% if t.topic %}<span class="task-topic">{{ t.topic }}</span>{% endif %}
+                    {% if t.difficulty %}<span class="task-diff">уровень {{ t.difficulty }}</span>{% endif %}
+                    {% if t.in_debt %}<span class="debt-badge">в долгу</span>{% endif %}
+                </div>
+                <div class="task-text">{{ t.text }}</div>
+                <div class="task-status {% if t.is_correct %}status-correct{% elif t.answered %}status-incorrect{% else %}status-pending{% endif %}">
+                    {% if t.is_correct %}✅ Решено верно
+                    {% elif t.answered %}❌ Решено неверно
+                    {% else %}⏳ Ещё не решено{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <p class="footer-note">
+        Это обзорная страница для родителя: условия и статусы — да, ответы и решения — нет.
+        Решать задачи ребёнок должен в своём аккаунте, чтобы зачислялись результаты.
+    </p>
+</div>
+{% endblock %}
