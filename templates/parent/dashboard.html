@@ -251,10 +251,11 @@
                         ⭐ Premium активен{% if c.premium.expires_at %} до {{ c.premium.expires_at[:10] }}{% endif %}
                     </span>
                     {% else %}
-                    <a class="buy-premium-btn"
-                       href="/payments/premium/checkout?plan=premium_intense&for_user={{ c.id }}">
-                        ⭐ Купить Premium (пилот)
-                    </a>
+                    {# 2026-11-02: покупка Premium — только в аккаунте ребёнка #}
+                    <span class="premium-active-badge" style="opacity:.85"
+                          title="Premium оформляется в аккаунте ребёнка">
+                        ⭐ Оформите это в аккаунте ребёнка
+                    </span>
                     {% endif %}
                 </div>
                 {% else %}
@@ -264,10 +265,11 @@
                         ⭐ Premium активен{% if c.premium.expires_at %} до {{ c.premium.expires_at[:10] }}{% endif %}
                     </span>
                     {% else %}
-                    <a class="buy-premium-btn"
-                       href="/payments/premium/checkout?plan=premium_intense&for_user={{ c.id }}">
-                        ⭐ Купить Premium (пилот)
-                    </a>
+                    {# 2026-11-02: покупка Premium — только в аккаунте ребёнка #}
+                    <span class="premium-active-badge" style="opacity:.85"
+                          title="Premium оформляется в аккаунте ребёнка">
+                        ⭐ Оформите это в аккаунте ребёнка
+                    </span>
                     {% endif %}
                 </div>
                 {% endif %}

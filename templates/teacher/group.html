@@ -374,10 +374,11 @@
                         ⭐ Premium{% if s.premium.expires_at %} до {{ s.premium.expires_at[:10] }}{% endif %}
                     </div>
                     {% else %}
-                    <a class="buy-premium-btn"
-                       href="/payments/premium/checkout?plan=premium_intense&for_user={{ s.id }}">
-                        ⭐ Купить Premium (пилот)
-                    </a>
+                    {# 2026-11-02: покупка Premium — только в аккаунте ученика #}
+                    <div class="premium-active-badge" style="opacity:.85"
+                          title="Premium оформляется в аккаунте ученика">
+                        ⭐ Оформите это в аккаунте ученика
+                    </div>
                     {% endif %}
                 </td>
             </tr>

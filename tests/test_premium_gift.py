@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
-"""PREMIUM_GIFT_V1 — покупка Premium родителем/учителем ДЛЯ ребёнка.
+"""PARENT_TEACHER_NO_BUY (02.11.2026) — родитель и учитель НЕ покупают Premium.
 
-Полный цикл в демо-режиме (ЮKassa не настроена — платёж без списания):
-  * родитель открывает checkout?for_user=<ребёнок> по подтверждённой связи;
-  * create → заказ с beneficiary_user_id;
-  * return → Premium активируется ИМЕННО ребёнку (не платящему).
+Роль берётся из первого вопроса анкеты (User.role). Правило:
+  * родитель/учитель не может оформить Premium-пилот вообще — ни себе,
+    ни подарочно для ребёнка (подарочный поток PREMIUM_GIFT_V1 закрыт);
+  * checkout для него — редирект на /subscribe (там показывается
+    «Оформите это в аккаунте ребёнка»);
+  * create — 403 с этим же сообщением;
+  * пробный день (/api/subscribe/trial) — тоже 403;
+  * ученик (роль student, пилотный id) покупает как раньше.
 
 Запуск: pytest tests/test_premium_gift.py -q
 """
@@ -92,8 +96,7 @@ def gift_app(app, monkeypatch):
 
 
 def _make_user(email, nickname, role='student', uid=None):
-    """Пользователь с ЯВНЫМ id: id=1/5/7452 — пилотные (services/pilot.py),
-    и тогда проверка доступа уходит в ветку пилота, а не подарка."""
+    """Пользователь с ЯВНЫМ id: id=1/5/7452 — пилотные (services/pilot.py)."""
     from models import db, User
     if uid is None:
         # выбираем первый свободный id вне пилотных
@@ -118,10 +121,10 @@ def _plan(user_id):
     return get_subscription_service().get_user_plan(user_id)
 
 
-# ───────────────────────── полный поток (демо-режим) ──────────────────────
+# ─────────────────────────── новое правило ────────────────────────────────
 
-def test_parent_gift_full_flow(gift_app):
-    """Родитель платит — Premium получает РЕБЁНОК, а не родитель."""
+def test_parent_cannot_buy_for_child(gift_app):
+    """Родитель (роль из анкеты) не покупает Premium даже для ребёнка."""
     from models import db, ParentChildLink
 
     parent = _make_user('gift_parent@example.invalid', 'gift_parent', role='parent')
@@ -133,50 +136,32 @@ def test_parent_gift_full_flow(gift_app):
     client = gift_app.test_client()
     _login(client, parent)
 
-    # 1) Страница оформления: доступна, показывает получателя
+    # Checkout — редирект на /subscribe (там сообщение про аккаунт ребёнка)
     resp = client.get(f'/payments/premium/checkout?plan=premium_intense&for_user={child.id}')
-    assert resp.status_code == 200
-    body = resp.get_data(as_text=True)
-    assert 'gift_child' in body
-    assert 'для ученика' in body
+    assert resp.status_code == 302
+    assert '/subscribe' in resp.headers['Location']
 
-    # 2) Создание платежа: заказ с beneficiary_user_id = ребёнок
+    # Создание платежа — 403 с сообщением, заказа не создаётся
     resp = client.post('/payments/premium/create', json={
         'plan': 'premium_intense', 'for_user': child.id,
     })
-    assert resp.status_code == 200
+    assert resp.status_code == 403
     data = resp.get_json()
-    assert data.get('ok') and data.get('demo')
-    order_id = data['order_id']
+    assert 'аккаунте ребёнка' in data.get('error', '')
 
     from sqlalchemy import text
-    row = db.session.execute(text(
-        'SELECT user_id, item_code, beneficiary_user_id FROM yookassa_payments WHERE order_id = :o'
-    ), {'o': order_id}).fetchone()
-    assert row is not None
-    assert row[0] == parent.id          # платит родитель
-    assert row[1] == 'premium_intense'
-    assert row[2] == child.id            # получатель — ребёнок
+    rows = db.session.execute(text(
+        'SELECT COUNT(*) FROM yookassa_payments WHERE user_id = :u'
+    ), {'u': parent.id}).fetchone()
+    assert rows[0] == 0, 'Заказ для родителя создаваться не должен'
 
-    # 3) Возврат с оплаты: активация Premium именно ребёнку
-    resp = client.get(f'/payments/premium/return?order_id={order_id}&demo=1')
-    assert resp.status_code == 200
-
-    child_plan = _plan(child.id)
-    parent_plan = _plan(parent.id)
-    assert child_plan['is_premium'], 'Premium должен быть у ребёнка'
-    assert child_plan['plan'] == 'premium_intense'
-    assert not parent_plan['is_premium'], 'У платящего родителя Premium быть не должно'
-
-    # 4) Повторное открытие ссылки — идемпотентно (срок не переписывается)
-    expires_before = _plan(child.id)['expires_at']
-    resp = client.get(f'/payments/premium/return?order_id={order_id}&demo=1')
-    assert resp.status_code == 200
-    assert _plan(child.id)['expires_at'] == expires_before
+    # Ни у кого Premium не появился
+    assert not _plan(child.id)['is_premium']
+    assert not _plan(parent.id)['is_premium']
 
 
-def test_teacher_gift_for_group_student(gift_app):
-    """Учитель может купить Premium ученику своей группы (accepted)."""
+def test_teacher_cannot_buy_for_student(gift_app):
+    """Учитель тоже не может купить Premium ученику своей группы."""
     from models import db, T10Group, T10GroupMember
 
     teacher = _make_user('gift_teacher@example.invalid', 'gift_teacher', role='teacher')
@@ -192,88 +177,92 @@ def test_teacher_gift_for_group_student(gift_app):
     _login(client, teacher)
 
     resp = client.get(f'/payments/premium/checkout?plan=premium_calm&for_user={student.id}')
-    assert resp.status_code == 200
+    assert resp.status_code == 302
 
     resp = client.post('/payments/premium/create', json={
         'plan': 'premium_calm', 'for_user': student.id,
     })
-    assert resp.status_code == 200
-    data = resp.get_json()
-    assert data.get('ok')
-    resp = client.get(f"/payments/premium/return?order_id={data['order_id']}&demo=1")
-    assert resp.status_code == 200
+    assert resp.status_code == 403
+    assert 'аккаунте ребёнка' in resp.get_json().get('error', '')
 
-    assert _plan(student.id)['is_premium']
-    assert _plan(student.id)['plan'] == 'premium_calm'
+    assert not _plan(student.id)['is_premium']
     assert not _plan(teacher.id)['is_premium']
 
 
-def test_pending_link_not_enough(gift_app):
-    """Без подтверждения ребёнком связи покупка недоступна (404)."""
-    from models import db, ParentChildLink
-
-    parent = _make_user('pend_parent@example.invalid', 'pend_parent', role='parent')
-    child = _make_user('pend_child@example.invalid', 'pend_child', role='student')
-    db.session.add(ParentChildLink(
-        parent_id=parent.id, child_id=child.id, status='pending'))
-    db.session.commit()
-
+def test_parent_cannot_buy_for_self(gift_app):
+    """Родитель не покупает Premium и в своём аккаунте."""
+    parent = _make_user('self_parent@example.invalid', 'self_parent', role='parent')
     client = gift_app.test_client()
     _login(client, parent)
 
-    resp = client.get(f'/payments/premium/checkout?for_user={child.id}')
-    assert resp.status_code == 404
-    resp = client.post('/payments/premium/create', json={
-        'plan': 'premium_intense', 'for_user': child.id})
-    assert resp.status_code == 404
+    resp = client.get('/payments/premium/checkout?plan=premium_intense')
+    assert resp.status_code == 302
+
+    resp = client.post('/payments/premium/create', json={'plan': 'premium_intense'})
+    assert resp.status_code == 403
+    assert 'аккаунте ребёнка' in resp.get_json().get('error', '')
 
 
-def test_foreign_parent_cannot_buy(gift_app):
-    """Чужой родитель не может купить Premium несвязанному ребёнку."""
-    parent = _make_user('other_parent@example.invalid', 'other_parent', role='parent')
-    child = _make_user('alien_child@example.invalid', 'alien_child', role='student')
+def _trial_as_role(email, nickname, role):
+    """Пробный день через РЕАЛЬНОЕ приложение (маршрут живёт в app.py).
 
-    client = gift_app.test_client()
-    _login(client, parent)
+    Фикстура app в conftest — минимальное приложение без этого маршрута,
+    поэтому проверяем на подлинном объекте app.
+    """
+    import app as real_app_module
+    from models import db as _db, User
 
-    resp = client.get(f'/payments/premium/checkout?for_user={child.id}')
-    assert resp.status_code == 404
-    resp = client.post('/payments/premium/create', json={
-        'plan': 'premium_intense', 'for_user': child.id})
-    assert resp.status_code == 404
+    rac = real_app_module.app.test_client()
+    with real_app_module.app.app_context():
+        user = User(email=email, nickname=nickname, role=role, is_guest=False)
+        _db.session.add(user)
+        _db.session.commit()
+        uid = user.id
+    with rac.session_transaction() as sess:
+        sess['_user_id'] = str(uid)
 
-
-def test_cannot_buy_for_self_via_for_user(gift_app):
-    """for_user=self — не подарочная покупка, доступ запрещён (не пилот)."""
-    user = _make_user('selfy@example.invalid', 'selfy', role='student')
-    client = gift_app.test_client()
-    _login(client, user)
-    resp = client.get(f'/payments/premium/checkout?for_user={user.id}')
-    assert resp.status_code == 404
-
-
-def test_child_with_premium_blocks_repeat_purchase(gift_app):
-    """Если у ребёнка уже есть Premium — повторная оплата не создаётся."""
-    from models import db, ParentChildLink
+    resp = rac.post('/api/subscribe/trial', json={'plan': 'premium_intense'})
     from services.subscription import get_subscription_service
+    with real_app_module.app.app_context():
+        plan = get_subscription_service().get_user_plan(uid)
+    return resp, plan
 
-    parent = _make_user('rp_parent@example.invalid', 'rp_parent', role='parent')
-    child = _make_user('rp_child@example.invalid', 'rp_child', role='student')
-    db.session.add(ParentChildLink(
-        parent_id=parent.id, child_id=child.id, status='accepted'))
-    db.session.commit()
-    get_subscription_service().activate_premium(
-        child.id, plan='premium_intense', is_beta=False)
-    from models import db
-    db.session.commit()  # сервис сознательно не коммитит сам
+
+def test_parent_cannot_start_trial():
+    """Пробный день Premium родителю тоже закрыт."""
+    resp, plan = _trial_as_role('trial_parent@example.invalid',
+                                'trial_parent', 'parent')
+    assert resp.status_code == 403
+    assert 'аккаунте ребёнка' in resp.get_json().get('error', '')
+    assert not plan['is_premium']
+
+
+def test_teacher_cannot_start_trial():
+    """Пробный день Premium учителю закрыт."""
+    resp, plan = _trial_as_role('trial_teacher@example.invalid',
+                                'trial_teacher', 'teacher')
+    assert resp.status_code == 403
+    assert 'аккаунте ребёнка' in resp.get_json().get('error', '')
+    assert not plan['is_premium']
+
+
+def test_student_pilot_can_buy_for_self(gift_app):
+    """Ученик с пилотным id покупает как раньше (демо-режим)."""
+    student = _make_user('pilot_student@example.invalid', 'pilot_student',
+                         role='student', uid=1)
 
     client = gift_app.test_client()
-    _login(client, parent)
+    _login(client, student)
 
-    resp = client.get(f'/payments/premium/checkout?for_user={child.id}')
+    resp = client.get('/payments/premium/checkout?plan=premium_intense')
     assert resp.status_code == 200
-    assert 'уже активен' in resp.get_data(as_text=True)
 
-    resp = client.post('/payments/premium/create', json={
-        'plan': 'premium_intense', 'for_user': child.id})
-    assert resp.status_code == 409
+    resp = client.post('/payments/premium/create', json={'plan': 'premium_intense'})
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data.get('ok') and data.get('demo')
+
+    resp = client.get(f"/payments/premium/return?order_id={data['order_id']}&demo=1")
+    assert resp.status_code == 200
+    assert _plan(student.id)['is_premium']
+    assert _plan(student.id)['plan'] == 'premium_intense'

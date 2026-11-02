@@ -183,6 +183,18 @@
 .sp-trial b{font-weight:700}
 .sp-trial .sp-timer{font-family:var(--font-mono);font-weight:700;font-variant-numeric:tabular-nums}
 
+/* ── родитель/учитель: покупка только в аккаунте ребёнка ── */
+.sp-parent-note{
+  border-radius:16px;padding:var(--s8) var(--s6);
+  background:linear-gradient(135deg,rgba(99,102,241,.10),rgba(56,189,248,.06));
+  border:1px solid rgba(129,140,248,.4);
+  display:flex;flex-direction:column;align-items:center;gap:var(--s3);
+  text-align:center;
+}
+.sp-parent-note .sp-parent-note__icon{font-size:40px;line-height:1}
+.sp-parent-note h3{font-size:var(--text-lg);margin:0}
+.sp-parent-note p{color:var(--muted);font-size:var(--text-sm);margin:0;max-width:560px}
+
 /* ── карточки тарифов ── */
 .sp-plans{
   display:grid;grid-template-columns:repeat(2,1fr);gap:var(--s6);
@@ -461,7 +473,7 @@
         <p class="sp-hero__subtitle">Полная версия для подготовки к олимпиадам.</p>
         <p class="sp-hero__desc">Два темпа занятий: «Работяга» — 6 занятий в неделю, включая пробник и метод; «Спокойный» — 3 занятия в неделю по 1,5 часа. Оба открывают ИИ-тьютора, куратора, генератор чертежей и все задачи платформы.</p>
         <ul class="sp-hero__proof">
-          {% if trial_available %}<li><b>Пробный день бесплатно</b> — полный Premium на 24 часа</li>{% endif %}
+          {% if trial_available and not is_parent_or_teacher %}<li><b>Пробный день бесплатно</b> — полный Premium на 24 часа</li>{% endif %}
           <li>Бесплатный тариф: <b>1 задача в день</b> — без карты и подписки</li>
           <li>Отмена в любой момент, <b>история и прогресс сохраняются</b></li>
           <li>Оплата картой или СБП через <b>ЮKassa</b></li>
@@ -497,6 +509,15 @@
       <span class="sp-section__no">§ 01</span>
       <h2 class="sp-section__title">Тарифы</h2>
     </div>
+
+    {# 2026-11-02: родитель/учитель не покупает Premium в своём аккаунте #}
+    {% if is_parent_or_teacher %}
+    <div class="sp-parent-note reveal">
+      <span class="sp-parent-note__icon">👨‍👩‍👧</span>
+      <h3>Оформите это в аккаунте ребёнка</h3>
+      <p>FORMYLA Premium — учебный инструмент ученика: подписка и пробный день оформляются в аккаунте ребёнка. Войдите в аккаунт ребёнка (или попросите его зайти) — там доступны оба тарифа и бесплатный пробный день.</p>
+    </div>
+    {% else %}
 
     {# 2026-11-01: статус пробного дня — для всех, не только пилотов #}
     {% if trial_active_until %}
@@ -575,6 +596,7 @@
       <p><b>Бесплатный тариф:</b> 1 задача в день — остаётся доступен всегда, карта не нужна; тест, методы, генератор чертежей и ИИ-тьютор — по Premium.</p>
       <p class="sp-plan__note" style="margin:0">Пробный день — 1 день полного Premium, один раз на аккаунт.</p>
     </div>
+    {% endif %}
   </section>
 
   <!-- ═══════════ § 02 · ЧТО ВХОДИТ ═══════════ -->
@@ -711,7 +733,13 @@
   <section class="sp-cta">
     <div class="sp-cta__in">
       <p class="sp-cta__eyebrow">Готов начать?</p>
-      {% if trial_available %}
+      {% if is_parent_or_teacher %}
+      <h2 class="reveal">Оформите это в аккаунте ребёнка</h2>
+      <p class="reveal">Подписка и пробный день открываются в аккаунте ученика — там же занятия, тьютор и статистика.</p>
+      <div class="sp-cta__row reveal">
+        <a class="a2btn a2btn--ghost" href="/about">Подробнее о платформе</a>
+      </div>
+      {% elif trial_available %}
       <h2 class="reveal">Полный доступ — уже сегодня</h2>
       <p class="reveal">Попробуй Premium бесплатно в течение дня или выбери тариф — и занимайся в полную силу.</p>
       <div class="sp-cta__row reveal">
@@ -746,7 +774,7 @@
 
   <!-- Липкая CTA-панель (только десктоп) -->
   <div class="sp-sticky" id="spSticky">
-    <span class="sp-sticky__text"><b>FORMYLA Premium</b> — {% if trial_available %}от 500 ₽/мес · пробный день бесплатно{% elif is_pilot and trial_active_until %}пробный день активен{% elif is_pilot %}от 500 ₽/мес{% else %}от 500 ₽/мес · старт 3 ноября 2026{% endif %}</span>
+    <span class="sp-sticky__text"><b>FORMYLA Premium</b> — {% if is_parent_or_teacher %}оформляется в аккаунте ребёнка{% elif trial_available %}от 500 ₽/мес · пробный день бесплатно{% elif is_pilot and trial_active_until %}пробный день активен{% elif is_pilot %}от 500 ₽/мес{% else %}от 500 ₽/мес · старт 3 ноября 2026{% endif %}</span>
     <a class="a2btn a2btn--primary" href="#plans">{% if is_pilot %}Выбрать тариф{% else %}К тарифам{% endif %}</a>
   </div>
 
