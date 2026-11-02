@@ -21,7 +21,7 @@ def _ui_enabled() -> bool:
     return False
 
 _SNIPPET = ('<div id="mw-root"></div>'
-            '<script src="/static/method_week.js?v=1" defer></script></body>')
+            '<script src="/static/method_week.js?v=4" defer></script></body>')
 
 
 def install_ui_injector(app) -> None:
