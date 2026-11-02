@@ -588,6 +588,113 @@ def parent_dashboard():
 
 
 # ---------------------------------------------------------------------------
+# Задачи дня детей (PARENT_CHILDREN_DAILY_V1)
+# ---------------------------------------------------------------------------
+
+def _child_daily_snapshot(child_id: int, today: date) -> dict:
+    """Read-only снимок задач дня ученика для родителя.
+
+    Показываем условия и статусы задач, но НЕ правильные ответы и решения —
+    родитель не должен случайно подсказать ответ. Генерацию не трогаем:
+    только чтение готового набора (тот же источник, что и /daily_tasks).
+    """
+    from daily_tasks.models import DailyTaskSet, DailyTaskItem
+
+    snap = {
+        'set_status': 'no_set',
+        'class_level': None,
+        'summary': None,
+        'solved': 0,
+        'total': 0,
+        'tasks': [],
+        'method_day': False,
+    }
+    ds = DailyTaskSet.query.filter_by(
+        user_id=child_id, target_date=today,
+    ).first()
+    if ds is None:
+        # Пилотный план 6 занятий: в день метода набора нет — занятие
+        # проходит на странице метода, это не «пропуск».
+        try:
+            from curator.session_plan import is_method_day
+            snap['method_day'] = bool(is_method_day(child_id))
+        except Exception:
+            pass
+        return snap
+
+    snap['set_status'] = ds.status or 'pending'
+    snap['class_level'] = ds.class_level
+    snap['summary'] = ds.reason_summary
+    items = DailyTaskItem.query.filter_by(
+        daily_set_id=ds.id,
+    ).order_by(DailyTaskItem.position).all()
+    for it in items:
+        snap['total'] += 1
+        if it.is_correct:
+            snap['solved'] += 1
+        text = (it.task_text or '').strip()
+        if len(text) > 400:
+            text = text[:400].rstrip() + '…'
+        snap['tasks'].append({
+            'position': it.position,
+            'topic': it.topic or it.subtopic or it.subject or '',
+            'difficulty': it.difficulty_level,
+            'text': text,
+            'answered': it.user_answer is not None or it.answered_at is not None,
+            'is_correct': it.is_correct,
+            'in_debt': it.debt_status == 'active',
+        })
+    return snap
+
+
+@parent_teacher_bp.route('/parent/children-daily')
+@login_required
+def parent_children_daily():
+    """Задачи дня всех подтверждённых детей — каждому свой блок.
+
+    Кнопка «К задачам дня ребёнка» на дашборде задач дня ведёт сюда.
+    Один ребёнок — один блок; несколько детей — блоки друг за другом,
+    каждый показывает только своего ребёнка. Доступ — только по
+    подтверждённым ParentChildLink, скрытый прогресс уважаем.
+    """
+    _require_role('parent')
+    links = ParentChildLink.query.filter_by(
+        parent_id=current_user.id, status='accepted',
+    ).order_by(ParentChildLink.responded_at.desc()).all()
+
+    today = date.today()
+    children = []
+    for link in links:
+        child = User.query.get(link.child_id)
+        if child is None:
+            continue
+        entry = {
+            'id': child.id,
+            'name': _display(child),
+            'nickname': getattr(child, 'nickname', None),
+        }
+        if getattr(child, 'share_progress', True) in (False, 0):
+            entry['hidden'] = True
+        else:
+            entry['hidden'] = False
+            entry.update(_child_daily_snapshot(child.id, today))
+        children.append(entry)
+
+    if not children:
+        flash(
+            'Сначала привяжите ребёнка — тогда здесь появятся его задачи дня.',
+            'info',
+        )
+        return redirect(url_for('parent_teacher.parent_dashboard'))
+
+    return render_template(
+        'parent/children_daily.html',
+        children=children,
+        today=today,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Student detail page (accessible by teacher / parent)
 # ---------------------------------------------------------------------------
 
