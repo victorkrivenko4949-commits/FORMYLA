@@ -13273,6 +13273,12 @@ def api_progress(user_id):
 def subscribe_page():
     """Страница выбора тарифа."""
     current_plan = current_user.current_plan or 'free'
+    # PARENT_TEACHER_NO_BUY (02.11.2026, владелец): родитель и учитель
+    # (роль из первого вопроса анкеты) не могут оформить Premium-пилот
+    # в своём аккаунте — страница показывает «Оформите это в аккаунте
+    # ребёнка», покупка и пробный день им закрыты и на сервере.
+    user_role = (getattr(current_user, 'role', 'student') or 'student')
+    is_parent_or_teacher = user_role in ('parent', 'teacher')
     # PAYMENTS_DOC_V1 (24.10.2026): менеджер ЮKassa просил показать
     # понятное описание платных товаров/услуг и тарифов для проверки анкеты.
     # Показываем таблицу всех доступных платных товаров/тарифов, чтобы покупатель
@@ -13325,6 +13331,7 @@ def subscribe_page():
         pass
     return render_template('subscribe.html',
                            current_plan=current_plan,
+                           is_parent_or_teacher=is_parent_or_teacher,
                            plan_expires_at=plan_expires_at,
                            trial_active_until=trial_active_until,
                            trial_active_until_iso=trial_active_until_iso,
@@ -13438,6 +13445,11 @@ def api_subscribe_trial():
     """
     if getattr(current_user, 'is_guest', False):
         return jsonify({'error': 'Недоступно для гостей'}), 403
+    # 2026-11-02 (владелец): родитель и учитель (роль из первого вопроса
+    # анкеты) не оформляют Premium в своём аккаунте — только в аккаунте
+    # ребёнка. Пробный день им тоже закрыт.
+    if (getattr(current_user, 'role', 'student') or 'student') in ('parent', 'teacher'):
+        return jsonify({'error': 'Оформите это в аккаунте ребёнка: Premium и пробный день открываются в аккаунте ученика.'}), 403
     # 2026-11-01 (владелец): пробный день открыт всем зарегистрированным —
     # «1 день бесплатно» должен работать и давать доступ к тесту.
     # Ограничение «только пилотным» (24.10, до запуска 3 ноября) снято.
@@ -13503,6 +13515,11 @@ def api_subscribe():
     """
     data = request.get_json() or {}
     requested = data.get('plan', 'premium_monthly')
+
+    # 2026-11-02 (владелец): родитель и учитель не оформляют Premium
+    # в своём аккаунте — только в аккаунте ребёнка.
+    if (getattr(current_user, 'role', 'student') or 'student') in ('parent', 'teacher'):
+        return jsonify({'error': 'Оформите это в аккаунте ребёнка: Premium открывается в аккаунте ученика.'}), 403
 
     # Пилотные тарифы — только пилотным аккаунтам, через SubscriptionService
     # (пишет строку в subscriptions + канонизирует users.current_plan).

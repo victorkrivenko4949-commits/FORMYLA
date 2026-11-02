@@ -90,6 +90,22 @@ def _pilot_or_404():
         abort(404)
 
 
+def _is_parent_or_teacher() -> bool:
+    """Роль из первого вопроса анкеты — родитель или учитель.
+
+    PARENT_TEACHER_NO_BUY (02.11.2026, владелец): такие аккаунты не
+    оформляют Premium-пилот в принципе — ни себе, ни подарочно для
+    ребёнка. Покупка и пробный день выполняются в аккаунте ученика.
+    """
+    return (getattr(current_user, 'role', 'student') or 'student') in ('parent', 'teacher')
+
+
+PARENT_TEACHER_BUY_MESSAGE = (
+    'Оформите это в аккаунте ребёнка: Premium-пилот оформляется '
+    'в аккаунте ученика, а не в аккаунте родителя или учителя.'
+)
+
+
 # ── PREMIUM_GIFT_V1: покупка Premium для ребёнка ──────────────────────────
 
 def _gift_child(for_user_raw):
@@ -296,6 +312,12 @@ def activate_premium_for_payment(user_id: int, plan: str,
 @premium_pay_bp.route('/payments/premium/checkout', methods=['GET'])
 @login_required
 def checkout():
+    # PARENT_TEACHER_NO_BUY (02.11.2026): родитель и учитель не покупают
+    # Premium-пилот вообще — страница /subscribe сама покажет им
+    # «Оформите это в аккаунте ребёнка».
+    if _is_parent_or_teacher():
+        return redirect('/subscribe')
+
     # PREMIUM_GIFT_V1: родитель/учитель может оформить Premium для ребёнка.
     child = _pilot_or_gift_or_404(request.args.get('for_user'))
     plan = request.args.get('plan', 'premium_intense')
@@ -348,6 +370,12 @@ def checkout():
 @premium_pay_bp.route('/payments/premium/create', methods=['POST'])
 @login_required
 def create_payment():
+    # PARENT_TEACHER_NO_BUY (02.11.2026): родитель и учитель не могут
+    # купить Premium-пилот — ни себе, ни для ребёнка. Оформление —
+    # в аккаунте ученика.
+    if _is_parent_or_teacher():
+        return jsonify({'error': PARENT_TEACHER_BUY_MESSAGE}), 403
+
     data = request.get_json(silent=True) or {}
     plan = data.get('plan') or request.form.get('plan') or 'premium_intense'
     if plan not in PLAN_INFO:
