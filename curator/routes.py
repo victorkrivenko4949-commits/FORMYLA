@@ -42,7 +42,7 @@ import logging
 from datetime import date, datetime
 
 from flask import jsonify, request, g, current_app
-from flask_login import login_required
+from flask_login import current_user, login_required
 
 from curator import curator_bp
 from curator.diagnostics import (
@@ -1182,3 +1182,76 @@ def curator_plan_status():
     from services.curator_plan_service import check_plan_status
     status = check_plan_status()
     return render_template("admin/curator_plan_status.html", status=status)
+
+
+# ──────────────────────────────────────────────────────────────────────
+# ADMIN: сделать сегодня занятие-пробник (владелец, 02.11.2026)
+# ──────────────────────────────────────────────────────────────────────
+
+@curator_bp.route("/admin/force-probnik-day", methods=["POST"])
+@login_required
+def curator_force_probnik_day():
+    """ADMIN: назначить ученику занятие-пробник НА СЕГОДНЯ.
+
+    По просьбе владельца (02.11.2026): проверить день пробника вживую,
+    не ждать 6-го занятия блока. Перезаписывает сегодняшнее занятие
+    (или создаёт новое) как пробник с реальным вариантом из каталога.
+    user_id необязателен — по умолчанию сам админ.
+    """
+    if not current_user.is_admin:
+        return jsonify({'error': 'forbidden'}), 403
+    data = request.get_json(silent=True) or {}
+    try:
+        user_id = int(data.get('user_id') or current_user.id)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'bad user_id'}), 400
+
+    try:
+        from models import db
+        from curator.session_plan import (
+            TABLE_NAME, _lessons, _insert_lesson, _pick_probnik,
+        )
+        from sqlalchemy import text
+
+        today = date.today()
+        lessons = _lessons(user_id)
+
+        # сегодняшнее занятие (любой статус — completed тоже перезапишем)
+        todays = [l for l in lessons if _to_date_safe(l.get('assigned_date')) == today]
+        if todays:
+            row = todays[-1]
+            # вариант: не повторяем уже выданные
+            used = {l['probnik_code'] for l in lessons if l.get('probnik_code')}
+            var = _pick_probnik(user_id, row.get('olympiad_slug'), used)
+            if not var:
+                return jsonify({'error': 'no variant available'}), 500
+            db.session.execute(text(
+                f"UPDATE {TABLE_NAME} SET lesson_type='probnik', "
+                "theme=NULL, method_code=NULL, method_name=NULL, "
+                "probnik_code=:pc, probnik_title=:pt, status='assigned', "
+                "completed_at=NULL, completed_set_id=NULL "
+                "WHERE user_id=:uid AND id=:lid"
+            ), {'pc': var['code'], 'pt': var['title'], 'uid': user_id,
+                'lid': row['id']})
+            db.session.commit()
+            return jsonify({
+                'success': True, 'action': 'rewritten',
+                'lesson_id': row['id'], 'probnik_code': var['code'],
+                'probnik_title': var['title'],
+            })
+        # сегодняшнего занятия нет — создаём новое
+        max_seq = max((l['seq'] for l in lessons), default=0)
+        _insert_lesson(user_id, max_seq + 1, 'probnik', assigned=today)
+        return jsonify({'success': True, 'action': 'inserted',
+                        'seq': max_seq + 1})
+    except Exception as e:  # noqa: BLE001
+        logger.exception('force-probnik-day failed')
+        return jsonify({'error': str(e)}), 500
+
+
+def _to_date_safe(v):
+    try:
+        from curator.session_plan import _to_date
+        return _to_date(v)
+    except Exception:  # noqa: BLE001
+        return None
