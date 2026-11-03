@@ -844,18 +844,19 @@
   {% set _s = data.session %}
   <div style="padding:16px;margin-bottom:16px;border-radius:14px;border:1px solid rgba(79,108,255,0.35);background:linear-gradient(135deg,rgba(79,108,255,0.10),rgba(94,234,212,0.08));">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
-      <div style="font-weight:800;color:var(--text);font-size:15px;">План на 6 занятий</div>
-      <div style="color:var(--muted);font-size:12px;">сдвигается каждый день · завершено: {{ _s.completed_lessons }}</div>
+      <div style="font-weight:800;color:var(--text);font-size:15px;">{% if _s.plan|length == 7 %}План на 7 дней{% else %}План на 6 занятий{% endif %}</div>
+      <div style="color:var(--muted);font-size:12px;">{% if _s.plan|length == 7 %}{{ _s.lessons_per_week }} {{ 'занятие' if _s.lessons_per_week == 1 else 'занятий' }} · {{ _s.rest_days_count }} {{ 'выходной' if _s.rest_days_count == 1 else 'выходных' }} · {% else %}сдвигается каждый день · {% endif %}завершено: {{ _s.completed_lessons }}</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       {% for p in _s.plan %}
-      <div style="flex:1;min-width:130px;padding:10px 12px;border-radius:12px;border:1px solid {{ 'rgba(79,108,255,0.55)' if p.state == 'current' else 'var(--border)' }};background:{{ 'var(--surface)' if p.state == 'current' else 'transparent' }};{{ '' if p.state == 'current' else 'opacity:0.55;' }}">
+      <div style="flex:1;min-width:110px;padding:10px 12px;border-radius:12px;border:1px solid {{ 'rgba(79,108,255,0.55)' if p.state == 'current' else 'var(--border)' }};background:{{ 'var(--surface)' if p.state == 'current' else 'transparent' }};{{ 'opacity:0.45;' if p.lesson_type == 'rest' else ('opacity:0.55;' if p.state != 'current' else '') }}">
         <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:1.1em;">{% if p.lesson_type == 'method' %}📘{% elif p.lesson_type == 'probnik' %}🏆{% else %}✏️{% endif %}</span>
-          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">{% if p.state == 'current' %}сейчас{% elif p.state == 'tomorrow' %}завтра{% else %}занятие {{ p.slot }}{% endif %}</span>
+          <span style="font-size:1.1em;">{% if p.lesson_type == 'method' %}📘{% elif p.lesson_type == 'probnik' %}🏆{% elif p.lesson_type == 'rest' %}😌{% else %}✏️{% endif %}</span>
+          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">{% if p.state == 'current' %}сейчас{% elif p.state == 'tomorrow' %}завтра{% elif p.lesson_type == 'rest' %}выходной{% else %}занятие {{ p.slot }}{% endif %}</span>
+          {% if p.day_label %}<span style="font-size:11px;color:var(--muted);margin-left:auto;">{{ p.day_label }}</span>{% endif %}
         </div>
         <div style="font-weight:700;color:var(--text);font-size:13px;margin-top:4px;">
-          {{ p.lesson_label }}{% if p.lesson_type == 'practice' and p.theme %}<span style="color:var(--muted);font-weight:500;"> · {{ p.theme }}</span>{% endif %}{% if p.lesson_type == 'method' and p.method_name %}<span style="color:var(--muted);font-weight:500;"> · {{ p.method_name }}</span>{% endif %}{% if p.lesson_type == 'probnik' and p.probnik_title %}<span style="color:var(--muted);font-weight:500;"> · {{ p.probnik_title }}</span>{% endif %}
+          {% if p.lesson_type == 'rest' %}Отдых{% else %}{{ p.lesson_label }}{% if p.lesson_type == 'practice' and p.theme %}<span style="color:var(--muted);font-weight:500;"> · {{ p.theme }}</span>{% endif %}{% if p.lesson_type == 'method' and p.method_name %}<span style="color:var(--muted);font-weight:500;"> · {{ p.method_name }}</span>{% endif %}{% if p.lesson_type == 'probnik' and p.probnik_title %}<span style="color:var(--muted);font-weight:500;"> · {{ p.probnik_title }}</span>{% endif %}{% endif %}
         </div>
       </div>
       {% endfor %}
@@ -869,9 +870,12 @@
     </div>
     {% endif %}
     <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
-      <span style="font-size:1.6em;">{% if _s.today_done %}✅{% elif _s.lesson_type == 'method' %}📘{% elif _s.lesson_type == 'probnik' %}🏆{% else %}✏️{% endif %}</span>
+      <span style="font-size:1.6em;">{% if _s.today_rest %}😌{% elif _s.today_done %}✅{% elif _s.lesson_type == 'method' %}📘{% elif _s.lesson_type == 'probnik' %}🏆{% else %}✏️{% endif %}</span>
       <div style="flex:1;">
-        {% if _s.today_done %}
+        {% if _s.today_rest %}
+        <div style="font-weight:700;color:var(--text);font-size:15px;">Сегодня выходной — отдыхай.</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:2px;">Следующее занятие — в {{ _s.next_lesson_day }}. План продолжается, долги за выходной не начисляются.</div>
+        {% elif _s.today_done %}
         <div style="font-weight:700;color:var(--text);font-size:15px;">Сегодняшнее занятие выполнено — отличная работа.</div>
         <div style="color:var(--muted);font-size:13px;margin-top:2px;">Следующее занятие — завтра: {{ _s.lesson_label }}. Заходи завтра, план продолжается.</div>
         {% else %}
@@ -897,7 +901,7 @@
       </div>
       {# PROBNIK_DAILY_V1: в день пробника кнопка не нужна — задачи
          варианта уже в задачах дня, отдельный переход лишний (владелец, 02.11) #}
-      {% if not _s.today_done and _s.lesson_type != 'probnik' %}
+      {% if not _s.today_done and not _s.today_rest and _s.lesson_type != 'probnik' %}
       <a href="{{ _s.cta_url }}" style="flex:none;padding:10px 18px;border-radius:10px;background:linear-gradient(135deg,#4f6cff,#5eead4);color:#fff;font-weight:700;font-size:13px;text-decoration:none;">
         {% if _s.lesson_type == 'method' %}Изучить метод{% else %}Начать{% endif %}
       </a>

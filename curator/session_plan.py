@@ -41,6 +41,9 @@ from models import db
 logger = logging.getLogger(__name__)
 
 BLOCK_SIZE = 6
+
+# Короткие имена дней недели для полосы «План на 7 дней»
+WEEKDAY_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 TABLE_NAME = 'curator_lessons'
 
 LESSON_LABELS = {
@@ -96,11 +99,72 @@ def _is_pg() -> bool:
 
 
 def _pilot(user_id: int) -> bool:
+    """Пилот потока занятий: аккаунт из пилотного списка ИЛИ активная
+    подписка на пилотный тариф (03.11.2026, продажа открыта всем —
+    доступ следует за тарифом, не за пилотным списком)."""
     try:
-        from services.pilot import is_pilot_user
-        return bool(is_pilot_user(int(user_id)))
+        from services.pilot import has_premium_access
+        return bool(has_premium_access(int(user_id)))
     except Exception:
         return False
+
+
+def _pilot_variant(user_id: int) -> Optional[str]:
+    """Активный пилотный тариф (premium_intense / premium_calm) или None.
+
+    Один лёгкий SQL-запрос к subscriptions (как _premium_started_at).
+    """
+    try:
+        from datetime import datetime
+        row = db.session.execute(text(
+            "SELECT plan FROM subscriptions "
+            "WHERE user_id = :uid AND status = 'active' "
+            "  AND (expires_at IS NULL OR expires_at > :now) "
+            "  AND plan IN ('premium_intense', 'premium_calm') "
+            "ORDER BY id DESC LIMIT 1"),
+            {'uid': int(user_id),
+             'now': datetime.utcnow().isoformat()}).fetchone()
+        return row[0] if row else None
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[session_plan] variant lookup failed: %r', e)
+        return None
+
+
+def _chosen_days(user_id: int, variant: Optional[str]) -> Optional[List[int]]:
+    """Дни занятий (0=Пн … 6=Вс), выбранные на /schedule.
+
+    PILOT_SCHEDULE_DAYS_V1: «Работяга» — 6 дней, «Спокойный» — 3.
+    Если выбора нет (гейт /schedule ещё не пройден) — дефолт тарифа:
+    Пн–Сб для intense, Пн/Ср/Пт для calm. Тариф неизвестен → None
+    (все дни считаются днями занятий — прежнее поведение).
+    """
+    if variant not in ('premium_intense', 'premium_calm'):
+        return None
+    try:
+        from services.schedule_days import days_for_plan
+        days = days_for_plan(user_id, variant)
+        if days:
+            return days
+    except Exception:
+        pass
+    # выбора ещё нет — дефолт тарифа
+    return ([0, 1, 2, 3, 4, 5] if variant == 'premium_intense'
+            else [0, 2, 4])
+
+
+def _is_rest_day(user_id: int) -> bool:
+    """Сегодняшний день — выходной по выбранному расписанию?
+
+    True только когда дни выбраны и сегодня НЕ среди них. Если выбор
+    не сделан — False (каждый день может быть занятием, как раньше).
+    """
+    variant = _pilot_variant(user_id)
+    if variant is None:
+        return False
+    chosen = _chosen_days(user_id, variant)
+    if not chosen:
+        return False
+    return date.today().weekday() not in chosen
 
 
 # ── Выбор олимпиады и класса пользователя ────────────────────────────────
@@ -405,6 +469,10 @@ def _ensure_today_lesson(user_id: int) -> None:
         lessons = _lessons(user_id)
         if lessons and _to_date(lessons[-1].get('assigned_date')) == date.today():
             return  # сегодняшний урок уже создан (или день уже закрыт)
+        # PILOT_SCHEDULE_DAYS_V1: в выходной (не выбранный день) новое
+        # занятие не создаём — оно появится в следующий день занятий
+        if _is_rest_day(user_id):
+            return
         current_lesson(user_id)
     except Exception as e:  # noqa: BLE001
         logger.warning('[session_plan] ensure_today_lesson failed: %r', e)
@@ -463,14 +531,22 @@ def _advance_stale(user_id: int) -> None:
     # выданные пробники не повторяются: если за пропущенные дни несколько
     # занятий-пробников, каждый получает СВОЙ вариант (без подмен)
     used_codes = {l['probnik_code'] for l in lessons if l['probnik_code']}
+    # PILOT_SCHEDULE_DAYS_V1: пропущенные ВЫХОДНЫЕ (дни, НЕ выбранные на
+    # /schedule) занятиями не считаются и в долг не уходят
+    _chosen = _chosen_days(user_id, _pilot_variant(user_id))
     # тип занятия-долга определяется по ДНЮ пропуска (неделя диагностики
     # не занимает слоты блока): если пропуск пришёлся на «неделю 1» —
     # практика, иначе — слот блока 1-из-6
     w1e = _week1_end_date(user_id)
     diag = _diag_count(lessons, w1e)
+    debt_seq = last['seq']  # seq только по ЗАНЯТИЯМ (выходные не занимают seq)
     for i in range(1, missed):
         day = assigned + timedelta(days=i)
-        seq = last['seq'] + i
+        # выходной по выбранному расписанию — пропускаем без долга
+        if _chosen and day.weekday() not in _chosen:
+            continue
+        seq = debt_seq + 1
+        debt_seq = seq
         if w1e and day < w1e:
             lesson_type = 'practice'  # диагностический день недели 1
             diag += 1
@@ -568,6 +644,10 @@ def current_lesson(user_id: int) -> Optional[Dict[str, Any]]:
         return assigned[0]
     # сегодняшний урок уже создан (завершён/пропущен) — нового не создаём
     if lessons and _to_date(lessons[-1].get('assigned_date')) == date.today():
+        return None
+    # PILOT_SCHEDULE_DAYS_V1: в выходной занятие не создаём — оно будет
+    # создано в следующий день занятий
+    if _is_rest_day(user_id):
         return None
     # история пуста или последний урок датирован прошлым — создаём следующий по слоту
     seq = (lessons[-1]['seq'] if lessons else 0) + 1
@@ -786,34 +866,50 @@ def session_info(user_id: int) -> Dict[str, Any]:
     """Сводка текущего занятия и плана для интерфейса. Никогда не бросает.
 
     Сначала — ролловер пропущенных дней (занятия уходят в долг, план
-    двигается дальше), затем текущее занятие + план на 6 слотов вперёд
-    (текущее + 5 следующих) и список долгов (skipped).
+    двигается дальше; ВЫХОДНЫЕ по выбранному расписанию долгами не
+    становятся), затем текущее занятие и полоса плана.
+
+    PILOT_SCHEDULE_DAYS_V1: полоса — НЕДЕЛЯ из 7 дней (сегодня + 6):
+    выбранные на /schedule дни — карточки занятий ротации 1-из-6,
+    остальные — «выходной» («Работяга» 6+1, «Спокойный» 3+4). Если дни
+    не выбраны — прежний режим (текущее занятие + 5 следующих слотов).
     """
     if not _pilot(user_id):
         return {'active': False}
     try:
         _sync(user_id)
-        lesson = current_lesson(user_id)
+        # PILOT_SCHEDULE_DAYS_V1: сегодня выходной (не выбранный на
+        # /schedule день) — занятие не создаём и не ищем
+        variant = _pilot_variant(user_id)
+        chosen = _chosen_days(user_id, variant)
+        today_rest = bool(chosen) and date.today().weekday() not in chosen
+        lesson = None if today_rest else current_lesson(user_id)
         lessons = _lessons(user_id)
         today_done = False
         if not lesson:
-            # назначенного нет: либо сегодняшний урок уже завершён (молодец,
-            # следующий — завтра), либо истории нет вовсе
-            if not lessons:
+            # назначенного нет: сегодняшний урок завершён (молодец), сегодня
+            # выходной или истории нет вовсе (свежий пилот в выходной) —
+            # показываем превью следующего занятия
+            if not lessons and not today_rest:
                 return {'active': False}
-            last = lessons[-1]
-            if _to_date(last.get('assigned_date')) != date.today():
-                return {'active': False}  # битое состояние — не показываем
-            today_done = True
-            # «текущий» слот для превью — СЛЕДУЮЩИЙ за завершённым
-            next_seq = last['seq'] + 1
+            if lessons:
+                last = lessons[-1]
+                if (_to_date(last.get('assigned_date')) != date.today()
+                        and not today_rest):
+                    return {'active': False}  # битое состояние — не показываем
+                today_done = (_to_date(last.get('assigned_date')) == date.today())
+                # «текущий» слот для превью — СЛЕДУЮЮЩИЙ (за завершённым или
+                # после последнего созданного занятия, если сегодня выходной)
+                next_seq = last['seq'] + 1
+            else:
+                next_seq = 1  # истории нет, сегодня выходной
             cur_slot = _eff_slot(user_id, lessons, next_seq)
             t = _lesson_type_for_position(user_id, cur_slot - 1)
             lesson = {'seq': next_seq, 'lesson_type': t,
                       'theme': None, 'method_name': None,
                       'probnik_title': None, 'method_code': None,
                       'probnik_code': None, 'olympiad_slug': None,
-                      'status': 'done_today'}
+                      'status': 'rest_today' if today_rest else 'done_today'}
         completed = _completed_count(user_id)
         week_one = _in_week_one(user_id)
         if not today_done:
@@ -841,22 +937,67 @@ def session_info(user_id: int) -> Dict[str, Any]:
                     # новый дизайн каталога 102 методов — атлас (раздел
                     # «Олимпиады»); обёртка передаёт #/methods/<код> в iframe
                     cta = f"/olympiads/methods#/methods/{eff}"
-        # ── План: текущее занятие + 5 следующих слотов ──────────────────
+        # ── Полоса плана: НЕДЕЛЯ из 7 дней (сегодня + 6) ────────────────
+        # PILOT_SCHEDULE_DAYS_V1: выбранные на /schedule дни — карточки
+        # занятий (ротация 1-из-6), остальные — «выходной»:
+        # «Работяга» — 6 занятий + 1 выходной, «Спокойный» — 3 + 4.
         plan = []
-        for i in range(BLOCK_SIZE):
-            slot = ((cur_slot - 1 + i) % BLOCK_SIZE) + 1
-            lt = _lesson_type_for_position(user_id, slot - 1)
-            entry = {
-                'slot': slot,
-                'lesson_type': lt,
-                'lesson_label': LESSON_LABELS.get(lt, lt),
-                'state': ('tomorrow' if today_done else 'current') if i == 0 else 'upcoming',
-            }
-            if i == 0 and not today_done:
-                entry['theme'] = lesson['theme']
-                entry['method_name'] = lesson['method_name']
-                entry['probnik_title'] = lesson['probnik_title']
-            plan.append(entry)
+        next_lesson_day = None
+        if chosen:
+            slot_cursor = cur_slot
+            for i in range(7):
+                day = date.today() + timedelta(days=i)
+                wd = day.weekday()
+                if wd not in chosen:
+                    plan.append({
+                        'slot': None,
+                        'lesson_type': 'rest',
+                        'lesson_label': 'выходной',
+                        'state': 'rest',
+                        'day_label': WEEKDAY_SHORT[wd],
+                        'is_today': (i == 0),
+                    })
+                    continue
+                lt = _lesson_type_for_position(user_id, slot_cursor - 1)
+                entry = {
+                    'slot': slot_cursor,
+                    'lesson_type': lt,
+                    'lesson_label': LESSON_LABELS.get(lt, lt),
+                    'state': (('current' if not today_rest else 'tomorrow')
+                              if not today_done else 'tomorrow') if i == 0
+                    else 'upcoming',
+                    'day_label': WEEKDAY_SHORT[wd],
+                    'is_today': (i == 0),
+                }
+                if i == 0 and not today_done and not today_rest:
+                    entry['theme'] = lesson['theme']
+                    entry['method_name'] = lesson['method_name']
+                    entry['probnik_title'] = lesson['probnik_title']
+                plan.append(entry)
+                slot_cursor = (slot_cursor % BLOCK_SIZE) + 1
+            # ближайший следующий день занятий (для баннера в выходной)
+            for i in range(1, 8):
+                d = date.today() + timedelta(days=i)
+                if d.weekday() in chosen:
+                    next_lesson_day = WEEKDAY_SHORT[d.weekday()]
+                    break
+        else:
+            # дни не выбраны (гейт /schedule не пройден) — прежний режим:
+            # текущее занятие + 5 следующих слотов ротации
+            for i in range(BLOCK_SIZE):
+                slot = ((cur_slot - 1 + i) % BLOCK_SIZE) + 1
+                lt = _lesson_type_for_position(user_id, slot - 1)
+                entry = {
+                    'slot': slot,
+                    'lesson_type': lt,
+                    'lesson_label': LESSON_LABELS.get(lt, lt),
+                    'state': ('tomorrow' if today_done else 'current') if i == 0 else 'upcoming',
+                }
+                if i == 0 and not today_done:
+                    entry['theme'] = lesson['theme']
+                    entry['method_name'] = lesson['method_name']
+                    entry['probnik_title'] = lesson['probnik_title']
+                plan.append(entry)
         # ── Долги: пропущенные занятия ────────────────────────────────
         debts = [{
             'seq': l['seq'],
@@ -889,6 +1030,11 @@ def session_info(user_id: int) -> Dict[str, Any]:
             'plan': plan,
             'debts': debts,
             'debts_count': len(debts),
+            # PILOT_SCHEDULE_DAYS_V1: недельная полоса
+            'today_rest': today_rest,
+            'lessons_per_week': (len(chosen) if chosen else BLOCK_SIZE),
+            'rest_days_count': ((7 - len(chosen)) if chosen else 0),
+            'next_lesson_day': next_lesson_day,
         }
     except Exception as e:  # noqa: BLE001
         logger.warning('[session_plan] session_info failed: %r', e)

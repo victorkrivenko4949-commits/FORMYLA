@@ -51,6 +51,12 @@ PILOT_PLANS = ('premium_intense', 'premium_calm')
 # Тариф, который активируется пилотным аккаунтам по умолчанию (бета, без оплаты)
 PILOT_DEFAULT_PLAN = 'premium_intense'
 
+# Открытая продажа (владелец, 03.11.2026): покупка тарифов «Работяга»/
+# «Спокойный» доступна ВСЕМ зарегистрированным, не только пилотным
+# аккаунтам. False возвращает ограничение «до старта» — тогда чекаут
+# снова открыт только пилотам (и подаркам для детей).
+PILOT_OPEN_SALES = True
+
 
 # ── Хелперы ─────────────────────────────────────────────────────────────────
 
@@ -133,6 +139,36 @@ def is_pilot_user(user) -> bool:
     except Exception:
         return False
     return False
+
+
+def has_premium_access(user) -> bool:
+    """Полный Premium-продукт (поток занятий, куратор-чат, навигация):
+    аккаунт из пилотного списка ИЛИ активная подписка на пилотный тариф
+    (бета / оплаченная / пробный день). После открытия продажи 03.11.2026
+    доступ следует за тарифом: купил «Работяга»/«Спокойный» — получил
+    продукт, даже если аккаунт не в пилотном списке.
+
+    Безопасен для анонимов (None → False). Ошибки БД → False.
+    """
+    if is_pilot_user(user):
+        return True
+    uid = getattr(user, 'id', None) or user
+    try:
+        uid = int(uid)
+    except (TypeError, ValueError):
+        return False
+    try:
+        from models import db
+        from sqlalchemy import text
+        row = db.session.execute(text(
+            "SELECT 1 FROM subscriptions "
+            "WHERE user_id = :uid AND status = 'active' "
+            "  AND (expires_at IS NULL OR expires_at > :now) "
+            "  AND plan IN ('premium_intense', 'premium_calm') LIMIT 1"),
+            {'uid': uid, 'now': datetime.utcnow().isoformat()}).fetchone()
+        return row is not None
+    except Exception:  # noqa: BLE001
+        return False
 
 
 def is_pilot_id(user_id) -> bool:
