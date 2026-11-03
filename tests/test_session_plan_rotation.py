@@ -43,14 +43,16 @@ def _next_day(uid, lesson_id, days=1):
 
 
 def test_rotation_split_1_of_6(pilot_user):
-    """Блок из шести: метод, 4 практики, пробник — и повторяется.
+    """Блок из шести: метод, 5 практик — и повторяется.
+
+    Пробник убран из ротации (владелец, 03.11.2026): 6-я позиция —
+    практика для всех Premium-пользователей.
 
     Одно занятие в день: после завершения сдвигаем дату урока на день
     назад (симуляция следующего дня) и продолжаем.
     """
     uid = pilot_user.id
-    expected = ['method', 'practice', 'practice', 'practice',
-                'practice', 'probnik'] * 2  # два полных блока
+    expected = (['method'] + ['practice'] * 5) * 2  # два полных блока
     for i, want in enumerate(expected):
         lesson = session_plan.current_lesson(uid)
         assert lesson is not None, f'шаг {i}: занятие не создано'
@@ -246,9 +248,9 @@ def test_plan_six_entries_and_current_first(pilot_user):
     assert info['plan'][0]['state'] == 'current'
     assert info['plan'][0]['lesson_type'] == info['lesson_type']
     assert all(p['state'] == 'upcoming' for p in info['plan'][1:])
-    # порядок типов: метод, 4 практики, пробник
+    # порядок типов: метод + 5 практик (пробник убран из ротации, 03.11.2026)
     assert [p['lesson_type'] for p in info['plan']] == [
-        'method', 'practice', 'practice', 'practice', 'practice', 'probnik']
+        'method', 'practice', 'practice', 'practice', 'practice', 'practice']
     assert info['debts_count'] == 0
 
 
