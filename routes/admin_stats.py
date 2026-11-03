@@ -203,6 +203,44 @@ def _render(section, template, **ctx):
 
 
 # ──────────────────────────── data ────────────────────────────
+def premium_users() -> dict:
+    """Люди с Premium-доступом прямо сейчас (как services.pilot.has_premium_access):
+    пилотные аккаунты + активные подписки на тарифы «Работяга»/«Спокойный».
+    Fail-open: нет таблиц/колонок → нули.
+    """
+    from services import pilot as pilot_cfg
+    now_iso = datetime.utcnow().isoformat()
+    enabled = bool(getattr(pilot_cfg, 'PILOT_ENABLED', False))
+    pilot_ids = [int(i) for i in getattr(pilot_cfg, 'PILOT_USER_IDS', ())] if enabled else []
+    pilot_emails = [str(e).strip().lower() for e in getattr(pilot_cfg, 'PILOT_EMAILS', ())
+                   if str(e).strip()] if enabled else []
+    ids_in = ','.join(str(i) for i in pilot_ids) or '-1'
+    emails_in = ','.join("'%s'" % e.replace("'", "''") for e in pilot_emails) or "''"
+
+    def _rows(with_email: bool):
+        email_cond = f" OR lower(COALESCE(email, '')) IN ({emails_in})" if with_email else ''
+        return _q(f"""
+            SELECT
+              (SELECT COUNT(*) FROM users WHERE id IN ({ids_in}){email_cond}) AS pilots,
+              (SELECT COUNT(DISTINCT user_id) FROM subscriptions
+                 WHERE status = 'active' AND (expires_at IS NULL OR expires_at > :now)
+                   AND plan IN ('premium_intense', 'premium_calm')) AS subscribed,
+              (SELECT COUNT(*) FROM (
+                 SELECT id AS uid FROM users WHERE id IN ({ids_in}){email_cond}
+                 UNION
+                 SELECT user_id FROM subscriptions
+                  WHERE status = 'active' AND (expires_at IS NULL OR expires_at > :now)
+                    AND plan IN ('premium_intense', 'premium_calm'))) AS total
+        """, now=now_iso)
+
+    rows = _rows(True) or _rows(False)   # нет колонки email → считаем только по id
+    try:
+        pilots, subscribed, total = (int(v or 0) for v in rows[0])
+    except Exception:
+        pilots = subscribed = total = 0
+    return {'total': total, 'pilots': pilots, 'subscribed': subscribed}
+
+
 def funnel_counts(d_from: date, d_to: date) -> dict:
     """Уникальные пользователи/аноны по каждому шагу за период."""
     start, end = _utc_bounds(d_from, d_to)
@@ -340,7 +378,7 @@ def view_overview(s):
     rev_y = revenue(yesterday, yesterday)
     rev_p = revenue(d_from, d_to)
     return _render(s, 'admin/stats_overview.html', cards=cards, rev_y=rev_y, rev_p=rev_p,
-                   yesterday=yesterday, today=today)
+                   yesterday=yesterday, today=today, premium=premium_users())
 
 
 def view_funnel(s):
