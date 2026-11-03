@@ -13460,8 +13460,13 @@ def _inject_subscription_flags():
             }
     except Exception:
         pass
+    try:
+        from services.pilot import PILOT_OPEN_SALES
+        _open_sales = bool(PILOT_OPEN_SALES)
+    except Exception:
+        _open_sales = False
     return {'is_premium': False, 'is_pilot': False, 'has_premium': False,
-            'open_sales': False, 'pilot_session': None,
+            'open_sales': _open_sales, 'pilot_session': None,
             'is_free_user': False}
 
 
