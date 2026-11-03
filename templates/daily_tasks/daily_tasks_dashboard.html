@@ -813,6 +813,14 @@
   <!-- Page header -->
   <div style="font-size:20px;font-weight:800;margin:0 0 6px;display:inline-block;background:linear-gradient(90deg,#8ea2ff,#5eead4,#ffc36b);-webkit-background-clip:text;background-clip:text;color:transparent;">Главное — возвращаться каждый день</div>
   <h2 style="font-size:26px;font-weight:700;margin-bottom:12px;color:var(--text);">Задачи дня</h2>
+
+  <!-- SUPPORT_V1: баннер «написать в поддержку» — ведёт в чат «Связаться с нами» (/about#contact) -->
+  <a href="/about#contact"
+     style="display:inline-flex;align-items:center;gap:8px;padding:9px 16px;margin:0 0 14px;border-radius:999px;border:1px solid rgba(142,162,255,0.45);background:rgba(142,162,255,0.10);color:var(--text);font-size:13px;font-weight:600;text-decoration:none;"
+     onmouseover="this.style.background='rgba(142,162,255,0.18)'"
+     onmouseout="this.style.background='rgba(142,162,255,0.10)'">
+    💬 Есть вопросы или что-то непонятно? Напишите в поддержку
+  </a>
   <!-- OLYMPIAD_DAILY_V1: задачи дня — под выбранную олимпиаду -->
   {% if data.daily_context %}
     {% if data.daily_context.status == 'applied' %}
