@@ -659,6 +659,29 @@ def get_daily_tasks():
                   "daily_context": _daily_ctx},
         )
 
+    # ── PILOT_SCHEDULE_DAYS_V1: сегодня выходной — на дашборде НИЧЕГО
+    # (владелец, 03.11): ни карточки «Сначала — тест», ни метода, ни задач
+    # дня. Баннер плана сверху сам показывает «Сегодня выходной — отдыхай».
+    # Пробник выше по коду приоритетнее расписания: назначение куратора
+    # не прячется за выходным.
+    if _session_ctx.get('today_rest'):
+        data = {
+            "status": "rest_day",
+            "daily_set_id": None,
+            "target_date": today.isoformat(),
+            "message": "Сегодня выходной по твоему расписанию.",
+            "class_level": None,
+            "summary": None,
+            "generated_at": None,
+            "total_cost_usd": None,
+            "progress": {"completed": 0, "total": 0},
+            "items": [],
+        }
+        return render_template(
+            "daily_tasks/daily_tasks_dashboard.html",
+            data={**data, "session": _session_ctx, "theme_today": real_theme_title, "daily_context": _daily_ctx},
+        )
+
     # ── BLOCKED: если в первую неделю срез не пройден — блокируем
     # выдачу задач дня ДО обращения к банку (иначе банк вернёт
     # plan_missing/empty и пользователь не увидит требование среза). ──
