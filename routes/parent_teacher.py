@@ -208,11 +208,25 @@ def _latest_mu_sigma(user_id: int) -> dict:
     return {a: {'mu': None, 'sigma': None} for a in anchors_order}
 
 
+def _premium_expires_str(value):
+    """Дата окончания Premium в виде 'YYYY-MM-DD' (или None).
+
+    PostgreSQL возвращает TIMESTAMP как datetime, SQLite — как строку.
+    Шаблоны раньше резали строку срезом [:10] — с datetime это TypeError
+    и ошибка 500 всего кабинета родителя. Нормализуем оба случая здесь.
+    """
+    if value is None:
+        return None
+    if hasattr(value, 'strftime'):  # datetime / date (PostgreSQL)
+        return value.strftime('%Y-%m-%d')
+    return str(value)[:10]  # строка ISO (SQLite)
+
+
 def _premium_brief(user_id: int):
     """Активный Premium пользователя (для кнопки покупки родителем/учителем).
 
-    Возвращает {'plan': ..., 'expires_at': ...} или None. Кэш-запросов нет —
-    страниц с детьми/группами немного, запрос лёгкий.
+    Возвращает {'plan': ..., 'expires_at': 'YYYY-MM-DD'} или None.
+    Кэш-запросов нет — страниц с детьми/группами немного, запрос лёгкий.
     """
     try:
         from services.subscription import get_subscription_service
@@ -220,7 +234,7 @@ def _premium_brief(user_id: int):
         if plan.get('is_premium'):
             return {
                 'plan': plan.get('plan'),
-                'expires_at': plan.get('expires_at'),
+                'expires_at': _premium_expires_str(plan.get('expires_at')),
             }
     except Exception:
         return None

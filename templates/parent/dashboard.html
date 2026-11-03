@@ -267,7 +267,7 @@
                     <a href="{{ url_for('parent_teacher.student_detail', sid=c.id) }}" class="open-btn">📂 Вся статистика</a>
                     {% if c.premium %}
                     <span class="premium-active-badge" title="Premium уже активен">
-                        ⭐ Premium активен{% if c.premium.expires_at %} до {{ c.premium.expires_at[:10] }}{% endif %}
+                        ⭐ Premium активен{% if c.premium.expires_at %} до {{ c.premium.expires_at }}{% endif %}
                     </span>
                     {% else %}
                     {# 2026-11-02: покупка Premium — только в аккаунте ребёнка #}
@@ -281,7 +281,7 @@
                 <div class="child-actions">
                     {% if c.premium %}
                     <span class="premium-active-badge" title="Premium уже активен">
-                        ⭐ Premium активен{% if c.premium.expires_at %} до {{ c.premium.expires_at[:10] }}{% endif %}
+                        ⭐ Premium активен{% if c.premium.expires_at %} до {{ c.premium.expires_at }}{% endif %}
                     </span>
                     {% else %}
                     {# 2026-11-02: покупка Premium — только в аккаунте ребёнка #}

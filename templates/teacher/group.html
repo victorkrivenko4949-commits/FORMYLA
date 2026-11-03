@@ -372,7 +372,7 @@
                     </a>
                     {% if s.premium %}
                     <div class="premium-active-badge" title="Premium уже активен">
-                        ⭐ Premium{% if s.premium.expires_at %} до {{ s.premium.expires_at[:10] }}{% endif %}
+                        ⭐ Premium{% if s.premium.expires_at %} до {{ s.premium.expires_at }}{% endif %}
                     </div>
                     {% else %}
                     {# 2026-11-02: покупка Premium — только в аккаунте ученика #}
