@@ -2261,6 +2261,17 @@ except Exception as _e:
     print(f"[BP] daily_tasks_bp NOT registered: {_e}")
     print(_tb.format_exc())
 
+# /schedule — PILOT_SCHEDULE_DAYS_V1: обязательный выбор дней занятий
+# после покупки пилотного тарифа (6 дней «Работяга» / 3 дня «Спокойный»).
+try:
+    from routes.schedule_days import schedule_days_bp
+    app.register_blueprint(schedule_days_bp)
+    print("[BP] schedule_days_bp registered (/schedule)")
+except Exception as _e:
+    import traceback as _tb
+    print(f"[BP] schedule_days_bp NOT registered: {_e}")
+    print(_tb.format_exc())
+
 # /curator/* — Модуль «Куратор» (AI-наставник): диагностика, план, тьютор, прогресс.
 try:
     from curator import curator_bp
@@ -3379,6 +3390,69 @@ def force_intake_completion():
         # свободны только /about и /olympiad-start (см. allowlist выше).
         if not _intake.get('completed') or _intake.get('skipped'):
             return redirect(url_for('intake.intake_page'))
+    except Exception:
+        pass
+
+
+@app.before_request
+def force_schedule_selection():
+    """PILOT_SCHEDULE_DAYS_V1: пока дни занятий не выбраны — не выпускаем.
+
+    Ученик с АКТИВНЫМ пилотным тарифом (premium_intense / premium_calm)
+    после покупки обязан выбрать дни недели (6 или 3). Пока выбора нет,
+    любой путь редиректит на /schedule — страницу нельзя «закрыть».
+
+    Состояние хранится в БД (user_schedule_days) — переживает перезагрузку
+    страницы/телефона. Гейт «падает открытым»: при ошибке БД пропускаем
+    (никогда не запираем пользователя из-за сбоя).
+    """
+    path = request.path
+
+    # Только реальные пользователи (гость/аноним — их уже встретил логин-гейт)
+    if not (current_user.is_authenticated
+            and not getattr(current_user, 'is_guest', False)):
+        return
+
+    # Пути, доступные до выбора дней
+    for _p in (
+        '/schedule',      # сама страница выбора и её API (/schedule/save)
+        '/static/',
+        '/favicon.ico',
+        '/login',
+        '/logout',
+        '/verify-code',
+        '/dev_login',
+        # Платёжный контур: возврат с ЮKassa активирует Premium именно
+        # здесь — не редиректим до активации (после неё гейт сработает
+        # на следующей странице).
+        '/payments/',
+        # Анкета входа — свой обязательный гейт; пока она не пройдена,
+        # /intake/ пропускаем (иначе два гейта зацикливают друг друга)
+        '/intake',
+        # Неотъемлемые права пользователя — как в intake-гейте
+        '/account/delete',
+        '/account/reintake',
+    ):
+        if path == _p or path.startswith(_p):
+            return
+
+    # teacher/parent не покупают пилотный тариф (PARENT_TEACHER_NO_BUY)
+    role = getattr(current_user, 'role', 'student') or 'student'
+    if role in ('teacher', 'parent'):
+        return
+
+    # Служебный аккаунт поддержки — без выбора дней
+    if (getattr(current_user, 'nickname', None) or '').lower() == 'lavrik':
+        return
+
+    try:
+        from routes.schedule_days import _active_pilot_plan
+        from services.schedule_days import days_for_plan
+        plan = _active_pilot_plan(current_user.id)
+        if plan is None:
+            return  # нет активного пилотного тарифа — гейт не про нас
+        if days_for_plan(current_user.id, plan) is None:
+            return redirect('/schedule')
     except Exception:
         pass
 

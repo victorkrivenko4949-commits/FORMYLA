@@ -270,10 +270,14 @@ def ensure_pilot_subscriptions() -> bool:
 def pilot_session_today(user_id: int) -> dict:
     """Какое сегодня занятие по тарифу пилотного аккаунта.
 
-    «Работяга» (6 занятий, Пн–Сб): 1 пробник (Сб), 1 метод (Ср),
-    4 задачи дня (Пн, Вт, Чт, Пт). Вс — отдых.
-    «Спокойный» (3 занятия, Пн/Ср/Пт): метод раз в 2 недели (Ср нечётных
-    недель), пробник раз в 2 недели (Пт нечётных недель), иначе задачи.
+    «Работяга» (6 занятий): 1 пробник (последний день недели), 1 метод
+    (средний день), остальные дни — задачи дня. Вс — отдых.
+    «Спокойный» (3 занятия): метод раз в 2 недели (средний день нечётных
+    недель), пробник раз в 2 недели (последний день чётных недель).
+
+    PILOT_SCHEDULE_DAYS_V1 (03.11.2026): конкретные дни недели — ВЫБРАННЫЕ
+    пользователем на /schedule (services/schedule_days.py). Пока выбор не
+    сделан — прежние расписания по умолчанию (Пн–Сб / Пн-Ср-Пт).
 
     Никогда не бросает. Возвращает dict(week, session_index, session_type,
     session_label, plan) или {'enabled': False}.
@@ -286,6 +290,13 @@ def pilot_session_today(user_id: int) -> dict:
         variant = plan.get('plan') if plan.get('is_premium') else None
         if variant not in PILOT_PLANS:
             return out
+
+        # PILOT_SCHEDULE_DAYS_V1: выбранные пользователем дни (может не быть)
+        try:
+            from services.schedule_days import days_for_plan as _days_for
+            chosen = _days_for(user_id, variant)
+        except Exception:
+            chosen = None
 
         started = None
         try:
@@ -301,17 +312,30 @@ def pilot_session_today(user_id: int) -> dict:
             pass
         if started is None:
             started = datetime.utcnow()
+        # Raw-SQL без типизации может вернуть строку (SQLite) — парсим
+        if isinstance(started, str):
+            started = datetime.fromisoformat(started[:19])
 
         now = datetime.utcnow()
         days_in = max(0, (now - started).days)
         week = days_in // 7 + 1
         weekday = now.weekday()  # 0=Пн … 6=Вс
 
-        # Первая неделя — диагностическая: без методов и пробников,
-        # только тест (5 задач) и задачи дня соответствующего уровня.
-        # (См. план Premium: «на первой неделе нет пробника и методов».)
+        # Дни недели расписания: выбранные на /schedule или дефолт тарифа
+        # (PILOT_SCHEDULE_DAYS_V1)
+        if chosen:
+            days_list = list(chosen)
+        elif variant == 'premium_intense':
+            days_list = [0, 1, 2, 3, 4, 5]   # Пн–Сб
+        else:
+            days_list = [0, 2, 4]             # Пн/Ср/Пт
+
         if week == 1:
-            if weekday == 6:
+            # Первая неделя — диагностическая: без методов и пробников,
+            # только тест (5 задач) и задачи дня соответствующего уровня.
+            # (См. план Premium: «на первой неделе нет пробника и методов».)
+            # Диагностическая неделя — занятия только по дням расписания
+            if weekday == 6 or weekday not in days_list:
                 session_type, session_index = 'rest', None
             else:
                 session_type, session_index = 'diagnostic', None
@@ -321,31 +345,36 @@ def pilot_session_today(user_id: int) -> dict:
                 'week': week,
                 'session_type': session_type,
                 'session_index': session_index,
-                'total': 6 if variant == 'premium_intense' else 3,
+                'total': len(days_list),
                 'session_label': 'диагностическая неделя: тест + задачи дня',
             }
             return out
 
         if variant == 'premium_intense':
-            # пробник убран из ротации (владелец, 03.11.2026): суббота —
-            # задачи дня, как и остальные дни тарифа
-            schedule = {0: 'tasks', 1: 'tasks', 2: 'method', 3: 'tasks',
-                        4: 'tasks', 5: 'tasks', 6: 'rest'}
-            order = {0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6}
-            total = 6
-            session_type = schedule.get(weekday, 'rest')
-            session_index = order.get(weekday)
-        else:  # premium_calm
-            total = 3
-            if weekday not in (0, 2, 4):
+            # Пробник убран из ротации (владелец, 03.11.2026, #176):
+            # метод — в средний выбранный день, остальные дни — задачи дня.
+            total = len(days_list)  # 6
+            if weekday not in days_list:
                 session_type, session_index = 'rest', None
             else:
+                pos = days_list.index(weekday) + 1  # 1..6
+                if pos == 3:
+                    session_type = 'method'   # средний день (как Ср в дефолте)
+                else:
+                    session_type = 'tasks'
+                session_index = pos
+        else:  # premium_calm
+            total = len(days_list)  # 3
+            if weekday not in days_list:
+                session_type, session_index = 'rest', None
+            else:
+                pos = days_list.index(weekday) + 1  # 1..3
                 odd_week = (week % 2 == 1)
-                if weekday == 2 and odd_week:
+                if pos == 2 and odd_week:
                     session_type = 'method'
                 else:
                     session_type = 'tasks'
-                session_index = {0: 1, 2: 2, 4: 3}[weekday]
+                session_index = pos
 
         labels = {
             'tasks': 'задачи дня',
