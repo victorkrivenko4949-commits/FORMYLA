@@ -364,6 +364,36 @@ def _serialize_bank_items(user_id: int, bank_items) -> list:
     return out
 
 
+def _attach_debt(data: dict, user_id: int) -> None:
+    """P4 DEBT: положить блок долга в data дашборда задач дня.
+
+    Без data['debt'] шаблон не отрисует «Открыть долг: N задач».
+    Раньше долг собирали только в ветке pick_daily_set, а банк
+    (теперь основная ветка выдачи) возвращал страницу без долга —
+    блок пропал (владелец, 03.11: «верни долг»). Ошибки не роняют
+    страницу: debt=None означает «долга нет».
+    """
+    try:
+        from services.daily_debt import get_debt_items
+        debt_items = get_debt_items(user_id)
+        if debt_items:
+            # Группируем по дате выдачи
+            from collections import defaultdict
+            by_date: dict = defaultdict(list)
+            for di in debt_items:
+                by_date[di['issued_date'] or '?'].append(di)
+            data['debt'] = {
+                'total': len(debt_items),
+                'by_date': [
+                    {'date': d, 'count': len(tasks), 'tasks': tasks}
+                    for d, tasks in sorted(by_date.items(), reverse=True)
+                ],
+            }
+        # debt=None означает «долга нет» — шаблон его не отрисует
+    except Exception as _debt_err:
+        logger.warning("get_debt_items failed: %s", _debt_err)
+
+
 # ──────────────────────────────────────────────────────────────────────
 # GET /daily_tasks
 # ──────────────────────────────────────────────────────────────────────
@@ -729,6 +759,14 @@ def get_daily_tasks():
                     "progress": _bank_progress(user_id, _bank_items),
                     "items": _serialize_bank_items(user_id, _bank_items),
                 }
+                # P4 DEBT: банк — тоже дашборд; без refresh+data['debt'] блок
+                # «Открыть долг» пропадал у всех, кто на банке (03.11 — вернуть).
+                try:
+                    from services.daily_debt import refresh_debt_for_user
+                    refresh_debt_for_user(user_id)
+                except Exception as _debt_err:
+                    logger.warning("daily_debt refresh failed for user=%d: %s", user_id, _debt_err)
+                _attach_debt(_bank_data, user_id)
                 return render_template(
                     "daily_tasks/daily_tasks_dashboard.html",
                     data={**_bank_data, "session": _session_ctx, "theme_today": real_theme_title, "daily_context": _daily_ctx},
@@ -1005,26 +1043,7 @@ def get_daily_tasks():
     }
 
     # ── P4 DEBT: добавляем долг в data ──────────────────────────────────
-    try:
-        from services.daily_debt import get_debt_items, get_debt_count
-        debt_items = get_debt_items(user_id)
-        if debt_items:
-            # Группируем по дате выдачи
-            from collections import defaultdict
-            by_date: dict = defaultdict(list)
-            for di in debt_items:
-                by_date[di['issued_date'] or '?'].append(di)
-            debt_summary = {
-                'total': len(debt_items),
-                'by_date': [
-                    {'date': d, 'count': len(tasks), 'tasks': tasks}
-                    for d, tasks in sorted(by_date.items(), reverse=True)
-                ],
-            }
-            data['debt'] = debt_summary
-        # debt=None означает «долга нет» — шаблон его не отрисует
-    except Exception as _debt_err:
-        logger.warning("get_debt_items failed: %s", _debt_err)
+    _attach_debt(data, user_id)
 
     # ──   Monthly plan (prep_plan from CuratorState) ────────────
     plan_data = _build_monthly_plan_data(user_id, today)
