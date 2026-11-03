@@ -2299,6 +2299,13 @@ except Exception as _e:
 try:
     from routes.parent_teacher import parent_teacher_bp
     app.register_blueprint(parent_teacher_bp)
+    # JOIN_CODE_V1: колонка users.parent_invite_code (код привязки родителя)
+    try:
+        from migrations.add_parent_invite_code import _ensure_parent_invite_code_column
+        with app.app_context():
+            _ensure_parent_invite_code_column(db)
+    except Exception as _mig_e:
+        print(f"[MIG] parent_invite_code: {_mig_e}")
     print("[BP] parent_teacher_bp registered (/teacher, /parent, /student/*)")
 except Exception as _e:
     import traceback as _tb

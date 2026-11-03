@@ -58,6 +58,10 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(16), nullable=False, default='student', server_default='student')
     child_email = db.Column(db.String(120), nullable=True)  # parent binds to child via email
     share_progress = db.Column(db.Boolean, nullable=False, default=True, server_default='1')
+    # JOIN_CODE_V1 — код привязки родителя: ученик вводит его на /join
+    # и попадает в «семью» родителя без ручного поиска по никнейму.
+    # Генерируется лениво при первом заходе родителя в /parent.
+    parent_invite_code = db.Column(db.String(6), unique=True, nullable=True, index=True)
 
     # Generation limits (free mock / exam generation)
     generation_count_today = db.Column(db.Integer, default=0, server_default='0')

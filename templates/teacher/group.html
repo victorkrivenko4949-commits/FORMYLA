@@ -249,6 +249,7 @@
     <h1>{{ group.name }}</h1>
     <div class="group-invite">
         Код приглашения: <span>{{ group.invite_code }}</span> — ученики могут вступать сами
+        через «Прочее → Присоединиться по коду»
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}

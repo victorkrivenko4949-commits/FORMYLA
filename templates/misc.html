@@ -42,6 +42,16 @@
         </div>
     </div>
 
+    {% if current_user.is_authenticated and not current_user.is_guest %}
+    <div class="misc-group">
+        <div class="misc-group-title">🔑 Учителя и родители</div>
+        <div class="misc-row">
+            <a href="/join" class="misc-link"><span class="misc-link-label">🔑 Присоединиться по коду</span><span class="misc-link-desc">Вступить в группу учителя или привязаться к родителю</span></a>
+            <button class="pin-btn" data-pin-id="join" data-pin-label="🔑 Присоединиться по коду" data-pin-href="/join" data-pin-desc="Вступить в группу учителя или привязаться к родителю" title="На главную">📌</button>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="misc-group">
         <div class="misc-group-title">🛠️ Инструменты</div>
         {% if current_user.is_authenticated %}

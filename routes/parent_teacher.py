@@ -532,6 +532,9 @@ def teacher_link_respond(member_id: int):
 def parent_dashboard():
     _require_role('parent')
 
+    # JOIN_CODE_V1: у родителя всегда есть код для подключения ребёнка
+    invite_code = _ensure_parent_code(current_user)
+
     # Подтверждённые связи: показываем ВСЕХ привязанных детей (не только первого).
     links = ParentChildLink.query.filter_by(
         parent_id=current_user.id, status='accepted',
@@ -555,6 +558,7 @@ def parent_dashboard():
         legacy_nick = getattr(current_user, 'child_email', None)
         return render_template(
             'parent/dashboard.html',
+            invite_code=invite_code,
             children=[],
             pending_children=[
                 {'nickname': c.nickname, 'created_at': p.created_at}
@@ -578,6 +582,7 @@ def parent_dashboard():
 
     return render_template(
         'parent/dashboard.html',
+        invite_code=invite_code,
         children=child_cards,
         pending_children=[
             {'nickname': c.nickname, 'created_at': p.created_at}
@@ -791,45 +796,173 @@ def student_detail(sid: int):
 # Profile actions (group join / share toggle)
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# JOIN_CODE_V1: единая страница «Присоединиться по коду» (/join)
+# ---------------------------------------------------------------------------
+
+def _join_teacher_group_by_code(user, code: str) -> tuple[bool, str]:
+    """Вступить в группу учителя по 6-символьному коду.
+
+    Согласие ученика выражено самим действием ввода кода, поэтому участник
+    создаётся сразу со статусом 'accepted' (pending/rejected — апгрейдятся).
+    Возвращает (ok, message).
+    """
+    if len(code) != 6:
+        return False, 'Неверный код: нужно ровно 6 символов'
+
+    g = T10Group.query.filter_by(invite_code=code).first()
+    if g is None:
+        return False, 'Группа с таким кодом не найдена'
+
+    existing = T10GroupMember.query.filter_by(
+        group_id=g.id, user_id=user.id
+    ).first()
+    if existing:
+        if existing.status == 'accepted':
+            return False, f'Вы уже состоите в группе «{g.name}»'
+        # pending (приглашение от учителя) или rejected — ввод кода = согласие
+        existing.accept()
+        db.session.commit()
+        return True, f'Вы вступили в группу «{g.name}»'
+
+    gm = T10GroupMember(
+        group_id=g.id, user_id=user.id, role='student', status='accepted',
+    )
+    db.session.add(gm)
+    # Уведомим учителя, что ученик пришёл по коду
+    try:
+        if g.teacher_id != user.id:
+            _notify(g.teacher_id, 'group_join', user.id, {
+                'group': g.name,
+                'student': _display(user),
+            })
+    except Exception:
+        pass
+    db.session.commit()
+    return True, f'Вы вступили в группу «{g.name}»'
+
+
+def _link_parent_by_code(user, code: str) -> tuple[bool, str]:
+    """Привязаться к родителю по его коду (users.parent_invite_code).
+
+    Ввод кода = согласие ученика, поэтому связь создаётся сразу 'accepted'.
+    Возвращает (ok, message).
+    """
+    parent = User.query.filter_by(parent_invite_code=code).first()
+    if parent is None:
+        return False, 'Родитель с таким кодом не найден'
+
+    if parent.id == user.id:
+        return False, 'Нельзя использовать свой собственный код'
+
+    existing = ParentChildLink.query.filter_by(
+        parent_id=parent.id, child_id=user.id
+    ).first()
+    if existing:
+        if existing.status == 'accepted':
+            return False, 'Вы уже привязаны к этому родителю'
+        if existing.status == 'blocked':
+            return False, 'Эта привязка заблокирована — обратитесь к родителю'
+        # pending / rejected — ввод кода = согласие
+        existing.accept()
+        db.session.commit()
+        return True, f'Вы привязаны к родителю {_display(parent)}'
+
+    link = ParentChildLink(
+        parent_id=parent.id, child_id=user.id, status='accepted',
+    )
+    db.session.add(link)
+    db.session.commit()
+    return True, f'Вы привязаны к родителю {_display(parent)}'
+
+
+def _ensure_parent_code(user) -> str:
+    """Лениво выдать родителю код привязки (если ещё нет)."""
+    if not user.parent_invite_code:
+        from services.parent_teacher_helpers import generate_parent_invite_code
+        user.parent_invite_code = generate_parent_invite_code()
+        db.session.commit()
+    return user.parent_invite_code
+
+
+@parent_teacher_bp.route('/join', methods=['GET'])
+@login_required
+def join_by_code_page():
+    """Страница «Присоединиться по коду» — из раздела «Прочее»."""
+    if getattr(current_user, 'is_guest', False):
+        flash('Гостевым аккаунтам нужно зарегистрироваться, чтобы присоединяться к группам', 'error')
+        return redirect('/register')
+
+    my_groups = [
+        m.group for m in current_user.teacher_group_memberships
+        if m.status == 'accepted'
+    ] if hasattr(current_user, 'teacher_group_memberships') else []
+
+    my_parents = [
+        l.parent for l in current_user.parent_links
+        if l.status == 'accepted'
+    ] if hasattr(current_user, 'parent_links') else []
+
+    return render_template(
+        'join_group.html',
+        my_groups=my_groups,
+        my_parents=my_parents,
+    )
+
+
+@parent_teacher_bp.route('/join', methods=['POST'])
+@login_required
+def join_by_code_submit():
+    """Обработка введённого кода: группа учителя ИЛИ код родителя."""
+    if getattr(current_user, 'is_guest', False):
+        flash('Гостевым аккаунтам нужно зарегистрироваться, чтобы присоединяться к группам', 'error')
+        return redirect('/register')
+
+    code = (request.form.get('invite_code', '') or '').strip().upper()
+    if not code:
+        flash('Введите код', 'error')
+        return redirect(url_for('parent_teacher.join_by_code_page'))
+    if len(code) != 6 or not code.isalnum():
+        flash('Неверный формат кода: нужно 6 букв или цифр', 'error')
+        return redirect(url_for('parent_teacher.join_by_code_page'))
+
+    role = _user_role()
+    if role in ('teacher', 'parent'):
+        flash('Присоединяться по коду могут только ученические аккаунты', 'error')
+        return redirect(url_for('parent_teacher.join_by_code_page'))
+
+    # 1) Сначала проверяем группы учителей (легаси-приоритет).
+    if T10Group.query.filter_by(invite_code=code).first():
+        ok, msg = _join_teacher_group_by_code(current_user, code)
+        flash(msg, 'success' if ok else 'info')
+        return redirect(url_for('parent_teacher.join_by_code_page'))
+
+    # 2) Затем — коды родителей.
+    ok, msg = _link_parent_by_code(current_user, code)
+    flash(msg, 'success' if ok else 'error')
+    return redirect(url_for('parent_teacher.join_by_code_page'))
+
+
 @parent_teacher_bp.route('/profile/join-group', methods=['POST'])
 @login_required
 def profile_join_group():
     """Ученик сам вступает в группу по коду — согласие уже дано действием."""
     code = (request.form.get('invite_code', '') or '').strip().upper()
-    if len(code) != 6:
-        flash('NOT FOUND: неверный код приглашения', 'error')
-        return redirect(_safe_next('/profile'))
-
-    g = T10Group.query.filter_by(invite_code=code).first()
-    if g is None:
-        flash('NOT FOUND: группа с таким кодом не найдена', 'error')
-        return redirect(_safe_next('/profile'))
-
-    existing = T10GroupMember.query.filter_by(
-        group_id=g.id, user_id=current_user.id
-    ).first()
-    if existing:
-        if existing.status == 'pending':
-            # Ученик уже был приглашён учителем и теперь сам подтверждает.
-            existing.accept()
-            db.session.commit()
-            flash(f'Вы вступили в группу "{g.name}"', 'success')
-            return redirect(_safe_next('/profile'))
-        if existing.status == 'rejected':
-            existing.accept()
-            db.session.commit()
-            flash(f'Вы вступили в группу "{g.name}"', 'success')
-            return redirect(_safe_next('/profile'))
-        flash('Вы уже состоите в этой группе', 'info')
-        return redirect(_safe_next('/profile'))
-
-    gm = T10GroupMember(
-        group_id=g.id, user_id=current_user.id, role='student', status='accepted',
-    )
-    db.session.add(gm)
-    db.session.commit()
-    flash(f'Вы вступили в группу "{g.name}"', 'success')
+    ok, msg = _join_teacher_group_by_code(current_user, code)
+    flash(msg, 'success' if ok else 'error')
     return redirect(_safe_next('/profile'))
+
+
+@parent_teacher_bp.route('/parent/invite-code/regenerate', methods=['POST'])
+@login_required
+def parent_invite_code_regenerate():
+    """JOIN_CODE_V1 — перевыпустить код привязки родителя (старый перестаёт работать)."""
+    _require_role('parent')
+    from services.parent_teacher_helpers import generate_parent_invite_code
+    current_user.parent_invite_code = generate_parent_invite_code()
+    db.session.commit()
+    flash('Код обновлён — сообщите ребёнку новый код', 'success')
+    return redirect(url_for('parent_teacher.parent_dashboard'))
 
 
 @parent_teacher_bp.route('/profile/share', methods=['POST'])
