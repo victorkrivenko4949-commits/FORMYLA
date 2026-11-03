@@ -83,10 +83,11 @@ PLAN_INFO = {
 
 
 def _pilot_or_404():
-    """Оплата Premium доступна только пилотным аккаунтам (до 3 ноября)."""
-    from services.pilot import is_pilot_user
+    """Оплата Premium: после открытия продажи 03.11.2026 — всем входящим;
+    до старта (PILOT_OPEN_SALES=False) — только пилотным аккаунтам."""
+    from services.pilot import is_pilot_user, PILOT_OPEN_SALES
     if not (getattr(current_user, 'is_authenticated', False)
-            and is_pilot_user(current_user.id)):
+            and (PILOT_OPEN_SALES or is_pilot_user(current_user.id))):
         abort(404)
 
 
@@ -154,12 +155,14 @@ def _gift_child(for_user_raw):
 
 
 def _pilot_or_gift_or_404(for_user_raw=None):
-    """Доступ к оплате: пилотный аккаунт ИЛИ покупка для своего ребёнка.
+    """Доступ к оплате: после открытия продажи — всем входящим;
+    до старта — пилотный аккаунт ИЛИ покупка для своего ребёнка.
 
     Возвращает ребёнка (User) для подарочной покупки или None для обычной.
     """
-    from services.pilot import is_pilot_user
-    if getattr(current_user, 'is_authenticated', False) and is_pilot_user(current_user.id):
+    from services.pilot import is_pilot_user, PILOT_OPEN_SALES
+    if getattr(current_user, 'is_authenticated', False) and (
+            PILOT_OPEN_SALES or is_pilot_user(current_user.id)):
         return _gift_child(for_user_raw) if for_user_raw else None
     child = _gift_child(for_user_raw)
     if child is None:
@@ -615,9 +618,10 @@ def payment_return():
     if p_user_id != current_user.id:
         abort(403)
 
-    # Доступ: пилотный аккаунт ИЛИ подарочный заказ (Premium — ребёнку).
-    from services.pilot import is_pilot_user
-    if not (is_pilot_user(current_user.id) or p_beneficiary):
+    # Доступ: после открытия продажи — всем (пилот ИЛИ подарочный заказ
+    # Premium — ребёнку — как раньше).
+    from services.pilot import is_pilot_user, PILOT_OPEN_SALES
+    if not (PILOT_OPEN_SALES or is_pilot_user(current_user.id) or p_beneficiary):
         abort(404)
 
     # PREMIUM_GIFT_V1: кому выдать Premium и как его показать на странице.

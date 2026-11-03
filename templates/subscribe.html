@@ -555,7 +555,7 @@
           {% else %}
           <button class="sp-btn sp-btn--trial" onclick="startTrial('premium_intense', this)">Пробный день бесплатно</button>
           {% endif %}
-          {% if is_pilot %}
+          {% if is_pilot or open_sales %}
           <a class="sp-btn sp-btn--primary" href="/payments/premium/checkout?plan=premium_intense">Выбрать «Работяга» →</a>
           {% else %}
           <span class="sp-btn sp-btn--primary" style="opacity:.5;cursor:default">Покупка откроется 3 ноября 2026</span>
@@ -583,7 +583,7 @@
           {% else %}
           <button class="sp-btn sp-btn--trial" onclick="startTrial('premium_calm', this)">Пробный день бесплатно</button>
           {% endif %}
-          {% if is_pilot %}
+          {% if is_pilot or open_sales %}
           <a class="sp-btn sp-btn--primary" href="/payments/premium/checkout?plan=premium_calm">Выбрать «Спокойный» →</a>
           {% else %}
           <span class="sp-btn sp-btn--primary" style="opacity:.5;cursor:default">Покупка откроется 3 ноября 2026</span>
@@ -698,11 +698,13 @@
         </tbody>
       </table>
     </div>
+    {% if not open_sales %}
     <p class="sp-tablenote reveal">Кнопки покупки платных тарифов появятся на этой странице 3 ноября 2026 вместе с запуском платной версии. Пока доступен бесплатный тариф, платные указаны для ознакомления.</p>
+    {% endif %}
   </section>
 
-  <!-- ═══════════ § 05 · FAQ (пилотам — до запуска оплаты 3 ноября) ═══════════ -->
-  {% if is_pilot %}
+  <!-- ═══════════ § 05 · FAQ ═══════════ -->
+  {% if is_pilot or open_sales %}
   <section class="sp-section" id="faq">
     <div class="sp-section__head reveal">
       <span class="sp-section__no">§ 05</span>
@@ -753,7 +755,7 @@
         <a class="a2btn a2btn--primary" href="#plans">Выбрать тариф →</a>
         <a class="a2btn a2btn--ghost" href="/about">Подробнее о платформе</a>
       </div>
-      {% elif not is_pilot %}
+      {% elif not is_pilot and not open_sales %}
       <h2 class="reveal">Платная версия — 3 ноября 2026</h2>
       <p class="reveal">Тарифы уже можно изучить и выбрать — покупка откроется вместе с запуском платной версии.</p>
       <div class="sp-cta__row reveal">
@@ -774,11 +776,11 @@
 
   <!-- Липкая CTA-панель (только десктоп) -->
   <div class="sp-sticky" id="spSticky">
-    <span class="sp-sticky__text"><b>FORMYLA Premium</b> — {% if is_parent_or_teacher %}оформляется в аккаунте ребёнка{% elif trial_available %}от 500 ₽/мес · пробный день бесплатно{% elif is_pilot and trial_active_until %}пробный день активен{% elif is_pilot %}от 500 ₽/мес{% else %}от 500 ₽/мес · старт 3 ноября 2026{% endif %}</span>
-    <a class="a2btn a2btn--primary" href="#plans">{% if is_pilot %}Выбрать тариф{% else %}К тарифам{% endif %}</a>
+    <span class="sp-sticky__text"><b>FORMYLA Premium</b> — {% if is_parent_or_teacher %}оформляется в аккаунте ребёнка{% elif trial_available %}от 500 ₽/мес · пробный день бесплатно{% elif is_pilot and trial_active_until %}пробный день активен{% elif is_pilot or open_sales %}от 500 ₽/мес{% else %}от 500 ₽/мес · старт 3 ноября 2026{% endif %}</span>
+    <a class="a2btn a2btn--primary" href="#plans">{% if is_pilot or open_sales %}Выбрать тариф{% else %}К тарифам{% endif %}</a>
   </div>
 
-  {% if is_pilot %}
+  {% if is_pilot or open_sales %}
   <div class="sp-success" id="successMsg">✅ Premium активирован! Перезагружаем страницу...</div>
   {% endif %}
 

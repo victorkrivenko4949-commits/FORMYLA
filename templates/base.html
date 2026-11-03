@@ -219,9 +219,9 @@
                 </div>
             </div>
 
-            <!-- 2. Задачи дня + Куратор (чат, пилотам). Статистика — в «Прочее». -->
+            <!-- 2. Задачи дня + Куратор (чат, Premium-тарифу). Статистика — в «Прочее». -->
             <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="nav-item">📅 Задачи дня</a>
-            {% if is_pilot %}
+            {% if has_premium is defined and has_premium %}
             <a href="/curator" class="nav-item" style="color:#f4b942;">💬 Куратор</a>
             {% elif is_free_user is defined and is_free_user %}
             <a href="/subscribe?feature=%D0%9A%D1%83%D1%80%D0%B0%D1%82%D0%BE%D1%80" class="nav-item" style="color:#f4b942;">💬 Куратор 🔒</a>
@@ -440,7 +440,7 @@
             <span class="bottom-nav-icon">🏆</span>
             <span class="bottom-nav-label">Олимпиады</span>
         </a>
-        {% if is_pilot %}
+        {% if has_premium is defined and has_premium %}
         <a href="/curator" class="bottom-nav-item" data-path="/curator*">
             <span class="bottom-nav-icon">🎓</span>
             <span class="bottom-nav-label">Куратор</span>

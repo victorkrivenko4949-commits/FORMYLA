@@ -99,9 +99,12 @@ def _is_pg() -> bool:
 
 
 def _pilot(user_id: int) -> bool:
+    """Пилот потока занятий: аккаунт из пилотного списка ИЛИ активная
+    подписка на пилотный тариф (03.11.2026, продажа открыта всем —
+    доступ следует за тарифом, не за пилотным списком)."""
     try:
-        from services.pilot import is_pilot_user
-        return bool(is_pilot_user(int(user_id)))
+        from services.pilot import has_premium_access
+        return bool(has_premium_access(int(user_id)))
     except Exception:
         return False
 

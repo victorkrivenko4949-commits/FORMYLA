@@ -25,7 +25,10 @@ curator_chat_bp = Blueprint('curator_chat', __name__)
 
 
 def _pilot_or_404():
-    if not is_pilot_user(current_user):
+    # 03.11.2026, продажа открыта: куратор-чат — часть Premium-продукта,
+    # доступен всем с активным пилотным тарифом (не только пилотному списку)
+    from services.pilot import has_premium_access
+    if not has_premium_access(current_user):
         abort(404)
 
 

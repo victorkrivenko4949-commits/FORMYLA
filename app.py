@@ -13437,9 +13437,13 @@ def _inject_subscription_flags():
     для шаблонов. is_free_user — бесплатник (видит предложения Premium)."""
     try:
         if current_user.is_authenticated:
-            from services.pilot import is_pilot_user, pilot_session_today
+            from services.pilot import (is_pilot_user, pilot_session_today,
+                                        has_premium_access, PILOT_OPEN_SALES)
             is_pilot = is_pilot_user(current_user)
             session = pilot_session_today(current_user.id) if is_pilot else None
+            # полный Premium-продукт: пилотный список ИЛИ активный тариф
+            # (продажа открыта 03.11.2026 — доступ следует за подпиской)
+            has_premium = has_premium_access(current_user)
             # платный доступ: Premium/триал/founder/админ/whitelist — как в paywall
             try:
                 from method_week.paywall import user_has_paid_access
@@ -13449,12 +13453,15 @@ def _inject_subscription_flags():
             return {
                 'is_premium': _is_premium_plan(current_user.current_plan),
                 'is_pilot': is_pilot,
+                'has_premium': has_premium,
+                'open_sales': bool(PILOT_OPEN_SALES),
                 'pilot_session': session,
                 'is_free_user': not has_paid,
             }
     except Exception:
         pass
-    return {'is_premium': False, 'is_pilot': False, 'pilot_session': None,
+    return {'is_premium': False, 'is_pilot': False, 'has_premium': False,
+            'open_sales': False, 'pilot_session': None,
             'is_free_user': False}
 
 
