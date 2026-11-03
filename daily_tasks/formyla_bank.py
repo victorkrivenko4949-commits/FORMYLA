@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
-"""Банк задач дня из FORMYLA_BANK.jsonl — ВКЛЮЧЁН ПО УМОЛЧАНИЮ.
+"""Единая выдача задач дня: daily_task_bank (приоритет) + FORMYLA_BANK.jsonl (страховка).
 
-Основной источник задач дня — таблица daily_task_bank (services/bank_daily.py).
-Пока daily_task_bank не заполнен по подтемам плана, задачи дня берутся отсюда
-(pick_daily_set в services/daily_task_rotation.py). Отключается только явно:
-FORMYLA_JSONL_FALLBACK=0 -> has_rows() -> False и get_tasks() -> [].
+Шаг 8.2 (вариант Б). get_tasks() — единственная точка выборки для pick_daily_set:
+  1. сначала задачи ТОЧНОГО уровня из таблицы daily_task_bank по ключу
+     (класс, тема, уровень) через services.daily_bank_source (DAILY_BANK_PRIORITY=0 выключает);
+  2. недостающее — из FORMYLA_BANK.jsonl по прежним правилам.
+Таблица пуста или недоступна -> поведение байт в байт как раньше.
 
-Логика выборки: точный уровень, затем смесь из соседних уровней,
+JSONL включён по умолчанию, отключается только явно: FORMYLA_JSONL_FALLBACK=0
+-> has_rows() -> False и JSONL-часть get_tasks() -> [].
+
+Логика выборки из JSONL: точный уровень, затем смесь из соседних уровней,
 затем level±2, затем повторы.
 
 Доля соседей при нехватке точного уровня:
@@ -174,15 +178,28 @@ def _take(pool: Dict[int, List[Dict[str, Any]]], lv: int, n: int) -> List[Dict[s
     return picked
 
 
+def _from_main_bank(grade: int, topic: str, level: int, count: int,
+                    user_id: Optional[int], exclude_texts: Optional[Set[str]]) -> List[Dict[str, Any]]:
+    """Шаг 8.2: задачи точного уровня из daily_task_bank. Любая ошибка -> []."""
+    if user_id is None or count <= 0:
+        return []
+    try:
+        from services.daily_bank_source import pick_from_table
+        return list(pick_from_table(grade, topic, level, count, user_id, exclude_texts) or [])
+    except Exception as _tbl_err:
+        logger.warning("formyla_bank: daily_task_bank недоступен, выдача из JSONL: %s", _tbl_err)
+        return []
+
+
 def get_tasks(grade: int, topic: str, level: int,
               count: int = 5, user_id: Optional[int] = None,
               exclude_positions: Optional[Set[int]] = None,
               exclude_texts: Optional[Set[str]] = None,
               day_seed: Optional[int] = None) -> List[Dict[str, Any]]:
-    """Pick same-grade, same-topic tasks of the requested level."""
-    if _fallback_disabled():
-        return []
-    load()
+    """Pick same-grade, same-topic tasks of the requested level.
+
+    Сначала daily_task_bank (точный уровень), затем добор из JSONL.
+    """
     if count <= 0:
         return []
     grade = _student_grade(user_id, grade)
@@ -196,10 +213,21 @@ def get_tasks(grade: int, topic: str, level: int,
         except ImportError:
             pass
 
+    # ── 1. Основной банк: точный уровень ────────────────────────────────
+    from_table = _from_main_bank(grade, topic, level, count, user_id, exclude_texts)
+    if len(from_table) >= count:
+        return from_table[:count]
+    need_jsonl = count - len(from_table)
+
+    # ── 2. JSONL: добор ─────────────────────────────────────────────
+    if _fallback_disabled():
+        return from_table
+    load()
+
     levels = [level] + [lv for lv in (level - 1, level + 1, level - 2, level + 2)
                         if 1 <= lv <= 4 and lv != level]
     day_part = int(day_seed) if day_seed else 0
-    excluded = exclude_texts or set()
+    excluded = set(exclude_texts or set()) | {_task_text(t) for t in from_table}
 
     by_level = _collect(grade, topic, levels, exclude_positions)
     fresh: Dict[int, List[Dict[str, Any]]] = {}
@@ -215,9 +243,9 @@ def get_tasks(grade: int, topic: str, level: int,
     def add(lv: int, items: List[Dict[str, Any]]) -> None:
         picked.extend((lv, t) for t in items)
 
-    add(level, _take(fresh, level, count))
+    add(level, _take(fresh, level, need_jsonl))
 
-    need = count - len(picked)
+    need = need_jsonl - len(picked)
     if need > 0:
         lower, upper = level - 1, level + 1
         rnd = 0.5 if day_part % 2 == 0 else 0.0
@@ -241,26 +269,27 @@ def get_tasks(grade: int, topic: str, level: int,
         add(upper, got_upper)
 
     for lv in (level - 2, level + 2):
-        need = count - len(picked)
+        need = need_jsonl - len(picked)
         if need <= 0:
             break
         add(lv, _take(fresh, lv, need))
 
     for lv in levels:
-        need = count - len(picked)
+        need = need_jsonl - len(picked)
         if need <= 0:
             break
         add(lv, _take(repeats, lv, need))
 
-    result = [t for _, t in picked]
+    jsonl_part = [t for _, t in picked]
+    result = from_table + jsonl_part
     if not result:
         logger.warning("formyla_bank: no tasks for grade=%s topic=%r level=%s", grade, topic, level)
     else:
         off = [lv for lv, _ in picked if lv != level]
         if off:
             logger.warning(
-                "formyla_bank: level shortage grade=%s topic=%r level=%s: exact=%d, mix=%s, hole=%s",
-                grade, topic, level, len(picked) - len(off),
+                "formyla_bank: level shortage grade=%s topic=%r level=%s: table=%d, exact=%d, mix=%s, hole=%s",
+                grade, topic, level, len(from_table), len(picked) - len(off),
                 {lv: off.count(lv) for lv in sorted(set(off))},
                 not by_level.get(level),
             )
