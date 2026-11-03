@@ -327,8 +327,10 @@ def pilot_session_today(user_id: int) -> dict:
             return out
 
         if variant == 'premium_intense':
+            # пробник убран из ротации (владелец, 03.11.2026): суббота —
+            # задачи дня, как и остальные дни тарифа
             schedule = {0: 'tasks', 1: 'tasks', 2: 'method', 3: 'tasks',
-                        4: 'tasks', 5: 'mock', 6: 'rest'}
+                        4: 'tasks', 5: 'tasks', 6: 'rest'}
             order = {0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6}
             total = 6
             session_type = schedule.get(weekday, 'rest')
@@ -341,8 +343,6 @@ def pilot_session_today(user_id: int) -> dict:
                 odd_week = (week % 2 == 1)
                 if weekday == 2 and odd_week:
                     session_type = 'method'
-                elif weekday == 4 and not odd_week:
-                    session_type = 'mock'
                 else:
                     session_type = 'tasks'
                 session_index = {0: 1, 2: 2, 4: 3}[weekday]

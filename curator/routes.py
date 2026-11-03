@@ -1258,6 +1258,57 @@ def curator_force_probnik_day():
         return jsonify({'error': str(e)}), 500
 
 
+@curator_bp.route("/admin/restore-practice-day", methods=["POST"])
+@login_required
+def curator_restore_practice_day():
+    """ADMIN: вернуть сегодняшнему занятию тип «практика».
+
+    Обратная операция к force-probnik-day (владелец, 03.11.2026):
+    пробник убран из ротации для всех Premium-пользователей — на его
+    позиции выдаётся практика. Конвертирует СЕГОДНЯШНЕЕ назначенное
+    занятие-пробник обратно в практику: тема — из дневной ротации
+    monthly_cycle (та же, что назначила бы система), код и название
+    пробника очищаются. Прохождения пробника из каталога не трогает.
+    user_id необязателен — по умолчанию сам админ.
+    """
+    if not current_user.is_admin:
+        return jsonify({'error': 'forbidden'}), 403
+    data = request.get_json(silent=True) or {}
+    try:
+        user_id = int(data.get('user_id') or current_user.id)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'bad user_id'}), 400
+
+    try:
+        from models import db
+        from curator.session_plan import _lessons, _theme_for_user
+        from sqlalchemy import text
+
+        today = date.today()
+        lessons = _lessons(user_id)
+        todays = [l for l in lessons
+                  if _to_date_safe(l.get('assigned_date')) == today]
+        if not todays:
+            return jsonify({'error': 'no lesson today'}), 404
+        row = todays[-1]
+        if row.get('lesson_type') != 'probnik':
+            return jsonify({'error': 'today is not a probnik lesson',
+                            'lesson_type': row.get('lesson_type')}), 400
+        theme = _theme_for_user(user_id)
+        db.session.execute(text(
+            "UPDATE curator_lessons SET lesson_type='practice', "
+            "theme=:theme, method_code=NULL, method_name=NULL, "
+            "probnik_code=NULL, probnik_title=NULL "
+            "WHERE user_id=:uid AND id=:lid"
+        ), {'theme': theme, 'uid': user_id, 'lid': row['id']})
+        db.session.commit()
+        return jsonify({'success': True, 'action': 'restored',
+                        'lesson_id': row['id'], 'theme': theme})
+    except Exception as e:  # noqa: BLE001
+        logger.exception('restore-practice-day failed')
+        return jsonify({'error': str(e)}), 500
+
+
 def _to_date_safe(v):
     try:
         from curator.session_plan import _to_date
