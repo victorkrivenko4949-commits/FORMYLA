@@ -46,6 +46,14 @@ def admin_client():
         from sqlalchemy import text
         ensure_tables()
         db.session.execute(text('DELETE FROM curator_lessons WHERE user_id = 1'))
+        # выбор дней пилота (user_schedule_days) может сделать сегодня
+        # выходным для uid=1 — тогда занятие не создаётся и тест падает.
+        # Активная пилотная подписка без выбора дней включает гейт
+        # force_schedule_selection (редирект /daily_tasks -> /schedule).
+        # Чистим и то и другое, чтобы тест не зависел от локальной БД.
+        db.session.execute(text('DELETE FROM user_schedule_days WHERE user_id = 1'))
+        db.session.execute(text("DELETE FROM subscriptions WHERE user_id = 1 "
+                                "AND plan IN ('premium_intense', 'premium_calm')"))
         db.session.commit()
 
     with app.test_client() as c:

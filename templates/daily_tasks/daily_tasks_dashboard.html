@@ -845,7 +845,7 @@
   <div style="padding:16px;margin-bottom:16px;border-radius:14px;border:1px solid rgba(79,108,255,0.35);background:linear-gradient(135deg,rgba(79,108,255,0.10),rgba(94,234,212,0.08));">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
       <div style="font-weight:800;color:var(--text);font-size:15px;">{% if _s.plan|length == 7 %}План на 7 дней{% else %}План на 6 занятий{% endif %}</div>
-      <div style="color:var(--muted);font-size:12px;">{% if _s.plan|length == 7 %}{{ _s.lessons_per_week }} {{ 'занятие' if _s.lessons_per_week == 1 else 'занятий' }} · {{ _s.rest_days_count }} {{ 'выходной' if _s.rest_days_count == 1 else 'выходных' }} · {% endif %}завершено: {{ _s.completed_lessons }}</div>
+      <div style="color:var(--muted);font-size:12px;">{% if _s.plan|length == 7 %}{{ _s.lessons_per_week }} {{ 'занятие' if _s.lessons_per_week == 1 else 'занятий' }} · {{ _s.rest_days_count }} {{ 'выходной' if _s.rest_days_count == 1 else 'выходных' }} · {% else %}сдвигается каждый день · {% endif %}завершено: {{ _s.completed_lessons }}</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       {% for p in _s.plan %}
