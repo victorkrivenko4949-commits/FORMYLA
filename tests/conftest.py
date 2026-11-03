@@ -63,6 +63,7 @@ def db():
             is_trial INTEGER DEFAULT 0,
             is_beta_access INTEGER DEFAULT 1,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            cancelled_at TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
 
