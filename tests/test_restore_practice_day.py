@@ -109,7 +109,7 @@ def test_restore_practice_day_roundtrip(admin_client):
     # 4) повторный вызов: сегодня не пробник → 400
     rv = admin_client.post('/curator/admin/restore-practice-day', json={})
     assert rv.status_code == 400
-    assert rv.get_json()['error'] == 'today is not a probnik lesson'
+    assert rv.get_json()['error'] == 'not a probnik lesson'
 
 
 def test_restore_practice_day_no_lesson(admin_client):
@@ -123,6 +123,62 @@ def test_restore_practice_day_no_lesson(admin_client):
     rv = admin_client.post('/curator/admin/restore-practice-day', json={})
     assert rv.status_code == 404
     assert rv.get_json()['error'] == 'no lesson today'
+
+
+def test_restore_practice_day_by_lesson_id(admin_client):
+    """lesson_id: конвертируем конкретный урок (пропущенный пробник-долг).
+
+    Долг-пробник из истории (не сегодняшний) тоже становится практикой.
+    """
+    from app import app
+    from sqlalchemy import text
+    from models import db
+    import datetime as _dt
+
+    # 0) синхронизируем расписание — инициализирует ротацию тем
+    #    (monthly_cycle), иначе _theme_for_user вернёт None
+    rv = admin_client.get('/daily_tasks')
+    assert rv.status_code == 200
+
+    # 1) создаём «вчерашний» пробник-долг вручную
+    with app.app_context():
+        lesson_id = db.session.execute(text(
+            "INSERT INTO curator_lessons "
+            "(user_id, seq, lesson_type, probnik_code, probnik_title, "
+            "status, assigned_date, created_at) VALUES "
+            "(1, 99, 'probnik', 'test-probnik', 'Тестовый пробник', "
+            "'skipped', :d, CURRENT_TIMESTAMP)"
+        ), {'d': _dt.date.today() - _dt.timedelta(days=1)}).lastrowid
+        db.session.commit()
+
+    # 2) конвертируем по lesson_id (сегодняшнего пробника нет —
+    #    без lesson_id было бы 404/400)
+    rv = admin_client.post('/curator/admin/restore-practice-day',
+                           json={'lesson_id': lesson_id})
+    assert rv.status_code == 200, rv.get_data(as_text=True)
+    data = rv.get_json()
+    assert data['success'] is True
+    assert data['lesson_id'] == lesson_id
+    assert data.get('theme'), 'тема практики не назначена'
+
+    with app.app_context():
+        row = db.session.execute(text(
+            "SELECT lesson_type, theme, probnik_code FROM curator_lessons "
+            "WHERE id = :lid"), {'lid': lesson_id}).mappings().first()
+        assert row['lesson_type'] == 'practice'
+        assert row['theme'] == data['theme']
+        assert row['probnik_code'] is None
+        db.session.execute(text(
+            "DELETE FROM curator_lessons WHERE id = :lid"), {'lid': lesson_id})
+        db.session.commit()
+
+
+def test_restore_practice_day_bad_lesson_id(admin_client):
+    """Несуществующий lesson_id → 404; не-пробник → 400."""
+    rv = admin_client.post('/curator/admin/restore-practice-day',
+                           json={'lesson_id': 999999})
+    assert rv.status_code == 404
+    assert rv.get_json()['error'] == 'lesson not found'
 
 
 def test_restore_practice_day_forbidden_for_non_admin():

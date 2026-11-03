@@ -1261,15 +1261,18 @@ def curator_force_probnik_day():
 @curator_bp.route("/admin/restore-practice-day", methods=["POST"])
 @login_required
 def curator_restore_practice_day():
-    """ADMIN: вернуть сегодняшнему занятию тип «практика».
+    """ADMIN: вернуть занятию тип «практика» (сегодняшнему или по lesson_id).
 
     Обратная операция к force-probnik-day (владелец, 03.11.2026):
     пробник убран из ротации для всех Premium-пользователей — на его
-    позиции выдаётся практика. Конвертирует СЕГОДНЯШНЕЕ назначенное
-    занятие-пробник обратно в практику: тема — из дневной ротации
-    monthly_cycle (та же, что назначила бы система), код и название
-    пробника очищаются. Прохождения пробника из каталога не трогает.
+    позиции выдаётся практика. Конвертирует назначенное занятие-пробник
+    обратно в практику: тема — из дневной ротации monthly_cycle (та же,
+    что назначила бы система), код и название пробника очищаются.
+    Прохождения пробника из каталога не трогает.
     user_id необязателен — по умолчанию сам админ.
+    lesson_id необязателен: без него конвертируется СЕГОДНЯШНЕЕ
+    занятие; с lesson_id — конкретный урок (например, пропущенный
+    пробник-долг из истории, владелец, 03.11.2026).
     """
     if not current_user.is_admin:
         return jsonify({'error': 'forbidden'}), 403
@@ -1278,21 +1281,37 @@ def curator_restore_practice_day():
         user_id = int(data.get('user_id') or current_user.id)
     except (TypeError, ValueError):
         return jsonify({'error': 'bad user_id'}), 400
+    lesson_id = data.get('lesson_id')  # опционально: конкретный урок (долг)
+    if lesson_id is not None:
+        try:
+            lesson_id = int(lesson_id)
+        except (TypeError, ValueError):
+            return jsonify({'error': 'bad lesson_id'}), 400
 
     try:
         from models import db
         from curator.session_plan import _lessons, _theme_for_user
         from sqlalchemy import text
 
-        today = date.today()
-        lessons = _lessons(user_id)
-        todays = [l for l in lessons
-                  if _to_date_safe(l.get('assigned_date')) == today]
-        if not todays:
-            return jsonify({'error': 'no lesson today'}), 404
-        row = todays[-1]
+        if lesson_id is not None:
+            # конкретный урок (например, пропущенный пробник-долг):
+            # конвертируем его, а не сегодняшний
+            row = db.session.execute(text(
+                "SELECT * FROM curator_lessons WHERE id = :lid"
+            ), {'lid': lesson_id}).mappings().first()
+            if row is None:
+                return jsonify({'error': 'lesson not found'}), 404
+            user_id = row['user_id']
+        else:
+            today = date.today()
+            lessons = _lessons(user_id)
+            todays = [l for l in lessons
+                      if _to_date_safe(l.get('assigned_date')) == today]
+            if not todays:
+                return jsonify({'error': 'no lesson today'}), 404
+            row = todays[-1]
         if row.get('lesson_type') != 'probnik':
-            return jsonify({'error': 'today is not a probnik lesson',
+            return jsonify({'error': 'not a probnik lesson',
                             'lesson_type': row.get('lesson_type')}), 400
         theme = _theme_for_user(user_id)
         db.session.execute(text(
