@@ -1059,6 +1059,11 @@
         {# USERS_STATS_V2: обязательный опрос «Как тебе сайт?» (25+ мин на сайте).
            Показываем всем залогиненным, включая админов. #}
         {% include 'partials/feedback_modal.html' %}
+        {# TG_TRIAL_WEEK: «Неделя Premium за подписку на ТГ» — полоска (бесплатным) + окно.
+           Состояние считается только для бесплатных и на /subscribe. #}
+        {% if (is_free_user is defined and is_free_user) or request.path.startswith('/subscribe') %}
+            {% include 'partials/tg_trial_week.html' %}
+        {% endif %}
     {% endif %}
     <div style="text-align:center;padding:12px 0;font-size:11px;color:var(--muted);">build {{ build_commit_short }}</div>
 </body>

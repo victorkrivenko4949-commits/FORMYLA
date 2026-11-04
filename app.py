@@ -368,6 +368,7 @@ init_db(app)
 try:
     import daily_tasks.models          # noqa: F401  — DailyTaskSet, DailyTaskItem, DailyGenerationJob
     import models_olympiad             # noqa: F401  — Probnik, OlympiadTask, etc. (re-imported by models.py too)
+    import models_tg_trial             # noqa: F401  — TgTrialGrant (неделя за подписку на ТГ)
     try:
         import models_grade            # noqa: F401  — grade 5-6 models
     except ImportError:
@@ -2235,6 +2236,26 @@ try:
     print("[BP] telegram_auth_bp registered (/auth/telegram/callback)")
 except Exception as _e:
     print(f"[BP] telegram_auth_bp NOT registered: {_e}")
+
+# /api/tg-trial/* — «Неделя Premium за подписку на Telegram-канал» (05.11.2026).
+try:
+    from routes.tg_trial import tg_trial_bp
+    app.register_blueprint(tg_trial_bp)
+
+    @app.context_processor
+    def _inject_tg_trial():
+        # Лениво: состояние считается только если шаблон его вызвал.
+        def tg_trial_state():
+            try:
+                from services.tg_trial import get_state
+                return get_state(current_user)
+            except Exception:
+                return {'state': 'hidden'}
+        return {'tg_trial_state': tg_trial_state}
+
+    print("[BP] tg_trial_bp registered (/api/tg-trial/status, /api/tg-trial/claim)")
+except Exception as _e:
+    print(f"[BP] tg_trial_bp NOT registered: {_e}")
 
 # /daily_tasks/* — Персонализированные «Задачи дня» (мульти-LLM пайплайн).
 #

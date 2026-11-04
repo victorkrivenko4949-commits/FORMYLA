@@ -405,6 +405,17 @@
 }
 .sp-success.show{display:block}
 
+/* ── TG_TRIAL_WEEK: карточка «Неделя за подписку» ── */
+.sp-tgweek{display:flex;align-items:center;gap:16px;margin-bottom:var(--s5);padding:16px 18px;border-radius:14px;
+  border:1px solid rgba(42,171,238,.4);background:linear-gradient(120deg,rgba(42,171,238,.14),rgba(244,185,66,.08))}
+.sp-tgweek__icon{font-size:30px;flex:none}
+.sp-tgweek__txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.sp-tgweek__txt b{font-size:1.08em;color:#fff}
+.sp-tgweek__txt span{color:#b8c4d8;font-size:.93em;line-height:1.4}
+.sp-tgweek__btn{flex:none;border:0;border-radius:12px;padding:12px 18px;font-weight:700;cursor:pointer;background:#2AABEE;color:#fff;white-space:nowrap}
+.sp-tgweek__btn:hover{background:#229ED9}
+@media (max-width:640px){.sp-tgweek{flex-wrap:wrap}.sp-tgweek__btn{width:100%}}
+
 /* ── reveal ── */
 .sub2 .reveal{opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
 .sub2 .reveal.in{opacity:1;transform:none}
@@ -416,6 +427,8 @@
 
   {# 2026-11-01: пробный день открыт всем (не только пилотам) #}
   {% set trial_available = not trial_used %}
+  {# TG_TRIAL_WEEK: неделя Premium за подписку на Telegram-канал #}
+  {% set tgw = tg_trial_state() if tg_trial_state is defined else {'state': 'hidden'} %}
 
   <!-- ═══════════ СТАТУС ТАРИФА ═══════════ -->
   <div class="sp-status">
@@ -473,6 +486,7 @@
         <p class="sp-hero__subtitle">Полная версия для подготовки к олимпиадам.</p>
         <p class="sp-hero__desc">Два темпа занятий: «Работяга» — 6 занятий в неделю, включая пробник и метод; «Спокойный» — 3 занятия в неделю по 1,5 часа. Оба открывают ИИ-тьютора, куратора, генератор чертежей и все задачи платформы.</p>
         <ul class="sp-hero__proof">
+          {% if tgw.state == 'available' %}<li><b>Неделя Premium бесплатно</b> — за подписку на наш <a href="#" onclick="tgTrialOpen('hero');return false" style="color:inherit;text-decoration:underline">Telegram-канал</a></li>{% endif %}
           {% if trial_available and not is_parent_or_teacher %}<li><b>Пробный день бесплатно</b> — полный Premium на 24 часа</li>{% endif %}
           <li>Бесплатный тариф: <b>1 задача в день</b> — без карты и подписки</li>
           <li>Отмена в любой момент, <b>история и прогресс сохраняются</b></li>
@@ -522,13 +536,24 @@
     {# 2026-11-01: статус пробного дня — для всех, не только пилотов #}
     {% if trial_active_until %}
     <div class="sp-trial sp-trial--active" id="spTrialBanner" data-until="{{ trial_active_until_iso }}">
-      ⏳ <strong>Пробный день активен</strong> — полный доступ ещё
+      ⏳ <strong>{{ 'Неделя Premium активна' if tgw.state == 'active' else 'Пробный день активен' }}</strong> — полный доступ ещё
       <span class="sp-timer" id="spTrialTimer">…</span>.
       После этого тариф снова станет бесплатным (1 задача в день).
     </div>
     {% elif trial_used %}
     <div class="sp-trial sp-trial--used">
       Пробный день уже использован. Выбери тариф ниже — и полный доступ вернётся.
+    </div>
+    {% endif %}
+
+    {% if tgw.state == 'available' %}
+    <div class="sp-tgweek reveal">
+      <div class="sp-tgweek__icon" aria-hidden="true">🎁</div>
+      <div class="sp-tgweek__txt">
+        <b>Неделя Premium бесплатно</b>
+        <span>Подпишись на наш Telegram-канал @{{ tgw.channel }} — и получи 7 дней «Работяги» без карты{% if tgw.trial_day_active %} (пробный день заменится неделей){% endif %}.</span>
+      </div>
+      <button type="button" class="sp-tgweek__btn" onclick="tgTrialOpen('subscribe')">Получить неделю</button>
     </div>
     {% endif %}
 
@@ -594,7 +619,7 @@
 
     <div class="sp-free-row reveal">
       <p><b>Бесплатный тариф:</b> 1 задача в день — остаётся доступен всегда, карта не нужна; тест, методы, генератор чертежей и ИИ-тьютор — по Premium.</p>
-      <p class="sp-plan__note" style="margin:0">Пробный день — 1 день полного Premium, один раз на аккаунт.</p>
+      <p class="sp-plan__note" style="margin:0">Пробный день — 1 день полного Premium, один раз на аккаунт. Неделя за подписку на Telegram-канал — 7 дней, тоже один раз.</p>
     </div>
     {% endif %}
   </section>
@@ -860,8 +885,8 @@ document.querySelectorAll('.sp-faq__q').forEach(function(btn){
       return;
     }
     var s = Math.floor(ms / 1000);
-    var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-    timer.textContent = pad(h) + ':' + pad(m) + ':' + pad(sec);
+    var d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    timer.textContent = (d > 0 ? d + ' дн. ' : '') + pad(h) + ':' + pad(m) + ':' + pad(sec);
     setTimeout(tick, 1000);
   }
   tick();
