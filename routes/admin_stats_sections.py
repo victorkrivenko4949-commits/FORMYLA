@@ -25,8 +25,8 @@ from sqlalchemy import text
 logger = logging.getLogger(__name__)
 
 PLAN_PRICES = {  # ₽ в месяц для MRR
-    'premium_intense': 800, 'premium_calm': 500,
     'premium_monthly': 390, 'premium_yearly': 2790 / 12,
+    'premium_intense': 800, 'premium_calm': 500,
     'student_month': 490, 'student_year': 2990 / 12,
     'family_month': 890, 'teacher_month': 1990,
 }
@@ -113,20 +113,31 @@ def _fmt_pct(v):
     return '—' if v is None else f'{v}%'
 
 
+# Реальные имена событий на сайте: экран лимита пишет services.ab.log_limit_shown -> 'limit_shown'.
+# 'limit_hit' — старое имя из плана, на сайте его никто не шлёт; считаем оба.
+EVENT_ALIASES = {'limit_hit': ('limit_hit', 'limit_shown')}
+LIMIT_EVENTS_SQL = "'limit_hit','limit_shown'"
+
+
+def _ev_in(event: str) -> str:
+    names = EVENT_ALIASES.get(event, (event,))
+    return 'event IN (' + ','.join("'" + n.replace("'", "") + "'" for n in names) + ')'
+
+
 def _events_by_day(event: str, d_from: date, d_to: date, uniq: bool = True):
     start, end = _utc_bounds(d_from, d_to)
     cnt = 'COUNT(DISTINCT COALESCE(CAST(user_id AS TEXT), anon_id))' if uniq else 'COUNT(*)'
     rows = _q(f"SELECT {_day_expr()} AS d, {cnt} FROM funnel_events "
-              f"WHERE event = :e AND created_at >= :s AND created_at < :en GROUP BY 1 ORDER BY 1 DESC",
-              e=event, s=start, en=end)
+              f"WHERE {_ev_in(event)} AND created_at >= :s AND created_at < :en GROUP BY 1 ORDER BY 1 DESC",
+              s=start, en=end)
     return rows or []
 
 
 def _event_total(event: str, d_from: date, d_to: date, uniq: bool = True):
     start, end = _utc_bounds(d_from, d_to)
     cnt = 'COUNT(DISTINCT COALESCE(CAST(user_id AS TEXT), anon_id))' if uniq else 'COUNT(*)'
-    return int(_scalar(f"SELECT {cnt} FROM funnel_events WHERE event = :e AND created_at >= :s AND created_at < :en",
-                       e=event, s=start, en=end) or 0)
+    return int(_scalar(f"SELECT {cnt} FROM funnel_events WHERE {_ev_in(event)} AND created_at >= :s AND created_at < :en",
+                       s=start, en=end) or 0)
 
 
 def _dau_avg(d_from: date, d_to: date) -> float:
@@ -278,7 +289,7 @@ def limits(d_from: date, d_to: date):
     hits_total = _event_total('limit_hit', d_from, d_to, uniq=False)
     dau = _dau_avg(d_from, d_to)
     blocks.append({'type': 'cards', 'items': [
-        {'title': 'Упёрлись в лимит (уник.)', 'value': hits_users, 'sub': 'limit_hit за период'},
+        {'title': 'Упёрлись в лимит (уник.)', 'value': hits_users, 'sub': 'экран лимита (limit_shown) за период'},
         {'title': 'Срабатываний', 'value': hits_total, 'sub': 'всего событий'},
         {'title': 'Средний DAU', 'value': dau, 'sub': 'site_time_sections'},
         {'title': 'Доля от DAU', 'value': _fmt_pct(_pct(hits_users / max(1, (d_to - d_from).days + 1), dau) if dau else None),
@@ -289,7 +300,7 @@ def limits(d_from: date, d_to: date):
     start, end = _utc_bounds(d_from, d_to)
     kind, ab = _json_get('props', 'kind'), _json_get('props', 'ab')
     by_kind = _q(f"""SELECT COALESCE({kind}, 'task'), COALESCE(CAST({ab} AS TEXT), '—'), COUNT(DISTINCT user_id), COUNT(*)
-                     FROM funnel_events WHERE event = 'limit_hit' AND created_at >= :s AND created_at < :e
+                     FROM funnel_events WHERE event IN ('limit_hit','limit_shown') AND created_at >= :s AND created_at < :e
                      GROUP BY 1, 2 ORDER BY 3 DESC""", s=start, e=end) or []
     blocks.append({'type': 'table', 'title': 'По типу лимита и A/B-когорте', 'header': ['Лимит', 'Когорта', 'Уник.', 'Событий'],
                    'rows': [[k, a, int(u), int(n)] for k, a, u, n in by_kind],
@@ -300,30 +311,65 @@ def limits(d_from: date, d_to: date):
     return blocks
 
 
+def _page_users(paths, start, end) -> set:
+    if not _has_table('page_views'):
+        return set()
+    ph = ','.join("'" + p + "'" for p in paths)
+    return {int(r[0]) for r in (_q(f"SELECT DISTINCT user_id FROM page_views WHERE user_id IS NOT NULL AND path IN ({ph}) "
+                                    "AND created_at >= :s AND created_at < :e", s=start, e=end) or [])}
+
+
+def _event_user_set(events_sql: str, start, end) -> set:
+    return {int(r[0]) for r in (_q(f"SELECT DISTINCT user_id FROM funnel_events WHERE user_id IS NOT NULL AND event IN ({events_sql}) "
+                                    "AND created_at >= :s AND created_at < :e", s=start, e=end) or [])}
+
+
 def paywall(d_from: date, d_to: date):
+    """Путь к оплате за период: лимит -> витрина -> оформление -> попытка платежа -> оплата."""
     start, end = _utc_bounds(d_from, d_to)
-    frm = _json_get('props', 'from')
-    rows = _q(f"""SELECT COALESCE({frm}, COALESCE(path, '—')), event, COUNT(DISTINCT COALESCE(CAST(user_id AS TEXT), anon_id))
-                  FROM funnel_events WHERE event IN ('paywall_view', 'subscribe_view', 'payment_success')
-                  AND created_at >= :s AND created_at < :e GROUP BY 1, 2""", s=start, e=end) or []
-    table = {}
-    for src, ev, n in rows:
-        table.setdefault(str(src), {'paywall_view': 0, 'subscribe_view': 0, 'payment_success': 0})[str(ev)] = int(n or 0)
-    out = []
-    for src, d in sorted(table.items(), key=lambda kv: -kv[1]['payment_success'] - kv[1]['subscribe_view']):
-        out.append([src, d['paywall_view'], d['subscribe_view'], _fmt_pct(_pct(d['subscribe_view'], d['paywall_view'])),
-                    d['payment_success'], _fmt_pct(_pct(d['payment_success'], d['subscribe_view']))])
-    pv, sv, ps = (_event_total(e, d_from, d_to) for e in ('paywall_view', 'subscribe_view', 'payment_success'))
-    return [
+    limit = _event_user_set(LIMIT_EVENTS_SQL, start, end)
+    shop = _page_users(('/subscribe',), start, end)
+    checkout = _page_users(('/payments/premium/checkout',), start, end)
+    tried, paid_try, statuses = set(), set(), []
+    if _has_table('yookassa_payments'):
+        rows = _q("SELECT user_id, status FROM yookassa_payments WHERE created_at >= :s AND created_at < :e", s=start, e=end) or []
+        for uid, st in rows:
+            tried.add(int(uid))
+            if st == 'succeeded':
+                paid_try.add(int(uid))
+        statuses = _q("SELECT COALESCE(item_code, '—'), status, COUNT(*) FROM yookassa_payments "
+                      "WHERE created_at >= :s AND created_at < :e GROUP BY 1, 2 ORDER BY 3 DESC", s=start, e=end) or []
+    paid = _event_user_set("'payment_success'", start, end) | paid_try
+    steps = [('Упёрлись в лимит', limit), ('Открыли витрину /subscribe', shop), ('Открыли оформление тарифа', checkout),
+             ('Нажали «Оплатить» (создан платёж)', tried), ('Оплатили', paid)]
+    rows, prev = [], None
+    for title, st in steps:
+        rows.append([title, len(st), _fmt_pct(_pct(len(st), prev)) if prev else '—'])
+        prev = len(st) or prev
+    abandoned = tried - paid
+    blocks = [
         {'type': 'cards', 'items': [
-            {'title': 'Видели paywall', 'value': pv, 'sub': 'paywall_view'},
-            {'title': 'Открыли /subscribe', 'value': sv, 'sub': _fmt_pct(_pct(sv, pv)) + ' от paywall'},
-            {'title': 'Оплатили', 'value': ps, 'sub': _fmt_pct(_pct(ps, sv)) + ' от витрины'},
+            {'title': 'Упёрлись в лимит', 'value': len(limit), 'sub': 'экран лимита за период'},
+            {'title': 'Были на витрине или оформлении', 'value': len(shop | checkout), 'sub': 'по журналу страниц'},
+            {'title': 'Начали оплату, но не оплатили', 'value': len(abandoned), 'sub': 'платёж создан, не прошёл'},
+            {'title': 'Оплатили', 'value': len(paid), 'sub': ''},
         ]},
-        {'type': 'table', 'title': 'По точке входа (from=)', 'header': ['Откуда', 'Paywall', 'Витрина', 'CR', 'Оплаты', 'CR'],
-         'rows': out, 'empty': 'Нет событий. paywall_view шлёт экран лимита/paywall, subscribe_view — страница /subscribe?from=… (PR 19–21.10).'},
-        {'type': 'note', 'text': f"PAYWALL_PREFIXES = {os.environ.get('PAYWALL_PREFIXES', '—')}"},
+        {'type': 'table', 'title': 'Путь к оплате (уникальные люди за период)', 'header': ['Шаг', 'Людей', '% от предыдущего'],
+         'rows': rows},
     ]
+    if abandoned:
+        nicks = {int(r[0]): r[1] or '' for r in (_q(
+            'SELECT id, nickname FROM users WHERE id IN (' + ','.join(str(u) for u in abandoned) + ')') or [])}
+        blocks.append({'type': 'table', 'title': 'Начали оплату и не оплатили', 'header': ['Пользователь', 'ID'],
+                       'rows': [[{'text': nicks.get(u) or 'Без ника', 'href': f'/admin/stats/person?id={u}'}, u]
+                                for u in sorted(abandoned)][:100]})
+    if statuses:
+        blocks.append({'type': 'table', 'title': 'Платежи ЮKassa по статусам', 'header': ['Тариф', 'Статус', 'Платежей'],
+                       'rows': [[PLAN_TITLES.get(str(c), c), st, int(n)] for c, st, n in statuses]})
+    blocks.append({'type': 'note', 'text': 'Шаги не обязаны идти по порядку: человек может открыть витрину, не упираясь в лимит. '
+                   'Витрина и оформление считаются по журналу страниц (с момента его включения), попытки платежа — по таблице '
+                   f"yookassa_payments. PAYWALL_PREFIXES = {os.environ.get('PAYWALL_PREFIXES', '—')}"})
+    return blocks
 
 
 def cohorts(d_from: date, d_to: date):
@@ -500,7 +546,56 @@ def curator(d_from: date, d_to: date):
     return blocks
 
 
+def exit_pages(d_from: date, d_to: date):
+    """Где заканчиваются визиты (пауза > 30 мин = конец). Источник — page_views."""
+    from services import page_views as pv
+    if not _has_table('page_views'):
+        return [{'type': 'note', 'text': 'Журнал просмотров ещё не создан: таблица page_views появится после '
+                 'выкладки и запуска сайта. Данные накапливаются только с этого момента.'}]
+    only_users = request.args.get('who', 'users') != 'all'
+    rows = pv.load_rows(d_from, d_to, only_users=only_users)
+    if rows is None:
+        return [{'type': 'note', 'text': 'Не удалось прочитать журнал просмотров.'}]
+    first = pv.first_view_at()
+    head = ('Журнал ведётся с ' + first.strftime('%d.%m.%Y %H:%M') + ' (UTC). ' if first else '') + \
+           ('Показаны только вошедшие пользователи; добавьте ?who=all в адрес, чтобы учесть гостей. '
+            if only_users else 'Показаны вошедшие пользователи и гости. ') + \
+           'Визит заканчивается, если дальше нет просмотров 30 минут. «Выход» — последняя страница визита.'
+    a = pv.analyze(rows)
+    if not a['visits']:
+        return [{'type': 'note', 'text': head}, {'type': 'note', 'text': 'За выбранный период просмотров нет.'}]
+
+    def share(x, y):
+        return _fmt_pct(_pct(x, y))
+
+    blocks = [{'type': 'note', 'text': head}]
+    avg_pages = round(a['views'] / a['visits'], 1)
+    bounce_total = sum(a['bounces'].values())
+    blocks.append({'type': 'cards', 'items': [
+        {'title': 'Визитов', 'value': a['visits'], 'sub': f"людей: {a['people']}"},
+        {'title': 'Просмотров страниц', 'value': a['views'], 'sub': f'в среднем {avg_pages} за визит'},
+        {'title': 'Отскок', 'value': share(bounce_total, a['visits']), 'sub': 'визиты из одной страницы'},
+        {'title': 'Визитов с анкетой', 'value': a['intake_visits'],
+         'sub': f"закончились внутри анкеты: {a['intake_left_inside']} ({share(a['intake_left_inside'], a['intake_visits'])})"},
+    ]})
+    top = a['exits'].most_common(40)
+    blocks.append({'type': 'table', 'title': 'Страницы выхода',
+                   'header': ['Страница', 'Просмотров', 'Выходов', 'Доля выходов', 'Людей ушло'],
+                   'rows': [[p, a['views_by_path'][p], n, share(n, a['views_by_path'][p]), a['exit_people'].get(p, 0)]
+                            for p, n in top]})
+    if a['intake_visits']:
+        blocks.append({'type': 'table', 'title': 'Визиты с анкетой: где закончились',
+                       'header': ['Страница', 'Визитов', 'Доля'],
+                       'rows': [[p, n, share(n, a['intake_visits'])] for p, n in a['intake_exit'].most_common(20)]})
+    ent = [(p, n, a['bounces'].get(p, 0)) for p, n in a['entries'].most_common(20)]
+    blocks.append({'type': 'table', 'title': 'Входные страницы и отскок',
+                   'header': ['Страница входа', 'Визитов', 'Ушли сразу', 'Доля'],
+                   'rows': [[p, n, b, share(b, n)] for p, n, b in ent]})
+    return blocks
+
+
 VIEWS = {
+    'exit_pages': exit_pages,
     'subscriptions': subscriptions, 'payments': payments, 'founders': founders, 'trial': trial,
     'limits': limits, 'paywall': paywall, 'cohorts': cohorts, 'streaks': streaks, 'ai_usage': ai_usage,
     'drawings_method_week': drawings_method_week, 'referrals': referrals, 'teachers_parents': teachers_parents,

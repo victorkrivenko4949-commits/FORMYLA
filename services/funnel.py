@@ -276,6 +276,11 @@ def _on_login(sender, user, **extra):
                 'UPDATE users SET acq_source = :s, acq_ref = :r WHERE id = :u AND acq_source IS NULL'
             ), {'s': acq.get('source') or 'direct_visit', 'r': acq.get('ref'), 'u': user.id})
             _db().session.commit()
+            try:  # PAGE_VIEWS_V1: путь гостя до регистрации → к аккаунту
+                from services.page_views import link_anon_to_user
+                link_anon_to_user(session.get('anon_id'), user.id)
+            except Exception as e:  # noqa: BLE001
+                logger.debug('funnel: link_anon_to_user: %r', e)
     except Exception as e:
         _db().session.rollback()
         logger.warning('funnel._on_login: %r', e)
@@ -290,7 +295,7 @@ def _json_of(resp):
 
 
 def _wrap_intake(app):
-    for ep in ('intake.answer_intake', 'intake.submit_intake_anchor'):
+    for ep in ('intake.answer_intake', 'intake.submit_intake_anchor', 'intake.skip_intake'):
         orig = app.view_functions.get(ep)
         if orig is None or getattr(orig, '_funnel_wrapped', False):
             continue
@@ -300,6 +305,14 @@ def _wrap_intake(app):
                 resp = o(*a, **kw)
                 try:
                     data = _json_of(resp)
+                    # PAGE_VIEWS_V1: шаг анкеты — видно, на каком вопросе бросают
+                    if request.endpoint == 'intake.answer_intake' and data and not data.get('error'):
+                        qid = str((request.get_json(silent=True) or {}).get('qid') or '')[:40]
+                        if qid:
+                            track('intake_answer', {'qid': qid})
+                    if request.endpoint == 'intake.skip_intake':
+                        track('intake_skip')
+                        return resp
                     if data and data.get('done') and data.get('result'):
                         res = data.get('result') or {}
                         track('intake_done', {'anchors_correct': res.get('anchors_correct'),

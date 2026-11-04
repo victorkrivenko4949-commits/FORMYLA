@@ -55,21 +55,27 @@ SECTIONS = [
     dict(slug='overview', title='Сводка', group='Сводка', kind='view', ready=True),
     # Привлечение
     dict(slug='funnel', title='Воронка', group='Привлечение', kind='view', ready=True),
+    dict(slug='journey', title='Путь регистрации', group='Привлечение', kind='view', ready=True,
+         note='Когорта зарегистрированных: анкета, готовность, первая задача, возврат, paywall, оплата.'),
     dict(slug='sources', title='Источники', group='Привлечение', kind='view', ready=True),
     dict(slug='referrals', title='Рефералы', group='Привлечение', kind='view', ready=True,
          note='Кто кого привёл (users.invited_by), визиты по ?ref=u_<id>, оплаты приглашённых.'),
     # Активность
-    dict(slug='users', title='Пользователи', group='Активность', kind='embed', target='/admin/users', ready=True),
+    dict(slug='users', title='Пользователи', group='Активность', kind='view', ready=True),
     dict(slug='sections', title='Разделы сайта', group='Активность', kind='embed', target='/admin/users/sections', ready=True),
-    dict(slug='returns', title='Возвраты', group='Активность', kind='embed', target='/admin/users/returns', ready=True),
+    dict(slug='returns', title='Возвраты', group='Активность', kind='view', ready=True),
+    dict(slug='lost_users', title='Ушли и не вернулись', group='Активность', kind='view', ready=True,
+         note='Кого нет 3 / 7 / 14 дней и на какой странице их видели в последний раз.'),
+    dict(slug='exit_pages', title='Где уходят', group='Активность', kind='view', ready=True,
+         note='Страницы, на которых заканчиваются визиты, отскок и выходы из анкеты (журнал page_views).'),
     dict(slug='daily_tasks', title='Задачи дня', group='Активность', kind='embed', target='/admin/daily_tasks/dashboard', ready=True),
     dict(slug='streaks', title='Серии и XP', group='Активность', kind='view', ready=True,
          note='Распределение серий (streak_records), доля ≥ 7 дней — контроль правила серии для Free с 3 задачами.'),
     # Монетизация
     dict(slug='limits', title='Лимиты', group='Монетизация', kind='view', ready=True,
-         note='limit_hit по дням и когортам A/B, доля от DAU. Экран для решения 11.11.'),
+         note='Экран лимита (limit_shown) по дням и когортам A/B, доля от DAU.'),
     dict(slug='paywall', title='Paywall и витрина', group='Монетизация', kind='view', ready=True,
-         note='paywall_view → subscribe_view → payment_success по точке входа (from=).'),
+         note='Лимит → витрина → оформление → попытка платежа → оплата; кто начал оплату и бросил.'),
     dict(slug='subscriptions', title='Подписки', group='Монетизация', kind='view', ready=True,
          note='Активные по тарифам, MRR и прогресс к 100 тыс. ₽/мес, истекающие, отмены.'),
     dict(slug='founders', title='Основатели', group='Монетизация', kind='view', ready=True,
@@ -90,7 +96,11 @@ SECTIONS = [
     dict(slug='daily_pool', title='Пул задач дня', group='Продукт', kind='embed', target='/admin/daily_pool', ready=True),
     # Люди
     dict(slug='support', title='Поддержка', group='Люди', kind='embed', target='/admin/support', ready=True),
-    dict(slug='surveys', title='Опросы и оценки', group='Люди', kind='embed', target='/admin/users/surveys', ready=True),
+    dict(slug='person', title='Путь человека', group='Люди', kind='view', ready=True,
+         note='Всё, что сайт знает об одном человеке, по времени, и вероятная причина ухода.'),
+    dict(slug='survey_behavior', title='Опросы и поведение', group='Люди', kind='view', ready=True,
+         note='Что делали после ответа в опросах: вернулись, решали задачи, оплатили.'),
+    dict(slug='surveys', title='Опросы и оценки', group='Люди', kind='view', ready=True),
     dict(slug='teachers_parents', title='Учителя и родители', group='Люди', kind='view', ready=True,
          note='Роли, визиты по меткам teacher/parent, связки (когда появятся).'),
     # Система
@@ -245,8 +255,10 @@ def funnel_counts(d_from: date, d_to: date) -> dict:
     """Уникальные пользователи/аноны по каждому шагу за период."""
     start, end = _utc_bounds(d_from, d_to)
     rows = _q("""
-        SELECT event, COUNT(DISTINCT COALESCE(CAST(user_id AS TEXT), anon_id, CAST(id AS TEXT))) AS n
-        FROM funnel_events WHERE created_at >= :s AND created_at < :e GROUP BY event
+        SELECT CASE WHEN event = 'limit_shown' THEN 'limit_hit' ELSE event END AS ev,
+               COUNT(DISTINCT COALESCE(CAST(user_id AS TEXT), anon_id, CAST(id AS TEXT))) AS n
+        FROM funnel_events WHERE created_at >= :s AND created_at < :e
+        GROUP BY CASE WHEN event = 'limit_shown' THEN 'limit_hit' ELSE event END
     """, s=start, e=end)
     return {str(r[0]): int(r[1] or 0) for r in rows}
 
@@ -254,7 +266,7 @@ def funnel_counts(d_from: date, d_to: date) -> dict:
 def funnel_by_day(d_from: date, d_to: date):
     start, end = _utc_bounds(d_from, d_to)
     rows = _q(f"""
-        SELECT {_day_expr()} AS day, event, COUNT(*) AS n
+        SELECT {_day_expr()} AS day, CASE WHEN event = 'limit_shown' THEN 'limit_hit' ELSE event END AS ev, COUNT(*) AS n
         FROM funnel_events WHERE created_at >= :s AND created_at < :e
         GROUP BY 1, 2 ORDER BY 1 DESC
     """, s=start, e=end)
@@ -346,7 +358,10 @@ def section(slug):
     # блочные разделы из routes/admin_stats_sections.py
     try:
         from routes import admin_stats_sections as sec
-        builder = sec.VIEWS.get(slug)
+        from routes import admin_stats_journey as jr
+        from routes import admin_stats_native as nat
+        from routes import admin_stats_person as per
+        builder = sec.VIEWS.get(slug) or jr.VIEWS.get(slug) or nat.VIEWS.get(slug) or per.VIEWS.get(slug)
     except Exception as e:  # noqa: BLE001
         logger.warning('admin_stats_sections import failed: %r', e)
         builder = None
@@ -358,7 +373,34 @@ def section(slug):
     except Exception as e:  # noqa: BLE001
         logger.exception('admin_stats section %s failed', slug)
         blocks = [{'type': 'note', 'text': f'Раздел временно недоступен: {e!r}'}]
+    if isinstance(blocks, Response):   # builder отдал CSV
+        return blocks
     return _render(s, 'admin/stats_blocks.html', blocks=blocks)
+
+
+def _spark(values, w=100, h=26):
+    """Точки SVG-polyline для мини-графика; None, если рисовать нечего."""
+    if len(values) < 2 or not any(values):
+        return None
+    top = max(values)
+    step = w / (len(values) - 1)
+    return ' '.join(f'{i * step:.1f},{h - 2 - (v / top) * (h - 4):.1f}' for i, v in enumerate(values))
+
+
+def _series(days_map, d_from, d_to, event):
+    out, d = [], d_from
+    while d <= d_to:
+        out.append(int((days_map.get(str(d)) or {}).get(event, 0)))
+        d += timedelta(days=1)
+    return out
+
+
+def _delta(cur, prev):
+    """Изменение к прошлому периоду: (текст, класс) или None, если сравнивать не с чем."""
+    if not prev:
+        return None
+    pct = round(100.0 * (cur - prev) / prev)
+    return (f'{pct:+d}%', 'up' if pct > 0 else ('down' if pct < 0 else 'flat'))
 
 
 def view_overview(s):
@@ -367,17 +409,27 @@ def view_overview(s):
     yesterday = today - timedelta(days=1)
     y_counts = funnel_counts(yesterday, yesterday)
     p_counts = funnel_counts(d_from, d_to)
+    span = (d_to - d_from).days + 1
+    prev_to = d_from - timedelta(days=1)
+    prev_from = prev_to - timedelta(days=span - 1)
+    prev_counts = funnel_counts(prev_from, prev_to)
+    by_day = funnel_by_day(d_from, d_to)
     cards = []
     for ev, title in FUNNEL_STEPS:
         cards.append({'key': ev, 'title': title, 'yesterday': y_counts.get(ev, 0), 'period': p_counts.get(ev, 0),
-                      'link': '/admin/stats/funnel'})
+                      'prev': prev_counts.get(ev, 0), 'delta': _delta(p_counts.get(ev, 0), prev_counts.get(ev, 0)),
+                      'spark': _spark(_series(by_day, d_from, d_to, ev)), 'link': '/admin/stats/funnel'})
     cards.insert(0, {'key': 'dau', 'title': 'DAU (время на сайте)', 'yesterday': dau(yesterday),
                      'period': None, 'link': '/admin/stats/users'})
     cards.append({'key': 'limit_hit', 'title': 'Упёрлись в лимит', 'yesterday': y_counts.get('limit_hit', 0),
-                  'period': p_counts.get('limit_hit', 0), 'link': '/admin/stats/limits'})
+                  'period': p_counts.get('limit_hit', 0), 'prev': prev_counts.get('limit_hit', 0),
+                  'delta': _delta(p_counts.get('limit_hit', 0), prev_counts.get('limit_hit', 0)),
+                  'spark': _spark(_series(by_day, d_from, d_to, 'limit_hit')), 'link': '/admin/stats/limits'})
     rev_y = revenue(yesterday, yesterday)
     rev_p = revenue(d_from, d_to)
-    return _render(s, 'admin/stats_overview.html', cards=cards, rev_y=rev_y, rev_p=rev_p,
+    rev_prev = revenue(prev_from, prev_to)
+    return _render(s, 'admin/stats_overview.html', cards=cards, rev_y=rev_y, rev_p=rev_p, rev_prev=rev_prev,
+                   rev_delta=_delta(rev_p, rev_prev), prev_from=prev_from, prev_to=prev_to,
                    yesterday=yesterday, today=today, premium=premium_users())
 
 
@@ -414,6 +466,123 @@ def view_sources(s):
         GROUP BY 1 ORDER BY 2 DESC LIMIT 30
     """, s=_utc_bounds(d_from, d_to)[0], e=_utc_bounds(d_from, d_to)[1])
     return _render(s, 'admin/stats_sources.html', rows=rows, refs=refs)
+
+
+SUB_FILTERS = (
+    ('active', 'Активные'), ('expiring', 'Истекают за 7 дней'), ('expired', 'Истекли'),
+    ('cancelled', 'Отменены'), ('all', 'Все'),
+)
+SUB_KINDS = {'paid': 'Платная', 'trial': 'Триал', 'beta': 'Бета'}
+SUB_STATES = {'active': 'Активна', 'expiring': 'Истекает', 'expired': 'Истекла', 'cancelled': 'Отменена'}
+
+
+def _dt(v):
+    if isinstance(v, datetime):
+        return v
+    try:
+        return datetime.fromisoformat(str(v).replace('T', ' ')[:26]) if v else None
+    except Exception:
+        return None
+
+
+def subscription_rows(now: datetime | None = None):
+    """По одной строке на пользователя: текущая подписка + суммы оплат."""
+    from routes.admin_stats_sections import PLAN_PRICES, PLAN_TITLES
+    now = now or datetime.utcnow()
+    from routes.admin_stats_sections import _has_column
+    nick = 'u.nickname' if _has_column('users', 'nickname') else "''"
+    beta = 's.is_beta_access' if _has_column('subscriptions', 'is_beta_access') else '0'
+    col = lambda c: f's.{c}' if _has_column('subscriptions', c) else 'NULL'
+    subs = _q(f"""SELECT s.id, s.user_id, {nick}, s.plan, s.status, {col('started_at')}, {col('expires_at')},
+                         {col('payment_id')}, {col('amount_rub')}, {beta}, {col('created_at')}
+                  FROM subscriptions s LEFT JOIN users u ON u.id = s.user_id
+                  ORDER BY s.id LIMIT 50000""") or []
+    trials = {}
+    if _has_column('subscriptions', 'is_trial'):
+        trials = {int(r[0]): bool(r[1]) for r in (_q("SELECT id, is_trial FROM subscriptions") or [])}
+    by_user = {}
+    for sid, uid, nick, plan, status, started, expires, pay_id, amount, beta, created in subs:
+        if uid is None:
+            continue
+        d = by_user.setdefault(int(uid), {'nick': nick, 'subs': []})
+        d['subs'].append(dict(id=int(sid), plan=str(plan), status=str(status), started=_dt(started or created),
+                              expires=_dt(expires), pay_id=pay_id, amount=int(amount or 0),
+                              beta=bool(beta), trial=trials.get(int(sid), False)))
+    rows = []
+    for uid, d in by_user.items():
+        lst = d['subs']
+        live = [x for x in lst if x['status'] == 'active' and (x['expires'] is None or x['expires'] > now)]
+        cur = max(live, key=lambda x: x['id']) if live else max(lst, key=lambda x: x['id'])
+        paid = [x for x in lst if x['pay_id'] and not x['beta'] and not x['trial']]
+        if live:
+            left = (cur['expires'] - now).days if cur['expires'] else None
+            state = 'expiring' if (cur['expires'] and cur['expires'] <= now + timedelta(days=7)) else 'active'
+        else:
+            left = None
+            state = 'cancelled' if cur['status'] == 'cancelled' else 'expired'
+        kind = 'trial' if cur['trial'] else ('beta' if cur['beta'] else 'paid')
+        price = PLAN_PRICES.get(cur['plan'], 0)
+        rows.append(dict(user_id=uid, nick=d['nick'] or '', plan=cur['plan'], plan_title=PLAN_TITLES.get(cur['plan'], cur['plan']),
+                         kind=kind, kind_title=SUB_KINDS[kind], state=state, state_title=SUB_STATES[state],
+                         started=cur['started'], expires=cur['expires'], days_left=left,
+                         paid_total=sum(x['amount'] for x in paid), paid_count=len(paid),
+                         mrr=price if (kind == 'paid' and state in ('active', 'expiring')) else 0))
+    # триал, выданный через users.trial_until без строки в subscriptions
+    trial_sql = ("SELECT id, nickname, trial_until FROM users WHERE trial_until IS NOT NULL"
+                 if _has_column('users', 'nickname') and _has_column('users', 'trial_until') else None)
+    for uid, nick, tu in (_q(trial_sql) or [] if trial_sql else []):
+        uid, tu = int(uid), _dt(tu)
+        if uid in by_user or tu is None:
+            continue
+        active = tu > now
+        rows.append(dict(user_id=uid, nick=nick or '', plan='trial', plan_title='Триал', kind='trial', kind_title='Триал',
+                         state='expiring' if active and tu <= now + timedelta(days=7) else ('active' if active else 'expired'),
+                         state_title='', started=None, expires=tu, days_left=(tu - now).days if active else None,
+                         paid_total=0, paid_count=0, mrr=0))
+        rows[-1]['state_title'] = SUB_STATES[rows[-1]['state']]
+    return rows
+
+
+def view_subscriptions(s):
+    d_from, d_to, _ = period_from_request()
+    now = datetime.utcnow()
+    rows = subscription_rows(now)
+    flt = request.args.get('f', 'active')
+    if flt not in dict(SUB_FILTERS):
+        flt = 'active'
+    q = (request.args.get('q') or '').strip().lower()
+    start, end = _utc_bounds(d_from, d_to)
+
+    def live(r):
+        return r['state'] in ('active', 'expiring')
+
+    counts = {'active': sum(1 for r in rows if live(r)), 'expiring': sum(1 for r in rows if r['state'] == 'expiring'),
+              'expired': sum(1 for r in rows if r['state'] == 'expired'),
+              'cancelled': sum(1 for r in rows if r['state'] == 'cancelled'), 'all': len(rows)}
+    cards = dict(
+        paid=sum(1 for r in rows if live(r) and r['kind'] == 'paid'),
+        trial=sum(1 for r in rows if live(r) and r['kind'] == 'trial'),
+        beta=sum(1 for r in rows if live(r) and r['kind'] == 'beta'),
+        mrr=sum(r['mrr'] for r in rows),
+        new=sum(1 for r in rows if r['started'] and start <= r['started'] < end),
+        churn=sum(1 for r in rows if r['state'] in ('expired', 'cancelled') and r['expires'] and start <= r['expires'] < end),
+        revenue=sum(r['paid_total'] for r in rows),
+    )
+    shown = [r for r in rows if (live(r) if flt == 'active' else (r['state'] == flt if flt != 'all' else True))]
+    if q:
+        shown = [r for r in shown if q in r['nick'].lower() or q == str(r['user_id'])]
+    shown.sort(key=lambda r: (r['days_left'] is None, r['days_left'] if r['days_left'] is not None else 0, -r['user_id']))
+    if request.args.get('csv') == '1':
+        return csv_response(
+            [(r['user_id'], r['nick'], r['plan_title'], r['kind_title'], r['state_title'],
+              r['started'].strftime('%Y-%m-%d') if r['started'] else '',
+              r['expires'].strftime('%Y-%m-%d') if r['expires'] else '',
+              r['days_left'] if r['days_left'] is not None else '', r['paid_total'], r['paid_count']) for r in shown],
+            ('user_id', 'nickname', 'plan', 'type', 'status', 'started', 'expires', 'days_left', 'paid_rub', 'payments'),
+            'subscriptions.csv')
+    return _render(s, 'admin/stats_subscriptions.html', rows=shown[:500], total_shown=len(shown), cards=cards,
+                   premium=premium_users(),
+                   counts=counts, flt=flt, filters=SUB_FILTERS, q=q)
 
 
 def view_env_flags(s):
