@@ -78,6 +78,10 @@ def app(tmp_path, monkeypatch):
     def answer_intake():
         return jsonify({'done': True, 'result': {'anchors_correct': 3, 'daily_tasks': 5}})
 
+    @intake.route('/skip', methods=['POST'])
+    def skip_intake():
+        return jsonify({'done': True, 'redirect_url': '/x'})
+
     @intake.route('/start', methods=['POST'])
     def start_intake():
         return jsonify({'done': True, 'result': {'anchors_correct': 3}})
@@ -252,3 +256,18 @@ def test_block_sections_with_data(app):
         for name, fn in sec.VIEWS.items():
             out = fn(today - timedelta(days=7), today)
             assert isinstance(out, list) and out, name
+
+
+def test_intake_steps_are_logged(app):
+    uid = _mk_user(app)
+    c = app.test_client()
+    c.get(f'/login/{uid}')
+    c.post('/intake/answer', json={'qid': 'goal', 'key': 'x'})
+    c.post('/intake/answer', json={'qid': 'grade', 'key': 'y'})
+    c.post('/intake/skip', json={})
+    assert _count(app, 'intake_answer') == 2          # каждый ответ — отдельное событие
+    assert _count(app, 'intake_skip') == 1
+    with app.app_context():
+        qids = [r[0] for r in app.db.session.execute(app.db.text(
+            "SELECT json_extract(props, '$.qid') FROM funnel_events WHERE event='intake_answer' ORDER BY id")).fetchall()]
+    assert qids == ['goal', 'grade']

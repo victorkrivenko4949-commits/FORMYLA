@@ -22,7 +22,7 @@
 </style>
 {% endblock %}
 {% block content %}
-{% set filtered = section.kind == 'view' and section.slug not in ('env_flags','streaks','trial','curator','cohorts') %}
+{% set filtered = section.kind == 'view' and section.slug not in ('env_flags','streaks','trial','curator','cohorts','lost_users') %}
 <div class="st-wrap">
 <details class="st-mobile-menu" open id="st-navigation">
 <summary>Разделы статистики · {{ section.title }}</summary>

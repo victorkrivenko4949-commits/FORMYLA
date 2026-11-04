@@ -18,7 +18,7 @@
       <thead><tr>{% for h in b.header %}<th>{{ h }}</th>{% endfor %}</tr></thead>
       <tbody>
       {% for row in b.rows %}
-        <tr>{% for cell in row %}<td>{{ cell if cell is not none else '—' }}</td>{% endfor %}</tr>
+        <tr>{% for cell in row %}<td>{% if cell is mapping %}<a href="{{ cell.href }}">{{ cell.text }}</a>{% else %}{{ cell if cell is not none else '—' }}{% endif %}</td>{% endfor %}</tr>
       {% else %}
         <tr><td colspan="{{ b.header|length }}" class="st-muted">{{ b.empty or 'Нет данных.' }}</td></tr>
       {% endfor %}

@@ -55,6 +55,8 @@ SECTIONS = [
     dict(slug='overview', title='Сводка', group='Сводка', kind='view', ready=True),
     # Привлечение
     dict(slug='funnel', title='Воронка', group='Привлечение', kind='view', ready=True),
+    dict(slug='journey', title='Путь регистрации', group='Привлечение', kind='view', ready=True,
+         note='Когорта зарегистрированных: анкета, готовность, первая задача, возврат, paywall, оплата.'),
     dict(slug='sources', title='Источники', group='Привлечение', kind='view', ready=True),
     dict(slug='referrals', title='Рефералы', group='Привлечение', kind='view', ready=True,
          note='Кто кого привёл (users.invited_by), визиты по ?ref=u_<id>, оплаты приглашённых.'),
@@ -62,6 +64,8 @@ SECTIONS = [
     dict(slug='users', title='Пользователи', group='Активность', kind='embed', target='/admin/users', ready=True),
     dict(slug='sections', title='Разделы сайта', group='Активность', kind='embed', target='/admin/users/sections', ready=True),
     dict(slug='returns', title='Возвраты', group='Активность', kind='embed', target='/admin/users/returns', ready=True),
+    dict(slug='lost_users', title='Ушли и не вернулись', group='Активность', kind='view', ready=True,
+         note='Кого нет 3 / 7 / 14 дней и на какой странице их видели в последний раз.'),
     dict(slug='exit_pages', title='Где уходят', group='Активность', kind='view', ready=True,
          note='Страницы, на которых заканчиваются визиты, отскок и выходы из анкеты (журнал page_views).'),
     dict(slug='daily_tasks', title='Задачи дня', group='Активность', kind='embed', target='/admin/daily_tasks/dashboard', ready=True),
@@ -92,6 +96,8 @@ SECTIONS = [
     dict(slug='daily_pool', title='Пул задач дня', group='Продукт', kind='embed', target='/admin/daily_pool', ready=True),
     # Люди
     dict(slug='support', title='Поддержка', group='Люди', kind='embed', target='/admin/support', ready=True),
+    dict(slug='survey_behavior', title='Опросы и поведение', group='Люди', kind='view', ready=True,
+         note='Что делали после ответа в опросах: вернулись, решали задачи, оплатили.'),
     dict(slug='surveys', title='Опросы и оценки', group='Люди', kind='embed', target='/admin/users/surveys', ready=True),
     dict(slug='teachers_parents', title='Учителя и родители', group='Люди', kind='view', ready=True,
          note='Роли, визиты по меткам teacher/parent, связки (когда появятся).'),
@@ -310,7 +316,8 @@ def section(slug):
     # блочные разделы из routes/admin_stats_sections.py
     try:
         from routes import admin_stats_sections as sec
-        builder = sec.VIEWS.get(slug)
+        from routes import admin_stats_journey as jr
+        builder = sec.VIEWS.get(slug) or jr.VIEWS.get(slug)
     except Exception as e:  # noqa: BLE001
         logger.warning('admin_stats_sections import failed: %r', e)
         builder = None
@@ -325,23 +332,40 @@ def section(slug):
     return _render(s, 'admin/stats_blocks.html', blocks=blocks)
 
 
+def _delta(cur, prev):
+    """Изменение к прошлому периоду: (текст, класс) или None, если сравнивать не с чем."""
+    if not prev:
+        return None
+    pct = round(100.0 * (cur - prev) / prev)
+    return (f'{pct:+d}%', 'up' if pct > 0 else ('down' if pct < 0 else 'flat'))
+
+
 def view_overview(s):
     d_from, d_to, _ = period_from_request()
     today = msk_today()
     yesterday = today - timedelta(days=1)
     y_counts = funnel_counts(yesterday, yesterday)
     p_counts = funnel_counts(d_from, d_to)
+    span = (d_to - d_from).days + 1
+    prev_to = d_from - timedelta(days=1)
+    prev_from = prev_to - timedelta(days=span - 1)
+    prev_counts = funnel_counts(prev_from, prev_to)
     cards = []
     for ev, title in FUNNEL_STEPS:
         cards.append({'key': ev, 'title': title, 'yesterday': y_counts.get(ev, 0), 'period': p_counts.get(ev, 0),
+                      'prev': prev_counts.get(ev, 0), 'delta': _delta(p_counts.get(ev, 0), prev_counts.get(ev, 0)),
                       'link': '/admin/stats/funnel'})
     cards.insert(0, {'key': 'dau', 'title': 'DAU (время на сайте)', 'yesterday': dau(yesterday),
                      'period': None, 'link': '/admin/stats/users'})
     cards.append({'key': 'limit_hit', 'title': 'Упёрлись в лимит', 'yesterday': y_counts.get('limit_hit', 0),
-                  'period': p_counts.get('limit_hit', 0), 'link': '/admin/stats/limits'})
+                  'period': p_counts.get('limit_hit', 0), 'prev': prev_counts.get('limit_hit', 0),
+                  'delta': _delta(p_counts.get('limit_hit', 0), prev_counts.get('limit_hit', 0)),
+                  'link': '/admin/stats/limits'})
     rev_y = revenue(yesterday, yesterday)
     rev_p = revenue(d_from, d_to)
-    return _render(s, 'admin/stats_overview.html', cards=cards, rev_y=rev_y, rev_p=rev_p,
+    rev_prev = revenue(prev_from, prev_to)
+    return _render(s, 'admin/stats_overview.html', cards=cards, rev_y=rev_y, rev_p=rev_p, rev_prev=rev_prev,
+                   rev_delta=_delta(rev_p, rev_prev), prev_from=prev_from, prev_to=prev_to,
                    yesterday=yesterday, today=today)
 
 

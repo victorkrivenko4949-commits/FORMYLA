@@ -3,8 +3,8 @@
 <div class="st-cards">
 {% for c in cards %}<a class="st-card" href="{{ c.link }}?p={{ period }}&amp;from={{ d_from }}&amp;to={{ d_to }}">
 <div class="t">{% if c.key=='visit' %}Посетители с событием visit{% elif c.key=='payment_success' %}Пользователи с оплатой{% elif c.key=='limit_hit' %}Пользователи с событием лимита{% elif c.key=='dau' %}Активные по трекеру времени{% else %}{{ c.title }}{% endif %}</div>
-<div class="v">{{ c.yesterday }}</div><div class="s">Вчера, {{ yesterday.strftime('%d.%m') }}{% if c.period is not none %} · за период: {{ c.period }}{% endif %}</div></a>{% endfor %}
-<a class="st-card" href="/admin/stats/payments?p={{ period }}&amp;from={{ d_from }}&amp;to={{ d_to }}"><div class="t">Сумма событий оплаты, ₽</div><div class="v">{{ '%.0f'|format(rev_y) }}</div><div class="s">Вчера · за период: {{ '%.0f'|format(rev_p) }}. Не сверено с возвратами.</div></a>
+<div class="v">{{ c.yesterday }}</div><div class="s">Вчера, {{ yesterday.strftime('%d.%m') }}{% if c.period is not none %} · за период: {{ c.period }}{% if c.delta %} <b style="color:{{ '#4ade80' if c.delta[1]=='up' else ('#f87171' if c.delta[1]=='down' else '#94a3b8') }}">{{ c.delta[0] }}</b>{% endif %}{% if c.prev is defined %} (было {{ c.prev }}){% endif %}{% endif %}</div></a>{% endfor %}
+<a class="st-card" href="/admin/stats/payments?p={{ period }}&amp;from={{ d_from }}&amp;to={{ d_to }}"><div class="t">Сумма событий оплаты, ₽</div><div class="v">{{ '%.0f'|format(rev_y) }}</div><div class="s">Вчера · за период: {{ '%.0f'|format(rev_p) }}{% if rev_delta %} <b style="color:{{ '#4ade80' if rev_delta[1]=='up' else ('#f87171' if rev_delta[1]=='down' else '#94a3b8') }}">{{ rev_delta[0] }}</b>{% endif %} (было {{ '%.0f'|format(rev_prev) }}). Не сверено с возвратами.</div></a>
 </div>
 <div class="st-note">Сводка основана на собранных событиях и трекере времени. Нулевое значение может означать отсутствие данных, а не отсутствие действий: текущий сервер при ошибке запроса также возвращает пустую выборку. Эти показатели пока нельзя использовать как единственный финансовый отчёт. Разделы будущих функций могут открываться, но оставаться без данных.</div>
 {% endblock %}

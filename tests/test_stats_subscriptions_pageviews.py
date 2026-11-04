@@ -227,3 +227,96 @@ def test_subscriptions_requires_admin(app):
     c = app.test_client()
     c.get(f'/login/{uid}')
     assert c.get('/admin/stats/subscriptions').status_code == 403
+
+
+# ───────────── путь регистрации, опросы, ушедшие, сводка ─────────────
+def _prep_journey_tables(app):
+    with app.app_context():
+        for sql in (
+            "CREATE TABLE IF NOT EXISTS readiness_survey_answers (user_id INTEGER PRIMARY KEY, answer VARCHAR(16), answered_at DATETIME)",
+            "CREATE TABLE IF NOT EXISTS site_feedback (user_id INTEGER, rating INTEGER, feedback_text TEXT, answered_at DATETIME)",
+            "CREATE TABLE IF NOT EXISTS site_time_sections (user_id INTEGER, section VARCHAR(24), day DATE, seconds INTEGER)",
+            "CREATE TABLE IF NOT EXISTS site_time_beat (user_id INTEGER PRIMARY KEY, last_beat DATETIME, last_section VARCHAR(24), last_page VARCHAR(160))",
+        ):
+            app.db.session.execute(app.db.text(sql))
+        app.db.session.commit()
+    from services import funnel
+    funnel._tables_ready = False
+    with app.app_context():
+        funnel.ensure_tables()
+
+
+def _event(app, uid, event, props=None, ago_min=60):
+    import json
+    with app.app_context():
+        app.db.session.execute(app.db.text(
+            'INSERT INTO funnel_events (user_id, event, props, created_at) VALUES (:u,:e,:p,:t)'),
+            {'u': uid, 'e': event, 'p': json.dumps(props) if props else None,
+             't': datetime.utcnow() - timedelta(minutes=ago_min)})
+        app.db.session.commit()
+
+
+def _activity(app, uid, day, sec=100):
+    with app.app_context():
+        app.db.session.execute(app.db.text(
+            "INSERT INTO site_time_sections (user_id, section, day, seconds) VALUES (:u,'general',:d,:s)"),
+            {'u': uid, 'd': day, 's': sec})
+        app.db.session.commit()
+
+
+def test_journey_steps_stuck_and_intake_questions(app):
+    _prep_journey_tables(app)
+    a, b, c_ = _user(app, 'done'), _user(app, 'quit'), _user(app, 'idle')
+    _event(app, a, 'intake_answer', {'qid': 'goal'})
+    _event(app, a, 'intake_done')
+    _event(app, a, 'first_task_solved')
+    _event(app, b, 'intake_answer', {'qid': 'goal'}, ago_min=30)
+    _event(app, b, 'intake_answer', {'qid': 'grade'}, ago_min=20)
+    cl = _admin_client(app)
+    html = cl.get('/admin/stats/journey?p=today').get_data(as_text=True)
+    assert 'Путь когорты' in html and 'Прошли анкету' in html
+    assert 'Где бросают анкету' in html and '>grade<' in html     # b остановился на grade
+    stuck = cl.get('/admin/stats/journey?p=today&stop=intake_start').get_data(as_text=True)
+    assert 'quit' in stuck and 'done' not in stuck.split('Остановились на шаге')[1]
+
+
+def test_survey_behavior_groups(app):
+    _prep_journey_tables(app)
+    a, b = _user(app, 'ready'), _user(app, 'notready')
+    ans_day = datetime.utcnow() - timedelta(days=10)
+    with app.app_context():
+        for uid, ans in ((a, 'yes'), (b, 'not_yet')):
+            app.db.session.execute(app.db.text('INSERT INTO readiness_survey_answers VALUES (:u,:a,:t)'),
+                                   {'u': uid, 'a': ans, 't': ans_day})
+        app.db.session.commit()
+    _activity(app, a, (ans_day + timedelta(days=2)).date())      # a вернулся
+    _event(app, a, 'first_task_solved')
+    cl = _admin_client(app)
+    html = cl.get('/admin/stats/survey_behavior?p=30').get_data(as_text=True)
+    assert 'Готов заниматься каждый день' in html and 'Пока не готов' in html
+    assert '1 из 1 (100.0%)' in html and '0 из 1 (0.0%)' in html
+
+
+def test_lost_users_last_page(app):
+    _prep_journey_tables(app)
+    a, b = _user(app, 'gone1'), _user(app, 'active1')
+    old = (datetime.utcnow() - timedelta(days=9)).date()
+    _activity(app, a, old)
+    _activity(app, b, datetime.utcnow().date())
+    with app.app_context():
+        app.db.session.execute(app.db.text("INSERT INTO site_time_beat (user_id, last_beat, last_page) VALUES (:u,:t,'/intake?x=1')"),
+                               {'u': a, 't': datetime.utcnow() - timedelta(days=9)})
+        app.db.session.commit()
+    cl = _admin_client(app)
+    html = cl.get('/admin/stats/lost_users').get_data(as_text=True)
+    assert 'gone1' in html and 'active1' not in html and '/intake' in html
+    assert 'gone1' not in cl.get('/admin/stats/lost_users?days=14').get_data(as_text=True)
+
+
+def test_overview_shows_previous_period_delta(app):
+    _prep_journey_tables(app)
+    u = _user(app, 'x')
+    _event(app, u, 'signup', ago_min=60)
+    cl = _admin_client(app)
+    r = cl.get('/admin/stats/overview?p=7')
+    assert r.status_code == 200 and 'было' in r.get_data(as_text=True)
