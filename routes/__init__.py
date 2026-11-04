@@ -309,6 +309,7 @@ def _install(app) -> None:
     # Analytics is additive; keep all existing main installers above unchanged.
     for module_name, flag, installed in (
         ("services.funnel", "FUNNEL_ENABLED", "funnel_installed"),
+        ("services.page_views", "PAGE_VIEWS_ENABLED", "page_views_installed"),
         ("routes.admin_stats", "ADMIN_STATS_ENABLED", "admin_stats_installed"),
     ):
         if os.environ.get(flag, "1") == "0" or app.extensions.get(installed):

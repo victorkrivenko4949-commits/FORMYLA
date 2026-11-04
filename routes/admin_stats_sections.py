@@ -26,11 +26,13 @@ logger = logging.getLogger(__name__)
 
 PLAN_PRICES = {  # ₽ в месяц для MRR
     'premium_monthly': 390, 'premium_yearly': 2790 / 12,
+    'premium_intense': 800, 'premium_calm': 500,
     'student_month': 490, 'student_year': 2990 / 12,
     'family_month': 890, 'teacher_month': 1990,
 }
 PLAN_TITLES = {
     'premium_monthly': 'Premium / мес (legacy)', 'premium_yearly': 'Premium / год (legacy)',
+    'premium_intense': 'Premium «Работяга»', 'premium_calm': 'Premium «Спокойный»',
     'student_month': 'Ученик / мес', 'student_year': 'Ученик / год', 'family_month': 'Семья / мес',
     'teacher_month': 'Учитель / мес', 'probe_once': 'Пробник (разово)', 'sheet_once': 'PDF-листок (разово)',
     'method_week_once': 'Неделя метода (разово)', 'free': 'Бесплатный',
@@ -494,7 +496,56 @@ def curator(d_from: date, d_to: date):
     return blocks
 
 
+def exit_pages(d_from: date, d_to: date):
+    """Где заканчиваются визиты (пауза > 30 мин = конец). Источник — page_views."""
+    from services import page_views as pv
+    if not _has_table('page_views'):
+        return [{'type': 'note', 'text': 'Журнал просмотров ещё не создан: таблица page_views появится после '
+                 'выкладки и запуска сайта. Данные накапливаются только с этого момента.'}]
+    only_users = request.args.get('who', 'users') != 'all'
+    rows = pv.load_rows(d_from, d_to, only_users=only_users)
+    if rows is None:
+        return [{'type': 'note', 'text': 'Не удалось прочитать журнал просмотров.'}]
+    first = pv.first_view_at()
+    head = ('Журнал ведётся с ' + first.strftime('%d.%m.%Y %H:%M') + ' (UTC). ' if first else '') + \
+           ('Показаны только вошедшие пользователи; добавьте ?who=all в адрес, чтобы учесть гостей. '
+            if only_users else 'Показаны вошедшие пользователи и гости. ') + \
+           'Визит заканчивается, если дальше нет просмотров 30 минут. «Выход» — последняя страница визита.'
+    a = pv.analyze(rows)
+    if not a['visits']:
+        return [{'type': 'note', 'text': head}, {'type': 'note', 'text': 'За выбранный период просмотров нет.'}]
+
+    def share(x, y):
+        return _fmt_pct(_pct(x, y))
+
+    blocks = [{'type': 'note', 'text': head}]
+    avg_pages = round(a['views'] / a['visits'], 1)
+    bounce_total = sum(a['bounces'].values())
+    blocks.append({'type': 'cards', 'items': [
+        {'title': 'Визитов', 'value': a['visits'], 'sub': f"людей: {a['people']}"},
+        {'title': 'Просмотров страниц', 'value': a['views'], 'sub': f'в среднем {avg_pages} за визит'},
+        {'title': 'Отскок', 'value': share(bounce_total, a['visits']), 'sub': 'визиты из одной страницы'},
+        {'title': 'Визитов с анкетой', 'value': a['intake_visits'],
+         'sub': f"закончились внутри анкеты: {a['intake_left_inside']} ({share(a['intake_left_inside'], a['intake_visits'])})"},
+    ]})
+    top = a['exits'].most_common(40)
+    blocks.append({'type': 'table', 'title': 'Страницы выхода',
+                   'header': ['Страница', 'Просмотров', 'Выходов', 'Доля выходов', 'Людей ушло'],
+                   'rows': [[p, a['views_by_path'][p], n, share(n, a['views_by_path'][p]), a['exit_people'].get(p, 0)]
+                            for p, n in top]})
+    if a['intake_visits']:
+        blocks.append({'type': 'table', 'title': 'Визиты с анкетой: где закончились',
+                       'header': ['Страница', 'Визитов', 'Доля'],
+                       'rows': [[p, n, share(n, a['intake_visits'])] for p, n in a['intake_exit'].most_common(20)]})
+    ent = [(p, n, a['bounces'].get(p, 0)) for p, n in a['entries'].most_common(20)]
+    blocks.append({'type': 'table', 'title': 'Входные страницы и отскок',
+                   'header': ['Страница входа', 'Визитов', 'Ушли сразу', 'Доля'],
+                   'rows': [[p, n, b, share(b, n)] for p, n, b in ent]})
+    return blocks
+
+
 VIEWS = {
+    'exit_pages': exit_pages,
     'subscriptions': subscriptions, 'payments': payments, 'founders': founders, 'trial': trial,
     'limits': limits, 'paywall': paywall, 'cohorts': cohorts, 'streaks': streaks, 'ai_usage': ai_usage,
     'drawings_method_week': drawings_method_week, 'referrals': referrals, 'teachers_parents': teachers_parents,

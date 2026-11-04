@@ -1,0 +1,40 @@
+{% extends "admin/stats_base.html" %}
+{% block stats_content %}
+{% set qs = '&p=' ~ period ~ '&from=' ~ d_from ~ '&to=' ~ d_to %}
+<div class="st-cards" style="margin-bottom:18px;">
+  <div class="st-card"><div class="t">Платных сейчас</div><div class="v">{{ cards.paid }}</div><div class="s">активные, не триал и не бета</div></div>
+  <div class="st-card"><div class="t">На триале</div><div class="v">{{ cards.trial }}</div></div>
+  <div class="st-card"><div class="t">Бета-доступ</div><div class="v">{{ cards.beta }}</div></div>
+  <div class="st-card"><div class="t">MRR, ₽ (оценка)</div><div class="v">{{ '{:,.0f}'.format(cards.mrr).replace(',', ' ') }}</div><div class="s">платные × цена тарифа в месяц</div></div>
+  <div class="st-card"><div class="t">Новых за период</div><div class="v">{{ cards.new }}</div><div class="s">начало текущей подписки в периоде</div></div>
+  <div class="st-card"><div class="t">Ушли за период</div><div class="v">{{ cards.churn }}</div><div class="s">подписка закончилась или отменена в периоде</div></div>
+  <div class="st-card"><div class="t">Оплачено всего, ₽</div><div class="v">{{ '{:,.0f}'.format(cards.revenue).replace(',', ' ') }}</div><div class="s">по строкам с payment_id</div></div>
+</div>
+
+<div class="st-period" style="margin:10px 0;">
+  {% for key, title in filters %}<a href="?f={{ key }}&q={{ q }}{{ qs }}" class="{% if flt == key %}active{% endif %}">{{ title }} · {{ counts[key] }}</a>{% endfor %}
+  <form method="get"><input type="hidden" name="f" value="{{ flt }}"><input type="hidden" name="p" value="{{ period }}"><input type="hidden" name="from" value="{{ d_from }}"><input type="hidden" name="to" value="{{ d_to }}">
+    <input type="search" name="q" value="{{ q }}" placeholder="Ник или ID" aria-label="Поиск по нику или ID"><button type="submit">Найти</button></form>
+  <a href="?f={{ flt }}&q={{ q }}{{ qs }}&csv=1">CSV</a>
+</div>
+
+<table class="st">
+  <thead><tr><th>Пользователь</th><th>Тариф</th><th>Тип</th><th>Статус</th><th>Начало</th><th>Действует до</th><th>Осталось дней</th><th>Оплачено, ₽</th><th>Платежей</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td><a href="/admin/base/user/{{ r.user_id }}" target="_blank">{{ r.nick or 'Без ника' }}</a> <span class="st-muted">#{{ r.user_id }}</span></td>
+      <td>{{ r.plan_title }}</td><td>{{ r.kind_title }}</td><td>{{ r.state_title }}</td>
+      <td>{{ r.started.strftime('%d.%m.%Y') if r.started else '—' }}</td>
+      <td>{{ r.expires.strftime('%d.%m.%Y') if r.expires else ('без срока' if r.state in ('active', 'expiring') else '—') }}</td>
+      <td>{{ r.days_left if r.days_left is not none else '—' }}</td>
+      <td>{{ '{:,.0f}'.format(r.paid_total).replace(',', ' ') }}</td><td>{{ r.paid_count }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="9" class="st-muted">Нет подписок по выбранному фильтру.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if total_shown > rows|length %}<p class="st-muted">Показаны первые {{ rows|length }} из {{ total_shown }}. Полный список — в CSV.</p>{% endif %}
+<p class="st-muted">Одна строка на пользователя — его текущая подписка. «Оплачено» считается по подпискам с payment_id (без беты и триала). MRR: годовые делятся на 12. Сортировка: сначала те, у кого срок ближе к концу.</p>
+{% endblock %}

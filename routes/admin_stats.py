@@ -62,6 +62,8 @@ SECTIONS = [
     dict(slug='users', title='Пользователи', group='Активность', kind='embed', target='/admin/users', ready=True),
     dict(slug='sections', title='Разделы сайта', group='Активность', kind='embed', target='/admin/users/sections', ready=True),
     dict(slug='returns', title='Возвраты', group='Активность', kind='embed', target='/admin/users/returns', ready=True),
+    dict(slug='exit_pages', title='Где уходят', group='Активность', kind='view', ready=True,
+         note='Страницы, на которых заканчиваются визиты, отскок и выходы из анкеты (журнал page_views).'),
     dict(slug='daily_tasks', title='Задачи дня', group='Активность', kind='embed', target='/admin/daily_tasks/dashboard', ready=True),
     dict(slug='streaks', title='Серии и XP', group='Активность', kind='view', ready=True,
          note='Распределение серий (streak_records), доля ≥ 7 дней — контроль правила серии для Free с 3 задачами.'),
@@ -376,6 +378,117 @@ def view_sources(s):
         GROUP BY 1 ORDER BY 2 DESC LIMIT 30
     """, s=_utc_bounds(d_from, d_to)[0], e=_utc_bounds(d_from, d_to)[1])
     return _render(s, 'admin/stats_sources.html', rows=rows, refs=refs)
+
+
+SUB_FILTERS = (
+    ('active', 'Активные'), ('expiring', 'Истекают за 7 дней'), ('expired', 'Истекли'),
+    ('cancelled', 'Отменены'), ('all', 'Все'),
+)
+SUB_KINDS = {'paid': 'Платная', 'trial': 'Триал', 'beta': 'Бета'}
+SUB_STATES = {'active': 'Активна', 'expiring': 'Истекает', 'expired': 'Истекла', 'cancelled': 'Отменена'}
+
+
+def _dt(v):
+    if isinstance(v, datetime):
+        return v
+    try:
+        return datetime.fromisoformat(str(v).replace('T', ' ')[:26]) if v else None
+    except Exception:
+        return None
+
+
+def subscription_rows(now: datetime | None = None):
+    """По одной строке на пользователя: текущая подписка + суммы оплат."""
+    from routes.admin_stats_sections import PLAN_PRICES, PLAN_TITLES
+    now = now or datetime.utcnow()
+    subs = _q("""SELECT s.id, s.user_id, u.nickname, s.plan, s.status, s.started_at, s.expires_at,
+                        s.payment_id, s.amount_rub, s.is_beta_access, s.created_at
+                 FROM subscriptions s LEFT JOIN users u ON u.id = s.user_id
+                 ORDER BY s.id LIMIT 50000""")
+    trial_col = _q("SELECT s.is_trial FROM subscriptions s LIMIT 1")  # [] если колонки нет / нет таблицы
+    trials = {}
+    if trial_col:
+        trials = {int(r[0]): bool(r[1]) for r in _q("SELECT id, is_trial FROM subscriptions")}
+    by_user = {}
+    for sid, uid, nick, plan, status, started, expires, pay_id, amount, beta, created in subs:
+        if uid is None:
+            continue
+        d = by_user.setdefault(int(uid), {'nick': nick, 'subs': []})
+        d['subs'].append(dict(id=int(sid), plan=str(plan), status=str(status), started=_dt(started or created),
+                              expires=_dt(expires), pay_id=pay_id, amount=int(amount or 0),
+                              beta=bool(beta), trial=trials.get(int(sid), False)))
+    rows = []
+    for uid, d in by_user.items():
+        lst = d['subs']
+        live = [x for x in lst if x['status'] == 'active' and (x['expires'] is None or x['expires'] > now)]
+        cur = max(live, key=lambda x: x['id']) if live else max(lst, key=lambda x: x['id'])
+        paid = [x for x in lst if x['pay_id'] and not x['beta'] and not x['trial']]
+        if live:
+            left = (cur['expires'] - now).days if cur['expires'] else None
+            state = 'expiring' if (cur['expires'] and cur['expires'] <= now + timedelta(days=7)) else 'active'
+        else:
+            left = None
+            state = 'cancelled' if cur['status'] == 'cancelled' else 'expired'
+        kind = 'trial' if cur['trial'] else ('beta' if cur['beta'] else 'paid')
+        price = PLAN_PRICES.get(cur['plan'], 0)
+        rows.append(dict(user_id=uid, nick=d['nick'] or '', plan=cur['plan'], plan_title=PLAN_TITLES.get(cur['plan'], cur['plan']),
+                         kind=kind, kind_title=SUB_KINDS[kind], state=state, state_title=SUB_STATES[state],
+                         started=cur['started'], expires=cur['expires'], days_left=left,
+                         paid_total=sum(x['amount'] for x in paid), paid_count=len(paid),
+                         mrr=price if (kind == 'paid' and state in ('active', 'expiring')) else 0))
+    # триал, выданный через users.trial_until без строки в subscriptions
+    for uid, nick, tu in _q("SELECT id, nickname, trial_until FROM users WHERE trial_until IS NOT NULL"):
+        uid, tu = int(uid), _dt(tu)
+        if uid in by_user or tu is None:
+            continue
+        active = tu > now
+        rows.append(dict(user_id=uid, nick=nick or '', plan='trial', plan_title='Триал', kind='trial', kind_title='Триал',
+                         state='expiring' if active and tu <= now + timedelta(days=7) else ('active' if active else 'expired'),
+                         state_title='', started=None, expires=tu, days_left=(tu - now).days if active else None,
+                         paid_total=0, paid_count=0, mrr=0))
+        rows[-1]['state_title'] = SUB_STATES[rows[-1]['state']]
+    return rows
+
+
+def view_subscriptions(s):
+    d_from, d_to, _ = period_from_request()
+    now = datetime.utcnow()
+    rows = subscription_rows(now)
+    flt = request.args.get('f', 'active')
+    if flt not in dict(SUB_FILTERS):
+        flt = 'active'
+    q = (request.args.get('q') or '').strip().lower()
+    start, end = _utc_bounds(d_from, d_to)
+
+    def live(r):
+        return r['state'] in ('active', 'expiring')
+
+    counts = {'active': sum(1 for r in rows if live(r)), 'expiring': sum(1 for r in rows if r['state'] == 'expiring'),
+              'expired': sum(1 for r in rows if r['state'] == 'expired'),
+              'cancelled': sum(1 for r in rows if r['state'] == 'cancelled'), 'all': len(rows)}
+    cards = dict(
+        paid=sum(1 for r in rows if live(r) and r['kind'] == 'paid'),
+        trial=sum(1 for r in rows if live(r) and r['kind'] == 'trial'),
+        beta=sum(1 for r in rows if live(r) and r['kind'] == 'beta'),
+        mrr=sum(r['mrr'] for r in rows),
+        new=sum(1 for r in rows if r['started'] and start <= r['started'] < end),
+        churn=sum(1 for r in rows if r['state'] in ('expired', 'cancelled') and r['expires'] and start <= r['expires'] < end),
+        revenue=sum(r['paid_total'] for r in rows),
+    )
+    shown = [r for r in rows if (live(r) if flt == 'active' else (r['state'] == flt if flt != 'all' else True))]
+    if q:
+        shown = [r for r in shown if q in r['nick'].lower() or q == str(r['user_id'])]
+    shown.sort(key=lambda r: (r['days_left'] is None, r['days_left'] if r['days_left'] is not None else 0, -r['user_id']))
+    if request.args.get('csv') == '1':
+        return csv_response(
+            [(r['user_id'], r['nick'], r['plan_title'], r['kind_title'], r['state_title'],
+              r['started'].strftime('%Y-%m-%d') if r['started'] else '',
+              r['expires'].strftime('%Y-%m-%d') if r['expires'] else '',
+              r['days_left'] if r['days_left'] is not None else '', r['paid_total'], r['paid_count']) for r in shown],
+            ('user_id', 'nickname', 'plan', 'type', 'status', 'started', 'expires', 'days_left', 'paid_rub', 'payments'),
+            'subscriptions.csv')
+    return _render(s, 'admin/stats_subscriptions.html', rows=shown[:500], total_shown=len(shown), cards=cards,
+                   counts=counts, flt=flt, filters=SUB_FILTERS, q=q)
 
 
 def view_env_flags(s):
