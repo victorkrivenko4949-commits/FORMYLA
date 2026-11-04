@@ -25,7 +25,6 @@ from sqlalchemy import text
 logger = logging.getLogger(__name__)
 
 PLAN_PRICES = {  # ₽ в месяц для MRR
-    'premium_intense': 800, 'premium_calm': 500,
     'premium_monthly': 390, 'premium_yearly': 2790 / 12,
     'premium_intense': 800, 'premium_calm': 500,
     'student_month': 490, 'student_year': 2990 / 12,
@@ -34,7 +33,6 @@ PLAN_PRICES = {  # ₽ в месяц для MRR
 PLAN_TITLES = {
     'premium_intense': 'Работяга / мес (800 ₽)', 'premium_calm': 'Спокойный / мес (500 ₽)',
     'premium_monthly': 'Premium / мес (legacy)', 'premium_yearly': 'Premium / год (legacy)',
-    'premium_intense': 'Premium «Работяга»', 'premium_calm': 'Premium «Спокойный»',
     'student_month': 'Ученик / мес', 'student_year': 'Ученик / год', 'family_month': 'Семья / мес',
     'teacher_month': 'Учитель / мес', 'probe_once': 'Пробник (разово)', 'sheet_once': 'PDF-листок (разово)',
     'method_week_once': 'Неделя метода (разово)', 'free': 'Бесплатный',
