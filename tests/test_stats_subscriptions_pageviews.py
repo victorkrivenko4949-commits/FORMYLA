@@ -86,6 +86,12 @@ def app(tmp_path, monkeypatch):
     page_views.install(app)
     from routes import admin_stats
     admin_stats.install(app)
+    # user_returns мог быть импортирован раньше с настоящим models.db
+    try:
+        import services.user_returns as _ur
+        monkeypatch.setattr(_ur, 'db', db)
+    except Exception:
+        pass
     app.User, app.db = User, db
     return app
 
@@ -342,3 +348,66 @@ def test_spark_helper():
     assert _spark([0, 0, 0]) is None and _spark([5]) is None
     pts = _spark([0, 5, 10])
     assert len(pts.split()) == 3 and pts.split()[0].startswith('0.0,')
+
+
+# ───────────── бывшие встроенные страницы: теперь разделы с периодом ─────────────
+def _reset_returns_cache():
+    from services import user_returns
+    user_returns._cache.update(ts=0, events=None, sources=None)
+
+
+def test_users_section_period_csv_and_activity(app):
+    _prep_journey_tables(app)
+    with app.app_context():
+        for col, typ in (('last_login', 'DATETIME'), ('login_count', 'INTEGER'),
+                         ('experience_points', 'INTEGER'), ('site_seconds_total', 'INTEGER')):
+            app.db.session.execute(app.db.text(f'ALTER TABLE users ADD COLUMN {col} {typ}'))
+        app.db.session.commit()
+    kid = _user(app, 'newbie')
+    with app.app_context():
+        app.db.session.execute(app.db.text('UPDATE users SET experience_points = 77, site_seconds_total = 600 WHERE id = :i'), {'i': kid})
+        app.db.session.execute(app.db.text('INSERT INTO page_views (user_id, path, created_at) VALUES (:u, :p, :t)'),
+                               {'u': kid, 'p': '/', 't': datetime.utcnow()})
+        app.db.session.commit()
+    _reset_returns_cache()
+    cl = _admin_client(app)
+    r = cl.get('/admin/stats/users?p=7')
+    html = r.get_data(as_text=True)
+    assert r.status_code == 200 and 'newbie' in html and 'Топ-10 по XP' in html and 'Средний DAU' in html
+    assert '<iframe' not in html
+    old = cl.get('/admin/stats/users?p=custom&from=2020-01-01&to=2020-01-02').get_data(as_text=True)
+    assert 'newbie' not in old.split('Зарегистрировались за период (')[1]
+    csv = cl.get('/admin/stats/users?p=7&csv=1')
+    assert csv.mimetype == 'text/csv' and 'newbie' in csv.get_data(as_text=True)
+
+
+def test_returns_section_counts_second_visit(app):
+    _prep_journey_tables(app)
+    kid, other = _user(app, 'back'), _user(app, 'once')
+    now = datetime.utcnow()
+    with app.app_context():
+        for uid, mins in ((kid, 300), (kid, 10), (other, 20)):   # у kid два визита с паузой > 60 мин
+            app.db.session.execute(app.db.text('INSERT INTO page_views (user_id, path, created_at) VALUES (:u,:p,:t)'),
+                                   {'u': uid, 'p': '/', 't': now - timedelta(minutes=mins)})
+        app.db.session.commit()
+    _reset_returns_cache()
+    cl = _admin_client(app)
+    html = cl.get('/admin/stats/returns?p=7').get_data(as_text=True)
+    assert 'вернулись 2-й раз' in html and 'Вернулись хотя бы раз' in html and 'back' in html
+    assert '<iframe' not in html
+
+
+def test_surveys_section_period_filter(app):
+    _prep_journey_tables(app)
+    a, b = _user(app, 'rater'), _user(app, 'oldrater')
+    now = datetime.utcnow()
+    with app.app_context():
+        app.db.session.execute(app.db.text("INSERT INTO site_feedback VALUES (:u, 5, 'супер', :t)"), {'u': a, 't': now})
+        app.db.session.execute(app.db.text("INSERT INTO site_feedback VALUES (:u, 1, 'плохо', :t)"), {'u': b, 't': now - timedelta(days=60)})
+        app.db.session.execute(app.db.text("INSERT INTO readiness_survey_answers VALUES (:u, 'yes', :t)"), {'u': a, 't': now})
+        app.db.session.commit()
+    cl = _admin_client(app)
+    html = cl.get('/admin/stats/surveys?p=7').get_data(as_text=True)
+    assert 'rater' in html and 'супер' in html and 'плохо' not in html
+    assert 'Да, готов!' in html
+    assert 'плохо' in cl.get(f'/admin/stats/surveys?p=custom&from={(datetime.utcnow() - timedelta(days=90)).date()}&to={datetime.utcnow().date()}').get_data(as_text=True)

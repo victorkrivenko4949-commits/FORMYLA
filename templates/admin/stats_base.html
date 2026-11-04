@@ -48,7 +48,7 @@
 <div class="st-period" aria-label="Период отчёта">
 <a href="?p=today" class="{% if period=='today' %}active{% endif %}">Сегодня</a><a href="?p=7" class="{% if period=='7' %}active{% endif %}">7 дней</a><a href="?p=30" class="{% if period=='30' %}active{% endif %}">30 дней</a>
 <form method="get"><input type="hidden" name="p" value="custom"><label for="st-from">С</label><input id="st-from" type="date" name="from" value="{{ d_from }}" required><label for="st-to">По</label><input id="st-to" type="date" name="to" value="{{ d_to }}" required><button type="submit">Показать</button></form>
-{% if section.slug in ('funnel','sources') %}<a href="?p={{ period }}&amp;from={{ d_from }}&amp;to={{ d_to }}&amp;csv=1">CSV</a>{% endif %}
+{% if section.slug in ('funnel','sources','users') %}<a href="?p={{ period }}&amp;from={{ d_from }}&amp;to={{ d_to }}&amp;csv=1">CSV</a>{% endif %}
 </div>
 {% endif %}
 </div>

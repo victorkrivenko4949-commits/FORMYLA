@@ -61,9 +61,9 @@ SECTIONS = [
     dict(slug='referrals', title='Рефералы', group='Привлечение', kind='view', ready=True,
          note='Кто кого привёл (users.invited_by), визиты по ?ref=u_<id>, оплаты приглашённых.'),
     # Активность
-    dict(slug='users', title='Пользователи', group='Активность', kind='embed', target='/admin/users', ready=True),
+    dict(slug='users', title='Пользователи', group='Активность', kind='view', ready=True),
     dict(slug='sections', title='Разделы сайта', group='Активность', kind='embed', target='/admin/users/sections', ready=True),
-    dict(slug='returns', title='Возвраты', group='Активность', kind='embed', target='/admin/users/returns', ready=True),
+    dict(slug='returns', title='Возвраты', group='Активность', kind='view', ready=True),
     dict(slug='lost_users', title='Ушли и не вернулись', group='Активность', kind='view', ready=True,
          note='Кого нет 3 / 7 / 14 дней и на какой странице их видели в последний раз.'),
     dict(slug='exit_pages', title='Где уходят', group='Активность', kind='view', ready=True,
@@ -98,7 +98,7 @@ SECTIONS = [
     dict(slug='support', title='Поддержка', group='Люди', kind='embed', target='/admin/support', ready=True),
     dict(slug='survey_behavior', title='Опросы и поведение', group='Люди', kind='view', ready=True,
          note='Что делали после ответа в опросах: вернулись, решали задачи, оплатили.'),
-    dict(slug='surveys', title='Опросы и оценки', group='Люди', kind='embed', target='/admin/users/surveys', ready=True),
+    dict(slug='surveys', title='Опросы и оценки', group='Люди', kind='view', ready=True),
     dict(slug='teachers_parents', title='Учителя и родители', group='Люди', kind='view', ready=True,
          note='Роли, визиты по меткам teacher/parent, связки (когда появятся).'),
     # Система
@@ -355,7 +355,8 @@ def section(slug):
     try:
         from routes import admin_stats_sections as sec
         from routes import admin_stats_journey as jr
-        builder = sec.VIEWS.get(slug) or jr.VIEWS.get(slug)
+        from routes import admin_stats_native as nat
+        builder = sec.VIEWS.get(slug) or jr.VIEWS.get(slug) or nat.VIEWS.get(slug)
     except Exception as e:  # noqa: BLE001
         logger.warning('admin_stats_sections import failed: %r', e)
         builder = None
@@ -367,6 +368,8 @@ def section(slug):
     except Exception as e:  # noqa: BLE001
         logger.exception('admin_stats section %s failed', slug)
         blocks = [{'type': 'note', 'text': f'Раздел временно недоступен: {e!r}'}]
+    if isinstance(blocks, Response):   # builder отдал CSV
+        return blocks
     return _render(s, 'admin/stats_blocks.html', blocks=blocks)
 
 
