@@ -277,8 +277,8 @@ def lost_users(d_from: date, d_to: date):
         return [{'type': 'note', 'text': 'Нет таблицы учёта времени (site_time_sections).'}]
     last = {int(u): _d(d) for u, d in rows if u is not None and _d(d)}
     lost = {u: d for u, d in last.items() if (today - d).days >= days}
-    switch = {'type': 'table', 'title': 'Порог «ушёл»', 'header': ['Нет активности', '', ''],
-              'rows': [[{'text': f'{n} дн.' + (' ✓' if n == days else ''), 'href': f'?days={n}'} for n in (3, 7, 14)]]}
+    switch = {'type': 'tabs', 'title': 'Нет активности',
+              'items': [{'text': f'{n} дн.', 'active': n == days, 'href': f'?days={n}'} for n in (3, 7, 14)]}
     if not lost:
         return [switch, {'type': 'note', 'text': 'Нет пользователей с такой паузой.'}]
     pages = _last_pages(list(lost))

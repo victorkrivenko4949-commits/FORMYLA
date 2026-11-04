@@ -24,6 +24,8 @@
       {% endfor %}
       </tbody>
     </table>
+  {% elif b.type == 'tabs' %}
+    <div class="st-tabs" role="group" aria-label="{{ b.title or 'Переключатель' }}">{% if b.title %}<span class="lbl">{{ b.title }}:</span>{% endif %}{% for it in b['items'] %}<a href="{{ it.href }}" class="{% if it.active %}active{% endif %}"{% if it.active %} aria-current="true"{% endif %}>{{ it.text }}</a>{% endfor %}</div>
   {% elif b.type == 'bar' %}
     {% if b.title %}<h3 style="margin:18px 0 8px;color:#e2e8f0;font-size:16px;">{{ b.title }}</h3>{% endif %}
     <div style="background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 16px;margin-bottom:18px;">

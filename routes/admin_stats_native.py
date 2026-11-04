@@ -97,9 +97,9 @@ def returns(d_from: date, d_to: date):
                      exact.get(n, 0), at_least, _fmt_pct(_pct(at_least, total))])
     top = sorted(visits.items(), key=lambda kv: -kv[1])[:20]
     nicks = _nicks([u for u, _ in top])
-    switch = {'type': 'table', 'title': 'Пауза, после которой начинается новый визит', 'header': ['', '', '', ''],
-              'rows': [[{'text': f'{g} мин' + (' ✓' if g == gap else ''),
-                         'href': f'?gap={g}&p={request.args.get("p", "7")}&from={d_from}&to={d_to}'} for g in GAPS]]}
+    switch = {'type': 'tabs', 'title': 'Пауза между визитами',
+              'items': [{'text': f'{g} мин', 'active': g == gap,
+                         'href': f'?gap={g}&p={request.args.get("p", "7")}&from={d_from}&to={d_to}'} for g in GAPS]}
     return [
         switch,
         {'type': 'cards', 'items': [
