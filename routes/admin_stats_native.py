@@ -46,7 +46,7 @@ def _nicks(ids) -> dict:
 
 
 def _user_cell(uid, nicks):
-    return {'text': nicks.get(uid) or 'Без ника', 'href': f'/admin/base/user/{uid}'}
+    return {'text': nicks.get(uid) or 'Без ника', 'href': f'/admin/stats/person?id={uid}'}
 
 
 def _fmt_dt(v):
@@ -142,7 +142,7 @@ def surveys(d_from: date, d_to: date):
                                         {'title': 'Средняя оценка', 'value': avg, 'sub': 'из 5'},
                                         {'title': 'Ожидают ответа', 'value': pending, 'sub': 'за всё время'}]},
             {'type': 'table', 'title': 'Опрос «Как тебе сайт?»: оценки', 'header': ['Оценка', 'Ответов', 'Доля'], 'rows': table},
-            {'type': 'table', 'title': 'Последние отзывы (до 100)', 'header': ['Пользователь', 'Оценка', 'Отзыв', 'Когда (UTC)'],
+            {'type': 'table', 'left': True, 'title': 'Последние отзывы (до 100)', 'header': ['Пользователь', 'Оценка', 'Отзыв', 'Когда (UTC)'],
              'rows': [[_user_cell(int(u), nicks), f'{r} / 5', t or '—', _fmt_dt(a)] for u, r, t, a in rows[:100]],
              'empty': 'Ответов за период нет.'},
         ]
@@ -157,7 +157,7 @@ def surveys(d_from: date, d_to: date):
         blocks += [
             {'type': 'cards', 'items': [{'title': 'Ответили «Готов заниматься каждый день?»', 'value': total, 'sub': 'за период'}]},
             {'type': 'table', 'title': 'Опрос «Готов заниматься каждый день?»', 'header': ['Ответ', 'Ответов', 'Доля'], 'rows': table},
-            {'type': 'table', 'title': 'Последние ответы (до 100)', 'header': ['Пользователь', 'Ответ', 'Когда (UTC)'],
+            {'type': 'table', 'left': True, 'title': 'Последние ответы (до 100)', 'header': ['Пользователь', 'Ответ', 'Когда (UTC)'],
              'rows': [[_user_cell(int(u), nicks), READINESS.get(a, a), _fmt_dt(t)] for u, a, t in rows[:100]],
              'empty': 'Ответов за период нет.'},
         ]
@@ -178,7 +178,7 @@ def users(d_from: date, d_to: date):
     if new_rows is None:
         return [{'type': 'note', 'text': 'Не удалось прочитать таблицу users.'}]
 
-    table_rows = [[{'text': r[1] or 'Без ника', 'href': f'/admin/base/user/{r[0]}'}, r[0], _fmt_dt(r[2]), _fmt_dt(r[3]),
+    table_rows = [[{'text': r[1] or 'Без ника', 'href': f'/admin/stats/person?id={r[0]}'}, r[0], _fmt_dt(r[2]), _fmt_dt(r[3]),
                    r[4] or 0, r[5] or 0, round((r[6] or 0) / 60, 1)] for r in new_rows]
     if request.args.get('csv') == '1':
         from routes.admin_stats import csv_response
@@ -224,7 +224,7 @@ def users(d_from: date, d_to: date):
         guest_q = ' AND COALESCE(is_guest, FALSE) = FALSE' if guest else ''
         top = _q(f'SELECT id, nickname, {col} FROM users WHERE {col} > 0{guest_q} ORDER BY {col} DESC LIMIT 10') or []
         blocks.append({'type': 'table', 'title': title + ' (за всё время)', 'header': ['Пользователь', 'ID', 'Значение'],
-                       'rows': [[{'text': n or 'Без ника', 'href': f'/admin/base/user/{i}'}, i, fmt(v)] for i, n, v in top]})
+                       'rows': [[{'text': n or 'Без ника', 'href': f'/admin/stats/person?id={i}'}, i, fmt(v)] for i, n, v in top]})
     blocks.append({'type': 'table', 'title': f'Зарегистрировались за период (до {LIMIT_USERS}; полный список — CSV)',
                    'header': ['Пользователь', 'ID', 'Регистрация (UTC)', 'Последний вход (UTC)', 'Входов', 'XP', 'Минут на сайте'],
                    'rows': table_rows[:LIMIT_USERS], 'empty': 'Регистраций за период нет.'})

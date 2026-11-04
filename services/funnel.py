@@ -276,6 +276,11 @@ def _on_login(sender, user, **extra):
                 'UPDATE users SET acq_source = :s, acq_ref = :r WHERE id = :u AND acq_source IS NULL'
             ), {'s': acq.get('source') or 'direct_visit', 'r': acq.get('ref'), 'u': user.id})
             _db().session.commit()
+            try:  # PAGE_VIEWS_V1: путь гостя до регистрации → к аккаунту
+                from services.page_views import link_anon_to_user
+                link_anon_to_user(session.get('anon_id'), user.id)
+            except Exception as e:  # noqa: BLE001
+                logger.debug('funnel: link_anon_to_user: %r', e)
     except Exception as e:
         _db().session.rollback()
         logger.warning('funnel._on_login: %r', e)

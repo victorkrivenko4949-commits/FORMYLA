@@ -411,3 +411,101 @@ def test_surveys_section_period_filter(app):
     assert 'rater' in html and 'супер' in html and 'плохо' not in html
     assert 'Да, готов!' in html
     assert 'плохо' in cl.get(f'/admin/stats/surveys?p=custom&from={(datetime.utcnow() - timedelta(days=90)).date()}&to={datetime.utcnow().date()}').get_data(as_text=True)
+
+
+# ───────────── точечное отслеживание: причины ухода, путь человека, оплата ─────────────
+def _yk_table(app):
+    with app.app_context():
+        app.db.session.execute(app.db.text(
+            "CREATE TABLE IF NOT EXISTS yookassa_payments (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id VARCHAR(64), "
+            "payment_id VARCHAR(128), user_id INTEGER, item_code VARCHAR(64), amount_rub NUMERIC, status VARCHAR(32), "
+            "confirmation_url TEXT, created_at TIMESTAMP, paid_at TIMESTAMP)"))
+        app.db.session.commit()
+
+
+def _pay_try(app, uid, status='canceled', ago_min=30):
+    with app.app_context():
+        app.db.session.execute(app.db.text(
+            "INSERT INTO yookassa_payments (order_id, user_id, item_code, amount_rub, status, created_at) "
+            "VALUES (:o, :u, 'premium_calm', 500, :s, :t)"),
+            {'o': f'o{uid}{status}', 'u': uid, 's': status, 't': datetime.utcnow() - timedelta(minutes=ago_min)})
+        app.db.session.commit()
+
+
+def test_signals_rules(app):
+    _prep_journey_tables(app)
+    _yk_table(app)
+    a, b, c_, d = _user(app, 'payquit'), _user(app, 'quiz'), _user(app, 'limiter'), _user(app, 'quiet')
+    _pay_try(app, a)
+    _event(app, b, 'intake_answer', {'qid': 'grade'})
+    _event(app, c_, 'limit_shown')
+    _event(app, d, 'first_task_solved')
+    for day in range(3):
+        _activity(app, d, (datetime.utcnow() - timedelta(days=day + 1)).date())
+    from routes.admin_stats_person import signals_for, reason_text
+    with app.test_request_context():
+        sig = signals_for([a, b, c_, d])
+    assert sig[a]['primary'] == 'checkout_abandoned'
+    assert sig[b]['primary'] == 'intake_quit' and 'grade' in reason_text(sig[b])
+    assert sig[c_]['primary'] == 'limit_no_pay'
+    assert sig[d]['primary'] == 'unknown'
+
+
+def test_person_page_timeline_and_reason(app):
+    _prep_journey_tables(app)
+    _yk_table(app)
+    uid = _user(app, 'tracked')
+    _event(app, uid, 'intake_answer', {'qid': 'goal'}, ago_min=50)
+    _pay_try(app, uid, ago_min=10)
+    with app.app_context():
+        app.db.session.execute(app.db.text("INSERT INTO page_views (user_id, path, created_at) VALUES (:u, '/subscribe', :t)"),
+                               {'u': uid, 't': datetime.utcnow() - timedelta(minutes=20)})
+        app.db.session.commit()
+    cl = _admin_client(app)
+    html = cl.get(f'/admin/stats/person?id={uid}').get_data(as_text=True)
+    assert 'tracked' in html and 'Лента действий' in html
+    assert '/subscribe' in html and 'вопрос: goal' in html and 'Платёж ЮKassa' in html
+    assert 'Вероятная причина: Начал оплату и не оплатил' in html
+    by_nick = cl.get('/admin/stats/person?q=track').get_data(as_text=True)
+    assert 'Лента действий' in by_nick
+    assert 'Введите ID или ник' in cl.get('/admin/stats/person').get_data(as_text=True)
+
+
+def test_paywall_path_and_abandoned_list(app):
+    _prep_journey_tables(app)
+    _yk_table(app)
+    a, b = _user(app, 'bought'), _user(app, 'dropped')
+    _event(app, a, 'limit_shown')
+    _event(app, b, 'limit_shown')
+    _pay_try(app, a, status='succeeded')
+    _pay_try(app, b, status='canceled')
+    cl = _admin_client(app)
+    html = cl.get('/admin/stats/paywall?p=7').get_data(as_text=True)
+    assert 'Путь к оплате' in html and 'Начали оплату и не оплатили' in html
+    tail = html.split('Начали оплату и не оплатили</h3>')[1]
+    assert 'dropped' in tail and 'bought' not in tail.split('</table>')[0]
+
+
+def test_limit_shown_counts_as_limit(app):
+    _prep_journey_tables(app)
+    uid = _user(app, 'lim')
+    _event(app, uid, 'limit_shown')
+    cl = _admin_client(app)
+    html = cl.get('/admin/stats/limits?p=7').get_data(as_text=True)
+    assert 'Упёрлись в лимит (уник.)' in html
+    assert '<div class="v">1</div>' in html.split('Упёрлись в лимит (уник.)')[1][:200]
+
+
+def test_guest_views_linked_on_signup_and_bots_skipped(app):
+    from services import page_views
+    with app.app_context():
+        page_views.record_view('/', None, 'anon-1')
+        page_views.record_view('/about', None, 'anon-1')
+        n = page_views.link_anon_to_user('anon-1', 42)
+        rows = app.db.session.execute(app.db.text('SELECT user_id FROM page_views')).fetchall()
+    assert n == 2 and all(r[0] == 42 for r in rows)
+    c = app.test_client()
+    c.get('/problems/1', headers={'User-Agent': 'Mozilla/5.0 (compatible; YandexBot/3.0)'})
+    with app.app_context():
+        total = app.db.session.execute(app.db.text('SELECT COUNT(*) FROM page_views')).scalar()
+    assert total == 2
