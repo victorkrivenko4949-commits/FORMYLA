@@ -2,6 +2,7 @@
 {% block stats_content %}
 {% set qs = '&p=' ~ period ~ '&from=' ~ d_from ~ '&to=' ~ d_to %}
 <div class="st-cards" style="margin-bottom:18px;">
+  <div class="st-card"><div class="t">Людей с Premium-доступом</div><div class="v">{{ premium.total }}</div><div class="s">пилоты: {{ premium.pilots }} · по тарифу: {{ premium.subscribed }}</div></div>
   <div class="st-card"><div class="t">Платных сейчас</div><div class="v">{{ cards.paid }}</div><div class="s">активные, не триал и не бета</div></div>
   <div class="st-card"><div class="t">На триале</div><div class="v">{{ cards.trial }}</div></div>
   <div class="st-card"><div class="t">Бета-доступ</div><div class="v">{{ cards.beta }}</div></div>

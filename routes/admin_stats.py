@@ -463,14 +463,17 @@ def subscription_rows(now: datetime | None = None):
     """По одной строке на пользователя: текущая подписка + суммы оплат."""
     from routes.admin_stats_sections import PLAN_PRICES, PLAN_TITLES
     now = now or datetime.utcnow()
-    subs = _q("""SELECT s.id, s.user_id, u.nickname, s.plan, s.status, s.started_at, s.expires_at,
-                        s.payment_id, s.amount_rub, s.is_beta_access, s.created_at
-                 FROM subscriptions s LEFT JOIN users u ON u.id = s.user_id
-                 ORDER BY s.id LIMIT 50000""")
-    trial_col = _q("SELECT s.is_trial FROM subscriptions s LIMIT 1")  # [] если колонки нет / нет таблицы
+    from routes.admin_stats_sections import _has_column
+    nick = 'u.nickname' if _has_column('users', 'nickname') else "''"
+    beta = 's.is_beta_access' if _has_column('subscriptions', 'is_beta_access') else '0'
+    col = lambda c: f's.{c}' if _has_column('subscriptions', c) else 'NULL'
+    subs = _q(f"""SELECT s.id, s.user_id, {nick}, s.plan, s.status, {col('started_at')}, {col('expires_at')},
+                         {col('payment_id')}, {col('amount_rub')}, {beta}, {col('created_at')}
+                  FROM subscriptions s LEFT JOIN users u ON u.id = s.user_id
+                  ORDER BY s.id LIMIT 50000""") or []
     trials = {}
-    if trial_col:
-        trials = {int(r[0]): bool(r[1]) for r in _q("SELECT id, is_trial FROM subscriptions")}
+    if _has_column('subscriptions', 'is_trial'):
+        trials = {int(r[0]): bool(r[1]) for r in (_q("SELECT id, is_trial FROM subscriptions") or [])}
     by_user = {}
     for sid, uid, nick, plan, status, started, expires, pay_id, amount, beta, created in subs:
         if uid is None:
@@ -499,7 +502,9 @@ def subscription_rows(now: datetime | None = None):
                          paid_total=sum(x['amount'] for x in paid), paid_count=len(paid),
                          mrr=price if (kind == 'paid' and state in ('active', 'expiring')) else 0))
     # триал, выданный через users.trial_until без строки в subscriptions
-    for uid, nick, tu in _q("SELECT id, nickname, trial_until FROM users WHERE trial_until IS NOT NULL"):
+    trial_sql = ("SELECT id, nickname, trial_until FROM users WHERE trial_until IS NOT NULL"
+                 if _has_column('users', 'nickname') and _has_column('users', 'trial_until') else None)
+    for uid, nick, tu in (_q(trial_sql) or [] if trial_sql else []):
         uid, tu = int(uid), _dt(tu)
         if uid in by_user or tu is None:
             continue
@@ -550,6 +555,7 @@ def view_subscriptions(s):
             ('user_id', 'nickname', 'plan', 'type', 'status', 'started', 'expires', 'days_left', 'paid_rub', 'payments'),
             'subscriptions.csv')
     return _render(s, 'admin/stats_subscriptions.html', rows=shown[:500], total_shown=len(shown), cards=cards,
+                   premium=premium_users(),
                    counts=counts, flt=flt, filters=SUB_FILTERS, q=q)
 
 
