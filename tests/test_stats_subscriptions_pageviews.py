@@ -509,3 +509,76 @@ def test_guest_views_linked_on_signup_and_bots_skipped(app):
     with app.app_context():
         total = app.db.session.execute(app.db.text('SELECT COUNT(*) FROM page_views')).scalar()
     assert total == 2
+
+
+# ───────────── вопрос «что остановило?» ─────────────
+def _install_exit_q(app):
+    from services import exit_question
+    exit_question._ready_engine = None
+    exit_question.install(app)
+
+
+def _login(app, uid):
+    c = app.test_client()
+    c.get(f'/login/{uid}')
+    return c
+
+
+def test_exit_question_after_abandoned_checkout(app):
+    _install_exit_q(app)
+    _prep_journey_tables(app)
+    _yk_table(app)
+    uid = _user(app, 'payer')
+    _pay_try(app, uid, status='canceled', ago_min=40)
+    c = _login(app, uid)
+    d = c.get('/api/exit-question/pending').get_json()
+    assert d['pending'] and d['trigger'] == 'checkout' and 'Что остановило' in d['question']
+    assert any(o['value'] == 'expensive' for o in d['options'])
+    bad = c.post('/api/exit-question', json={'trigger': 'checkout', 'key': d['key'], 'answer': 'expensive'},
+                 headers={'X-Exit-CSRF': 'wrong'})
+    assert bad.status_code == 403
+    ok = c.post('/api/exit-question', json={'trigger': 'checkout', 'key': d['key'], 'answer': 'expensive', 'text': 'дороговато'},
+                headers={'X-Exit-CSRF': d['csrf']})
+    assert ok.get_json()['ok'] is True
+    assert c.get('/api/exit-question/pending').get_json()['pending'] is False
+    cl = _admin_client(app)
+    person = cl.get(f'/admin/stats/person?id={uid}').get_data(as_text=True)
+    assert 'Сам назвал причину' in person and 'Дорого' in person and 'дороговато' in person
+    surveys = cl.get('/admin/stats/surveys?p=7').get_data(as_text=True)
+    assert 'что остановило?»: ответы' in surveys and 'Дорого' in surveys
+
+
+def test_exit_question_comeback_dismiss_and_rules(app):
+    _install_exit_q(app)
+    _prep_journey_tables(app)
+    _yk_table(app)
+    uid = _user(app, 'returner')
+    _activity(app, uid, (datetime.utcnow() + timedelta(hours=3) - timedelta(days=10)).date())
+    c = _login(app, uid)
+    d = c.get('/api/exit-question/pending').get_json()
+    assert d['trigger'] == 'comeback' and 'не было 10 дн.' in d['question']
+    c.post('/api/exit-question', json={'trigger': 'comeback', 'key': d['key'], 'dismiss': True}, headers={'X-Exit-CSRF': d['csrf']})
+    from services.exit_question import pending_for
+    with app.app_context():
+        assert pending_for(uid) is None                                        # пропустил — не спрашиваем
+        assert pending_for(uid, datetime.utcnow() + timedelta(days=4)) is None  # тот же перерыв — и позже не спрашиваем
+        st = app.db.session.execute(app.db.text('SELECT status FROM exit_answers WHERE user_id = :u'), {'u': uid}).scalar()
+    assert st == 'dismissed'
+    # оплатил после неудачи — про оплату не спрашиваем
+    other = _user(app, 'paidlater')
+    _pay_try(app, other, status='canceled', ago_min=90)
+    with app.app_context():
+        app.db.session.execute(app.db.text(
+            "INSERT INTO yookassa_payments (order_id, user_id, item_code, amount_rub, status, created_at) "
+            "VALUES ('ok1', :u, 'premium_calm', 500, 'succeeded', :t)"), {'u': other, 't': datetime.utcnow() - timedelta(minutes=60)})
+        app.db.session.commit()
+        assert pending_for(other) is None
+
+
+def test_exit_question_script_injection(app):
+    _install_exit_q(app)
+    uid = _user(app, 'kid')
+    html = _login(app, uid).get('/problems/1').get_data(as_text=True)
+    assert 'id="ft-exit-q-script"' in html
+    admin_html = _admin_client(app).get('/problems/1').get_data(as_text=True)
+    assert 'ft-exit-q-script' not in admin_html

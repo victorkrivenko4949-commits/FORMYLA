@@ -310,6 +310,7 @@ def _install(app) -> None:
     for module_name, flag, installed in (
         ("services.funnel", "FUNNEL_ENABLED", "funnel_installed"),
         ("services.page_views", "PAGE_VIEWS_ENABLED", "page_views_installed"),
+        ("services.exit_question", "EXIT_QUESTION_ENABLED", "exit_question_installed"),
         ("routes.admin_stats", "ADMIN_STATS_ENABLED", "admin_stats_installed"),
     ):
         if os.environ.get(flag, "1") == "0" or app.extensions.get(installed):

@@ -32,6 +32,7 @@ READINESS = {'yes': 'готов', 'try': 'постараюсь', 'not_yet': 'п�
 
 # код причины → (название, порядок важности: меньше = важнее)
 REASONS = {
+    'said': ('Сам назвал причину', 0),
     'checkout_abandoned': ('Начал оплату и не оплатил', 1),
     'sub_expired': ('Подписка закончилась, не продлил', 2),
     'limit_no_pay': ('Упёрся в лимит и не оплатил', 3),
@@ -136,11 +137,22 @@ def signals_for(uids) -> dict:
                           f"AND seconds > 0 AND user_id IN ({ids}) GROUP BY user_id") or []):
             days[int(uid)] = int(n or 0)
 
+    said = {}
+    if _has_table('exit_answers'):
+        from services.exit_question import OPTIONS, TRIGGER_TITLES
+        for uid, kind, ans, note in (_q(f"SELECT user_id, kind, answer, answer_text FROM exit_answers "
+                                        f"WHERE status = 'answered' AND user_id IN ({ids}) ORDER BY created_at") or []):
+            label = OPTIONS.get(kind, {}).get(ans, ans)
+            said[int(uid)] = f"{TRIGGER_TITLES.get(kind, kind).lower()}: «{label}»" + (f', «{note}»' if note else '')
+
     out = {}
     for u in uids:
         e = ev.get(u, set())
         paid = 'payment_success' in e or u in pay_ok or subs.get(u, {}).get('paid_ever')
         codes, det = [], {}
+        if u in said:
+            codes.append('said')
+            det['said'] = said[u]
         if u in pay_try and not paid:
             codes.append('checkout_abandoned')
         s = subs.get(u)
@@ -224,6 +236,15 @@ def timeline(uid: int):
                                     'WHERE user_id = :u', u=uid) or []):
             items.append((_dt(t), 'Платёж ЮKassa', f"{PLAN_TITLES.get(str(code), code)}, {amt} ₽ — "
                                                      f"{'прошёл' if st == 'succeeded' else 'не завершён (' + str(st) + ')'}"))
+    if _has_table('exit_answers'):
+        from services.exit_question import OPTIONS, TRIGGER_TITLES
+        for kind, ans, note, st, t in (_q('SELECT kind, answer, answer_text, status, created_at FROM exit_answers '
+                                          'WHERE user_id = :u', u=uid) or []):
+            what = f'Вопрос «что остановило?» ({TRIGGER_TITLES.get(kind, kind).lower()})'
+            if st == 'dismissed':
+                items.append((_dt(t), what, 'пропустил'))
+            else:
+                items.append((_dt(t), what, OPTIONS.get(kind, {}).get(ans, ans) + (f': «{note}»' if note else '')))
     items = [i for i in items if i[0] is not None]
     items.sort(key=lambda i: i[0], reverse=True)
     return items
@@ -283,7 +304,8 @@ def person(d_from: date, d_to: date):
         ]},
         {'type': 'note', 'text': 'Вероятная причина: ' + reason_text(sig) +
          ('. Другие сигналы: ' + '; '.join(reason_text(sig, c) for c in sig['codes'][1:]) if len(sig['codes']) > 1 else '') +
-         '. Это правило по фактам из базы, а не ответ самого человека.'},
+         ('. Причину назвал сам человек.' if sig['primary'] == 'said' else
+          '. Это правило по фактам из базы, а не ответ самого человека.')},
         {'type': 'table', 'left': True, 'title': f'Лента действий (новые сверху, до {TIMELINE_LIMIT})', 'header': ['Когда (МСК)', 'Что', 'Подробности'],
          'rows': [[msk(t), w, d or '—'] for t, w, d in items[:TIMELINE_LIMIT]],
          'empty': 'О действиях этого человека данных нет.'},

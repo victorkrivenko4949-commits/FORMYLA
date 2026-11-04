@@ -161,6 +161,32 @@ def surveys(d_from: date, d_to: date):
              'rows': [[_user_cell(int(u), nicks), READINESS.get(a, a), _fmt_dt(t)] for u, a, t in rows[:100]],
              'empty': 'Ответов за период нет.'},
         ]
+    if _has_table('exit_answers'):
+        from services.exit_question import OPTIONS, TRIGGER_TITLES
+        rows = _q('SELECT user_id, kind, answer, answer_text, status, created_at FROM exit_answers '
+                  'WHERE created_at >= :s AND created_at < :e ORDER BY created_at DESC', s=start, e=end) or []
+        answered = [r for r in rows if r[4] == 'answered']
+        dist = defaultdict(int)
+        for _, kind, ans, _t, _s, _c in answered:
+            dist[(kind, ans)] += 1
+        dist_rows = [[TRIGGER_TITLES.get(k, k), OPTIONS.get(k, {}).get(a, a), n, _fmt_pct(_pct(n, sum(
+            v for (kk, _), v in dist.items() if kk == k)))] for (k, a), n in sorted(dist.items(), key=lambda kv: (kv[0][0], -kv[1]))]
+        nicks = _nicks([int(r[0]) for r in rows[:100]])
+        blocks += [
+            {'type': 'cards', 'items': [
+                {'title': 'Спросили «что остановило?»', 'value': len(rows), 'sub': 'за период'},
+                {'title': 'Ответили', 'value': len(answered), 'sub': _fmt_pct(_pct(len(answered), len(rows))) + ' от спрошенных'},
+            ]},
+            {'type': 'table', 'left': True, 'title': 'Вопрос «что остановило?»: ответы',
+             'header': ['Когда спрашивали', 'Ответ', 'Ответов', 'Доля'], 'rows': dist_rows,
+             'empty': 'Ответов за период нет. Вопрос задаётся после брошенной оплаты и после перерыва от 7 дней.'},
+            {'type': 'table', 'left': True, 'title': 'Последние ответы «что остановило?» (до 100)',
+             'header': ['Пользователь', 'Когда спрашивали', 'Ответ', 'Комментарий', 'Когда (UTC)'],
+             'rows': [[_user_cell(int(u), nicks), TRIGGER_TITLES.get(k, k),
+                       'пропустил' if st == 'dismissed' else OPTIONS.get(k, {}).get(a, a), t or '—', _fmt_dt(c)]
+                      for u, k, a, t, st, c in rows[:100]],
+             'empty': 'Пока никого не спрашивали.'},
+        ]
     if len(blocks) == 1:
         blocks.append({'type': 'note', 'text': 'Таблиц с ответами опросов пока нет.'})
     return blocks
