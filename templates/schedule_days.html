@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+{% block title %}Выберите дни занятий — FORMYLA.net{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --sd-bg: #0a0e1a;
+    --sd-card: #141c30;
+    --sd-card-hover: #1b2540;
+    --sd-card-on: #1f3a63;
+    --sd-border: rgba(255,255,255,0.09);
+    --sd-text: #e2e8f0;
+    --sd-muted: #94a3b8;
+    --sd-accent: #4c7dff;
+    --sd-accent-hi: #6b9aff;
+    --sd-ok: #3ecf8e;
+  }
+
+  .sd-wrap {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px 96px;
+  }
+
+  .sd-container {
+    width: 100%;
+    max-width: 680px;
+  }
+
+  .sd-head {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .sd-head h1 {
+    font-size: clamp(24px, 4.5vw, 34px);
+    font-weight: 800;
+    color: var(--sd-text);
+    letter-spacing: -0.01em;
+  }
+
+  .sd-plan {
+    text-align: center;
+    color: var(--sd-muted);
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+
+  .sd-plan b {
+    color: var(--sd-accent-hi);
+  }
+
+  .sd-days {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 560px) {
+    .sd-days { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .sd-day {
+    position: relative;
+    border: 1.5px solid var(--sd-border);
+    background: var(--sd-card);
+    border-radius: 12px;
+    padding: 16px 10px 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease,
+                transform 0.1s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sd-day:active { transform: scale(0.97); }
+
+  .sd-day .sd-day-num {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--sd-muted);
+    margin-bottom: 4px;
+  }
+
+  .sd-day .sd-day-name {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--sd-text);
+  }
+
+  .sd-day.on {
+    background: var(--sd-card-on);
+    border-color: var(--sd-accent);
+    box-shadow: 0 0 0 1px var(--sd-accent);
+  }
+
+  .sd-day.on .sd-day-num { color: var(--sd-accent-hi); }
+
+  .sd-day .sd-check {
+    position: absolute;
+    top: 7px;
+    right: 8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--sd-ok);
+    color: #06281a;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 18px;
+    text-align: center;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+
+  .sd-day.on .sd-check { opacity: 1; transform: scale(1); }
+
+  .sd-counter {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--sd-muted);
+    margin-bottom: 14px;
+  }
+
+  .sd-counter b { color: var(--sd-text); }
+
+  .sd-counter.done b { color: var(--sd-ok); }
+
+  .sd-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    background: var(--sd-accent);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s ease, opacity 0.15s ease;
+  }
+
+  .sd-btn:hover:not(:disabled) { background: var(--sd-accent-hi); }
+
+  .sd-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .sd-note {
+    text-align: center;
+    color: var(--sd-muted);
+    font-size: 12.5px;
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+
+  .sd-error {
+    display: none;
+    text-align: center;
+    color: #f87171;
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sd-wrap">
+  <div class="sd-container">
+    <div class="sd-head">
+      <h1>Выберите дни занятий</h1>
+    </div>
+    <div class="sd-plan">
+      Ваш тариф — <b>{{ plan_title }}</b>: {{ need }} {{ 'дня' if need == 3 else 'дней' }} в неделю.
+      Отметьте подходящие дни — расписание занятий подстроится под них.
+    </div>
+
+    <div class="sd-error" id="sdError"></div>
+
+    <div class="sd-days" id="sdDays">
+      {% for d in weekdays %}
+      <div class="sd-day" data-day="{{ d.i }}" role="checkbox" aria-checked="false" tabindex="0">
+        <span class="sd-check">✓</span>
+        <span class="sd-day-num">{{ d.short }}</span>
+        <span class="sd-day-name">{{ d.label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="sd-counter" id="sdCounter">Выбрано <b>0</b> из {{ need }}</div>
+
+    <button class="sd-btn" id="sdSave" disabled>
+      Сохранить и начать заниматься
+    </button>
+
+    <div class="sd-note">
+      Выбор можно будет поменять позже, а пока — выберите дни, чтобы продолжить.
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var NEED = {{ need }};
+  var days = document.querySelectorAll('.sd-day');
+  var counter = document.getElementById('sdCounter');
+  var counterB = counter.querySelector('b');
+  var saveBtn = document.getElementById('sdSave');
+  var errBox = document.getElementById('sdError');
+  var selected = new Set();
+  var saving = false;
+
+  function update() {
+    counterB.textContent = selected.size;
+    counter.classList.toggle('done', selected.size === NEED);
+    saveBtn.disabled = selected.size !== NEED;
+    errBox.style.display = 'none';
+  }
+
+  function toggle(el) {
+    var d = parseInt(el.getAttribute('data-day'), 10);
+    if (selected.has(d)) {
+      selected.delete(d);
+      el.classList.remove('on');
+      el.setAttribute('aria-checked', 'false');
+    } else {
+      selected.add(d);
+      el.classList.add('on');
+      el.setAttribute('aria-checked', 'true');
+    }
+    update();
+  }
+
+  days.forEach(function (el) {
+    el.addEventListener('click', function () { toggle(el); });
+    el.addEventListener('keydown', function (e) {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggle(el);
+      }
+    });
+  });
+
+  saveBtn.addEventListener('click', function () {
+    if (saving || selected.size !== NEED) return;
+    saving = true;
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Сохраняем…';
+    fetch('/schedule/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ days: Array.from(selected) })
+    }).then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data && data.ok) {
+          window.location.href = data.redirect || '/daily_tasks';
+        } else {
+          errBox.textContent = (data && data.error) || 'Не удалось сохранить выбор';
+          errBox.style.display = 'block';
+          saving = false;
+          saveBtn.textContent = 'Сохранить и начать заниматься';
+          saveBtn.disabled = selected.size !== NEED;
+        }
+      })
+      .catch(function () {
+        errBox.textContent = 'Проблема с сетью — попробуйте ещё раз';
+        errBox.style.display = 'block';
+        saving = false;
+        saveBtn.textContent = 'Сохранить и начать заниматься';
+        saveBtn.disabled = selected.size !== NEED;
+      });
+  });
+})();
+</script>
+{% endblock %}

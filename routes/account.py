@@ -64,15 +64,18 @@ def reintake_account():
         except Exception as e:
             logger.error(f"Error deleting solutions: {e}")
 
-        # 2. Планы подготовки (после удаления prep_days в _delete_related_records)
+        # 2. Удаляем связанные записи (внутри — prep_days, дети prep_plans,
+        #    и обнуление task_solutions.plan_id). ВАЖНО: _delete_related_records
+        #    должен идти РАНЬШЕ удаления prep_plans, иначе на PostgreSQL
+        #    FK prep_days.plan_id → prep_plans.id валит удаление планов.
+        _delete_related_records(user_id)
+
+        # 2b. Планы подготовки (после того как prep_days удалены)
         _delete_in_savepoint(
             "DELETE FROM prep_plans WHERE user_id = :uid", {'uid': user_id})
         db.session.flush()
 
-        # 3. Delete other related records
-        _delete_related_records(user_id)
-
-        # 4. Audit log
+        # 3. Audit log
         _log_deletion_audit(user_id, email_hash)
 
         # 5. Delete user (raw SQL — обходим ORM-nullify, который ломается
@@ -116,15 +119,18 @@ def delete_account():
         except Exception as e:
             logger.error(f"Error deleting solutions: {e}")
 
-        # 2. Планы подготовки (после удаления prep_days в _delete_related_records)
+        # 2. Удаляем связанные записи (внутри — prep_days, дети prep_plans,
+        #    и обнуление task_solutions.plan_id). ВАЖНО: _delete_related_records
+        #    должен идти РАНЬШЕ удаления prep_plans, иначе на PostgreSQL
+        #    FK prep_days.plan_id → prep_plans.id валит удаление планов.
+        _delete_related_records(user_id)
+
+        # 2b. Планы подготовки (после того как prep_days удалены)
         _delete_in_savepoint(
             "DELETE FROM prep_plans WHERE user_id = :uid", {'uid': user_id})
         db.session.flush()
 
-        # 3. Delete other related records
-        _delete_related_records(user_id)
-
-        # 4. Audit log
+        # 3. Audit log
         _log_deletion_audit(user_id, email_hash)
 
         # 5. Delete user (raw SQL — обходим ORM-nullify).
@@ -176,16 +182,34 @@ def _delete_user_row(user_id):
 
 
 def _delete_in_savepoint(sql, params):
-    """Выполняет DELETE внутри SAVEPOINT. Если одна таблица отсутствует
-    или запрос падает — откатываем только эту операцию и идём дальше,
-    а не гасим всю транзакцию (PostgreSQL иначе отменяет всё удаление)."""
+    """Выполняет DELETE внутри SAVEPOINT. При ошибке откатывается ТОЛЬКО
+    этот savepoint (context manager откатывает его автоматически).
+
+    ВАЖНО: раньше здесь был db.session.rollback() в except — он откатывал
+    ВСЮ внешнюю транзакцию целиком, из-за чего:
+      - при падении на одной таблице (например, отсутствующей olympiad_variants)
+        терялась вся уже выполненная очистка;
+      - на PostgreSQL «successful» ответ «удалено» оставлял половину записей
+        (user удалён, curator_state и прочее — нет), а при FK-нарушении
+        raw DELETE FROM users валил всё удаление с 500 «Deletion failed».
+
+    Пропускаем ТОЛЬКО отсутствующие таблицы (опциональные модули, SQLite
+    «no such table» / PG «relation ... does not exist»): их удаление — best
+    effort. Любая другая ошибка (FK, синтаксис) пробрасывается наверх —
+    удаление аккаунта должно быть атомарным, без частичных результатов.
+    """
     from sqlalchemy import text
-    db.session.begin_nested()
     try:
-        db.session.execute(text(sql), params)
+        with db.session.begin_nested():
+            db.session.execute(text(sql), params)
     except Exception as e:
-        db.session.rollback()
-        logger.warning(f"Account-cleanup skipped ({sql.split()[3]}): {e}")
+        _msg = str(getattr(e, 'orig', e) or e).lower()
+        _table = sql.split()[2] if len(sql.split()) > 2 else sql[:40]
+        if ('no such table' in _msg) or ('does not exist' in _msg and 'relation' in _msg):
+            logger.warning(f"Account-cleanup skipped (optional table {_table}): {e}")
+            return
+        logger.error(f"Account-cleanup FAILED on {_table}: {e}")
+        raise
 
 
 def _delete_related_records(user_id):
@@ -211,6 +235,9 @@ def _delete_related_records(user_id):
         {'uid': user_id})
 
     # Таблицы с колонкой user_id (FK не CASCADE → чистим вручную).
+    # ВАЖНО: список должен покрывать ВСЕ таблицы с FK users.id без каскада,
+    # иначе raw DELETE FROM users падает на PostgreSQL с FK-нарушением
+    # (SQLite локально FK не проверяет — там ошибка не проявляется).
     tables_with_user_id = [
         'chat_messages', 'adaptive_tests', 'adaptive_test_results',
         'user_topic_progress', 'daily_quests', 'user_streaks',
@@ -242,6 +269,14 @@ def _delete_related_records(user_id):
         'group_members', 'teacher_group_members',
         # ── Push-подписки ──
         'push_subscriptions',
+        # ── FK users.id без каскада, ранее НЕ чистились (провоцировало
+        #    500 «Deletion failed» на PostgreSQL при наличии строк) ──
+        'ab_cohort', 'article_views', 'verified_problem_checks',
+        'founder_grants', 'purchases',
+        # ── Подписки/тарифы и аналитика (user_id без FK, но данные
+        #    пользователя — чистим для GDPR-полноты) ──
+        'subscriptions', 'usage_daily', 'funnel_events',
+        'site_time_sections', 'site_time_beat', 'user_devices',
     ]
 
     for table in tables_with_user_id:
@@ -249,10 +284,25 @@ def _delete_related_records(user_id):
             f"DELETE FROM {table} WHERE user_id = :uid",
             {'uid': user_id})
 
-    # Friendships (обе колонки — CASCADE, но подстраховываемся)
+    # Orders: FK на users через payer_user_id/beneficiary_user_id (NOT NULL, без каскада).
+    # В текущем релизе beneficiary_user_id всегда равен плательщику
+    # (см. services/billing/service.py — «family/teacher в первом релизе
+    # не продаются»), поэтому удаление строк по обеим колонкам затрагивает
+    # только заказы самого пользователя. Если позже появятся подарки
+    # (payer ≠ beneficiary), здесь понадобится политика: не уничтожать
+    # заказы другого пользователя (например, обезличивание плательщика).
     _delete_in_savepoint(
-        "DELETE FROM friendships WHERE requester_id = :uid OR addressee_id = :uid "
-        "OR user_id = :uid OR friend_id = :uid",
+        "DELETE FROM orders WHERE payer_user_id = :uid OR beneficiary_user_id = :uid",
+        {'uid': user_id})
+
+    # Связи родитель-ученик (parent_id/child_id, без каскада)
+    _delete_in_savepoint(
+        "DELETE FROM parent_child_links WHERE parent_id = :uid OR child_id = :uid",
+        {'uid': user_id})
+
+    # Friendships (колонки requester_id/addressee_id — CASCADE, но подстраховываемся)
+    _delete_in_savepoint(
+        "DELETE FROM friendships WHERE requester_id = :uid OR addressee_id = :uid",
         {'uid': user_id})
 
     # Mentorships (teacher_id / student_id — NOT NULL без каскада)
@@ -269,28 +319,27 @@ def _delete_related_records(user_id):
 
 
 def _log_deletion_audit(user_id, email_hash):
-    """Log account deletion for audit trail. Отдельная транзакция:
-    при любой ошибке (нет SEQUENCE на PG и т.п.) — откатываем сами логи,
-    но не ломаем основную транзакцию удаления."""
+    """Log account deletion for audit trail. Отдельный savepoint:
+    при любой ошибке откатываются только сами логи, основная
+    транзакция удаления не страдает."""
     from sqlalchemy import text
-    db.session.begin_nested()
     try:
-        # Create audit table if not exists
-        db.session.execute(text("""
-            CREATE TABLE IF NOT EXISTS deleted_users_audit (
-                id SERIAL PRIMARY KEY,
-                original_user_id INTEGER NOT NULL,
-                email_hash VARCHAR(64) NOT NULL,
-                deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        with db.session.begin_nested():
+            # Create audit table if not exists
+            db.session.execute(text("""
+                CREATE TABLE IF NOT EXISTS deleted_users_audit (
+                    id SERIAL PRIMARY KEY,
+                    original_user_id INTEGER NOT NULL,
+                    email_hash VARCHAR(64) NOT NULL,
+                    deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """))
+            db.session.execute(
+                text("INSERT INTO deleted_users_audit (original_user_id, email_hash, deleted_at) VALUES (:uid, :eh, :dt)"),
+                {'uid': user_id, 'eh': email_hash, 'dt': datetime.utcnow()}
             )
-        """))
-        db.session.execute(
-            text("INSERT INTO deleted_users_audit (original_user_id, email_hash, deleted_at) VALUES (:uid, :eh, :dt)"),
-            {'uid': user_id, 'eh': email_hash, 'dt': datetime.utcnow()}
-        )
-        db.session.flush()
+            db.session.flush()
     except Exception as e:
-        db.session.rollback()
         logger.warning(f"Audit log failed: {e}")
 
 

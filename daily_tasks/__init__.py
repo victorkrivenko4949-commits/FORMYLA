@@ -21,11 +21,11 @@ from . import routes  # noqa: E402, F401
 from .intake_probe import attach as _intake_probe_attach
 _intake_probe_attach(daily_tasks_bp)
 
-# «Метод недели» + план куратора + paywall (ноябрь 2026). Подключается в момент
+# «Метод недели» + план куратора + paywall. Подключается в момент
 # регистрации daily_tasks_bp в app.py — без правки app.py. Любая ошибка здесь
 # не ломает задачи дня. Блоки на странице задач дня временно скрыты для всех
 # (method_week/ui_inject.py, вернуть: METHOD_WEEK_UI_ENABLED=1), API работает;
-# paywall выключен (PAYWALL_ENABLED=0).
+# paywall ВКЛЮЧЁН по умолчанию с 28.10.2026 (PAYWALL_ENABLED=0 — выключить).
 try:  # pragma: no cover
     from method_week import attach as _method_week_attach
     _method_week_attach(daily_tasks_bp)

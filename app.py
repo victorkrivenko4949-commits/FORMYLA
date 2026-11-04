@@ -1990,172 +1990,185 @@ try:
 except Exception as _e_dates:
     print(f"[OLYMP-DATES] hook skipped: {_e_dates}")
 
-# ── Olympiad prep catalog seed (idempotent, без env-гейта) ───────────────────
-# Засевает olympiad_prep дефолтным набором олимпиад России, если таблица
-# пуста. Безопасно: ничего не пересоздаёт, если уже есть хотя бы одна запись.
-# Это решает проблему пустого «Календаря олимпиад» (/olympiad-prep/calendar)
-# на проде, где локальные скрипты вроде _add_10_olympiads.py не запускаются.
-# grades/stages в модели — db.Text, поэтому передаём JSON-строки.
+# ── Каталог олимпиад: список выбора = НЫНЕШНИЙ каталог ──────────────────────
+# Список олимпиад для выбора плана подготовки берётся из загружаемого
+# индекса каталога (data/olymp_catalog/_index.json; раздел «other» — не
+# олимпиада и в выбор не попадает). Синхронизация идемпотентна и выполняется
+# на каждом старте:
+#   • добавляет олимпиады, появившиеся в каталоге (is_active=True);
+#   • прячет из выбора (is_active=False) убранные из каталога — существующие
+#     планы учеников не трогаются, меняется только список выбора;
+#   • выравнивает порядок (sort_order) по индексу каталога.
+# Метаданные существующих строк не перезаписываются.
+_OLYMP_PREP_CATALOG_META = {
+    'vsosh': {
+        'short_name': 'ВсОШ',
+        'description': 'Всероссийская олимпиада школьников по математике: школьный, муниципальный, региональный и заключительный этапы.',
+        'grades': [9, 10, 11],
+        'official_url': 'https://vos.olimpiada.ru/',
+        'color_hex': '#22d3a6',
+        'stages': [
+            {'name': 'Школьный этап', 'date_range': 'Сентябрь – октябрь'},
+            {'name': 'Муниципальный этап', 'date_range': 'Ноябрь'},
+            {'name': 'Региональный этап', 'date_range': 'Январь – февраль'},
+            {'name': 'Заключительный этап', 'date_range': 'Март – апрель'},
+        ],
+    },
+    'mmo': {
+        'short_name': 'МОШ',
+        'description': 'Московская математическая олимпиада — старейшая математическая олимпиада школьников.',
+        'grades': [6, 7, 8, 9, 10, 11],
+        'official_url': 'https://olympiads.mccme.ru/mmo/',
+        'color_hex': '#f59e0b',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'Уточняется'},
+            {'name': 'Основной тур', 'date_range': 'Весна'},
+        ],
+    },
+    'kurchatov': {
+        'short_name': 'Курчатов',
+        'description': 'Олимпиада «Курчатов» по математике для школьников 6–11 классов (НИЦ «Курчатовский институт», МФТИ и другие вузы).',
+        'grades': [6, 7, 8, 9, 10, 11],
+        'official_url': 'https://olimpiadakurchatov.ru/',
+        'color_hex': '#a855f7',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'Февраль'},
+            {'name': 'Заключительный этап', 'date_range': 'Март'},
+        ],
+    },
+    'lomonosov': {
+        'short_name': 'Ломоносов',
+        'description': 'Олимпиада школьников «Ломоносов» по математике. Даёт льготы при поступлении в вузы.',
+        'grades': [5, 6, 7, 8, 9, 10, 11],
+        'official_url': None,
+        'color_hex': '#3b82f6',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'Уточняется'},
+            {'name': 'Заключительный этап', 'date_range': 'Уточняется'},
+        ],
+    },
+    'formula-unity': {
+        'short_name': 'Формула Единства',
+        'description': 'Объединённая международная олимпиада «Формула Единства» / «Третье тысячелетие» по математике для школьников 5–11 классов.',
+        'grades': [5, 6, 7, 8, 9, 10, 11],
+        'official_url': 'https://www.formulo.org/ru/olymp/',
+        'color_hex': '#06b6d4',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'Октябрь – ноябрь'},
+            {'name': 'Заключительный этап', 'date_range': 'Февраль – март'},
+        ],
+    },
+    'euler': {
+        'short_name': 'Эйлер',
+        'description': 'Олимпиада им. Леонарда Эйлера по математике для школьников 8 классов.',
+        'grades': [8],
+        'official_url': None,
+        'color_hex': '#84cc16',
+        'stages': [
+            {'name': 'Региональный этап', 'date_range': 'Уточняется'},
+        ],
+    },
+    'vysshaya-proba': {
+        'short_name': 'Высшая проба',
+        'description': 'Олимпиада «Высшая проба» по математике (НИУ ВШЭ) для школьников 7–11 классов.',
+        'grades': [7, 8, 9, 10, 11],
+        'official_url': None,
+        'color_hex': '#ef4444',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'Уточняется'},
+            {'name': 'Заключительный этап', 'date_range': 'Уточняется'},
+        ],
+    },
+    'matprazdnik': {
+        'short_name': 'Матпраздник',
+        'description': 'Математический праздник — олимпиада для школьников 6–7 классов.',
+        'grades': [6, 7],
+        'official_url': None,
+        'color_hex': '#f97316',
+        'stages': [
+            {'name': 'Основной тур', 'date_range': 'Уточняется'},
+        ],
+    },
+    'spbgu': {
+        'short_name': 'СПбГУ',
+        'description': 'Олимпиада школьников СПбГУ по математике для учащихся 6–11 классов.',
+        'grades': [6, 7, 8, 9, 10, 11],
+        'official_url': 'https://olympiada.spbu.ru/',
+        'color_hex': '#8b5cf6',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'До 1 декабря, заочно'},
+            {'name': 'Заключительный этап', 'date_range': 'Очно, по графику'},
+        ],
+    },
+    'phystech': {
+        'short_name': 'Физтех',
+        'description': 'Олимпиада «Физтех» по математике, проводится МФТИ. Победители и призёры получают льготы при поступлении.',
+        'grades': [9, 10, 11],
+        'official_url': 'https://olymp.mipt.ru/',
+        'color_hex': '#0ea5e9',
+        'stages': [
+            {'name': 'Отборочный этап', 'date_range': 'Октябрь – январь'},
+            {'name': 'Заключительный этап', 'date_range': 'Февраль – март'},
+        ],
+    },
+}
 try:
-    import json as _json_seed
+    import json as _json_olymp_prep
     with app.app_context():
-        from models import OlympiadPrep as _OlympiadPrepSeed
-        if _OlympiadPrepSeed.query.count() == 0:
-            print("[OLYMP-PREP-SEED] olympiad_prep empty, seeding 10 defaults...")
-            _olymp_prep_defaults = [
-                {
-                    "slug": "fiztekh",
-                    "name": "Олимпиада «Физтех»",
-                    "short_name": "Физтех",
-                    "description": "Олимпиада «Физтех» по математике проводится Московским физико-техническим институтом. Победители и призёры получают льготы при поступлении в ведущие вузы России.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://olymp.mipt.ru/",
-                    "color_hex": "#06b6d4",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Октябрь 2025 – январь 2026"},
-                        {"name": "Заключительный этап", "date_range": "Февраль – март 2026"},
-                    ],
-                },
-                {
-                    "slug": "kurchatov",
-                    "name": "Олимпиада «Курчатов»",
-                    "short_name": "Курчатов",
-                    "description": "Олимпиада «Курчатов» по математике для школьников. Даёт льготы при поступлении в вузы.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://kurchatov.test.ru/",
-                    "color_hex": "#a855f7",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Уточняется"},
-                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
-                    ],
-                },
-                {
-                    "slug": "shag-v-budushchee",
-                    "name": "Шаг в будущее",
-                    "short_name": "Шаг в будущее",
-                    "description": "Олимпиада школьников «Шаг в будущее» по математике. Проводится МГТУ им. Н.Э. Баумана.",
-                    "grades": [8, 9, 10, 11],
-                    "official_url": "https://olymp.bmstu.ru/",
-                    "color_hex": "#f97316",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "2025"},
-                        {"name": "Заключительный этап — 11 кл.", "date_range": "7 марта 2026"},
-                        {"name": "Заключительный этап — 8–10 кл.", "date_range": "9 марта 2026"},
-                    ],
-                },
-                {
-                    "slug": "otkrytaya",
-                    "name": "Открытая олимпиада школьников",
-                    "short_name": "Открытая",
-                    "description": "Открытая олимпиада школьников по математике. Организатор — НИУ ИТМО и другие ведущие вузы.",
-                    "grades": [8, 9, 10, 11],
-                    "official_url": "https://openolymp.ru/",
-                    "color_hex": "#10b981",
-                    "stages": [
-                        {"name": "1-й отборочный онлайн-этап", "date_range": "3 декабря 2025 – 19 января 2026"},
-                        {"name": "Заключительный этап", "date_range": "Уточняется"},
-                    ],
-                },
-                {
-                    "slug": "vsesibirskaya",
-                    "name": "Всесибирская открытая олимпиада",
-                    "short_name": "Всесибирская",
-                    "description": "Всесибирская открытая олимпиада школьников по математике. Проводится НГУ и СО РАН.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://sesc.nsu.ru/olymp/",
-                    "color_hex": "#84cc16",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Уточняется"},
-                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
-                    ],
-                },
-                {
-                    "slug": "itmo",
-                    "name": "Олимпиада ИТМО",
-                    "short_name": "ИТМО",
-                    "description": "Олимпиада школьников по математике университета ИТМО. Входит в Перечень олимпиад РСОШ.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://olymp.itmo.ru/",
-                    "color_hex": "#eab308",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Осень 2025 – зима 2026"},
-                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
-                    ],
-                },
-                {
-                    "slug": "nadezhda-energetiki",
-                    "name": "Олимпиада «Надежда энергетики»",
-                    "short_name": "Надежда энергетики",
-                    "description": "Олимпиада «Надежда энергетики» по математике. Организаторы — ведущие энергетические вузы России.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://www.energy-hope.ru/",
-                    "color_hex": "#ec4899",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Уточняется"},
-                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
-                    ],
-                },
-                {
-                    "slug": "rosatom",
-                    "name": "Олимпиада «Росатом»",
-                    "short_name": "Росатом",
-                    "description": "Олимпиада «Росатом» по математике. Проводится НИЯУ МИФИ. Даёт льготы при поступлении.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://rosatomolymp.mephi.ru/",
-                    "color_hex": "#3b82f6",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Уточняется"},
-                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
-                    ],
-                },
-                {
-                    "slug": "inzhenernaya",
-                    "name": "Инженерная олимпиада школьников",
-                    "short_name": "Инженерная",
-                    "description": "Инженерная олимпиада школьников по математике. Входит в Перечень РСОШ, даёт льготы при поступлении.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://olymp.urfu.ru/",
-                    "color_hex": "#14b8a6",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Осень 2025 – зима 2026"},
-                        {"name": "Заключительный этап", "date_range": "Февраль – март 2026"},
-                    ],
-                },
-                {
-                    "slug": "plekhanovskaya",
-                    "name": "Плехановская олимпиада",
-                    "short_name": "Плехановская",
-                    "description": "Плехановская олимпиада школьников по математике. Проводится РЭУ им. Г.В. Плеханова.",
-                    "grades": [9, 10, 11],
-                    "official_url": "https://olymp.rea.ru/",
-                    "color_hex": "#d946ef",
-                    "stages": [
-                        {"name": "Отборочный этап", "date_range": "Уточняется"},
-                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
-                    ],
-                },
-            ]
-            for _i, _o in enumerate(_olymp_prep_defaults):
-                db.session.add(_OlympiadPrepSeed(
-                    slug=_o["slug"],
-                    name=_o["name"],
-                    short_name=_o["short_name"],
-                    description=_o["description"],
-                    grades=_json_seed.dumps(_o["grades"]),
-                    stages=_json_seed.dumps(_o["stages"], ensure_ascii=False),
-                    official_url=_o["official_url"],
-                    color_hex=_o["color_hex"],
-                    sort_order=_i + 1,
-                    is_active=True,
-                ))
-            db.session.commit()
-            print(f"[OLYMP-PREP-SEED] [OK] Added {len(_olymp_prep_defaults)} olympiads to olympiad_prep")
+        from models import OlympiadPrep as _OlympiadPrepSync
+        _index_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'data', 'olymp_catalog', '_index.json')
+        _sync_added = _sync_reactivated = _sync_hidden = 0
+        _target = []  # [(slug, название из каталога)]
+        if os.path.exists(_index_path):
+            with open(_index_path, encoding='utf-8') as _f_olymp_index:
+                _catalog_index = _json_olymp_prep.load(_f_olymp_index)
+            for _row in _catalog_index:
+                _slug = str(_row.get('slug') or '').strip()
+                if not _slug or _slug == 'other':
+                    continue
+                _target.append((_slug, str(_row.get('name') or _slug)))
+        if not _target:
+            print('[OLYMP-PREP-SYNC] olymp catalog index not found, skipping')
         else:
-            # Idempotent: nothing to do; uncomment for verbose logs:
-            # print(f"[OLYMP-PREP-SEED] already populated ({_OlympiadPrepSeed.query.count()} rows), skipping")
-            pass
-except Exception as _e_olymp_prep_seed:
-    print(f"[OLYMP-PREP-SEED] hook skipped: {_e_olymp_prep_seed}")
+            _existing = {o.slug: o for o in _OlympiadPrepSync.query.all()}
+            for _pos, (_slug, _name) in enumerate(_target, start=1):
+                _meta = _OLYMP_PREP_CATALOG_META.get(_slug, {})
+                _row_db = _existing.get(_slug)
+                if _row_db is None:
+                    db.session.add(_OlympiadPrepSync(
+                        slug=_slug,
+                        name=_name,
+                        short_name=_meta.get('short_name') or _name,
+                        description=_meta.get('description'),
+                        grades=_json_olymp_prep.dumps(_meta.get('grades') or []),
+                        stages=_json_olymp_prep.dumps(
+                            _meta.get('stages') or [], ensure_ascii=False),
+                        official_url=_meta.get('official_url'),
+                        color_hex=_meta.get('color_hex') or '#22d3a6',
+                        sort_order=_pos,
+                        is_active=True,
+                    ))
+                    _sync_added += 1
+                else:
+                    _row_db.sort_order = _pos
+                    if not _row_db.is_active:
+                        _row_db.is_active = True
+                        _sync_reactivated += 1
+            _target_slugs = {_slug for _slug, _ in _target}
+            for _slug, _row_db in _existing.items():
+                if _slug not in _target_slugs and _row_db.is_active:
+                    _row_db.is_active = False
+                    _sync_hidden += 1
+            if _sync_added or _sync_reactivated or _sync_hidden:
+                db.session.commit()
+                print(f"[OLYMP-PREP-SYNC] +{_sync_added} added, "
+                      f"{_sync_reactivated} reactivated, {_sync_hidden} hidden "
+                      f"(list follows olymp catalog)")
+except Exception as _e_olymp_prep_sync:
+    print(f"[OLYMP-PREP-SYNC] hook skipped: {_e_olymp_prep_sync}")
+
 
 # ── Theory placeholder fix (idempotent) ──────────────────────────────────────
 # Перезаписывает названия методов вида «E14 (название ждёт текста)»
@@ -2248,6 +2261,17 @@ except Exception as _e:
     print(f"[BP] daily_tasks_bp NOT registered: {_e}")
     print(_tb.format_exc())
 
+# /schedule — PILOT_SCHEDULE_DAYS_V1: обязательный выбор дней занятий
+# после покупки пилотного тарифа (6 дней «Работяга» / 3 дня «Спокойный»).
+try:
+    from routes.schedule_days import schedule_days_bp
+    app.register_blueprint(schedule_days_bp)
+    print("[BP] schedule_days_bp registered (/schedule)")
+except Exception as _e:
+    import traceback as _tb
+    print(f"[BP] schedule_days_bp NOT registered: {_e}")
+    print(_tb.format_exc())
+
 # /curator/* — Модуль «Куратор» (AI-наставник): диагностика, план, тьютор, прогресс.
 try:
     from curator import curator_bp
@@ -2275,6 +2299,13 @@ except Exception as _e:
 try:
     from routes.parent_teacher import parent_teacher_bp
     app.register_blueprint(parent_teacher_bp)
+    # JOIN_CODE_V1: колонка users.parent_invite_code (код привязки родителя)
+    try:
+        from migrations.add_parent_invite_code import _ensure_parent_invite_code_column
+        with app.app_context():
+            _ensure_parent_invite_code_column(db)
+    except Exception as _mig_e:
+        print(f"[MIG] parent_invite_code: {_mig_e}")
     print("[BP] parent_teacher_bp registered (/teacher, /parent, /student/*)")
 except Exception as _e:
     import traceback as _tb
@@ -2486,6 +2517,21 @@ def daily_streak_reset_job():
             app.logger.info("[OK] Daily streak reset completed")
         except Exception as e:
             app.logger.error(f" Daily streak reset failed: {e}")
+
+# Premium Auto-Renewal Job (runs hourly at :13)
+@scheduler.task('cron', id='premium_auto_renew', hour='*', minute=13)
+def premium_auto_renew_job():
+    """Автопродление Premium: безакцептное списание сохранённым способом
+    оплаты, когда оплаченный период подходит к концу (окно 2 часа).
+    В демо-режиме (ЮKassa не настроена) ничего не делает.
+    """
+    with app.app_context():
+        from services.auto_renew import run_renewal_job
+        try:
+            stats = run_renewal_job()
+            app.logger.info("[OK] Premium auto-renew job: %s", stats)
+        except Exception as e:
+            app.logger.error("Premium auto-renew job failed: %s", e)
 
 # Daily Quest Deadline Reminder (runs at 19:00 and 21:00 MSK)
 @scheduler.task('cron', id='daily_quest_deadline_reminder', hour='19,21', minute=0)
@@ -3317,6 +3363,11 @@ def force_intake_completion():
         '/api/link-requests',
         '/teacher-link/',
         '/parent-link/',
+        # Удаление аккаунта — неотъемлемое право пользователя (GDPR):
+        # доступно независимо от прохождения анкеты, иначе «удалить аккаунт»
+        # молча редиректило на /intake и не работало вовсе.
+        '/account/delete',
+        '/account/reintake',
     ):
         if path == _p or path.startswith(_p):
             return
@@ -3346,6 +3397,69 @@ def force_intake_completion():
         # свободны только /about и /olympiad-start (см. allowlist выше).
         if not _intake.get('completed') or _intake.get('skipped'):
             return redirect(url_for('intake.intake_page'))
+    except Exception:
+        pass
+
+
+@app.before_request
+def force_schedule_selection():
+    """PILOT_SCHEDULE_DAYS_V1: пока дни занятий не выбраны — не выпускаем.
+
+    Ученик с АКТИВНЫМ пилотным тарифом (premium_intense / premium_calm)
+    после покупки обязан выбрать дни недели (6 или 3). Пока выбора нет,
+    любой путь редиректит на /schedule — страницу нельзя «закрыть».
+
+    Состояние хранится в БД (user_schedule_days) — переживает перезагрузку
+    страницы/телефона. Гейт «падает открытым»: при ошибке БД пропускаем
+    (никогда не запираем пользователя из-за сбоя).
+    """
+    path = request.path
+
+    # Только реальные пользователи (гость/аноним — их уже встретил логин-гейт)
+    if not (current_user.is_authenticated
+            and not getattr(current_user, 'is_guest', False)):
+        return
+
+    # Пути, доступные до выбора дней
+    for _p in (
+        '/schedule',      # сама страница выбора и её API (/schedule/save)
+        '/static/',
+        '/favicon.ico',
+        '/login',
+        '/logout',
+        '/verify-code',
+        '/dev_login',
+        # Платёжный контур: возврат с ЮKassa активирует Premium именно
+        # здесь — не редиректим до активации (после неё гейт сработает
+        # на следующей странице).
+        '/payments/',
+        # Анкета входа — свой обязательный гейт; пока она не пройдена,
+        # /intake/ пропускаем (иначе два гейта зацикливают друг друга)
+        '/intake',
+        # Неотъемлемые права пользователя — как в intake-гейте
+        '/account/delete',
+        '/account/reintake',
+    ):
+        if path == _p or path.startswith(_p):
+            return
+
+    # teacher/parent не покупают пилотный тариф (PARENT_TEACHER_NO_BUY)
+    role = getattr(current_user, 'role', 'student') or 'student'
+    if role in ('teacher', 'parent'):
+        return
+
+    # Служебный аккаунт поддержки — без выбора дней
+    if (getattr(current_user, 'nickname', None) or '').lower() == 'lavrik':
+        return
+
+    try:
+        from routes.schedule_days import _active_pilot_plan
+        from services.schedule_days import days_for_plan
+        plan = _active_pilot_plan(current_user.id)
+        if plan is None:
+            return  # нет активного пилотного тарифа — гейт не про нас
+        if days_for_plan(current_user.id, plan) is None:
+            return redirect('/schedule')
     except Exception:
         pass
 
@@ -6146,12 +6260,23 @@ def verify_code():
 @app.route("/logout")
 def logout():
     """Выход пользователя."""
-    logout_user()
+    # ВАЖНО: сначала чистим сессию, ПОТОМ logout_user(). logout_user()
+    # ставит в сессию маркер session['_remember'] = 'clear', по которому
+    # Flask-Login в after_request сам удаляет remember_token cookie
+    # с правильными атрибутами (secure/samesite из REMEMBER_COOKIE_*).
+    # Раньше session.clear() вызывался ПОСЛЕ logout_user() и стирал маркер —
+    # cookie не удалялась, Flask-Login автоматически логинил пользователя
+    # обратно по выжившему remember_token («выход кидает обратно»).
     session.clear()
+    logout_user()
     resp = redirect(url_for('login'))
-    # Удаляем remember_me cookie (с учётом secure/samesite флагов для production)
-    resp.delete_cookie('remember_token', path='/', samesite='Lax')
-    resp.delete_cookie('formyla_device_id', path='/', samesite='Lax')
+    # Дополнительно удаляем cookie вручную — с теми же атрибутами, с которыми
+    # они ставятся (secure/httponly): браузеры (Chrome «Strict Secure Cookies»,
+    # см. https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis)
+    # игнорируют Set-Cookie без Secure при удалении Secure-cookie.
+    _secure = request.is_secure or bool(app.config.get('REMEMBER_COOKIE_SECURE', False))
+    resp.delete_cookie('remember_token', path='/', secure=_secure, httponly=True, samesite='Lax')
+    resp.delete_cookie('formyla_device_id', path='/', secure=_secure, httponly=True, samesite='Lax')
     return resp
 
 
@@ -13229,6 +13354,12 @@ def api_progress(user_id):
 def subscribe_page():
     """Страница выбора тарифа."""
     current_plan = current_user.current_plan or 'free'
+    # PARENT_TEACHER_NO_BUY (02.11.2026, владелец): родитель и учитель
+    # (роль из первого вопроса анкеты) не могут оформить Premium-пилот
+    # в своём аккаунте — страница показывает «Оформите это в аккаунте
+    # ребёнка», покупка и пробный день им закрыты и на сервере.
+    user_role = (getattr(current_user, 'role', 'student') or 'student')
+    is_parent_or_teacher = user_role in ('parent', 'teacher')
     # PAYMENTS_DOC_V1 (24.10.2026): менеджер ЮKassa просил показать
     # понятное описание платных товаров/услуг и тарифов для проверки анкеты.
     # Показываем таблицу всех доступных платных товаров/тарифов, чтобы покупатель
@@ -13281,6 +13412,7 @@ def subscribe_page():
         pass
     return render_template('subscribe.html',
                            current_plan=current_plan,
+                           is_parent_or_teacher=is_parent_or_teacher,
                            plan_expires_at=plan_expires_at,
                            trial_active_until=trial_active_until,
                            trial_active_until_iso=trial_active_until_iso,
@@ -13308,20 +13440,41 @@ def _is_premium_plan(plan_value):
 
 @app.context_processor
 def _inject_subscription_flags():
-    """Глобальные флаги is_premium / is_pilot / pilot_session для шаблонов."""
+    """Глобальные флаги is_premium / is_pilot / pilot_session / is_free_user
+    для шаблонов. is_free_user — бесплатник (видит предложения Premium)."""
     try:
         if current_user.is_authenticated:
-            from services.pilot import is_pilot_user, pilot_session_today
+            from services.pilot import (is_pilot_user, pilot_session_today,
+                                        has_premium_access, PILOT_OPEN_SALES)
             is_pilot = is_pilot_user(current_user)
             session = pilot_session_today(current_user.id) if is_pilot else None
+            # полный Premium-продукт: пилотный список ИЛИ активный тариф
+            # (продажа открыта 03.11.2026 — доступ следует за подпиской)
+            has_premium = has_premium_access(current_user)
+            # платный доступ: Premium/триал/founder/админ/whitelist — как в paywall
+            try:
+                from method_week.paywall import user_has_paid_access
+                has_paid = bool(user_has_paid_access(current_user))
+            except Exception:
+                has_paid = False
             return {
                 'is_premium': _is_premium_plan(current_user.current_plan),
                 'is_pilot': is_pilot,
+                'has_premium': has_premium,
+                'open_sales': bool(PILOT_OPEN_SALES),
                 'pilot_session': session,
+                'is_free_user': not has_paid,
             }
     except Exception:
         pass
-    return {'is_premium': False, 'is_pilot': False, 'pilot_session': None}
+    try:
+        from services.pilot import PILOT_OPEN_SALES
+        _open_sales = bool(PILOT_OPEN_SALES)
+    except Exception:
+        _open_sales = False
+    return {'is_premium': False, 'is_pilot': False, 'has_premium': False,
+            'open_sales': _open_sales, 'pilot_session': None,
+            'is_free_user': False}
 
 
 @app.context_processor
@@ -13355,8 +13508,16 @@ def _inject_user_helpers():
                     except Exception:
                         pass
             else:
-                # не-пилот: прежнее поведение без изменений
-                _probe_active = bool(has_active_probe(_uid))
+                # 2026-11-01 (владелец): тест — функция Premium. Не-пилотам
+                # без активной Premium-подписки/пробного дня баннер
+                # «Вернуться в тест» не показываем (тест им закрыт).
+                _probe_active = False
+                try:
+                    from services.pilot import can_take_theme_test
+                    if can_take_theme_test(_uid):
+                        _probe_active = bool(has_active_probe(_uid))
+                except Exception:
+                    pass
             helpers['has_active_probe'] = _probe_active
         else:
             helpers['has_active_probe'] = False
@@ -13377,13 +13538,14 @@ def api_subscribe_trial():
     """
     if getattr(current_user, 'is_guest', False):
         return jsonify({'error': 'Недоступно для гостей'}), 403
-    # 2026-10-24: пробный день — только пилотным аккаунтам (до запуска 3 ноября).
-    try:
-        from services.pilot import is_pilot_user as _is_pilot
-        if not _is_pilot(current_user.id):
-            return jsonify({'error': 'Недоступно'}), 403
-    except Exception:
-        return jsonify({'error': 'Недоступно'}), 403
+    # 2026-11-02 (владелец): родитель и учитель (роль из первого вопроса
+    # анкеты) не оформляют Premium в своём аккаунте — только в аккаунте
+    # ребёнка. Пробный день им тоже закрыт.
+    if (getattr(current_user, 'role', 'student') or 'student') in ('parent', 'teacher'):
+        return jsonify({'error': 'Оформите это в аккаунте ребёнка: Premium и пробный день открываются в аккаунте ученика.'}), 403
+    # 2026-11-01 (владелец): пробный день открыт всем зарегистрированным —
+    # «1 день бесплатно» должен работать и давать доступ к тесту.
+    # Ограничение «только пилотным» (24.10, до запуска 3 ноября) снято.
     data = request.get_json() or {}
     plan = data.get('plan', 'premium_intense')
     if plan not in ('premium_intense', 'premium_calm'):
@@ -13447,6 +13609,11 @@ def api_subscribe():
     data = request.get_json() or {}
     requested = data.get('plan', 'premium_monthly')
 
+    # 2026-11-02 (владелец): родитель и учитель не оформляют Premium
+    # в своём аккаунте — только в аккаунте ребёнка.
+    if (getattr(current_user, 'role', 'student') or 'student') in ('parent', 'teacher'):
+        return jsonify({'error': 'Оформите это в аккаунте ребёнка: Premium открывается в аккаунте ученика.'}), 403
+
     # Пилотные тарифы — только пилотным аккаунтам, через SubscriptionService
     # (пишет строку в subscriptions + канонизирует users.current_plan).
     if requested in ('premium_intense', 'premium_calm'):
@@ -13503,6 +13670,18 @@ def api_cancel_subscription():
     """API отмены подписки Premium."""
     if not current_user.current_plan or current_user.current_plan == 'free':
         return jsonify({'error': 'У вас нет активной подписки'}), 400
+
+    # Отмена подписки выключает автопродление (без него списаний не будет).
+    # Если выключить не удалось — честно сообщаем об этом, а не молчим.
+    ar_disabled = True
+    try:
+        from services.auto_renew import set_enabled as _ar_off
+        ar_disabled = _ar_off(current_user.id, False)
+    except Exception as e:
+        app.logger.error("[cancel_subscription] auto-renew disable failed: %s", e)
+        ar_disabled = False
+    if not ar_disabled:
+        return jsonify({'error': 'Не удалось отключить автопродление — повторите отмену, иначе подписка продлится автоматически.'}), 500
 
     # Синхронизируем таблицу subscriptions (mark superseded), чтобы
     # users.current_plan и subscriptions не расходились.

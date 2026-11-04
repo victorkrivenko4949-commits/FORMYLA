@@ -669,6 +669,19 @@ def maybe_upgrade_undersized_sets() -> int:
                 if answered > 0:
                     continue  # есть прогресс — не трогаем
                 norm = get_daily_task_count(s.user_id)
+                # LIMITS_V1: для Free с лимитами норма выдачи — дневной кап
+                # (1 задача), а не 10. Такой «урезанный» сет — ПОЛНАЯ норма
+                # бесплатника: удалять нельзя, иначе его задача дня исчезнет
+                # при каждом рестарте (лимит уже списан, окно лимита вместо
+                # задачи).
+                try:
+                    from models import User as _User
+                    from services import limits as _limits_svc
+                    _u = _User.query.get(s.user_id)
+                    if _u is not None and _limits_svc.limits_active(_u):
+                        norm = min(norm, _limits_svc.free_tasks_per_day())
+                except Exception:
+                    pass
                 if len(items) >= norm:
                     continue  # сет уже полной нормы
                 logger.info(

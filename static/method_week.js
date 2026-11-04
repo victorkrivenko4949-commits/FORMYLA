@@ -85,7 +85,15 @@
   if (MODE) curatorCard.style.display = 'none';
 
   function paywallHtml(title, d) {
-    return '<h3>' + title + '</h3><p class="mw-muted">Доступно по подписке Premium. <a href="' + esc(d.upgrade_url || '/subscribe') + '">Оформить</a></p>';
+    var url = esc(d.upgrade_url || '/subscribe');
+    if (MODE === 'tasks') {
+      // Карточка «Сегодня — день метода»: без Premium вместо 3 задач —
+      // понятная заглушка с кнопкой оформления (владелец, 02.11.2026).
+      return '<h3>3 задачи по методу</h3>' +
+        '<p>Задачи по методу доступны только в Premium.</p>' +
+        '<a class="mw-btn" style="display:inline-block;text-decoration:none" href="' + url + '">Оформить Premium</a>';
+    }
+    return '<h3>' + title + '</h3><p class="mw-muted">Доступно по подписке Premium. <a href="' + url + '">Оформить</a></p>';
   }
 
   /* ── Куратор ─────────────────────────────────────────── */

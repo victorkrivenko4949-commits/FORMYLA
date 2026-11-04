@@ -42,18 +42,19 @@ COHORTS = ('limits', 'control')
 # ─────────────────────────── env ───────────────────────────
 
 def mode() -> str:
-    """off | experiment | rollout. Дефолт — off (безопасно)."""
-    return (os.environ.get('PAYWALL_MODE', 'off') or 'off').strip().lower()
+    """off | experiment | rollout. Дефолт — rollout (28.10.2026: лимиты
+    Free включены для всех; PAYWALL_MODE=off в env — выключить)."""
+    return (os.environ.get('PAYWALL_MODE', 'rollout') or 'rollout').strip().lower()
 
 
 def start_at() -> datetime:
-    """PAYWALL_START_AT → aware UTC (дефолт 03.11.2026 00:00 МСК)."""
-    raw = (os.environ.get('PAYWALL_START_AT') or '2026-11-02T21:00:00Z').strip().replace('Z', '+00:00')
+    """PAYWALL_START_AT → aware UTC (дефолт — уже прошло: 28.10.2026)."""
+    raw = (os.environ.get('PAYWALL_START_AT') or '2026-10-28T00:00:00Z').strip().replace('Z', '+00:00')
     try:
         dt = datetime.fromisoformat(raw)
     except ValueError:
         logger.error('ab: bad PAYWALL_START_AT=%r', raw)
-        dt = datetime(2026, 10, 31, 21, 0, tzinfo=timezone.utc)
+        dt = datetime(2026, 10, 28, 0, 0, tzinfo=timezone.utc)
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc)

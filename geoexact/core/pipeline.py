@@ -141,11 +141,20 @@ def _sketch_result(text: str, with_aux: bool, base: "Result | None", aux=None) -
         svg = render_svg(plan, sol, gate=None, show_aux=with_aux)
     except Exception:  # noqa: BLE001 - a sketch must never break the pipeline
         return None
+    # Причина исходного отказа не должна теряться: без неё «почему показан
+    # именно этот набросок» можно узнать только из журнала сервера.
+    warns = ["SKETCH: построен схематичный чертёж по ключевым словам "
+             "условия; пропорции условные, проверьте его по тексту задачи."]
+    if base is not None and not getattr(base, "ok", True):
+        why = (f"FALLBACK_FROM: {getattr(base, 'stage', '')} "
+               f"{getattr(base, 'reason', '')} "
+               f"{(getattr(base, 'detail', '') or '')[:200]}").rstrip()
+        if why != "FALLBACK_FROM:":
+            warns.append(why[:320])
     return Result(True, "9-render-sketch", "", "", svg=svg, svg_base=svg,
                   plan=plan.to_dict(), with_aux=with_aux,
                   cls=getattr(base, "cls", "") or "",
-                  warnings=["SKETCH: построен схематичный чертёж по ключевым словам "
-                            "условия; пропорции условные, проверьте его по тексту задачи."],
+                  warnings=warns,
                   notes=plan.notes, verification="sketch")
 
 

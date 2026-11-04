@@ -155,6 +155,37 @@
         color: #fbbf24;
         font-weight: 600;
     }
+    .buy-premium-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #8b5cf6, #d946ef);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 13px;
+        white-space: nowrap;
+        border: 1px solid rgba(139,92,246,0.55);
+        box-shadow: 0 4px 14px rgba(139,92,246,0.22);
+        margin-top: 6px;
+    }
+    .buy-premium-btn:hover { opacity: 0.9; }
+    .premium-active-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(139,92,246,0.12);
+        border: 1px solid rgba(139,92,246,0.4);
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 12px;
+        color: #c4b5fd;
+        font-weight: 600;
+        white-space: nowrap;
+        margin-top: 6px;
+    }
     .badge-rejected {
         display: inline-flex;
         align-items: center;
@@ -218,6 +249,7 @@
     <h1>{{ group.name }}</h1>
     <div class="group-invite">
         Код приглашения: <span>{{ group.invite_code }}</span> — ученики могут вступать сами
+        через «Прочее → Присоединиться по коду»
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -338,6 +370,17 @@
                        style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; text-decoration: none; font-weight: 600; font-size: 13px; white-space: nowrap;">
                         📂 Статистика
                     </a>
+                    {% if s.premium %}
+                    <div class="premium-active-badge" title="Premium уже активен">
+                        ⭐ Premium{% if s.premium.expires_at %} до {{ s.premium.expires_at }}{% endif %}
+                    </div>
+                    {% else %}
+                    {# 2026-11-02: покупка Premium — только в аккаунте ученика #}
+                    <div class="premium-active-badge" style="opacity:.85"
+                          title="Premium оформляется в аккаунте ученика">
+                        ⭐ Оформите это в аккаунте ученика
+                    </div>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}

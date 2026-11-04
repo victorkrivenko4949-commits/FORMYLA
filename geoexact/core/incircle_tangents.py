@@ -161,7 +161,8 @@ def _wrap_sketch(orig):
         try:
             stage = getattr(base, "stage", "") or ""
             reason = getattr(base, "reason", "") or ""
-            if res is not None and (stage or reason):
+            if res is not None and (stage or reason) and not any(
+                    str(w).startswith("FALLBACK_FROM") for w in res.warnings):
                 detail = (getattr(base, "detail", "") or "")[:200]
                 res.warnings.append(f"FALLBACK_FROM: {stage} {reason} {detail}".rstrip())
         except Exception:  # noqa: BLE001

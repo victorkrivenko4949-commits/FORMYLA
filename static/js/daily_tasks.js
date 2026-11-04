@@ -41,6 +41,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // сервер при заходе на страницу, отдельное пустое состояние
             // не показываем ни при каких условиях.
             break;
+        case 'rest_day':
+            // ВЫХОДНОЙ по расписанию пилота (владелец, 03.11): на дашборде
+            // ничего — ни теста, ни метода, ни задач дня. Баннер плана
+            // сверху уже показывает «Сегодня выходной — отдыхай».
+            break;
         case 'generating':
             showGeneratingState(data);
             // Fix «прошло X:XX» сбрасывается при F5: даже на загрузке
@@ -104,10 +109,13 @@ function showBlockedState(data) {
     if (el) {
         // Update message with theme title
         var msgEl = document.getElementById('dt-blocked-message');
-        // 2026-09-15: срез временно отключён — нейтральный текст,
-        // пока бэкенд может вернуть blocked по устаревшему состоянию цикла.
+        // 2026-11-02 (владелец): срез снова включён — показываем
+        // серверное сообщение («нужно пройти тест: <тема>. 5 задач…»),
+        // а не нейтральный текст из временного отключения 2026-09-15:
+        // без него ученик не понимает, почему задач нет и что делать.
         if (msgEl) {
-            msgEl.textContent = 'Задачи дня появятся автоматически — обнови страницу через пару минут.';
+            msgEl.textContent = (data && data.message) ||
+                'Пройди тест по теме дня: 5 задач, примерно 15 минут. После него откроются задачи дня.';
         }
         el.classList.remove('dt-hidden');
     }
@@ -169,11 +177,8 @@ function showReadyState(data) {
         }
     }
 
-    // Partial notice
-    if (data.status === 'partial') {
-        var notice = document.getElementById('dt-partial-notice');
-        if (notice) notice.classList.remove('dt-hidden');
-    }
+    // Partial notice: убран по просьбе владельца (01.11.2026) —
+    // баннер «Некоторые задачи не удалось сгенерировать» больше не показываем.
 
     // Date badge
     if (data.date) {

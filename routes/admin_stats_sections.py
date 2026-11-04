@@ -25,12 +25,14 @@ from sqlalchemy import text
 logger = logging.getLogger(__name__)
 
 PLAN_PRICES = {  # ₽ в месяц для MRR
+    'premium_intense': 800, 'premium_calm': 500,
     'premium_monthly': 390, 'premium_yearly': 2790 / 12,
     'premium_intense': 800, 'premium_calm': 500,
     'student_month': 490, 'student_year': 2990 / 12,
     'family_month': 890, 'teacher_month': 1990,
 }
 PLAN_TITLES = {
+    'premium_intense': 'Работяга / мес (800 ₽)', 'premium_calm': 'Спокойный / мес (500 ₽)',
     'premium_monthly': 'Premium / мес (legacy)', 'premium_yearly': 'Premium / год (legacy)',
     'premium_intense': 'Premium «Работяга»', 'premium_calm': 'Premium «Спокойный»',
     'student_month': 'Ученик / мес', 'student_year': 'Ученик / год', 'family_month': 'Семья / мес',
@@ -142,6 +144,8 @@ def subscriptions(d_from: date, d_to: date):
     blocks = []
     if not _has_table('subscriptions'):
         return [{'type': 'note', 'text': 'Таблица subscriptions ещё не создана.'}]
+    from routes.admin_stats import premium_users   # лениво: без цикличного импорта
+    premium = premium_users()
     now_iso = datetime.utcnow().isoformat()
     rows = _q("""SELECT plan, COUNT(*), COALESCE(SUM(CASE WHEN is_beta_access THEN 1 ELSE 0 END), 0)
                  FROM subscriptions WHERE status = 'active' AND (expires_at IS NULL OR expires_at > :now)
@@ -170,6 +174,8 @@ def subscriptions(d_from: date, d_to: date):
     blocks.append({'type': 'cards', 'items': [
         {'title': 'Активных подписок', 'value': active_total, 'sub': f'из них бета/бесплатных: {active_total - paid_total}'},
         {'title': 'Платных', 'value': paid_total, 'sub': 'is_beta_access = false'},
+        {'title': 'Людей с Premium-доступом', 'value': premium['total'],
+         'sub': f"пилоты: {premium['pilots']} · по тарифу: {premium['subscribed']}"},
         {'title': 'MRR, ₽ (оценка)', 'value': f'{mrr:,.0f}'.replace(',', ' '), 'sub': f'цель {MRR_TARGET:,} ₽ к концу февраля'.replace(',', ' ')},
         {'title': 'Новых за период', 'value': new_in_period, 'sub': 'строк в subscriptions'},
         {'title': 'Истекают за 7 дней', 'value': expiring_7, 'sub': 'активные, expires_at ≤ +7 дн'},

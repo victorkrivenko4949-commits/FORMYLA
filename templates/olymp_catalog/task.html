@@ -4,6 +4,7 @@
 {% block extra_css %}
 {% include "olymp_catalog/_style.html" %}
 <style>
+{% raw %}
 #oc-tutor .oc-quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:10px 12px 6px;flex-shrink:0}
 #oc-tutor .oc-quick button.oc-chip{display:flex;align-items:center;justify-content:center;min-width:0;min-height:34px;margin:0;padding:6px;font:500 12px/1.35 'Golos Text','Segoe UI',sans-serif;letter-spacing:0;text-transform:none;white-space:normal;overflow-wrap:anywhere;border:1px solid var(--oc-line);border-radius:6px;background:transparent;color:var(--oc-txt);box-shadow:none;text-shadow:none;transform:none}
 #oc-tutor .oc-quick button.oc-chip:hover{background:rgba(143,227,255,.08);border-color:var(--oc-teal);box-shadow:none}
@@ -14,6 +15,7 @@
 #oc-tutor .oc-compose-help{margin:0;padding:2px 12px 6px;color:var(--oc-mute);font-size:11px;line-height:1.4;flex-shrink:0}
 @media(pointer:coarse){#oc-tutor .oc-quick button.oc-chip{min-height:40px}#oc-tutor .oc-compose-help{display:none}}
 @media(max-width:319px){#oc-tutor .oc-quick{grid-template-columns:repeat(2,minmax(0,1fr))}}
+{% endraw %}
 </style>
 {% endblock %}
 {% block content %}
@@ -40,6 +42,12 @@
       </div>
       <details class="oc-brief" id="oc-brief" style="display:none"{% if t.garbled %} open{% endif %}><summary>Конспект подготовки тьютора (что он уже разобрал)</summary><div class="bd" id="oc-brief-body"></div></details>
       <div class="oc-msgs" id="oc-msgs"></div>
+      {% if is_free_user is defined and is_free_user %}
+      <div class="oc-premium-note" style="margin:8px 0;padding:10px 12px;border:1px solid rgba(139,92,246,.45);border-radius:10px;background:linear-gradient(120deg,rgba(56,189,248,.10),rgba(139,92,246,.10));font-size:13px;line-height:1.5;">
+        🔒 <b>ИИ-тьютор</b> сейчас недоступен в бесплатной версии.
+        <a href="/subscribe?feature=%D0%98%D0%98-%D1%82%D1%8C%D1%8E%D1%82%D0%BE%D1%80" style="color:#7ecbff;font-weight:700;">Открыть с Premium →</a>
+      </div>
+      {% endif %}
       <div class="oc-quick" role="group" aria-label="Быстрые вопросы тьютору">
         <button class="oc-chip" type="button" title="Получить подсказку без решения" aria-label="Получить подсказку без решения" data-quick="Дай лёгкую подсказку, с чего начать, не раскрывая решение.">Подсказка</button>
         <button class="oc-chip" type="button" title="Ключевая идея задачи" aria-label="Ключевая идея задачи" data-quick="В чём ключевая идея этой задачи?">Идея</button>

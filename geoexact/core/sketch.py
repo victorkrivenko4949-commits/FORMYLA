@@ -78,7 +78,33 @@ _SIZE = {"square": 4, "rectangle": 4, "rhombus": 4, "parallelogram": 4,
          "trapezoid": 4, "quad": 4, "triangle": 3}
 
 
+_QUESTION = re.compile(r"\b(?:найди|вычисли|чему\s+равн|определи)\b", re.I)
+
+
+def _in_question(t: str, pos: int) -> bool:
+    """Позиция внутри вопросительного предложения («Найдите …»).
+
+    Основная фигура определяется условием; искомая фигура из вопроса —
+    не то же самое.
+    """
+    start = max((m.end() for m in re.finditer(r"[.;!?]", t[:pos])), default=0)
+    end_m = re.search(r"[.;!?]", t[start:])
+    end = start + (end_m.start() if end_m else len(t) - start)
+    return bool(_QUESTION.search(t[start:end]))
+
+
 def _base_polygon(t: str):
+    """Первая названная фигура УСЛОВИЯ — не вопроса.
+
+    Раньше тип фигуры имел фиксированный приоритет (четырёхугольник раньше
+    треугольника): «Найдите площадь четырёхугольника KLHM» превращало целевой
+    четырёхугольник из вопроса в основную фигуру, а треугольник ABC из условия
+    пропадал. Теперь берётся фигура, названная в тексте раньше остальных;
+    фигуры из вопросительного предложения («найдите …», «вычислите …»)
+    учитываются только если других нет.
+    """
+    best = None      # (позиция, тип, имена) — самая ранняя фигура условия
+    asked = None     # то же, но из вопроса
     for kind, word in _SHAPES:
         for m in re.finditer(rf"{word}\s*((?:{_P0}){{3,8}})(?![A-Za-z0-9_])", t):
             names = _names_run(m[1])
@@ -86,7 +112,16 @@ def _base_polygon(t: str):
                 continue
             if len(set(names)) != len(names):
                 continue
-            return kind, names
+            entry = (m.start(), kind, names)
+            if _in_question(t, m.start()):
+                if asked is None or entry[0] < asked[0]:
+                    asked = entry
+            elif best is None or entry[0] < best[0]:
+                best = entry
+    if best is not None:
+        return best[1], best[2]
+    if asked is not None:
+        return asked[1], asked[2]
     # "треугольник со сторонами 3, 4, 5": a figure without point names
     for kind, word in _SHAPES:
         m = re.search(word, t)

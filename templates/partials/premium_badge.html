@@ -1,0 +1,19 @@
+{# FREE_TIER_UPSELL: компактный бейдж «Premium» для бесплатников.
+   Использование (feature — человекочитаемое название раздела):
+     {% with feature='Генератор чертежей' %}{% include 'partials/premium_badge.html' %}{% endwith %}
+   Показывается ТОЛЬКО бесплатникам (is_free_user из context processor);
+   Premium/триал/founder/админ видят обычный интерфейс.
+   badge_linked=False — вариант без <a> (когда бейдж уже внутри ссылки/кнопки:
+   вложенные <a> в HTML невалидны). #}
+{% if is_free_user is defined and is_free_user %}
+{% if badge_linked is defined and not badge_linked %}
+<span class="pm-upsell-badge"
+      style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 8px;border-radius:999px;background:linear-gradient(120deg,#38bdf8,#8b5cf6);color:#fff;font-size:11px;font-weight:700;letter-spacing:0.3px;vertical-align:middle;white-space:nowrap;"
+      title="Доступно с Premium — купить на странице подписки">🔒 Premium</span>
+{% else %}
+<a href="/subscribe?feature={{ feature|default('Premium')|urlencode }}"
+   class="pm-upsell-badge"
+   style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 8px;border-radius:999px;background:linear-gradient(120deg,#38bdf8,#8b5cf6);color:#fff;font-size:11px;font-weight:700;letter-spacing:0.3px;text-decoration:none;vertical-align:middle;white-space:nowrap;"
+   title="Доступно с Premium">🔒 Premium</a>
+{% endif %}
+{% endif %}

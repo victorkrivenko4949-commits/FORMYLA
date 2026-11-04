@@ -26,6 +26,7 @@ def lapp(app, monkeypatch):
     monkeypatch.setenv('PAYWALL_AB', '50')
     monkeypatch.setenv('FREE_TASKS_PER_DAY', '3')
     monkeypatch.setenv('FREE_AI_PER_DAY', '1')
+    monkeypatch.setenv('FREE_LIMITS_DISABLED', '0')   # включить лимиты в тесте
     import services.ab as ab_mod
     monkeypatch.setattr(ab_mod, 'cohort_for', lambda e, uid, percent=None: 'limits')
     from models import db
@@ -230,7 +231,12 @@ def test_premium_founder_trial_not_limited(lapp):
 # ─────────────────────────── daily_tasks ───────────────────────────
 
 def test_daily_tasks_limit_screen_and_reopen(lapp, monkeypatch):
+    # первый пользователь БД получает id=1 (владелец-пилот с циклом куратора
+    # → состояние «Сначала — тест»), поэтому создаём заполнитель и проверяем
+    # на обычном бесплатнике с id >= 2.
+    _mk_user(lapp, 'root-filler@x.invalid')
     u = _mk_user(lapp, 'dt@x.invalid')
+    assert u.id != 1
     c = _client(lapp, u)
     # 1–3 задачи: страницы без экрана лимита
     r1 = c.get('/daily_tasks/')

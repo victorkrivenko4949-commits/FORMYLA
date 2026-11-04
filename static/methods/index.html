@@ -1973,11 +1973,14 @@ html[data-theme="light"] .sel-panel button.primary{color:#fff}
         function pump() {
           return reader.read().then(function (result) {
             if (result.done) {
-              if (streamedText) {
-                pushMsg(tutorKey(), 'ai', streamedText);
-              } else if (!done) {
-                pushMsg(tutorKey(), 'ai', 'Наставник вернул пустой ответ.');
-                if (chats[tutorKey()] && chats[tutorKey()].length) chats[tutorKey()][chats[tutorKey()].length - 1].error = true;
+              // сообщение уже добавлено обработчиком 'done' — не дублируем
+              if (!done) {
+                if (streamedText) {
+                  pushMsg(tutorKey(), 'ai', streamedText);
+                } else {
+                  pushMsg(tutorKey(), 'ai', 'Наставник вернул пустой ответ.');
+                  if (chats[tutorKey()] && chats[tutorKey()].length) chats[tutorKey()][chats[tutorKey()].length - 1].error = true;
+                }
               }
               finalizeStream();
               renderTutorLog();

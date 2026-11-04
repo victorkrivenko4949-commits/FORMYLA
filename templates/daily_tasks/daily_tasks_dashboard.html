@@ -317,13 +317,6 @@
   }
   .dt-summary-card strong { color: var(--accent-hi); }
 
-  .dt-partial-notice {
-    background: rgba(229,172,58,0.1);
-    border: 1px solid rgba(229,172,58,0.2);
-    border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;
-    font-size: 14px; color: var(--warn);
-  }
-
   /* ── Task Grid ────────────────────────────────────── */
   #dt-task-grid {
     display: grid;
@@ -501,6 +494,17 @@
   @media (max-width: 600px) {
     .dt-calibration-banner { flex-direction: column; align-items: stretch; }
     .dt-cal-banner-btn { align-self: flex-start; }
+  }
+
+  /* MOBILE_FULLBLEED_V1 (02.11.2026, владелец): «убери зазоры по бокам» —
+     на телефоне контент задач дня от края до края экрана, без боковых
+     полей. Инлайн-стил на .page-daily-tasks задаёт десктопные 16px,
+     поэтому здесь нужен !important. */
+  @media (max-width: 768px) {
+    .page-daily-tasks {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
   }
 
   /* Calibration badge on card */
@@ -809,6 +813,34 @@
   <!-- Page header -->
   <div style="font-size:20px;font-weight:800;margin:0 0 6px;display:inline-block;background:linear-gradient(90deg,#8ea2ff,#5eead4,#ffc36b);-webkit-background-clip:text;background-clip:text;color:transparent;">Главное — возвращаться каждый день</div>
   <h2 style="font-size:26px;font-weight:700;margin-bottom:12px;color:var(--text);">Задачи дня</h2>
+
+  <!-- SUPPORT_V1: баннер «написать в поддержку» — ведёт в чат «Связаться с нами» (/about#contact) -->
+  <a href="/about#contact"
+     style="display:inline-flex;align-items:center;gap:8px;padding:9px 16px;margin:0 0 14px;border-radius:999px;border:1px solid rgba(142,162,255,0.45);background:rgba(142,162,255,0.10);color:var(--text);font-size:13px;font-weight:600;text-decoration:none;"
+     onmouseover="this.style.background='rgba(142,162,255,0.18)'"
+     onmouseout="this.style.background='rgba(142,162,255,0.10)'">
+    💬 Есть вопросы или что-то непонятно? Напишите в поддержку
+  </a>
+  <!-- OLYMPIAD_DAILY_V1: задачи дня — под выбранную олимпиаду -->
+  {% if data.daily_context %}
+    {% if data.daily_context.status == 'applied' %}
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;margin:0 0 14px;border-radius:999px;border:1px solid rgba(94,234,212,0.45);background:rgba(94,234,212,0.10);color:var(--text);font-size:13px;font-weight:600;">
+        🏅 Задачи дня — подготовка к олимпиаде «{{ data.daily_context.name }}»
+      </div>
+    {% elif data.daily_context.status == 'stale_set' %}
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;margin:0 0 14px;border-radius:999px;border:1px solid rgba(255,195,107,0.5);background:rgba(255,195,107,0.10);color:var(--text);font-size:13px;">
+        {% if data.daily_context.former_name %}
+        ⚠️ Сегодняшний набор выдан под олимпиаду «{{ data.daily_context.former_name }}»; подготовка к «{{ data.daily_context.name }}» начнётся со следующей выдачи
+        {% else %}
+        ⚠️ Олимпиадный профиль сегодняшнего набора не сохранён; подготовка к «{{ data.daily_context.name }}» начнётся со следующей выдачи
+        {% endif %}
+      </div>
+    {% elif data.daily_context.status == 'no_profile' %}
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;margin:0 0 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;">
+        Олимпиада «{{ data.daily_context.name }}»: профиль задач дня для неё или вашего класса пока не готов — выдаём общую подготовку
+      </div>
+    {% endif %}
+  {% endif %}
   <label class="dt-pledge" style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;margin-bottom:16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:14px;line-height:1.45;cursor:pointer;">
     <input type="checkbox" id="dt-pledge" style="width:18px;height:18px;margin-top:2px;flex:none;accent-color:#4f6cff;cursor:pointer;">
     <span>Согласен: постараюсь заходить как можно чаще, ведь успех — в стабильности.</span>
@@ -820,18 +852,19 @@
   {% set _s = data.session %}
   <div style="padding:16px;margin-bottom:16px;border-radius:14px;border:1px solid rgba(79,108,255,0.35);background:linear-gradient(135deg,rgba(79,108,255,0.10),rgba(94,234,212,0.08));">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
-      <div style="font-weight:800;color:var(--text);font-size:15px;">План на 6 занятий</div>
-      <div style="color:var(--muted);font-size:12px;">сдвигается каждый день · завершено: {{ _s.completed_lessons }}</div>
+      <div style="font-weight:800;color:var(--text);font-size:15px;">{% if _s.plan|length == 7 %}План на 7 дней{% else %}План на 6 занятий{% endif %}</div>
+      <div style="color:var(--muted);font-size:12px;">{% if _s.plan|length == 7 %}{{ _s.lessons_per_week }} {{ 'занятие' if _s.lessons_per_week == 1 else 'занятий' }} · {{ _s.rest_days_count }} {{ 'выходной' if _s.rest_days_count == 1 else 'выходных' }} · {% else %}сдвигается каждый день · {% endif %}завершено: {{ _s.completed_lessons }}</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       {% for p in _s.plan %}
-      <div style="flex:1;min-width:130px;padding:10px 12px;border-radius:12px;border:1px solid {{ 'rgba(79,108,255,0.55)' if p.state == 'current' else 'var(--border)' }};background:{{ 'var(--surface)' if p.state == 'current' else 'transparent' }};{{ '' if p.state == 'current' else 'opacity:0.55;' }}">
+      <div style="flex:1;min-width:110px;padding:10px 12px;border-radius:12px;border:1px solid {{ 'rgba(79,108,255,0.55)' if p.state == 'current' else 'var(--border)' }};background:{{ 'var(--surface)' if p.state == 'current' else 'transparent' }};{{ 'opacity:0.45;' if p.lesson_type == 'rest' else ('opacity:0.55;' if p.state != 'current' else '') }}">
         <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:1.1em;">{% if p.lesson_type == 'method' %}📘{% elif p.lesson_type == 'probnik' %}🏆{% else %}✏️{% endif %}</span>
-          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">{% if p.state == 'current' %}сейчас{% elif p.state == 'tomorrow' %}завтра{% else %}занятие {{ p.slot }}{% endif %}</span>
+          <span style="font-size:1.1em;">{% if p.lesson_type == 'method' %}📘{% elif p.lesson_type == 'probnik' %}🏆{% elif p.lesson_type == 'rest' %}😌{% else %}✏️{% endif %}</span>
+          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">{% if p.state == 'current' %}сейчас{% elif p.state == 'tomorrow' %}завтра{% elif p.lesson_type == 'rest' %}выходной{% else %}занятие {{ p.slot }}{% endif %}</span>
+          {% if p.day_label %}<span style="font-size:11px;color:var(--muted);margin-left:auto;">{{ p.day_label }}</span>{% endif %}
         </div>
         <div style="font-weight:700;color:var(--text);font-size:13px;margin-top:4px;">
-          {{ p.lesson_label }}{% if p.lesson_type == 'practice' and p.theme %}<span style="color:var(--muted);font-weight:500;"> · {{ p.theme }}</span>{% endif %}{% if p.lesson_type == 'method' and p.method_name %}<span style="color:var(--muted);font-weight:500;"> · {{ p.method_name }}</span>{% endif %}{% if p.lesson_type == 'probnik' and p.probnik_title %}<span style="color:var(--muted);font-weight:500;"> · {{ p.probnik_title }}</span>{% endif %}
+          {% if p.lesson_type == 'rest' %}Отдых{% else %}{{ p.lesson_label }}{% if p.lesson_type == 'practice' and p.theme %}<span style="color:var(--muted);font-weight:500;"> · {{ p.theme }}</span>{% endif %}{% if p.lesson_type == 'method' and p.method_name %}<span style="color:var(--muted);font-weight:500;"> · {{ p.method_name }}</span>{% endif %}{% if p.lesson_type == 'probnik' and p.probnik_title %}<span style="color:var(--muted);font-weight:500;"> · {{ p.probnik_title }}</span>{% endif %}{% endif %}
         </div>
       </div>
       {% endfor %}
@@ -845,9 +878,12 @@
     </div>
     {% endif %}
     <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
-      <span style="font-size:1.6em;">{% if _s.today_done %}✅{% elif _s.lesson_type == 'method' %}📘{% elif _s.lesson_type == 'probnik' %}🏆{% else %}✏️{% endif %}</span>
+      <span style="font-size:1.6em;">{% if _s.today_rest %}😌{% elif _s.today_done %}✅{% elif _s.lesson_type == 'method' %}📘{% elif _s.lesson_type == 'probnik' %}🏆{% else %}✏️{% endif %}</span>
       <div style="flex:1;">
-        {% if _s.today_done %}
+        {% if _s.today_rest %}
+        <div style="font-weight:700;color:var(--text);font-size:15px;">Сегодня выходной — отдыхай.</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:2px;">Следующее занятие — в {{ _s.next_lesson_day }}. План продолжается, долги за выходной не начисляются.</div>
+        {% elif _s.today_done %}
         <div style="font-weight:700;color:var(--text);font-size:15px;">Сегодняшнее занятие выполнено — отличная работа.</div>
         <div style="color:var(--muted);font-size:13px;margin-top:2px;">Следующее занятие — завтра: {{ _s.lesson_label }}. Заходи завтра, план продолжается.</div>
         {% else %}
@@ -871,9 +907,11 @@
         {% endif %}
         {% endif %}
       </div>
-      {% if not _s.today_done %}
+      {# PROBNIK_DAILY_V1: в день пробника кнопка не нужна — задачи
+         варианта уже в задачах дня, отдельный переход лишний (владелец, 02.11) #}
+      {% if not _s.today_done and not _s.today_rest and _s.lesson_type != 'probnik' %}
       <a href="{{ _s.cta_url }}" style="flex:none;padding:10px 18px;border-radius:10px;background:linear-gradient(135deg,#4f6cff,#5eead4);color:#fff;font-weight:700;font-size:13px;text-decoration:none;">
-        {% if _s.lesson_type == 'method' %}Изучить метод{% elif _s.lesson_type == 'probnik' %}К пробнику{% else %}Начать{% endif %}
+        {% if _s.lesson_type == 'method' %}Изучить метод{% else %}Начать{% endif %}
       </a>
       {% endif %}
     </div>
@@ -1013,7 +1051,7 @@
     </div>
     <!-- 3 задачи метода (Дипсик) прямо на месте задач дня (пилоты, 26.10) -->
     <div id="mw-root" data-mw-only="tasks"></div>
-    <script src="/static/method_week.js?v=3" defer></script>
+    <script src="/static/method_week.js?v=4" defer></script>
     {% endif %}
   </div>
 
@@ -1071,10 +1109,8 @@
       <span id="dt-summary-text"></span>
     </div>
 
-    <!-- Partial notice -->
-    <div id="dt-partial-notice" class="dt-partial-notice dt-hidden">
-      Некоторые задачи не удалось сгенерировать. Они отмечены флагом.
-    </div>
+    <!-- Partial notice: убран по просьбе владельца (01.11.2026) —
+         надпись «Некоторые задачи не удалось сгенерировать» не показываем -->
 
     {% if data and data.has_calibration %}
     <div class="dt-calibration-banner" role="status">

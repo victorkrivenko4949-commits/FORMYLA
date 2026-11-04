@@ -32,6 +32,10 @@ class DailyTaskSet(db.Model):
     reason_summary = db.Column(db.Text, nullable=True)
     pipeline_log = db.Column(db.Text, nullable=True)
     total_cost_usd = db.Column(db.Float, nullable=False, default=0.0)
+    # OLYMPIAD_DAILY_V1: контекст выдачи (JSON: olympiad_slug, grade,
+    # profile_version) — сверяется при повторном чтении: смена олимпиады/
+    # класса/профиля не отдаёт ученику несовместимый сет.
+    olympiad_context = db.Column(db.Text, nullable=True)
 
     # --- relationships ---
     user = db.relationship('User', backref=db.backref('daily_task_sets', lazy='dynamic'))

@@ -1018,6 +1018,10 @@ async function sendToTutor() {
             } else {
                 addMessageToChat('assistant', '\ud83c\udf1f ' + data.message);
             }
+        } else if (data.error === 'payment_required') {
+            // FREE_TIER_UPSELL: бесплатнику — предложение Premium вместо ошибки
+            addMessageToChat('assistant', '\ud83d\udd12 ' + (data.message || 'ИИ-тьютор доступен с Premium.') +
+                ' \u27a4 <a href="' + (data.upgrade_url || '/subscribe?feature=%D0%98%D0%98-%D1%82%D1%8C%D1%8E%D1%82%D0%BE%D1%80') + '" style="color:#38bdf8;font-weight:700;">\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0441 Premium \u2192</a>');
         } else if (data.error === 'rate_limit_exceeded') {
             addMessageToChat('assistant', '\u23f3 \u0421\u043b\u0438\u0448\u043a\u043e\u043c \u043c\u043d\u043e\u0433\u043e \u0437\u0430\u043f\u0440\u043e\u0441\u043e\u0432. \u041f\u043e\u0434\u043e\u0436\u0434\u0438\u0442\u0435 \u043c\u0438\u043d\u0443\u0442\u0443 \u0438 \u043f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0441\u043d\u043e\u0432\u0430.');
         } else if (data.ai_response) {

@@ -67,6 +67,24 @@ def create_enabled() -> bool:
     return _env_bool('BILLING_CREATE_ENABLED', False)
 
 
+DEFAULT_ALLOWED_EMAILS = 'viktorformulevitch@yandex.ru'
+
+
+def _allowed_emails() -> set:
+    raw = os.environ.get('BILLING_ALLOWED_EMAILS', DEFAULT_ALLOWED_EMAILS)
+    return {e.strip().lower() for e in raw.split(',') if e.strip()}
+
+
+def create_allowed_for(user) -> bool:
+    """Если задан список BILLING_ALLOWED_EMAILS — оплата только для этих email (независимо от
+    BILLING_CREATE_ENABLED). Пустой список (BILLING_ALLOWED_EMAILS='') — старое поведение по флагу."""
+    allowed = _allowed_emails()
+    if allowed:
+        email = (getattr(user, 'email', '') or '').strip().lower()
+        return bool(email) and email in allowed
+    return create_enabled()
+
+
 # ─────────────────────────── создание заказа ───────────────────────────
 
 def create_order(user, plan_code: str, return_url_for: Callable[[str], str]) -> Order:
@@ -75,7 +93,7 @@ def create_order(user, plan_code: str, return_url_for: Callable[[str], str]) -> 
     Повтор после тайм-аута переиспользует заказ в статусе created (тот же ключ).
     user_id / child_user_id / сумма из браузера сюда не попадают по построению.
     """
-    if not create_enabled():
+    if not create_allowed_for(user):
         raise BillingDisabled('Оплата временно недоступна.')
     product = get_product(plan_code)
     if product is None or not is_product_enabled(product):

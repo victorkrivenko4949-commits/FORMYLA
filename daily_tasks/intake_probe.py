@@ -118,24 +118,15 @@ def _advance(cs, intake, data):
 
 
 def attach(bp):
-    @bp.after_app_request
-    def redirect_completed_intake(response):
-        if request.endpoint in ('intake.start_intake', 'intake.answer_intake', 'intake.submit_intake_anchor') and response.is_json:
-            data = response.get_json(silent=True)
-            if response.status_code == 200 and isinstance(data, dict) and data.get('done') and data.get('result') and not data.get('error'):
-                data['redirect_url'] = '/daily_tasks/'
-                response.set_data(current_app.json.dumps(data))
-                response.headers['Cache-Control'] = 'no-store'
-        return response
-
     # The before_app_request gate that rendered daily_tasks/intake_probe.html
     # on /daily_tasks is intentionally gone: nobody who is already on the site
     # should see the test. New users get it inside the questionnaire.
 
     def run_probe(submit=False):
         from models import db
-        if not current_user.has_access():
-            return jsonify(error='Доступ к занятиям закончился.'), 402
+        # 2026-11-01 (владелец): гейт «has_access() → 402» убран. Вступительная
+        # анкета и пробный тест в ней — часть бесплатного онбординга;
+        # после истечения пробного дня аккаунт остаётся обычным бесплатником.
         try:
             cs, ps, intake = _load(current_user.id, lock=True)
             if not intake.get('completed') or intake.get('skipped'):

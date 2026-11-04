@@ -36,6 +36,24 @@ def generate_invite_code() -> str:
     raise RuntimeError('Failed to generate a unique invite code after 20 attempts')
 
 
+def generate_parent_invite_code() -> str:
+    """JOIN_CODE_V1 — уникальный код привязки родителя (users.parent_invite_code).
+
+    Код проверяется на уникальность и среди групп (T10Group.invite_code),
+    чтобы один и тот же код не открывал два разных сценария на /join.
+    """
+    from models import User
+
+    for _ in range(20):  # safety cap
+        code = ''.join(random.choices(_INVITE_ALPHABET, k=6))
+        if T10Group.query.filter_by(invite_code=code).first():
+            continue
+        if User.query.filter_by(parent_invite_code=code).first():
+            continue
+        return code
+    raise RuntimeError('Failed to generate a unique parent invite code after 20 attempts')
+
+
 def student_streak(user_id: int) -> int:
     """Return the current daily streak for *user_id*.
 

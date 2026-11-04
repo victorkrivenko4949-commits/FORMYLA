@@ -28,6 +28,7 @@ from . import daily_tasks_bp
 from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob, TaskPool
 from . import services
 from .services import today_in_user_tz
+from services.pilot import can_take_theme_test
 from .monthly_plan import get_or_build_plan, current_month_index, pick_day_subtopic, subtopic_title
 from utils.math_text_fixer import wrap_bare_math
 from services.streak_service import (
@@ -363,6 +364,36 @@ def _serialize_bank_items(user_id: int, bank_items) -> list:
     return out
 
 
+def _attach_debt(data: dict, user_id: int) -> None:
+    """P4 DEBT: положить блок долга в data дашборда задач дня.
+
+    Без data['debt'] шаблон не отрисует «Открыть долг: N задач».
+    Раньше долг собирали только в ветке pick_daily_set, а банк
+    (теперь основная ветка выдачи) возвращал страницу без долга —
+    блок пропал (владелец, 03.11: «верни долг»). Ошибки не роняют
+    страницу: debt=None означает «долга нет».
+    """
+    try:
+        from services.daily_debt import get_debt_items
+        debt_items = get_debt_items(user_id)
+        if debt_items:
+            # Группируем по дате выдачи
+            from collections import defaultdict
+            by_date: dict = defaultdict(list)
+            for di in debt_items:
+                by_date[di['issued_date'] or '?'].append(di)
+            data['debt'] = {
+                'total': len(debt_items),
+                'by_date': [
+                    {'date': d, 'count': len(tasks), 'tasks': tasks}
+                    for d, tasks in sorted(by_date.items(), reverse=True)
+                ],
+            }
+        # debt=None означает «долга нет» — шаблон его не отрисует
+    except Exception as _debt_err:
+        logger.warning("get_debt_items failed: %s", _debt_err)
+
+
 # ──────────────────────────────────────────────────────────────────────
 # GET /daily_tasks
 # ──────────────────────────────────────────────────────────────────────
@@ -378,8 +409,10 @@ def get_daily_tasks():
     * Генерация -> 202 ``{"status": "generating", "progress_pct": ..., ...}``
     * Готов / частично -> 200 с полным набором задач
     """
-    if not current_user.has_access():
-        return render_template('trial_expired.html'), 402
+    # 2026-11-01 (владелец): гейт «has_access() → 402 trial_expired» убран.
+    # Пробный день — это премиум на 1 день; после истечения аккаунт
+    # становится обычным бесплатником: задачи дня открыты по правилам
+    # Free (лимиты — services.limits), а не «доступ закончился».
     user_id = current_user.id
     today = today_in_user_tz()
 
@@ -396,6 +429,17 @@ def get_daily_tasks():
         _method_day = bool(_ismd(user_id))
     except Exception:
         logger.exception("is_method_day failed")
+
+    # ── OLYMPIAD_DAILY_V1: задачи дня — под выбранную олимпиаду. Контекст
+    # (только чтение) собираем рано — он нужен всем веткам рендера, включая
+    # учителя. МУТАЦИЯ (применение профиля к циклу) — строго после
+    # teacher-guard ниже: цикл куратора учителя не трогаем.
+    _daily_ctx = {'status': 'no_olympiad'}
+    try:
+        from services.daily_olympiad import daily_context as _dc
+        _daily_ctx = _dc(user_id)
+    except Exception:
+        logger.exception("daily_tasks: olympiad daily context failed")
 
     # ── TEACHER: задачи дня — практика учеников; учителю набор не выдаётся,
     # лимиты и цикл куратора для роли teacher не трогаем вообще. ──────────
@@ -417,8 +461,20 @@ def get_daily_tasks():
         }
         return render_template(
             "daily_tasks/daily_tasks_dashboard.html",
-            data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, None)},
+            data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, None), "daily_context": _daily_ctx},
         )
+
+    # ── OLYMPIAD_DAILY_V1 (мутация): применяем профиль олимпиады к циклу
+    # лениво — идемпотентно, после teacher-guard. Ошибка применения не
+    # ломает страницу: статус честно отразится как pending/no_profile.
+    try:
+        from curator.monthly_cycle import apply_olympiad_cycle as _aoc
+        _aoc(current_user.id)
+        # контекст мог измениться (профиль применился) — перечитываем
+        from services.daily_olympiad import daily_context as _dc2
+        _daily_ctx = _dc2(current_user.id)
+    except Exception:
+        logger.exception("daily_tasks: apply_olympiad_cycle failed")
 
     # ── LIMITS_V1: мягкие лимиты Free (3 задачи / 1 ИИ-разбор в день, МСК) ──
     # Лимит действует только при resolve_access=free И apply_limits=True;
@@ -434,12 +490,23 @@ def get_daily_tasks():
             log_limit_shown(current_user)
         except Exception:
             pass
+        _ntasks = _limits_svc.free_tasks_per_day()
+        _nai = _limits_svc.free_ai_per_day()
+        _resets_human = "00:00 по Москве"
+        try:
+            from datetime import datetime as _dt_l
+            _lctx["resets_human"] = _dt_l.fromisoformat(
+                _lctx.get("resets_at") or ""
+            ).strftime("%d.%m.%Y в %H:%M") + " МСК"
+        except Exception:
+            _lctx["resets_human"] = _resets_human
+        _tasks_word = 'задача' if _ntasks == 1 else 'задачи'
         data = {
             "status": "limit_reached",
             "daily_set_id": None,
             "target_date": today.isoformat(),
             "message": (
-                "Бесплатный план: 3 задачи и 1 ИИ-разбор в день. "
+                f"Бесплатный план: {_ntasks} {_tasks_word} и {_nai} ИИ-разбор в день. "
                 "Доступ восстановится в 00:00 по Москве."
             ),
             "class_level": None,
@@ -453,7 +520,7 @@ def get_daily_tasks():
         }
         return render_template(
             "daily_tasks/daily_tasks_dashboard.html",
-            data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, None)},
+            data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, None), "daily_context": _daily_ctx},
         ), 402
 
     def _limit_cap_for_new_set():
@@ -471,7 +538,15 @@ def get_daily_tasks():
         if already:
             return None  # повторное открытие не списывает
         if _lctx["tasks_remaining"] <= 0:
-            return -1
+            # Самовосстановление (LIMITS_V1): бюджет задач уже списан, но
+            # набора дня нет — выдача потерялась (сет удалён очисткой и т.п.).
+            # Бесплатник не должен видеть окно лимита ВМЕСТО своей задачи
+            # дня: возвращаем одну задачу и выдаём её (списание повторится).
+            try:
+                _limits_svc.refund(user_id, "free_tasks", 1)
+                _lctx["tasks_remaining"] = 1
+            except Exception:
+                return -1
         cap = _lctx["tasks_remaining"]
         if not _limits_svc.try_consume(user_id, "free_tasks", _lctx["tasks_limit"], n=cap):
             # конкурентный запрос списал одновременно: возможно, набор уже создан
@@ -532,6 +607,10 @@ def get_daily_tasks():
         pass
 
     # ── Цикл месяца: реальная тема дня + блокировка срезом ──────────
+    # 2026-11-01 (владелец): тест — функция Premium. Пользователям, которым
+    # тест недоступен (не пилот, без активной Premium-подписки/пробного дня),
+    # задачи дня тестом НЕ блокируем — выдаём задачи как обычно.
+    _test_required = can_take_theme_test(current_user)
     cycle_info = {}
     blocked = False
     blocked_theme_title = None
@@ -557,10 +636,56 @@ def get_daily_tasks():
     if not real_theme_title:
         real_theme_title = _theme_for_day(today, None)
 
+    # ── PROBNIK_DAILY_V1 (02.11.2026, владелец): занятие-пробник выдаёт
+    # задачи НАЗНАЧЕННОГО варианта прямо в задачах дня — из каталога
+    # олимпиад, с условием, ответом и решением; сверху в сводке — что за
+    # пробник: олимпиада, год, класс. Ответы идут через конвейер банка
+    # (bank_issues). Занятие засчитывается, когда отвечены все задачи
+    # варианта. Не день пробника / вариант не назначен — обычная выдача.
+    # ВАЖНО: проверяем ДО блокировки «Сначала — тест» (владелец, 02.11):
+    # в день пробника срез-тест по теме дня не блокирует выдачу —
+    # ученик пишет олимпиаду, а не проходит тест.
+    try:
+        from services.probnik_daily import get_probnik_day_data
+        _probnik_day = get_probnik_day_data(user_id, today)
+    except Exception:
+        logger.exception("daily_tasks: probnik day failed")
+        _probnik_day = None
+    if _probnik_day:
+        return render_template(
+            "daily_tasks/daily_tasks_dashboard.html",
+            data={**_probnik_day, "session": _session_ctx,
+                  "theme_today": _theme_for_day(today, None),
+                  "daily_context": _daily_ctx},
+        )
+
+    # ── PILOT_SCHEDULE_DAYS_V1: сегодня выходной — на дашборде НИЧЕГО
+    # (владелец, 03.11): ни карточки «Сначала — тест», ни метода, ни задач
+    # дня. Баннер плана сверху сам показывает «Сегодня выходной — отдыхай».
+    # Пробник выше по коду приоритетнее расписания: назначение куратора
+    # не прячется за выходным.
+    if _session_ctx.get('today_rest'):
+        data = {
+            "status": "rest_day",
+            "daily_set_id": None,
+            "target_date": today.isoformat(),
+            "message": "Сегодня выходной по твоему расписанию.",
+            "class_level": None,
+            "summary": None,
+            "generated_at": None,
+            "total_cost_usd": None,
+            "progress": {"completed": 0, "total": 0},
+            "items": [],
+        }
+        return render_template(
+            "daily_tasks/daily_tasks_dashboard.html",
+            data={**data, "session": _session_ctx, "theme_today": real_theme_title, "daily_context": _daily_ctx},
+        )
+
     # ── BLOCKED: если в первую неделю срез не пройден — блокируем
     # выдачу задач дня ДО обращения к банку (иначе банк вернёт
     # plan_missing/empty и пользователь не увидит требование среза). ──
-    if blocked and not _method_day:
+    if blocked and not _method_day and _test_required:
         data = {
             "status": "blocked",
             "daily_set_id": None,
@@ -582,7 +707,7 @@ def get_daily_tasks():
         }
         return render_template(
             "daily_tasks/daily_tasks_dashboard.html",
-            data={**data, "session": data.get("session") or _session_ctx, "theme_today": real_theme_title},
+            data={**data, "session": data.get("session") or _session_ctx, "theme_today": real_theme_title, "daily_context": _daily_ctx},
         )
 
     # ── День метода (пилоты): задачи дня НЕ выдаются и не генерируются —
@@ -606,7 +731,7 @@ def get_daily_tasks():
         return render_template(
             "daily_tasks/daily_tasks_dashboard.html",
             data={**data, "session": _session_ctx,
-                  "theme_today": _theme_for_day(today, None)},
+                  "theme_today": _theme_for_day(today, None), "daily_context": _daily_ctx},
         )
 
     # ── BANK: задачи дня выдаются из предзаполненного банка ─────────
@@ -657,9 +782,17 @@ def get_daily_tasks():
                     "progress": _bank_progress(user_id, _bank_items),
                     "items": _serialize_bank_items(user_id, _bank_items),
                 }
+                # P4 DEBT: банк — тоже дашборд; без refresh+data['debt'] блок
+                # «Открыть долг» пропадал у всех, кто на банке (03.11 — вернуть).
+                try:
+                    from services.daily_debt import refresh_debt_for_user
+                    refresh_debt_for_user(user_id)
+                except Exception as _debt_err:
+                    logger.warning("daily_debt refresh failed for user=%d: %s", user_id, _debt_err)
+                _attach_debt(_bank_data, user_id)
                 return render_template(
                     "daily_tasks/daily_tasks_dashboard.html",
-                    data={**_bank_data, "session": _session_ctx, "theme_today": real_theme_title},
+                    data={**_bank_data, "session": _session_ctx, "theme_today": real_theme_title, "daily_context": _daily_ctx},
                 )
     except Exception as _bank_err:
         logger.exception("daily_tasks: build_daily_set failed for user=%d: %s", user_id, _bank_err)
@@ -722,7 +855,7 @@ def get_daily_tasks():
     except Exception:
         pass
 
-    if blocked and not _method_day:
+    if blocked and not _method_day and _test_required:
         data = {
             "status": "blocked",
             "daily_set_id": None,
@@ -743,7 +876,7 @@ def get_daily_tasks():
             "probe_url": "/prep/probe",
         }
         if wants_html:
-            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level"))})
+            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level")), "daily_context": _daily_ctx})
         return jsonify({
             "status": "blocked",
             "message": data["message"],
@@ -799,7 +932,7 @@ def get_daily_tasks():
             "items": [],
         }
         if wants_html:
-            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level"))})
+            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level")), "daily_context": _daily_ctx})
         return jsonify({
             "status": "no_set",
             "message": data["message"],
@@ -867,7 +1000,7 @@ def get_daily_tasks():
                 "items": [],
             }
             if wants_html:
-                return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level"))})
+                return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "session": data.get("session") or _session_ctx, "theme_today": _theme_for_day(today, data.get("class_level")), "daily_context": _daily_ctx})
             return jsonify({
                 "status": "generating",
                 "daily_set_id": daily_set.id,
@@ -933,26 +1066,7 @@ def get_daily_tasks():
     }
 
     # ── P4 DEBT: добавляем долг в data ──────────────────────────────────
-    try:
-        from services.daily_debt import get_debt_items, get_debt_count
-        debt_items = get_debt_items(user_id)
-        if debt_items:
-            # Группируем по дате выдачи
-            from collections import defaultdict
-            by_date: dict = defaultdict(list)
-            for di in debt_items:
-                by_date[di['issued_date'] or '?'].append(di)
-            debt_summary = {
-                'total': len(debt_items),
-                'by_date': [
-                    {'date': d, 'count': len(tasks), 'tasks': tasks}
-                    for d, tasks in sorted(by_date.items(), reverse=True)
-                ],
-            }
-            data['debt'] = debt_summary
-        # debt=None означает «долга нет» — шаблон его не отрисует
-    except Exception as _debt_err:
-        logger.warning("get_debt_items failed: %s", _debt_err)
+    _attach_debt(data, user_id)
 
     # ──   Monthly plan (prep_plan from CuratorState) ────────────
     plan_data = _build_monthly_plan_data(user_id, today)
@@ -972,7 +1086,7 @@ def get_daily_tasks():
     data["session"] = _session_ctx
 
     if wants_html:
-        return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": real_theme_title})
+        return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": real_theme_title, "daily_context": _daily_ctx})
     return jsonify(data), 200
 
 
@@ -1351,6 +1465,8 @@ def daily_tasks_pool_status():
             "status": "no_pool",
             "pool_id": None,
             "message": "Пул ещё не создан",
+            # OLYMPIAD_DAILY_V1: контекст олимпиады задач дня (для клиентов API)
+            "daily_context": _daily_tasks_context(current_user.id),
         }), 404
 
     return jsonify({
@@ -1364,7 +1480,18 @@ def daily_tasks_pool_status():
             "failed": "Генерация не удалась",
         }.get(pool.status, "Неизвестный статус"),
         "valid_count": pool.valid_count,
+        # OLYMPIAD_DAILY_V1: контекст олимпиады задач дня (для клиентов API)
+        "daily_context": _daily_tasks_context(current_user.id),
     }), 200
+
+
+def _daily_tasks_context(user_id: int):
+    """Контекст олимпиады задач дня (никогда не бросает)."""
+    try:
+        from services.daily_olympiad import daily_context
+        return daily_context(user_id)
+    except Exception:
+        return {"status": "no_olympiad"}
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -1629,7 +1756,15 @@ def submit_answer_ai(item_id: int):
         user_id=current_user.id, task_id=item_id,
     ).first()
     if _bank_issue is not None:
-        return _submit_bank_answer(item_id, _bank_issue)
+        _resp = _submit_bank_answer(item_id, _bank_issue)
+        # PROBNIK_DAILY_V1: отвечены все задачи варианта пробника —
+        # завершаем занятие-пробник (идемпотентно, вне пилота — no-op).
+        try:
+            from services.probnik_daily import maybe_finish_probnik_day
+            maybe_finish_probnik_day(current_user.id)
+        except Exception:
+            logger.exception("probnik daily finish hook failed")
+        return _resp
 
     item = DailyTaskItem.query.get(item_id)
     if not item:

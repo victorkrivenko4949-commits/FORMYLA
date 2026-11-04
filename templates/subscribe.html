@@ -183,6 +183,18 @@
 .sp-trial b{font-weight:700}
 .sp-trial .sp-timer{font-family:var(--font-mono);font-weight:700;font-variant-numeric:tabular-nums}
 
+/* ── родитель/учитель: покупка только в аккаунте ребёнка ── */
+.sp-parent-note{
+  border-radius:16px;padding:var(--s8) var(--s6);
+  background:linear-gradient(135deg,rgba(99,102,241,.10),rgba(56,189,248,.06));
+  border:1px solid rgba(129,140,248,.4);
+  display:flex;flex-direction:column;align-items:center;gap:var(--s3);
+  text-align:center;
+}
+.sp-parent-note .sp-parent-note__icon{font-size:40px;line-height:1}
+.sp-parent-note h3{font-size:var(--text-lg);margin:0}
+.sp-parent-note p{color:var(--muted);font-size:var(--text-sm);margin:0;max-width:560px}
+
 /* ── карточки тарифов ── */
 .sp-plans{
   display:grid;grid-template-columns:repeat(2,1fr);gap:var(--s6);
@@ -402,7 +414,8 @@
 {% block content %}
 <div class="sub2" id="tariffs">
 
-  {% set trial_available = is_pilot and not trial_used %}
+  {# 2026-11-01: пробный день открыт всем (не только пилотам) #}
+  {% set trial_available = not trial_used %}
 
   <!-- ═══════════ СТАТУС ТАРИФА ═══════════ -->
   <div class="sp-status">
@@ -422,10 +435,24 @@
     </div>
   </div>
 
-  <!-- баннер бесплатного периода -->
+  <!-- Banner: переход с закрытого раздела (paywall) -->
+  {% set _from_feature = request.args.get('feature') or '' %}
+  {% if _from_feature %}
   <div class="sp-banner">
     <div class="sp-banner__inner reveal">
-      <b>Сейчас все разделы доступны бесплатно.</b> Платная версия выйдет 3 ноября 2026 — тарифы ниже уже можно изучить.
+      {% if _from_feature == 'Куратор' %}
+      💬 <b>Куратор</b> сейчас доступен только пилотным аккаунтам — скоро откроется в Premium. Тарифы ниже.
+      {% else %}
+      🔒 Раздел <b>«{{ _from_feature }}»</b> сейчас недоступен в бесплатной версии. Откройте его с Premium — тарифы ниже.
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- баннер бесплатной версии -->
+  <div class="sp-banner">
+    <div class="sp-banner__inner reveal">
+      <b>В бесплатной версии — 1 задача в день.</b> Адаптивный тест, каталог методов, генератор чертежей и ИИ-тьютор откроются с Premium — тарифы ниже.
     </div>
   </div>
 
@@ -446,8 +473,8 @@
         <p class="sp-hero__subtitle">Полная версия для подготовки к олимпиадам.</p>
         <p class="sp-hero__desc">Два темпа занятий: «Работяга» — 6 занятий в неделю, включая пробник и метод; «Спокойный» — 3 занятия в неделю по 1,5 часа. Оба открывают ИИ-тьютора, куратора, генератор чертежей и все задачи платформы.</p>
         <ul class="sp-hero__proof">
-          {% if trial_available %}<li><b>Пробный день бесплатно</b> — полный Premium на 24 часа</li>{% endif %}
-          <li>Бесплатный тариф: <b>3 задачи в день</b> — без карты и подписки</li>
+          {% if trial_available and not is_parent_or_teacher %}<li><b>Пробный день бесплатно</b> — полный Premium на 24 часа</li>{% endif %}
+          <li>Бесплатный тариф: <b>1 задача в день</b> — без карты и подписки</li>
           <li>Отмена в любой момент, <b>история и прогресс сохраняются</b></li>
           <li>Оплата картой или СБП через <b>ЮKassa</b></li>
         </ul>
@@ -483,18 +510,26 @@
       <h2 class="sp-section__title">Тарифы</h2>
     </div>
 
-    {% if is_pilot %}
+    {# 2026-11-02: родитель/учитель не покупает Premium в своём аккаунте #}
+    {% if is_parent_or_teacher %}
+    <div class="sp-parent-note reveal">
+      <span class="sp-parent-note__icon">👨‍👩‍👧</span>
+      <h3>Оформите это в аккаунте ребёнка</h3>
+      <p>FORMYLA Premium — учебный инструмент ученика: подписка и пробный день оформляются в аккаунте ребёнка. Войдите в аккаунт ребёнка (или попросите его зайти) — там доступны оба тарифа и бесплатный пробный день.</p>
+    </div>
+    {% else %}
+
+    {# 2026-11-01: статус пробного дня — для всех, не только пилотов #}
     {% if trial_active_until %}
     <div class="sp-trial sp-trial--active" id="spTrialBanner" data-until="{{ trial_active_until_iso }}">
       ⏳ <strong>Пробный день активен</strong> — полный доступ ещё
       <span class="sp-timer" id="spTrialTimer">…</span>.
-      После этого тариф снова станет бесплатным (3 задачи в день).
+      После этого тариф снова станет бесплатным (1 задача в день).
     </div>
     {% elif trial_used %}
     <div class="sp-trial sp-trial--used">
       Пробный день уже использован. Выбери тариф ниже — и полный доступ вернётся.
     </div>
-    {% endif %}
     {% endif %}
 
     <div class="sp-plans">
@@ -514,12 +549,13 @@
           <div><span>ИИ-тьютор · куратор · чертежи</span><b>✓</b></div>
         </div>
         <div class="sp-plan__btns">
-          {% if is_pilot %}
+          {# 2026-11-01: пробный день — для всех, не только пилотов #}
           {% if trial_used %}
           <button class="sp-btn sp-btn--trial" disabled>Пробный день уже использован</button>
           {% else %}
           <button class="sp-btn sp-btn--trial" onclick="startTrial('premium_intense', this)">Пробный день бесплатно</button>
           {% endif %}
+          {% if is_pilot or open_sales %}
           <a class="sp-btn sp-btn--primary" href="/payments/premium/checkout?plan=premium_intense">Выбрать «Работяга» →</a>
           {% else %}
           <span class="sp-btn sp-btn--primary" style="opacity:.5;cursor:default">Покупка откроется 3 ноября 2026</span>
@@ -541,12 +577,13 @@
           <div><span>ИИ-тьютор · куратор · чертежи</span><b>✓</b></div>
         </div>
         <div class="sp-plan__btns">
-          {% if is_pilot %}
+          {# 2026-11-01: пробный день — для всех, не только пилотов #}
           {% if trial_used %}
           <button class="sp-btn sp-btn--trial" disabled>Пробный день уже использован</button>
           {% else %}
           <button class="sp-btn sp-btn--trial" onclick="startTrial('premium_calm', this)">Пробный день бесплатно</button>
           {% endif %}
+          {% if is_pilot or open_sales %}
           <a class="sp-btn sp-btn--primary" href="/payments/premium/checkout?plan=premium_calm">Выбрать «Спокойный» →</a>
           {% else %}
           <span class="sp-btn sp-btn--primary" style="opacity:.5;cursor:default">Покупка откроется 3 ноября 2026</span>
@@ -556,11 +593,10 @@
     </div>
 
     <div class="sp-free-row reveal">
-      <p><b>Бесплатный тариф:</b> 3 задачи в день — остаётся доступен всегда, карта не нужна.</p>
-      {% if is_pilot %}
+      <p><b>Бесплатный тариф:</b> 1 задача в день — остаётся доступен всегда, карта не нужна; тест, методы, генератор чертежей и ИИ-тьютор — по Premium.</p>
       <p class="sp-plan__note" style="margin:0">Пробный день — 1 день полного Premium, один раз на аккаунт.</p>
-      {% endif %}
     </div>
+    {% endif %}
   </section>
 
   <!-- ═══════════ § 02 · ЧТО ВХОДИТ ═══════════ -->
@@ -618,7 +654,7 @@
         <div class="sp-step__num">03<small>МЕСЯЦ</small></div>
         <div>
           <h3>Выход на цель</h3>
-          <p>Темы повторяются уровнем выше, пробники приближаются к формату твоей олимпиады. Итог — готовность к региональному/заключительному этапу.</p>
+          <p>Темы повторяются уровнем выше, пробники приближаются к формату твоей олимпиады. Итог — уверенная готовность к своей цели.</p>
         </div>
       </article>
       <article class="sp-step reveal">
@@ -662,11 +698,13 @@
         </tbody>
       </table>
     </div>
+    {% if not open_sales %}
     <p class="sp-tablenote reveal">Кнопки покупки платных тарифов появятся на этой странице 3 ноября 2026 вместе с запуском платной версии. Пока доступен бесплатный тариф, платные указаны для ознакомления.</p>
+    {% endif %}
   </section>
 
-  <!-- ═══════════ § 05 · FAQ (пилотам — до запуска оплаты 3 ноября) ═══════════ -->
-  {% if is_pilot %}
+  <!-- ═══════════ § 05 · FAQ ═══════════ -->
+  {% if is_pilot or open_sales %}
   <section class="sp-section" id="faq">
     <div class="sp-section__head reveal">
       <span class="sp-section__no">§ 05</span>
@@ -697,23 +735,36 @@
   <section class="sp-cta">
     <div class="sp-cta__in">
       <p class="sp-cta__eyebrow">Готов начать?</p>
-      {% if trial_available %}
+      {% if is_parent_or_teacher %}
+      <h2 class="reveal">Оформите это в аккаунте ребёнка</h2>
+      <p class="reveal">Подписка и пробный день открываются в аккаунте ученика — там же занятия, тьютор и статистика.</p>
+      <div class="sp-cta__row reveal">
+        <a class="a2btn a2btn--ghost" href="/about">Подробнее о платформе</a>
+      </div>
+      {% elif trial_available %}
       <h2 class="reveal">Полный доступ — уже сегодня</h2>
       <p class="reveal">Попробуй Premium бесплатно в течение дня или выбери тариф — и занимайся в полную силу.</p>
       <div class="sp-cta__row reveal">
         <button type="button" class="a2btn a2btn--primary" onclick="startTrial('premium_intense', this)">Пробный день бесплатно</button>
         <a class="a2btn a2btn--ghost" href="/about">Подробнее о платформе</a>
       </div>
-      {% elif is_pilot %}
+      {% elif trial_used %}
       <h2 class="reveal">Пробный день {{ 'активен' if trial_active_until else 'уже использован' }}</h2>
       <p class="reveal">Полный доступ возвращается с тарифом — выбери «Работяга» или «Спокойный».</p>
       <div class="sp-cta__row reveal">
         <a class="a2btn a2btn--primary" href="#plans">Выбрать тариф →</a>
         <a class="a2btn a2btn--ghost" href="/about">Подробнее о платформе</a>
       </div>
-      {% else %}
+      {% elif not is_pilot and not open_sales %}
       <h2 class="reveal">Платная версия — 3 ноября 2026</h2>
       <p class="reveal">Тарифы уже можно изучить и выбрать — покупка откроется вместе с запуском платной версии.</p>
+      <div class="sp-cta__row reveal">
+        <a class="a2btn a2btn--primary" href="#plans">Выбрать тариф →</a>
+        <a class="a2btn a2btn--ghost" href="/about">Подробнее о платформе</a>
+      </div>
+      {% else %}
+      <h2 class="reveal">Пробный день {{ 'активен' if trial_active_until else 'уже использован' }}</h2>
+      <p class="reveal">Полный доступ возвращается с тарифом — выбери «Работяга» или «Спокойный».</p>
       <div class="sp-cta__row reveal">
         <a class="a2btn a2btn--primary" href="#plans">Выбрать тариф →</a>
         <a class="a2btn a2btn--ghost" href="/about">Подробнее о платформе</a>
@@ -725,11 +776,11 @@
 
   <!-- Липкая CTA-панель (только десктоп) -->
   <div class="sp-sticky" id="spSticky">
-    <span class="sp-sticky__text"><b>FORMYLA Premium</b> — {% if trial_available %}от 500 ₽/мес · пробный день бесплатно{% elif is_pilot and trial_active_until %}пробный день активен{% elif is_pilot %}от 500 ₽/мес{% else %}от 500 ₽/мес · старт 3 ноября 2026{% endif %}</span>
-    <a class="a2btn a2btn--primary" href="#plans">{% if is_pilot %}Выбрать тариф{% else %}К тарифам{% endif %}</a>
+    <span class="sp-sticky__text"><b>FORMYLA Premium</b> — {% if is_parent_or_teacher %}оформляется в аккаунте ребёнка{% elif trial_available %}от 500 ₽/мес · пробный день бесплатно{% elif is_pilot and trial_active_until %}пробный день активен{% elif is_pilot or open_sales %}от 500 ₽/мес{% else %}от 500 ₽/мес · старт 3 ноября 2026{% endif %}</span>
+    <a class="a2btn a2btn--primary" href="#plans">{% if is_pilot or open_sales %}Выбрать тариф{% else %}К тарифам{% endif %}</a>
   </div>
 
-  {% if is_pilot %}
+  {% if is_pilot or open_sales %}
   <div class="sp-success" id="successMsg">✅ Premium активирован! Перезагружаем страницу...</div>
   {% endif %}
 

@@ -6,7 +6,7 @@ STATUS_LABEL = {
     "official_found": "официальное", "official": "официальное",
     "AI_verified": "проверено ИИ", "gemini_solved": "Gemini",
     "official_variant": "вариант источника", "AI_generated": "сгенерировано",
-    "AI_generated_with_hints": "набросок", "unresolved": "не решено",
+    "AI_generated_with_hints": "набросок", "unresolved": "не решено", "needs_review": "требует проверки",
     "broken_text": "условие повреждено", "figure_only": "только рисунок",
 }
 QA_KEYS = ("tasks", "task_block_removed", "solution_in_text", "text_dup_in_solution",
