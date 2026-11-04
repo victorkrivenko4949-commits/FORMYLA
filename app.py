@@ -2229,6 +2229,14 @@ try:
 except Exception as _e:
     print(f"[BP] assistant_bp NOT registered: {_e}")
 
+# /api/tg/support-webhook — ответ на обращение прямо из Telegram (секрет проверяется внутри).
+try:
+    from routes.tg_support_bot import tg_support_bp
+    app.register_blueprint(tg_support_bp)
+    print("[BP] tg_support_bp registered (/api/tg/support-webhook)")
+except Exception as _e:
+    print(f"[BP] tg_support_bp NOT registered: {_e}")
+
 # /auth/telegram/* — Telegram Login Widget callback.
 try:
     from routes.telegram_auth import telegram_auth_bp
@@ -3240,6 +3248,7 @@ _PUBLIC_PATHS = (
     '/yandex_receiver',
     '/link_yandex',
     '/api/support',   # Обращение в поддержку доступно и гостям
+    '/api/tg/support-webhook',  # Webhook бота: ответ владельца из Telegram (секрет проверяется внутри)
     '/api/conference/',  # Конференции (гостевой доступ, WebRTC + SocketIO)
     '/',               # Главная страница — доступна без регистрации
     '/topics',
@@ -13730,7 +13739,9 @@ def api_cancel_subscription():
 # СТРАНИЦА "О САЙТЕ" + ФОРМА ПОДДЕРЖКИ С EMAIL-УВЕДОМЛЕНИЯМИ
 # ═══════════════════════════════════════════════════════════════════
 
-from services.telegram_notify import send_support_email, send_review_email
+from services.telegram_notify import (
+    send_support_email, send_review_email, send_support_telegram,
+)
 
 # Простой rate-limit: один user ≤ 5 обращений за час
 _SUPPORT_RATE_LIMIT = {}  # in-memory, для prod лучше Redis
@@ -14013,6 +14024,17 @@ def submit_support():
             import logging
             logging.warning(f'[support] email send raised: {_mail_err}')
             ok, err = False, str(_mail_err)[:500]
+
+        # 2b. Мгновенное уведомление в Telegram — best-effort, запрос не падает.
+        try:
+            send_support_telegram(
+                ticket_id=new_id, nickname=nickname, email=email,
+                category=category, message=message_text, page_url=page_url,
+                has_attachments=bool(email_attachments),
+            )
+        except Exception as _tg_err:
+            import logging
+            logging.warning(f'[support] telegram notify raised: {_tg_err}')
 
         if new_id:
             try:

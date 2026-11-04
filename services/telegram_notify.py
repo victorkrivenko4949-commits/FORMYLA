@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Email-уведомления для FORMYLA.net: support-форма и отзывы."""
+"""Уведомления для FORMYLA.net: email (support-форма, отзывы) и Telegram (поддержка)."""
 import logging
 import os
 
@@ -272,3 +272,91 @@ def send_review_email(mail_instance, *, nickname, email, rating, message,
     except Exception as e:
         logging.exception('review email send failed (both Resend and SMTP)')
         return False, str(e)
+
+
+def send_support_telegram(*, ticket_id, nickname, email, category,
+                          message, page_url, has_attachments=False):
+    """Мгновенное уведомление владельцу о новом обращении в поддержку.
+
+    Нужны переменные окружения:
+      TELEGRAM_BOT_TOKEN        — токен бота (тот же, что у Login Widget);
+      SUPPORT_NOTIFY_TG_CHAT_ID — chat_id владельца (личка с ботом).
+    Ссылку на раздел поддержки строит из DOMAIN_URL, если он задан
+    и не localhost.
+    Возвращает (ok, error). Никогда не бросает исключений.
+    """
+    token = (os.environ.get('TELEGRAM_BOT_TOKEN') or '').strip()
+    chat_id = (os.environ.get('SUPPORT_NOTIFY_TG_CHAT_ID') or '').strip()
+    if not token or not chat_id:
+        return False, ('Telegram не настроен. Задайте TELEGRAM_BOT_TOKEN '
+                       'и SUPPORT_NOTIFY_TG_CHAT_ID в env.')
+
+    try:
+        cat_labels = {
+            'bug': 'баг',
+            'suggestion': 'предложение',
+            'question': 'вопрос',
+            'other': 'сообщение',
+        }
+        cat_label = cat_labels.get(category, 'сообщение')
+        head = 'Новое обращение'
+        if ticket_id:
+            head += ' #' + str(ticket_id)
+
+        lines = [
+            '<b>' + _esc(head) + '</b> (' + _esc(cat_label) + ')',
+            'От: ' + _esc(nickname or 'Гость'),
+        ]
+        if email:
+            lines.append('Email: ' + _esc(email))
+        if page_url:
+            lines.append('Страница: ' + _esc(page_url))
+        lines.extend(['', _esc((message or '')[:3000])])
+        if has_attachments:
+            lines.extend(['', '📎 Есть вложения — смотрите в админке'])
+        domain = (os.environ.get('DOMAIN_URL') or '').strip().rstrip('/')
+        if domain and 'localhost' not in domain and '127.0.0.1' not in domain:
+            lines.extend([
+                '',
+                '<a href="%s">Открыть поддержку</a>'
+                % _esc(domain + '/admin/support'),
+            ])
+        text = '\n'.join(lines)
+
+        return tg_send_text(chat_id, text, parse_mode='HTML')
+    except Exception as e:
+        logging.warning('[support-tg] build error: %s', str(e)[:300])
+        return False, str(e)[:300]
+
+
+def tg_send_text(chat_id, text, parse_mode=None):
+    """Отправить сообщение через Bot API (TELEGRAM_BOT_TOKEN).
+
+    parse_mode: None — обычный текст, 'HTML' — с HTML-тегами.
+    Возвращает (ok, error). Не бросает исключений; токен в ошибках скрывается.
+    """
+    token = (os.environ.get('TELEGRAM_BOT_TOKEN') or '').strip()
+    if not token or not chat_id:
+        return False, 'Telegram не настроен: нет TELEGRAM_BOT_TOKEN или chat_id.'
+    try:
+        import requests
+
+        payload = {'chat_id': chat_id, 'text': text,
+                   'disable_web_page_preview': True}
+        if parse_mode:
+            payload['parse_mode'] = parse_mode
+        r = requests.post(
+            'https://api.telegram.org/bot' + token + '/sendMessage',
+            json=payload,
+            timeout=5,
+        )
+        if r.ok:
+            return True, None
+        logging.warning('[tg] sendMessage failed: %s %s',
+                        r.status_code, str(r.text)[:200])
+        return False, 'Telegram HTTP %s' % r.status_code
+    except Exception as e:
+        # В тексте ошибки urllib3 может встретиться путь /bot<TOKEN>/… — не логируем токен.
+        msg = str(e).replace(token, '***')[:300]
+        logging.warning('[tg] send error: %s', msg)
+        return False, msg
