@@ -7,14 +7,14 @@
       {% for c in b['items'] %}
       <div class="st-card">
         <div class="t">{{ c.title }}</div>
-        <div class="v">{{ c.value }}</div>
+        <div class="v{% if c.small %} sm{% endif %}">{{ c.value }}</div>
         {% if c.sub %}<div class="s">{{ c.sub }}</div>{% endif %}
       </div>
       {% endfor %}
     </div>
   {% elif b.type == 'table' %}
     {% if b.title %}<h3 style="margin:18px 0 8px;color:#e2e8f0;font-size:16px;">{{ b.title }}</h3>{% endif %}
-    <table class="st" style="margin-bottom:18px;">
+    <table class="st{% if b.left %} st-text{% endif %}" style="margin-bottom:18px;">
       <thead><tr>{% for h in b.header %}<th>{{ h }}</th>{% endfor %}</tr></thead>
       <tbody>
       {% for row in b.rows %}
@@ -24,6 +24,8 @@
       {% endfor %}
       </tbody>
     </table>
+  {% elif b.type == 'search' %}
+    <form method="get" class="st-period" style="margin:6px 0 16px" role="search"><label for="st-person-q">Найти человека</label><input id="st-person-q" type="search" name="q" value="{{ b.value }}" placeholder="{{ b.placeholder }}"><button type="submit">Открыть</button></form>
   {% elif b.type == 'tabs' %}
     <div class="st-tabs" role="group" aria-label="{{ b.title or 'Переключатель' }}">{% if b.title %}<span class="lbl">{{ b.title }}:</span>{% endif %}{% for it in b['items'] %}<a href="{{ it.href }}" class="{% if it.active %}active{% endif %}"{% if it.active %} aria-current="true"{% endif %}>{{ it.text }}</a>{% endfor %}</div>
   {% elif b.type == 'bar' %}

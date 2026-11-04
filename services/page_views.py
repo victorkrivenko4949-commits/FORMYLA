@@ -37,6 +37,7 @@ INTAKE_PREFIX = '/intake'
 SKIP_PREFIXES = ('/static/', '/api/', '/admin/', '/sw.js', '/offline', '/favicon',
                  '/site.webmanifest', '/login/', '/_')
 
+_BOT_RE = re.compile(r'bot|crawl|spider|slurp|headless|python-requests|curl/|wget|httpx', re.I)
 _ID_SEG = re.compile(r'^(\d+|[0-9a-fA-F]{16,}|[0-9a-fA-F-]{32,36})$')
 _tables_ready = False
 
@@ -134,6 +135,8 @@ def _after_request(resp):
             return resp
         p = request.path or '/'
         if p.startswith(SKIP_PREFIXES) or _is_admin_user():
+            return resp
+        if _BOT_RE.search(request.headers.get('User-Agent') or ''):
             return resp
         norm = normalize_path(p)
         now = time.time()
@@ -260,3 +263,21 @@ def first_view_at():
     except Exception:
         _db().session.rollback()
         return None
+
+
+def link_anon_to_user(anon_id, user_id) -> int:
+    """После регистрации: просмотры гостя с этим anon_id привязываем к аккаунту,
+    чтобы был виден путь ДО регистрации. Возвращает число строк."""
+    if not anon_id or not user_id:
+        return 0
+    ensure_tables()
+    if not _tables_ready:
+        return 0
+    try:
+        with _db().engine.begin() as conn:
+            res = conn.execute(text('UPDATE page_views SET user_id = :u WHERE anon_id = :a AND user_id IS NULL'),
+                               {'u': int(user_id), 'a': str(anon_id)})
+            return int(getattr(res, 'rowcount', 0) or 0)
+    except Exception as e:  # noqa: BLE001
+        logger.warning('page_views.link_anon_to_user: %r', e)
+        return 0

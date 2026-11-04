@@ -73,9 +73,9 @@ SECTIONS = [
          note='Распределение серий (streak_records), доля ≥ 7 дней — контроль правила серии для Free с 3 задачами.'),
     # Монетизация
     dict(slug='limits', title='Лимиты', group='Монетизация', kind='view', ready=True,
-         note='limit_hit по дням и когортам A/B, доля от DAU. Экран для решения 11.11.'),
+         note='Экран лимита (limit_shown) по дням и когортам A/B, доля от DAU.'),
     dict(slug='paywall', title='Paywall и витрина', group='Монетизация', kind='view', ready=True,
-         note='paywall_view → subscribe_view → payment_success по точке входа (from=).'),
+         note='Лимит → витрина → оформление → попытка платежа → оплата; кто начал оплату и бросил.'),
     dict(slug='subscriptions', title='Подписки', group='Монетизация', kind='view', ready=True,
          note='Активные по тарифам, MRR и прогресс к 100 тыс. ₽/мес, истекающие, отмены.'),
     dict(slug='founders', title='Основатели', group='Монетизация', kind='view', ready=True,
@@ -96,6 +96,8 @@ SECTIONS = [
     dict(slug='daily_pool', title='Пул задач дня', group='Продукт', kind='embed', target='/admin/daily_pool', ready=True),
     # Люди
     dict(slug='support', title='Поддержка', group='Люди', kind='embed', target='/admin/support', ready=True),
+    dict(slug='person', title='Путь человека', group='Люди', kind='view', ready=True,
+         note='Всё, что сайт знает об одном человеке, по времени, и вероятная причина ухода.'),
     dict(slug='survey_behavior', title='Опросы и поведение', group='Люди', kind='view', ready=True,
          note='Что делали после ответа в опросах: вернулись, решали задачи, оплатили.'),
     dict(slug='surveys', title='Опросы и оценки', group='Люди', kind='view', ready=True),
@@ -253,8 +255,10 @@ def funnel_counts(d_from: date, d_to: date) -> dict:
     """Уникальные пользователи/аноны по каждому шагу за период."""
     start, end = _utc_bounds(d_from, d_to)
     rows = _q("""
-        SELECT event, COUNT(DISTINCT COALESCE(CAST(user_id AS TEXT), anon_id, CAST(id AS TEXT))) AS n
-        FROM funnel_events WHERE created_at >= :s AND created_at < :e GROUP BY event
+        SELECT CASE WHEN event = 'limit_shown' THEN 'limit_hit' ELSE event END AS ev,
+               COUNT(DISTINCT COALESCE(CAST(user_id AS TEXT), anon_id, CAST(id AS TEXT))) AS n
+        FROM funnel_events WHERE created_at >= :s AND created_at < :e
+        GROUP BY CASE WHEN event = 'limit_shown' THEN 'limit_hit' ELSE event END
     """, s=start, e=end)
     return {str(r[0]): int(r[1] or 0) for r in rows}
 
@@ -262,7 +266,7 @@ def funnel_counts(d_from: date, d_to: date) -> dict:
 def funnel_by_day(d_from: date, d_to: date):
     start, end = _utc_bounds(d_from, d_to)
     rows = _q(f"""
-        SELECT {_day_expr()} AS day, event, COUNT(*) AS n
+        SELECT {_day_expr()} AS day, CASE WHEN event = 'limit_shown' THEN 'limit_hit' ELSE event END AS ev, COUNT(*) AS n
         FROM funnel_events WHERE created_at >= :s AND created_at < :e
         GROUP BY 1, 2 ORDER BY 1 DESC
     """, s=start, e=end)
@@ -356,7 +360,8 @@ def section(slug):
         from routes import admin_stats_sections as sec
         from routes import admin_stats_journey as jr
         from routes import admin_stats_native as nat
-        builder = sec.VIEWS.get(slug) or jr.VIEWS.get(slug) or nat.VIEWS.get(slug)
+        from routes import admin_stats_person as per
+        builder = sec.VIEWS.get(slug) or jr.VIEWS.get(slug) or nat.VIEWS.get(slug) or per.VIEWS.get(slug)
     except Exception as e:  # noqa: BLE001
         logger.warning('admin_stats_sections import failed: %r', e)
         builder = None

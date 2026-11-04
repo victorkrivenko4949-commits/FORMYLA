@@ -132,7 +132,11 @@ def journey(d_from: date, d_to: date):
     reach['intake_done'] = _event_users("'intake_done'", '', uids)
     reach['intake_start'] |= reach['intake_done']
     reach['first_task'] = _event_users("'first_task_solved'", '', uids)
-    reach['paywall'] = _event_users("'paywall_view','limit_hit','subscribe_view'", '', uids)
+    reach['paywall'] = _event_users("'paywall_view','limit_hit','limit_shown','subscribe_view'", '', uids)
+    if _has_table('page_views'):   # витрина и оформление — по журналу страниц
+        rows = _q("SELECT DISTINCT user_id FROM page_views WHERE path IN ('/subscribe', '/payments/premium/checkout') "
+                  f"AND user_id IN ({_in(uids)})") or []
+        reach['paywall'] |= {int(r[0]) for r in rows}
     reach['paid'] = _paid_users(uids)
     if _has_table('readiness_survey_answers'):
         rows = _q(f"SELECT user_id FROM readiness_survey_answers WHERE user_id IN ({_in(uids)})") or []
@@ -182,10 +186,10 @@ def journey(d_from: date, d_to: date):
         nxt = STEPS[[k for k, _ in STEPS].index(stop) + 1][0]
         stuck_ids = sorted(reach[stop] - reach[nxt], key=lambda u: info[u][1] or datetime.min, reverse=True)
         pages = _last_pages(stuck_ids[:STUCK_LIMIT])
-        blocks.append({'type': 'table',
+        blocks.append({'type': 'table', 'left': True,
                        'title': f'Остановились на шаге «{STEP_TITLES[stop]}» (не дошли до «{STEP_TITLES[nxt]}»)',
                        'header': ['Пользователь', 'ID', 'Зарегистрировался (UTC)', 'Последняя страница'],
-                       'rows': [[{'text': info[u][0] or 'Без ника', 'href': f'/admin/base/user/{u}'}, u,
+                       'rows': [[{'text': info[u][0] or 'Без ника', 'href': f'/admin/stats/person?id={u}'}, u,
                                  info[u][1].strftime('%d.%m.%Y %H:%M') if info[u][1] else '—', pages.get(u, '—')]
                                 for u in stuck_ids[:STUCK_LIMIT]],
                        'empty': 'Никого.'})
@@ -286,19 +290,28 @@ def lost_users(d_from: date, d_to: date):
     cnt = Counter(pages.get(u, '— (нет данных о странице)') for u in lost)
     nicks = {int(r[0]): (r[1] or '') for r in (_q(f"SELECT id, nickname FROM users WHERE id IN ({_in(list(lost)[:2000])})") or [])}
     recent = sorted(lost, key=lambda u: lost[u], reverse=True)[:STUCK_LIMIT]
+    from routes.admin_stats_person import REASONS, reason_text, signals_for
+    sig = signals_for(list(lost)[:3000])
+    reasons = Counter(sig[u]['primary'] for u in sig)
+    reason_rows = [[REASONS[c][0], n, _fmt_pct(_pct(n, len(sig)))] for c, n in
+                   sorted(reasons.items(), key=lambda kv: (REASONS[kv[0]][1], -kv[1]))]
     return [
         switch,
         {'type': 'cards', 'items': [
             {'title': 'Ушли', 'value': len(lost), 'sub': f'нет активности {days}+ дн., из {len(last)} с активностью'},
             {'title': 'Из них платили', 'value': len(paid_now), 'sub': 'есть платёж за всё время'},
         ]},
+        {'type': 'table', 'left': True, 'title': 'Вероятная причина ухода (главный сигнал у каждого)', 'header': ['Причина', 'Людей', 'Доля'],
+         'rows': reason_rows},
         {'type': 'table', 'title': 'Последняя страница у ушедших', 'header': ['Страница', 'Людей', 'Доля'],
          'rows': [[p, n, _fmt_pct(_pct(n, len(lost)))] for p, n in cnt.most_common(30)]},
-        {'type': 'table', 'title': f'Недавно ушедшие (до {STUCK_LIMIT})',
-         'header': ['Пользователь', 'ID', 'Последняя активность', 'Дней назад', 'Последняя страница'],
-         'rows': [[{'text': nicks.get(u) or 'Без ника', 'href': f'/admin/base/user/{u}'}, u, lost[u].strftime('%d.%m.%Y'),
-                   (today - lost[u]).days, pages.get(u, '—')] for u in recent]},
-        {'type': 'note', 'text': 'Последняя страница берётся из трекера времени (site_time_beat.last_page) — это место последнего «удара» таймера, '
+        {'type': 'table', 'left': True, 'title': f'Недавно ушедшие (до {STUCK_LIMIT})',
+         'header': ['Пользователь', 'ID', 'Последняя активность', 'Дней назад', 'Последняя страница', 'Вероятная причина'],
+         'rows': [[{'text': nicks.get(u) or 'Без ника', 'href': f'/admin/stats/person?id={u}'}, u, lost[u].strftime('%d.%m.%Y'),
+                   (today - lost[u]).days, pages.get(u, '—'),
+                   reason_text(sig[u]) if u in sig else '—'] for u in recent]},
+        {'type': 'note', 'text': 'Причина — правило по фактам из базы (платёж, лимит, анкета, опросы, задачи), главный сигнал по важности; '
+         'полный путь человека открывается по нику. Последняя страница — из трекера времени (site_time_beat.last_page), '
          'с точностью до пары минут. Период в панели на этот отчёт не влияет.'},
     ]
 
