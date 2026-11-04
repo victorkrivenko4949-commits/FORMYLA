@@ -370,6 +370,23 @@ def section(slug):
     return _render(s, 'admin/stats_blocks.html', blocks=blocks)
 
 
+def _spark(values, w=100, h=26):
+    """Точки SVG-polyline для мини-графика; None, если рисовать нечего."""
+    if len(values) < 2 or not any(values):
+        return None
+    top = max(values)
+    step = w / (len(values) - 1)
+    return ' '.join(f'{i * step:.1f},{h - 2 - (v / top) * (h - 4):.1f}' for i, v in enumerate(values))
+
+
+def _series(days_map, d_from, d_to, event):
+    out, d = [], d_from
+    while d <= d_to:
+        out.append(int((days_map.get(str(d)) or {}).get(event, 0)))
+        d += timedelta(days=1)
+    return out
+
+
 def _delta(cur, prev):
     """Изменение к прошлому периоду: (текст, класс) или None, если сравнивать не с чем."""
     if not prev:
@@ -388,17 +405,18 @@ def view_overview(s):
     prev_to = d_from - timedelta(days=1)
     prev_from = prev_to - timedelta(days=span - 1)
     prev_counts = funnel_counts(prev_from, prev_to)
+    by_day = funnel_by_day(d_from, d_to)
     cards = []
     for ev, title in FUNNEL_STEPS:
         cards.append({'key': ev, 'title': title, 'yesterday': y_counts.get(ev, 0), 'period': p_counts.get(ev, 0),
                       'prev': prev_counts.get(ev, 0), 'delta': _delta(p_counts.get(ev, 0), prev_counts.get(ev, 0)),
-                      'link': '/admin/stats/funnel'})
+                      'spark': _spark(_series(by_day, d_from, d_to, ev)), 'link': '/admin/stats/funnel'})
     cards.insert(0, {'key': 'dau', 'title': 'DAU (время на сайте)', 'yesterday': dau(yesterday),
                      'period': None, 'link': '/admin/stats/users'})
     cards.append({'key': 'limit_hit', 'title': 'Упёрлись в лимит', 'yesterday': y_counts.get('limit_hit', 0),
                   'period': p_counts.get('limit_hit', 0), 'prev': prev_counts.get('limit_hit', 0),
                   'delta': _delta(p_counts.get('limit_hit', 0), prev_counts.get('limit_hit', 0)),
-                  'link': '/admin/stats/limits'})
+                  'spark': _spark(_series(by_day, d_from, d_to, 'limit_hit')), 'link': '/admin/stats/limits'})
     rev_y = revenue(yesterday, yesterday)
     rev_p = revenue(d_from, d_to)
     rev_prev = revenue(prev_from, prev_to)

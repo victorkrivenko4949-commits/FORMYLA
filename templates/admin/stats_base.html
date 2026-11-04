@@ -31,7 +31,7 @@
 <input class="st-search" id="st-section-search" type="search" placeholder="Например: задачи, опросы" autocomplete="off">
 <nav aria-label="Меню отчётов">
 {% for group, items in nav %}
-<details class="st-nav-group" open>
+<details class="st-nav-group"{% if group not in ('Продукт', 'Система') or section.group == group %} open{% endif %}>
 <summary>{{ group }}</summary>
 {% for s in items %}
 <a data-st-link href="/admin/stats/{{ s.slug }}?p={{ period }}&amp;from={{ d_from }}&amp;to={{ d_to }}" class="{% if s.slug == section.slug %}active{% endif %}{% if not s.ready %} soon{% endif %}" {% if s.slug == section.slug %}aria-current="page"{% endif %}><span>{{ s.title }}</span>{% if not s.ready %}<span class="since">Запланировано{% if s.since %}: {{ s.since }}{% endif %}</span>{% endif %}</a>

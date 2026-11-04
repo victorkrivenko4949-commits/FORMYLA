@@ -320,3 +320,25 @@ def test_overview_shows_previous_period_delta(app):
     cl = _admin_client(app)
     r = cl.get('/admin/stats/overview?p=7')
     assert r.status_code == 200 and 'было' in r.get_data(as_text=True)
+
+
+def test_overview_sparkline_and_collapsed_menu(app):
+    _prep_journey_tables(app)
+    u = _user(app, 'x')
+    _event(app, u, 'signup', ago_min=60)
+    _event(app, _user(app, 'y'), 'signup', ago_min=60 * 30)
+    cl = _admin_client(app)
+    html = cl.get('/admin/stats/overview?p=7').get_data(as_text=True)
+    assert '<polyline' in html
+    assert 'class="st-nav-group">' in html          # «Продукт» и «Система» свёрнуты
+    assert 'class="st-nav-group" open>' in html     # остальные раскрыты
+    # в свёрнутой группе раздел открывается раскрытым
+    html = cl.get('/admin/stats/ai_usage').get_data(as_text=True)
+    assert html.count('class="st-nav-group">') == 1
+
+
+def test_spark_helper():
+    from routes.admin_stats import _spark
+    assert _spark([0, 0, 0]) is None and _spark([5]) is None
+    pts = _spark([0, 5, 10])
+    assert len(pts.split()) == 3 and pts.split()[0].startswith('0.0,')
