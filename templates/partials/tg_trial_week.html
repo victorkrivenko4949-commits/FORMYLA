@@ -4,11 +4,13 @@
         закрывается крестиком и прячется на 3 дня — чтобы не захламлять задачи дня);
       • окна с двумя шагами: «Перейти в канал» (личная ссылка) → «Проверить подписку»
         (после возврата из Telegram проверка запускается сама).
-    Открыть окно из любого места: tgTrialOpen()  (например, карточка на /subscribe). -#}
+    Открыть окно из любого места: tgTrialOpen()  (например, карточка на /subscribe).
+    Админ: ?tg_week=preview — посмотреть полоску и окно со своего аккаунта (неделя не выдаётся). -#}
 {%- set tgt = tg_trial_state() -%}
-{%- if tgt.state == 'available' -%}
+{%- set _preview = current_user.is_admin and request.args.get('tg_week') == 'preview' -%}
+{%- if tgt.state == 'available' or _preview -%}
 {%- set _p = request.path or '' -%}
-{%- set _strip_ok = is_free_user and not (_p.startswith('/subscribe') or _p.startswith('/payments') or _p.startswith('/login') or _p.startswith('/intake') or _p.startswith('/onboarding')) -%}
+{%- set _strip_ok = (is_free_user or _preview) and not (_p.startswith('/subscribe') or _p.startswith('/payments') or _p.startswith('/login') or _p.startswith('/intake') or _p.startswith('/onboarding')) -%}
 <style>
 .tgt-strip{box-sizing:border-box;display:none;align-items:center;gap:10px;margin:0 auto 14px;max-width:1100px;
   padding:9px 12px 9px 14px;border-radius:12px;border:1px solid rgba(42,171,238,.35);
@@ -79,6 +81,11 @@
     <button type="button" class="tgt-close" aria-label="Закрыть" onclick="tgTrialClose()">×</button>
 
     <div id="tgtMain">
+      {%- if _preview %}
+      <div class="tgt-err show" style="margin:0 0 12px;background:rgba(244,185,66,.1);border-color:rgba(244,185,66,.4);color:#f4d58a">
+        Предпросмотр для админа: так окно видят бесплатные ученики. Неделя не выдаётся.
+      </div>
+      {%- endif %}
       <div class="tgt-gift" aria-hidden="true">🎁</div>
       <h3 id="tgtTitle">Неделя Premium бесплатно</h3>
       <p class="tgt-lead">Подпишись на наш Telegram-канал — и получи <b>7 дней Premium «Работяга»</b> без карты.</p>
@@ -134,6 +141,7 @@
   var KEY = 'tgTrialStripHiddenUntil';
   var CSRF = {{ csrf_token()|tojson }};
   var busy = false, linksLoaded = false, step1Clicked = false, goNext = '/schedule';
+  var PREVIEW = {{ 'true' if _preview else 'false' }};
 
   function $(id){ return document.getElementById(id); }
   var YM = {{ (config.YANDEX_METRIKA_ID or '')|tojson }};
@@ -165,7 +173,7 @@
     j.textContent = ready ? 'Перейти в канал ↗' : 'Готовим ссылку…';
   }
   function loadLinks(){
-    if(linksLoaded) return;
+    if(linksLoaded || PREVIEW) return;
     linksLoaded = true;
     setJoinReady(false);
     var done = false;
@@ -205,6 +213,12 @@
 
   function claim(tgAuth, auto){
     if(busy) return;
+    if(PREVIEW){   // предпросмотр: показываем экран успеха без запроса к серверу
+      $('tgtUntil').textContent = fmt(new Date(Date.now() + 7*24*3600*1000).toISOString().slice(0, 19).replace('T', ' '));
+      $('tgtMain').style.display = 'none';
+      $('tgtOk').classList.add('show');
+      return;
+    }
     busy = true; showErr('');
     var btn = $('tgtClaimBtn');
     if(btn){ btn.disabled = true; btn.textContent = 'Проверяем подписку…'; }
@@ -249,7 +263,7 @@
       });
   }
   window.tgTrialClaim = function(){ claim(null); };
-  window.tgTrialGo = function(){ location.href = goNext; };
+  window.tgTrialGo = function(){ if(PREVIEW){ window.tgTrialClose(); return; } location.href = goNext; };
 
   // Вернулся из Telegram после «Перейти в канал» — проверяем сам, без лишнего клика.
   document.addEventListener('visibilitychange', function(){
@@ -261,7 +275,7 @@
   });
 
   // Открыть окно по ссылке вида ?tg_week=1 (для поста в канале / рассылки)
-  try{ if(/[?&]tg_week=1\b/.test(location.search)) window.tgTrialOpen('link'); }catch(e){}
+  try{ if(/[?&]tg_week=(1|preview)\b/.test(location.search)) window.tgTrialOpen('link'); }catch(e){}
 })();
 </script>
 {%- endif -%}

@@ -363,3 +363,39 @@ def test_link_endpoint(tg_app, fake_bot):
     r = client.get('/api/tg-trial/link')
     assert r.status_code == 200, r.data
     assert r.get_json()['invite_link'].startswith('https://t.me/+inv')
+
+
+def _render_promo(app, user, qs=''):
+    """Отрендерить партиал окна от имени user (контекст-процессора в тестовом app нет)."""
+    from flask import render_template
+    from flask_login import login_user
+    from services import tg_trial
+    with app.test_request_context('/daily_tasks' + qs):
+        login_user(user)
+        return render_template('partials/tg_trial_week.html', is_free_user=False,
+                               tg_trial_state=lambda: tg_trial.get_state(user),
+                               csrf_token=lambda: 'x')
+
+
+def test_admin_preview_shows_window(tg_app):
+    """Админ (id 1, пилот с Premium) по ?tg_week=preview видит окно; без параметра — нет."""
+    from models import db, User
+    admin = db.session.get(User, 1) or User(id=1, email='admin@x.ru', is_guest=False)
+    db.session.add(admin)
+    db.session.commit()
+    html = _render_promo(tg_app, admin, '?tg_week=preview')
+    assert 'Предпросмотр для админа' in html and 'Проверить подписку' in html
+    assert 'var PREVIEW = true' in html
+    assert 'tgtModal' not in _render_promo(tg_app, admin)
+
+
+def test_preview_param_ignored_for_regular_user(tg_app):
+    """Обычный пользователь с Premium по ?tg_week=preview окно не видит."""
+    from models import db
+    u = _user('prem@x.ru', tg_id='321')
+    db.session.execute(text(
+        "INSERT INTO subscriptions (user_id, plan, status, expires_at, is_trial) "
+        "VALUES (:u, 'premium_intense', 'active', :e, 0)"),
+        {'u': u.id, 'e': (datetime.utcnow() + timedelta(days=30)).isoformat(sep=' ')})
+    db.session.commit()
+    assert 'tgtModal' not in _render_promo(tg_app, u, '?tg_week=preview')
