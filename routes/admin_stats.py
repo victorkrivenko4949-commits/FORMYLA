@@ -47,7 +47,8 @@ SOURCE_TITLES = {
 ENV_FLAGS = ('PAYWALL_ENABLED', 'PAYWALL_START_DATE', 'PAYWALL_PREFIXES', 'PAYWALL_AB',
              'METHOD_WEEK_ALLOWED_USERS', 'FREE_TASKS_PER_DAY', 'FREE_AI_PER_DAY', 'TRIAL_DAYS',
              'FUNNEL_ENABLED', 'ADMIN_STATS_ENABLED', 'ADMIN_STATS_REDIRECTS', 'YANDEX_METRIKA_ID',
-             'PLAUSIBLE_DOMAIN', 'ADMIN_BASE_AUTOREG', 'PWA_AUTOREG', 'SURVEYS_AUTOREG')
+             'PLAUSIBLE_DOMAIN', 'ADMIN_BASE_AUTOREG', 'PWA_AUTOREG', 'PWA_ALLOWED_USERS',
+             'PWA_STATS_EXCLUDE_USERS', 'SURVEYS_AUTOREG')
 
 # slug, title, group, kind (view|embed|stub), target (url для embed), ready, since, note
 SECTIONS = [
@@ -57,6 +58,8 @@ SECTIONS = [
          note='Онлайн, активность, все люди, учёба, отзывы — по вкладкам.'),
     dict(slug='subscriptions', title='Подписки', group='Главное', kind='view', ready=True,
          note='У кого какая подписка, до какого числа и сколько заплатил.'),
+    dict(slug='pwa', title='Приложение', group='Главное', kind='view', ready=True,
+         note='Сколько людей поставили сайт как приложение и на каких устройствах. Основная платформа — Android.'),
     dict(slug='person', title='Путь человека', group='Главное', kind='view', ready=True,
          note='Всё об одном человеке: откуда пришёл, как входит, что делал и почему, скорее всего, ушёл.'),
     # Где теряем людей
@@ -105,7 +108,6 @@ SECTIONS = [
     dict(slug='drawings_method_week', title='Чертежи и метод недели', group='Продукт', kind='view', ready=True,
          note='Сколько чертежей строят по дням и где людям показывалась оплата.'),
     # Система
-    dict(slug='pwa', title='Установки приложения', group='Система', kind='embed', target='/admin/pwa/stats', ready=True),
     dict(slug='env_flags', title='Настройки сервера', group='Система', kind='view', ready=True),
 ]
 GROUP_ORDER = ('Главное', 'Где теряем людей', 'Люди и опросы', 'Откуда приходят', 'Деньги', 'Продукт', 'Система')
@@ -253,6 +255,15 @@ def premium_users() -> dict:
     return {'total': total, 'pilots': pilots, 'subscribed': subscribed}
 
 
+def app_users() -> int | None:
+    """Сколько людей когда-либо ставили приложение (PWA), без тестовых. None — таблицы ещё нет."""
+    from routes.admin_stats_sections import _has_table
+    if not _has_table('pwa_installs'):
+        return None
+    rows = _q("SELECT COUNT(DISTINCT user_id) FROM pwa_installs WHERE is_test = :f AND user_id IS NOT NULL", f=False)
+    return int(rows[0][0] or 0) if rows else None
+
+
 def funnel_counts(d_from: date, d_to: date) -> dict:
     """Уникальные пользователи/аноны по каждому шагу за период."""
     start, end = _utc_bounds(d_from, d_to)
@@ -295,6 +306,9 @@ def revenue(d_from: date, d_to: date) -> float:
 
 
 def dau(d: date) -> int:
+    from routes.admin_stats_sections import _has_table
+    if not _has_table('pwa_installs'):
+        return None
     rows = _q("SELECT COUNT(DISTINCT user_id) FROM site_time_sections WHERE section = 'general' AND day = :d", d=d)
     try:
         return int(rows[0][0] or 0) if rows else 0
@@ -364,8 +378,9 @@ def section(slug):
         from routes import admin_stats_native as nat
         from routes import admin_stats_person as per
         from routes import admin_stats_users as usr
+        from routes import admin_stats_app as app_sec
         builder = (usr.VIEWS.get(slug) or sec.VIEWS.get(slug) or jr.VIEWS.get(slug) or nat.VIEWS.get(slug)
-                   or per.VIEWS.get(slug))
+                   or per.VIEWS.get(slug) or app_sec.VIEWS.get(slug))
     except Exception as e:  # noqa: BLE001
         logger.warning('admin_stats_sections import failed: %r', e)
         builder = None
@@ -434,7 +449,7 @@ def view_overview(s):
     rev_prev = revenue(prev_from, prev_to)
     return _render(s, 'admin/stats_overview.html', cards=cards, rev_y=rev_y, rev_p=rev_p, rev_prev=rev_prev,
                    rev_delta=_delta(rev_p, rev_prev), prev_from=prev_from, prev_to=prev_to,
-                   yesterday=yesterday, today=today, premium=premium_users())
+                   yesterday=yesterday, today=today, premium=premium_users(), app_users=app_users())
 
 
 def view_funnel(s):
