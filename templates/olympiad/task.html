@@ -19,7 +19,7 @@
 
     <p style="margin-bottom: 12px;">
         <a href="{{ url_for('olympiad.probnik', code=probnik.code) }}"
-           class="oly-btn-ghost oly-btn oly-btn-sm"><- к пробнику «{{ probnik.title }}»</a>
+           class="oly-btn-ghost oly-btn oly-btn-sm">← к пробнику «{{ probnik.title }}»</a>
     </p>
 
     <header style="margin-bottom: 18px;">
@@ -137,7 +137,7 @@
     <!-- Полное решение (свёрнуто по умолчанию, раскрывается по клику) -->
     <section class="oly-reveal" data-open="false">
         <header class="oly-reveal-head">
-            <span>[OK] Полное решение</span>
+            <span>✓ Полное решение</span>
             <span class="oly-reveal-arrow">▾</span>
         </header>
         <div class="oly-reveal-body">
@@ -533,12 +533,12 @@ function olympiadTask(cfg) {
                     this.status = data.attempt.status;
                     if (data.attempt.self_score !== undefined) this.selfScore = data.attempt.self_score;
                 }
-                this.saveHint = '[OK] сохранено';
+                this.saveHint = '✓ сохранено';
                 setTimeout(()=>{ this.saveHint=''; }, 1500);
                 return data;
             } catch (e) {
                 console.error('attempt save failed', e);
-                this.saveHint = '[!] не удалось сохранить';
+                this.saveHint = '⚠️ не удалось сохранить';
                 return null;
             }
         },
@@ -749,7 +749,7 @@ function olympiadTask(cfg) {
             if (data.is_correct) {
                 html = `
                     <div class="feedback-correct">
-                        <div class="feedback-icon">[OK]</div>
+                        <div class="feedback-icon">✓</div>
                         <h3>Правильно!</h3>
                         <p class="xp-earned">+${data.xp_earned} XP</p>
                         <div class="ai-feedback">${aiHtml}</div>
@@ -967,7 +967,7 @@ function olympiadTask(cfg) {
             var aiHtml = escapeHtml(data.ai_feedback || '').replace(/\n/g,'<br>');
             if (data.is_correct) {
                 html = '<div class="feedback-correct">' +
-                       '  <div class="feedback-icon">[OK]</div>' +
+                       '  <div class="feedback-icon">✓</div>' +
                        '  <h3>Правильно!</h3>' +
                        '  <p class="xp-earned">+' + (data.xp_earned||0) + ' XP</p>' +
                        '  <div class="ai-feedback">' + aiHtml + '</div>' +

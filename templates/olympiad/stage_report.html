@@ -70,7 +70,7 @@
                 <span x-show="saving" x-cloak>Сохранение…</span>
             </button>
             <a class="oly-btn-ghost oly-btn" href="{{ url_for('olympiad.probnik', code=probnik.code) }}">
-                <- к пробнику
+                ← к пробнику
             </a>
             <span style="color: var(--text-muted); font-size: .9em;" x-text="hint"></span>
         </p>
@@ -130,10 +130,10 @@ function olympiadStageReport(cfg) {
                 });
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 const data = await r.json();
-                this.hint = '[OK] сохранено (' + (data.total_score ?? this.totalScore) + ' баллов)';
+                this.hint = '✓ сохранено (' + (data.total_score ?? this.totalScore) + ' баллов)';
             } catch (e) {
                 console.error('save failed', e);
-                this.hint = '[!] не удалось сохранить';
+                this.hint = '⚠️ не удалось сохранить';
             } finally {
                 this.saving = false;
                 setTimeout(() => { this.hint = ''; }, 3000);

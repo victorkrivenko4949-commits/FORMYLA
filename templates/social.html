@@ -3,6 +3,8 @@
 {% block title %}Социальная сеть — FORMYLA.net{% endblock %}
 
 {% block content %}
+<style>@media (max-width:768px){.social-wrap{padding:8px 14px 24px}.social-wrap > div{padding:18px !important}}</style>
+<div class="social-wrap">
 <h1 class="page-title">Социальная сеть</h1>
 <p class="page-subtitle">Найди друзей и учителей для совместного обучения</p>
 
@@ -254,4 +256,5 @@ document.getElementById('nickname-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') setNickname();
 });
 </script>
+</div>
 {% endblock %}

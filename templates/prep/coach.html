@@ -12,7 +12,17 @@
 .coach-card h2 { margin: 0 0 14px; font-size: 16px; color: #E6EBF7; }
 
 .stats-top { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 24px; align-items: start; margin-bottom: 24px; }
-@media (max-width: 1080px) { .stats-top { grid-template-columns: 1fr; } }
+@media (max-width: 1080px) { .stats-top { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) {
+  .stats-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 8px !important; margin-bottom: 14px !important; }
+  .stats-kpi { padding: 10px 10px 12px !important; margin: 0 !important; }
+  .stats-kpi-label { font-size: 9.5px !important; letter-spacing: .3px !important; line-height: 1.25; min-height: 2.5em; }
+  .stats-kpi-value { font-size: 24px !important; }
+  .stats-kpi-sub { font-size: 10px !important; line-height: 1.25; }
+}
+.stats-top > * { min-width: 0; }
+#generalRadarCard .radar-chart { position: relative; width: 100%; }
+#generalRadarCard .radar-chart canvas { max-width: 100% !important; height: auto !important; }
 
 .stats-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .stats-kpi { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 16px; }
@@ -95,8 +105,10 @@
 .section-radar-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; padding: 14px; }
 .section-radar-card h3 { margin: 0 0 4px; font-size: 14px; color: #E6EBF7; font-weight: 600; }
 .section-radar-card .radar-subtitle { font-size: 11px; color: rgba(255,255,255,0.45); margin-bottom: 8px; }
-.section-radar-card .radar-chart { display: flex; justify-content: center; }
-.section-radar-card .radar-chart canvas { width: 100%; max-width: 240px; height: auto; }
+.section-radar-card .radar-chart { position: relative; display: block; width: 100%; max-width: 300px; margin: 0 auto; }
+.section-radar-card .radar-chart canvas { display: block; width: 100% !important; max-width: 100% !important; height: auto !important; }
+.section-radar-card { min-width: 0; }
+.section-radars-grid { grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); }
 .section-radar-card .radar-legend { margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.4); max-height: 120px; overflow-y: auto; }
 .section-radar-card .radar-legend-item { display: flex; justify-content: space-between; padding: 2px 4px; }
 .section-radar-card .radar-legend-item .legend-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -104,7 +116,9 @@
 .section-radar-card .radar-legend-item.no-data .legend-pct { color: rgba(255,255,255,0.25); }
 
 /* ── Theme results ── */
-.te-scroll { overflow-x: auto; }
+.te-scroll { overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
+#themeEvalCard { min-width: 0; max-width: 100%; overflow: hidden; }
+.te-empty { color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1.5; margin: 4px 0 0; }
 .te-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .te-table th, .te-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.07); vertical-align: middle; white-space: nowrap; }
 .te-table th { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: rgba(255,255,255,0.45); font-weight: 600; }
@@ -306,7 +320,7 @@
       },
       options: {
         responsive: true, maintainAspectRatio: true,
-        layout: { padding: 10 },
+        layout: { padding: { top: 6, bottom: 6, left: 14, right: 14 } },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -321,7 +335,7 @@
           ticks: { stepSize: 1, color: 'rgba(255,255,255,0.3)', backdropColor: 'transparent', font: { size: 9 } },
           grid: { color: 'rgba(107,149,255,0.15)' },
           angleLines: { color: 'rgba(107,149,255,0.2)' },
-          pointLabels: { color: function (ctx) { return cols[ctx.index] || 'rgba(255,255,255,0.5)'; }, font: { size: 9, weight: '600' } }
+          pointLabels: { color: function (ctx) { return cols[ctx.index] || 'rgba(255,255,255,0.5)'; }, font: { size: 10, weight: '600' }, padding: 4 }
         } }
       }
     });
@@ -335,7 +349,11 @@
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         if (!d || !d.themes || !d.themes.length) {
-          teBody.innerHTML = '<tr><td colspan="7" class="te-wait">Пока нет решённых задач дня. Итог по теме появится после 10 задач.</td></tr>';
+          // Пустое состояние — обычным абзацем, без таблицы: иначе 7 колонок
+          // с nowrap распирают страницу на телефоне.
+          var teWrap = teBody.closest('.te-scroll');
+          if (teWrap) teWrap.outerHTML = '<p class="te-empty">Пока нет решённых задач дня. Итог по теме появится после 10 задач.</p>';
+          else teBody.innerHTML = '<tr><td colspan="7" class="te-wait">Пока нет решённых задач дня. Итог по теме появится после 10 задач.</td></tr>';
           return;
         }
         var block = d.block || 10;

@@ -191,7 +191,7 @@
         var html = '';
         for (var i = 0; i < results.length; i++) {
             var r = results[i];
-            var icon = r.is_correct ? '[OK]' : '[ERROR]';
+            var icon = r.is_correct ? '✓' : '✗';
             var topicText = escapeHtml(r.topic || typeLabels[r.test_type] || r.test_type || '—');
             var diffText = r.difficulty ? ('ур.' + r.difficulty) : '';
             var timeText = formatTime(r.time_spent_sec);

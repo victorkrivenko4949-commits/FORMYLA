@@ -74,7 +74,7 @@
         }
         track.addEventListener('scroll', onScroll, { passive: true });
 
-        /* ── Клик/тап по точке -> программно листаем ──────────────── */
+        /* ── Клик/тап по точке → программно листаем ──────────────── */
         dots.forEach(function (dot, i) {
             dot.addEventListener('click', function () {
                 var slide = slides[i];

@@ -87,7 +87,7 @@
           document.documentElement.classList.remove('katex-loading');
           document.documentElement.classList.add('katex-ready');
           if (window.console && console.log) {
-            console.log('[OK] KaTeX rendered in ' + Math.round(performance.now()-t0) + 'ms');
+            console.log('✓ KaTeX rendered in ' + Math.round(performance.now()-t0) + 'ms');
           }
         }
       });
@@ -318,7 +318,7 @@
         <!-- Drawer header -->
         <div class="drawer-header">
             <span class="drawer-logo">FORMYLA.net</span>
-            <button class="drawer-close" onclick="closeDrawer()" aria-label="Закрыть"></button>
+            <button class="drawer-close" onclick="closeDrawer()" aria-label="Закрыть">✕</button>
         </div>
 
         <!-- User info -->
@@ -624,7 +624,7 @@
         console.log("Введенный ответ:", userAnswer);
         
         if (!userAnswer) {
-            feedbackEl.innerHTML = '<span style="color: #f59e0b;">[!]️ Введите ответ</span>';
+            feedbackEl.innerHTML = '<span style="color: #f59e0b;">⚠️ Введите ответ</span>';
             return;
         }
         

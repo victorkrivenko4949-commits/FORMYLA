@@ -6,7 +6,7 @@
 <div class="oly-wrap">
     <p style="margin-bottom: 12px;">
         <a href="{{ url_for('grade.domain_' ~ task.grade, domain=task.domain) }}"
-           class="oly-btn-ghost oly-btn oly-btn-sm"><- к теме «{{ domain_label }}»</a>
+           class="oly-btn-ghost oly-btn oly-btn-sm">← к теме «{{ domain_label }}»</a>
     </p>
 
     <header style="margin-bottom: 24px;">
@@ -32,7 +32,7 @@
 
     {% if task.answer %}
     <details class="oly-card" style="margin-top: 16px;">
-        <summary style="cursor: pointer; font-weight: 600;">[OK] Показать ответ</summary>
+        <summary style="cursor: pointer; font-weight: 600;">✓ Показать ответ</summary>
         <div class="oly-md" style="margin-top: 12px;">{{ task.answer | md_render }}</div>
     </details>
     {% endif %}

@@ -501,10 +501,29 @@
      полей. Инлайн-стил на .page-daily-tasks задаёт десктопные 16px,
      поэтому здесь нужен !important. */
   @media (max-width: 768px) {
-    .page-daily-tasks {
-      padding-left: 0 !important;
-      padding-right: 0 !important;
+    /* Страница с нормальными полями (текст, таймер, плашки не липнут к краю),
+       а сетка карточек вылезает за поля — карточки остаются на всю ширину. */
+    /* Класс page-daily-tasks висит и на <body>, и на обёртке — поля удваивались. */
+    body.page-daily-tasks { padding-left: 0 !important; padding-right: 0 !important; }
+    .page-daily-tasks .page-daily-tasks, main .page-daily-tasks { padding-left: 1rem !important; padding-right: 1rem !important; }
+    .page-daily-tasks #dt-task-grid { margin-left: -1rem; margin-right: -1rem; }
+  }
+
+  /* MOBILE_MODAL_V1: окно задачи на телефоне — на весь экран, крупные кнопки. */
+  @media (max-width: 768px) {
+    #dt-modal { padding: 0 !important; background: var(--surface) !important; }
+    #dt-modal .dt-modal-box {
+      border: 0 !important; border-radius: 0 !important; box-sizing: border-box;
+      min-height: 100%; padding: 52px 16px 28px !important; max-width: none !important;
     }
+    #dt-modal #dt-modal-close { top: 6px !important; right: 6px !important; width: 44px; height: 44px; font-size: 30px !important; }
+    #dt-modal .dt-modal-body { font-size: 16.5px !important; margin-bottom: 14px !important; }
+    #dt-modal .kb-field-btn { flex: 0 0 48px; width: 48px; height: 48px; padding: 0 !important; font-size: 20px !important; border-radius: 12px; }
+    #dt-modal #dt-answer-input { min-height: 48px; }
+    #dt-modal #dt-solution-input { min-height: 120px; }
+    #dt-modal #dt-photo-btn { min-height: 44px; font-size: 14px !important; }
+    #dt-modal #dt-submit-btn { width: 100%; min-height: 50px; font-size: 16px !important; }
+    #dt-modal > .dt-modal-box > div[style*="flex-wrap:wrap"] { display: block !important; }
   }
 
   /* Calibration badge on card */

@@ -74,7 +74,7 @@
                                 {% else %}
                                     background: rgba(239, 68, 68, 0.2); color: #ef4444;
                                 {% endif %}">
-                                {% if answer.score is defined and answer.score >= 1 %}[OK] Верно{% elif answer.score is defined and answer.score == 0 %}[!]️ Частично{% else %}[ERROR] Неверно{% endif %}
+                                {% if answer.score is defined and answer.score >= 1 %}✓ Верно{% elif answer.score is defined and answer.score == 0 %}⚠️ Частично{% else %}✗ Неверно{% endif %}
                             </span>
                         </div>
                         {% if answer.task_text %}

@@ -145,7 +145,7 @@ function showTeacherState(data) {
 function showFailedState(data) {
     var el = document.getElementById('dt-failed-state');
     var msg = (data && (data.error_message || data.summary)) || '';
-    msg = String(msg || '').replace(/^[ERROR]\s*/, '');  // убираем дубликат значка
+    msg = String(msg || '').replace(/^(✗|\[ERROR\])\s*/, '');  // убираем дубликат значка
 
     if (el) {
         // Заполняем сообщение, если шаблон содержит #dt-failed-message
@@ -257,10 +257,10 @@ function renderTaskGrid(items) {
         if (item.user_answer !== null) {
             if (item.is_correct) {
                 statusRow.classList.add('dt-correct');
-                statusRow.textContent = '[OK] Верно';
+                statusRow.textContent = '✓ Верно';
             } else {
                 statusRow.classList.add('dt-incorrect');
-                statusRow.textContent = '[ERROR] Неверно';
+                statusRow.textContent = '✗ Неверно';
             }
         } else {
             statusRow.classList.add('dt-pending');
@@ -270,7 +270,7 @@ function renderTaskGrid(items) {
         if (item.is_flagged) {
             var flagBadge = document.createElement('span');
             flagBadge.className = 'dt-flag-badge';
-            flagBadge.textContent = '[!]️ Флаг';
+            flagBadge.textContent = '⚠️ Флаг';
             statusRow.appendChild(flagBadge);
         }
 
@@ -406,7 +406,7 @@ function startGeneration() {
         console.error('Generation error:', error);
         if (genBtn) genBtn.disabled = false;
         if (regenBtn) regenBtn.disabled = false;
-        if (stepName) stepName.textContent = '[ERROR] ' + error.message;
+        if (stepName) stepName.textContent = '✗ ' + error.message;
     });
 }
 
@@ -508,7 +508,7 @@ function pollJobStatus() {
             } else if (data.state === 'failed') {
                 stopPolling();
                 var stepName = document.getElementById('dt-step-name');
-                if (stepName) stepName.textContent = '[ERROR] Ошибка генерации';
+                if (stepName) stepName.textContent = '✗ Ошибка генерации';
                 setTimeout(function() {
                     location.reload();
                 }, 3000);
@@ -714,7 +714,7 @@ function openTaskModal(item, index) {
     // Flagged warning
     if (item.is_flagged) {
         html += '<div class="dt-flagged-warning">';
-        html += '<span class="dt-flag-icon">[!]️</span>';
+        html += '<span class="dt-flag-icon">⚠️</span>';
         html += '<span>Решение этой задачи не гарантировано — качество проверяется. Отнесись к ней критически.</span>';
         html += '</div>';
     }
@@ -741,7 +741,7 @@ function openTaskModal(item, index) {
         html += '<label class="dt-answer-label">️ Твой ответ:</label>';
         html += '<input type="text" class="dt-answer-input" id="dt-answer-input" placeholder="Введи ответ..." autocomplete="off">';
         html += '<div class="dt-answer-actions">';
-        html += '<button class="dt-btn-check" id="dt-btn-check" onclick="submitAnswer(\'' + item.id + '\')">[OK] Проверить</button>';
+        html += '<button class="dt-btn-check" id="dt-btn-check" onclick="submitAnswer(\'' + item.id + '\')">✓ Проверить</button>';
         html += '</div>';
         html += '</div>';
 
@@ -755,7 +755,7 @@ function openTaskModal(item, index) {
     } else {
         // Already answered — show result
         var resultClass = item.is_correct ? 'dt-correct' : 'dt-incorrect';
-        var resultIcon = item.is_correct ? '[OK]' : '[ERROR]';
+        var resultIcon = item.is_correct ? '✓' : '✗';
         var resultText = item.is_correct ? 'Верно!' : 'Неверно';
 
         html += '<div class="dt-result ' + resultClass + '">';
@@ -834,7 +834,7 @@ function submitAnswer(itemId) {
         if (!form) return;
 
         var resultClass = result.is_correct ? 'dt-correct' : 'dt-incorrect';
-        var resultIcon = result.is_correct ? '[OK]' : '[ERROR]';
+        var resultIcon = result.is_correct ? '✓' : '✗';
         var resultText = result.is_correct ? 'Верно!' : 'Неверно';
 
         var resultHtml = '<div class="dt-result ' + resultClass + '">';
@@ -896,7 +896,7 @@ function submitAnswer(itemId) {
         console.error('Submit error:', error);
         if (btn) {
             btn.disabled = false;
-            btn.textContent = '[OK] Проверить';
+            btn.textContent = '✓ Проверить';
         }
         if (hintBtn) hintBtn.disabled = false;
     });
@@ -906,7 +906,7 @@ function submitAnswer(itemId) {
 /**
  * Update the task card in the grid after an answer is submitted,
  * so the user sees the result without a page reload.
- * Tasks remain visible all day with their [OK]/[ERROR] status.
+ * Tasks remain visible all day with their [OK]/✗ status.
  */
 function updateTaskCardInPlace(itemId, isCorrect) {
     // Find all cards in the grid
@@ -934,10 +934,10 @@ function updateTaskCardInPlace(itemId, isCorrect) {
                 statusRow.className = 'dt-card-status';
                 if (isCorrect) {
                     statusRow.classList.add('dt-correct');
-                    statusRow.textContent = '[OK] Верно';
+                    statusRow.textContent = '✓ Верно';
                 } else {
                     statusRow.classList.add('dt-incorrect');
-                    statusRow.textContent = '[ERROR] Неверно';
+                    statusRow.textContent = '✗ Неверно';
                 }
             }
         }
@@ -994,7 +994,7 @@ function getHint(itemId) {
             console.error('Hint error:', error);
             btn.disabled = false;
             btn.textContent = ' Подсказка';
-            container.innerHTML = '<div class="dt-hint-box">[!]️ ' + error.message + '</div>';
+            container.innerHTML = '<div class="dt-hint-box">⚠️ ' + error.message + '</div>';
         });
 }
 
@@ -1012,7 +1012,7 @@ function getHint(itemId) {
 })();
 
 /**
- * Fallback LaTeX -> styled spans when KaTeX CDN is unavailable.
+ * Fallback LaTeX → styled spans when KaTeX CDN is unavailable.
  * Converts \(...\) to <span class="dt-latex-fallback">...</span>
  * and \[...\] to <div class="dt-latex-fallback dt-latex-display">...</div>.
  */

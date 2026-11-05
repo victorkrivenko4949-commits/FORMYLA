@@ -56,7 +56,7 @@ function openProgressModal() {
             console.error('[Progress]', err);
             if (loading) loading.style.display = 'none';
             if (empty) {
-                empty.querySelector('p').textContent = '[!]️ ' + (err.message || 'Ошибка загрузки');
+                empty.querySelector('p').textContent = '⚠️ ' + (err.message || 'Ошибка загрузки');
                 empty.style.display = 'block';
             }
         });

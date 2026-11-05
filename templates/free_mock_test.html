@@ -80,7 +80,7 @@
                     style="padding: 20px 60px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); transition: transform 0.3s;"
                     onmouseover="this.style.transform='translateY(-2px)'"
                     onmouseout="this.style.transform='translateY(0)'">
-                [OK] Завершить тест и проверить ответы
+                ✓ Завершить тест и проверить ответы
             </button>
         </div>
 
@@ -169,7 +169,7 @@
     function renderMath() {
         if (typeof reRenderMath === 'function') {
             reRenderMath(document.body);
-            console.log('[OK] KaTeX rendered all formulas');
+            console.log('✓ KaTeX rendered all formulas');
         } else {
             // Если KaTeX еще не загружен, ждем
             console.log('Waiting for KaTeX to load...');

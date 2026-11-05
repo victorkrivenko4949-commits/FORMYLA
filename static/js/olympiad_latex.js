@@ -45,7 +45,7 @@ function shareOlymp() {
       .then(function() {
         var btn = document.querySelector('.btn-share');
         if (btn) {
-          btn.textContent = '[OK] Ссылка скопирована!';
+          btn.textContent = '✓ Ссылка скопирована!';
           setTimeout(function() { btn.textContent = ' Поделиться'; }, 2000);
         }
       });

@@ -69,7 +69,7 @@
 
 {# ════════════════════════════════════════════════════════════════════════
    DESKTOP / TABLET (>768px) — старая верстка без изменений.
-   Скрывается на мобильных через .m-hide -> display:none в mobile.css.
+   Скрывается на мобильных через .m-hide → display:none в mobile.css.
    ════════════════════════════════════════════════════════════════════════ #}
 <div class="m-hide">
   <div style="text-align:center;margin-bottom:8px;">
@@ -121,7 +121,7 @@
 
 {# ════════════════════════════════════════════════════════════════════════
    MOBILE HOME SLIDER (≤768px) — свайп-пейджер главных разделов.
-   Показывается только на узких экранах через .m-only -> media-query в mobile.css.
+   Показывается только на узких экранах через .m-only → media-query в mobile.css.
    Прототип: 3 слайда (Задачи дня / Темы / Олимпиады).
    ════════════════════════════════════════════════════════════════════════ #}
 <section class="m-only mhome" id="mHome"
@@ -148,7 +148,7 @@
                 </div>
                 <div class="mhome-progress-text">
                   {% if dq.completed_count >= dq.total_count %}
-                    [OK] Готово на сегодня!
+                    ✓ Готово на сегодня!
                   {% else %}
                     {{ dq.completed_count }} / {{ dq.total_count }} задач
                   {% endif %}
@@ -161,7 +161,7 @@
         </div>
 
         <a href="/daily_tasks" class="mhome-btn mhome-btn--primary">
-          Решать сегодня ->
+          Решать сегодня →
         </a>
       </div>
     </article>
@@ -259,7 +259,7 @@
             aria-label="К разделу: Олимпиады" data-target="2"></button>
   </div>
 
-  <p class="mhome-hint"><- свайп влево / вправо -></p>
+  <p class="mhome-hint">← свайп влево / вправо →</p>
 </section>
 
 {% endblock %}

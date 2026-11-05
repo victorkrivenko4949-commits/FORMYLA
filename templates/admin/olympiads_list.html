@@ -137,7 +137,7 @@
                 <td>{{ o.short_name }}</td>
                 <td>{{ o.grades_display }}</td>
                 <td><span class="adm-color-dot" style="background:{{ o.color_hex }};"></span>{{ o.color_hex }}</td>
-                <td>{{ '[OK]' if o.is_active else '[ERROR]' }}</td>
+                <td>{{ '✓' if o.is_active else '✗' }}</td>
                 <td class="adm-actions">
                     <a href="{{ url_for('admin_olympiads.edit_olympiad', oid=o.id) }}" class="adm-btn adm-btn-sm">️ Ред.</a>
                     <form method="post" action="{{ url_for('admin_olympiads.delete_olympiad', oid=o.id) }}"
