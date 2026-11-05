@@ -240,3 +240,28 @@ def test_state_fresh_after_claim(tg_app):
     assert tg_trial.get_state(u)['state'] == 'available'
     tg_trial.claim_week(u)
     assert tg_trial.get_state(u)['state'] == 'active'    # кэш сброшен выдачей
+
+
+def test_check_membership_uses_api_base(monkeypatch):
+    """TELEGRAM_API_BASE перенаправляет запросы к Bot API на прокси."""
+    from services import tg_trial
+
+    seen = {}
+
+    class _Resp:
+        def json(self):
+            return {'ok': True, 'result': {'status': 'member'}}
+
+    def fake_get(url, params=None, timeout=None):
+        seen['url'] = url
+        return _Resp()
+
+    monkeypatch.setenv('TELEGRAM_BOT_TOKEN', '123:abc')
+    monkeypatch.setenv('TELEGRAM_API_BASE', 'https://tgapi.example.org/')
+    monkeypatch.setattr(tg_trial.requests, 'get', fake_get)
+    assert tg_trial.check_membership('42') is True
+    assert seen['url'] == 'https://tgapi.example.org/bot123:abc/getChatMember'
+
+    monkeypatch.delenv('TELEGRAM_API_BASE')
+    tg_trial.check_membership('42')
+    assert seen['url'].startswith('https://api.telegram.org/bot')

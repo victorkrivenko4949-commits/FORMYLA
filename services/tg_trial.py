@@ -54,6 +54,13 @@ def _bot_token() -> str:
     return (os.environ.get('TELEGRAM_BOT_TOKEN') or '').strip()
 
 
+def telegram_api_base() -> str:
+    """Адрес Bot API. С российского сервера api.telegram.org недоступен —
+    тогда TELEGRAM_API_BASE указывает на прокси (Cloudflare Worker),
+    который пересылает запросы /bot<token>/… как есть."""
+    return (os.environ.get('TELEGRAM_API_BASE') or 'https://api.telegram.org').strip().rstrip('/')
+
+
 class TgTrialError(Exception):
     """Ошибка с понятным пользователю текстом и кодом для фронтенда."""
 
@@ -74,7 +81,7 @@ def check_membership(telegram_id: str) -> bool:
         raise TgTrialError('config', 'Проверка подписки временно недоступна. Попробуй чуть позже.', 503)
     try:
         resp = requests.get(
-            f'https://api.telegram.org/bot{token}/getChatMember',
+            f'{telegram_api_base()}/bot{token}/getChatMember',
             params={'chat_id': '@' + channel_username(), 'user_id': telegram_id},
             timeout=5,
         )
