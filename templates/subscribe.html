@@ -553,8 +553,8 @@
     <div class="sp-tgweek reveal">
       <div class="sp-tgweek__icon" aria-hidden="true">🎁</div>
       <div class="sp-tgweek__txt">
-        <b>Неделя Premium бесплатно</b>
-        <span>Подпишись на наш Telegram-канал @{{ tgw.channel }} — и получи 7 дней «Работяги» без карты{% if tgw.trial_day_active %} (пробный день заменится неделей){% endif %}.</span>
+        <b>{% if tgw.has_premium %}+7 дней Premium бесплатно{% else %}Неделя Premium бесплатно{% endif %}</b>
+        <span>Подпишись на наш Telegram-канал @{{ tgw.channel }} — и получи {% if tgw.has_premium %}+7 дней к твоему Premium{% else %}7 дней «Работяги» без карты{% endif %}{% if tgw.trial_day_active %} (пробный день заменится неделей){% endif %}.</span>
       </div>
       <button type="button" class="sp-tgweek__btn" onclick="tgTrialOpen('subscribe')">Получить неделю</button>
     </div>
