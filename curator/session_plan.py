@@ -365,7 +365,8 @@ def _eff_slot(user_id: int, lessons: List[Dict[str, Any]], seq: int) -> int:
     return ((seq - diag - 1) % BLOCK_SIZE) + 1
 
 
-def _lesson_type_for_position(user_id: int, completed: int) -> str:
+def _lesson_type_for_position(user_id: int, completed: int,
+                              on_date: Optional[date] = None) -> str:
     """Занятие 1 блока — метод, остальные (2-6) — практика.
 
     ПРОБНИК УБРАН ИЗ РОТАЦИИ (владелец, 03.11.2026): 6-я позиция блока —
@@ -376,8 +377,12 @@ def _lesson_type_for_position(user_id: int, completed: int) -> str:
     premium): без методов — только практика (тест + задачи дня).
     Критерий — дата, а не момент: единый для назначения,
     долгов и отображения (ревью 28.10.2026).
+
+    on_date — день занятия (по умолчанию сегодня). Полоса плана передаёт
+    дату карточки: иначе на неделе 1 все будущие дни, включая дни ПОСЛЕ
+    диагностики, показывались практикой без метода (05.11.2026).
     """
-    if _is_diag_date(user_id, date.today()):
+    if _is_diag_date(user_id, on_date or date.today()):
         return 'practice'
     pos = (completed % BLOCK_SIZE) + 1
     if pos == 1:
@@ -904,7 +909,15 @@ def session_info(user_id: int) -> Dict[str, Any]:
             else:
                 next_seq = 1  # истории нет, сегодня выходной
             cur_slot = _eff_slot(user_id, lessons, next_seq)
-            t = _lesson_type_for_position(user_id, cur_slot - 1)
+            # тип превью — по дате СЛЕДУЮЩЕГО дня занятий, а не сегодняшней
+            next_day = date.today() + timedelta(days=1)
+            if chosen:
+                for _i in range(1, 8):
+                    _d = date.today() + timedelta(days=_i)
+                    if _d.weekday() in chosen:
+                        next_day = _d
+                        break
+            t = _lesson_type_for_position(user_id, cur_slot - 1, next_day)
             lesson = {'seq': next_seq, 'lesson_type': t,
                       'theme': None, 'method_name': None,
                       'probnik_title': None, 'method_code': None,
@@ -944,7 +957,10 @@ def session_info(user_id: int) -> Dict[str, Any]:
         plan = []
         next_lesson_day = None
         if chosen:
-            slot_cursor = cur_slot
+            # Неделя 1 (диагностика) не занимает слоты блока: первый урок
+            # после неё — слот 1 (метод). Пока сегодня диагностика, _eff_slot
+            # даёт для сегодняшнего урока артефакт «6 из 6» — начинаем с 1.
+            slot_cursor = 1 if _is_diag_date(user_id, date.today()) else cur_slot
             for i in range(7):
                 day = date.today() + timedelta(days=i)
                 wd = day.weekday()
@@ -958,9 +974,12 @@ def session_info(user_id: int) -> Dict[str, Any]:
                         'is_today': (i == 0),
                     })
                     continue
-                lt = _lesson_type_for_position(user_id, slot_cursor - 1)
+                diag_day = _is_diag_date(user_id, day)
+                lt = _lesson_type_for_position(user_id, slot_cursor - 1, day)
                 entry = {
-                    'slot': slot_cursor,
+                    # день диагностики — без номера в блоке 1-из-6
+                    'slot': None if diag_day else slot_cursor,
+                    'diag': diag_day,
                     'lesson_type': lt,
                     'lesson_label': LESSON_LABELS.get(lt, lt),
                     'state': (('current' if not today_rest else 'tomorrow')
@@ -974,7 +993,8 @@ def session_info(user_id: int) -> Dict[str, Any]:
                     entry['method_name'] = lesson['method_name']
                     entry['probnik_title'] = lesson['probnik_title']
                 plan.append(entry)
-                slot_cursor = (slot_cursor % BLOCK_SIZE) + 1
+                if not diag_day:
+                    slot_cursor = (slot_cursor % BLOCK_SIZE) + 1
             # ближайший следующий день занятий (для баннера в выходной)
             for i in range(1, 8):
                 d = date.today() + timedelta(days=i)
@@ -1019,6 +1039,10 @@ def session_info(user_id: int) -> Dict[str, Any]:
             'block_size': BLOCK_SIZE,
             'completed_lessons': completed,
             'week_one': week_one,
+            # день диагностики N из 7 (для текста «Сегодня — диагностика»)
+            'diag_day_num': (
+                (date.today() - (_week1_end_date(user_id) - timedelta(days=7))).days + 1
+                if week_one else None),
             'theme': lesson['theme'],
             'method_name': lesson['method_name'],
             'probnik_code': lesson['probnik_code'],

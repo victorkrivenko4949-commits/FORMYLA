@@ -879,7 +879,7 @@
       <div style="flex:1;min-width:110px;padding:10px 12px;border-radius:12px;border:1px solid {{ 'rgba(79,108,255,0.55)' if p.state == 'current' else 'var(--border)' }};background:{{ 'var(--surface)' if p.state == 'current' else 'transparent' }};{{ 'opacity:0.45;' if p.lesson_type == 'rest' else ('opacity:0.55;' if p.state != 'current' else '') }}">
         <div style="display:flex;align-items:center;gap:6px;">
           <span style="font-size:1.1em;">{% if p.lesson_type == 'method' %}📘{% elif p.lesson_type == 'probnik' %}🏆{% elif p.lesson_type == 'rest' %}😌{% else %}✏️{% endif %}</span>
-          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">{% if p.state == 'current' %}сейчас{% elif p.state == 'tomorrow' %}завтра{% elif p.lesson_type == 'rest' %}выходной{% else %}занятие {{ p.slot }}{% endif %}</span>
+          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">{% if p.state == 'current' %}сейчас{% elif p.state == 'tomorrow' %}завтра{% elif p.lesson_type == 'rest' %}выходной{% elif p.diag %}диагностика{% else %}занятие {{ p.slot }}{% endif %}</span>
           {% if p.day_label %}<span style="font-size:11px;color:var(--muted);margin-left:auto;">{{ p.day_label }}</span>{% endif %}
         </div>
         <div style="font-weight:700;color:var(--text);font-size:13px;margin-top:4px;">
@@ -911,6 +911,12 @@
           Сегодня изучаешь метод{% if _s.method_name %}: «{{ _s.method_name }}»{% endif %}
         </div>
         <div style="color:var(--muted);font-size:13px;margin-top:2px;">Разбор метода + 3 задачи по нему</div>
+        {% elif _s.week_one %}
+        {# неделя 1 не входит в блок 1-из-6: вместо «занятие 6 из 6» — день диагностики #}
+        <div style="font-weight:700;color:var(--text);font-size:15px;">
+          Сегодня — диагностика{% if _s.diag_day_num %}, день {{ _s.diag_day_num }} из 7{% endif %}: практика{% if _s.theme %} по теме куратора{% endif %}
+        </div>
+        <div style="color:var(--muted);font-size:13px;margin-top:2px;">Первая неделя — тест и задачи дня. Методы начнутся после неё.</div>
         {% else %}
         <div style="font-weight:700;color:var(--text);font-size:15px;">
           Сегодня — занятие {{ _s.position_in_block }} из {{ _s.block_size }}:
