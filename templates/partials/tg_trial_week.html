@@ -1,0 +1,269 @@
+{#- TG_TRIAL_WEEK (05.11.2026): «Неделя Premium за подписку на Telegram-канал».
+    Подключается в base.html. Состоит из:
+      • узкой полоски-приглашения над контентом (только бесплатным, не на /subscribe,
+        закрывается крестиком и прячется на 3 дня — чтобы не захламлять задачи дня);
+      • окна с двумя шагами: «Подпишись» → «Проверить и получить».
+    Открыть окно из любого места: tgTrialOpen()  (например, карточка на /subscribe). -#}
+{%- set tgt = tg_trial_state() -%}
+{%- if tgt.state == 'available' -%}
+{%- set _p = request.path or '' -%}
+{%- set _strip_ok = is_free_user and not (_p.startswith('/subscribe') or _p.startswith('/payments') or _p.startswith('/login') or _p.startswith('/intake') or _p.startswith('/onboarding')) -%}
+<style>
+.tgt-strip{box-sizing:border-box;display:none;align-items:center;gap:10px;margin:0 auto 14px;max-width:1100px;
+  padding:9px 12px 9px 14px;border-radius:12px;border:1px solid rgba(42,171,238,.35);
+  background:linear-gradient(90deg,rgba(42,171,238,.13),rgba(244,185,66,.08));color:#e6edf7;font-size:14px;line-height:1.35}
+.tgt-strip.show{display:flex}
+.tgt-strip__txt{flex:1;min-width:0}
+.tgt-strip__txt b{color:#fff}
+.tgt-strip__go{flex:none;border:0;border-radius:999px;padding:7px 14px;font-weight:700;font-size:13px;cursor:pointer;
+  background:#2AABEE;color:#fff;white-space:nowrap}
+.tgt-strip__go:hover{background:#229ED9}
+.tgt-strip__x{flex:none;border:0;background:none;color:#8fa3c0;font-size:18px;line-height:1;cursor:pointer;padding:4px}
+.tgt-strip__x:hover{color:#fff}
+@media (max-width:560px){.tgt-strip{margin:0 10px 12px;font-size:13px}.tgt-strip__hide-sm{display:none}}
+
+.tgt-modal{position:fixed;inset:0;z-index:10050;display:none;align-items:center;justify-content:center;padding:16px;
+  background:rgba(3,8,20,.72);backdrop-filter:blur(3px)}
+.tgt-modal.show{display:flex}
+.tgt-box{box-sizing:border-box;width:100%;max-width:440px;max-height:calc(100vh - 32px);overflow:auto;border-radius:18px;padding:24px 22px 18px;
+  background:#0d1628;border:1px solid rgba(255,255,255,.1);box-shadow:0 30px 80px rgba(0,0,0,.6);color:#e6edf7;position:relative}
+.tgt-close{position:absolute;top:10px;right:12px;border:0;background:none;color:#8fa3c0;font-size:22px;cursor:pointer}
+.tgt-gift{font-size:34px;line-height:1}
+.tgt-box h3{margin:8px 0 6px;font-size:21px;color:#fff}
+.tgt-lead{margin:0 0 16px;color:#b8c4d8;font-size:14.5px;line-height:1.45}
+.tgt-lead b{color:#f4b942}
+.tgt-what{margin:0 0 14px;padding:0;list-style:none;font-size:13.5px;color:#cfd9ea;line-height:1.4}
+.tgt-what li{padding:3px 0 3px 22px;position:relative}
+.tgt-what li:before{content:"✓";position:absolute;left:2px;color:#38ef7d;font-weight:700}
+.tgt-what b{color:#fff}
+.tgt-next{margin:0 0 16px;padding:0;list-style:none;counter-reset:n;text-align:left;font-size:14px;color:#cfd9ea}
+.tgt-next li{counter-increment:n;padding:7px 0 7px 34px;position:relative;line-height:1.35}
+.tgt-next li:before{content:counter(n);position:absolute;left:0;top:6px;width:24px;height:24px;border-radius:50%;
+  background:rgba(56,239,125,.15);color:#38ef7d;border:1px solid rgba(56,239,125,.4);font-weight:700;font-size:12.5px;text-align:center;line-height:22px}
+.tgt-step{display:flex;gap:12px;padding:12px 0;border-top:1px solid rgba(255,255,255,.07)}
+.tgt-num{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;background:rgba(42,171,238,.18);color:#7cc8f5;border:1px solid rgba(42,171,238,.4)}
+.tgt-step.done .tgt-num{background:#38ef7d;color:#06210f;border-color:#38ef7d}
+.tgt-step__body{flex:1;min-width:0}
+.tgt-step__t{font-weight:600;color:#fff;margin-bottom:8px;font-size:15px}
+.tgt-btn{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:12px;
+  padding:12px 14px;font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;transition:filter .15s}
+.tgt-btn:hover{filter:brightness(1.08)}
+.tgt-btn[disabled]{opacity:.6;cursor:wait}
+.tgt-btn--tg{background:#2AABEE;color:#fff}
+.tgt-btn--gold{background:#f4b942;color:#1a1305}
+.tgt-hint{font-size:12.5px;color:#8fa3c0;margin-top:6px}
+.tgt-err{display:none;margin-top:10px;padding:9px 11px;border-radius:10px;font-size:13.5px;
+  background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.35);color:#fca5a5}
+.tgt-err.show{display:block}
+.tgt-fine{margin:14px 0 0;font-size:12px;color:#7d8ba3;line-height:1.45;text-align:center}
+.tgt-ok{display:none;text-align:center;padding:6px 0 4px}
+.tgt-ok.show{display:block}
+.tgt-ok__big{font-size:44px}
+.tgt-ok__until{font-size:16px;color:#fff;margin:8px 0 16px}
+.tgt-ok__until b{color:#38ef7d}
+#tgtWidget{min-height:40px;display:flex;justify-content:center}
+</style>
+
+{%- if _strip_ok %}
+<div class="tgt-strip" id="tgtStrip" role="region" aria-label="Неделя Premium бесплатно">
+  <span aria-hidden="true">🎁</span>
+  <span class="tgt-strip__txt"><b>Неделя Premium бесплатно</b><span class="tgt-strip__hide-sm"> — за подписку на наш Telegram-канал</span></span>
+  <button type="button" class="tgt-strip__go" onclick="tgTrialOpen('strip')">Получить</button>
+  <button type="button" class="tgt-strip__x" aria-label="Скрыть" onclick="tgTrialHideStrip()">×</button>
+</div>
+{%- endif %}
+
+<div class="tgt-modal" id="tgtModal" role="dialog" aria-modal="true" aria-labelledby="tgtTitle" onclick="if(event.target===this)tgTrialClose()">
+  <div class="tgt-box">
+    <button type="button" class="tgt-close" aria-label="Закрыть" onclick="tgTrialClose()">×</button>
+
+    <div id="tgtMain">
+      <div class="tgt-gift" aria-hidden="true">🎁</div>
+      <h3 id="tgtTitle">Неделя Premium бесплатно</h3>
+      <p class="tgt-lead">Подпишись на наш Telegram-канал — и получи <b>7 дней Premium «Работяга»</b> без карты.</p>
+      <ul class="tgt-what">
+        <li><b>5 задач теста + 5 задач дня</b> в каждый учебный день, по твоему уровню</li>
+        <li><b>6 дней из 7</b> — выберешь их сам после получения</li>
+        <li>ИИ-тьютор и генератор чертежей</li>
+      </ul>
+
+      <div class="tgt-step" id="tgtStep1">
+        <div class="tgt-num">1</div>
+        <div class="tgt-step__body">
+          <div class="tgt-step__t">Подпишись на канал</div>
+          <a class="tgt-btn tgt-btn--tg" href="{{ tgt.channel_url }}" target="_blank" rel="noopener" onclick="tgTrialStep1Done()">
+            Открыть @{{ tgt.channel }} ↗
+          </a>
+          <div class="tgt-hint">Там задачи дня, разборы олимпиад и новости FORMYLA.</div>
+        </div>
+      </div>
+
+      <div class="tgt-step" id="tgtStep2">
+        <div class="tgt-num">2</div>
+        <div class="tgt-step__body">
+          <div class="tgt-step__t">Вернись сюда и получи неделю</div>
+          {%- if tgt.tg_linked %}
+          <button type="button" class="tgt-btn tgt-btn--gold" id="tgtClaimBtn" onclick="tgTrialClaim()">Проверить подписку и получить неделю</button>
+          <div class="tgt-hint">Проверим Telegram{% if tgt.tg_username %} @{{ tgt.tg_username }}{% endif %}, привязанный к аккаунту.</div>
+          {%- else %}
+          <div id="tgtWidget"></div>
+          <div class="tgt-hint" id="tgtWidgetHint">Войди через Telegram — так мы увидим твою подписку. Telegram привяжется к аккаунту FORMYLA.</div>
+          {%- endif %}
+          <div class="tgt-err" id="tgtErr" role="alert"></div>
+        </div>
+      </div>
+
+      <p class="tgt-fine">
+        {% if tgt.trial_day_active %}Твой пробный день заменится неделей. {% endif %}
+        Один раз на аккаунт. Без карты — ничего не спишется: через 7 дней аккаунт просто вернётся к бесплатному тарифу.
+      </p>
+    </div>
+
+    <div class="tgt-ok" id="tgtOk">
+      <div class="tgt-ok__big" aria-hidden="true">🎉</div>
+      <h3>Неделя Premium активна!</h3>
+      <p class="tgt-ok__until">Полный доступ до <b id="tgtUntil">—</b></p>
+      <ol class="tgt-next" id="tgtNext">
+        <li id="tgtNextDays">Выбери <b id="tgtDaysN">6</b> дней занятий — это займёт 10 секунд</li>
+        <li>Пройди тест: 5 задач по теме дня</li>
+        <li>Реши 5 задач дня — и так каждый выбранный день</li>
+      </ol>
+      <button type="button" class="tgt-btn tgt-btn--gold" id="tgtGo" onclick="tgTrialGo()">Выбрать дни занятий →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var KEY = 'tgTrialStripHiddenUntil';
+  var CSRF = {{ csrf_token()|tojson }};
+  var BOT = {{ (config.TELEGRAM_BOT_USERNAME or '')|tojson }};
+  var busy = false, widgetLoaded = false, step1Clicked = false, goNext = '/schedule';
+
+  function $(id){ return document.getElementById(id); }
+  var YM = {{ (config.YANDEX_METRIKA_ID or '')|tojson }};
+  function goal(name){ try{ if(YM && typeof ym !== 'undefined') ym(Number(YM),'reachGoal',name); }catch(e){} }
+
+  // Полоска: показываем, если её не скрывали последние 3 дня
+  var strip = $('tgtStrip');
+  if(strip){
+    var hiddenUntil = 0;
+    try{ hiddenUntil = parseInt(localStorage.getItem(KEY) || '0', 10) || 0; }catch(e){}
+    if(Date.now() > hiddenUntil) strip.classList.add('show');
+    // поставить полоску в начало контента, над заголовком страницы
+    var main = document.querySelector('main.main');
+    if(main && strip.parentNode !== main) main.insertBefore(strip, main.firstChild);
+  }
+  window.tgTrialHideStrip = function(){
+    if(strip) strip.classList.remove('show');
+    try{ localStorage.setItem(KEY, String(Date.now() + 3*24*3600*1000)); }catch(e){}
+  };
+
+  function showErr(msg){ var e = $('tgtErr'); if(!e) return; e.textContent = msg || ''; e.classList.toggle('show', !!msg); }
+
+  function loadWidget(){
+    var box = $('tgtWidget');
+    if(!box || widgetLoaded) return;
+    widgetLoaded = true;
+    if(!BOT){ showErr('Вход через Telegram сейчас недоступен. Попробуй позже.'); return; }
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://telegram.org/js/telegram-widget.js?22';
+    s.setAttribute('data-telegram-login', BOT);
+    s.setAttribute('data-size', 'large');
+    s.setAttribute('data-radius', '12');
+    s.setAttribute('data-onauth', 'tgTrialOnAuth(user)');
+    box.appendChild(s);
+  }
+
+  window.tgTrialOpen = function(src){
+    var m = $('tgtModal'); if(!m) return;
+    m.classList.add('show');
+    showErr('');
+    loadWidget();
+    goal('tg_trial_open');
+  };
+  window.tgTrialClose = function(){ var m = $('tgtModal'); if(m) m.classList.remove('show'); };
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') window.tgTrialClose(); });
+
+  window.tgTrialStep1Done = function(){
+    step1Clicked = true;
+    var s = $('tgtStep1'); if(s) s.classList.add('done');
+    goal('tg_trial_channel_click');
+  };
+
+  function fmt(iso){
+    var d = new Date(String(iso).replace(' ', 'T') + 'Z');   // сервер отдаёт naive UTC
+    if(isNaN(d.getTime())) return iso;
+    return d.toLocaleString('ru-RU', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'});
+  }
+
+  function claim(tgAuth){
+    if(busy) return;
+    busy = true; showErr('');
+    var btn = $('tgtClaimBtn');
+    if(btn){ btn.disabled = true; btn.textContent = 'Проверяем подписку…'; }
+    fetch('/api/tg-trial/claim', {
+      method: 'POST', credentials: 'same-origin',
+      headers: {'Content-Type': 'application/json', 'X-CSRF-Token': CSRF},
+      body: JSON.stringify(tgAuth ? {tg_auth: tgAuth} : {})
+    }).then(function(r){ return r.json().catch(function(){ return {}; }); })
+      .then(function(d){
+        busy = false;
+        if(d && d.ok){
+          $('tgtUntil').textContent = fmt(d.expires_at);
+          goNext = d.needs_schedule === false ? '/daily_tasks' : '/schedule';
+          if(d.needs_schedule === false){
+            var nd = $('tgtNextDays'); if(nd) nd.style.display = 'none';
+            var gb = $('tgtGo'); if(gb) gb.textContent = 'Начать заниматься →';
+          } else if(d.days_required){
+            var dn = $('tgtDaysN'); if(dn) dn.textContent = d.days_required;
+          }
+          $('tgtMain').style.display = 'none';
+          $('tgtOk').classList.add('show');
+          if(strip) strip.classList.remove('show');
+          goal('tg_trial_granted');
+          return;
+        }
+        showErr((d && d.error) || 'Не получилось. Попробуй ещё раз.');
+        if(d && d.code === 'not_member') goal('tg_trial_not_member');
+        // Telegram привязался, но подписки нет — дальше проверяем обычной кнопкой
+        if(tgAuth && d && d.code === 'not_member') switchToButton();
+        if(btn){ btn.disabled = false; btn.textContent = 'Проверить ещё раз'; }
+      })
+      .catch(function(){
+        busy = false;
+        showErr('Нет связи. Проверь интернет и нажми ещё раз.');
+        if(btn){ btn.disabled = false; btn.textContent = 'Проверить ещё раз'; }
+      });
+  }
+  window.tgTrialClaim = function(){ claim(null); };
+  window.tgTrialGo = function(){ location.href = goNext; };
+
+  // Вернулся из Telegram после «Открыть канал» — проверяем сам, без лишнего клика.
+  // Только если Telegram уже привязан (кнопка проверки есть) и окно открыто.
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState !== 'visible' || !step1Clicked || busy) return;
+    var m = $('tgtModal');
+    if(!m || !m.classList.contains('show') || !$('tgtClaimBtn')) return;
+    step1Clicked = false;
+    setTimeout(function(){ if(!busy) claim(null); }, 600);
+  });
+  window.tgTrialOnAuth = function(user){ claim(user); };
+
+  function switchToButton(){
+    var w = $('tgtWidget'); if(!w || $('tgtClaimBtn')) return;
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'tgt-btn tgt-btn--gold'; b.id = 'tgtClaimBtn';
+    b.textContent = 'Проверить ещё раз';
+    b.onclick = window.tgTrialClaim;
+    w.replaceWith(b);
+    var h = $('tgtWidgetHint'); if(h) h.textContent = 'Telegram привязан. Подпишись на канал и нажми «Проверить ещё раз».';
+  }
+
+  // Открыть окно по ссылке вида ?tg_week=1 (для поста в канале / рассылки)
+  try{ if(/[?&]tg_week=1\b/.test(location.search)) window.tgTrialOpen('link'); }catch(e){}
+})();
+</script>
+{%- endif -%}
