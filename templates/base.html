@@ -1059,13 +1059,10 @@
         {# USERS_STATS_V2: обязательный опрос «Как тебе сайт?» (25+ мин на сайте).
            Показываем всем залогиненным, включая админов. #}
         {% include 'partials/feedback_modal.html' %}
-        {# TG_TRIAL_WEEK: «Неделя Premium за подписку на ТГ» — полоска (бесплатным) + окно.
-           Состояние считается только для бесплатных и на /subscribe. #}
-        {# ?tg_week=preview — админ видит окно со своего (Premium) аккаунта, неделя не выдаётся #}
-        {% if (is_free_user is defined and is_free_user) or request.path.startswith('/subscribe')
-              or (current_user.is_admin and request.args.get('tg_week') == 'preview') %}
-            {% include 'partials/tg_trial_week.html' %}
-        {% endif %}
+        {# TG_TRIAL_WEEK: «Неделя Premium за подписку на ТГ» — полоска + окно ВСЕМ ученикам
+           (у кого уже Premium — +7 дней к сроку). Скрыто тем, кто неделю уже получил,
+           родителям/учителям и без бота. ?tg_week=preview — предпросмотр для админа. #}
+        {% include 'partials/tg_trial_week.html' %}
     {% endif %}
     <div style="text-align:center;padding:12px 0;font-size:11px;color:var(--muted);">build {{ build_commit_short }}</div>
 </body>

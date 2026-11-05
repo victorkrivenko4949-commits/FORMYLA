@@ -13,7 +13,7 @@
 Правила:
   • одна неделя на аккаунт и одна на Telegram-аккаунт (таблица tg_trial_grants);
   • если идёт пробный день — неделя его заменяет (срок = сейчас + 7 дней);
-  • если уже есть оплаченный/пилотный Premium — неделя не нужна;
+  • уже есть оплаченный Premium — +7 дней сразу после текущего срока;
   • родитель/учитель — как с пробным днём: только в аккаунте ребёнка;
   • после выдачи отписка доступ не отзывает (честная акция, без «ловушек»).
 
@@ -335,11 +335,10 @@ def _compute_state(user) -> dict:
         if grant.expires_at > _now():
             return {**base, 'state': 'active', 'expires_at': grant.expires_at.isoformat(sep=' ')}
         return {**base, 'state': 'used'}
+    # Акция доступна ВСЕМ ученикам: у кого уже есть Premium — +7 дней к сроку.
     kind = _premium_kind(user)
-    if kind == 'real':
-        return {**base, 'state': 'premium'}
     trial_day = kind == 'trial'
-    return {**base, 'state': 'available',
+    return {**base, 'state': 'available', 'has_premium': kind == 'real',
             'tg_linked': bool(getattr(user, 'telegram_id', None)),
             'tg_username': getattr(user, 'telegram_username', None) or '',
             'trial_day_active': trial_day}
@@ -365,6 +364,47 @@ def link_telegram(user, payload: dict) -> None:
     user.telegram_username = (clean.get('username') or '').strip() or None
     db.session.commit()
     _drop_cache()
+
+
+def _parse_dt(v):
+    if v is None or isinstance(v, datetime):
+        return v
+    try:
+        return datetime.fromisoformat(str(v).replace('T', ' ').split('+')[0])
+    except ValueError:
+        return None
+
+
+def _week_period(user, now):
+    """(начало, конец, тариф, создавать_ли_подписку) для выдачи недели.
+
+    Нет Premium / пробный день → неделя «Работяги» с этого момента.
+    Есть оплаченный Premium → +7 дней сразу после текущего срока, тот же тариф
+    (activate_premium с будущим началом не сокращает оплаченный период).
+    Бессрочный доступ → подписку не трогаем, только фиксируем выдачу.
+    """
+    week = timedelta(days=TRIAL_WEEK_DAYS)
+    if _premium_kind(user) != 'real':
+        return now, now + week, TRIAL_WEEK_PLAN, True
+    try:
+        rows = db.session.execute(text(
+            "SELECT plan, expires_at FROM subscriptions "
+            "WHERE user_id = :u AND status = 'active' AND plan LIKE 'premium%' "
+            "AND COALESCE(CAST(is_trial AS INTEGER),0) = 0 "
+            "AND (expires_at IS NULL OR expires_at > :now)"
+        ), {'u': user.id, 'now': now.isoformat(sep=' ')}).fetchall()
+    except Exception:  # noqa: BLE001
+        rows = []
+    if any(r[1] is None for r in rows):
+        return now, now + week, TRIAL_WEEK_PLAN, False
+    if rows:
+        plan, end = max(((r[0], _parse_dt(r[1])) for r in rows), key=lambda x: x[1] or now)
+        if end and end > now:
+            from services.subscription import PLAN_LIMITS
+            plan = plan if plan in PLAN_LIMITS else TRIAL_WEEK_PLAN
+            return end, end + week, plan, True
+    # пилот/админ без строки подписки — обычная неделя с этого момента
+    return now, now + week, TRIAL_WEEK_PLAN, True
 
 
 def _remember_telegram(user, tg_id: str) -> None:
@@ -396,8 +436,6 @@ def claim_week(user, tg_auth: Optional[dict] = None) -> dict:
         raise TgTrialError('already_active', 'Неделя Premium уже активна.', 409)
     if st == 'used':
         raise TgTrialError('used', 'Неделя за подписку уже была получена на этом аккаунте.', 409)
-    if st == 'premium':
-        raise TgTrialError('premium', 'У тебя уже есть Premium — неделя не нужна.', 409)
 
     if tg_auth:
         link_telegram(user, tg_auth)
@@ -417,7 +455,7 @@ def claim_week(user, tg_auth: Optional[dict] = None) -> dict:
                            'Подпишись на канал и нажми «Проверить» ещё раз.', 400)
 
     now = _now()
-    expires = now + timedelta(days=TRIAL_WEEK_DAYS)
+    starts, expires, plan, activate = _week_period(user, now)
     try:
         db.session.add(TgTrialGrant(user_id=user.id, telegram_id=tg_id,
                                     channel=channel_username(), granted_at=now, expires_at=expires))
@@ -428,10 +466,11 @@ def claim_week(user, tg_auth: Optional[dict] = None) -> dict:
 
     from services.subscription import get_subscription_service
     # activate_premium сам гасит текущий пробный день (superseded) и коммитит.
-    get_subscription_service().activate_premium(
-        user_id=user.id, plan=TRIAL_WEEK_PLAN, is_beta=True, is_trial=True,
-        starts_at=now, expires_at=expires,
-    )
+    if activate:
+        get_subscription_service().activate_premium(
+            user_id=user.id, plan=plan, is_beta=True, is_trial=True,
+            starts_at=starts, expires_at=expires,
+        )
     db.session.commit()
     _drop_cache()
     log.info('[tg_trial] user=%s tg=%s week granted until %s', user.id, tg_id, expires)
@@ -440,8 +479,8 @@ def claim_week(user, tg_auth: Optional[dict] = None) -> dict:
     needs_schedule = True
     try:
         from services.schedule_days import days_for_plan, required_days_count
-        needs_schedule = days_for_plan(user.id, TRIAL_WEEK_PLAN) is None
-        days_required = required_days_count(TRIAL_WEEK_PLAN) or 6
+        needs_schedule = days_for_plan(user.id, plan) is None
+        days_required = required_days_count(plan) or 6
     except Exception:  # noqa: BLE001
         days_required = 6
     return {'expires_at': expires.isoformat(sep=' '),

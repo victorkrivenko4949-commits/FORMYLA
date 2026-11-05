@@ -118,7 +118,7 @@ def test_unknown_telegram_asks_to_subscribe(tg_app):
     assert e.value.code == 'not_member'
 
 
-def test_paid_premium_not_needed(tg_app):
+def test_paid_premium_gets_plus_7_days(tg_app):
     from models import db
     from services import tg_trial
     u = _user('f@x.ru', tg_id='555')
@@ -127,7 +127,30 @@ def test_paid_premium_not_needed(tg_app):
         " VALUES (:u, 'premium_intense', 'active', :s, :e, 'pay_1', 0, 0)"),
         {'u': u.id, 's': datetime.utcnow() - timedelta(days=1), 'e': datetime.utcnow() + timedelta(days=20)})
     db.session.commit()
-    assert tg_trial.get_state(u)['state'] == 'premium'
+    st = tg_trial.get_state(u)
+    assert st['state'] == 'available' and st['has_premium'] is True
+    tg_app.tg_members.add('555')
+    res = tg_trial.claim_week(u)
+    exp = datetime.fromisoformat(res['expires_at'])
+    # +7 дней ПОСЛЕ оплаченного срока (20 дней), оплаченный период не сокращён
+    assert timedelta(days=26, hours=23) < exp - datetime.utcnow() < timedelta(days=27, hours=1)
+    subs = _active_subs(u.id)
+    assert len(subs) == 2
+
+
+def test_perpetual_premium_not_touched(tg_app):
+    """Бессрочный Premium: подписку не трогаем, выдачу фиксируем (второй раз — нельзя)."""
+    from models import db
+    from services import tg_trial
+    u = _user('perp@x.ru', tg_id='556')
+    db.session.execute(text(
+        "INSERT INTO subscriptions (user_id, plan, status, started_at, expires_at, is_trial)"
+        " VALUES (:u, 'premium_intense', 'active', :s, NULL, 0)"), {'u': u.id, 's': datetime.utcnow()})
+    db.session.commit()
+    tg_app.tg_members.add('556')
+    tg_trial.claim_week(u)
+    assert len(_active_subs(u.id)) == 1
+    assert tg_trial.get_state(u)['state'] == 'active'
 
 
 def test_week_replaces_active_trial_day(tg_app):
@@ -378,7 +401,7 @@ def _render_promo(app, user, qs=''):
 
 
 def test_admin_preview_shows_window(tg_app):
-    """Админ (id 1, пилот с Premium) по ?tg_week=preview видит окно; без параметра — нет."""
+    """Админ (id 1) по ?tg_week=preview видит окно с пометкой «Предпросмотр»."""
     from models import db, User
     admin = db.session.get(User, 1) or User(id=1, email='admin@x.ru', is_guest=False)
     db.session.add(admin)
@@ -386,11 +409,13 @@ def test_admin_preview_shows_window(tg_app):
     html = _render_promo(tg_app, admin, '?tg_week=preview')
     assert 'Предпросмотр для админа' in html and 'Проверить подписку' in html
     assert 'var PREVIEW = true' in html
-    assert 'tgtModal' not in _render_promo(tg_app, admin)
+    plain = _render_promo(tg_app, admin)
+    assert 'tgtModal' in plain and 'var PREVIEW = false' in plain   # акция видна всем, без пометки
 
 
 def test_preview_param_ignored_for_regular_user(tg_app):
-    """Обычный пользователь с Premium по ?tg_week=preview окно не видит."""
+    """Обычному пользователю ?tg_week=preview не включает режим предпросмотра:
+    окно настоящее (с Premium — «+7 дней»)."""
     from models import db
     u = _user('prem@x.ru', tg_id='321')
     db.session.execute(text(
@@ -398,4 +423,6 @@ def test_preview_param_ignored_for_regular_user(tg_app):
         "VALUES (:u, 'premium_intense', 'active', :e, 0)"),
         {'u': u.id, 'e': (datetime.utcnow() + timedelta(days=30)).isoformat(sep=' ')})
     db.session.commit()
-    assert 'tgtModal' not in _render_promo(tg_app, u, '?tg_week=preview')
+    html = _render_promo(tg_app, u, '?tg_week=preview')
+    assert 'var PREVIEW = false' in html and 'Предпросмотр для админа' not in html
+    assert '+7 дней Premium' in html
