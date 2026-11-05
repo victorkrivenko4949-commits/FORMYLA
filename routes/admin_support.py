@@ -1211,9 +1211,25 @@ def log_site_event(user_id: int, kind: str, seconds: int = 0,
 @login_required
 def admin_users_stats():
     """USERS_STATS_V2: богатая статистика — онлайн, DAU/WAU/MAU, по дням,
-    пики одновременных, топы по активности/XP/задачам, почасовой график."""
+    пики одновременных, топы по активности/XP/задачам, почасовой график.
+
+    ADMIN_STATS_USERS_V1 (05.11.2026): расчёт вынесен в users_stats_context() —
+    те же данные показывает раздел «Пользователи» панели /admin/stats.
+    """
     if not _is_admin():
         abort(403)
+    ctx = users_stats_context()
+    rows, total = ctx.pop('rows'), ctx.pop('total')
+    return render_template('admin/users_stats.html', rows=rows, total=total,
+                           **ctx)
+
+
+def users_stats_context() -> dict:
+    """Все данные страницы «Статистика пользователей» (без отрисовки).
+
+    Тело — прежнее тело admin_users_stats() без изменений (u.sh при выкладке
+    правит в нём отдельные строки по точному тексту — не переписывать).
+    """
     ensure_site_events_tables()
 
     from models import User
@@ -1579,12 +1595,12 @@ def admin_users_stats():
         current_app.logger.warning('admin_users_stats: extra stats failed: %r',
                                    _ase_err)
 
-    return render_template('admin/users_stats.html', rows=rows, total=total,
-                           devices_stats=devices_stats,
-                           by_day=by_day, reg_map=reg_map, by_hour=by_hour,
-                           top_xp=top_xp, top_problems=top_problems,
-                           top_time=top_time, inactive=inactive,
-                           photo_items=photo_items,
-                           feedback_list=feedback_list,
-                           feedback_stats=feedback_stats,
-                           **extra)
+    return dict(rows=rows, total=total,
+                devices_stats=devices_stats,
+                by_day=by_day, reg_map=reg_map, by_hour=by_hour,
+                top_xp=top_xp, top_problems=top_problems,
+                top_time=top_time, inactive=inactive,
+                photo_items=photo_items,
+                feedback_list=feedback_list,
+                feedback_stats=feedback_stats,
+                **extra)
