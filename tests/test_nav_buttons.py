@@ -56,9 +56,11 @@ def _logged_client(app):
 
 CASES = [
     # path, want_base, want_surveys
-    ('/admin/users', False, True),
-    ('/admin/users/sections', False, True),
-    ('/admin/users/returns', False, True),
+    # 05.11.2026: старые /admin/users* по умолчанию ведут в /admin/stats;
+    # сами страницы открываются по ?embed=1 — кнопки проверяем там.
+    ('/admin/users?embed=1', False, True),
+    ('/admin/users/sections?embed=1', False, True),
+    ('/admin/users/returns?embed=1', False, True),
     ('/admin/stats/overview', True, False),
     ('/admin/support', True, False),
     ('/admin/daily', True, False),

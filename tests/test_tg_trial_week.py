@@ -171,3 +171,97 @@ def test_claim_endpoint_with_csrf(tg_app):
     assert r.get_json()['ok'] is True
     r = c.get('/api/tg-trial/status')
     assert r.get_json()['state'] == 'active'
+
+
+# ───────── интеграция: выбор 6 дней, первая (диагностическая) неделя, скорость ─────────
+
+def test_week_requires_choosing_6_days(tg_app):
+    """После выдачи недели гейт /schedule требует ровно 6 дней (как у «Работяги»)."""
+    from services import tg_trial
+    from services.schedule_days import days_for_plan, required_days_count, save_user_days
+    from routes.schedule_days import _active_pilot_plan
+    u = _user('s1@x.ru', tg_id='901')
+    tg_app.tg_members.add('901')
+    res = tg_trial.claim_week(u)
+    assert res['needs_schedule'] is True and res['days_required'] == 6
+    plan = _active_pilot_plan(u.id)
+    assert plan == 'premium_intense' and required_days_count(plan) == 6
+    assert days_for_plan(u.id, plan) is None            # гейт отправит на /schedule
+    assert save_user_days(u.id, [0, 1, 2, 3, 4, 5], plan) is True
+    assert days_for_plan(u.id, plan) == [0, 1, 2, 3, 4, 5]
+    assert save_user_days(u.id, [0, 1, 2], plan) is False   # не 6 — нельзя
+
+
+def test_week_is_diagnostic_week_with_5_test_tasks(tg_app):
+    """Неделя = неделя 1 Premium: диагностика (тест 5 задач) + задачи дня."""
+    from services import tg_trial
+    from services.theme_probe import PROBE_SIZE
+    from services.pilot import can_take_theme_test
+    from curator.session_plan import _pilot_variant
+    u = _user('s2@x.ru', tg_id='902')
+    tg_app.tg_members.add('902')
+    assert not can_take_theme_test(u)                    # до недели тест закрыт
+    tg_trial.claim_week(u)
+    assert PROBE_SIZE == 5
+    assert can_take_theme_test(u)                        # с неделей — открыт
+    assert _pilot_variant(u.id) == 'premium_intense'
+    sub = _active_subs(u.id)[0]
+    exp = sub[1] if isinstance(sub[1], datetime) else datetime.fromisoformat(str(sub[1]))
+    # вся неделя укладывается в days_in//7 + 1 == 1 (диагностическая неделя)
+    assert (exp - datetime.utcnow()).days < 7
+
+
+def test_get_state_is_cheap(tg_app):
+    """Состояние для баннера — не больше 3 SQL-запросов, повторный вызов — 0."""
+    from models import db
+    from sqlalchemy import event
+    from services import tg_trial
+    u = _user('s3@x.ru', tg_id='903')
+    n = {'q': 0}
+
+    def _count(conn, cur, stmt, params, ctx, many):
+        n['q'] += 1
+    event.listen(db.engine, 'before_cursor_execute', _count)
+    try:
+        tg_trial._drop_cache()
+        tg_trial.get_state(u)
+        first = n['q']
+        tg_trial.get_state(u)
+        assert n['q'] == first                           # из кэша запроса
+        assert first <= 3, first
+    finally:
+        event.remove(db.engine, 'before_cursor_execute', _count)
+
+
+def test_state_fresh_after_claim(tg_app):
+    from services import tg_trial
+    u = _user('s4@x.ru', tg_id='904')
+    tg_app.tg_members.add('904')
+    assert tg_trial.get_state(u)['state'] == 'available'
+    tg_trial.claim_week(u)
+    assert tg_trial.get_state(u)['state'] == 'active'    # кэш сброшен выдачей
+
+
+def test_check_membership_uses_api_base(monkeypatch):
+    """TELEGRAM_API_BASE перенаправляет запросы к Bot API на прокси."""
+    from services import tg_trial
+
+    seen = {}
+
+    class _Resp:
+        def json(self):
+            return {'ok': True, 'result': {'status': 'member'}}
+
+    def fake_get(url, params=None, timeout=None):
+        seen['url'] = url
+        return _Resp()
+
+    monkeypatch.setenv('TELEGRAM_BOT_TOKEN', '123:abc')
+    monkeypatch.setenv('TELEGRAM_API_BASE', 'https://tgapi.example.org/')
+    monkeypatch.setattr(tg_trial.requests, 'get', fake_get)
+    assert tg_trial.check_membership('42') is True
+    assert seen['url'] == 'https://tgapi.example.org/bot123:abc/getChatMember'
+
+    monkeypatch.delenv('TELEGRAM_API_BASE')
+    tg_trial.check_membership('42')
+    assert seen['url'].startswith('https://api.telegram.org/bot')

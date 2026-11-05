@@ -54,6 +54,13 @@ def _bot_token() -> str:
     return (os.environ.get('TELEGRAM_BOT_TOKEN') or '').strip()
 
 
+def telegram_api_base() -> str:
+    """Адрес Bot API. С российского сервера api.telegram.org недоступен —
+    тогда TELEGRAM_API_BASE указывает на прокси (Cloudflare Worker),
+    который пересылает запросы /bot<token>/… как есть."""
+    return (os.environ.get('TELEGRAM_API_BASE') or 'https://api.telegram.org').strip().rstrip('/')
+
+
 class TgTrialError(Exception):
     """Ошибка с понятным пользователю текстом и кодом для фронтенда."""
 
@@ -74,9 +81,9 @@ def check_membership(telegram_id: str) -> bool:
         raise TgTrialError('config', 'Проверка подписки временно недоступна. Попробуй чуть позже.', 503)
     try:
         resp = requests.get(
-            f'https://api.telegram.org/bot{token}/getChatMember',
+            f'{telegram_api_base()}/bot{token}/getChatMember',
             params={'chat_id': '@' + channel_username(), 'user_id': telegram_id},
-            timeout=8,
+            timeout=5,
         )
         data = resp.json()
     except Exception as exc:  # noqa: BLE001 — сеть/JSON
@@ -109,23 +116,32 @@ def _role_blocked(user) -> bool:
     return (getattr(user, 'role', 'student') or 'student') in ('parent', 'teacher')
 
 
-def _has_real_premium(user) -> bool:
-    """Оплаченный / бета / пилотный Premium (пробные — не считаются)."""
+def _premium_kind(user) -> str:
+    """Какой Premium сейчас у пользователя — ОДНИМ запросом.
+
+    'real'  — оплаченный / бета / пилотный (акция не нужна);
+    'trial' — идёт пробный день (неделя его заменит);
+    'none'  — Premium нет.
+    """
     try:
         from services.pilot import is_pilot_user
         if is_pilot_user(user):
-            return True
+            return 'real'
     except Exception:  # noqa: BLE001
         pass
     try:
+        # Сортировка по is_trial: настоящая подписка (0) важнее пробной (1).
         row = db.session.execute(text(
-            "SELECT 1 FROM subscriptions WHERE user_id = :u AND status = 'active' "
-            "AND plan LIKE 'premium%' AND COALESCE(CAST(is_trial AS INTEGER),0) = 0 "
-            "AND (expires_at IS NULL OR expires_at > :now) LIMIT 1"
+            "SELECT COALESCE(CAST(is_trial AS INTEGER),0) FROM subscriptions "
+            "WHERE user_id = :u AND status = 'active' AND plan LIKE 'premium%' "
+            "AND (expires_at IS NULL OR expires_at > :now) "
+            "ORDER BY COALESCE(CAST(is_trial AS INTEGER),0) ASC LIMIT 1"
         ), {'u': user.id, 'now': _now().isoformat(sep=' ')}).first()
-        return row is not None
     except Exception:  # noqa: BLE001
-        return False
+        return 'none'
+    if row is None:
+        return 'none'
+    return 'trial' if int(row[0]) == 1 else 'real'
 
 
 def _grant_for(user_id: int):
@@ -133,7 +149,33 @@ def _grant_for(user_id: int):
     return TgTrialGrant.query.filter_by(user_id=user_id).first()
 
 
+_G_KEY = '_tg_trial_state'
+
+
+def _drop_cache() -> None:
+    try:
+        from flask import g
+        g.pop(_G_KEY, None)
+    except Exception:  # noqa: BLE001 — вне запроса кэша нет
+        pass
+
+
 def get_state(user) -> dict:
+    """Состояние для UI. Считается один раз за запрос (flask.g): шаблон base.html
+    и страница /subscribe спрашивают его оба, в БД это 2 запроса, не 4."""
+    try:
+        from flask import g
+        cached = g.get(_G_KEY)
+        if cached is not None and cached[0] == getattr(user, 'id', None):
+            return cached[1]
+        state = _compute_state(user)
+        setattr(g, _G_KEY, (getattr(user, 'id', None), state))
+        return state
+    except Exception:  # noqa: BLE001 — вне контекста запроса
+        return _compute_state(user)
+
+
+def _compute_state(user) -> dict:
     """Что показать пользователю. state:
        hidden     — гость/аноним/родитель/учитель: ничего не показываем;
        premium    — уже есть настоящий Premium;
@@ -154,12 +196,10 @@ def get_state(user) -> dict:
         if grant.expires_at > _now():
             return {**base, 'state': 'active', 'expires_at': grant.expires_at.isoformat(sep=' ')}
         return {**base, 'state': 'used'}
-    if _has_real_premium(user):
+    kind = _premium_kind(user)
+    if kind == 'real':
         return {**base, 'state': 'premium'}
-    try:
-        trial_day = bool(user.is_trial_active())
-    except Exception:  # noqa: BLE001
-        trial_day = False
+    trial_day = kind == 'trial'
     return {**base, 'state': 'available',
             'tg_linked': bool(getattr(user, 'telegram_id', None)),
             'tg_username': getattr(user, 'telegram_username', None) or '',
@@ -185,6 +225,7 @@ def link_telegram(user, payload: dict) -> None:
     user.telegram_id = tg_id
     user.telegram_username = (clean.get('username') or '').strip() or None
     db.session.commit()
+    _drop_cache()
 
 
 def claim_week(user, tg_auth: Optional[dict] = None) -> dict:
@@ -235,5 +276,16 @@ def claim_week(user, tg_auth: Optional[dict] = None) -> dict:
         starts_at=now, expires_at=expires,
     )
     db.session.commit()
+    _drop_cache()
     log.info('[tg_trial] user=%s tg=%s week granted until %s', user.id, tg_id, expires)
-    return {'expires_at': expires.isoformat(sep=' ')}
+    # Сразу после выдачи сайт заставит выбрать 6 дней занятий (гейт /schedule):
+    # говорим фронтенду, чтобы вёл туда сам, а не ждал редиректа посреди страницы.
+    needs_schedule = True
+    try:
+        from services.schedule_days import days_for_plan, required_days_count
+        needs_schedule = days_for_plan(user.id, TRIAL_WEEK_PLAN) is None
+        days_required = required_days_count(TRIAL_WEEK_PLAN) or 6
+    except Exception:  # noqa: BLE001
+        days_required = 6
+    return {'expires_at': expires.isoformat(sep=' '),
+            'needs_schedule': needs_schedule, 'days_required': days_required}

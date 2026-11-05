@@ -582,3 +582,36 @@ def test_exit_question_script_injection(app):
     assert 'id="ft-exit-q-script"' in html
     admin_html = _admin_client(app).get('/problems/1').get_data(as_text=True)
     assert 'ft-exit-q-script' not in admin_html
+
+
+def test_legacy_admin_pages_redirect_to_new_panel(tmp_path, monkeypatch):
+    """Старые /admin/users* ведут в /admin/stats; ?embed=1 оставляет старую страницу."""
+    from flask import Flask
+    from flask_login import LoginManager, UserMixin, login_user
+    monkeypatch.delenv('ADMIN_STATS_REDIRECTS', raising=False)
+    app = Flask(__name__)
+    app.config.update(SECRET_KEY='t', TESTING=True)
+    lm = LoginManager(app)
+
+    class U(UserMixin):
+        id = 1
+        is_admin = True
+
+    lm.user_loader(lambda uid: U())
+
+    @app.route('/login-admin')
+    def la():
+        login_user(U())
+        return 'ok'
+
+    for path in ('/admin/users', '/admin/users/returns', '/admin/users/surveys', '/admin/users/sections'):
+        app.add_url_rule(path, path, lambda: '<html><body>old</body></html>')
+    from routes import admin_stats
+    app.extensions.pop('admin_stats_installed', None)
+    admin_stats.install(app)
+    c = app.test_client()
+    c.get('/login-admin')
+    assert c.get('/admin/users').headers['Location'].endswith('/admin/stats/users')
+    assert c.get('/admin/users/returns').headers['Location'].endswith('/admin/stats/returns')
+    assert c.get('/admin/users/surveys').headers['Location'].endswith('/admin/stats/surveys')
+    assert c.get('/admin/users?embed=1').status_code == 200

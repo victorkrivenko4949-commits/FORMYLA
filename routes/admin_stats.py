@@ -111,7 +111,8 @@ SECTIONS = [
 GROUP_ORDER = ('Сводка', 'Привлечение', 'Активность', 'Монетизация', 'Продукт', 'Люди', 'Система')
 _BY_SLUG = {s['slug']: s for s in SECTIONS}
 
-# старые адреса → новые разделы (redirect, если включён ADMIN_STATS_REDIRECTS=1)
+# старые адреса → новые разделы. Включено по умолчанию (05.11.2026); старая страница — по ?embed=1.
+# Выключить: ADMIN_STATS_REDIRECTS=0.
 LEGACY_REDIRECTS = {
     '/admin/users': 'users',
     '/admin/users/sections': 'sections',
@@ -601,7 +602,7 @@ def install(app) -> None:
     if 'admin_stats' not in app.blueprints:
         app.register_blueprint(admin_stats_bp)
 
-    if os.environ.get('ADMIN_STATS_REDIRECTS', '0') == '1':
+    if os.environ.get('ADMIN_STATS_REDIRECTS', '1') == '1':
         @app.before_request
         def _legacy_redirect():
             slug = LEGACY_REDIRECTS.get(request.path.rstrip('/'))
