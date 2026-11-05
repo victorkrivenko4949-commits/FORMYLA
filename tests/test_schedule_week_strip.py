@@ -186,3 +186,40 @@ def test_rest_days_no_debts(pilot_user):
     # дни долгов — только дни занятий (кроме искусственно перенесённого)
     yesterday_wd = (today_wd - 1) % 7
     assert yesterday_wd in chosen
+
+
+# ── Неделя 1 (диагностика) в полосе плана ─────────────────────────────
+
+def test_week_one_strip_shows_method_after_diagnostics(pilot_user):
+    """Неделя 1: дни диагностики — без номера слота, а первый день занятий
+    ПОСЛЕ неё — слот 1, изучение метода (баг 05.11.2026: все карточки
+    показывались практикой, т.к. тип считался по сегодняшней дате)."""
+    from models import Subscription
+    uid = pilot_user.id
+    db.session.add(Subscription(
+        user_id=uid, plan='premium_intense', status='active',
+        started_at=datetime.utcnow() - timedelta(days=3),
+        expires_at=datetime.utcnow() + timedelta(days=30),
+        is_beta_access=False, is_trial=False))
+    db.session.commit()
+    _choose_days(uid, 'premium_intense', [0, 1, 2, 3, 4, 5])
+    w1e = (datetime.utcnow() - timedelta(days=3) + timedelta(days=7)).date()
+
+    s = session_plan.session_info(uid)
+    assert s['active'] is True
+    assert s['week_one'] is True
+    assert s['diag_day_num'] == 4
+    lessons = []
+    for i, p in enumerate(s['plan']):
+        if p['lesson_type'] == 'rest':
+            continue
+        day = date.today() + timedelta(days=i)
+        if day < w1e:
+            assert p['diag'] is True and p['slot'] is None
+            assert p['lesson_type'] == 'practice'
+        else:
+            lessons.append(p)
+    assert lessons, 'в полосе должны быть дни после диагностики'
+    assert lessons[0]['slot'] == 1
+    assert lessons[0]['lesson_type'] == 'method'
+    assert [p['slot'] for p in lessons] == list(range(1, len(lessons) + 1))
