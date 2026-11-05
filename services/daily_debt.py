@@ -117,6 +117,53 @@ def refresh_debt_for_user(user_id: int) -> Dict[str, int]:
     return {'migrated': migrated, 'burned': burned}
 
 
+def issue_tasks_for_skipped_lessons(user_id: int) -> int:
+    """Выдать задачи за пропущенные занятия-практики, чтобы их можно было
+    открыть из блока «Открыть долг» (владелец, 05.11).
+
+    Раньше пропущенное занятие только попадало в плашку «В долгу», а задач
+    по нему не было — открыть было нечего. Теперь за каждый пропущенный
+    день практики (не старше DEBT_TTL_DAYS) выдаём набор из банка датой
+    того дня. Банковые выдачи прошлых дней без ответа get_debt_items сам
+    показывает как долг. build_daily_set идемпотентен по (user_id, дата),
+    поэтому повторный заход новых задач не создаёт.
+
+    Возвращает число дней, за которые набор выдан впервые.
+    """
+    from curator.session_plan import _pilot, _lessons, _to_date
+    if not _pilot(user_id):
+        return 0
+    from models import BankIssue
+    from services.bank_daily import build_daily_set
+
+    today = date.today()
+    floor = today - timedelta(days=DEBT_TTL_DAYS)
+    issued = 0
+    for lesson in _lessons(user_id):
+        if lesson.get('status') != 'skipped' or lesson.get('lesson_type') != 'practice':
+            continue
+        day = _to_date(lesson.get('assigned_date'))
+        if day is None or day >= today or day < floor:
+            continue
+        # в этот день уже что-то выдавалось (банк или старый сет) — не дублируем
+        if BankIssue.query.filter_by(user_id=user_id, issued_date=day).first():
+            continue
+        if DailyTaskSet.query.filter_by(user_id=user_id, target_date=day).first():
+            continue
+        try:
+            res = build_daily_set(user_id, day)
+            if res.get('items'):
+                issued += 1
+        except Exception as e:  # noqa: BLE001
+            db.session.rollback()
+            logger.warning("daily_debt: skipped-lesson set failed user=%d day=%s: %s",
+                           user_id, day, e)
+    if issued:
+        logger.info("daily_debt: user=%d выданы задачи за %d пропущенных занятий",
+                    user_id, issued)
+    return issued
+
+
 def get_debt_items(user_id: int) -> List[Dict[str, Any]]:
     """Получить активные долговые задачи для ученика.
 
