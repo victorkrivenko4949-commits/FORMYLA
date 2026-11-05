@@ -840,13 +840,10 @@
      onmouseout="this.style.background='rgba(142,162,255,0.10)'">
     💬 Есть вопросы или что-то непонятно? Напишите в поддержку
   </a>
-  <!-- OLYMPIAD_DAILY_V1: задачи дня — под выбранную олимпиаду -->
+  <!-- OLYMPIAD_DAILY_V1: задачи дня — под выбранную олимпиаду.
+       Бейдж applied (зелёная плашка с 🏅) удалён по требованию владельца. -->
   {% if data.daily_context %}
-    {% if data.daily_context.status == 'applied' %}
-      <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;margin:0 0 14px;border-radius:999px;border:1px solid rgba(94,234,212,0.45);background:rgba(94,234,212,0.10);color:var(--text);font-size:13px;font-weight:600;">
-        🏅 Задачи дня — подготовка к олимпиаде «{{ data.daily_context.name }}»
-      </div>
-    {% elif data.daily_context.status == 'stale_set' %}
+    {% if data.daily_context.status == 'stale_set' %}
       <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;margin:0 0 14px;border-radius:999px;border:1px solid rgba(255,195,107,0.5);background:rgba(255,195,107,0.10);color:var(--text);font-size:13px;">
         {% if data.daily_context.former_name %}
         ⚠️ Сегодняшний набор выдан под олимпиаду «{{ data.daily_context.former_name }}»; подготовка к «{{ data.daily_context.name }}» начнётся со следующей выдачи
