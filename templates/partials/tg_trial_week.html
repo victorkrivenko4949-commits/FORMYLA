@@ -2,7 +2,8 @@
     Подключается в base.html. Состоит из:
       • узкой полоски-приглашения над контентом (только бесплатным, не на /subscribe,
         закрывается крестиком и прячется на 3 дня — чтобы не захламлять задачи дня);
-      • окна с двумя шагами: «Подпишись» → «Проверить и получить».
+      • окна с двумя шагами: «Перейти в канал» (личная ссылка) → «Проверить подписку»
+        (после возврата из Telegram проверка запускается сама).
     Открыть окно из любого места: tgTrialOpen()  (например, карточка на /subscribe). -#}
 {%- set tgt = tg_trial_state() -%}
 {%- if tgt.state == 'available' -%}
@@ -62,7 +63,6 @@
 .tgt-ok__big{font-size:44px}
 .tgt-ok__until{font-size:16px;color:#fff;margin:8px 0 16px}
 .tgt-ok__until b{color:#38ef7d}
-#tgtWidget{min-height:40px;display:flex;justify-content:center}
 </style>
 
 {%- if _strip_ok %}
@@ -91,26 +91,21 @@
       <div class="tgt-step" id="tgtStep1">
         <div class="tgt-num">1</div>
         <div class="tgt-step__body">
-          <div class="tgt-step__t">Подпишись на канал</div>
-          <a class="tgt-btn tgt-btn--tg" href="{{ tgt.channel_url }}" target="_blank" rel="noopener" onclick="tgTrialStep1Done()">
-            Открыть @{{ tgt.channel }} ↗
+          <div class="tgt-step__t">Подпишись на @{{ tgt.channel }}</div>
+          <a class="tgt-btn tgt-btn--tg" id="tgtJoin" href="{{ tgt.channel_url }}" target="_blank" rel="noopener" onclick="tgTrialStep1Done()">
+            Перейти в канал ↗
           </a>
-          <div class="tgt-hint">Там задачи дня, разборы олимпиад и новости FORMYLA.</div>
+          <div class="tgt-hint">Нажми «Подписаться» в Telegram и вернись на эту страницу.</div>
         </div>
       </div>
 
       <div class="tgt-step" id="tgtStep2">
         <div class="tgt-num">2</div>
         <div class="tgt-step__body">
-          <div class="tgt-step__t">Вернись сюда и получи неделю</div>
-          {%- if tgt.tg_linked %}
-          <button type="button" class="tgt-btn tgt-btn--gold" id="tgtClaimBtn" onclick="tgTrialClaim()">Проверить подписку и получить неделю</button>
-          <div class="tgt-hint">Проверим Telegram{% if tgt.tg_username %} @{{ tgt.tg_username }}{% endif %}, привязанный к аккаунту.</div>
-          {%- else %}
-          <div id="tgtWidget"></div>
-          <div class="tgt-hint" id="tgtWidgetHint">Войди через Telegram — так мы увидим твою подписку. Telegram привяжется к аккаунту FORMYLA.</div>
-          {%- endif %}
+          <div class="tgt-step__t">Получи неделю</div>
+          <button type="button" class="tgt-btn tgt-btn--gold" id="tgtClaimBtn" onclick="tgTrialClaim()">Проверить подписку</button>
           <div class="tgt-err" id="tgtErr" role="alert"></div>
+          <div class="tgt-hint" id="tgtBotHint" style="display:none">Уже был подписан раньше? <a id="tgtBotLink" href="#" target="_blank" rel="noopener" onclick="tgTrialStep1Done()" style="color:#7cc8f5">Подтверди через бота ↗</a> — нажми «Start» и вернись.</div>
         </div>
       </div>
 
@@ -138,8 +133,7 @@
 (function(){
   var KEY = 'tgTrialStripHiddenUntil';
   var CSRF = {{ csrf_token()|tojson }};
-  var BOT = {{ (config.TELEGRAM_BOT_USERNAME or '')|tojson }};
-  var busy = false, widgetLoaded = false, step1Clicked = false, goNext = '/schedule';
+  var busy = false, linksLoaded = false, step1Clicked = false, goNext = '/schedule';
 
   function $(id){ return document.getElementById(id); }
   var YM = {{ (config.YANDEX_METRIKA_ID or '')|tojson }};
@@ -162,26 +156,36 @@
 
   function showErr(msg){ var e = $('tgtErr'); if(!e) return; e.textContent = msg || ''; e.classList.toggle('show', !!msg); }
 
-  function loadWidget(){
-    var box = $('tgtWidget');
-    if(!box || widgetLoaded) return;
-    widgetLoaded = true;
-    if(!BOT){ showErr('Вход через Telegram сейчас недоступен. Попробуй позже.'); return; }
-    var s = document.createElement('script');
-    s.async = true;
-    s.src = 'https://telegram.org/js/telegram-widget.js?22';
-    s.setAttribute('data-telegram-login', BOT);
-    s.setAttribute('data-size', 'large');
-    s.setAttribute('data-radius', '12');
-    s.setAttribute('data-onauth', 'tgTrialOnAuth(user)');
-    box.appendChild(s);
+  // Личная ссылка в канал: по ней бот узнаёт, кто подписался (вход через Telegram не нужен)
+  // Ссылка создаётся при первом открытии окна (~0,5 с); пока её нет — кнопка ждёт.
+  function setJoinReady(ready){
+    var j = $('tgtJoin'); if(!j) return;
+    j.style.pointerEvents = ready ? '' : 'none';
+    j.style.opacity = ready ? '' : '.6';
+    j.textContent = ready ? 'Перейти в канал ↗' : 'Готовим ссылку…';
+  }
+  function loadLinks(){
+    if(linksLoaded) return;
+    linksLoaded = true;
+    setJoinReady(false);
+    var done = false;
+    var fallback = setTimeout(function(){ if(!done) setJoinReady(true); }, 5000);
+    fetch('/api/tg-trial/link', {credentials: 'same-origin'})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        done = true; clearTimeout(fallback); setJoinReady(true);
+        if(!d || !d.ok) { linksLoaded = false; return; }
+        var j = $('tgtJoin'); if(j && d.invite_link) j.href = d.invite_link;
+        var b = $('tgtBotLink'); if(b && d.bot_link){ b.href = d.bot_link; $('tgtBotHint').style.display = ''; }
+      })
+      .catch(function(){ done = true; clearTimeout(fallback); setJoinReady(true); linksLoaded = false; });
   }
 
   window.tgTrialOpen = function(src){
     var m = $('tgtModal'); if(!m) return;
     m.classList.add('show');
     showErr('');
-    loadWidget();
+    loadLinks();
     goal('tg_trial_open');
   };
   window.tgTrialClose = function(){ var m = $('tgtModal'); if(m) m.classList.remove('show'); };
@@ -199,11 +203,12 @@
     return d.toLocaleString('ru-RU', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'});
   }
 
-  function claim(tgAuth){
+  function claim(tgAuth, auto){
     if(busy) return;
     busy = true; showErr('');
     var btn = $('tgtClaimBtn');
     if(btn){ btn.disabled = true; btn.textContent = 'Проверяем подписку…'; }
+    showErr('');
     fetch('/api/tg-trial/claim', {
       method: 'POST', credentials: 'same-origin',
       headers: {'Content-Type': 'application/json', 'X-CSRF-Token': CSRF},
@@ -226,11 +231,16 @@
           goal('tg_trial_granted');
           return;
         }
+        // Telegram присылает событие о подписке с задержкой в пару секунд —
+        // при автопроверке после возврата пробуем ещё раз молча.
+        if(auto && d && d.code === 'not_member' && auto < 3){
+          if(btn) btn.textContent = 'Проверяем подписку…';
+          setTimeout(function(){ claim(null, auto + 1); }, 2500);
+          return;
+        }
         showErr((d && d.error) || 'Не получилось. Попробуй ещё раз.');
         if(d && d.code === 'not_member') goal('tg_trial_not_member');
-        // Telegram привязался, но подписки нет — дальше проверяем обычной кнопкой
-        if(tgAuth && d && d.code === 'not_member') switchToButton();
-        if(btn){ btn.disabled = false; btn.textContent = 'Проверить ещё раз'; }
+        if(btn){ btn.disabled = false; btn.textContent = 'Проверить подписку'; }
       })
       .catch(function(){
         busy = false;
@@ -241,26 +251,14 @@
   window.tgTrialClaim = function(){ claim(null); };
   window.tgTrialGo = function(){ location.href = goNext; };
 
-  // Вернулся из Telegram после «Открыть канал» — проверяем сам, без лишнего клика.
-  // Только если Telegram уже привязан (кнопка проверки есть) и окно открыто.
+  // Вернулся из Telegram после «Перейти в канал» — проверяем сам, без лишнего клика.
   document.addEventListener('visibilitychange', function(){
     if(document.visibilityState !== 'visible' || !step1Clicked || busy) return;
     var m = $('tgtModal');
-    if(!m || !m.classList.contains('show') || !$('tgtClaimBtn')) return;
+    if(!m || !m.classList.contains('show')) return;
     step1Clicked = false;
-    setTimeout(function(){ if(!busy) claim(null); }, 600);
+    setTimeout(function(){ if(!busy) claim(null, 1); }, 800);
   });
-  window.tgTrialOnAuth = function(user){ claim(user); };
-
-  function switchToButton(){
-    var w = $('tgtWidget'); if(!w || $('tgtClaimBtn')) return;
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'tgt-btn tgt-btn--gold'; b.id = 'tgtClaimBtn';
-    b.textContent = 'Проверить ещё раз';
-    b.onclick = window.tgTrialClaim;
-    w.replaceWith(b);
-    var h = $('tgtWidgetHint'); if(h) h.textContent = 'Telegram привязан. Подпишись на канал и нажми «Проверить ещё раз».';
-  }
 
   // Открыть окно по ссылке вида ?tg_week=1 (для поста в канале / рассылки)
   try{ if(/[?&]tg_week=1\b/.test(location.search)) window.tgTrialOpen('link'); }catch(e){}

@@ -374,6 +374,13 @@ def _attach_debt(data: dict, user_id: int) -> None:
     страницу: debt=None означает «долга нет».
     """
     try:
+        # пропущенные занятия-практики → задачи из банка датой того дня,
+        # чтобы долг можно было открыть (владелец, 05.11)
+        from services.daily_debt import issue_tasks_for_skipped_lessons
+        issue_tasks_for_skipped_lessons(user_id)
+    except Exception as _skip_err:
+        logger.warning("issue_tasks_for_skipped_lessons failed: %s", _skip_err)
+    try:
         from services.daily_debt import get_debt_items
         debt_items = get_debt_items(user_id)
         if debt_items:

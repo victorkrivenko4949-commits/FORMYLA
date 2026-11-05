@@ -182,7 +182,7 @@ def test_exit_pages_section_renders(app):
     r = c.get('/admin/stats/exit_pages?p=today')
     html = r.get_data(as_text=True)
     assert r.status_code == 200
-    assert 'Страницы выхода' in html and '/intake' in html
+    assert 'После каких страниц уходят' in html and 'Анкета' in html
     assert 'Визиты с анкетой' in html
 
 
@@ -281,7 +281,7 @@ def test_journey_steps_stuck_and_intake_questions(app):
     cl = _admin_client(app)
     html = cl.get('/admin/stats/journey?p=today').get_data(as_text=True)
     assert 'Путь когорты' in html and 'Прошли анкету' in html
-    assert 'Где бросают анкету' in html and '>grade<' in html     # b остановился на grade
+    assert 'На каком вопросе бросают анкету' in html and '>grade<' in html     # b остановился на grade
     stuck = cl.get('/admin/stats/journey?p=today&stop=intake_start').get_data(as_text=True)
     assert 'quit' in stuck and 'done' not in stuck.split('Остановились на шаге')[1]
 
@@ -315,7 +315,7 @@ def test_lost_users_last_page(app):
         app.db.session.commit()
     cl = _admin_client(app)
     html = cl.get('/admin/stats/lost_users').get_data(as_text=True)
-    assert 'gone1' in html and 'active1' not in html and '/intake' in html
+    assert 'gone1' in html and 'active1' not in html and 'Анкета' in html
     assert 'gone1' not in cl.get('/admin/stats/lost_users?days=14').get_data(as_text=True)
 
 
@@ -371,13 +371,13 @@ def test_users_section_period_csv_and_activity(app):
         app.db.session.commit()
     _reset_returns_cache()
     cl = _admin_client(app)
-    r = cl.get('/admin/stats/users?p=7')
+    r = cl.get('/admin/stats/users_period?p=7')
     html = r.get_data(as_text=True)
-    assert r.status_code == 200 and 'newbie' in html and 'Топ-10 по XP' in html and 'Средний DAU' in html
+    assert r.status_code == 200 and 'newbie' in html and 'Топ-10 по XP' in html and 'Активных в день (в среднем)' in html
     assert '<iframe' not in html
-    old = cl.get('/admin/stats/users?p=custom&from=2020-01-01&to=2020-01-02').get_data(as_text=True)
+    old = cl.get('/admin/stats/users_period?p=custom&from=2020-01-01&to=2020-01-02').get_data(as_text=True)
     assert 'newbie' not in old.split('Зарегистрировались за период (')[1]
-    csv = cl.get('/admin/stats/users?p=7&csv=1')
+    csv = cl.get('/admin/stats/users_period?p=7&csv=1')
     assert csv.mimetype == 'text/csv' and 'newbie' in csv.get_data(as_text=True)
 
 
@@ -464,7 +464,7 @@ def test_person_page_timeline_and_reason(app):
     cl = _admin_client(app)
     html = cl.get(f'/admin/stats/person?id={uid}').get_data(as_text=True)
     assert 'tracked' in html and 'Лента действий' in html
-    assert '/subscribe' in html and 'вопрос: goal' in html and 'Платёж ЮKassa' in html
+    assert 'Тарифы' in html and '2. Цель' in html and 'Платёж ЮKassa' in html
     assert 'Вероятная причина: Начал оплату и не оплатил' in html
     by_nick = cl.get('/admin/stats/person?q=track').get_data(as_text=True)
     assert 'Лента действий' in by_nick
@@ -615,3 +615,107 @@ def test_legacy_admin_pages_redirect_to_new_panel(tmp_path, monkeypatch):
     assert c.get('/admin/users/returns').headers['Location'].endswith('/admin/stats/returns')
     assert c.get('/admin/users/surveys').headers['Location'].endswith('/admin/stats/surveys')
     assert c.get('/admin/users?embed=1').status_code == 200
+
+
+# ───────────── «Пользователи»: всё со старой страницы, по вкладкам ─────────────
+def _fake_users_ctx():
+    row = lambda i, nick, online=False: {
+        'id': i, 'nickname': nick, 'name': 'Имя ' + nick, 'email': nick + '@example.invalid', 'created_at': '01.11.2026',
+        'last_login': '04.11.2026 10:00', 'login_count': 3, 'problems': 10 * i, 'checked': 12 * i, 'level': 2, 'xp': 100 * i,
+        'xp_level': 1, 'seconds': 3600 * i, 'minutes': 60.0 * i, 'hours': float(i), 'online': online}
+    rows = [row(1, 'ann', True), row(2, 'bob'), row(3, 'cat')]
+    days = [{'day': f'2026-11-0{d}', 'active': d, 'logins': 1, 'hours': 0.5, 'events': 0} for d in range(1, 6)]
+    return {
+        'rows': rows,
+        'total': {'users': 3, 'online_now': 7, 'logins': 9, 'problems': 60, 'checked': 72, 'seconds': 21600, 'dau': 11,
+                  'wau': 22, 'mau': 33, 'peak_today': 5, 'peak_yesterday': 4, 'peak_ever': 19, 'peak_ever_at': '01.11 12:00',
+                  'solved_today': 2, 'solved_week': 8, 'photos_total': 1},
+        'devices_stats': {'pc_only': 1, 'mobile_only': 2, 'both': 3, 'unknown': 4, 'tracked_users': 10},
+        'by_day': days, 'reg_map': {'2026-11-02': 2}, 'by_hour': list(range(24)),
+        'top_xp': rows[::-1], 'top_problems': rows, 'top_time': rows, 'inactive': [rows[2]],
+        'photo_items': [{'user_id': 2, 'nickname': 'bob', 'when': '04.11 10:00', 'url': '/static/x.jpg', 'correct': True}],
+        'feedback_list': [{'user_id': 1, 'nickname': 'ann', 'rating': 5, 'text': 'классно', 'asked': '01.11 10:00', 'answered': '01.11 11:00'}],
+        'feedback_stats': {'answered': 1, 'pending': 2, 'avg': 5.0, 'dist': [0, 0, 0, 0, 1]},
+        'funnel': {'steps': [{'name': 'Регистрация', 'count': 3, 'pct': 100}], 'retention': {'d1': {'pct': 33, 'retained': 1, 'cohort': 3}}},
+        'task_types': [{'name': 'Задачи дня', 'answered': 10, 'correct': 7, 'pct': 70, 'avg_sec': 40}],
+        'weak_themes': [{'source': 'день', 'theme': 'Дроби', 'answered': 6, 'correct': 1, 'pct': 17}],
+        'problem_tasks': [{'text': 'Найдите x', 'answered': 5, 'wrong': 4, 'pct': 20}],
+        'streaks': {'avg': 2.5, 'max_ever': 9, 'buckets': {'1-2': 3}},
+        'ai_tutor': {'assistant_total': 50, 'assistant_week': 5, 'users_week': 2, 'top_agents': [{'name': 'тьютор', 'count': 5}]},
+        'pledge': {'total': 4, 'users_count': 2, 'today': 1, 'week': 3, 'users': []},
+        'roles': {'students': 3, 'teachers': 1, 'parents': 1, 'parents_bound': 0, 'groups': 1, 'groups_with_members': 1,
+                  'active_by_role': {'student': 2}},
+    }
+
+
+def _users_app(app, monkeypatch):
+    fake = types.ModuleType('routes.admin_support')
+    fake.users_stats_context = _fake_users_ctx
+    monkeypatch.setitem(sys.modules, 'routes.admin_support', fake)
+    return _admin_client(app)
+
+
+def test_users_online_tab_has_everything_from_old_page(app, monkeypatch):
+    cl = _users_app(app, monkeypatch)
+    html = cl.get('/admin/stats/users').get_data(as_text=True)
+    for text in ('Сейчас на сайте', 'Макс. онлайн сегодня', 'Рекорд онлайна', 'Активны сегодня', 'Активны за 7 дней',
+                 'Активны за 30 дней', 'Решено задач', 'Активные по дням', 'Регистрации по дням', 'Активность по часам',
+                 'Устройства', 'Только с телефона'):
+        assert text in html, text
+    assert 'class="st-vbars"' in html and 'st-card green' in html
+    assert 'Период:' not in html          # период к этому разделу не применяется
+
+
+def test_users_people_tab_table_search_csv(app, monkeypatch):
+    cl = _users_app(app, monkeypatch)
+    html = cl.get('/admin/stats/users?tab=people').get_data(as_text=True)
+    assert 'Все пользователи — 3' in html and 'ann@example.invalid' in html and '🟢 ann' in html
+    assert 'Топ-5 по XP' in html and 'Отвалившиеся' in html and 'href="/admin/stats/person?id=2"' in html
+    found = cl.get('/admin/stats/users?tab=people&q=bob').get_data(as_text=True)
+    assert 'Все пользователи — 1' in found
+    csv = cl.get('/admin/stats/users?tab=people&csv=1')
+    assert csv.mimetype == 'text/csv' and 'cat@example.invalid' in csv.get_data(as_text=True)
+
+
+def test_users_study_and_feedback_tabs(app, monkeypatch):
+    cl = _users_app(app, monkeypatch)
+    study = cl.get('/admin/stats/users?tab=study').get_data(as_text=True)
+    for text in ('Воронка', 'Удержание', 'По типам задач', 'Слабые темы', 'Дроби', 'Проблемные задачи', 'Серии дней подряд',
+                 'ИИ-тьютор', 'Обещание регулярности', 'Роли'):
+        assert text in study, text
+    fb = cl.get('/admin/stats/users?tab=feedback').get_data(as_text=True)
+    assert 'Средняя оценка' in fb and 'классно' in fb and 'class="st-photos"' in fb and '/static/x.jpg' in fb
+
+
+# ───────── понятные подписи и телефонная версия ─────────
+def test_labels_are_human():
+    from routes.admin_stats_labels import page_title, question_title, source_title
+    assert page_title('/daily_tasks') == 'Задачи дня' and page_title('/intake') == 'Анкета'
+    assert page_title('/problems/<id>') == 'Задача' and page_title('/unknown/x') == '/unknown/x'
+    assert source_title('tg') == 'Telegram' and source_title(None) == 'Неизвестно'
+    assert question_title('goal') == '2. Цель'
+
+
+def test_mobile_menu_and_clean_texts(app):
+    cl = _admin_client(app)
+    html = cl.get('/admin/stats/overview?p=7').get_data(as_text=True)
+    assert 'id="st-mnav-select"' in html and '<optgroup label="Главное">' in html
+    assert 'Инсайты' not in html and 'Флаги окружения' not in html
+    import re as _re
+    html = _re.sub(r'<script.*?</script>', '', html, flags=_re.S)   # только видимый текст
+    for jargon in ('с событием visit', 'payment_id', 'funnel_events', 'site_time_sections', 'PR 19.10', 'window.track'):
+        assert jargon not in html, jargon
+
+
+def test_person_shows_login_method_telegram(app):
+    _prep_journey_tables(app)
+    with app.app_context():
+        app.db.session.execute(app.db.text('ALTER TABLE users ADD COLUMN telegram_id VARCHAR(64)'))
+        app.db.session.commit()
+    uid = _user(app, 'roman')
+    with app.app_context():
+        app.db.session.execute(app.db.text("UPDATE users SET telegram_id = '123' WHERE id = :u"), {'u': uid})
+        app.db.session.commit()
+    html = _admin_client(app).get(f'/admin/stats/person?id={uid}').get_data(as_text=True)
+    assert 'Как входит' in html and 'Telegram' in html
+    assert 'Не записано' in html and 'после 18.10.2026' in html
