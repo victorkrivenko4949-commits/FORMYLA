@@ -2,6 +2,7 @@
 """TG_TRIAL_WEEK — API «Неделя Premium за подписку на Telegram-канал».
 
   GET  /api/tg-trial/status  → {state, channel, channel_url, days, expires_at?, tg_linked?}
+  GET  /api/tg-trial/link    → {ok, invite_link, bot_link}
   POST /api/tg-trial/claim   {tg_auth?: {...payload Telegram Login Widget}}
        → {ok, expires_at} | {error, code}
 
@@ -27,6 +28,25 @@ tg_trial_bp = Blueprint('tg_trial', __name__, url_prefix='/api/tg-trial')
 @login_required
 def status():
     return jsonify(tg_trial.get_state(current_user))
+
+
+@tg_trial_bp.route('/link', methods=['GET'])
+@login_required
+def link():
+    """Личная ссылка в канал и ссылка на бота (создаются при первом открытии окна)."""
+    if tg_trial.get_state(current_user).get('state') != 'available':
+        return jsonify({'error': 'Неделя недоступна.', 'code': 'unavailable'}), 409
+    try:
+        return jsonify({'ok': True, **tg_trial.get_links(current_user)})
+    except tg_trial.TgTrialError as e:
+        return jsonify({'error': e.message, 'code': e.code}), e.http
+    except Exception as e:  # noqa: BLE001
+        log.exception('[tg_trial] link failed: %s', e)
+        try:
+            db.session.rollback()
+        except Exception:  # noqa: BLE001
+            pass
+        return jsonify({'error': 'server', 'code': 'server'}), 500
 
 
 @tg_trial_bp.route('/claim', methods=['POST'])

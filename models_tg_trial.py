@@ -29,3 +29,29 @@ class TgTrialGrant(db.Model):
 
     def __repr__(self):
         return f'<TgTrialGrant user={self.user_id} tg={self.telegram_id} until={self.expires_at}>'
+
+
+class TgTrialLink(db.Model):
+    """Личная ссылка-приглашение в канал для пользователя сайта.
+
+    Кто вступил в канал по этой ссылке — бот видит (апдейт chat_member с
+    invite_link), так мы узнаём Telegram пользователя без входа через Telegram.
+    start_token — для тех, кто уже был подписан: t.me/<бот>?start=<token>.
+    """
+    __tablename__ = 'tg_trial_links'
+
+    user_id = db.Column(db.Integer, primary_key=True)
+    invite_link = db.Column(db.String(255), unique=True, index=True)
+    start_token = db.Column(db.String(64), nullable=False, unique=True, index=True)
+    telegram_id = db.Column(db.String(64), index=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    matched_at = db.Column(db.DateTime)
+
+
+class TgBotCursor(db.Model):
+    """Смещение getUpdates бота (одна строка id=1)."""
+    __tablename__ = 'tg_bot_cursor'
+
+    id = db.Column(db.Integer, primary_key=True)
+    offset = db.Column(db.BigInteger, nullable=False, default=0)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
