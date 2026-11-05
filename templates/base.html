@@ -1061,7 +1061,9 @@
         {% include 'partials/feedback_modal.html' %}
         {# TG_TRIAL_WEEK: «Неделя Premium за подписку на ТГ» — полоска (бесплатным) + окно.
            Состояние считается только для бесплатных и на /subscribe. #}
-        {% if (is_free_user is defined and is_free_user) or request.path.startswith('/subscribe') %}
+        {# ?tg_week=preview — админ видит окно со своего (Premium) аккаунта, неделя не выдаётся #}
+        {% if (is_free_user is defined and is_free_user) or request.path.startswith('/subscribe')
+              or (current_user.is_admin and request.args.get('tg_week') == 'preview') %}
             {% include 'partials/tg_trial_week.html' %}
         {% endif %}
     {% endif %}
