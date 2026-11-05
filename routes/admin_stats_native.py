@@ -255,8 +255,8 @@ def users(d_from: date, d_to: date):
                    'header': ['Пользователь', 'ID', 'Регистрация (UTC)', 'Последний вход (UTC)', 'Входов', 'XP', 'Минут на сайте'],
                    'rows': table_rows[:LIMIT_USERS], 'empty': 'Регистраций за период нет.'})
     blocks.append({'type': 'note', 'text': 'Онлайн сейчас, пики одновременных пользователей и полная таблица по всем пользователям '
-                   '(решено, проверено, уровень) — на старой странице: /admin/users?embed=1.'})
+                   '(решено, проверено, уровень) — в разделе «Пользователи» (вкладка «Люди»).'})
     return blocks
 
 
-VIEWS = {'users': users, 'returns': returns, 'surveys': surveys}
+VIEWS = {'users_period': users, 'returns': returns, 'surveys': surveys}

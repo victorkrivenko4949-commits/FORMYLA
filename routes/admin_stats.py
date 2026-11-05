@@ -61,12 +61,11 @@ SECTIONS = [
     dict(slug='referrals', title='Рефералы', group='Привлечение', kind='view', ready=True,
          note='Кто кого привёл (users.invited_by), визиты по ?ref=u_<id>, оплаты приглашённых.'),
     # Активность
-    dict(slug='users_full', title='Пользователи (полная таблица)', group='Активность', kind='embed', target='/admin/users', ready=True,
-         note='Прежняя страница «Статистика пользователей» целиком: онлайн, DAU/WAU/MAU, пики, почасовой график, таблица всех людей.'),
-    dict(slug='users', title='Пользователи за период', group='Активность', kind='view', ready=True),
+    dict(slug='users', title='Пользователи', group='Активность', kind='view', ready=True,
+         note='Всё, что было на прежней странице «Статистика пользователей», по вкладкам: онлайн и активность, люди, учёба, отзывы и фото.'),
+    dict(slug='users_period', title='Пользователи за период', group='Активность', kind='view', ready=True),
     dict(slug='sections', title='Разделы сайта', group='Активность', kind='embed', target='/admin/users/sections', ready=True),
     dict(slug='returns', title='Возвраты', group='Активность', kind='view', ready=True),
-    dict(slug='last_seen', title='Когда заходили в последний раз', group='Активность', kind='embed', target='/admin/users/last_seen', ready=True),
     dict(slug='lost_users', title='Ушли и не вернулись', group='Активность', kind='view', ready=True,
          note='Кого нет 3 / 7 / 14 дней и на какой странице их видели в последний раз.'),
     dict(slug='exit_pages', title='Где уходят', group='Активность', kind='view', ready=True,
@@ -117,8 +116,8 @@ _BY_SLUG = {s['slug']: s for s in SECTIONS}
 # старые адреса → новые разделы. Включено по умолчанию (05.11.2026); старая страница — по ?embed=1.
 # Выключить: ADMIN_STATS_REDIRECTS=0.
 LEGACY_REDIRECTS = {
-    '/admin/users': 'users_full',
-    '/admin/users/last_seen': 'last_seen',
+    '/admin/users': 'users',
+    '/admin/users/last_seen': 'users',
     '/admin/users/sections': 'sections',
     '/admin/users/returns': 'returns',
     '/admin/users/surveys': 'surveys',
@@ -366,7 +365,9 @@ def section(slug):
         from routes import admin_stats_journey as jr
         from routes import admin_stats_native as nat
         from routes import admin_stats_person as per
-        builder = sec.VIEWS.get(slug) or jr.VIEWS.get(slug) or nat.VIEWS.get(slug) or per.VIEWS.get(slug)
+        from routes import admin_stats_users as usr
+        builder = (usr.VIEWS.get(slug) or sec.VIEWS.get(slug) or jr.VIEWS.get(slug) or nat.VIEWS.get(slug)
+                   or per.VIEWS.get(slug))
     except Exception as e:  # noqa: BLE001
         logger.warning('admin_stats_sections import failed: %r', e)
         builder = None
