@@ -20,6 +20,7 @@ from datetime import date, datetime, timedelta
 
 from flask import request
 
+from routes.admin_stats_labels import page_title, question_title, source_title
 from routes.admin_stats_sections import PLAN_TITLES, _has_column, _has_table, _json_get, _q
 
 logger = logging.getLogger(__name__)
@@ -173,7 +174,7 @@ def signals_for(uids) -> dict:
         if 'intake_answer' in e and 'intake_done' not in e and 'intake_skip' not in e:
             codes.append('intake_quit')
             if u in last_qid:
-                det['intake_quit'] = f'последний вопрос: {last_qid[u]}'
+                det['intake_quit'] = f'последний отвеченный вопрос: {question_title(last_qid[u])}'
         if ready.get(u) == 'not_yet':
             codes.append('not_ready')
         if 'intake_skip' in e and 'intake_done' not in e:
@@ -202,19 +203,21 @@ def timeline(uid: int):
     items = []
     if _has_table('page_views'):
         for p, t in (_q('SELECT path, created_at FROM page_views WHERE user_id = :u ORDER BY created_at DESC LIMIT 500', u=uid) or []):
-            items.append((_dt(t), 'Страница', p))
-    for name, props, path, t in (_q('SELECT event, props, path, created_at FROM funnel_events WHERE user_id = :u '
-                                    'ORDER BY created_at DESC LIMIT 500', u=uid) or []):
+            items.append((_dt(t), 'Открыл страницу', page_title(p)))
+    for name, props, path, src, t in (_q('SELECT event, props, path, source, created_at FROM funnel_events WHERE user_id = :u '
+                                         'ORDER BY created_at DESC LIMIT 500', u=uid) or []):
         pr = _props(props)
         detail = ''
         if name == 'intake_answer':
-            detail = f"вопрос: {pr.get('qid', '—')}"
+            detail = question_title(pr.get('qid', '—'))
         elif name == 'payment_success':
             detail = f"{PLAN_TITLES.get(str(pr.get('plan')), pr.get('plan') or '—')}, {pr.get('amount', '—')} ₽"
         elif name == 'visit':
-            detail = 'со страницы ' + (path or '/')
+            detail = 'зашёл на «' + page_title(path or '/') + '»' + (f" · источник: {source_title(src)}" if src else '')
+        elif name == 'signup':
+            detail = {'telegram': 'через Telegram', 'email': 'по почте'}.get(pr.get('via'), '')
         elif name in LIMIT_EVENTS or name == 'limit_applied':
-            detail = path or ''
+            detail = page_title(path) if path else ''
         items.append((_dt(t), EVENT_TITLES.get(name, name), detail))
     if _has_table('readiness_survey_answers'):
         for a, t in (_q('SELECT answer, answered_at FROM readiness_survey_answers WHERE user_id = :u', u=uid) or []):
@@ -250,6 +253,20 @@ def timeline(uid: int):
     return items
 
 
+def login_method(uid: int) -> str:
+    """Telegram / Яндекс / Google по привязанным аккаунтам, иначе — почта (код на email)."""
+    ways = []
+    if _has_column('users', 'telegram_id'):
+        r = _q('SELECT telegram_id FROM users WHERE id = :u', u=uid) or []
+        if r and r[0][0]:
+            ways.append('Telegram')
+    if _has_table('oauth_accounts'):
+        names = {'yandex': 'Яндекс', 'google': 'Google', 'vk': 'VK'}
+        for (prov,) in (_q('SELECT DISTINCT provider FROM oauth_accounts WHERE user_id = :u', u=uid) or []):
+            ways.append(names.get(str(prov).lower(), str(prov)))
+    return ', '.join(ways) if ways else 'Почта (код на email)'
+
+
 def _find_user():
     raw = (request.args.get('id') or '').strip()
     q = (request.args.get('q') or '').strip()
@@ -278,13 +295,13 @@ def person(d_from: date, d_to: date):
     items = timeline(uid)
     sig = signals_for([uid])[uid]
     last = items[0][0] if items else None
-    last_page = next((d for t, w, d in items if w == 'Страница'), None)
+    last_page = next((d for t, w, d in items if w == 'Открыл страницу'), None)
     if _has_table('site_time_beat'):
         beat = _q('SELECT last_beat, last_page FROM site_time_beat WHERE user_id = :u', u=uid) or []
         if beat and _dt(beat[0][0]) and (last is None or _dt(beat[0][0]) > last):
             last = _dt(beat[0][0])
             from services.page_views import normalize_path
-            last_page = normalize_path(beat[0][1] or '') or last_page
+            last_page = page_title(normalize_path(beat[0][1] or '')) if beat[0][1] else last_page
     days_away = (datetime.utcnow() - last).days if last else None
     created = _dt(info.get('created_at'))
 
@@ -298,9 +315,12 @@ def person(d_from: date, d_to: date):
             {'title': 'Пользователь', 'value': info.get('nickname') or 'Без ника', 'small': True,
              'sub': f'#{uid} · регистрация {msk(created)}'},
             {'title': 'Последняя активность', 'value': status, 'small': True, 'sub': msk(last) + ' (МСК)'},
-            {'title': 'Последняя страница', 'value': last_page or '—', 'small': True, 'sub': 'журнал страниц / трекер времени'},
-            {'title': 'Откуда пришёл', 'value': info.get('acq_source') or '—', 'small': True,
-             'sub': f"метка: {info.get('acq_ref') or '—'}"},
+            {'title': 'Последняя страница', 'value': last_page or '—', 'small': True, 'sub': 'где был в последний раз'},
+            {'title': 'Откуда пришёл', 'value': source_title(info.get('acq_source')) if info.get('acq_source') else 'Не записано',
+             'small': True, 'sub': (f"метка ссылки: {info.get('acq_ref')}" if info.get('acq_ref') else
+                                    'источник записывается у тех, кто пришёл после 18.10.2026') if info.get('acq_source') or info.get('acq_ref')
+             else 'источник записывается у тех, кто пришёл после 18.10.2026'},
+            {'title': 'Как входит', 'value': login_method(uid), 'small': True, 'sub': 'по привязанным аккаунтам'},
         ]},
         {'type': 'note', 'text': 'Вероятная причина: ' + reason_text(sig) +
          ('. Другие сигналы: ' + '; '.join(reason_text(sig, c) for c in sig['codes'][1:]) if len(sig['codes']) > 1 else '') +

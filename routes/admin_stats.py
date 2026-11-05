@@ -31,17 +31,17 @@ admin_stats_bp = Blueprint('admin_stats', __name__, url_prefix='/admin/stats')
 ENABLED = os.environ.get('ADMIN_STATS_ENABLED', '1') != '0'
 
 FUNNEL_STEPS = (
-    ('visit', 'Визиты'),
+    ('visit', 'Посетители'),
     ('signup', 'Регистрации'),
-    ('intake_done', 'Анкета пройдена'),
-    ('first_task_solved', 'Первая задача решена'),
-    ('payment_success', 'Оплаты'),
+    ('intake_done', 'Прошли анкету'),
+    ('first_task_solved', 'Решили первую задачу'),
+    ('payment_success', 'Оплатили'),
 )
 
 SOURCE_TITLES = {
-    'tg': 'Telegram', 'teacher': 'Учителя', 'parent': 'Родители', 'referral': 'Рефералы / ссылки',
-    'organic': 'Поиск (органика)', 'social': 'Соцсети', 'direct_visit': 'Прямые заходы',
-    'internal': 'Внутренние', None: 'Не определён', '': 'Не определён',
+    'tg': 'Telegram', 'teacher': 'Ссылки учителей', 'parent': 'Ссылки родителей', 'referral': 'Приглашения по ссылке',
+    'organic': 'Поиск (Яндекс, Google)', 'social': 'Соцсети', 'direct_visit': 'Сами набрали адрес / закладка',
+    'internal': 'Внутренние переходы', None: 'Неизвестно', '': 'Неизвестно',
 }
 
 ENV_FLAGS = ('PAYWALL_ENABLED', 'PAYWALL_START_DATE', 'PAYWALL_PREFIXES', 'PAYWALL_AB',
@@ -51,66 +51,64 @@ ENV_FLAGS = ('PAYWALL_ENABLED', 'PAYWALL_START_DATE', 'PAYWALL_PREFIXES', 'PAYWA
 
 # slug, title, group, kind (view|embed|stub), target (url для embed), ready, since, note
 SECTIONS = [
-    # Сводка
-    dict(slug='overview', title='Сводка', group='Сводка', kind='view', ready=True),
-    # Привлечение
-    dict(slug='funnel', title='Воронка', group='Привлечение', kind='view', ready=True),
-    dict(slug='journey', title='Путь регистрации', group='Привлечение', kind='view', ready=True,
-         note='Когорта зарегистрированных: анкета, готовность, первая задача, возврат, paywall, оплата.'),
-    dict(slug='sources', title='Источники', group='Привлечение', kind='view', ready=True),
-    dict(slug='referrals', title='Рефералы', group='Привлечение', kind='view', ready=True,
-         note='Кто кого привёл (users.invited_by), визиты по ?ref=u_<id>, оплаты приглашённых.'),
-    # Активность
-    dict(slug='users', title='Пользователи', group='Активность', kind='view', ready=True,
-         note='Всё, что было на прежней странице «Статистика пользователей», по вкладкам: онлайн и активность, люди, учёба, отзывы и фото.'),
-    dict(slug='users_period', title='Пользователи за период', group='Активность', kind='view', ready=True),
-    dict(slug='sections', title='Разделы сайта', group='Активность', kind='embed', target='/admin/users/sections', ready=True),
-    dict(slug='returns', title='Возвраты', group='Активность', kind='view', ready=True),
-    dict(slug='lost_users', title='Ушли и не вернулись', group='Активность', kind='view', ready=True,
-         note='Кого нет 3 / 7 / 14 дней и на какой странице их видели в последний раз.'),
-    dict(slug='exit_pages', title='Где уходят', group='Активность', kind='view', ready=True,
-         note='Страницы, на которых заканчиваются визиты, отскок и выходы из анкеты (журнал page_views).'),
-    dict(slug='daily_tasks', title='Задачи дня', group='Активность', kind='embed', target='/admin/daily_tasks/dashboard', ready=True),
-    dict(slug='streaks', title='Серии и XP', group='Активность', kind='view', ready=True,
-         note='Распределение серий (streak_records), доля ≥ 7 дней — контроль правила серии для Free с 3 задачами.'),
-    # Монетизация
-    dict(slug='limits', title='Лимиты', group='Монетизация', kind='view', ready=True,
-         note='Экран лимита (limit_shown) по дням и когортам A/B, доля от DAU.'),
-    dict(slug='paywall', title='Paywall и витрина', group='Монетизация', kind='view', ready=True,
-         note='Лимит → витрина → оформление → попытка платежа → оплата; кто начал оплату и бросил.'),
-    dict(slug='subscriptions', title='Подписки', group='Монетизация', kind='view', ready=True,
-         note='Активные по тарифам, MRR и прогресс к 100 тыс. ₽/мес, истекающие, отмены.'),
-    dict(slug='founders', title='Основатели', group='Монетизация', kind='view', ready=True,
-         note='users.is_founder (после PR 19.10), клики по офферу, годовые по 2 790 ₽, дни до 31.01.2027.'),
-    dict(slug='trial', title='Триал', group='Монетизация', kind='view', ready=True,
-         note='users.trial_until (после PR 20.10): выдано, активно, истекают, конверсия в оплату.'),
-    dict(slug='payments', title='Платежи', group='Монетизация', kind='view', ready=True,
-         note='payment_success из webhook ЮKassa: суммы по тарифам, последние платежи.'),
-    dict(slug='cohorts', title='Когорты', group='Монетизация', kind='view', ready=True,
-         note='По неделе регистрации: анкета, первая задача, оплата.'),
+    # Главное
+    dict(slug='overview', title='Сводка', group='Главное', kind='view', ready=True),
+    dict(slug='users', title='Пользователи', group='Главное', kind='view', ready=True,
+         note='Онлайн, активность, все люди, учёба, отзывы — по вкладкам.'),
+    dict(slug='subscriptions', title='Подписки', group='Главное', kind='view', ready=True,
+         note='У кого какая подписка, до какого числа и сколько заплатил.'),
+    dict(slug='person', title='Путь человека', group='Главное', kind='view', ready=True,
+         note='Всё об одном человеке: откуда пришёл, как входит, что делал и почему, скорее всего, ушёл.'),
+    # Где теряем людей
+    dict(slug='journey', title='Путь после регистрации', group='Где теряем людей', kind='view', ready=True,
+         note='Сколько новых людей дошли до анкеты, первой задачи, возврата и оплаты — и кто где остановился.'),
+    dict(slug='lost_users', title='Ушли и не вернулись', group='Где теряем людей', kind='view', ready=True,
+         note='Кого нет 3, 7 или 14 дней, где их видели последний раз и почему, скорее всего, ушли.'),
+    dict(slug='exit_pages', title='На каких страницах уходят', group='Где теряем людей', kind='view', ready=True,
+         note='После каких страниц люди закрывают сайт и на каком вопросе бросают анкету.'),
+    dict(slug='paywall', title='Путь к оплате', group='Где теряем людей', kind='view', ready=True,
+         note='Лимит → тарифы → оформление → оплата: сколько людей на каждом шаге и кто бросил оплату.'),
+    dict(slug='returns', title='Возвращаются ли', group='Где теряем людей', kind='view', ready=True),
+    # Люди и опросы
+    dict(slug='surveys', title='Опросы и оценки', group='Люди и опросы', kind='view', ready=True),
+    dict(slug='survey_behavior', title='Опросы и поведение', group='Люди и опросы', kind='view', ready=True,
+         note='Что делали люди после ответа в опросе: вернулись, решали задачи, оплатили.'),
+    dict(slug='support', title='Поддержка', group='Люди и опросы', kind='embed', target='/admin/support', ready=True),
+    dict(slug='teachers_parents', title='Учителя и родители', group='Люди и опросы', kind='view', ready=True,
+         note='Сколько учителей и родителей и сколько людей пришло по их ссылкам.'),
+    dict(slug='referrals', title='Приглашения друзей', group='Люди и опросы', kind='view', ready=True,
+         note='Кто кого привёл по своей ссылке и оплатили ли приглашённые.'),
+    # Откуда приходят
+    dict(slug='sources', title='Откуда приходят', group='Откуда приходят', kind='view', ready=True),
+    dict(slug='users_period', title='Новые и активные за период', group='Откуда приходят', kind='view', ready=True),
+    dict(slug='cohorts', title='По неделям регистрации', group='Откуда приходят', kind='view', ready=True,
+         note='Люди, зарегистрированные в одну неделю: сколько прошли анкету, решили задачу и оплатили.'),
+    dict(slug='funnel', title='События по дням', group='Откуда приходят', kind='view', ready=True),
+    # Деньги
+    dict(slug='payments', title='Платежи', group='Деньги', kind='view', ready=True,
+         note='Все оплаты: суммы по тарифам и последние платежи.'),
+    dict(slug='limits', title='Лимиты бесплатной версии', group='Деньги', kind='view', ready=True,
+         note='Сколько людей упираются в лимит бесплатной версии.'),
+    dict(slug='trial', title='Пробный период', group='Деньги', kind='view', ready=True,
+         note='Сколько пробных периодов выдано, сколько скоро закончится и сколько людей потом оплатили.'),
+    dict(slug='founders', title='Основатели', group='Деньги', kind='view', ready=True,
+         note='Предложение для основателей: клики, годовые оплаты, дни до конца акции.'),
     # Продукт
-    dict(slug='ai_usage', title='ИИ-разборы и бюджет', group='Продукт', kind='view', ready=True,
-         note='usage_daily: разборы, токены, cost_usd, дни на лимите FREE_AI_PER_DAY, топ пользователей.'),
-    dict(slug='curator', title='Куратор и план', group='Продукт', kind='view', ready=True,
-         note='Состояния куратора и ссылки на существующие страницы статуса плана/бюджета.'),
+    dict(slug='daily_tasks', title='Задачи дня', group='Продукт', kind='embed', target='/admin/daily_tasks/dashboard', ready=True),
+    dict(slug='daily_pool', title='Запас задач дня', group='Продукт', kind='embed', target='/admin/daily_pool', ready=True),
+    dict(slug='sections', title='Время по разделам сайта', group='Продукт', kind='embed', target='/admin/users/sections', ready=True),
+    dict(slug='streaks', title='Серии дней подряд', group='Продукт', kind='view', ready=True,
+         note='Сколько дней подряд люди занимаются.'),
+    dict(slug='ai_usage', title='ИИ-разборы и расходы', group='Продукт', kind='view', ready=True,
+         note='Сколько разборов делает ИИ, сколько это стоит и кто пользуется больше всех.'),
+    dict(slug='curator', title='Куратор и план', group='Продукт', kind='view', ready=True),
     dict(slug='drawings_method_week', title='Чертежи и метод недели', group='Продукт', kind='view', ready=True,
-         note='geo_drawing_history по дням + paywall_view по страницам.'),
-    dict(slug='daily_pool', title='Пул задач дня', group='Продукт', kind='embed', target='/admin/daily_pool', ready=True),
-    # Люди
-    dict(slug='support', title='Поддержка', group='Люди', kind='embed', target='/admin/support', ready=True),
-    dict(slug='person', title='Путь человека', group='Люди', kind='view', ready=True,
-         note='Всё, что сайт знает об одном человеке, по времени, и вероятная причина ухода.'),
-    dict(slug='survey_behavior', title='Опросы и поведение', group='Люди', kind='view', ready=True,
-         note='Что делали после ответа в опросах: вернулись, решали задачи, оплатили.'),
-    dict(slug='surveys', title='Опросы и оценки', group='Люди', kind='view', ready=True),
-    dict(slug='teachers_parents', title='Учителя и родители', group='Люди', kind='view', ready=True,
-         note='Роли, визиты по меткам teacher/parent, связки (когда появятся).'),
+         note='Сколько чертежей строят по дням и где людям показывалась оплата.'),
     # Система
-    dict(slug='pwa', title='PWA-установки', group='Система', kind='embed', target='/admin/pwa/stats', ready=True),
-    dict(slug='insights', title='Инсайты', group='Система', kind='embed', target='/api/admin/insights/stats', ready=True),
-    dict(slug='env_flags', title='Флаги окружения', group='Система', kind='view', ready=True),
+    dict(slug='pwa', title='Установки приложения', group='Система', kind='embed', target='/admin/pwa/stats', ready=True),
+    dict(slug='env_flags', title='Настройки сервера', group='Система', kind='view', ready=True),
 ]
-GROUP_ORDER = ('Сводка', 'Привлечение', 'Активность', 'Монетизация', 'Продукт', 'Люди', 'Система')
+GROUP_ORDER = ('Главное', 'Где теряем людей', 'Люди и опросы', 'Откуда приходят', 'Деньги', 'Продукт', 'Система')
 _BY_SLUG = {s['slug']: s for s in SECTIONS}
 
 # старые адреса → новые разделы. Включено по умолчанию (05.11.2026); старая страница — по ?embed=1.
@@ -425,7 +423,7 @@ def view_overview(s):
         cards.append({'key': ev, 'title': title, 'yesterday': y_counts.get(ev, 0), 'period': p_counts.get(ev, 0),
                       'prev': prev_counts.get(ev, 0), 'delta': _delta(p_counts.get(ev, 0), prev_counts.get(ev, 0)),
                       'spark': _spark(_series(by_day, d_from, d_to, ev)), 'link': '/admin/stats/funnel'})
-    cards.insert(0, {'key': 'dau', 'title': 'DAU (время на сайте)', 'yesterday': dau(yesterday),
+    cards.insert(0, {'key': 'dau', 'title': 'Активные вчера', 'yesterday': dau(yesterday),
                      'period': None, 'link': '/admin/stats/users'})
     cards.append({'key': 'limit_hit', 'title': 'Упёрлись в лимит', 'yesterday': y_counts.get('limit_hit', 0),
                   'period': p_counts.get('limit_hit', 0), 'prev': prev_counts.get('limit_hit', 0),

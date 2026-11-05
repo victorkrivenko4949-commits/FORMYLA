@@ -182,7 +182,7 @@ def test_exit_pages_section_renders(app):
     r = c.get('/admin/stats/exit_pages?p=today')
     html = r.get_data(as_text=True)
     assert r.status_code == 200
-    assert 'Страницы выхода' in html and '/intake' in html
+    assert 'После каких страниц уходят' in html and 'Анкета' in html
     assert 'Визиты с анкетой' in html
 
 
@@ -281,7 +281,7 @@ def test_journey_steps_stuck_and_intake_questions(app):
     cl = _admin_client(app)
     html = cl.get('/admin/stats/journey?p=today').get_data(as_text=True)
     assert 'Путь когорты' in html and 'Прошли анкету' in html
-    assert 'Где бросают анкету' in html and '>grade<' in html     # b остановился на grade
+    assert 'На каком вопросе бросают анкету' in html and '>grade<' in html     # b остановился на grade
     stuck = cl.get('/admin/stats/journey?p=today&stop=intake_start').get_data(as_text=True)
     assert 'quit' in stuck and 'done' not in stuck.split('Остановились на шаге')[1]
 
@@ -315,7 +315,7 @@ def test_lost_users_last_page(app):
         app.db.session.commit()
     cl = _admin_client(app)
     html = cl.get('/admin/stats/lost_users').get_data(as_text=True)
-    assert 'gone1' in html and 'active1' not in html and '/intake' in html
+    assert 'gone1' in html and 'active1' not in html and 'Анкета' in html
     assert 'gone1' not in cl.get('/admin/stats/lost_users?days=14').get_data(as_text=True)
 
 
@@ -373,7 +373,7 @@ def test_users_section_period_csv_and_activity(app):
     cl = _admin_client(app)
     r = cl.get('/admin/stats/users_period?p=7')
     html = r.get_data(as_text=True)
-    assert r.status_code == 200 and 'newbie' in html and 'Топ-10 по XP' in html and 'Средний DAU' in html
+    assert r.status_code == 200 and 'newbie' in html and 'Топ-10 по XP' in html and 'Активных в день (в среднем)' in html
     assert '<iframe' not in html
     old = cl.get('/admin/stats/users_period?p=custom&from=2020-01-01&to=2020-01-02').get_data(as_text=True)
     assert 'newbie' not in old.split('Зарегистрировались за период (')[1]
@@ -464,7 +464,7 @@ def test_person_page_timeline_and_reason(app):
     cl = _admin_client(app)
     html = cl.get(f'/admin/stats/person?id={uid}').get_data(as_text=True)
     assert 'tracked' in html and 'Лента действий' in html
-    assert '/subscribe' in html and 'вопрос: goal' in html and 'Платёж ЮKassa' in html
+    assert 'Тарифы' in html and '2. Цель' in html and 'Платёж ЮKassa' in html
     assert 'Вероятная причина: Начал оплату и не оплатил' in html
     by_nick = cl.get('/admin/stats/person?q=track').get_data(as_text=True)
     assert 'Лента действий' in by_nick
@@ -658,12 +658,12 @@ def _users_app(app, monkeypatch):
 def test_users_online_tab_has_everything_from_old_page(app, monkeypatch):
     cl = _users_app(app, monkeypatch)
     html = cl.get('/admin/stats/users').get_data(as_text=True)
-    for text in ('Сейчас на сайте', 'Макс. онлайн сегодня', 'Рекорд онлайна', 'Активны сегодня (DAU)', 'За 7 дней (WAU)',
-                 'За 30 дней (MAU)', 'Решено задач', 'Активные по дням', 'Регистрации по дням', 'Активность по часам',
+    for text in ('Сейчас на сайте', 'Макс. онлайн сегодня', 'Рекорд онлайна', 'Активны сегодня', 'Активны за 7 дней',
+                 'Активны за 30 дней', 'Решено задач', 'Активные по дням', 'Регистрации по дням', 'Активность по часам',
                  'Устройства', 'Только с телефона'):
         assert text in html, text
     assert 'class="st-vbars"' in html and 'st-card green' in html
-    assert 'Выбранный период' not in html          # период к этому разделу не применяется
+    assert 'Период:' not in html          # период к этому разделу не применяется
 
 
 def test_users_people_tab_table_search_csv(app, monkeypatch):
@@ -685,3 +685,37 @@ def test_users_study_and_feedback_tabs(app, monkeypatch):
         assert text in study, text
     fb = cl.get('/admin/stats/users?tab=feedback').get_data(as_text=True)
     assert 'Средняя оценка' in fb and 'классно' in fb and 'class="st-photos"' in fb and '/static/x.jpg' in fb
+
+
+# ───────── понятные подписи и телефонная версия ─────────
+def test_labels_are_human():
+    from routes.admin_stats_labels import page_title, question_title, source_title
+    assert page_title('/daily_tasks') == 'Задачи дня' and page_title('/intake') == 'Анкета'
+    assert page_title('/problems/<id>') == 'Задача' and page_title('/unknown/x') == '/unknown/x'
+    assert source_title('tg') == 'Telegram' and source_title(None) == 'Неизвестно'
+    assert question_title('goal') == '2. Цель'
+
+
+def test_mobile_menu_and_clean_texts(app):
+    cl = _admin_client(app)
+    html = cl.get('/admin/stats/overview?p=7').get_data(as_text=True)
+    assert 'id="st-mnav-select"' in html and '<optgroup label="Главное">' in html
+    assert 'Инсайты' not in html and 'Флаги окружения' not in html
+    import re as _re
+    html = _re.sub(r'<script.*?</script>', '', html, flags=_re.S)   # только видимый текст
+    for jargon in ('с событием visit', 'payment_id', 'funnel_events', 'site_time_sections', 'PR 19.10', 'window.track'):
+        assert jargon not in html, jargon
+
+
+def test_person_shows_login_method_telegram(app):
+    _prep_journey_tables(app)
+    with app.app_context():
+        app.db.session.execute(app.db.text('ALTER TABLE users ADD COLUMN telegram_id VARCHAR(64)'))
+        app.db.session.commit()
+    uid = _user(app, 'roman')
+    with app.app_context():
+        app.db.session.execute(app.db.text("UPDATE users SET telegram_id = '123' WHERE id = :u"), {'u': uid})
+        app.db.session.commit()
+    html = _admin_client(app).get(f'/admin/stats/person?id={uid}').get_data(as_text=True)
+    assert 'Как входит' in html and 'Telegram' in html
+    assert 'Не записано' in html and 'после 18.10.2026' in html

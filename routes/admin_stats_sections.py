@@ -32,7 +32,7 @@ PLAN_PRICES = {  # ₽ в месяц для MRR
 }
 PLAN_TITLES = {
     'premium_intense': 'Работяга / мес (800 ₽)', 'premium_calm': 'Спокойный / мес (500 ₽)',
-    'premium_monthly': 'Premium / мес (legacy)', 'premium_yearly': 'Premium / год (legacy)',
+    'premium_monthly': 'Premium / мес (старый тариф)', 'premium_yearly': 'Premium / год (старый тариф)',
     'student_month': 'Ученик / мес', 'student_year': 'Ученик / год', 'family_month': 'Семья / мес',
     'teacher_month': 'Учитель / мес', 'probe_once': 'Пробник (разово)', 'sheet_once': 'PDF-листок (разово)',
     'method_week_once': 'Неделя метода (разово)', 'free': 'Бесплатный',
@@ -103,6 +103,24 @@ def _day_expr(col='created_at') -> str:
 def _json_get(col: str, key: str) -> str:
     """SQL-выражение: props->>'key' (PG) / json_extract (SQLite)."""
     return f"({col}->>'{key}')" if _pg() else f"json_extract({col}, '$.{key}')"
+
+
+def _msk_str(v) -> str:
+    """Время из базы (UTC) → «дд.мм.гггг чч:мм» по Москве."""
+    try:
+        d = v if isinstance(v, datetime) else datetime.fromisoformat(str(v).replace('T', ' ')[:26])
+        return (d + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')
+    except Exception:
+        return str(v or '—')[:16]
+
+
+def _user_link(uid):
+    return {'text': f'#{uid}', 'href': f'/admin/stats/person?id={uid}'} if uid is not None else '—'
+
+
+def _status(s) -> str:
+    from routes.admin_stats_labels import PLAN_STATUS
+    return PLAN_STATUS.get(str(s), str(s))
 
 
 def _pct(a, b):
@@ -182,25 +200,24 @@ def subscriptions(d_from: date, d_to: date):
                              now=now_iso, week=(datetime.utcnow() + timedelta(days=7)).isoformat()) or 0)
     blocks.append({'type': 'cards', 'items': [
         {'title': 'Активных подписок', 'value': active_total, 'sub': f'из них бета/бесплатных: {active_total - paid_total}'},
-        {'title': 'Платных', 'value': paid_total, 'sub': 'is_beta_access = false'},
+        {'title': 'Платных', 'value': paid_total, 'sub': 'без бета-доступа'},
         {'title': 'Людей с Premium-доступом', 'value': premium['total'],
          'sub': f"пилоты: {premium['pilots']} · по тарифу: {premium['subscribed']}"},
-        {'title': 'MRR, ₽ (оценка)', 'value': f'{mrr:,.0f}'.replace(',', ' '), 'sub': f'цель {MRR_TARGET:,} ₽ к концу февраля'.replace(',', ' ')},
+        {'title': 'Доход в месяц, ₽ (оценка)', 'value': f'{mrr:,.0f}'.replace(',', ' '), 'sub': f'цель {MRR_TARGET:,} ₽ к концу февраля'.replace(',', ' ')},
         {'title': 'Новых за период', 'value': new_in_period, 'sub': 'строк в subscriptions'},
         {'title': 'Истекают за 7 дней', 'value': expiring_7, 'sub': 'активные, expires_at ≤ +7 дн'},
         {'title': 'Отмен всего', 'value': cancelled, 'sub': "status = 'cancelled'"},
     ]})
     blocks.append({'type': 'bar', 'title': 'Прогресс к 100 000 ₽/мес', 'items': [
-        {'label': 'MRR', 'value': f'{mrr:,.0f} ₽'.replace(',', ' '), 'pct': min(100, round(100 * mrr / MRR_TARGET, 1))}]})
+        {'label': 'Доход в месяц', 'value': f'{mrr:,.0f} ₽'.replace(',', ' '), 'pct': min(100, round(100 * mrr / MRR_TARGET, 1))}]})
     blocks.append({'type': 'table', 'title': 'Активные подписки по тарифам',
-                   'header': ['Тариф', 'Активных', 'Бета', 'Платных', 'MRR, ₽'], 'rows': table_rows,
+                   'header': ['Тариф', 'Активных', 'Бета', 'Платных', 'В месяц, ₽'], 'rows': table_rows,
                    'empty': 'Активных подписок нет.'})
     plans = _q("SELECT COALESCE(current_plan, 'free'), COUNT(*) FROM users GROUP BY 1 ORDER BY 2 DESC")
     if plans:
-        blocks.append({'type': 'table', 'title': 'users.current_plan', 'header': ['План', 'Пользователей'],
+        blocks.append({'type': 'table', 'title': 'Тариф, записанный у пользователей', 'header': ['Тариф', 'Пользователей'],
                        'rows': [[PLAN_TITLES.get(str(p), str(p)), int(n)] for p, n in plans]})
-    blocks.append({'type': 'note', 'text': 'MRR считается как платные активные подписки × цена/мес (годовые — /12). '
-                   'Тарифы student_*/family/teacher появятся в PLAN_LIMITS после PR ЮKassa (19.10).'})
+    blocks.append({'type': 'note', 'text': 'Доход в месяц = платные активные подписки × цена тарифа в месяц (годовые делятся на 12).'})
     return blocks
 
 
@@ -216,22 +233,23 @@ def payments(d_from: date, d_to: date):
     total_n = sum(int(r[1] or 0) for r in totals)
     blocks.append({'type': 'cards', 'items': [
         {'title': 'Оплат за период', 'value': total_n, 'sub': 'payment_success'},
-        {'title': 'Выручка, ₽', 'value': f'{total_sum:,.0f}'.replace(',', ' '), 'sub': 'сумма props.amount'},
+        {'title': 'Выручка, ₽', 'value': f'{total_sum:,.0f}'.replace(',', ' '), 'sub': 'сумма оплат'},
         {'title': 'Средний чек, ₽', 'value': f'{(total_sum / total_n) if total_n else 0:,.0f}'.replace(',', ' '), 'sub': ''},
     ]})
     blocks.append({'type': 'table', 'title': 'По тарифам', 'header': ['Тариф', 'Оплат', 'Сумма, ₽'],
                    'rows': [[PLAN_TITLES.get(str(p), str(p)), int(n), f'{float(s or 0):,.0f}'.replace(',', ' ')] for p, n, s in totals],
-                   'empty': 'Оплат пока нет. События пишет services.funnel.payment_success() из webhook ЮKassa (PR 19.10).'})
+                   'empty': 'Оплат пока нет.'})
     last = _q(f"""SELECT created_at, user_id, {plan}, {amt}, {pid}
                   FROM funnel_events WHERE event = 'payment_success' ORDER BY created_at DESC LIMIT 100""") or []
-    blocks.append({'type': 'table', 'title': 'Последние 100 платежей', 'header': ['Когда (UTC)', 'user_id', 'Тариф', 'Сумма', 'payment_id'],
-                   'rows': [[str(c)[:19], u, PLAN_TITLES.get(str(p), p), a, i] for c, u, p, a, i in last], 'empty': 'Пусто.'})
+    blocks.append({'type': 'table', 'title': 'Последние 100 платежей', 'header': ['Когда (по Москве)', 'Пользователь', 'Тариф', 'Сумма, ₽', 'Номер платежа'],
+                   'rows': [[_msk_str(c), _user_link(u), PLAN_TITLES.get(str(p), p), a, i] for c, u, p, a, i in last], 'empty': 'Пусто.'})
     if _has_table('subscriptions'):
         subs = _q("""SELECT created_at, user_id, plan, amount_rub, payment_id, status FROM subscriptions
                      WHERE payment_id IS NOT NULL ORDER BY id DESC LIMIT 50""") or []
-        blocks.append({'type': 'table', 'title': 'subscriptions с payment_id (последние 50)',
-                       'header': ['Создано', 'user_id', 'План', 'Сумма', 'payment_id', 'Статус'],
-                       'rows': [[str(c)[:19], u, p, a, i, s] for c, u, p, a, i, s in subs], 'empty': 'Нет записей с payment_id.'})
+        blocks.append({'type': 'table', 'title': 'Оплаченные подписки (последние 50)',
+                       'header': ['Создана (по Москве)', 'Пользователь', 'Тариф', 'Сумма, ₽', 'Номер платежа', 'Статус'],
+                       'rows': [[_msk_str(c), _user_link(u), PLAN_TITLES.get(str(p), p), a, i, _status(s)] for c, u, p, a, i, s in subs],
+                       'empty': 'Оплаченных подписок пока нет.'})
     return blocks
 
 
@@ -241,13 +259,12 @@ def founders(d_from: date, d_to: date):
     cards = [{'title': 'До конца срока Основателей', 'value': max(0, days_left), 'sub': 'дней до 31.01.2027'}]
     if _has_column('users', 'is_founder'):
         n_f = int(_scalar("SELECT COUNT(*) FROM users WHERE is_founder = TRUE") or 0)
-        cards.append({'title': 'Основателей', 'value': n_f, 'sub': 'users.is_founder'})
+        cards.append({'title': 'Основателей', 'value': n_f, 'sub': 'отмечены как основатели'})
         paid = int(_scalar("""SELECT COUNT(DISTINCT fe.user_id) FROM funnel_events fe JOIN users u ON u.id = fe.user_id
                               WHERE fe.event = 'payment_success' AND u.is_founder = TRUE""") or 0)
         cards.append({'title': 'Основателей оплатили', 'value': paid, 'sub': _fmt_pct(_pct(paid, n_f)) + ' от основателей'})
     else:
-        blocks.append({'type': 'note', 'text': 'Поля users.is_founder ещё нет — появится с миграцией в PR «/subscribe» (19.10). '
-                       'Пока показываем только события оффера и оплаты годового доступа.'})
+        blocks.append({'type': 'note', 'text': 'Отметки «основатель» в базе пока нет — видны только клики по предложению и годовые оплаты.'})
     start, end = _utc_bounds(d_from, d_to)
     clicks = _event_total('founder_offer_click', d_from, d_to)
     amt = _json_get('props', 'amount')
@@ -259,14 +276,13 @@ def founders(d_from: date, d_to: date):
     blocks.insert(0, {'type': 'cards', 'items': cards})
     blocks.append({'type': 'table', 'title': 'Клики по офферу по дням', 'header': ['День', 'Уникальных'],
                    'rows': [[str(d), int(n)] for d, n in _events_by_day('founder_offer_click', d_from, d_to)],
-                   'empty': 'Кликов пока нет — событие шлёт window.track("founder_offer_click") с кнопки оффера (PR 20.10).'})
+                   'empty': 'Кликов пока нет.'})
     return blocks
 
 
 def trial(d_from: date, d_to: date):
     if not _has_column('users', 'trial_until'):
-        return [{'type': 'note', 'text': 'Поля users.trial_until ещё нет — появится в PR «Триал 14 дней» (20.10, промпт 9). '
-                 f'TRIAL_DAYS сейчас = {os.environ.get("TRIAL_DAYS", "не задан")}.'}]
+        return [{'type': 'note', 'text': 'Пробный период в базе ещё не включён.'}]
     now = datetime.utcnow()
     active = int(_scalar("SELECT COUNT(*) FROM users WHERE trial_until > :n", n=now) or 0)
     expired = int(_scalar("SELECT COUNT(*) FROM users WHERE trial_until IS NOT NULL AND trial_until <= :n", n=now) or 0)
@@ -275,8 +291,8 @@ def trial(d_from: date, d_to: date):
                           WHERE fe.event = 'payment_success' AND u.trial_until IS NOT NULL""") or 0)
     given = active + expired
     return [{'type': 'cards', 'items': [
-        {'title': 'Выдано триалов', 'value': given, 'sub': 'users.trial_until IS NOT NULL'},
-        {'title': 'Активных', 'value': active, 'sub': 'trial_until > сейчас'},
+        {'title': 'Выдано триалов', 'value': given, 'sub': 'за всё время'},
+        {'title': 'Идут сейчас', 'value': active, 'sub': ''},
         {'title': 'Истекают за 3 дня', 'value': soon, 'sub': 'момент для письма'},
         {'title': 'Истекли', 'value': expired, 'sub': ''},
         {'title': 'Триал → оплата', 'value': conv, 'sub': _fmt_pct(_pct(conv, given)) + ' от выданных'},
@@ -289,25 +305,25 @@ def limits(d_from: date, d_to: date):
     hits_total = _event_total('limit_hit', d_from, d_to, uniq=False)
     dau = _dau_avg(d_from, d_to)
     blocks.append({'type': 'cards', 'items': [
-        {'title': 'Упёрлись в лимит (уник.)', 'value': hits_users, 'sub': 'экран лимита (limit_shown) за период'},
-        {'title': 'Срабатываний', 'value': hits_total, 'sub': 'всего событий'},
-        {'title': 'Средний DAU', 'value': dau, 'sub': 'site_time_sections'},
-        {'title': 'Доля от DAU', 'value': _fmt_pct(_pct(hits_users / max(1, (d_to - d_from).days + 1), dau) if dau else None),
-         'sub': 'уник. в день / DAU'},
-        {'title': 'FREE_TASKS_PER_DAY', 'value': os.environ.get('FREE_TASKS_PER_DAY', '—'), 'sub': f"FREE_AI_PER_DAY = {os.environ.get('FREE_AI_PER_DAY', '—')}"},
-        {'title': 'PAYWALL_AB', 'value': os.environ.get('PAYWALL_AB', '—'), 'sub': f"PAYWALL_ENABLED = {os.environ.get('PAYWALL_ENABLED', '—')}"},
+        {'title': 'Упёрлись в лимит (уник.)', 'value': hits_users, 'sub': 'людей за период'},
+        {'title': 'Сколько раз всего', 'value': hits_total, 'sub': ''},
+        {'title': 'Активных в день', 'value': dau, 'sub': 'в среднем'},
+        {'title': 'Доля от активных', 'value': _fmt_pct(_pct(hits_users / max(1, (d_to - d_from).days + 1), dau) if dau else None),
+         'sub': 'от активных за день'},
+        {'title': 'Бесплатно задач в день', 'value': os.environ.get('FREE_TASKS_PER_DAY', '—'), 'sub': f"ИИ-разборов в день: {os.environ.get('FREE_AI_PER_DAY', '—')}"},
+        {'title': 'Тест лимитов (A/B)', 'value': os.environ.get('PAYWALL_AB', '—'), 'sub': 'оплата включена' if os.environ.get('PAYWALL_ENABLED', '0') not in ('0', '') else 'оплата выключена'},
     ]})
     start, end = _utc_bounds(d_from, d_to)
     kind, ab = _json_get('props', 'kind'), _json_get('props', 'ab')
     by_kind = _q(f"""SELECT COALESCE({kind}, 'task'), COALESCE(CAST({ab} AS TEXT), '—'), COUNT(DISTINCT user_id), COUNT(*)
                      FROM funnel_events WHERE event IN ('limit_hit','limit_shown') AND created_at >= :s AND created_at < :e
                      GROUP BY 1, 2 ORDER BY 3 DESC""", s=start, e=end) or []
-    blocks.append({'type': 'table', 'title': 'По типу лимита и A/B-когорте', 'header': ['Лимит', 'Когорта', 'Уник.', 'Событий'],
+    blocks.append({'type': 'table', 'title': 'По типу лимита и группе теста', 'header': ['Лимит', 'Группа', 'Людей', 'Раз'],
                    'rows': [[k, a, int(u), int(n)] for k, a, u, n in by_kind],
-                   'empty': 'Событий limit_hit пока нет. Их будет слать экран лимита: window.track("limit_hit", {kind: "task"|"ai", ab: 0|1}) — PR 21.10.'})
-    blocks.append({'type': 'table', 'title': 'По дням', 'header': ['День', 'Уник. пользователей'],
+                   'empty': 'Пока никто не упирался в лимит.'})
+    blocks.append({'type': 'table', 'title': 'По дням', 'header': ['День', 'Людей'],
                    'rows': [[str(d), int(n)] for d, n in _events_by_day('limit_hit', d_from, d_to)], 'empty': 'Пусто.'})
-    blocks.append({'type': 'note', 'text': 'Решение 11.11 о 100% лимитов: сравните долю упёршихся и оплаты в когортах ab=1 (лимиты) и ab=0 (контроль).'})
+    blocks.append({'type': 'note', 'text': 'Чтобы решить, нужны ли лимиты всем, сравните долю упёршихся и оплаты в группе с лимитами и без.'})
     return blocks
 
 
@@ -367,14 +383,14 @@ def paywall(d_from: date, d_to: date):
         blocks.append({'type': 'table', 'title': 'Платежи ЮKassa по статусам', 'header': ['Тариф', 'Статус', 'Платежей'],
                        'rows': [[PLAN_TITLES.get(str(c), c), st, int(n)] for c, st, n in statuses]})
     blocks.append({'type': 'note', 'text': 'Шаги не обязаны идти по порядку: человек может открыть витрину, не упираясь в лимит. '
-                   'Витрина и оформление считаются по журналу страниц (с момента его включения), попытки платежа — по таблице '
-                   f"yookassa_payments. PAYWALL_PREFIXES = {os.environ.get('PAYWALL_PREFIXES', '—')}"})
+                   'Витрина и оформление считаются по журналу страниц (с момента его включения), попытки платежа — по '
+                   'данным ЮKassa.'})
     return blocks
 
 
 def cohorts(d_from: date, d_to: date):
     if not _has_column('users', 'created_at'):
-        return [{'type': 'note', 'text': 'Нет users.created_at.'}]
+        return [{'type': 'note', 'text': 'У пользователей нет даты регистрации.'}]
     weeks = 10
     since = datetime.utcnow() - timedelta(weeks=weeks)
     wk = "TO_CHAR(DATE_TRUNC('week', u.created_at), 'YYYY-MM-DD')" if _pg() else "DATE(u.created_at, 'weekday 1', '-7 days')"
@@ -404,7 +420,7 @@ def cohorts(d_from: date, d_to: date):
 def streaks(d_from: date, d_to: date):
     blocks = []
     if not _has_table('streak_records'):
-        return [{'type': 'note', 'text': 'Таблицы streak_records нет.'}]
+        return [{'type': 'note', 'text': 'Данных о сериях пока нет.'}]
     buckets = [('0', 0, 0), ('1–2', 1, 2), ('3–6', 3, 6), ('7–13', 7, 13), ('14–29', 14, 29), ('30+', 30, 10 ** 6)]
     total = int(_scalar("SELECT COUNT(*) FROM streak_records") or 0)
     items = []
@@ -413,16 +429,16 @@ def streaks(d_from: date, d_to: date):
         items.append({'label': f'серия {label}', 'value': n, 'pct': _pct(n, total) or 0})
     ge7 = int(_scalar("SELECT COUNT(*) FROM streak_records WHERE current_streak >= 7") or 0)
     avg_max = _scalar("SELECT AVG(max_streak) FROM streak_records", default=0)
-    cards = [{'title': 'Записей серий', 'value': total, 'sub': 'streak_records'},
+    cards = [{'title': 'Записей серий', 'value': total, 'sub': ''},
              {'title': 'Серия ≥ 7 дней', 'value': ge7, 'sub': _fmt_pct(_pct(ge7, total)) + ' от всех'},
              {'title': 'Средняя макс. серия', 'value': round(float(avg_max or 0), 1), 'sub': 'max_streak'}]
     if _has_column('users', 'xp'):
-        cards.append({'title': 'XP всего', 'value': f"{int(_scalar('SELECT COALESCE(SUM(xp),0) FROM users') or 0):,}".replace(',', ' '), 'sub': 'users.xp'})
+        cards.append({'title': 'XP всего', 'value': f"{int(_scalar('SELECT COALESCE(SUM(xp),0) FROM users') or 0):,}".replace(',', ' '), 'sub': 'у всех пользователей'})
     blocks.append({'type': 'cards', 'items': cards})
     blocks.append({'type': 'bar', 'title': 'Распределение текущих серий', 'items': items})
     top = _q("""SELECT s.user_id, u.nickname, s.current_streak, s.max_streak FROM streak_records s
                 LEFT JOIN users u ON u.id = s.user_id ORDER BY s.current_streak DESC LIMIT 20""") or []
-    blocks.append({'type': 'table', 'title': 'Топ-20 по текущей серии', 'header': ['user_id', 'Ник', 'Серия', 'Макс.'],
+    blocks.append({'type': 'table', 'title': 'Топ-20 по текущей серии', 'header': ['ID', 'Ник', 'Серия', 'Макс.'],
                    'rows': [[a, b or '—', c, d] for a, b, c, d in top], 'empty': 'Пусто.'})
     blocks.append({'type': 'note', 'text': 'Контроль красной линии: после включения лимита 3 задачи доля «серия ≥ 7» не должна падать. '
                    'Снимайте значение каждое утро 1–11 ноября.'})
@@ -431,7 +447,7 @@ def streaks(d_from: date, d_to: date):
 
 def ai_usage(d_from: date, d_to: date):
     if not _has_table('usage_daily'):
-        return [{'type': 'note', 'text': 'Таблицы usage_daily нет.'}]
+        return [{'type': 'note', 'text': 'Данных об ИИ-разборах пока нет.'}]
     a, b = d_from.isoformat(), d_to.isoformat()
     rows = _q("""SELECT date, COUNT(DISTINCT user_id), COALESCE(SUM(tasks_completed),0), COALESCE(SUM(ai_explanations_used),0),
                         COALESCE(SUM(tokens_consumed),0), COALESCE(SUM(cost_usd),0)
@@ -447,14 +463,14 @@ def ai_usage(d_from: date, d_to: date):
                 GROUP BY ud.user_id, u.nickname, u.current_plan ORDER BY 4 DESC LIMIT 15""", a=a, b=b) or []
     return [
         {'type': 'cards', 'items': [
-            {'title': 'Пользователей с активностью', 'value': tot_users, 'sub': 'usage_daily за период'},
+            {'title': 'Пользователей с активностью', 'value': tot_users, 'sub': 'за период'},
             {'title': 'ИИ-разборов', 'value': tot_ai, 'sub': 'ai_explanations_used'},
-            {'title': 'Расход на модели, $', 'value': round(tot_cost, 2), 'sub': 'cost_usd'},
-            {'title': f'Дней на лимите ≥{free_ai}', 'value': at_limit, 'sub': 'user-day с ai ≥ FREE_AI_PER_DAY'},
+            {'title': 'Расход на ИИ, $', 'value': round(tot_cost, 2), 'sub': 'за период'},
+            {'title': f'Дней на лимите ≥{free_ai}', 'value': at_limit, 'sub': 'сколько раз люди исчерпали бесплатные разборы за день'},
         ]},
-        {'type': 'table', 'title': 'По дням', 'header': ['Дата', 'Польз.', 'Задач', 'ИИ-разборов', 'Токенов', 'Cost $'],
+        {'type': 'table', 'title': 'По дням', 'header': ['Дата', 'Польз.', 'Задач', 'ИИ-разборов', 'Токенов', 'Расход, $'],
          'rows': [[str(r[0]), int(r[1]), int(r[2]), int(r[3]), int(r[4]), round(float(r[5] or 0), 3)] for r in rows], 'empty': 'Нет данных.'},
-        {'type': 'table', 'title': 'Топ-15 по ИИ-разборам', 'header': ['user_id', 'Ник', 'План', 'ИИ', 'Задач', 'Cost $'],
+        {'type': 'table', 'title': 'Топ-15 по ИИ-разборам', 'header': ['ID', 'Ник', 'План', 'ИИ', 'Задач', 'Cost $'],
          'rows': [[u, n or '—', PLAN_TITLES.get(str(p), p), int(ai or 0), int(t or 0), round(float(c or 0), 3)] for u, n, p, ai, t, c in top], 'empty': 'Пусто.'},
     ]
 
@@ -466,20 +482,20 @@ def drawings_method_week(d_from: date, d_to: date):
                       WHERE created_at >= :s AND created_at < :e GROUP BY 1 ORDER BY 1 DESC""", s=_utc_bounds(d_from, d_to)[0], e=_utc_bounds(d_from, d_to)[1]) or []
         total = sum(int(r[1]) for r in rows)
         blocks.append({'type': 'cards', 'items': [
-            {'title': 'Чертежей за период', 'value': total, 'sub': 'geo_drawing_history'},
-            {'title': 'Уник. пользователей', 'value': int(_scalar("SELECT COUNT(DISTINCT user_id) FROM geo_drawing_history WHERE created_at >= :s AND created_at < :e",
+            {'title': 'Чертежей за период', 'value': total, 'sub': ''},
+            {'title': 'Людей', 'value': int(_scalar("SELECT COUNT(DISTINCT user_id) FROM geo_drawing_history WHERE created_at >= :s AND created_at < :e",
                                                                   s=_utc_bounds(d_from, d_to)[0], e=_utc_bounds(d_from, d_to)[1]) or 0), 'sub': ''},
         ]})
         blocks.append({'type': 'table', 'title': 'Чертежи по дням', 'header': ['День', 'Чертежей', 'Пользователей'],
                        'rows': [[str(d), int(n), int(u)] for d, n, u in rows], 'empty': 'Нет чертежей за период.'})
     else:
-        blocks.append({'type': 'note', 'text': 'Таблицы geo_drawing_history нет.'})
+        blocks.append({'type': 'note', 'text': 'Данных о чертежах пока нет.'})
     start, end = _utc_bounds(d_from, d_to)
     pw = _q("""SELECT COALESCE(path, '—'), COUNT(DISTINCT COALESCE(CAST(user_id AS TEXT), anon_id)) FROM funnel_events
                WHERE event = 'paywall_view' AND created_at >= :s AND created_at < :e GROUP BY 1 ORDER BY 2 DESC LIMIT 20""", s=start, e=end) or []
-    blocks.append({'type': 'table', 'title': 'Paywall по страницам (/geometry/draw, /method_week, /figures/generate)',
-                   'header': ['Путь', 'Уник.'], 'rows': [[p, int(n)] for p, n in pw],
-                   'empty': 'Событий paywall_view пока нет — их начнёт слать method_week/paywall.py после PR 21.10.'})
+    blocks.append({'type': 'table', 'title': 'Где людям показывалась оплата',
+                   'header': ['Страница', 'Людей'], 'rows': [[p, int(n)] for p, n in pw],
+                   'empty': 'Пока нет данных.'})
     return blocks
 
 
@@ -496,14 +512,14 @@ def referrals(d_from: date, d_to: date):
                     LEFT JOIN funnel_events fe ON fe.user_id = i.id
                     WHERE i.invited_by IS NOT NULL GROUP BY i.invited_by, u.nickname ORDER BY invited DESC LIMIT 20""") or []
         blocks.append({'type': 'cards', 'items': [
-            {'title': 'Приглашённых всего', 'value': inv_total, 'sub': 'users.invited_by'},
+            {'title': 'Приглашённых всего', 'value': inv_total, 'sub': 'за всё время'},
             {'title': 'Визитов по u_-ссылкам', 'value': sum(int(n) for _, n in ref_visits), 'sub': 'за период'},
         ]})
-        blocks.append({'type': 'table', 'title': 'Топ пригласивших', 'header': ['user_id', 'Ник', 'Приглашено', 'Из них оплатили'],
+        blocks.append({'type': 'table', 'title': 'Топ пригласивших', 'header': ['ID', 'Ник', 'Приглашено', 'Из них оплатили'],
                        'rows': [[a, b or '—', int(c), int(d)] for a, b, c, d in top],
-                       'empty': 'invited_by пока никому не проставлен. Проставлять при регистрации по ?ref=u_<id> — PR 27.10.'})
+                       'empty': 'Пока никто не пришёл по приглашению.'})
     else:
-        blocks.append({'type': 'note', 'text': 'Поля users.invited_by нет — его создаёт services/funnel.py при первом запуске.'})
+        blocks.append({'type': 'note', 'text': 'Приглашения пока не записываются.'})
     blocks.append({'type': 'table', 'title': 'Визиты по реферальным меткам', 'header': ['ref', 'Визитов'],
                    'rows': [[r, int(n)] for r, n in ref_visits], 'empty': 'Нет визитов с ?ref=u_<id>.'})
     return blocks
@@ -532,7 +548,7 @@ def curator(d_from: date, d_to: date):
     blocks = []
     if _has_table('curator_states'):
         n = int(_scalar('SELECT COUNT(*) FROM curator_states') or 0)
-        blocks.append({'type': 'cards', 'items': [{'title': 'Состояний куратора', 'value': n, 'sub': 'curator_states'}]})
+        blocks.append({'type': 'cards', 'items': [{'title': 'Людей с куратором', 'value': n, 'sub': 'у кого заведён план'}]})
     try:
         from flask import current_app
         links = [str(r.rule) for r in current_app.url_map.iter_rules()
@@ -540,9 +556,9 @@ def curator(d_from: date, d_to: date):
     except Exception:
         links = []
     if links:
-        blocks.append({'type': 'links', 'title': 'Существующие страницы', 'items': links})
-    blocks.append({'type': 'note', 'text': 'Статусы планов куратора считаются в services/curator_plan_service.check_plan_status(); '
-                   'сводную таблицу по статусам добавим после PR 25.10, когда план куратора станет частью Premium.'})
+        blocks.append({'type': 'links', 'title': 'Страницы плана и бюджета куратора', 'items': links})
+    if not blocks:
+        blocks.append({'type': 'note', 'text': 'Данных по куратору пока нет.'})
     return blocks
 
 
@@ -550,47 +566,48 @@ def exit_pages(d_from: date, d_to: date):
     """Где заканчиваются визиты (пауза > 30 мин = конец). Источник — page_views."""
     from services import page_views as pv
     if not _has_table('page_views'):
-        return [{'type': 'note', 'text': 'Журнал просмотров ещё не создан: таблица page_views появится после '
-                 'выкладки и запуска сайта. Данные накапливаются только с этого момента.'}]
+        return [{'type': 'note', 'text': 'Журнал страниц ещё не включён. Данные начнут копиться после выкладки.'}]
     only_users = request.args.get('who', 'users') != 'all'
     rows = pv.load_rows(d_from, d_to, only_users=only_users)
     if rows is None:
         return [{'type': 'note', 'text': 'Не удалось прочитать журнал просмотров.'}]
     first = pv.first_view_at()
-    head = ('Журнал ведётся с ' + first.strftime('%d.%m.%Y %H:%M') + ' (UTC). ' if first else '') + \
-           ('Показаны только вошедшие пользователи; добавьте ?who=all в адрес, чтобы учесть гостей. '
-            if only_users else 'Показаны вошедшие пользователи и гости. ') + \
-           'Визит заканчивается, если дальше нет просмотров 30 минут. «Выход» — последняя страница визита.'
+    head = ('Страницы записываются с ' + first.strftime('%d.%m.%Y') + '. ' if first else '') + \
+           'Визит заканчивается, если человек 30 минут ничего не открывал. «Ушли» — последняя страница визита.'
+    who_tabs = {'type': 'tabs', 'title': 'Кого считать',
+                'items': [{'text': 'Только вошедших', 'href': f'?who=users&p=custom&from={d_from}&to={d_to}', 'active': only_users},
+                          {'text': 'Всех, включая гостей', 'href': f'?who=all&p=custom&from={d_from}&to={d_to}', 'active': not only_users}]}
+    from routes.admin_stats_labels import page_title
     a = pv.analyze(rows)
     if not a['visits']:
-        return [{'type': 'note', 'text': head}, {'type': 'note', 'text': 'За выбранный период просмотров нет.'}]
+        return [who_tabs, {'type': 'note', 'text': head}, {'type': 'note', 'text': 'За выбранный период просмотров нет.'}]
 
     def share(x, y):
         return _fmt_pct(_pct(x, y))
 
-    blocks = [{'type': 'note', 'text': head}]
+    blocks = [who_tabs, {'type': 'note', 'text': head}]
     avg_pages = round(a['views'] / a['visits'], 1)
     bounce_total = sum(a['bounces'].values())
     blocks.append({'type': 'cards', 'items': [
         {'title': 'Визитов', 'value': a['visits'], 'sub': f"людей: {a['people']}"},
         {'title': 'Просмотров страниц', 'value': a['views'], 'sub': f'в среднем {avg_pages} за визит'},
-        {'title': 'Отскок', 'value': share(bounce_total, a['visits']), 'sub': 'визиты из одной страницы'},
+        {'title': 'Ушли сразу', 'value': share(bounce_total, a['visits']), 'sub': 'визиты из одной страницы'},
         {'title': 'Визитов с анкетой', 'value': a['intake_visits'],
          'sub': f"закончились внутри анкеты: {a['intake_left_inside']} ({share(a['intake_left_inside'], a['intake_visits'])})"},
     ]})
     top = a['exits'].most_common(40)
-    blocks.append({'type': 'table', 'title': 'Страницы выхода',
-                   'header': ['Страница', 'Просмотров', 'Выходов', 'Доля выходов', 'Людей ушло'],
-                   'rows': [[p, a['views_by_path'][p], n, share(n, a['views_by_path'][p]), a['exit_people'].get(p, 0)]
+    blocks.append({'type': 'table', 'title': 'После каких страниц уходят',
+                   'header': ['Страница', 'Просмотров', 'Ушли с неё', 'Доля ушедших', 'Людей'],
+                   'rows': [[page_title(p), a['views_by_path'][p], n, share(n, a['views_by_path'][p]), a['exit_people'].get(p, 0)]
                             for p, n in top]})
     if a['intake_visits']:
         blocks.append({'type': 'table', 'title': 'Визиты с анкетой: где закончились',
                        'header': ['Страница', 'Визитов', 'Доля'],
-                       'rows': [[p, n, share(n, a['intake_visits'])] for p, n in a['intake_exit'].most_common(20)]})
+                       'rows': [[page_title(p), n, share(n, a['intake_visits'])] for p, n in a['intake_exit'].most_common(20)]})
     ent = [(p, n, a['bounces'].get(p, 0)) for p, n in a['entries'].most_common(20)]
-    blocks.append({'type': 'table', 'title': 'Входные страницы и отскок',
-                   'header': ['Страница входа', 'Визитов', 'Ушли сразу', 'Доля'],
-                   'rows': [[p, n, b, share(b, n)] for p, n, b in ent]})
+    blocks.append({'type': 'table', 'title': 'С каких страниц начинают и сразу уходят',
+                   'header': ['Первая страница визита', 'Визитов', 'Ушли сразу', 'Доля'],
+                   'rows': [[page_title(p), n, b, share(b, n)] for p, n, b in ent]})
     return blocks
 
 
