@@ -520,7 +520,9 @@ def test_http_regression_switch_shows_stale_marking(app, client):
     rv = client.get('/daily_tasks/')
     assert rv.status_code == 200
     body = rv.get_data(as_text=True)
-    assert 'подготовка к олимпиаде «Всероссийская олимпиада школьников»' in body
+    assert 'подготовка к олимпиаде «Всероссийская олимпиада школьников»' not in body, (
+        'бейдж «подготовка к олимпиаде …» удалён с дашборда задач дня'
+    )
     assert '⚠️' not in body, 'первая выдача — без пометки stale'
 
     # ТЕСТ-ИНФРА: фикстура держит постоянный app-контекст, поэтому teardown
@@ -687,7 +689,7 @@ def test_effective_grade_target_grade(app):
 # ─── Маршрут ─────────────────────────────────────────────────────────────
 
 
-def test_route_shows_olympiad_badge(app, client):
+def test_route_hides_olympiad_badge(app, client):
     uid = _mk_user(app, 'odo11@test.local', grade=9)
     oid = _mk_olympiad(app, 'vsosh', 'Всероссийская олимпиада школьников')
     _mk_plan(app, uid, oid)
@@ -698,6 +700,6 @@ def test_route_shows_olympiad_badge(app, client):
     rv = client.get('/daily_tasks/')
     assert rv.status_code == 200
     body = rv.get_data(as_text=True)
-    assert 'подготовка к олимпиаде' in body, (
-        'страница задач дня должна честно помечать выбранную олимпиаду'
+    assert 'подготовка к олимпиаде' not in body, (
+        'бейдж «подготовка к олимпиаде …» удалён с дашборда задач дня'
     )
