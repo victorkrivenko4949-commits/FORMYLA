@@ -27,7 +27,9 @@ def send_telegram(chat_id, text):
         return False
 
     import requests
-    url = "https://api.telegram.org/bot" + TG_BOT_TOKEN + "/sendMessage"
+    # TELEGRAM_API_BASE — прокси, если api.telegram.org недоступен с сервера
+    base = (os.environ.get("TELEGRAM_API_BASE") or "https://api.telegram.org").strip().rstrip("/")
+    url = base + "/bot" + TG_BOT_TOKEN + "/sendMessage"
     payload = dict(
         chat_id=chat_id,
         text=text,
