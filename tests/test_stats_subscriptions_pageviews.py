@@ -611,7 +611,17 @@ def test_legacy_admin_pages_redirect_to_new_panel(tmp_path, monkeypatch):
     admin_stats.install(app)
     c = app.test_client()
     c.get('/login-admin')
-    assert c.get('/admin/users').headers['Location'].endswith('/admin/stats/users')
+    assert c.get('/admin/users').headers['Location'].endswith('/admin/stats/users_full')
     assert c.get('/admin/users/returns').headers['Location'].endswith('/admin/stats/returns')
     assert c.get('/admin/users/surveys').headers['Location'].endswith('/admin/stats/surveys')
     assert c.get('/admin/users?embed=1').status_code == 200
+
+
+def test_full_old_users_page_available_inside_panel(app):
+    """Прежняя страница «Статистика пользователей» целиком доступна в панели (iframe ?embed=1)."""
+    cl = _admin_client(app)
+    html = cl.get('/admin/stats/users_full').get_data(as_text=True)
+    assert '<iframe' in html and 'src="/admin/users?embed=1"' in html
+    assert 'Пользователи (полная таблица)' in html and 'Пользователи за период' in html
+    html = cl.get('/admin/stats/last_seen').get_data(as_text=True)
+    assert 'src="/admin/users/last_seen?embed=1"' in html
