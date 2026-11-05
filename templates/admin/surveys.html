@@ -11,7 +11,7 @@
 <main class="survey-wrap">
   <h1>Опросы</h1>
   <p><a href="/admin/users">← Статистика пользователей</a></p>
-  <nav aria-label="Опросы"><a href="#site-survey">Как тебе сайт?</a> · <a href="#readiness-survey">Готов заниматься каждый день?</a></nav>
+  <nav aria-label="Опросы"><a href="#site-survey">Как тебе сайт?</a> · <a href="#readiness-survey">Готов заниматься каждый день?</a> · <a href="#wish-survey">Что хочешь от Формулы?</a></nav>
   {% macro distribution_table(data) %}
   <div class="survey-scroll"><table class="survey-table">
     <thead><tr><th>Вариант</th><th>Ответов</th><th>Доля</th></tr></thead>
@@ -39,6 +39,16 @@
     <div class="survey-scroll"><table class="survey-table">
       <thead><tr><th>Пользователь</th><th>Ответ</th><th>Дата (UTC)</th></tr></thead>
       <tbody>{% for row in readiness.rows %}<tr><td>{{ row.nickname or 'Без ника' }} (#{{ row.user_id }})</td><td>{{ options.get(row.answer, row.answer) }}</td><td>{{ row.answered_at }}</td></tr>{% else %}<tr><td colspan="3">Ответов пока нет.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+  <section class="survey-panel" id="wish-survey">
+    <h2>{{ wish.question }}</h2>
+    <p class="survey-muted">Показывается всем вошедшим один раз. Ответ длиннее 30 символов даёт скидку {{ wish.percent }}% на первую оплату Premium (оба тарифа).</p>
+    <p>Ответили: <strong>{{ wish.total }}</strong> · Получили скидку: <strong>{{ wish.granted }}</strong> · Оплатили со скидкой: <strong>{{ wish.used }}</strong></p>
+    <h3>Последние ответы (до 300)</h3>
+    <div class="survey-scroll"><table class="survey-table">
+      <thead><tr><th>Пользователь</th><th>Ответ</th><th>Скидка</th><th>Дата (UTC)</th></tr></thead>
+      <tbody>{% for row in wish.rows %}<tr><td>{{ row.nickname or 'Без ника' }} (#{{ row.user_id }})</td><td>{{ row.answer_text }}</td><td>{{ 'да' if row.discount_granted else 'нет' }}</td><td>{{ row.answered_at }}</td></tr>{% else %}<tr><td colspan="4">Ответов пока нет.</td></tr>{% endfor %}</tbody>
     </table></div>
   </section>
   <p class="survey-muted">Количество и проценты рассчитаны по всем ответам соответствующего опроса, а не только по последним 200. Проценты округлены до десятых.</p>

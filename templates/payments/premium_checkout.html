@@ -213,10 +213,20 @@
     </div>
     {% endif %}
 
+    {% set pay_amount = price.amount if price else info.price_rub %}
     <div class="pm-price-row">
-      <span class="pm-price">{{ info.price_rub }} ₽</span>
+      {% if price and price.discount_pct %}
+      <s class="pm-price-old" style="opacity:.55;font-size:20px;margin-right:6px;">{{ price.base }} ₽</s>
+      {% endif %}
+      <span class="pm-price">{{ pay_amount }} ₽</span>
       <span class="pm-price-note">в месяц · 30 дней полного доступа</span>
     </div>
+    {% if price and price.discount_pct %}
+    <div class="pm-gift-note" id="pmDiscountNote">
+      🎉 Скидка {{ price.discount_pct }}% за ответ в опросе «Что ты хочешь от Формулы?» —
+      {{ price.base }} ₽ → <b>{{ pay_amount }} ₽</b>. Действует на одну оплату.
+    </div>
+    {% endif %}
 
     <ul class="pm-feats">
       {% for f in info.features %}
@@ -227,7 +237,7 @@
     </ul>
 
     <button class="pm-pay-btn" id="pmPayBtn" onclick="pmPay()">
-      {% if beneficiary %}Оплатить {{ info.price_rub }} ₽ для {{ beneficiary }}{% else %}Оплатить {{ info.price_rub }} ₽{% endif %}
+      {% if beneficiary %}Оплатить {{ pay_amount }} ₽ для {{ beneficiary }}{% else %}Оплатить {{ pay_amount }} ₽{% endif %}
     </button>
 
     {% if beneficiary %}
@@ -258,7 +268,7 @@
     </div>
 
     {% if not beneficiary and recurring_enabled %}
-    <div class="pm-ar-consent">🔁 <b>Подписка с автопродлением:</b> каждые 30 дней {{ info.price_rub }} ₽ будут списываться автоматически тем же способом оплаты. Отключить можно в любой момент одним нажатием — доступ сохранится до конца оплаченного периода.</div>
+    <div class="pm-ar-consent">🔁 <b>Подписка с автопродлением:</b> {% if price and price.discount_pct %}сейчас {{ price.amount }} ₽ со скидкой, далее {% endif %}каждые 30 дней {{ info.price_rub }} ₽ будут списываться автоматически тем же способом оплаты. Отключить можно в любой момент одним нажатием — доступ сохранится до конца оплаченного периода.</div>
     {% elif not beneficiary %}
     <div class="pm-ar-consent">🕐 <b>Оплата за 30 дней, разовая:</b> по истечении срока тариф можно продлить снова на этой странице. Автопродление подключим позже — тогда способ оплаты сохранится и списания будут проходить сами.</div>
     {% else %}
@@ -277,20 +287,24 @@ function pmPay() {
   fetch('/payments/premium/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ plan: {{ plan | tojson }}, for_user: {{ for_user | tojson }} })
+    body: JSON.stringify({ plan: {{ plan | tojson }}, for_user: {{ for_user | tojson }},
+                           expected_amount: {{ (price.amount if price else info.price_rub) | tojson }} })
   }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
     .then(function (res) {
       if (res.d && res.d.redirect) {
         window.location.href = res.d.redirect;
+      } else if (res.d && res.d.price_changed) {
+        alert(res.d.error);
+        window.location.reload();
       } else {
         alert((res.d && res.d.error) || 'Не удалось создать платёж');
         btn.disabled = false;
-        btn.textContent = {% if beneficiary %}'Оплатить {{ info.price_rub }} ₽ для {{ beneficiary }}'{% else %}'Оплатить {{ info.price_rub }} ₽'{% endif %};
+        btn.textContent = {% if beneficiary %}'Оплатить {{ price.amount if price else info.price_rub }} ₽ для {{ beneficiary }}'{% else %}'Оплатить {{ price.amount if price else info.price_rub }} ₽'{% endif %};
       }
     }).catch(function () {
       alert('Ошибка сети');
       btn.disabled = false;
-      btn.textContent = {% if beneficiary %}'Оплатить {{ info.price_rub }} ₽ для {{ beneficiary }}'{% else %}'Оплатить {{ info.price_rub }} ₽'{% endif %};
+      btn.textContent = {% if beneficiary %}'Оплатить {{ price.amount if price else info.price_rub }} ₽ для {{ beneficiary }}'{% else %}'Оплатить {{ price.amount if price else info.price_rub }} ₽'{% endif %};
     });
 }
 </script>

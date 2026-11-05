@@ -549,6 +549,22 @@
     </div>
     {% endif %}
 
+    {# WISH_SURVEY_V1: скидка 30% за ответ «Что ты хочешь от Формулы?» #}
+    {% if wish.available %}
+    <div class="sp-trial sp-trial--active" id="spWishDiscount">
+      🎉 <strong>Твоя скидка 30% активна</strong> — применится автоматически на одну оплату любого тарифа.
+    </div>
+    {% elif not wish.granted and not wish.used and wish.offer_intense %}
+    <div class="sp-tgweek reveal" id="spWishOffer">
+      <div class="sp-tgweek__icon" aria-hidden="true">✍️</div>
+      <div class="sp-tgweek__txt">
+        <b>Скидка 30% на оба тарифа</b>
+        <span>Ответь на один вопрос — «Что ты хочешь от Формулы?» (больше 30 символов) — и «Работяга» будет {{ wish.offer_intense }} ₽, «Спокойный» — {{ wish.offer_calm }} ₽.</span>
+      </div>
+      <button type="button" class="sp-tgweek__btn" onclick="window.ftWishOpen && window.ftWishOpen()">Ответить</button>
+    </div>
+    {% endif %}
+
     {% if tgw.state == 'available' %}
     <div class="sp-tgweek reveal">
       <div class="sp-tgweek__icon" aria-hidden="true">🎁</div>
@@ -568,7 +584,8 @@
         </div>
         <h3>⚡ «Работяга»</h3>
         <p class="sp-plan__sub">Максимальный темп: шесть занятий в неделю, включая пробник и метод.</p>
-        <div class="sp-plan__price">800 ₽<small> / месяц</small></div>
+        {% set wp = wish_prices.get('premium_intense') %}
+        <div class="sp-plan__price">{% if wp and wp.discount_pct %}<s style="opacity:.5;font-size:.6em;margin-right:6px;">{{ wp.base }} ₽</s>{{ wp.amount }} ₽{% else %}800 ₽{% endif %}<small> / месяц</small></div>
         <div class="sp-plan__ledger">
           <div><span>Занятий</span><b>6 / неделю</b></div>
           <div><span>Пробник</span><b>1 / неделю</b></div>
@@ -596,7 +613,8 @@
         <div class="sp-plan__tags"><span class="sp-plan__tag">Тариф 2 · Без спешки</span></div>
         <h3>🌿 «Спокойный»</h3>
         <p class="sp-plan__sub">Полная версия без спешки: три занятия в неделю по 1,5 часа.</p>
-        <div class="sp-plan__price">500 ₽<small> / месяц</small></div>
+        {% set wp = wish_prices.get('premium_calm') %}
+        <div class="sp-plan__price">{% if wp and wp.discount_pct %}<s style="opacity:.5;font-size:.6em;margin-right:6px;">{{ wp.base }} ₽</s>{{ wp.amount }} ₽{% else %}500 ₽{% endif %}<small> / месяц</small></div>
         <div class="sp-plan__ledger">
           <div><span>Занятий</span><b>3 / неделю</b></div>
           <div><span>Пробник</span><b>1 / 2 недели</b></div>

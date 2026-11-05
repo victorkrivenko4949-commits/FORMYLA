@@ -82,6 +82,19 @@ PLAN_INFO = {
 }
 
 
+def plan_price(plan: str, user_id=None, gift: bool = False) -> dict:
+    """WISH_SURVEY_V1: итоговая цена тарифа для пользователя (целые рубли).
+
+    Единственный источник цены и для страницы оплаты, и для платежа ЮKassa.
+    Скидка 30% за ответ в опросе — только на собственную покупку (не подарок).
+    """
+    base = int(PLAN_INFO[plan]['price_rub'])
+    if gift or not user_id:
+        return {'base': base, 'amount': base, 'discount_pct': 0}
+    from routes.wish_survey import price_for_plan
+    return price_for_plan(base, user_id)
+
+
 def _pilot_or_404():
     """Оплата Premium: после открытия продажи 03.11.2026 — всем входящим;
     до старта (PILOT_OPEN_SALES=False) — только пилотным аккаунтам."""
@@ -263,6 +276,17 @@ def activate_premium_for_payment(user_id: int, plan: str,
     if plan not in PLAN_INFO:
         return {'ok': False, 'error': 'unknown plan'}
     price = PLAN_INFO[plan]['price_rub']
+    # WISH_SURVEY_V1: в подписку пишем фактически оплаченную сумму заказа
+    # (со скидкой, если она была), а не прайсовую.
+    try:
+        _amt = db.session.execute(text(
+            "SELECT amount_rub FROM yookassa_payments"
+            " WHERE (order_id = :oid OR payment_id = :pid) LIMIT 1"
+        ), {'oid': order_id or '', 'pid': payment_id or ''}).fetchone()
+        if _amt and _amt[0] is not None:
+            price = int(round(float(_amt[0])))
+    except Exception:  # noqa: BLE001
+        db.session.rollback()
 
     # PREMIUM_GIFT_V1: подарочный заказ — Premium получает РЕБЁНОК,
     # а не платящий родитель/учитель (beneficiary_user_id в заказе).
@@ -350,6 +374,7 @@ def checkout():
         expires = active.get('expires_at')
         return render_template('payments/premium_checkout.html',
                                plan=plan, info=info, cfg=cfg,
+                               price=plan_price(plan, current_user.id, gift=bool(beneficiary_id)),
                                already_premium=True,
                                premium_until=str(expires)[:16] if expires else None,
                                active_title=active_info['title'] if active_info else 'Premium',
@@ -360,8 +385,9 @@ def checkout():
                                beneficiary=beneficiary)
 
     from services.auto_renew import get_auto_renewal as _gar
+    price = plan_price(plan, current_user.id, gift=bool(beneficiary_id))
     return render_template('payments/premium_checkout.html',
-                           plan=plan, info=info, cfg=cfg,
+                           plan=plan, info=info, cfg=cfg, price=price,
                            auto_renew=_gar(current_user.id) if not beneficiary_id else None,
                            recurring_enabled=_recurring_enabled(),
                            for_user=beneficiary_id,
@@ -400,6 +426,23 @@ def create_payment():
                        'У вас уже активен Premium — повторная оплата не требуется.')
         return jsonify({'error': already_msg, 'already_premium': True}), 409
 
+    # WISH_SURVEY_V1: цену считает только сервер. Если человек видел другую
+    # сумму (скидка появилась/израсходована, пока страница была открыта) —
+    # платёж НЕ создаём, просим обновить страницу.
+    price = plan_price(plan, current_user.id, gift=bool(beneficiary_id))
+    amount = int(price['amount'])
+    expected = data.get('expected_amount')
+    if expected is not None:
+        try:
+            expected_ok = int(expected) == amount
+        except (TypeError, ValueError):
+            expected_ok = False
+        if not expected_ok:
+            return jsonify({'error': f'Цена обновилась: к оплате {amount} ₽. Обновите страницу и проверьте сумму.',
+                            'price_changed': True, 'amount': amount}), 409
+    amount_str = f"{amount}.00"
+    discount_note = f" (скидка {price['discount_pct']}%)" if price['discount_pct'] else ''
+
     order_id = uuid.uuid4().hex
     nick_label = current_user.nickname or f"id={current_user.id}"
     gift_label = None
@@ -430,10 +473,13 @@ def create_payment():
             "VALUES (:oid, NULL, :uid, :item, :amount, 'pending', NULL, :now, :ben)"
         ), {
             'oid': order_id, 'uid': current_user.id, 'item': plan,
-            'amount': float(info['price_rub']),
+            'amount': float(amount),
             'now': datetime.utcnow(),
             'ben': beneficiary_id,
         })
+        if price['discount_pct']:
+            from routes.wish_survey import record_discount_order
+            record_discount_order(order_id, current_user.id, plan, price['base'], amount)
         db.session.commit()
     except Exception as e:  # noqa: BLE001
         db.session.rollback()
@@ -461,11 +507,11 @@ def create_payment():
         # save_payment_method НЕ включаем — автопродление для подарков
         # не подключается (взрослый платит разово, без подписки).
         payload = {
-            "amount": {"value": f"{info['price_rub']}.00", "currency": "RUB"},
+            "amount": {"value": amount_str, "currency": "RUB"},
             "capture": True,
             "confirmation": {"type": "redirect", "return_url": return_url},
             "description": (
-                f"{info['title']} на FORMYLA (30 дней) для ученика @{gift_label} — "
+                f"{info['title']} на FORMYLA (30 дней){discount_note} для ученика @{gift_label} — "
                 f"оплачивает @{nick_label}"
             ),
             "metadata": {
@@ -477,14 +523,14 @@ def create_payment():
         }
     else:
         payload = {
-            "amount": {"value": f"{info['price_rub']}.00", "currency": "RUB"},
+            "amount": {"value": amount_str, "currency": "RUB"},
             "capture": True,
             "confirmation": {"type": "redirect", "return_url": return_url},
             # save_payment_method=True отклоняется ЮKassa с ошибкой
             # 'This store can't make recurring payments', пока у магазина
             # не включена опция рекуррентных платежей (см. _recurring_enabled).
             "save_payment_method": _recurring_enabled(),  # автопродление: ЮKassa сохранит способ оплаты
-            "description": f"{info['title']} на FORMYLA (30 дней) — @{nick_label}",
+            "description": f"{info['title']} на FORMYLA (30 дней){discount_note} — @{nick_label}",
             "metadata": {
                 "order_id": order_id,
                 "user_id": str(current_user.id),
@@ -497,9 +543,9 @@ def create_payment():
             payload["receipt"] = {
                 "customer": {"email": customer_email},
                 "items": [{
-                    "description": f"{info['title']} (30 дней)",
+                    "description": f"{info['title']} (30 дней){discount_note}",
                     "quantity": "1.00",
-                    "amount": {"value": f"{info['price_rub']}.00", "currency": "RUB"},
+                    "amount": {"value": amount_str, "currency": "RUB"},
                     "vat_code": 1,
                     "payment_mode": "full_payment",
                     "payment_subject": "service",
@@ -603,7 +649,7 @@ def payment_return():
     row = None
     try:
         row = db.session.execute(text(
-            "SELECT user_id, item_code, status, payment_id, beneficiary_user_id"
+            "SELECT user_id, item_code, status, payment_id, beneficiary_user_id, amount_rub"
             " FROM yookassa_payments WHERE order_id = :oid LIMIT 1"
         ), {'oid': order_id}).fetchone()
     except Exception as e:  # noqa: BLE001
@@ -615,6 +661,11 @@ def payment_return():
 
     p_user_id, item_code, p_status, payment_id = row[0], row[1], row[2], row[3]
     p_beneficiary = row[4] if len(row) > 4 else None
+    # WISH_SURVEY_V1: на странице результата — фактическая сумма заказа (со скидкой).
+    try:
+        paid_amount = int(round(float(row[5]))) if len(row) > 5 and row[5] is not None else None
+    except (TypeError, ValueError):
+        paid_amount = None
     if p_user_id != current_user.id:
         abort(403)
 
@@ -650,7 +701,7 @@ def payment_return():
             # покупки — подарки не создают подписку со списаниями.
             upsert_from_payment(current_user.id, payment_id, plan)
         return render_template('payments/premium_result.html',
-                               status='succeeded', info=info, plan=plan, demo=True,
+                               status='succeeded', info=info, plan=plan, paid_amount=paid_amount, demo=True,
                                expires=str(expires)[:16] if expires else None,
                                auto_renew=get_auto_renewal(current_user.id) if not beneficiary_id else None,
                                recurring_enabled=_recurring_enabled(),
@@ -688,7 +739,7 @@ def payment_return():
             # покупки — подарки не создают подписку со списаниями.
             upsert_from_payment(current_user.id, payment_id, plan)
         return render_template('payments/premium_result.html',
-                               status='succeeded', info=info, plan=plan,
+                               status='succeeded', info=info, plan=plan, paid_amount=paid_amount,
                                expires=str(expires)[:16] if expires else None,
                                auto_renew=get_auto_renewal(current_user.id) if not beneficiary_id else None,
                                recurring_enabled=_recurring_enabled(),
@@ -696,10 +747,10 @@ def payment_return():
 
     if p_status == 'canceled':
         return render_template('payments/premium_result.html',
-                               status='canceled', info=info, plan=plan)
+                               status='canceled', info=info, plan=plan, paid_amount=paid_amount)
 
     return render_template('payments/premium_result.html',
-                           status='pending', info=info, plan=plan)
+                           status='pending', info=info, plan=plan, paid_amount=paid_amount)
 
 
 def install_premium_pay(app, register=None) -> None:

@@ -13431,7 +13431,23 @@ def subscribe_page():
         trial_used = bool(used)
     except Exception:
         pass
+    # WISH_SURVEY_V1: скидка 30% за ответ в опросе — цены те же, что уйдут в ЮKassa.
+    wish = {'answered': True, 'granted': False, 'available': False, 'used': False}
+    wish_prices = {}
+    if not is_parent_or_teacher:
+        try:
+            from routes.wish_survey import survey_state
+            from routes.premium_pay import plan_price
+            wish = survey_state(current_user.id)
+            wish_prices = {code: plan_price(code, current_user.id)
+                           for code in ('premium_intense', 'premium_calm')}
+            from routes.wish_survey import discounted_rub
+            wish['offer_intense'] = discounted_rub(wish_prices['premium_intense']['base'])
+            wish['offer_calm'] = discounted_rub(wish_prices['premium_calm']['base'])
+        except Exception:
+            app.logger.exception('subscribe: wish survey prices failed')
     return render_template('subscribe.html',
+                           wish=wish, wish_prices=wish_prices,
                            current_plan=current_plan,
                            is_parent_or_teacher=is_parent_or_teacher,
                            plan_expires_at=plan_expires_at,
