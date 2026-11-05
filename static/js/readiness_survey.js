@@ -29,7 +29,7 @@
     // CONFIRM_LINK_V1: не накрываем уведомление о запросах учителя/родителя —
     // дождёмся, пока ученик ответит на него, и покажем опрос готовности после.
     var lr = document.getElementById('ft-linkreq-overlay');
-    if (lr && lr.style.display === 'flex') {
+    if ((lr && lr.style.display === 'flex') || document.getElementById('ft-wish-overlay')) {
       clearTimeout(waitingTimer);
       waitingTimer = setTimeout(show, 300);
       return;

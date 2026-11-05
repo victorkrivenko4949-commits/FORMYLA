@@ -173,8 +173,10 @@ def admin_surveys():
     if getattr(current_user, 'is_admin', False) is not True:
         abort(403)
     site, readiness = load_stats()
+    from routes.wish_survey import load_admin_stats
     response = current_app.make_response(render_template(
-        'admin/surveys.html', site=site, readiness=readiness, options=OPTIONS))
+        'admin/surveys.html', site=site, readiness=readiness, options=OPTIONS,
+        wish=load_admin_stats()))
     response.headers['Cache-Control'] = 'no-store'
     return response
 
@@ -188,6 +190,13 @@ def install_surveys(app, register=None):
             app.register_blueprint(surveys_bp)
         else:
             register(app, surveys_bp)
+    # WISH_SURVEY_V1: «Что ты хочешь от Формулы?» + скидка 30%.
+    from routes.wish_survey import wish_survey_bp
+    if 'wish_survey' not in app.blueprints:
+        if register is None:
+            app.register_blueprint(wish_survey_bp)
+        else:
+            register(app, wish_survey_bp)
 
     @app.after_request
     def surveys_ui(response):
@@ -214,7 +223,12 @@ def install_surveys(app, register=None):
         elif not getattr(current_user, 'is_guest', False) and 'id="ft-feedback-overlay"' in body:
             if 'id="ft-readiness-script"' not in body:
                 extra += ('<script id="ft-readiness-script" '
-                          'src="/static/js/readiness_survey.js?v=1" defer></script>')
+                          'src="/static/js/readiness_survey.js?v=2" defer></script>')
+            # WISH_SURVEY_V1: всем вошедшим, кроме анкеты (там свой поток).
+            if ('id="ft-wish-script"' not in body
+                    and not request.path.startswith(('/intake', '/admin'))):
+                extra += ('<script id="ft-wish-script" '
+                          'src="/static/js/wish_survey.js?v=1" defer></script>')
         if extra:
             response.set_data(body.replace('</body>', extra + '</body>', 1))
             response.headers['Cache-Control'] = 'private, no-store'
