@@ -937,6 +937,37 @@
   </div>
   {% endif %}
 
+  <!-- P4 DEBT block: показываем всегда (в любой день, а не только когда
+       готовы задачи дня) — владелец, 05.11 -->
+    {% if data and data.debt and data.debt.total %}
+    <div class="dt-debt-block">
+      <button type="button" class="dt-debt-toggle-btn" id="dt-debt-toggle" onclick="toggleDebt()">
+        <span>&#9203; Открыть долг: {{ data.debt.total }} задач</span>
+        <span class="dt-debt-toggle-arrow" id="dt-debt-toggle-arrow">&#9660;</span>
+      </button>
+      <div class="dt-debt-body dt-hidden" id="dt-debt-body">
+        <div class="dt-debt-header">
+          <span class="dt-debt-title">Долг: {{ data.debt.total }} задач</span>
+          <span class="dt-debt-hint">Нерешённые задачи прошлых дней — реши, пока не сгорели</span>
+        </div>
+        {% for _grp in data.debt.by_date %}
+        <div class="dt-debt-group">
+          <div class="dt-debt-group-date">{{ _grp.date }}</div>
+          {% for _dt in _grp.tasks %}
+          <div class="dt-debt-item" data-debt-item-id="{{ _dt.id }}">
+            {% if _dt.figure_url %}<img class="dt-debt-item-figure" src="{{ _dt.figure_url }}" alt="Чертёж" loading="lazy">{% endif %}
+            <span class="dt-debt-item-topic">#{{ _dt.position }} {{ _dt.topic or '' }}</span>
+            {% if _dt.difficulty_level %}<span class="dt-debt-item-level">уровень {{ _dt.difficulty_level }}</span>{% endif %}
+            {% if _dt.days_left is not none %}<span class="dt-debt-item-days">{% if _dt.days_left >= 0 %}{{ _dt.days_left }} дн.{% else %}сгорел{% endif %}</span>{% endif %}
+            <button type="button" class="dt-debt-item-open" onclick="openDebtTask({{ _dt.id }})">Открыть задачу <span aria-hidden="true">&rarr;</span></button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
   <!-- Two-column layout -->
   <div class="dt-layout">
     <div class="dt-main">
@@ -1166,36 +1197,6 @@
           Взять выходной ({{ data.streak.days_off_available }})
         </button>
         {% endif %}
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- P4 DEBT block -->
-    {% if data and data.debt and data.debt.total %}
-    <div class="dt-debt-block">
-      <button type="button" class="dt-debt-toggle-btn" id="dt-debt-toggle" onclick="toggleDebt()">
-        <span>&#9203; Открыть долг: {{ data.debt.total }} задач</span>
-        <span class="dt-debt-toggle-arrow" id="dt-debt-toggle-arrow">&#9660;</span>
-      </button>
-      <div class="dt-debt-body dt-hidden" id="dt-debt-body">
-        <div class="dt-debt-header">
-          <span class="dt-debt-title">Долг: {{ data.debt.total }} задач</span>
-          <span class="dt-debt-hint">Нерешённые задачи прошлых дней — реши, пока не сгорели</span>
-        </div>
-        {% for _grp in data.debt.by_date %}
-        <div class="dt-debt-group">
-          <div class="dt-debt-group-date">{{ _grp.date }}</div>
-          {% for _dt in _grp.tasks %}
-          <div class="dt-debt-item" data-debt-item-id="{{ _dt.id }}">
-            {% if _dt.figure_url %}<img class="dt-debt-item-figure" src="{{ _dt.figure_url }}" alt="Чертёж" loading="lazy">{% endif %}
-            <span class="dt-debt-item-topic">#{{ _dt.position }} {{ _dt.topic or '' }}</span>
-            {% if _dt.difficulty_level %}<span class="dt-debt-item-level">уровень {{ _dt.difficulty_level }}</span>{% endif %}
-            {% if _dt.days_left is not none %}<span class="dt-debt-item-days">{% if _dt.days_left >= 0 %}{{ _dt.days_left }} дн.{% else %}сгорел{% endif %}</span>{% endif %}
-            <button type="button" class="dt-debt-item-open" onclick="openDebtTask({{ _dt.id }})">Открыть задачу <span aria-hidden="true">&rarr;</span></button>
-          </div>
-          {% endfor %}
-        </div>
-        {% endfor %}
       </div>
     </div>
     {% endif %}
