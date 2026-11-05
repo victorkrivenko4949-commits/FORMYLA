@@ -3,7 +3,7 @@
 {% block title %}Задача #{{ problem.id }}{% endblock %}
 
 {% block content %}
-<a href="javascript:history.back()" class="back-link"><- Назад к списку</a>
+<a href="javascript:history.back()" class="back-link">← Назад к списку</a>
 
 <div class="problem-card">
 
@@ -66,7 +66,7 @@
     {% if is_solved %}
     <!-- Задача уже решена -->
     <div class="reveal-block" style="background: #10b981; border-color: #10b981; padding: 15px; border-radius: 12px; margin-top: 20px;">
-        <div style="color: #fff; font-weight: 600; font-size: 16px;">[OK] Задача решена!</div>
+        <div style="color: #fff; font-weight: 600; font-size: 16px;">✓ Задача решена!</div>
         <div style="color: #d1fae5; margin-top: 8px;">Правильный ответ: <strong>{{ problem.answer | safe }}</strong></div>
     </div>
 
@@ -429,19 +429,19 @@ function toggleReveal(id, btn){
 function checkAnswer(problemId){
     var userAnswer=document.getElementById('user-answer-'+problemId).value.trim();
     var feedback=document.getElementById('feedback-'+problemId);
-    if(!userAnswer){ feedback.innerHTML='<span style="color:#f59e0b;">[!]️ Введите ответ</span>'; return; }
+    if(!userAnswer){ feedback.innerHTML='<span style="color:#f59e0b;">⚠️ Введите ответ</span>'; return; }
     fetch('/check_answer',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({problem_id:problemId,user_answer:userAnswer})})
     .then(function(r){return r.json();})
     .then(function(data){
         if(data.correct){
-            feedback.innerHTML='<span style="color:#10b981;font-weight:600;">[OK] Правильно!</span>';
+            feedback.innerHTML='<span style="color:#10b981;font-weight:600;">✓ Правильно!</span>';
             setTimeout(function(){ var sc=document.getElementById('solution-container-'+problemId); if(sc) sc.style.display='block'; },500);
         } else {
-            feedback.innerHTML='<span style="color:#ef4444;">[ERROR] Неправильно. Попробуйте ещё раз!</span>';
+            feedback.innerHTML='<span style="color:#ef4444;">✗ Неправильно. Попробуйте ещё раз!</span>';
         }
     })
-    .catch(function(err){ feedback.innerHTML='<span style="color:#f59e0b;">[!]️ Ошибка проверки</span>'; console.error(err); });
+    .catch(function(err){ feedback.innerHTML='<span style="color:#f59e0b;">⚠️ Ошибка проверки</span>'; console.error(err); });
 }
 
 /* ── AI Tutor helpers ────────────────────────────────────────────────── */
@@ -469,12 +469,12 @@ async function getAIHint(problemId){
     try {
         var response=await fetch('/api/tutor/hint/'+problemId,{method:'POST',headers:{'Content-Type':'application/json'}});
         var data=await response.json();
-        if(data.error){ content.innerHTML='<span style="color:#ef4444;">[ERROR] '+data.error+'</span>'; }
+        if(data.error){ content.innerHTML='<span style="color:#ef4444;">✗ '+data.error+'</span>'; }
         else { content.innerHTML=protectAndRenderMarkdown(data.hint); if(typeof reRenderMath==='function') reRenderMath(content); }
         container.classList.remove('hidden');
-        btn.innerHTML='[OK] Подсказка получена'; btn.style.background='#10b981';
+        btn.innerHTML='✓ Подсказка получена'; btn.style.background='#10b981';
     } catch(err){
-        content.innerHTML='<span style="color:#ef4444;">[ERROR] Ошибка связи с сервером</span>';
+        content.innerHTML='<span style="color:#ef4444;">✗ Ошибка связи с сервером</span>';
         container.classList.remove('hidden'); btn.disabled=false; btn.innerHTML=' Получить подсказку от AI';
         console.error(err);
     }
@@ -489,16 +489,16 @@ async function getAISolution(problemId){
     try {
         var response=await fetch('/api/tutor/solution/'+problemId,{method:'POST',headers:{'Content-Type':'application/json'}});
         var data=await response.json();
-        if(data.error){ content.innerHTML='<span style="color:#ef4444;">[ERROR] '+data.error+'</span>'; }
+        if(data.error){ content.innerHTML='<span style="color:#ef4444;">✗ '+data.error+'</span>'; }
         else {
             answerDiv.innerHTML=data.answer;
             content.innerHTML=protectAndRenderMarkdown(data.solution);
             if(typeof reRenderMath==='function') reRenderMath(container);
         }
         container.classList.remove('hidden');
-        btn.innerHTML='[OK] Решение получено'; btn.style.background='#10b981';
+        btn.innerHTML='✓ Решение получено'; btn.style.background='#10b981';
     } catch(err){
-        content.innerHTML='<span style="color:#ef4444;">[ERROR] Ошибка связи с сервером</span>';
+        content.innerHTML='<span style="color:#ef4444;">✗ Ошибка связи с сервером</span>';
         container.classList.remove('hidden'); btn.disabled=false; btn.innerHTML=' Сгенерировать решение AI';
         console.error(err);
     }

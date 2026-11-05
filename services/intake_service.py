@@ -54,7 +54,10 @@ def _prep_state_dict(cs: Any) -> Dict:
     """
     ps = getattr(cs, 'prep_state', None)
     if isinstance(ps, dict):
-        return ps
+        # Глубокая копия: иначе правка «на месте» + `cs.prep_state = ps` не
+        # помечает JSON-колонку изменённой (SQLite) и шаги анкеты теряются.
+        import copy as _copy
+        return _copy.deepcopy(ps)
     if isinstance(ps, str):
         try:
             parsed = _json.loads(ps)

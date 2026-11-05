@@ -5,6 +5,7 @@
 <style>
   .art-list{max-width:1000px;margin:0 auto;padding:36px 0 60px}
   .art-list__head{margin-bottom:32px}
+  @media (max-width:768px){.art-list{padding:20px 14px 40px}.art-list__head{margin-bottom:20px}.art-card{grid-template-columns:minmax(0,1fr);border-radius:18px}.art-card+.art-card{margin-top:16px}}
   .art-list__head h1{margin:0 0 10px;font-size:clamp(1.9em,4.5vw,2.6em);font-weight:800;color:#fff}
   .art-list__head p{margin:0;color:rgba(255,255,255,.78);font-size:1.08em;line-height:1.6;max-width:640px}
   .art-card{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);background:rgba(30,41,59,.94);border:1px solid rgba(255,255,255,.09);border-radius:22px;overflow:hidden;text-decoration:none;color:#fff;transition:transform .2s,border-color .2s,box-shadow .2s}

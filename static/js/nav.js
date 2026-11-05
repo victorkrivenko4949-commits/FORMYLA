@@ -254,6 +254,8 @@ document.addEventListener('DOMContentLoaded', function () {
   function showNotice() {
     if (Date.now() - firstVisit >= HOUR || read(DISMISS_KEY) === '1' ||
         document.getElementById('formyla-start-notice')) return;
+    // Не мешаем анкете, входу и самой странице «О сайте» — там подсказка закрывает контент.
+    if (/^\/(intake|login|verify-code|register|about)(\/|$)/.test(location.pathname)) return;
     var notice = document.createElement('aside');
     notice.id = 'formyla-start-notice';
     notice.setAttribute('aria-label', 'Знакомство с платформой');
@@ -305,6 +307,9 @@ document.addEventListener('DOMContentLoaded', function () {
     '#formyla-start-notice p{margin:0 0 12px;line-height:1.5}' +
     '#formyla-start-notice a{display:inline-block;padding:8px 14px;border-radius:8px;background:#6d28d9;color:#fff;text-decoration:none;font-weight:600}' +
     '#formyla-start-notice .formyla-start-close{position:absolute;right:4px;top:4px;width:36px;height:36px;border:0;background:transparent;color:inherit;cursor:pointer;font-size:24px}' +
+    '@media (max-width:768px){#formyla-start-notice{left:12px;right:12px;width:auto;bottom:calc(76px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:10px;padding:10px 40px 10px 14px;border-radius:14px}' +
+    '#formyla-start-notice p{margin:0;flex:1;font-size:14px;line-height:1.35}#formyla-start-notice a{flex:none;padding:8px 12px;font-size:14px}' +
+    '#formyla-start-notice .formyla-start-close{top:50%;transform:translateY(-50%)}}' +
     '#formyla-start-notice a:focus-visible,#formyla-start-notice button:focus-visible{outline:2px solid #a78bfa;outline-offset:3px}';
   document.head.appendChild(style);
   var initial = Number(read(FIRST_KEY));

@@ -139,6 +139,16 @@
     color: var(--accent-hi);
   }
 
+  .intake-option:disabled { opacity: .55; cursor: default; }
+  .intake-option.is-pending { opacity: 1; position: relative; padding-right: 44px; }
+  .intake-option.is-pending::after {
+    content: ''; position: absolute; right: 16px; top: 50%;
+    width: 16px; height: 16px; margin-top: -8px;
+    border: 2px solid rgba(76,125,255,.3); border-top-color: var(--accent);
+    border-radius: 50%; animation: intakeSpin .7s linear infinite;
+  }
+  @keyframes intakeSpin { to { transform: rotate(360deg); } }
+
   /* ── Anchor section ────────────────────────────── */
   .intake-anchor-section {
     margin-bottom: 16px;
@@ -422,7 +432,7 @@
   function updateProgress(qIndex, total) {
     const pct = Math.round((qIndex / total) * 100);
     document.getElementById('intake-progress-text').textContent =
-      total > 6 ? `Задача ${qIndex - 6} из 5 (якорь)` : `Вопрос ${qIndex} из ${total}`;
+      total > 6 ? `Задача ${qIndex - 5} из 5` : `Вопрос ${qIndex} из ${total}`;
     document.getElementById('intake-progress-pct').textContent = pct + '%';
     document.getElementById('intake-progress-fill').style.width = pct + '%';
   }
@@ -441,18 +451,18 @@
       }
       html += '</div>';
       html += '<div class="intake-btn-row">';
-      html += `<button class="intake-btn intake-btn-back" onclick="goBack()"><- Назад</button>`;
-      html += `<button class="intake-btn intake-btn-primary" id="intake-submit-btn" onclick="submitMulti()">Далее -></button>`;
+      html += `<button class="intake-btn intake-btn-back" onclick="goBack()">← Назад</button>`;
+      html += `<button class="intake-btn intake-btn-primary" id="intake-submit-btn" onclick="submitMulti()">Далее →</button>`;
       html += '</div>';
     } else {
       html += '<div class="intake-options">';
       for (const opt of q.options) {
-        html += `<button class="intake-option" onclick="selectSingle('${q.id}', '${opt.key}')">${opt.label}</button>`;
+        html += `<button class="intake-option" onclick="selectSingle('${q.id}', '${opt.key}', this)">${opt.label}</button>`;
       }
       html += '</div>';
       if (qIndex > 1) {
         html += '<div class="intake-btn-row">';
-        html += `<button class="intake-btn intake-btn-back" onclick="goBack()"><- Назад</button>`;
+        html += `<button class="intake-btn intake-btn-back" onclick="goBack()">← Назад</button>`;
         html += '</div>';
       }
     }
@@ -513,7 +523,7 @@
       <div class="intake-anchor-statement">${escapeHtml(anchor.statement).replace(/\n/g, '<br>')}</div>
       <input type="text" class="intake-answer-input" id="anchor-answer" placeholder="Твой ответ..." autofocus>
       <div class="intake-btn-row">
-        <button class="intake-btn intake-btn-back" onclick="submitAnchor(${anchor.task_id}, true)">Не знаю -></button>
+        <button class="intake-btn intake-btn-back" onclick="submitAnchor(${anchor.task_id}, true)">Не знаю →</button>
         <button class="intake-btn intake-btn-primary" onclick="submitAnchor(${anchor.task_id})">Проверить</button>
       </div>
       <div id="anchor-solution" style="display:none;margin-top:16px;padding:16px;background:var(--surface2);border:1px solid var(--border-soft);border-radius:var(--radius-sm);font-size:14px;line-height:1.7;color:var(--text-soft);"></div>
@@ -627,9 +637,9 @@
         <div style="margin:18px 0;padding:16px 18px;background:linear-gradient(135deg,rgba(56,189,248,0.10),rgba(139,92,246,0.10));border:1px solid rgba(139,92,246,0.35);border-radius:12px;color:var(--text-soft);font-size:14px;line-height:1.65;text-align:left;">
           <b style="color:var(--text);">Почему это стоит твоего времени?</b><br>
           Олимпиадный диплом даёт <b style="color:var(--text);">БВИ или 100 баллов по профильному предмету</b> вместо ЕГЭ — и это реально не так сложно, как кажется. Раздел «102 метода» заменяет кружок: полный набор приёмов с разборами, в своём темпе.<br>
-          <a href="/olympiad-start" style="color:#7dd3fc;font-weight:700;text-decoration:underline;text-underline-offset:3px;">Прочитать, как войти в олимпиадную математику -></a>
+          <a href="/olympiad-start" style="color:#7dd3fc;font-weight:700;text-decoration:underline;text-underline-offset:3px;">Прочитать, как войти в олимпиадную математику →</a>
         </div>
-        <button class="intake-btn intake-btn-primary" onclick="showDailyTasksConfirm()" style="margin-top:8px;font-size:16px;padding:14px 34px;">Начать задачи дня -&gt;</button>
+        <button class="intake-btn intake-btn-primary" onclick="showDailyTasksConfirm()" style="margin-top:8px;font-size:16px;padding:14px 34px;">Начать задачи дня →</button>
 
         ${solutionsHtml}
 
@@ -650,9 +660,22 @@
     `;
   }
 
-  async function selectSingle(qid, key) {
-    const result = await apiCall(API_BASE + '/answer', { qid, key });
-    processResponse(result);
+  async function selectSingle(qid, key, btn) {
+    // Мгновенный отклик на тап: подсвечиваем выбор и блокируем повторные нажатия,
+    // пока сервер отвечает (на телефоне иначе кажется, что ничего не нажалось).
+    const card = document.getElementById('intake-card');
+    if (card.dataset.busy === '1') return;
+    card.dataset.busy = '1';
+    if (btn) btn.classList.add('multi-selected', 'is-pending');
+    card.querySelectorAll('.intake-option, .intake-btn').forEach(b => { b.disabled = true; });
+    try {
+      const result = await apiCall(API_BASE + '/answer', { qid, key });
+      processResponse(result);
+    } catch (e) {
+      renderError('Не получилось отправить ответ. Проверь интернет и попробуй ещё раз.');
+    } finally {
+      card.dataset.busy = '';
+    }
   }
 
   function toggleMulti(btn, key) {

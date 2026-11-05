@@ -6,7 +6,7 @@
 <div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
     
     <div style="text-align: center; margin-bottom: 40px;">
-        <h1 style="font-size: 2.5em; color: var(--text-main);">[OK] Результаты пробника</h1>
+        <h1 style="font-size: 2.5em; color: var(--text-main);">✓ Результаты пробника</h1>
         <div style="font-size: 3em; font-weight: bold; color: {% if exam.score >= 80 %}#22c55e{% elif exam.score >= 60 %}#f59e0b{% else %}#ef4444{% endif %}; margin: 20px 0;">
             {{ exam.score }}%
         </div>
@@ -24,7 +24,7 @@
     {% for result in results %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-bottom: 20px;">
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-            <div style="font-size: 2em;">{% if result.is_correct %}[OK]{% else %}[ERROR]{% endif %}</div>
+            <div style="font-size: 2em;">{% if result.is_correct %}✓ {% else %}✗{% endif %}</div>
             <h3 style="color: var(--text-main); margin: 0;">Задача {{ loop.index }}</h3>
         </div>
         

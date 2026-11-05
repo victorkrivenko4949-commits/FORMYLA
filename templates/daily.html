@@ -96,7 +96,7 @@
         {% for g in range(5, 12) %}
         <button onclick="changeGrade({{ g }})" style="display: block; width: 100%; text-align: left; padding: 8px 12px; border: none; background: {% if g == preferred_grade %}rgba(56,239,125,0.15){% else %}transparent{% endif %}; color: {% if g == preferred_grade %}#38ef7d{% else %}rgba(255,255,255,0.8){% endif %}; font-size: 14px; font-weight: {% if g == preferred_grade %}700{% else %}500{% endif %}; cursor: pointer; border-radius: 8px; transition: background 0.15s;"
                 onmouseover="this.style.background='rgba(56,239,125,0.1)'" onmouseout="this.style.background='{% if g == preferred_grade %}rgba(56,239,125,0.15){% else %}transparent{% endif %}'">
-          {{ g }} класс {% if g == preferred_grade %}[OK]{% endif %}
+          {{ g }} класс {% if g == preferred_grade %}✓ {% endif %}
         </button>
         {% endfor %}
       </div>
@@ -186,7 +186,7 @@
         </div>
       </div>
       {% if is_done %}
-      <span style="color: #38ef7d; font-weight: 600; font-size: 14px;">[OK] Решено</span>
+      <span style="color: #38ef7d; font-weight: 600; font-size: 14px;">✓ Решено</span>
       {% else %}
       <span style="color: #38ef7d; font-size: 13px; font-weight: 600;">● Доступна</span>
       {% endif %}

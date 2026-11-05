@@ -40,15 +40,27 @@
     overlay = document.createElement('div');
     overlay.id = 'ft-readiness-overlay';
     overlay.style.cssText = 'position:fixed;inset:0;z-index:41000;background:rgba(5,8,18,.78);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
-    overlay.innerHTML = '<form role="dialog" aria-modal="true" aria-labelledby="ft-readiness-title" style="background:var(--card,#141a2e);color:var(--text,#e2e8f0);border:1px solid rgba(244,185,66,.45);border-radius:16px;max-width:440px;width:100%;padding:26px 24px;box-shadow:0 18px 60px rgba(0,0,0,.55);max-height:90vh;overflow:auto;">' +
-      '<h2 id="ft-readiness-title" style="font-size:20px;font-weight:800;margin:0 0 12px;">Олимпиады требуют регулярной подготовки. Ты готов заходить каждый день и заниматься?</h2>' +
+    overlay.innerHTML = '<form role="dialog" aria-modal="true" aria-labelledby="ft-readiness-title" style="background:var(--card,#141a2e);color:var(--text,#e2e8f0);border:1px solid rgba(244,185,66,.45);border-radius:16px;max-width:440px;width:100%;box-sizing:border-box;padding:22px 18px;box-shadow:0 18px 60px rgba(0,0,0,.55);max-height:90vh;overflow:auto;">' +
+      '<h2 id="ft-readiness-title" style="font-size:19px !important;line-height:1.3;font-weight:800;margin:0 0 12px;">Олимпиады требуют регулярной подготовки. Ты готов заходить каждый день и заниматься?</h2>' +
       '<fieldset style="border:0;padding:0;margin:0;"><legend style="font-size:14px;margin-bottom:10px;">Выбери один вариант</legend>' +
-      '<label style="display:block;padding:12px 0;cursor:pointer;"><input type="radio" name="readiness" value="yes" required> Да, готов!</label>' +
-      '<label style="display:block;padding:12px 0;cursor:pointer;"><input type="radio" name="readiness" value="try"> Постараюсь, но не обещаю каждый день.</label>' +
-      '<label style="display:block;padding:12px 0;cursor:pointer;"><input type="radio" name="readiness" value="not_yet"> Пока не готов.</label></fieldset>' +
+      '<label class="ftr-opt"><input type="radio" name="readiness" value="yes" required><span>Да, готов!</span></label>' +
+      '<label class="ftr-opt"><input type="radio" name="readiness" value="try"><span>Постараюсь, но не обещаю каждый день.</span></label>' +
+      '<label class="ftr-opt"><input type="radio" name="readiness" value="not_yet"><span>Пока не готов.</span></label></fieldset>' +
       '<p style="font-size:14px;color:var(--muted,#94a3b8);margin:16px 0;">Если есть вопросы, напиши в поддержку — контакты есть на странице <a href="/about" target="_blank" rel="noopener" style="color:#f4b942;">«О сайте»</a>.</p>' +
       '<button type="submit" style="width:100%;padding:12px;border:0;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#F4B942,#e09a1f);color:#1a1205;">Отправить</button>' +
       '<p id="ft-readiness-error" role="alert" style="color:#f87171;font-size:13px;margin:10px 0 0;"></p></form>';
+    if (!document.getElementById('ftr-style')) {
+      // Свои стили с !important: глобальные правила для input (width:100%, padding)
+      // растягивали радиокнопки в овал на телефоне.
+      var st = document.createElement('style'); st.id = 'ftr-style';
+      st.textContent =
+        '#ft-readiness-overlay .ftr-opt{display:flex !important;flex-direction:row !important;justify-content:flex-start !important;text-align:left !important;align-items:center !important;gap:12px;margin:0 0 8px;padding:13px 14px;border:1px solid rgba(148,163,184,.22);border-radius:12px;background:rgba(255,255,255,.03);cursor:pointer;font-size:15px;line-height:1.35;transition:border-color .15s,background .15s}' +
+        '#ft-readiness-overlay .ftr-opt:has(input:checked){border-color:#F4B942;background:rgba(244,185,66,.10)}' +
+        '#ft-readiness-overlay .ftr-opt input{flex:none;width:20px !important;height:20px !important;min-height:0 !important;margin:0 !important;padding:0 !important;accent-color:#F4B942;box-shadow:none !important;border:0 !important}' +
+        '#ft-readiness-overlay .ftr-opt span{flex:1;text-align:left}' +
+        '#ft-readiness-overlay legend{padding:0;color:var(--muted,#94a3b8)}';
+      document.head.appendChild(st);
+    }
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
     overlay.querySelector('input').focus();

@@ -39,8 +39,8 @@
         {% elif friendship_status == 'pending_sent' %}
           <button class="pp-btn pp-btn-secondary" data-rid="{{ pending_request_id }}" onclick="ppCancelRequest(this)">⏳ Запрос отправлен · Отменить</button>
         {% elif friendship_status == 'pending_received' %}
-          <button class="pp-btn pp-btn-primary" data-rid="{{ pending_request_id }}" onclick="ppAcceptRequest(this)">[OK] Принять запрос</button>
-          <button class="pp-btn pp-btn-danger" data-rid="{{ pending_request_id }}" onclick="ppDeclineRequest(this)">[ERROR] Отклонить</button>
+          <button class="pp-btn pp-btn-primary" data-rid="{{ pending_request_id }}" onclick="ppAcceptRequest(this)">✓ Принять запрос</button>
+          <button class="pp-btn pp-btn-danger" data-rid="{{ pending_request_id }}" onclick="ppDeclineRequest(this)">✗ Отклонить</button>
         {% elif friendship_status == 'friends' %}
           <span class="pp-friends-badge"> Вы друзья</span>
           <button class="pp-btn pp-btn-ghost" data-uid="{{ target.id }}" onclick="ppRemoveFriend(this)">Удалить из друзей</button>

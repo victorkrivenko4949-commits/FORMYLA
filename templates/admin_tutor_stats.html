@@ -128,13 +128,13 @@
 <h1> Дашборд AI-тьютора v2</h1>
 <p class="subtitle">
     Статистика вызовов тьютора · 
-    <a href="/"><- На главную</a> · 
+    <a href="/">← На главную</a> · 
     <a href="/admin/tutor_stats?export=csv" class="btn btn-csv" style="margin-left:8px;">⬇ CSV</a>
 </p>
 
 {% if not stats or stats.total == 0 %}
 <div class="alert">
-    [!]️ Данных пока нет — тьютор ещё не вызывался за последние 7 дней.
+    ⚠️ Данных пока нет — тьютор ещё не вызывался за последние 7 дней.
     Это нормально если деплой только что произошёл.
 </div>
 {% endif %}
@@ -219,13 +219,13 @@
                     {% if row.is_flagged %}
                     <span class="badge badge-red"> Помечена</span>
                     {% else %}
-                    <span class="badge badge-green">[OK] Активна</span>
+                    <span class="badge badge-green">✓ Активна</span>
                     {% endif %}
                 </td>
                 <td style="white-space:nowrap;">
                     {% if row.is_flagged %}
                     <button class="btn btn-unflag" onclick="toggleFlag({{ row.task_id }}, false)">
-                        [OK] Снять флаг
+                        ✓ Снять флаг
                     </button>
                     {% else %}
                     <button class="btn btn-flag" onclick="toggleFlag({{ row.task_id }}, true)">
@@ -312,7 +312,7 @@
                 </td>
                 <td style="white-space:nowrap;">
                     <button class="btn btn-unflag" onclick="toggleFlag({{ task.id }}, false)">
-                        [OK] Снять флаг
+                        ✓ Снять флаг
                     </button>
                 </td>
             </tr>

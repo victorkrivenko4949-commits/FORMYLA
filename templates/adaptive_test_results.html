@@ -84,7 +84,7 @@
                     </div>
                 </div>
                 <div style="font-size: 32px;">
-                    {% if item.is_correct %}[OK]{% else %}[ERROR]{% endif %}
+                    {% if item.is_correct %}✓ {% else %}✗{% endif %}
                 </div>
             </div>
             
@@ -120,7 +120,7 @@
     <!-- Действия -->
     <div style="text-align: center; margin-top: 40px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
         <a href="{{ url_for('index') }}" style="padding: 14px 30px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); font-weight: 600; text-decoration: none; transition: all 0.3s;">
-            <- На главную
+            ← На главную
         </a>
         <button onclick="startNewTest()" style="padding: 14px 30px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); transition: all 0.3s;">
              Пройти еще раз

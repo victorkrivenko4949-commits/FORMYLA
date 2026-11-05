@@ -29,6 +29,7 @@
     min-width: 0;
 }
 .lb-user-info { min-width: 0; flex: 1; }
+.lb-meta { display: none; }
 .lb-stats {
     display: flex;
     gap: 30px;
@@ -56,46 +57,42 @@
 /* ── Мобильный (телефоны) ── */
 @media (max-width: 640px) {
     .lb-page-wrap { margin: 20px auto; padding: 0 12px; }
+    /* Компактная строка: место | аватар+имя+мета | рейтинг (было ~100px, стало ~60px) */
     .lb-row {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 14px 12px;
-        gap: 10px;
-    }
-    .lb-rank {
-        width: 100%;
-        text-align: left;
-        font-size: 1.05em;
-        display: flex;
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) auto;
         align-items: center;
+        padding: 10px 12px;
         gap: 8px;
     }
+    .lb-rank {
+        width: auto;
+        text-align: center;
+        font-size: 1.1em;
+        display: block;
+    }
     .lb-user {
-        width: 100%;
+        width: auto;
         gap: 10px;
         flex-wrap: nowrap;
     }
     .lb-user img,
     .lb-user > div:first-child:not(.lb-user-info) {
-        width: 42px !important;
-        height: 42px !important;
-        font-size: 1.1em !important;
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 1em !important;
     }
     .lb-user-info > div:first-child {
-        font-size: 1em !important;
-        max-width: calc(100vw - 110px);
+        font-size: 0.98em !important;
+        max-width: none;
     }
-    .lb-stats {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 6px;
-        width: 100%;
-        padding-top: 8px;
-        border-top: 1px dashed var(--border-soft);
-    }
-    .lb-stat { padding: 4px 2px; }
-    .lb-stat-value { font-size: 1em; }
-    .lb-stat-label { font-size: 0.7em; }
+    .lb-user-info > div:nth-child(2) { font-size: 0.78em !important; line-height: 1.3; }
+    .lb-meta { display: inline; }
+    .lb-stats { display: block; width: auto; padding: 0; border: 0; }
+    .lb-stat:not(:last-child) { display: none; }
+    .lb-stat { padding: 0; text-align: right; }
+    .lb-stat-value { font-size: 1.1em; line-height: 1.1; }
+    .lb-stat-label { font-size: 0.65em; }
     .lb-stats-current {
         display: grid !important;
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -109,10 +106,7 @@
 /* ── Узкие экраны (≤ 380px) ── */
 @media (max-width: 380px) {
     .lb-page-wrap { padding: 0 8px; }
-    .lb-row { padding: 12px 10px; }
-    .lb-stats { gap: 4px; }
-    .lb-stat-value { font-size: 0.95em; }
-    .lb-stat-label { font-size: 0.65em; }
+    .lb-row { padding: 9px 8px; grid-template-columns: 30px minmax(0, 1fr) auto; }
     .lb-user-info > div:first-child { font-size: 0.95em !important; }
 }
 </style>
@@ -178,9 +172,9 @@
 
             <!-- Ранг -->
             <div class="lb-rank" style="{% if entry.rank == 1 %}color: #FFD700;{% elif entry.rank == 2 %}color: #C0C0C0;{% elif entry.rank == 3 %}color: #CD7F32;{% else %}color: var(--text-muted);{% endif %}">
-                {% if entry.rank == 1 %}
-                {% elif entry.rank == 2 %}
-                {% elif entry.rank == 3 %}
+                {% if entry.rank == 1 %}🥇
+                {% elif entry.rank == 2 %}🥈
+                {% elif entry.rank == 3 %}🥉
                 {% else %}{{ entry.rank }}{% endif %}
             </div>
 
@@ -200,7 +194,7 @@
                         {% if entry.user.is_founder %}<span title="Основатель: аккаунт создан до 01.11.2026" style="display: inline-block; vertical-align: middle; font-size: 0.72em; padding: 2px 8px; border-radius: 10px; background: linear-gradient(135deg, #f4b942, #d99a1f); color: #0b1020; font-weight: 800;">★</span>{% endif %}
                     </div>
                     <div style="font-size: 0.85em; color: var(--text-muted);">
-                        Уровень {{ entry.level }}
+                        Уровень {{ entry.level }}<span class="lb-meta"> · {{ entry.total_solved }} задач · {{ entry.mock_exams_passed }} проб.</span>
                     </div>
                 </div>
             </div>
@@ -269,7 +263,7 @@
         <a href="/" style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);"
            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4)'"
            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)'">
-            <- На главную
+            ← На главную
         </a>
     </div>
 

@@ -6,7 +6,7 @@
 <div class="container" style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
 
     <div style="display: flex; align-items: center; gap: 8px; font-size: .85em; color: var(--text-muted); margin-bottom: 16px;">
-        <a href="/chat" style="color: var(--accent-2); text-decoration: none;"><- В чат</a>
+        <a href="/chat" style="color: var(--accent-2); text-decoration: none;">← В чат</a>
         <span>·</span>
         <span>Задача из адаптивного теста · #{{ task.id }}</span>
     </div>
@@ -42,7 +42,7 @@
 
         {% if task.answer %}
         <details style="margin-bottom: 14px; padding: 14px 18px; background: rgba(34,197,94,.06); border: 1px solid rgba(34,197,94,.2); border-radius: 10px;">
-            <summary style="cursor: pointer; color: #22c55e; font-weight: 600;">[OK] Показать ответ</summary>
+            <summary style="cursor: pointer; color: #22c55e; font-weight: 600;">✓ Показать ответ</summary>
             <div style="margin-top: 10px; color: var(--text-main); font-size: 1.05em;">
                 {{ task.answer }}
             </div>

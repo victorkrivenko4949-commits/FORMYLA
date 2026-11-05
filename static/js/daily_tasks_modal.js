@@ -116,7 +116,7 @@ function _buildRegular(){
   // FIX bug#23: «Готово» раньше отправляло форму целиком (dtSubmitCurrent) —
   // ученик дописывал решение, нажимал «Готово» и получал отправку/сброс.
   // Теперь «Готово» просто закрывает экранную клавиатуру.
-  out += '<button type="button" class="dt-kb-key enter" onclick="dtToggleKeyboard()">Готово [OK]</button>';
+  out += '<button type="button" class="dt-kb-key enter" onclick="dtToggleKeyboard()">Готово ✓</button>';
   out += '</div>';
   return out;
 }
@@ -392,14 +392,14 @@ function openTaskModal(item, index){
   h += '<div class="dt-task-meta">';
   h += '<span class="dt-difficulty-badge">⭐ Уровень: '+(item.difficulty || '?')+'/4</span>';
   if(item.subtopic) h += '<span class="dt-topic-chip"> '+_esc(item.subtopic)+'</span>';
-  if(item.is_flagged) h += '<span class="dt-topic-chip" style="background:rgba(239,68,68,0.18);border-color:rgba(239,68,68,0.4);color:#fca5a5;">[!]️ Флаг</span>';
+  if(item.is_flagged) h += '<span class="dt-topic-chip" style="background:rgba(239,68,68,0.18);border-color:rgba(239,68,68,0.4);color:#fca5a5;">⚠️ Флаг</span>';
   h += '</div>';
   h += '<div class="dt-task-section-title"> Условие:</div>';
   h += '<div class="dt-task-text-html" id="dt-task-text-html">'+(item.task_text || '')+'</div>';
 
   if(done){
     var vc = item.is_correct ? 'success' : 'error';
-    var vi = item.is_correct ? '[OK]' : '[ERROR]';
+    var vi = item.is_correct ? '✓' : '✗';
     var vt = item.is_correct ? 'Верно!' : 'Неверно';
     h += '<div class="dt-result-block show">';
     h += '<div class="dt-verdict '+vc+'">'+vi+' '+vt+'</div>';
@@ -820,7 +820,7 @@ function _dtSyncItemState(itemId, result){
         st.classList.remove('dt-pending','dt-correct','dt-incorrect');
         st.classList.add(result.is_correct ? 'dt-correct' : 'dt-incorrect');
         var extras = st.querySelectorAll('span');
-        st.textContent = result.is_correct ? '[OK] Верно' : '[ERROR] Неверно';
+        st.textContent = result.is_correct ? '✓ Верно' : '✗ Неверно';
         for(var k=0;k<extras.length;k++) st.appendChild(extras[k]);
       }
     }
@@ -840,11 +840,11 @@ function _dtShowResult(result, itemId){
   var score = (typeof result.score === 'number') ? result.score : null;
   var html = '';
   if(isCorrect){
-    html = '<div class="dt-verdict success">[OK] Верно! Отличная работа</div>';
+    html = '<div class="dt-verdict success">✓ Верно! Отличная работа</div>';
   } else if(score === 1){
-    html = '<div class="dt-verdict partial">[!] Частично верно</div>';
+    html = '<div class="dt-verdict partial">⚠️ Частично верно</div>';
   } else {
-    html = '<div class="dt-verdict error">[ERROR] Неверно</div>';
+    html = '<div class="dt-verdict error">✗ Неверно</div>';
   }
   verdict.innerHTML = html;
 
@@ -917,7 +917,7 @@ function getHint(itemId){
       if(typeof renderMath === 'function') renderMath(container);
     })
     .catch(function(err){
-      container.innerHTML = '<div class="dt-hint-box">[!] '+_esc(err.message)+'</div>';
+      container.innerHTML = '<div class="dt-hint-box">⚠️ '+_esc(err.message)+'</div>';
     });
 }
 window.getHint = getHint;

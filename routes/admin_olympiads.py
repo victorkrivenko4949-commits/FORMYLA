@@ -73,11 +73,11 @@ def create_olympiad():
             )
             db.session.add(olympiad)
             db.session.commit()
-            flash('[OK] Олимпиада создана', 'success')
+            flash('✓ Олимпиада создана', 'success')
             return redirect(url_for('admin_olympiads.list_olympiads'))
         except Exception as e:
             db.session.rollback()
-            flash(f'[ERROR] Ошибка: {e}', 'error')
+            flash(f'✗ Ошибка: {e}', 'error')
 
     return render_template('admin/olympiad_form.html', olympiad=None)
 
@@ -107,11 +107,11 @@ def edit_olympiad(oid):
             olympiad.is_active = 'is_active' in request.form
 
             db.session.commit()
-            flash('[OK] Олимпиада обновлена', 'success')
+            flash('✓ Олимпиада обновлена', 'success')
             return redirect(url_for('admin_olympiads.list_olympiads'))
         except Exception as e:
             db.session.rollback()
-            flash(f'[ERROR] Ошибка: {e}', 'error')
+            flash(f'✗ Ошибка: {e}', 'error')
 
     return render_template('admin/olympiad_form.html', olympiad=olympiad)
 

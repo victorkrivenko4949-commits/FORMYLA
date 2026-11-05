@@ -6,7 +6,8 @@
 #}
 {% if current_user.is_authenticated %}
 {% if is_free_user is defined and is_free_user %}
-<div style="
+<style>@media (max-width:768px){.upgrade-banner{margin:12px 12px 18px !important;padding:14px !important}.upgrade-banner a{width:100%;box-sizing:border-box;text-align:center}}</style>
+<div class="upgrade-banner" style="
     background: linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(139,92,246,0.10) 100%);
     border: 1px solid rgba(56,189,248,0.35);
     border-radius: 14px;

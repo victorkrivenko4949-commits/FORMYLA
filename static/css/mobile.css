@@ -8,28 +8,33 @@
 .nav-burger {
     display: none;
     flex-direction: column;
-    justify-content: space-between;
-    width: 28px;
-    height: 22px;
-    background: none;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 44px;   /* зона нажатия 44x44, сами полоски компактные */
+    height: 44px;
+    margin-right: -8px;
+    background: none !important;
     border: none;
+    box-shadow: none !important;
     cursor: pointer;
     padding: 0;
     z-index: 10000;
     flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .nav-burger span {
     display: block;
-    width: 100%;
+    width: 22px;
     height: 3px;
     background: #38ef7d;
     border-radius: 2px;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.2s ease;
 }
 
 .nav-burger.active span:nth-child(1) {
-    transform: rotate(45deg) translate(7px, 7px);
+    transform: translateY(8px) rotate(45deg);
 }
 
 .nav-burger.active span:nth-child(2) {
@@ -38,7 +43,7 @@
 }
 
 .nav-burger.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -7px);
+    transform: translateY(-8px) rotate(-45deg);
 }
 
 /* ── BOTTOM NAV (hidden on desktop) ── */
@@ -186,8 +191,10 @@
         align-items: center;
         justify-content: center;
         transition: background 0.2s;
-        padding: 0;
+        padding: 0 !important;
         min-height: unset !important;
+        box-shadow: none !important;
+        line-height: 1;
     }
 
     .drawer-close:hover {
@@ -505,7 +512,9 @@
     /* Cards */
     .task-card,
     .card,
-    [class*="card"]:not(.agent-card):not(.drawer-link) {
+    /* Только сами карточки: части вроде .oly-card-body / .dt-card-top / .x-card__title
+       раньше тоже получали padding 14px и margin-bottom 12px и раздували вёрстку. */
+    [class*="card"]:not(.agent-card):not(.drawer-link):not([class*="card-"]):not([class*="card__"]) {
         padding: 14px !important;
         margin-bottom: 12px !important;
         border-radius: 10px !important;

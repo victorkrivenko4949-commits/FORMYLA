@@ -88,7 +88,7 @@
                         style="padding: 18px 50px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;"
                         onmouseover="this.style.transform='translateY(-2px)'"
                         onmouseout="this.style.transform='translateY(0)'">
-                    Далее ->
+                    Далее →
                 </button>
             </div>
         </div>
@@ -161,7 +161,7 @@ function restoreProgress() {
         tasksQueue = data.tasksQueue || {};
         previousTopics = data.previousTopics || [];
         
-        console.log('[OK] Прогресс восстановлен:', data);
+        console.log('✓ Прогресс восстановлен:', data);
         return true;
     } catch (e) {
         console.error('[ERROR] Ошибка восстановления прогресса:', e);
@@ -198,7 +198,7 @@ function startTest() {
 async function loadTask(taskNum) {
     // Проверяем, есть ли задача уже в очереди
     if (tasksQueue[taskNum]) {
-        console.log(`[OK] Задача ${taskNum} уже в очереди, используем её`);
+        console.log(`✓ Задача ${taskNum} уже в очереди, используем её`);
         renderTask(tasksQueue[taskNum], taskNum);
         return;
     }
@@ -244,7 +244,7 @@ async function preloadTask(taskNum, retryCount = 0) {
         }
         
         tasksQueue[taskNum] = task;
-        console.log(`[OK] Задача ${taskNum} предзагружена успешно`);
+        console.log(`✓ Задача ${taskNum} предзагружена успешно`);
         isFetchingNext = false;
     } catch (error) {
         console.error(`[ERROR] Ошибка предзагрузки задачи ${taskNum} (попытка ${retryCount + 1}):`, error);
@@ -303,7 +303,7 @@ async function fetchTask(taskNum, retryCount = 0) {
             
             // ТИХИЙ АВТО-ПОВТОР: не показываем ошибку пользователю
             if (retryCount < MAX_RETRIES) {
-                console.log(`[!]️ Ошибка генерации задачи ${taskNum} (попытка ${retryCount + 1}/${MAX_RETRIES}): ${error.error}`);
+                console.log(`⚠️ Ошибка генерации задачи ${taskNum} (попытка ${retryCount + 1}/${MAX_RETRIES}): ${error.error}`);
                 console.log(`⏳ Повторная попытка через ${RETRY_DELAY/1000} секунд...`);
                 
                 // Ждем и пробуем снова
@@ -326,13 +326,13 @@ async function fetchTask(taskNum, retryCount = 0) {
         preloadedTasks[taskNum] = task;
         saveProgress();
         
-        console.log(`[OK] Задача ${taskNum} успешно сгенерирована${retryCount > 0 ? ` (после ${retryCount + 1} попыток)` : ''}`);
+        console.log(`✓ Задача ${taskNum} успешно сгенерирована${retryCount > 0 ? ` (после ${retryCount + 1} попыток)` : ''}`);
         return task;
         
     } catch (error) {
         // Ошибка сети или парсинга JSON
         if (retryCount < MAX_RETRIES) {
-            console.log(`[!]️ Ошибка сети для задачи ${taskNum} (попытка ${retryCount + 1}/${MAX_RETRIES}): ${error.message}`);
+            console.log(`⚠️ Ошибка сети для задачи ${taskNum} (попытка ${retryCount + 1}/${MAX_RETRIES}): ${error.message}`);
             console.log(`⏳ Повторная попытка через ${RETRY_DELAY/1000} секунд...`);
             
             await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
@@ -398,7 +398,7 @@ function renderTask(task, taskNum) {
                 throwOnError: false,
                 strict: false
             });
-            console.log('[OK] KaTeX rendered task', taskNum);
+            console.log('✓ KaTeX rendered task', taskNum);
         } else {
             // KaTeX еще не загружен, ждем
             console.log('⏳ Waiting for KaTeX...');
@@ -432,10 +432,10 @@ function updateProgress(taskNum) {
     
     // Меняем текст кнопки на последней задаче
     if (taskNum === 25) {
-        nextButton.textContent = '[OK] Завершить тест';
+        nextButton.textContent = '✓ Завершить тест';
         nextButton.onclick = finishMock;
     } else {
-        nextButton.textContent = 'Далее ->';
+        nextButton.textContent = 'Далее →';
         nextButton.onclick = nextTask;
     }
 }
@@ -602,7 +602,7 @@ function renderResults(data) {
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <h4 style="color: var(--text-main); margin: 0;">Задача ${r.task_num}</h4>
                             <span style="padding: 4px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; ${r.is_correct ? 'background: rgba(34, 197, 94, 0.2); color: #22c55e;' : 'background: rgba(239, 68, 68, 0.2); color: #ef4444;'}">
-                                ${r.is_correct ? '[OK] Верно' : ' Неверно'}
+                                ${r.is_correct ? '✓ Верно' : ' Неверно'}
                             </span>
                         </div>
                         
@@ -638,7 +638,7 @@ window.addEventListener('DOMContentLoaded', function() {
     if (restoreProgress()) {
         // Есть сохраненный прогресс - спрашиваем пользователя
         if (confirm('У вас есть незаконченный пробник. Хотите продолжить?')) {
-            console.log('[OK] Пользователь выбрал продолжить');
+            console.log('✓ Пользователь выбрал продолжить');
             
             // Скрываем форму настроек
             document.getElementById('setup-form').style.display = 'none';
@@ -737,7 +737,7 @@ function _showMockPayment(plan) {
         '<div style="margin-top:18px;padding:10px;' +
         'background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);' +
         'border-radius:8px;color:#fbbf24;font-size:11px;text-align:center;">' +
-          '[!]️ Тестовая страница. Реальный платёжный шлюз пока не подключён.' +
+          '⚠️ Тестовая страница. Реальный платёжный шлюз пока не подключён.' +
         '</div>' +
       '</div>';
     document.body.appendChild(overlay);
@@ -750,7 +750,7 @@ function _showMockPayment(plan) {
         btn.style.opacity = '0.6';
         btn.textContent = 'Обработка...';
         setTimeout(function() {
-            status.innerHTML = '<span style="color:#4ade80;">[OK] Платёж принят (тестовый режим)</span>';
+            status.innerHTML = '<span style="color:#4ade80;">✓ Платёж принят (тестовый режим)</span>';
             btn.textContent = 'Готово';
             setTimeout(function() { overlay.remove(); }, 1500);
         }, 1100);

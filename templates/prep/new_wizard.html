@@ -8,7 +8,7 @@
 {% block content %}
 <div class="wiz-wrap">
     <div class="wiz-back">
-        <a href="{{ url_for('prep.dashboard') }}"><- Моя подготовка</a>
+        <a href="{{ url_for('prep.dashboard') }}">← Моя подготовка</a>
     </div>
 
     <!-- Step indicator -->
@@ -45,7 +45,7 @@
         <div class="wiz-nav">
             <div></div>
             <button class="wiz-nav-btn next" id="btn-next-1" disabled onclick="goToStep(2)" aria-label="Далее">
-                Далее ->
+                Далее →
             </button>
         </div>
     </div>
@@ -60,9 +60,9 @@
         </div>
 
         <div class="wiz-nav">
-            <button class="wiz-nav-btn back" onclick="goToStep(1)" aria-label="Назад"><- Назад</button>
+            <button class="wiz-nav-btn back" onclick="goToStep(1)" aria-label="Назад">← Назад</button>
             <button class="wiz-nav-btn next" id="btn-next-2" disabled onclick="goToStep(3)" aria-label="Далее">
-                Далее ->
+                Далее →
             </button>
         </div>
     </div>
@@ -76,7 +76,7 @@
             <div class="wiz-baseline-card {{ '' if has_radar else 'disabled' }}"
                  data-baseline="radar" onclick="selectBaseline(this)" tabindex="0"
                  aria-label="Использовать Радар">
-                <div class="wiz-baseline-icon">[OK]</div>
+                <div class="wiz-baseline-icon">✓</div>
                 <div class="wiz-baseline-title">Использовать мой Радар</div>
                 <div class="wiz-baseline-desc">
                     {% if has_radar %}
@@ -102,9 +102,9 @@
         </div>
 
         <div class="wiz-nav">
-            <button class="wiz-nav-btn back" onclick="goToStep(2)" aria-label="Назад"><- Назад</button>
+            <button class="wiz-nav-btn back" onclick="goToStep(2)" aria-label="Назад">← Назад</button>
             <button class="wiz-nav-btn next" id="btn-next-3" disabled onclick="goToStep(4)" aria-label="Далее">
-                Далее ->
+                Далее →
             </button>
         </div>
     </div>
@@ -146,7 +146,7 @@
         </div>
 
         <div class="wiz-nav">
-            <button class="wiz-nav-btn back" onclick="goToStep(3)" aria-label="Назад"><- Назад</button>
+            <button class="wiz-nav-btn back" onclick="goToStep(3)" aria-label="Назад">← Назад</button>
             <button class="wiz-nav-btn submit" onclick="submitPlan()" aria-label="Создать план">
                  Создать план
             </button>

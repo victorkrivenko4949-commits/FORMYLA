@@ -481,7 +481,7 @@
             html += 'Класс: <strong>' + r.grade + '</strong> &nbsp;|&nbsp; ';
             html += 'Дедлайн: <strong>' + (data.deadline_ru || r.deadline_bucket) + '</strong>';
             if (r.conflict) {
-                html += '<br>[!]️ Обнаружено расхождение между самооценкой и якорями.';
+                html += '<br>⚠️ Обнаружено расхождение между самооценкой и якорями.';
             }
             html += '</div>';
 
@@ -501,7 +501,7 @@
                     var a = data.anchor_breakdown[i];
                     var ok = a.correct;
                     var rowColor = ok ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)';
-                    var verdictHtml = ok ? '<span style="color:#22c55e;">[OK] верно</span>' : '<span style="color:#ef4444;"> неверно</span>';
+                    var verdictHtml = ok ? '<span style="color:#22c55e;">✓ верно</span>' : '<span style="color:#ef4444;"> неверно</span>';
                     var muStr = (a.section_mu !== null && a.section_mu !== undefined) ? a.section_mu.toFixed(2) : '—';
                     html += '<tr style="background:' + rowColor + ';border-bottom:1px solid rgba(255,255,255,0.05);">';
                     html += '<td style="padding:8px 6px;">' + a.section_ru + '</td>';

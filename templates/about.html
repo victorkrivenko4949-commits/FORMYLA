@@ -112,6 +112,7 @@
 @media (max-width:900px){
   .hero__in{grid-template-columns:1fr}
   .hero__figure{max-width:420px;margin:0 auto}
+  @media (max-width:640px){.hero__figure{max-width:200px;margin:4px auto 0;opacity:.85}}
 }
 
 /* ─────────────────────────  SECTIONS  ───────────────────────── */
@@ -474,6 +475,7 @@
 <div class="about2" id="about-top" style="scroll-margin-top: 24px;">
 
   {# ── 0. Mobile notice ── #}
+  <style>.mobile-notice{display:none}@media (max-width:768px){.mobile-notice{display:flex;align-items:center;gap:10px;margin:12px 16px 0;padding:10px 14px;border:1px solid rgba(148,163,184,.25);border-radius:12px;background:rgba(255,255,255,.04);font-size:13px;line-height:1.35;color:var(--muted,#94a3b8)}.mobile-notice strong{color:var(--text,#e2e8f0)}.about2 .support-section{padding:8px 16px 0;box-sizing:border-box}}</style>
   <div class="mobile-notice">
     <span class="mn-icon">📱</span>
     <span class="mn-text"><strong>Удобнее на компьютере</strong> — на телефоне доступны не все функции</span>
@@ -483,7 +485,7 @@
   {% if request.args.get('onboarding') %}
   <div class="onboarding-banner">
     <span>🎓 <strong>Добро пожаловать в FORMYLA.net!</strong> Это короткое знакомство — за 30 секунд поймёшь, что тут можно делать.</span>
-    <a href="/intake" class="btn-secondary">Пройти анкету -></a>
+    <a href="/intake" class="btn-secondary">Пройти анкету →</a>
   </div>
   {% endif %}
 

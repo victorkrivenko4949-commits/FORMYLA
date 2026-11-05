@@ -19,7 +19,7 @@
     </div>
 
     {# UI-FIX (Task 1): убрали 25 нумерованных кружков + легенду — навигация
-       по слотам теперь только через кнопки «<- Предыдущая» / «Следующая ->».
+       по слотам теперь только через кнопки «← Предыдущая» / «Следующая ->».
        Старый код см. git history до 2026-05-25. #}
 
     <!-- Карточка задачи -->
@@ -273,7 +273,7 @@
                         <div class="kb-row">
                             <button type="button" class="kb-key action wide" onclick="kbBackspace()">⌫</button>
                             <button type="button" class="kb-key space" onclick="kbInsert(' ')">Пробел</button>
-                            <button type="button" class="kb-key enter" onclick="submitCurrentAnswer()">Готово [OK]</button>
+                            <button type="button" class="kb-key enter" onclick="submitCurrentAnswer()">Готово ✓</button>
                         </div>
                     </div>
                 </div>
@@ -298,12 +298,12 @@
                     </button>
                     <div id="photoPreviewList" style="display: none; margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px;"></div>
                     <p id="photoFileName" style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px; display: none;">
-                        [OK] Прикреплено фото: <span id="fileName"></span>
+                        ✓ Прикреплено фото: <span id="fileName"></span>
                     </p>
                     <p id="photoWaitHint" role="status" style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px; display: none;">Проверка фото займёт около 15 секунд</p>
                 </div>
                 <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
-                     Нажимайте кнопку повторно, чтобы <strong>добавить</strong> ещё фото. Каждое снимается/распознаётся отдельно (OpenRouter Vision) и подмешивается в решение для AI-тьютора. Лишнее фото можно удалить крестиком.
+                     Нажимайте кнопку повторно, чтобы <strong>добавить</strong> ещё фото. Каждое распознаётся отдельно и добавляется к решению для ИИ-тьютора. Лишнее фото можно удалить крестиком.
                 </p>
             </div>
 
@@ -313,7 +313,7 @@
             <!-- Read-only баннер для уже отвеченных слотов -->
             {% if is_readonly %}
             <div id="readonlyBanner" style="margin: 10px 0 20px; padding: 14px 18px; background: rgba(34,197,94,0.10); border: 1px solid rgba(34,197,94,0.4); border-radius: var(--radius-sm); color: #86efac; font-size: 0.95em;">
-                [OK] На эту задачу уже отвечен ответ. Поля заблокированы для редактирования.
+                ✓ На эту задачу уже отвечен ответ. Поля заблокированы для редактирования.
                 {% if existing_user_answer %}<div style="margin-top:6px; color: var(--text-muted); font-size: 0.9em;">Ваш ответ: <code style="color:#86efac;">{{ existing_user_answer }}</code></div>{% endif %}
             </div>
             {% endif %}
@@ -323,7 +323,7 @@
                 <button type="button" id="prevSlotBtn" onclick="goToSlot({{ (current_slot or current_index) - 1 }})"
                         {% if (current_slot or current_index) <= 1 %}disabled{% endif %}
                         style="padding: 14px 22px; background: rgba(100, 116, 139, 0.18); color: var(--text-main); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer;">
-                    <- Предыдущая
+                    ← Предыдущая
                 </button>
 
                 {% if is_readonly %}
@@ -331,16 +331,16 @@
                     <button type="button" id="nextSlotBtnRO" onclick="goToSlot({{ (current_slot or current_index) + 1 }})"
                             {% if (current_slot or current_index) >= 25 %}disabled{% endif %}
                             style="padding: 14px 28px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
-                        Следующая ->
+                        Следующая →
                     </button>
                 {% else %}
                     <button type="button" id="skipBtn" onclick="skipCurrentSlot()"
                             style="padding: 14px 22px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer;">
-                        Пропустить ->
+                        Пропустить →
                     </button>
                     <button type="submit" id="submitBtn"
                             style="padding: 14px 28px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
-                        Ответить ->
+                        Ответить →
                     </button>
                 {% endif %}
 
@@ -349,7 +349,7 @@
                         {% if not can_finish %}disabled{% endif %}
                         title="{% if can_finish %}Завершить тест и посмотреть результаты{% else %}Осталось ответить на {{ remaining_to_finish }} задач(и){% endif %}"
                         style="padding: 14px 22px; background: {% if can_finish %}linear-gradient(135deg, #22c55e, #16a34a){% else %}rgba(100, 116, 139, 0.2){% endif %}; color: {% if can_finish %}white{% else %}var(--text-muted){% endif %}; border: 1px solid {% if can_finish %}#16a34a{% else %}var(--border-mid){% endif %}; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: {% if can_finish %}pointer{% else %}not-allowed{% endif %}; opacity: {% if can_finish %}1{% else %}0.65{% endif %};">
-                    Завершить тест [OK]
+                    Завершить тест ✓
                 </button>
             </div>
             {% if not can_finish %}
@@ -386,12 +386,12 @@
                         style="padding: 15px 40px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);"
                         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4)'"
                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)'">
-                    Следующая задача ->
+                    Следующая задача →
                 </button>
                 <button id="finishBtn" onclick="finishTest()" disabled
                         title="Кнопка активируется после того, как вы ответите на все 25 задач"
                         style="display: none; padding: 15px 40px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; cursor: not-allowed; opacity: 0.65; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);">
-                    Завершить тест [OK]
+                    Завершить тест ✓
                 </button>
             </div>
             <p id="finishBtnHint" style="display:none; text-align: center; color: var(--text-muted); font-size: 0.85em; margin-top: 10px;"></p>
@@ -846,7 +846,7 @@ function renderKatexSafe(element) {
  * Auto-mathify: оборачивает «голые» математические выражения в \(...\),
  * чтобы KaTeX их отрендерил красиво (степени x², дроби, индексы, неравенства…).
  *
- * Работает на сырой строке ДО конвертации \n -> <br>. Уважает уже
+ * Работает на сырой строке ДО конвертации \n → <br>. Уважает уже
  * существующие LaTeX-делимитеры $...$, $$...$$, \(...\), \[...\]: текст
  * внутри них не трогается.
  */
@@ -966,7 +966,7 @@ async function reportTask(taskId) {
         const result = await response.json();
         
         if (result.status === 'success') {
-            reportBtn.innerHTML = '<span>[OK]</span><span>Спасибо!</span>';
+            reportBtn.innerHTML = '<span>✓</span><span>Спасибо!</span>';
             reportBtn.style.background = 'rgba(34, 197, 94, 0.1)';
             reportBtn.style.color = '#22c55e';
             reportBtn.style.borderColor = 'rgba(34, 197, 94, 0.3)';
@@ -1213,7 +1213,7 @@ document.getElementById('answerForm').addEventListener('submit', async function(
 
     // Проверяем, что ответ введен
     if (!data.user_answer || data.user_answer.trim() === '') {
-        if (_photoWaitShown && _photoSubmitBtn) { _photoSubmitBtn.disabled = false; _photoSubmitBtn.textContent = 'Ответить ->'; }
+        if (_photoWaitShown && _photoSubmitBtn) { _photoSubmitBtn.disabled = false; _photoSubmitBtn.textContent = 'Ответить →'; }
         var _whReset = document.getElementById('photoWaitHint');
         if (_whReset) { _whReset.textContent = 'Проверка фото займёт около 15 секунд'; }
         alert('Пожалуйста, введите ответ!');
@@ -1268,7 +1268,7 @@ function showLoader() {
 }
 
 function hideLoader() {
-    document.getElementById('aiLoader').style.display = 'none'; var _sb = document.getElementById('submitBtn'); if (_sb) { _sb.disabled = false; if (_sb.textContent.indexOf('Проверяем') !== -1) _sb.textContent = 'Ответить ->'; }
+    document.getElementById('aiLoader').style.display = 'none'; var _sb = document.getElementById('submitBtn'); if (_sb) { _sb.disabled = false; if (_sb.textContent.indexOf('Проверяем') !== -1) _sb.textContent = 'Ответить →'; }
     // Восстанавливаем подсказку после фото-отправки (если фото всё ещё прикреплено)
     var _whRestore = document.getElementById('photoWaitHint');
     if (_whRestore && typeof PHOTO_BUFFER !== 'undefined' && PHOTO_BUFFER.length) {
@@ -1290,7 +1290,7 @@ function showResult(result) {
     if (result.score === 1) {
         verdictHTML = `
             <div class="verdict-success">
-                [OK] Верно! +1 уровень, уровень: ${result.new_level}/8
+                ✓ Верно! +1 уровень, уровень: ${result.new_level}/8
                 <div class="level-badge">Уровень: ${result.new_level}/8</div>
             </div>
         `;
@@ -1305,7 +1305,7 @@ function showResult(result) {
     } else {
         verdictHTML = `
             <div class="verdict-error">
-                [ERROR] Неверно — -1 уровень
+                ✗ Неверно — -1 уровень
                 <div class="level-badge">Уровень: ${result.new_level}/8</div>
             </div>
         `;
@@ -1423,12 +1423,12 @@ async function skipCurrentSlot() {
             window.location.href = '/adaptive_test_simple?slot=' + Math.min(25, Math.max(1, next));
         } else {
             alert((j && j.message) || 'Не удалось пропустить задачу');
-            if (skipBtn) { skipBtn.disabled = false; skipBtn.textContent = 'Пропустить ->'; }
+            if (skipBtn) { skipBtn.disabled = false; skipBtn.textContent = 'Пропустить →'; }
         }
     } catch (err) {
         console.error('skip failed', err);
         alert('Ошибка сети при пропуске задачи');
-        if (skipBtn) { skipBtn.disabled = false; skipBtn.textContent = 'Пропустить ->'; }
+        if (skipBtn) { skipBtn.disabled = false; skipBtn.textContent = 'Пропустить →'; }
     }
 }
 

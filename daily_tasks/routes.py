@@ -416,6 +416,18 @@ def get_daily_tasks():
     user_id = current_user.id
     today = today_in_user_tz()
 
+    # P4 DEBT: кнопка «Открыть долг» — на ЛЮБОМ варианте дашборда
+    # (выходной, день метода, пробник, лимит и т.д.), а не только когда
+    # готовы задачи дня (владелец, 05.11). Локальная обёртка докладывает
+    # долг во все ранние возвраты ниже.
+    from flask import render_template as _flask_render
+
+    def render_template(tpl, **kw):  # noqa: F811
+        _d = kw.get("data")
+        if tpl == "daily_tasks/daily_tasks_dashboard.html" and isinstance(_d, dict) and not _d.get("debt"):
+            _attach_debt(_d, user_id)
+        return _flask_render(tpl, **kw)
+
     # ── SESSION_PLAN_V1: план 6 занятий и долги — на ЛЮБОМ варианте
     # дашборда (ранние возвраты ниже тоже рендерят этот шаблон).
     # Не-пилотам — {'active': False}, карточка не показывается.
