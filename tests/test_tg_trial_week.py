@@ -107,14 +107,15 @@ def test_only_once_per_telegram(tg_app):
     assert e.value.code == 'tg_used'
 
 
-def test_need_telegram_linked(tg_app):
+def test_unknown_telegram_asks_to_subscribe(tg_app):
+    """Telegram не привязан и по личной ссылке ещё не вступал — просим подписаться."""
     from services import tg_trial
     u = _user('e@x.ru')
     st = tg_trial.get_state(u)
     assert st['state'] == 'available' and st['tg_linked'] is False
     with pytest.raises(tg_trial.TgTrialError) as e:
         tg_trial.claim_week(u)
-    assert e.value.code == 'need_tg'
+    assert e.value.code == 'not_member'
 
 
 def test_paid_premium_not_needed(tg_app):
@@ -265,3 +266,100 @@ def test_check_membership_uses_api_base(monkeypatch):
     monkeypatch.delenv('TELEGRAM_API_BASE')
     tg_trial.check_membership('42')
     assert seen['url'].startswith('https://api.telegram.org/bot')
+
+
+class _FakeBot:
+    """Мини-Bot API: createChatInviteLink / getUpdates / sendMessage."""
+
+    def __init__(self):
+        self.updates, self.sent, self.n = [], [], 0
+
+    def __call__(self, method, payload, timeout=6):
+        if method == 'createChatInviteLink':
+            self.n += 1
+            return {'invite_link': f'https://t.me/+inv{self.n}'}
+        if method == 'getUpdates':
+            off = payload.get('offset') or 0
+            assert 'chat_member' in payload['allowed_updates']
+            return [u for u in self.updates if u['update_id'] >= off]
+        if method == 'sendMessage':
+            self.sent.append(payload)
+            return {}
+        raise AssertionError(method)
+
+    def join(self, link, tg_id):
+        self.updates.append({'update_id': 100 + len(self.updates), 'chat_member': {
+            'chat': {'id': -1001, 'username': 'FormylaMaths', 'type': 'channel'},
+            'from': {'id': int(tg_id)},
+            'old_chat_member': {'status': 'left', 'user': {'id': int(tg_id)}},
+            'new_chat_member': {'status': 'member', 'user': {'id': int(tg_id)}},
+            'invite_link': {'invite_link': link, 'name': 'x'}}})
+
+    def start(self, token, tg_id):
+        self.updates.append({'update_id': 100 + len(self.updates), 'message': {
+            'message_id': 1, 'chat': {'id': int(tg_id), 'type': 'private'},
+            'from': {'id': int(tg_id)}, 'text': f'/start {token}'}})
+
+
+@pytest.fixture
+def fake_bot(tg_app, monkeypatch):
+    from services import tg_trial
+    bot = _FakeBot()
+    monkeypatch.setattr(tg_trial, '_bot_call', bot)
+    monkeypatch.setenv('TELEGRAM_BOT_USERNAME', 'formyla_poster_bot')
+    return bot
+
+
+def test_subscribe_by_personal_link_then_check(tg_app, fake_bot):
+    """Перешёл по личной ссылке, подписался, вернулся, нажал «Проверить» — неделя выдана."""
+    from services import tg_trial
+    u = _user('inv@x.ru')
+    links = tg_trial.get_links(u)
+    assert links['invite_link'] == 'https://t.me/+inv1'
+    assert links['bot_link'].startswith('https://t.me/formyla_poster_bot?start=fw')
+    assert tg_trial.get_links(u)['invite_link'] == 'https://t.me/+inv1'   # ссылка одна на пользователя
+    other = _user('other@x.ru')
+    tg_trial.get_links(other)                                             # +inv2 — чужая
+    fake_bot.join('https://t.me/+inv2', 999)                              # чужой вступил — не наш
+    fake_bot.join('https://t.me/+inv1', 5551)
+    tg_app.tg_members.add('5551')
+    res = tg_trial.claim_week(u)
+    assert res['expires_at']
+    assert tg_trial.get_state(u)['state'] == 'active'
+    assert u.telegram_id == '5551'          # Telegram запомнили в аккаунте
+    from models_tg_trial import TgBotCursor
+    from models import db
+    assert db.session.get(TgBotCursor, 1).offset == 102
+
+
+def test_already_subscribed_confirms_via_bot(tg_app, fake_bot):
+    """Уже был подписан: «Подтвердить через бота» (/start <token>) → проверка проходит."""
+    from services import tg_trial
+    u = _user('old@x.ru')
+    token = tg_trial.get_links(u)['bot_link'].split('start=')[1]
+    fake_bot.start(token, 7771)
+    tg_app.tg_members.add('7771')
+    tg_trial.claim_week(u)
+    assert tg_trial.get_state(u)['state'] == 'active'
+    assert fake_bot.sent and fake_bot.sent[0]['chat_id'] == 7771
+
+
+def test_joined_but_left_is_refused(tg_app, fake_bot):
+    """Вступил по ссылке и сразу отписался — getChatMember не подтвердит, недели нет."""
+    from services import tg_trial
+    u = _user('left@x.ru')
+    fake_bot.join(tg_trial.get_links(u)['invite_link'], 8881)
+    with pytest.raises(tg_trial.TgTrialError) as e:
+        tg_trial.claim_week(u)
+    assert e.value.code == 'not_member'
+
+
+def test_link_endpoint(tg_app, fake_bot):
+    u = _user('ep@x.ru')
+    client = tg_app.test_client()
+    with client.session_transaction() as sess:
+        sess['_user_id'] = str(u.id)
+        sess['_fresh'] = True
+    r = client.get('/api/tg-trial/link')
+    assert r.status_code == 200, r.data
+    assert r.get_json()['invite_link'].startswith('https://t.me/+inv')

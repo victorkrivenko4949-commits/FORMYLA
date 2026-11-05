@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """TG_TRIAL_WEEK (05.11.2026) — неделя Premium за подписку на Telegram-канал.
 
-Поток для пользователя (одна кнопка):
-  1. «Открыть канал» → подписывается на @FormylaMaths.
-  2. «Проверить подписку и получить неделю»:
-     • Telegram уже привязан (вход через ТГ / привязка в профиле) — сразу проверка;
-     • не привязан — Telegram Login Widget, подпись проверяем тем же HMAC,
-       что и при входе, привязываем Telegram к аккаунту и проверяем.
-  3. Сервер спрашивает Bot API getChatMember(канал, telegram_id).
-     Подписан → выдаём ровно 7 дней Premium «Работяга».
+Поток для пользователя (без входа через Telegram):
+  1. «Перейти в канал» — ЛИЧНАЯ ссылка-приглашение (createChatInviteLink).
+     Вступил по ней → бот видит апдейт chat_member и узнаёт Telegram id.
+  2. Вернулся на сайт → проверка запускается сама (или кнопка «Проверить подписку»).
+     Сервер забирает апдейты бота (getUpdates), находит Telegram id и
+     спрашивает getChatMember(канал, id). Подписан → ровно 7 дней Premium.
+  Уже был подписан (по ссылке вступить нельзя) → «Подтвердить через бота»:
+     t.me/<бот>?start=<token>, бот узнаёт id из /start.
 
 Правила:
   • одна неделя на аккаунт и одна на Telegram-аккаунт (таблица tg_trial_grants);
@@ -104,6 +104,145 @@ def check_membership(telegram_id: str) -> bool:
         return True
     # restricted — участник с ограничениями, подписка есть, если is_member
     return status == 'restricted' and bool(member.get('is_member'))
+
+
+def _bot_call(method: str, payload: dict, timeout: float = 6) -> dict:
+    """POST в Bot API. Возвращает result или бросает TgTrialError('network')."""
+    token = _bot_token()
+    if not token:
+        raise TgTrialError('config', 'Проверка подписки временно недоступна. Попробуй чуть позже.', 503)
+    try:
+        resp = requests.post(f'{telegram_api_base()}/bot{token}/{method}', json=payload, timeout=timeout)
+        data = resp.json()
+    except Exception as exc:  # noqa: BLE001
+        log.warning('[tg_trial] %s network error: %r', method, exc)
+        raise TgTrialError('network', 'Telegram не ответил. Нажми «Проверить» ещё раз через пару секунд.', 503)
+    if not data.get('ok'):
+        log.error('[tg_trial] %s failed: %s', method, data.get('description'))
+        raise TgTrialError('config', 'Проверка подписки временно недоступна. Попробуй чуть позже.', 503)
+    return data.get('result')
+
+
+def bot_username() -> str:
+    return (os.environ.get('TELEGRAM_BOT_USERNAME') or '').strip().lstrip('@')
+
+
+# ───────────────────── Личная ссылка в канал ─────────────────────
+#
+# Чтобы не просить «войти через Telegram» (виджет telegram.org в РФ часто не
+# открывается), каждому даём ЛИЧНУЮ ссылку-приглашение в канал. Вступил по ней —
+# бот получает апдейт chat_member с этой ссылкой и узнаёт его Telegram id.
+# Уже подписанным (по ссылке вступить нельзя) — запасной путь через бота:
+# t.me/<бот>?start=<token> → апдейт message «/start <token>».
+
+def get_links(user) -> dict:
+    """Личная ссылка в канал + ссылка на бота. Создаёт ссылку при первом вызове."""
+    import secrets
+    from models_tg_trial import TgTrialLink
+
+    row = db.session.get(TgTrialLink, user.id)
+    if row is None:
+        row = TgTrialLink(user_id=user.id, start_token='fw' + secrets.token_urlsafe(12).replace('-', 'x').replace('_', 'y'))
+        db.session.add(row)
+        db.session.commit()
+    if not row.invite_link:
+        res = _bot_call('createChatInviteLink', {
+            'chat_id': '@' + channel_username(),
+            'name': f'FORMYLA неделя #{user.id}'[:32],
+        })
+        row.invite_link = (res or {}).get('invite_link')
+        db.session.commit()
+    bot = bot_username()
+    return {
+        'invite_link': row.invite_link or channel_url(),
+        'bot_link': f'https://t.me/{bot}?start={row.start_token}' if bot else '',
+    }
+
+
+def _member_status_ok(member: dict) -> bool:
+    st = (member or {}).get('status')
+    return st in _MEMBER_STATUSES or (st == 'restricted' and bool((member or {}).get('is_member')))
+
+
+def sync_updates() -> int:
+    """Забрать новые апдейты бота и сопоставить Telegram id со ссылками.
+
+    Идемпотентно: несколько воркеров могут вызвать одновременно — повторная
+    обработка того же апдейта ничего не ломает. Возвращает число сопоставлений.
+    """
+    from models_tg_trial import TgBotCursor, TgTrialLink
+
+    cur = db.session.get(TgBotCursor, 1)
+    offset = int(cur.offset) if cur else 0
+    updates = _bot_call('getUpdates', {
+        'offset': offset, 'timeout': 0, 'limit': 100,
+        'allowed_updates': ['chat_member', 'message'],
+    }, timeout=8) or []
+    matched = 0
+    replies = []
+    channel = channel_username().lower()
+    for upd in updates:
+        tg_id, row = None, None
+        cm = upd.get('chat_member')
+        msg = upd.get('message')
+        if cm and str((cm.get('chat') or {}).get('username') or '').lower() == channel:
+            link = ((cm.get('invite_link') or {}).get('invite_link') or '')
+            if link and _member_status_ok(cm.get('new_chat_member')):
+                row = TgTrialLink.query.filter_by(invite_link=link).first()
+                tg_id = str(((cm.get('new_chat_member') or {}).get('user') or {}).get('id') or '')
+        elif msg and str(msg.get('text') or '').startswith('/start'):
+            parts = str(msg['text']).split(maxsplit=1)
+            token = parts[1].strip() if len(parts) > 1 else ''
+            tg_id = str((msg.get('from') or {}).get('id') or '')
+            if token:
+                row = TgTrialLink.query.filter_by(start_token=token).first()
+            replies.append((msg.get('chat') or {}).get('id'))
+        if row is not None and tg_id:
+            row.telegram_id = tg_id
+            row.matched_at = _now()
+            matched += 1
+    if updates:
+        new_offset = max(int(u.get('update_id', 0)) for u in updates) + 1
+        if cur is None:
+            db.session.add(TgBotCursor(id=1, offset=new_offset, updated_at=_now()))
+        elif new_offset > int(cur.offset):
+            cur.offset = new_offset
+            cur.updated_at = _now()
+    try:
+        db.session.commit()
+    except IntegrityError:   # другой воркер успел создать курсор — не страшно
+        db.session.rollback()
+    for chat_id in replies:
+        if not chat_id:
+            continue
+        try:
+            _bot_call('sendMessage', {
+                'chat_id': chat_id,
+                'text': '✅ Готово! Вернись на сайт FORMYLA и нажми «Проверить подписку».\n'
+                        f'Если ещё не подписан — вот канал: https://t.me/{channel_username()}',
+                'disable_web_page_preview': True,
+            }, timeout=4)
+        except TgTrialError:
+            pass
+    return matched
+
+
+def _telegram_for(user) -> str:
+    """Telegram id пользователя: из личной ссылки/бота, иначе привязанный к аккаунту."""
+    from models_tg_trial import TgTrialLink
+
+    row = db.session.get(TgTrialLink, user.id)
+    if row is not None and not row.telegram_id:
+        try:
+            sync_updates()
+        except TgTrialError as e:
+            if not getattr(user, 'telegram_id', None):
+                raise
+            log.warning('[tg_trial] sync_updates failed: %s', e.code)
+        db.session.refresh(row)
+    if row is not None and row.telegram_id:
+        return str(row.telegram_id)
+    return str(getattr(user, 'telegram_id', '') or '').strip()
 
 
 # ───────────────────────── Состояние ─────────────────────────
@@ -228,6 +367,21 @@ def link_telegram(user, payload: dict) -> None:
     _drop_cache()
 
 
+def _remember_telegram(user, tg_id: str) -> None:
+    """Привязать найденный Telegram к аккаунту, если он ничей (для входа и уведомлений)."""
+    from models import User
+    try:
+        if getattr(user, 'telegram_id', None):
+            return
+        if User.query.filter_by(telegram_id=tg_id).first() is not None:
+            return
+        user.telegram_id = tg_id
+        db.session.commit()
+    except Exception as e:  # noqa: BLE001 — привязка не обязательна для выдачи
+        log.warning('[tg_trial] remember telegram failed: %r', e)
+        db.session.rollback()
+
+
 def claim_week(user, tg_auth: Optional[dict] = None) -> dict:
     """Проверить подписку и выдать неделю. Возвращает {'expires_at': iso}."""
     from models_tg_trial import TgTrialGrant
@@ -247,9 +401,12 @@ def claim_week(user, tg_auth: Optional[dict] = None) -> dict:
 
     if tg_auth:
         link_telegram(user, tg_auth)
-    tg_id = str(getattr(user, 'telegram_id', '') or '').strip()
+    tg_id = _telegram_for(user)
     if not tg_id:
-        raise TgTrialError('need_tg', 'Подтверди свой Telegram, чтобы мы проверили подписку.', 400)
+        raise TgTrialError('not_member',
+                           'Пока не видим подписку. Нажми «Перейти в канал», подпишись и вернись сюда. '
+                           'Если ты уже был подписан — нажми «Подтвердить через бота».', 400)
+    _remember_telegram(user, tg_id)
 
     if TgTrialGrant.query.filter_by(telegram_id=tg_id).first() is not None:
         raise TgTrialError('tg_used', 'С этого Telegram неделя уже была получена на другом аккаунте.', 409)
