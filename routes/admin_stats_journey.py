@@ -109,8 +109,9 @@ def _last_pages(uids) -> dict:
     if not uids or not _has_table('site_time_beat'):
         return {}
     from services.page_views import normalize_path
+    from routes.admin_stats_labels import page_title
     rows = _q(f"SELECT user_id, last_page FROM site_time_beat WHERE user_id IN ({_in(uids)})") or []
-    return {int(u): normalize_path(p or '—') for u, p in rows}
+    return {int(u): page_title(normalize_path(p)) if p else '—' for u, p in rows}
 
 
 # ──────────────────────────── Путь регистрации ────────────────────────────
@@ -173,13 +174,14 @@ def journey(d_from: date, d_to: date):
                              f"AND user_id IN ({_in(started_only)}) ORDER BY created_at") or []:
             if q:
                 last_q[int(uid)] = str(q)
-        cnt = Counter(last_q.get(u, '— (только открыли / пропустили)') for u in started_only)
-        blocks.append({'type': 'table', 'title': 'Где бросают анкету (последний отвеченный вопрос)',
-                       'header': ['Вопрос (qid)', 'Людей', 'Доля'],
+        from routes.admin_stats_labels import question_title
+        cnt = Counter(question_title(last_q[u]) if u in last_q else '— (только открыли или пропустили)' for u in started_only)
+        blocks.append({'type': 'table', 'title': 'На каком вопросе бросают анкету',
+                       'header': ['Последний отвеченный вопрос', 'Людей', 'Доля'],
                        'rows': [[q, n, _fmt_pct(_pct(n, len(started_only)))] for q, n in cnt.most_common(30)],
                        'empty': 'Нет данных.'})
-        blocks.append({'type': 'note', 'text': 'Вопросы анкеты пишутся с момента выкладки этого обновления; '
-                       'у более ранних пользователей будет «только открыли / пропустили».'})
+        blocks.append({'type': 'note', 'text': 'Ответы на вопросы анкеты записываются с 05.11.2026 — у более ранних людей '
+                       'будет «только открыли или пропустили».'})
 
     stop = request.args.get('stop')
     if stop in reach and stop != STEPS[-1][0]:
@@ -188,7 +190,7 @@ def journey(d_from: date, d_to: date):
         pages = _last_pages(stuck_ids[:STUCK_LIMIT])
         blocks.append({'type': 'table', 'left': True,
                        'title': f'Остановились на шаге «{STEP_TITLES[stop]}» (не дошли до «{STEP_TITLES[nxt]}»)',
-                       'header': ['Пользователь', 'ID', 'Зарегистрировался (UTC)', 'Последняя страница'],
+                       'header': ['Пользователь', 'ID', 'Зарегистрировался', 'Последняя страница'],
                        'rows': [[{'text': info[u][0] or 'Без ника', 'href': f'/admin/stats/person?id={u}'}, u,
                                  info[u][1].strftime('%d.%m.%Y %H:%M') if info[u][1] else '—', pages.get(u, '—')]
                                 for u in stuck_ids[:STUCK_LIMIT]],
@@ -278,7 +280,7 @@ def lost_users(d_from: date, d_to: date):
     rows = _q("SELECT user_id, MAX(day) FROM site_time_sections WHERE section = 'general' AND seconds > 0 "
               "GROUP BY user_id")
     if rows is None:
-        return [{'type': 'note', 'text': 'Нет таблицы учёта времени (site_time_sections).'}]
+        return [{'type': 'note', 'text': 'Нет данных о времени на сайте.'}]
     last = {int(u): _d(d) for u, d in rows if u is not None and _d(d)}
     lost = {u: d for u, d in last.items() if (today - d).days >= days}
     switch = {'type': 'tabs', 'title': 'Нет активности',
@@ -310,9 +312,8 @@ def lost_users(d_from: date, d_to: date):
          'rows': [[{'text': nicks.get(u) or 'Без ника', 'href': f'/admin/stats/person?id={u}'}, u, lost[u].strftime('%d.%m.%Y'),
                    (today - lost[u]).days, pages.get(u, '—'),
                    reason_text(sig[u]) if u in sig else '—'] for u in recent]},
-        {'type': 'note', 'text': 'Причина — правило по фактам из базы (платёж, лимит, анкета, опросы, задачи), главный сигнал по важности; '
-         'полный путь человека открывается по нику. Последняя страница — из трекера времени (site_time_beat.last_page), '
-         'с точностью до пары минут. Период в панели на этот отчёт не влияет.'},
+        {'type': 'note', 'text': 'Причина — вывод по фактам из базы (оплата, лимит, анкета, опросы, задачи) или ответ самого человека. '
+         'Полный путь — по клику на ник. Последнюю страницу видно с точностью до пары минут.'},
     ]
 
 

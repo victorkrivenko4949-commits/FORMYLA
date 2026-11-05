@@ -74,9 +74,9 @@ def _online(c):
             {'title': 'Макс. онлайн сегодня', 'value': t['peak_today'], 'sub': 'людей в один момент'},
             {'title': 'Макс. онлайн вчера', 'value': t['peak_yesterday']},
             {'title': 'Рекорд онлайна', 'value': t['peak_ever'], 'sub': str(t['peak_ever_at'])},
-            {'title': 'Активны сегодня (DAU)', 'value': t['dau'], 'sub': 'с 00:00 МСК, включая гостей'},
-            {'title': 'За 7 дней (WAU)', 'value': t['wau']},
-            {'title': 'За 30 дней (MAU)', 'value': t['mau']},
+            {'title': 'Активны сегодня', 'value': t['dau'], 'sub': 'с 00:00 МСК, включая гостей'},
+            {'title': 'Активны за 7 дней', 'value': t['wau']},
+            {'title': 'Активны за 30 дней', 'value': t['mau']},
         ]},
         {'type': 'cards', 'title': 'Всего', 'items': [
             {'title': 'Пользователей', 'value': t['users'], 'sub': 'без гостей'},
@@ -156,7 +156,7 @@ def _people(c):
                    'rows': [[_person(r['id'], r['nickname']), r['last_login']] for r in c['inactive']], 'empty': 'Все активны.'})
     _ret, ls = _returns_and_last_seen()
     if ls:
-        blocks.append({'type': 'table', 'left': True, 'nowrap': True, 'title': f"Последний заход каждого (UTC, визит — паузы ≤ {ls['gap_min']} мин)",
+        blocks.append({'type': 'table', 'left': True, 'nowrap': True, 'title': f"Последний заход каждого (время UTC — это Москва минус 3 часа)",
                        'header': ['Пользователь', 'ID', 'Последнее действие', 'Сколько прошло', 'Начало визита', 'Длит. визита',
                                   'Действий', 'Визитов', 'Устройства'],
                        'rows': [[_person(r['user_id'], ('🟢 ' if r['bucket'] == 'online' else '') + str(r['name'])), r['user_id'],
@@ -227,7 +227,7 @@ def _study(c):
             {'title': 'Родителей привязали ребёнка', 'value': ro['parents_bound']},
             {'title': 'Групп учителей', 'value': ro['groups'], 'sub': f"с учениками: {ro.get('groups_with_members', 0)}"}]})
     if not blocks:
-        blocks.append({'type': 'note', 'text': 'Учебные блоки временно недоступны (services.admin_stats_extra не ответил).'})
+        blocks.append({'type': 'note', 'text': 'Учебные блоки временно недоступны.'})
     return blocks
 
 

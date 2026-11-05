@@ -111,8 +111,8 @@ def returns(d_from: date, d_to: date):
          'header': ['Сколько визитов', 'Ровно столько', 'Столько и более', '% от всех'], 'rows': rows},
         {'type': 'table', 'title': 'Чаще всего заходят (топ-20)', 'header': ['Пользователь', 'ID', 'Визитов', 'Возвращений'],
          'rows': [[_user_cell(u, nicks), u, v, v - 1] for u, v in top]},
-        {'type': 'note', 'text': 'Визит — серия действий с паузами не более выбранного порога. Действия берутся из всех таблиц БД '
-         'с user_id и временем. Подробные таблицы «когда заходил в последний раз» — на старой странице: /admin/users/last_seen.'},
+        {'type': 'note', 'text': 'Визит — серия действий с паузами не больше выбранного порога. Действие — любая запись о человеке '
+         'в базе (задача, вход, сообщение и т. д.). Когда каждый заходил в последний раз — в «Пользователях», вкладка «Люди».'},
     ]
 
 
@@ -142,7 +142,7 @@ def surveys(d_from: date, d_to: date):
                                         {'title': 'Средняя оценка', 'value': avg, 'sub': 'из 5'},
                                         {'title': 'Ожидают ответа', 'value': pending, 'sub': 'за всё время'}]},
             {'type': 'table', 'title': 'Опрос «Как тебе сайт?»: оценки', 'header': ['Оценка', 'Ответов', 'Доля'], 'rows': table},
-            {'type': 'table', 'left': True, 'title': 'Последние отзывы (до 100)', 'header': ['Пользователь', 'Оценка', 'Отзыв', 'Когда (UTC)'],
+            {'type': 'table', 'left': True, 'title': 'Последние отзывы (до 100)', 'header': ['Пользователь', 'Оценка', 'Отзыв', 'Когда'],
              'rows': [[_user_cell(int(u), nicks), f'{r} / 5', t or '—', _fmt_dt(a)] for u, r, t, a in rows[:100]],
              'empty': 'Ответов за период нет.'},
         ]
@@ -157,7 +157,7 @@ def surveys(d_from: date, d_to: date):
         blocks += [
             {'type': 'cards', 'items': [{'title': 'Ответили «Готов заниматься каждый день?»', 'value': total, 'sub': 'за период'}]},
             {'type': 'table', 'title': 'Опрос «Готов заниматься каждый день?»', 'header': ['Ответ', 'Ответов', 'Доля'], 'rows': table},
-            {'type': 'table', 'left': True, 'title': 'Последние ответы (до 100)', 'header': ['Пользователь', 'Ответ', 'Когда (UTC)'],
+            {'type': 'table', 'left': True, 'title': 'Последние ответы (до 100)', 'header': ['Пользователь', 'Ответ', 'Когда'],
              'rows': [[_user_cell(int(u), nicks), READINESS.get(a, a), _fmt_dt(t)] for u, a, t in rows[:100]],
              'empty': 'Ответов за период нет.'},
         ]
@@ -181,7 +181,7 @@ def surveys(d_from: date, d_to: date):
              'header': ['Когда спрашивали', 'Ответ', 'Ответов', 'Доля'], 'rows': dist_rows,
              'empty': 'Ответов за период нет. Вопрос задаётся после брошенной оплаты и после перерыва от 7 дней.'},
             {'type': 'table', 'left': True, 'title': 'Последние ответы «что остановило?» (до 100)',
-             'header': ['Пользователь', 'Когда спрашивали', 'Ответ', 'Комментарий', 'Когда (UTC)'],
+             'header': ['Пользователь', 'Когда спрашивали', 'Ответ', 'Комментарий', 'Когда'],
              'rows': [[_user_cell(int(u), nicks), TRIGGER_TITLES.get(k, k),
                        'пропустил' if st == 'dismissed' else OPTIONS.get(k, {}).get(a, a), t or '—', _fmt_dt(c)]
                       for u, k, a, t, st, c in rows[:100]],
@@ -202,7 +202,7 @@ def users(d_from: date, d_to: date):
     new_rows = _q(f'SELECT id, {sel} FROM users WHERE created_at >= :s AND created_at < :e{guest} '
                   'ORDER BY created_at DESC', s=start, e=end)
     if new_rows is None:
-        return [{'type': 'note', 'text': 'Не удалось прочитать таблицу users.'}]
+        return [{'type': 'note', 'text': 'Не удалось прочитать список пользователей.'}]
 
     table_rows = [[{'text': r[1] or 'Без ника', 'href': f'/admin/stats/person?id={r[0]}'}, r[0], _fmt_dt(r[2]), _fmt_dt(r[3]),
                    r[4] or 0, r[5] or 0, round((r[6] or 0) / 60, 1)] for r in new_rows]
@@ -226,8 +226,8 @@ def users(d_from: date, d_to: date):
         span = (d_to - d_from).days + 1
         dau = [len(by_day.get(d_from + timedelta(days=i), ())) for i in range(span)]
         cards += [{'title': 'Были активны за период', 'value': len(act), 'sub': 'любое действие в БД'},
-                  {'title': 'Средний DAU', 'value': round(sum(dau) / max(1, span), 1), 'sub': f'за {span} дн.'},
-                  {'title': 'Пик DAU', 'value': max(dau) if dau else 0, 'sub': ''}]
+                  {'title': 'Активных в день (в среднем)', 'value': round(sum(dau) / max(1, span), 1), 'sub': f'за {span} дн.'},
+                  {'title': 'Больше всего активных за день', 'value': max(dau) if dau else 0, 'sub': ''}]
         reg_by_day = defaultdict(int)
         for r in new_rows:
             c = _dt(r[2])
@@ -252,7 +252,7 @@ def users(d_from: date, d_to: date):
         blocks.append({'type': 'table', 'title': title + ' (за всё время)', 'header': ['Пользователь', 'ID', 'Значение'],
                        'rows': [[{'text': n or 'Без ника', 'href': f'/admin/stats/person?id={i}'}, i, fmt(v)] for i, n, v in top]})
     blocks.append({'type': 'table', 'title': f'Зарегистрировались за период (до {LIMIT_USERS}; полный список — CSV)',
-                   'header': ['Пользователь', 'ID', 'Регистрация (UTC)', 'Последний вход (UTC)', 'Входов', 'XP', 'Минут на сайте'],
+                   'header': ['Пользователь', 'ID', 'Регистрация', 'Последний вход', 'Входов', 'XP', 'Минут на сайте'],
                    'rows': table_rows[:LIMIT_USERS], 'empty': 'Регистраций за период нет.'})
     blocks.append({'type': 'note', 'text': 'Онлайн сейчас, пики одновременных пользователей и полная таблица по всем пользователям '
                    '(решено, проверено, уровень) — в разделе «Пользователи» (вкладка «Люди»).'})

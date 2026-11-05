@@ -6,17 +6,17 @@
   <div class="st-card"><div class="t">Платных сейчас</div><div class="v">{{ cards.paid }}</div><div class="s">активные, не триал и не бета</div></div>
   <div class="st-card"><div class="t">На триале</div><div class="v">{{ cards.trial }}</div></div>
   <div class="st-card"><div class="t">Бета-доступ</div><div class="v">{{ cards.beta }}</div></div>
-  <div class="st-card"><div class="t">MRR, ₽ (оценка)</div><div class="v">{{ '{:,.0f}'.format(cards.mrr).replace(',', ' ') }}</div><div class="s">платные × цена тарифа в месяц</div></div>
+  <div class="st-card"><div class="t">Доход в месяц, ₽</div><div class="v">{{ '{:,.0f}'.format(cards.mrr).replace(',', ' ') }}</div><div class="s">платные × цена тарифа в месяц</div></div>
   <div class="st-card"><div class="t">Новых за период</div><div class="v">{{ cards.new }}</div><div class="s">начало текущей подписки в периоде</div></div>
   <div class="st-card"><div class="t">Ушли за период</div><div class="v">{{ cards.churn }}</div><div class="s">подписка закончилась или отменена в периоде</div></div>
-  <div class="st-card"><div class="t">Оплачено всего, ₽</div><div class="v">{{ '{:,.0f}'.format(cards.revenue).replace(',', ' ') }}</div><div class="s">по строкам с payment_id</div></div>
+  <div class="st-card"><div class="t">Оплачено всего, ₽</div><div class="v">{{ '{:,.0f}'.format(cards.revenue).replace(',', ' ') }}</div><div class="s">по подтверждённым оплатам</div></div>
 </div>
 
 <div class="st-period" style="margin:10px 0;">
   {% for key, title in filters %}<a href="?f={{ key }}&q={{ q }}{{ qs }}" class="{% if flt == key %}active{% endif %}">{{ title }} · {{ counts[key] }}</a>{% endfor %}
   <form method="get"><input type="hidden" name="f" value="{{ flt }}"><input type="hidden" name="p" value="{{ period }}"><input type="hidden" name="from" value="{{ d_from }}"><input type="hidden" name="to" value="{{ d_to }}">
     <input type="search" name="q" value="{{ q }}" placeholder="Ник или ID" aria-label="Поиск по нику или ID"><button type="submit">Найти</button></form>
-  <a href="?f={{ flt }}&q={{ q }}{{ qs }}&csv=1">CSV</a>
+  <a href="?f={{ flt }}&q={{ q }}{{ qs }}&csv=1">Скачать CSV</a>
 </div>
 
 <table class="st">
@@ -37,5 +37,5 @@
   </tbody>
 </table>
 {% if total_shown > rows|length %}<p class="st-muted">Показаны первые {{ rows|length }} из {{ total_shown }}. Полный список — в CSV.</p>{% endif %}
-<p class="st-muted">Одна строка на пользователя — его текущая подписка. «Оплачено» считается по подпискам с payment_id (без беты и триала). MRR: годовые делятся на 12. Сортировка: сначала те, у кого срок ближе к концу.</p>
+<p class="st-muted">Одна строка на пользователя — его текущая подписка. «Оплачено» — по подтверждённым оплатам (без беты и пробного периода). Годовые тарифы в доходе за месяц делятся на 12. Сортировка: сначала те, у кого срок ближе к концу.</p>
 {% endblock %}

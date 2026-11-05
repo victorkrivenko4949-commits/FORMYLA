@@ -12,25 +12,54 @@
 .st-side a:hover{background:#17243d}.st-side a.active{background:#203b70;color:#dbeafe;border-left:3px solid #60a5fa;font-weight:700}
 .st-side a.soon{color:#94a3b8}.since{font-size:11px;white-space:nowrap}
 .st-wrap [hidden]{display:none!important}
-.st-wrap a:focus-visible,.st-wrap button:focus-visible,.st-wrap input:focus-visible,.st-wrap summary:focus-visible{outline:2px solid #7dd3fc;outline-offset:3px}
+.st-wrap a:focus-visible,.st-wrap button:focus-visible,.st-wrap input:focus-visible,.st-wrap summary:focus-visible,.st-wrap select:focus-visible{outline:2px solid #7dd3fc;outline-offset:3px}
 .st-main{flex:1;min-width:0;padding:8px 0 40px}.st-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.st-head h1{font-size:24px;margin:0}
 .st-period{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.st-period a,.st-period button{display:inline-block;padding:8px 10px;border:1px solid #475569;border-radius:8px;background:#111827;color:#e2e8f0;text-decoration:none;font:inherit;font-size:13px;cursor:pointer}.st-period a.active{background:#244d9e}.st-period form{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.st-period input{padding:7px;background:#111827;color:#e2e8f0;border:1px solid #475569;border-radius:6px;color-scheme:dark;max-width:100%}.st-period label{font-size:12px;color:#cbd5e1}
 .st-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.st-card{display:block;background:#111827;border:1px solid #334155;border-radius:12px;padding:16px;color:inherit;text-decoration:none}.st-card .t{font-size:13px;color:#cbd5e1;margin-bottom:8px}.st-card .v{font-size:27px;font-weight:800;font-variant-numeric:tabular-nums}.st-card .s{font-size:12px;line-height:1.5;color:#94a3b8;margin-top:6px}
 .st-table-scroll{max-width:100%;overflow-x:auto;border:1px solid #334155;border-radius:10px;margin:12px 0;overscroll-behavior-x:contain}table.st{width:100%;border-collapse:collapse;background:#111827;font-size:14px}table.st th,table.st td{padding:11px 12px;border-bottom:1px solid #263247;text-align:right;vertical-align:top;font-variant-numeric:tabular-nums}table.st th:first-child,table.st td:first-child{text-align:left}table.st th{color:#cbd5e1;font-size:12px}table.st tbody tr:hover{background:#18243a}
 .st-tabs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 14px}.st-tabs .lbl{font-size:13px;color:#94a3b8;margin-right:4px}.st-tabs a{display:inline-block;padding:8px 12px;border:1px solid #475569;border-radius:8px;background:#111827;color:#e2e8f0;text-decoration:none;font-size:13px}.st-tabs a:hover{background:#17243d}.st-tabs a.active{background:#244d9e;border-color:#60a5fa;color:#fff}
-table.st a{text-decoration:underline;text-underline-offset:3px}table.st.st-text th,table.st.st-text td{text-align:left}table.st.st-nowrap td{white-space:nowrap}.st-card .v.sm{font-size:18px;line-height:1.3;overflow-wrap:anywhere}.st-card.green .v{color:#34d399}.st-h3{margin:22px 0 10px;color:#e2e8f0;font-size:16px}.st-vbars{background:#111827;border:1px solid #334155;border-radius:12px;padding:14px 14px 8px;margin-bottom:18px}.st-vbars .row{display:flex;align-items:flex-end;gap:4px;height:140px}.st-vbars .col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}.st-vbars .n{font-size:11px;color:#cbd5e1;margin-bottom:3px;font-variant-numeric:tabular-nums}.st-vbars .b{width:100%;max-width:34px;background:#60a5fa;border-radius:4px 4px 0 0;min-height:2px}.st-vbars .lbls{display:flex;gap:4px;margin-top:6px}.st-vbars .lbls span{flex:1;min-width:0;text-align:center;font-size:10px;color:#94a3b8;overflow:hidden}.st-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px}.st-photos figure{margin:0;background:#111827;border:1px solid #334155;border-radius:10px;overflow:hidden}.st-photos img{width:100%;height:120px;object-fit:cover;display:block}.st-photos figcaption{padding:6px 8px;font-size:12px;color:#cbd5e1}@media(max-width:600px){.st-vbars .n{font-size:9px}.st-vbars .lbls span{font-size:8px}}table.st th.l,table.st td.l{text-align:left}.st-period input[type=date]{width:150px}.st-period input[type=search]{width:170px;max-width:100%;padding:7px;background:#111827;color:#e2e8f0;border:1px solid #475569;border-radius:6px}@media(min-width:901px){.st-period form{flex-wrap:nowrap}}
+table.st a{text-decoration:underline;text-underline-offset:3px}table.st.st-text th,table.st.st-text td{text-align:left}table.st.st-nowrap td{white-space:nowrap}.st-card .v.sm{font-size:18px;line-height:1.3;overflow-wrap:anywhere}.st-card.green .v{color:#34d399}.st-h3{margin:22px 0 10px;color:#e2e8f0;font-size:16px}.st-vbars{background:#111827;border:1px solid #334155;border-radius:12px;padding:14px 14px 8px;margin-bottom:18px}.st-vbars .row{display:flex;align-items:flex-end;gap:4px;height:140px}.st-vbars .col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}.st-vbars .n{font-size:11px;color:#cbd5e1;margin-bottom:3px;font-variant-numeric:tabular-nums}.st-vbars .b{width:100%;max-width:34px;background:#60a5fa;border-radius:4px 4px 0 0;min-height:2px}.st-vbars .lbls{display:flex;gap:4px;margin-top:6px}.st-vbars .lbls span{flex:1;min-width:0;text-align:center;font-size:10px;color:#94a3b8;overflow:hidden}.st-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px}.st-photos figure{margin:0;background:#111827;border:1px solid #334155;border-radius:10px;overflow:hidden}.st-photos img{width:100%;height:120px;object-fit:cover;display:block}.st-photos figcaption{padding:6px 8px;font-size:12px;color:#cbd5e1}table.st th.l,table.st td.l{text-align:left}.st-period input[type=date]{width:150px}.st-period input[type=search]{width:170px;max-width:100%;padding:7px;background:#111827;color:#e2e8f0;border:1px solid #475569;border-radius:6px}@media(min-width:901px){.st-period form{flex-wrap:nowrap}}
 .st-bar{height:10px;background:#60a5fa;border-radius:5px}.st-note{background:#111e36;border:1px solid #36547e;border-radius:10px;padding:14px;color:#cbd5e1;font-size:14px;line-height:1.6;margin:12px 0}.st-muted{color:#94a3b8;font-size:13px;line-height:1.6}.st-iframe{width:100%;height:72vh;min-height:400px;border:1px solid #334155;border-radius:12px;background:#0b1120}.st-main a{color:#bfdbfe}.st-mobile-menu>summary{display:none}
-@media(max-width:900px){.st-wrap{display:block;padding:0 10px}.st-mobile-menu>summary{display:block;cursor:pointer;padding:12px;background:#17243d;border-radius:8px}.st-side{position:static;width:100%;max-height:55vh;margin-bottom:16px}.st-main{padding-top:12px}.st-head{align-items:flex-start}.st-head h1{font-size:21px}.st-period{width:100%}.st-period form{width:100%}.st-iframe{height:65vh;min-height:320px}.st-cards{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))}}
+/* Телефон: выпадающий список разделов вместо длинного меню */
+.st-mnav{display:none}
+.st-mnav label{display:block;font-size:12px;color:#94a3b8;margin-bottom:6px}
+.st-mnav select{width:100%;padding:12px;font-size:16px;background:#17243d;color:#e2e8f0;border:1px solid #36547e;border-radius:10px;color-scheme:dark}
+@media(max-width:900px){.st-wrap{display:block;padding:0 12px}#st-navigation{display:none}.st-mnav{display:block;margin:4px 0 12px}.st-main{padding-top:4px}.st-head{align-items:flex-start}.st-head h1{font-size:21px}.st-period{width:100%}.st-period form{width:100%}.st-iframe{height:65vh;min-height:320px}.st-cards{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))}}
+@media(max-width:600px){
+.st-head h1{font-size:20px}
+.st-period>a{flex:1;text-align:center}
+.st-period form{display:grid;grid-template-columns:auto 1fr;gap:6px 8px;align-items:center}
+.st-period form button{grid-column:1/-1;padding:10px}
+.st-period input[type=date],.st-period input[type=search]{width:100%}
+.st-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}.st-tabs a{white-space:nowrap}
+.st-cards{grid-template-columns:1fr 1fr;gap:8px}.st-card{padding:12px}.st-card .t{font-size:12px}.st-card .v{font-size:22px}.st-card .v.sm{font-size:15px}
+.st-note{font-size:13px;padding:12px}
+.st-vbars{padding:10px 8px 6px}.st-vbars .row{gap:2px;height:110px}.st-vbars .n{font-size:9px}.st-vbars .lbls{gap:2px}.st-vbars .lbls span{font-size:8px}
+/* таблицы — карточками «название: значение» */
+table.st.st-m thead{display:none}
+table.st.st-m,table.st.st-m tbody,table.st.st-m tr,table.st.st-m td{display:block;width:100%}
+table.st.st-m tr{border-bottom:1px solid #334155;padding:8px 0}
+table.st.st-m td{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:4px 12px;border:0;text-align:right!important;white-space:normal;overflow-wrap:anywhere}
+table.st.st-m td::before{content:attr(data-label);flex:0 0 45%;color:#94a3b8;font-size:12px;text-align:left}
+table.st.st-m td:first-child{font-weight:700;font-size:15px;justify-content:flex-start;text-align:left!important}
+table.st.st-m td:first-child::before,table.st.st-m td[colspan]::before{content:none}
+}
 </style>
 {% endblock %}
 {% block content %}
 {% set filtered = section.kind == 'view' and section.slug not in ('env_flags','streaks','trial','curator','cohorts','lost_users','person','users') %}
 <div class="st-wrap">
+<div class="st-mnav">
+<label for="st-mnav-select">Раздел статистики</label>
+<select id="st-mnav-select" onchange="if(this.value)location.href=this.value">
+{% for group, items in nav %}<optgroup label="{{ group }}">{% for s in items %}<option value="/admin/stats/{{ s.slug }}?p={{ period }}&amp;from={{ d_from }}&amp;to={{ d_to }}"{% if s.slug == section.slug %} selected{% endif %}>{{ s.title }}</option>{% endfor %}</optgroup>{% endfor %}
+</select>
+</div>
 <details class="st-mobile-menu" open id="st-navigation">
 <summary>Разделы статистики · {{ section.title }}</summary>
 <aside class="st-side" aria-label="Разделы статистики">
 <label for="st-section-search">Найти раздел</label>
-<input class="st-search" id="st-section-search" type="search" placeholder="Например: задачи, опросы" autocomplete="off">
+<input class="st-search" id="st-section-search" type="search" placeholder="Например: подписки, опросы" autocomplete="off">
 <nav aria-label="Меню отчётов">
 {% for group, items in nav %}
 <details class="st-nav-group"{% if group not in ('Продукт', 'Система') or section.group == group %} open{% endif %}>
@@ -50,25 +79,24 @@ table.st a{text-decoration:underline;text-underline-offset:3px}table.st.st-text 
 <div class="st-period" aria-label="Период отчёта">
 <a href="?p=today" class="{% if period=='today' %}active{% endif %}">Сегодня</a><a href="?p=7" class="{% if period=='7' %}active{% endif %}">7 дней</a><a href="?p=30" class="{% if period=='30' %}active{% endif %}">30 дней</a>
 <form method="get"><input type="hidden" name="p" value="custom"><label for="st-from">С</label><input id="st-from" type="date" name="from" value="{{ d_from }}" required><label for="st-to">По</label><input id="st-to" type="date" name="to" value="{{ d_to }}" required><button type="submit">Показать</button></form>
-{% if section.slug in ('funnel','sources','users') %}<a href="?p={{ period }}&amp;from={{ d_from }}&amp;to={{ d_to }}&amp;csv=1">CSV</a>{% endif %}
+{% if section.slug in ('funnel','sources','users_period') %}<a href="?p={{ period }}&amp;from={{ d_from }}&amp;to={{ d_to }}&amp;csv=1">Скачать CSV</a>{% endif %}
 </div>
 {% endif %}
 </div>
 {% if section.kind == 'embed' %}
-<p class="st-muted">Встроенный отчёт использует собственные фильтры. Общий период панели к нему не применяется.</p>
+<p class="st-muted">Это отдельная страница внутри панели, у неё свои фильтры.</p>
 {% elif section.slug == 'env_flags' %}
-<p class="st-muted">Текущие настройки процесса приложения, а не данные за период.</p>
-{% elif not filtered %}
-<p class="st-muted">Срез состояния или фиксированный горизонт отчёта; фильтр периода здесь не применяется.</p>
-{% else %}
-<p class="st-muted">Выбранный период: {{ d_from.strftime('%d.%m.%Y') }} — {{ d_to.strftime('%d.%m.%Y') }} (МСК). Карточки «сейчас» и «всего» относятся к текущему состоянию или всей истории.</p>
+<p class="st-muted">Технические настройки сервера — для разработчика.</p>
+{% elif filtered %}
+<p class="st-muted">Период: {{ d_from.strftime('%d.%m.%Y') }} — {{ d_to.strftime('%d.%m.%Y') }} (по Москве).</p>
 {% endif %}
 {% block stats_content %}{% endblock %}
 </section>
 </div>
 <script>
 (function(){
-var root=document.getElementById('st-navigation');if(!root)return;
+var root=document.getElementById('st-navigation');
+if(root){
 var mobile=window.matchMedia('(max-width:900px)');root.open=!mobile.matches;
 mobile.addEventListener('change',function(e){root.open=!e.matches;});
 var input=document.getElementById('st-section-search');
@@ -79,9 +107,17 @@ group.querySelectorAll('[data-st-link]').forEach(function(link){var match=link.t
 group.hidden=!found;if(q&&found)group.open=true;any=any||found;});
 document.getElementById('st-search-empty').hidden=any;
 });
+}
 document.querySelectorAll('.st-main table.st').forEach(function(table){
-if(table.parentElement.classList.contains('st-table-scroll'))return;
-var box=document.createElement('div');box.className='st-table-scroll';box.tabIndex=0;box.setAttribute('role','region');box.setAttribute('aria-label','Таблица отчёта, горизонтальная прокрутка');table.parentNode.insertBefore(box,table);box.appendChild(table);
+if(!table.parentElement.classList.contains('st-table-scroll')){
+var box=document.createElement('div');box.className='st-table-scroll';box.tabIndex=0;box.setAttribute('role','region');box.setAttribute('aria-label','Таблица отчёта');table.parentNode.insertBefore(box,table);box.appendChild(table);
+}
+// на телефоне таблица показывается карточками: каждой ячейке — подпись из шапки
+var heads=Array.prototype.map.call(table.querySelectorAll('thead th'),function(th){return th.textContent.trim();});
+if(heads.length&&!table.classList.contains('st-nowrap')){
+table.classList.add('st-m');
+table.querySelectorAll('tbody tr').forEach(function(tr){Array.prototype.forEach.call(tr.children,function(td,i){if(heads[i])td.setAttribute('data-label',heads[i]);});});
+}
 });
 })();
 </script>
