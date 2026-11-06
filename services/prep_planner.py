@@ -126,9 +126,9 @@ def generate_prep_plan(user, olympiad, target_stage_name, target_date,
     # профиль к месячному циклу сразу при создании плана (идемпотентно).
     try:
         from curator.monthly_cycle import apply_olympiad_cycle
-        apply_olympiad_cycle(user_id)
+        apply_olympiad_cycle(user.id)
     except Exception:
-        logger.exception('prep_planner: apply_olympiad_cycle failed user=%s', user_id)
+        logger.exception('prep_planner: apply_olympiad_cycle failed user=%s', user.id)
 
     return plan
 

@@ -24,7 +24,9 @@
 
 from __future__ import annotations
 
+import json
 import logging
+import os
 from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -33,6 +35,9 @@ logger = logging.getLogger(__name__)
 # месячные циклы помечаются устаревшими и пересобираются, а выданные
 # ранее сеты сверяются по ключу контекста.
 PROFILE_VERSION = 1
+# Частотные профили (OLYMPIAD_FREQ_V1) — своя версия: пока только админам,
+# у остальных версия и циклы остаются прежними
+FREQ_PROFILE_VERSION = 2
 
 # ── Редакционные профили ────────────────────────────────────────────────
 # Каждый профиль: класс → УПОРЯДОЧЕННЫЙ список theme_id (приоритет убывает).
@@ -264,29 +269,138 @@ OLYMPIAD_PROFILES: Dict[str, Dict] = {
 }
 
 
-def profile_for(slug: str, grade: Optional[int]) -> Optional[Dict]:
-    """Профиль олимпиады для класса: {'slug', 'name', 'version', 'themes'}.
+# ── Частотные профили из реальных вариантов (OLYMPIAD_FREQ_V1) ──────────
+# Владелец (06.11.2026): «анализируешь олимпиаду (например, Росатом),
+# смотришь самое популярное и даёшь в первую очередь, а потом уже
+# оставшееся — для каждого класса и каждой из 11 олимпиад».
+# data/olympiad_topic_profiles.json строит
+# scripts/build_olympiad_topic_profiles.py по каталогу data/olymp_catalog:
+# сколько задач каждой темы было на олимпиаде в этом классе.
+# Профиль = популярные темы (по убыванию частоты) → остальные темы.
+# Класс, в котором олимпиады нет в каталоге, профиля не получает
+# (не каждая олимпиада есть в каждом классе).
 
-    Возвращает None, если олимпиада не поддерживается профилями или
-    профиль не покрывает этот класс (не молча подменяя общим пулом).
-    """
-    if not slug or grade is None:
+_FREQ_PATH = os.path.join(os.path.dirname(__file__), '..', 'data',
+                          'olympiad_topic_profiles.json')
+_FREQ_CACHE: Optional[Dict] = None
+
+# Минимум распознанных задач, чтобы верить частотам (иначе — редакционный)
+FREQ_MIN_TASKS = 5
+# Тема с такой долей задач олимпиады попадает в КАЖДЫЙ месяц цикла
+# (популярное повторяется чаще, хвост ротируется)
+PIN_SHARE = 0.20
+MAX_PINNED = 2
+
+# Slug плана подготовки (olympiad_prep) → slug каталога
+_PREP_TO_CATALOG = {
+    'fiztekh': 'phystech',
+    'fizteh': 'phystech',
+    'spbu': 'spbgu',
+    'formula-edinstva': 'formula-unity',
+    'tretye-tysyacheletie': 'formula-unity',
+    'mosh': 'mmo',
+}
+
+# Названия олимпиад, у которых нет редакционного профиля
+_FREQ_NAMES = {
+    'rosatom': 'Олимпиада «Росатом»',
+    'kurchatov': 'Олимпиада «Курчатов»',
+    'phystech': 'Олимпиада «Физтех»',
+    'spbgu': 'Олимпиада СПбГУ',
+    'formula-unity': '«Формула Единства» / «Третье тысячелетие»',
+}
+
+
+def _freq_data() -> Dict:
+    global _FREQ_CACHE
+    if _FREQ_CACHE is None:
+        try:
+            with open(_FREQ_PATH, encoding='utf-8') as f:
+                _FREQ_CACHE = json.load(f)
+        except Exception:
+            logger.exception('daily_olympiad: не прочитан %s', _FREQ_PATH)
+            _FREQ_CACHE = {}
+    return _FREQ_CACHE
+
+
+def _freq_allowed(user_id: Optional[int]) -> bool:
+    if not user_id:
+        return False
+    try:
+        from models import User
+        u = User.query.get(int(user_id))
+        return bool(u is not None and u.is_admin)
+    except Exception:
+        return False
+
+
+def catalog_slug(slug: Optional[str]) -> Optional[str]:
+    if not slug:
         return None
-    prof = OLYMPIAD_PROFILES.get(slug)
-    if not prof:
+    return _PREP_TO_CATALOG.get(slug, slug)
+
+
+def topic_stats(slug: str, grade: int) -> Optional[Dict]:
+    """Частоты тем олимпиады в классе (или None — олимпиады нет в классе)."""
+    olymp = (_freq_data().get('olympiads') or {}).get(catalog_slug(slug) or '')
+    if not olymp:
+        return None
+    return olymp.get(str(grade))
+
+
+def profile_for(slug: str, grade: Optional[int], user_id: Optional[int] = None,
+                freq: Optional[bool] = None) -> Optional[Dict]:
+    """Профиль олимпиады для класса.
+
+    {'slug', 'name', 'version', 'themes', 'pinned', 'source'}:
+    themes — сначала популярные на этой олимпиаде темы (по убыванию
+    частоты в реальных вариантах), затем оставшиеся; pinned — самые
+    частые темы, которые идут в каждый месяц цикла.
+
+    Возвращает None, если олимпиада не поддерживается или её нет в этом
+    классе (не молча подменяя общим пулом).
+
+    Частотный профиль — только при freq=True или для админа (user_id);
+    иначе прежний редакционный профиль (OLYMPIAD_FREQ_V1, «пока только
+    для админов»).
+    """
+    if freq is None:
+        freq = _freq_allowed(user_id)
+    if not slug or grade is None:
         return None
     try:
         grade = int(grade)
     except (TypeError, ValueError):
         return None
-    themes = (prof.get('grade_plans') or {}).get(grade)
-    if not themes:
+    prof = OLYMPIAD_PROFILES.get(slug) or {}
+    editorial = list((prof.get('grade_plans') or {}).get(grade) or [])
+    stats = topic_stats(slug, grade)
+    if freq and stats and int(stats.get('n_classified') or 0) >= FREQ_MIN_TASKS:
+        bank = list((_freq_data().get('bank_themes') or {}).get(str(grade)) or [])
+        popular = [t['id'] for t in stats.get('themes') or []]
+        themes: List[str] = []
+        for t in popular + editorial + bank:
+            if t not in themes:
+                themes.append(t)
+        pinned = [t['id'] for t in (stats.get('themes') or [])
+                  if float(t.get('share') or 0) >= PIN_SHARE][:MAX_PINNED]
+        return {
+            'slug': slug,
+            'name': prof.get('name') or _FREQ_NAMES.get(catalog_slug(slug), slug),
+            'version': FREQ_PROFILE_VERSION,
+            'themes': themes,
+            'pinned': pinned,
+            'source': 'catalog_frequency',
+        }
+    if not editorial:
         return None
     return {
         'slug': slug,
         'name': prof['name'],
         'version': PROFILE_VERSION,
-        'themes': list(themes),
+        'themes': editorial,
+        'pinned': [],
+        'source': 'editorial',
     }
 
 
@@ -494,7 +608,7 @@ def daily_context(user_id: int) -> Dict:
     uo = user_olympiad(user_id)
     if not uo:
         return {'status': 'no_olympiad'}
-    prof = profile_for(uo['slug'], uo['grade'])
+    prof = profile_for(uo['slug'], uo['grade'], user_id=user_id)
     if not prof:
         return {
             'status': 'no_profile',
@@ -561,10 +675,11 @@ def context_key(user_id: int) -> Optional[Dict]:
         uo = user_olympiad(user_id)
         if not uo:
             return None
+        prof = profile_for(uo['slug'], uo['grade'], user_id=user_id)
         return {
             'olympiad_slug': uo['slug'],
             'grade': uo['grade'],
-            'profile_version': PROFILE_VERSION,
+            'profile_version': prof['version'] if prof else PROFILE_VERSION,
         }
     except Exception:
         return None

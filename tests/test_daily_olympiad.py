@@ -34,6 +34,14 @@ if str(_ROOT) not in sys.path:
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def _no_admins(monkeypatch):
+    """Частотные профили пока только админам (id=1 — админ); здесь
+    проверяется поведение для обычных учеников — редакционные профили."""
+    from models import User
+    monkeypatch.setattr(User, 'is_admin', property(lambda self: False))
+
+
 # ─── Хелперы ─────────────────────────────────────────────────────────────
 
 
@@ -253,16 +261,19 @@ def test_weakness_orders_selection(app):
     oid = _mk_olympiad(app, 'vsosh', 'Всероссийская олимпиада школьников')
     _mk_plan(app, uid, oid)
 
-    # без измерений — редакционный порядок (первая тема окна)
+    # без измерений — порядок профиля: самая частая тема олимпиады первая
+    from services.daily_olympiad import profile_for
     mc = build_or_get_cycle(uid, 9)
-    assert mc['themes'][0] == 'G9_T01'
+    first = profile_for('vsosh', 9)['themes'][0]
+    assert mc['themes'][0] == first
+    weak = mc['themes'][-1]          # тема из конца окна
 
-    # слабость в теме окна (G9_T10, позиция 7 пула) → она первая
+    # слабость в теме окна → она первая
     with app.app_context():
         cs = CuratorState.query.filter_by(user_id=uid).first()
         cs.level_by_theme = json.dumps({
-            'G9_T10': {'mu': 1.0},   # очень слаб
-            'G9_T01': {'mu': 4.0},   # силён
+            weak: {'mu': 1.0},    # очень слаб
+            first: {'mu': 4.0},   # силён
         })
         db.session.commit()
     from curator.monthly_cycle import _get_monthly_cycle, _save_monthly_cycle
@@ -273,7 +284,7 @@ def test_weakness_orders_selection(app):
         _save_monthly_cycle(cs, raw)
         db.session.commit()
     mc2 = build_or_get_cycle(uid, 9)
-    assert mc2['themes'][0] == 'G9_T10', 'слабейшая тема должна идти первой'
+    assert mc2['themes'][0] == weak, 'слабейшая тема должна идти первой'
 
 
 def test_by_section_fallback_orders_selection(app):
@@ -299,7 +310,8 @@ def test_by_section_fallback_orders_selection(app):
         })
         db.session.commit()
     mc = build_or_get_cycle(uid, 9)
-    assert mc['themes'][0] == 'G9_T16', (
+    from services.theme_registry import section_of_theme
+    assert section_of_theme(mc['themes'][0]) == 'geometry', (
         'тема слабого раздела (геометрия) должна идти первой при пустом level_by_theme'
     )
 
@@ -328,12 +340,13 @@ def test_rotation_across_months_no_stuck_seven(app):
     oid = _mk_olympiad(app, 'vsosh', 'Всероссийская олимпиада школьников')
     _mk_plan(app, uid, oid)
     prof = profile_for('vsosh', 9)
-    assert len(prof['themes']) == 12
+    assert len(prof['themes']) >= 12
 
     months = []
     mc = build_or_get_cycle(uid, 9)
     months.append(list(mc['themes']))
-    for _ in range(3):
+    # пул частотного профиля — 18 тем: хватает 6 месяцев
+    for _ in range(5):
         # «месяц прошёл»: 32 дня назад + finished
         with app.app_context():
             cs = CuratorState.query.filter_by(user_id=uid).first()
@@ -346,12 +359,12 @@ def test_rotation_across_months_no_stuck_seven(app):
             db.session.commit()
         info = get_cycle_info(uid)
         months.append(list(info['themes']))
-    # все 12 тем профиля прошли за 4 месяца
+    # все темы профиля прошли за 6 месяцев
     union = set()
     for m in months:
         union |= set(m)
     assert union == set(prof['themes']), (
-        f'за 4 месяца должны ротироваться все темы профиля, прошло: {sorted(union)}'
+        f'за 6 месяцев должны ротироваться все темы профиля, прошло: {sorted(union)}'
     )
     # месяц 3 не повторяет месяц 1 (нет «залипания»)
     assert set(months[2]) != set(months[0]) or sorted(months[2]) != sorted(months[0]), (

@@ -82,6 +82,56 @@ SYSTEM_PROMPT = """Ты — куратор платформы FORMYLA, эксп�
 - Если ученик пишет о проблеме с сайтом — попроси обратиться в Поддержку (отвечает всегда).
 - В конце — конкретный следующий шаг на сегодня, а не вопрос в пустоту."""
 
+# CURATOR_ADMIN_V1 (06.11.2026, владелец: «пока только для админов»):
+# справка о продукте и действия куратора включены только админам
+# (User.is_admin). Остальные получают прежний промпт без изменений.
+ADMIN_PROMPT_EXTRA = """Дополнительные правила:
+- Как устроена платформа (тарифы, задачи дня, уровни, серии, пробники, роли) — отвечай СТРОГО по блоку «Справка FORMYLA». Чего там нет — не выдумывай.
+- Если ученик пишет о проблеме с сайтом, об оплате, или просит то, что ты сделать не можешь, — скажи: «Нажми справа от меня на иконку поддержки 💬 и напиши свою просьбу или проблему».
+
+Что ты умеешь делать сам (только когда ученик ЯВНО просит или соглашается на твоё предложение):
+1. Поднять уровень задач дня на 1 (шкала 1–4)  → [[ACTION {"type": "raise_level"}]]
+2. Снизить уровень задач дня на 1               → [[ACTION {"type": "lower_level"}]]
+3. Поменять дни занятий (0=Пн … 6=Вс; ровно столько дней, сколько даёт тариф: «Работяга» — 6, «Спокойный» — 3) → [[ACTION {"type": "set_days", "days": [0, 2, 4]}]]
+4. Перестроить задачи дня под олимпиаду (slug — из списка в «Данных ученика»; темы пойдут по популярности на этой олимпиаде) → [[ACTION {"type": "set_olympiad", "slug": "rosatom"}]]
+Правила действий: служебную строку пиши ОТДЕЛЬНОЙ последней строкой ответа, без пояснений вокруг неё — ученик её не увидит, система выполнит действие и сама допишет итог. Не пиши «готово» сам — итог допишет система. Если просьба неясная (например, не названы дни) — сначала уточни, без действия. Количество задач в день, тариф, оплату, пробники и всё остальное ты менять не можешь — отправляй в поддержку (иконка справа от тебя)."""
+
+
+def _guide_text() -> str:
+    """Справка о продукте (data/curator_guide.md) — читается один раз."""
+    global _GUIDE_CACHE
+    if _GUIDE_CACHE is None:
+        try:
+            import os
+            path = os.path.join(os.path.dirname(__file__), '..', 'data', 'curator_guide.md')
+            with open(path, encoding='utf-8') as f:
+                _GUIDE_CACHE = f.read().strip()
+        except Exception as e:  # noqa: BLE001
+            logger.warning('[curator_chat] guide not loaded: %s', e)
+            _GUIDE_CACHE = ''
+    return _GUIDE_CACHE
+
+
+_GUIDE_CACHE: Optional[str] = None
+
+
+def _system_messages(ctx: Dict[str, Any], extra: str = '') -> List[Dict[str, str]]:
+    """Системные сообщения: правила + данные ученика.
+
+    Админам (ctx['admin_features']) — ещё справка FORMYLA и действия.
+    """
+    msgs = [{'role': 'system', 'content': SYSTEM_PROMPT}]
+    if ctx.get('admin_features'):
+        msgs.append({'role': 'system', 'content': ADMIN_PROMPT_EXTRA})
+        guide = _guide_text()
+        if guide:
+            msgs.append({'role': 'system', 'content': 'Справка FORMYLA:\n\n' + guide})
+    block = _context_block(ctx)
+    if extra:
+        block += '\n' + extra
+    msgs.append({'role': 'system', 'content': block})
+    return msgs
+
 
 # ── История ─────────────────────────────────────────────────────────────────
 
@@ -317,6 +367,17 @@ def build_context(user_id: int, since: Optional[datetime] = None,
     ctx['visits_data_ok'] = visits_ok
     ctx['inactive'] = bool(visits_ok and visits <= 2)
 
+    # Уровень, дни занятий, олимпиада и её частые темы — то, что куратор
+    # может поменять сам (services/curator_actions.py)
+    # — только админам (CURATOR_ADMIN_V1)
+    try:
+        from services.curator_actions import is_admin_id, state_lines
+        ctx['admin_features'] = is_admin_id(user_id)
+        if ctx['admin_features']:
+            ctx['state_lines'] = state_lines(user_id, grade)
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[curator_chat] state lines failed: %r', e)
+
     return ctx
 
 
@@ -369,6 +430,7 @@ def _context_block(ctx: Dict[str, Any]) -> str:
         lines.append(f"- сейчас идёт неделя {ctx['week_number']} подписки")
     if ctx.get('inactive'):
         lines.append("- ВАЖНО: ученик был малоактивен (заходил 1–2 раза) — не обвиняй, мягко предложи маленький первый шаг.")
+    lines.extend(ctx.get('state_lines') or [])
     return '\n'.join(lines)
 
 
@@ -401,6 +463,16 @@ def _call_deepseek(messages: List[Dict[str, str]], thinking: bool = False,
     return asyncio.run(asyncio.wait_for(_run(), timeout=GENERATION_TIMEOUT_SEC))
 
 
+def _strip_actions(text: Optional[str]) -> str:
+    """Системные сообщения (приветствие, оценка недели) ничего не меняют:
+    служебные строки действий только вырезаем."""
+    try:
+        from services.curator_actions import extract_actions
+        return extract_actions(text or '')[0]
+    except Exception:  # noqa: BLE001
+        return (text or '').strip()
+
+
 def generate_reply(user_id: int, user_text: str,
                    ctx: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Ответ куратора на сообщение ученика. Никогда не бросает.
@@ -414,8 +486,7 @@ def generate_reply(user_id: int, user_text: str,
         # чат должен работать даже если история недоступна — продолжаем без неё
         logger.warning('[curator_chat] history unavailable: %s', e)
         history = []
-    messages: List[Dict[str, str]] = [{'role': 'system', 'content': SYSTEM_PROMPT}]
-    messages.append({'role': 'system', 'content': _context_block(ctx)})
+    messages: List[Dict[str, str]] = _system_messages(ctx)
     for m in history:
         if m['role'] == 'user':
             messages.append({'role': 'user', 'content': m['content']})
@@ -427,7 +498,18 @@ def generate_reply(user_id: int, user_text: str,
         text = _call_deepseek(messages)
         text = (text or '').strip()
         if text:
-            return {'content': text, 'fallback': False}
+            # действия куратора: [[ACTION {...}]] → выполнить, вырезать, дописать итог
+            results = []
+            if ctx.get('admin_features'):
+                try:
+                    from services.curator_actions import apply_reply
+                    text, results = apply_reply(user_id, text)
+                except Exception as e:  # noqa: BLE001
+                    logger.warning('[curator_chat] actions failed: %r', e)
+            else:
+                text = _strip_actions(text)
+            if text:
+                return {'content': text, 'fallback': False, 'actions': results}
     except Exception as e:  # noqa: BLE001
         logger.warning('[curator_chat] generation failed: %s', e)
     return {'content': FALLBACK_MESSAGE, 'fallback': True}
@@ -524,15 +606,9 @@ def send_welcome_message(user_id: int) -> bool:
 
         text = None
         try:
-            sys_block = _context_block(ctx)
-            if plan_line:
-                sys_block += '\n' + plan_line
-            messages: List[Dict[str, str]] = [
-                {'role': 'system', 'content': SYSTEM_PROMPT},
-                {'role': 'system', 'content': sys_block},
-                {'role': 'user', 'content': WELCOME_PROMPT_INSTRUCTION},
-            ]
-            text = _call_deepseek(messages).strip()
+            messages: List[Dict[str, str]] = _system_messages(ctx, plan_line)
+            messages.append({'role': 'user', 'content': WELCOME_PROMPT_INSTRUCTION})
+            text = _strip_actions(_call_deepseek(messages))
         except Exception as e:  # noqa: BLE001
             logger.warning('[curator_chat] welcome generation failed: %s', e)
 
@@ -660,12 +736,9 @@ def _send_weekly_message_locked(user_id: int) -> bool:
 
         text = None
         try:
-            messages: List[Dict[str, str]] = [
-                {'role': 'system', 'content': SYSTEM_PROMPT},
-                {'role': 'system', 'content': _context_block(ctx)},
-                {'role': 'user', 'content': WEEKLY_PROMPT_INSTRUCTION},
-            ]
-            text = _call_deepseek(messages, thinking=True, max_tokens=3000).strip()
+            messages: List[Dict[str, str]] = _system_messages(ctx)
+            messages.append({'role': 'user', 'content': WEEKLY_PROMPT_INSTRUCTION})
+            text = _strip_actions(_call_deepseek(messages, thinking=True, max_tokens=3000))
         except Exception as e:  # noqa: BLE001
             logger.warning('[curator_chat] weekly generation failed: %s', e)
 
