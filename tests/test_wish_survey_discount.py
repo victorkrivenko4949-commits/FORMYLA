@@ -9,17 +9,77 @@
 import pytest
 from sqlalchemy import text
 
-from test_premium_gift import _login, _make_user, gift_app  # noqa: F401 (фикстура)
+from test_premium_gift import _login, _make_user
 
 LONG = 'Хочу подготовиться к региональному этапу по математике и понять геометрию'
 SHORT = 'Хочу решать задачи'
 
 
+# Таблицы, которые на проде создают yookassa_pay/_ensure_tables, subscription и
+# auto_renew. DDL одинаково работает на SQLite и PostgreSQL (прод), поэтому
+# весь файл можно прогнать на Postgres: BILLING_TEST_PG_URL=postgresql://...
+_RAW_TABLES = (
+    """CREATE TABLE IF NOT EXISTS yookassa_config (
+        config_key VARCHAR(64) PRIMARY KEY, config_value TEXT,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""",
+    """CREATE TABLE IF NOT EXISTS yookassa_payments (
+        id {pk}, order_id VARCHAR(64) UNIQUE NOT NULL, payment_id VARCHAR(128),
+        user_id INTEGER NOT NULL, item_code VARCHAR(64) NOT NULL DEFAULT 'diamond_badge',
+        amount_rub NUMERIC(10, 2) NOT NULL DEFAULT 10.00,
+        status VARCHAR(32) NOT NULL DEFAULT 'pending', confirmation_url TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, paid_at TIMESTAMP,
+        beneficiary_user_id INTEGER)""",
+    """CREATE TABLE IF NOT EXISTS subscriptions (
+        id {pk}, user_id INTEGER NOT NULL, plan TEXT NOT NULL DEFAULT 'free',
+        status TEXT NOT NULL DEFAULT 'active', started_at TIMESTAMP, expires_at TIMESTAMP,
+        payment_method TEXT, payment_id TEXT, amount_rub INTEGER, is_trial INTEGER DEFAULT 0,
+        is_beta_access INTEGER DEFAULT 1, created_at TIMESTAMP)""",
+    """CREATE TABLE IF NOT EXISTS premium_auto_renewals (
+        id {pk}, user_id INTEGER NOT NULL UNIQUE, plan VARCHAR(64) NOT NULL,
+        price_rub NUMERIC(10, 2) NOT NULL, payment_method_id VARCHAR(128),
+        method_label VARCHAR(64), enabled INTEGER NOT NULL DEFAULT 1,
+        next_charge_at TIMESTAMP, fail_count INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""",
+    """CREATE TABLE IF NOT EXISTS premium_renewal_attempts (
+        id {pk}, renewal_id INTEGER NOT NULL, period_start TIMESTAMP NOT NULL,
+        period_end TIMESTAMP NOT NULL, order_id VARCHAR(64) UNIQUE NOT NULL,
+        payment_id VARCHAR(128), status VARCHAR(32) NOT NULL DEFAULT 'pending', error TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE (renewal_id, period_start))""",
+)
+
+
 @pytest.fixture
-def wapp(gift_app):  # noqa: F811
+def wapp(app, monkeypatch):
+    monkeypatch.delenv('YOOKASSA_SHOP_ID', raising=False)
+    monkeypatch.delenv('YOOKASSA_SECRET_KEY', raising=False)
+    from models import db
+    from routes.premium_pay import install_premium_pay
     from routes.surveys import install_surveys
-    install_surveys(gift_app)
-    return gift_app
+    install_premium_pay(app)
+    install_surveys(app)
+    # base.html зовёт tg_trial_state() — на проде его даёт app.py, тут заглушка.
+    app.context_processor(lambda: {'tg_trial_state': lambda: {'state': 'hidden'}})
+    db.create_all()
+    pk = ('SERIAL PRIMARY KEY' if db.engine.dialect.name == 'postgresql'
+          else 'INTEGER PRIMARY KEY AUTOINCREMENT')
+    with db.engine.begin() as conn:
+        for ddl in _RAW_TABLES:
+            conn.execute(text(ddl.format(pk=pk)))
+    if pk.startswith('SERIAL'):
+        # Как на проде: колонка уже есть, иначе yookassa_pay._ensure_tables
+        # ждёт блокировку users, пока тест держит транзакцию.
+        with db.engine.begin() as conn:
+            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS '
+                              'has_diamond BOOLEAN NOT NULL DEFAULT FALSE'))
+    yield app
+    # Таблицы опроса ссылаются на users — убираем их до общего drop_all().
+    db.session.rollback()
+    db.session.remove()
+    with db.engine.begin() as conn:
+        for name in ('wish_discount_orders', 'wish_survey_answers', 'readiness_survey_answers'):
+            conn.execute(text(f'DROP TABLE IF EXISTS {name}'))
 
 
 def _csrf(client):
