@@ -517,7 +517,9 @@
             <span class="pilot-badge">🔥 Premium-пилот</span>
             <span class="pilot-week">Неделя {{ pilot_session.week }}</span>
             <span class="pilot-divider" aria-hidden="true"></span>
-            {% if pilot_session.session_type == 'rest' %}
+            {% if probnik_today %}
+            <span class="pilot-session">сегодня: <strong><a href="/daily_tasks" style="color:inherit;">пробник по вашей просьбе</a></strong></span>
+            {% elif pilot_session.session_type == 'rest' %}
             <span class="pilot-session pilot-rest">сегодня выходной — отдыхай</span>
             {% elif pilot_session.session_type == 'diagnostic' %}
             <span class="pilot-session"><strong>{{ pilot_session.session_label }}</strong></span>
@@ -526,6 +528,16 @@
             {% endif %}
             <a href="/curator" class="pilot-curator">💬 Куратор</a>
           </div>
+        </div>
+        {% endif %}
+        {# PROBNIK_ASSIGN_V1: уведомление — куратор разобрал пробник (гаснет после открытия) #}
+        {% if probnik_review_unseen and request.path != '/probnik-assign/' ~ probnik_review_unseen.id %}
+        <div style="max-width:1100px;margin:12px auto 0;padding:0 16px;">
+          <a href="/probnik-assign/{{ probnik_review_unseen.id }}" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;border:1px solid rgba(79,108,255,.55);background:linear-gradient(135deg,rgba(79,108,255,.18),rgba(94,234,212,.10));color:inherit;text-decoration:none;">
+            <span style="font-size:22px;">💬</span>
+            <span style="flex:1;line-height:1.4;"><b>Куратор разобрал твой пробник</b> — {{ probnik_review_unseen.total_score }} из {{ probnik_review_unseen.max_score }} баллов. Открой разбор и план обучения.</span>
+            <span style="font-weight:800;">→</span>
+          </a>
         </div>
         {% endif %}
         {% block content %}{% endblock %}

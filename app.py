@@ -370,6 +370,10 @@ try:
     import models_olympiad             # noqa: F401  — Probnik, OlympiadTask, etc. (re-imported by models.py too)
     import models_tg_trial             # noqa: F401  — TgTrialGrant (неделя за подписку на ТГ)
     try:
+        import models_probnik_assign   # noqa: F401  — назначенный пробник (PROBNIK_ASSIGN_V1)
+    except Exception as _e_pa:
+        print(f"[PROBNIK_ASSIGN] models import failed: {_e_pa}")
+    try:
         import models_grade            # noqa: F401  — grade 5-6 models
     except ImportError:
         pass
@@ -403,6 +407,16 @@ try:
             print("[PILOT] premium launch notice scheduled (3 Nov 19:00 MSK)")
 except Exception as _e_pilot:
     print(f"[PILOT] ensure_pilot_subscriptions skipped: {_e_pilot}")
+
+# PROBNIK_ASSIGN_V1: разовые назначения пробников из services/probnik_assign.SEED
+# (идемпотентно, прошедшие даты пропускаются). Никогда не роняет старт.
+try:
+    from services.probnik_assign import ensure_seed as _pa_seed
+    with app.app_context():
+        for _line in _pa_seed():
+            print(f"[PROBNIK_ASSIGN] seed: {_line}")
+except Exception as _e_pa_seed:
+    print(f"[PROBNIK_ASSIGN] seed skipped: {_e_pa_seed}")
 
 # 2026-10-23: норма задач дня — 10 для всех. Пересоздаём сегодняшние
 # «урезанные» сеты (без ответов): при следующем заходе ученик получит
@@ -2968,6 +2982,19 @@ def curator_pilot_week1_sweep_job():
                 app.logger.info('[PILOT] curator week1 sweep: sent %d', sent)
         except Exception as e:
             app.logger.warning('[PILOT] curator week1 sweep failed: %s', e)
+
+
+@scheduler.task('interval', id='probnik_assign_sweep', minutes=5)
+def probnik_assign_sweep_job():
+    """PROBNIK_ASSIGN_V1: автосдача по таймеру и перезапуск зависших проверок."""
+    with app.app_context():
+        try:
+            from services.probnik_assign import sweep
+            n = sweep(app=app)
+            if n:
+                app.logger.info('[PROBNIK_ASSIGN] sweep: changed %d', n)
+        except Exception as e:
+            app.logger.warning('[PROBNIK_ASSIGN] sweep failed: %s', e)
 
 
 @scheduler.task('cron', id='daily_midnight_assign', hour=0, minute=5)
@@ -13512,6 +13539,22 @@ def _inject_subscription_flags():
     return {'is_premium': False, 'is_pilot': False, 'has_premium': False,
             'open_sales': _open_sales, 'pilot_session': None,
             'is_free_user': False}
+
+
+@app.context_processor
+def _inject_probnik_assign():
+    """PROBNIK_ASSIGN_V1: пробник на сегодня (плашка пилота) и неоткрытый
+    разбор куратора (баннер-уведомление на всех страницах)."""
+    out = {'probnik_today': None, 'probnik_review_unseen': None}
+    try:
+        if current_user.is_authenticated:
+            from services import probnik_assign as _pa_svc
+            from daily_tasks.services import today_in_user_tz
+            out['probnik_today'] = _pa_svc.for_date(current_user.id, today_in_user_tz())
+            out['probnik_review_unseen'] = _pa_svc.unseen_review(current_user.id)
+    except Exception:
+        pass
+    return out
 
 
 @app.context_processor

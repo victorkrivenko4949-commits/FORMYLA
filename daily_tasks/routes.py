@@ -655,6 +655,49 @@ def get_daily_tasks():
     if not real_theme_title:
         real_theme_title = _theme_for_day(today, None)
 
+    # ── PROBNIK_ASSIGN_V1 (07.11.2026, владелец): назначенный на сегодня
+    # пробник (services/probnik_assign) приоритетнее всего — занятия,
+    # выходного по расписанию, среза: вместо «Сегодня выходной» ученик
+    # видит карточку пробника со «Старт» и «Сменить пробник».
+    try:
+        from services import probnik_assign as _pa_svc
+        _pa = _pa_svc.for_date(user_id, today)
+        if _pa is not None:
+            _pa_svc.refresh(_pa)
+            _pa_data = {
+                "status": "probnik_assignment",
+                "daily_set_id": None,
+                "target_date": today.isoformat(),
+                "message": None,
+                "class_level": _pa.grade,
+                "summary": None,
+                "generated_at": None,
+                "total_cost_usd": None,
+                "progress": {"completed": 0, "total": 0},
+                "items": [],
+                "assignment": {
+                    "id": _pa.id,
+                    "title": _pa.title,
+                    "status": _pa.status,
+                    "intro": _pa_svc.intro_for(_pa),
+                    "hours": _pa_svc.hours_text(_pa.duration_minutes),
+                    "task_count": len(_pa_svc.tasks_of(_pa)),
+                    "total_score": _pa.total_score,
+                    "max_score": _pa.max_score,
+                    "url": f"/probnik-assign/{_pa.id}",
+                    "can_swap": _pa.status == "assigned" and len(
+                        _pa_svc.candidate_variants(_pa.olympiad_slug, _pa.grade, _pa.stage)) > 1,
+                },
+            }
+            return render_template(
+                "daily_tasks/daily_tasks_dashboard.html",
+                data={**_pa_data, "session": _session_ctx,
+                      "theme_today": _theme_for_day(today, None),
+                      "daily_context": _daily_ctx},
+            )
+    except Exception:
+        logger.exception("daily_tasks: probnik assignment failed")
+
     # ── PROBNIK_DAILY_V1 (02.11.2026, владелец): занятие-пробник выдаёт
     # задачи НАЗНАЧЕННОГО варианта прямо в задачах дня — из каталога
     # олимпиад, с условием, ответом и решением; сверху в сводке — что за

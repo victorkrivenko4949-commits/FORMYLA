@@ -323,6 +323,12 @@ def build_context(user_id: int, since: Optional[datetime] = None,
 def _context_block(ctx: Dict[str, Any]) -> str:
     """Собрать текстовый блок «Данные ученика» для промпта."""
     lines = ['Данные ученика:']
+    # PROBNIK_ASSIGN_V1: результаты назначенных пробников и отправленный план
+    try:
+        from services.probnik_assign import context_lines as _pa_lines
+        lines.extend(_pa_lines(ctx.get('user_id')) if ctx.get('user_id') else [])
+    except Exception:  # noqa: BLE001
+        pass
     if ctx.get('grade'):
         lines.append(f"- класс: {ctx['grade']}")
     if ctx.get('plan_display'):
