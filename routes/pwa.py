@@ -19,10 +19,12 @@ routes/pwa.py — PWA_INSTALL_V3 (11.10.2026).
 Регистрируется автоматически из routes/__init__.py (как admin_base).
 Отключить: переменная окружения PWA_AUTOREG=0.
 
-ОГРАНИЧЕНИЕ ПО АККАУНТАМ (этап тестирования): manifest и кнопка «Скачать
-приложение» вставляются только пользователям из PWA_ALLOWED_USERS
-(по умолчанию «lavrik,victor»; сравнение по nickname ИЛИ username, без учёта
-регистра). Чтобы открыть всем — PWA_ALLOWED_USERS=* в окружении.
+ДОСТУП (06.11.2026 — открыто всем, только Android):
+  * PWA_ALLOWED_USERS — кому показывать (по умолчанию «*» = всем; можно список
+    ников через запятую, сравнение по nickname ИЛИ username без учёта регистра).
+  * PWA_PLATFORMS — на каких устройствах (по умолчанию «android»; через запятую
+    из android, ios, desktop, other; «*» — везде). Устройство — по User-Agent.
+    Тестовые аккаунты (PWA_STATS_EXCLUDE_USERS) видят кнопку на любом устройстве.
 PWA_STATS_EXCLUDE_USERS — доп. список аккаунтов, чьи установки считать тестовыми
 даже после открытия всем (по умолчанию «lavrik,victor»).
 
@@ -45,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 pwa_bp = Blueprint("pwa", __name__)
 
-PWA_VERSION = "5"
+PWA_VERSION = "6"
 _MANIFEST_TAG = '<link rel="manifest" href="/site.webmanifest">'
 _SCRIPT_TAG = '<script defer src="/static/js/pwa_install.js?v=%s"></script>' % PWA_VERSION
 _HEAD_RE = re.compile(r"<head(\s[^>]*)?>", re.IGNORECASE)
@@ -56,7 +58,9 @@ def _env_set(name: str, default: str) -> set[str]:
 
 
 # Кому показывать PWA на этапе теста. "*" — всем.
-_ALLOWED_USERS = _env_set("PWA_ALLOWED_USERS", "lavrik,victor")
+_ALLOWED_USERS = _env_set("PWA_ALLOWED_USERS", "*")
+# На каких устройствах показывать кнопку. "*" — везде.
+_PLATFORMS = _env_set("PWA_PLATFORMS", "android")
 # Чьи установки всегда считать тестовыми (не входят в «реальный» счётчик).
 _TEST_USERS = _env_set("PWA_STATS_EXCLUDE_USERS", "lavrik,victor")
 
@@ -80,11 +84,16 @@ def _current_user_names() -> tuple[object | None, set[str]]:
 
 
 def _user_allowed() -> bool:
-    """True, если текущий пользователь входит в PWA_ALLOWED_USERS (или там «*»)."""
-    if not _ALLOWED_USERS or "*" in _ALLOWED_USERS:
-        return True
+    """True, если показываем приложение: подходит аккаунт (PWA_ALLOWED_USERS)
+    и устройство (PWA_PLATFORMS). Тестовым аккаунтам — на любом устройстве."""
     _, names = _current_user_names()
-    return bool(names & _ALLOWED_USERS)
+    if names & _TEST_USERS:
+        return True
+    if _ALLOWED_USERS and "*" not in _ALLOWED_USERS and not (names & _ALLOWED_USERS):
+        return False
+    if not _PLATFORMS or "*" in _PLATFORMS:
+        return True
+    return _platform_from_ua(request.headers.get("User-Agent") or "") in _PLATFORMS
 
 
 def _static_dir() -> str:
@@ -317,8 +326,8 @@ def install_pwa(app) -> None:
             _abs.TABLE_META["pwa_installs"] = ("Активность", "Установки приложения (PWA)")
         except Exception:  # noqa: BLE001
             pass
-        msg = "[BP] pwa_bp registered (/sw.js, /site.webmanifest, /offline, /api/pwa/installed); allowed users: %s" % \
-              ", ".join(sorted(_ALLOWED_USERS))
+        msg = "[BP] pwa_bp registered (/sw.js, /site.webmanifest, /offline, /api/pwa/installed); allowed users: %s; platforms: %s" % (
+              ", ".join(sorted(_ALLOWED_USERS)), ", ".join(sorted(_PLATFORMS)))
         logger.info(msg)
         print(msg)
     except Exception as e:  # noqa: BLE001

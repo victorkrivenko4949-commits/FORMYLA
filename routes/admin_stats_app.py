@@ -23,31 +23,35 @@ PLATFORMS = (
 )
 
 PLATFORM_NOTE = (
-    'Где работает установка. Android (Chrome, Яндекс Браузер, Samsung Internet) — кнопка '
-    '«Скачать приложение» ставит его в один клик, это основная платформа. Компьютер (Chrome, Edge) — '
-    'тоже в один клик. iPhone / iPad — только вручную: Safari → «Поделиться» → «На экран “Домой”» '
-    '(по кнопке показываем инструкцию); установку засчитываем при первом запуске с экрана «Домой». '
-    'Firefox и Safari на Mac приложение не ставят. Пуш-уведомления на iPhone приходят только в '
-    'установленное приложение (iOS 16.4+).'
+    'Приложение открыто всем, но только на Android: кнопка «📲 Скачать приложение для Android» '
+    'показывается на Android-телефонах (Chrome, Яндекс Браузер, Samsung Internet) и ставит его в один клик. '
+    'На iPhone и компьютере кнопки нет (PWA_PLATFORMS=android). Тестовые аккаунты видят её везде, поэтому '
+    'в «Последних установках» могут быть компьютер и iPhone — это тесты. Чтобы открыть другие устройства: '
+    'PWA_PLATFORMS=android,desktop,ios или PWA_PLATFORMS=*.'
 )
+
+PLATFORM_TITLES = {'android': 'Android', 'desktop': 'компьютер', 'ios': 'iPhone / iPad', 'other': 'другое'}
 
 
 def _access():
-    """(текст «кому доступно», открыто_всем)."""
+    """(текст «кому доступно», подсказка)."""
     try:
         from routes import pwa
-        allowed = pwa._ALLOWED_USERS
+        allowed, platforms = pwa._ALLOWED_USERS, getattr(pwa, '_PLATFORMS', {'*'})
     except Exception:  # noqa: BLE001
-        return 'неизвестно (routes/pwa.py не загружен)', False
-    if not allowed or '*' in allowed:
-        return 'Всем пользователям', True
-    return 'Только: ' + ', '.join(sorted(allowed)), False
+        return 'неизвестно (routes/pwa.py не загружен)', ''
+    who = 'Всем' if (not allowed or '*' in allowed) else 'Только: ' + ', '.join(sorted(allowed))
+    if not platforms or '*' in platforms:
+        where = 'на всех устройствах'
+    else:
+        where = 'только ' + ', '.join(PLATFORM_TITLES.get(x, x) for x in sorted(platforms))
+    hint = f"PWA_ALLOWED_USERS={','.join(sorted(allowed)) or '*'} · PWA_PLATFORMS={','.join(sorted(platforms)) or '*'}"
+    return f'{who}, {where}', hint
 
 
 def app_installs(d_from: date, d_to: date):
-    access_text, open_all = _access()
-    access_card = {'title': 'Кнопка «Скачать приложение»', 'value': access_text, 'small': True,
-                   'sub': 'PWA_ALLOWED_USERS=* — открыть всем' if not open_all else 'PWA_ALLOWED_USERS=*'}
+    access_text, hint = _access()
+    access_card = {'title': 'Кому видна кнопка', 'value': access_text, 'small': True, 'sub': hint}
     if not _has_table('pwa_installs'):
         return [
             {'type': 'cards', 'items': [{'title': 'Людей с приложением', 'value': 0, 'sub': 'установок ещё не было'},
