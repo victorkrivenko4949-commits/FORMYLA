@@ -44,14 +44,17 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
-_DATA_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    'data', 'olymp_catalog',
-)
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Источник пробников — очищенный каталог data/olymp_catalog_final
+# (сборка run_all.py). Фолбэк на data/olymp_catalog, если его нет.
+_DATA_DIR = os.path.join(_ROOT, 'data', 'olymp_catalog_final')
+if not os.path.isfile(os.path.join(_DATA_DIR, '_index.json')):
+    _DATA_DIR = os.path.join(_ROOT, 'data', 'olymp_catalog')
 
 # slug prep-плана → имя файла каталога (без .json), где оно отличается.
 _SLUG_ALIASES = {
@@ -589,8 +592,71 @@ def ensure_real_probnik(code: str, variant: Dict[str, Any], slug: str,
 
 # ─── Выбор следующего пробника ────────────────────────────────────────────
 
+_CODE_RE = re.compile(r'^(.*)[0-9a-z]{3}(-g\d+)$')
+
+
+def _code_key(code: str) -> str:
+    """Код без хеша состава (_set_tag): real-<slug>-<год>-<этап+тег>-g<класс>.
+
+    Переход на очищенный каталог поменял uid задач, а с ними хеш состава
+    у уже выданных кодов. Выданность сверяем по ключу без этого хеша,
+    чтобы ученики не получили повторно тот же (год, этап, класс).
+    Для параллельных комплектов одного этапа ключ общий — выданным
+    считается весь этап (консервативно: повторов нет)."""
+    m = _CODE_RE.match(code or '')
+    return (m.group(1) + m.group(2)) if m else (code or '')
+
+
+def _is_used(code: str, used_codes: set, used_keys: set) -> bool:
+    return code in used_codes or _code_key(code) in used_keys
+
+def stage_codes(slug: str, grade: Optional[int],
+                stage: Optional[str] = None) -> List[Tuple[str, Dict[str, Any]]]:
+    """variant_codes, отфильтрованные по этапу ('school', 'municipal', …).
+
+    stage=None — все этапы (прежнее поведение). Порядок выдачи сохраняется.
+    """
+    pairs = variant_codes(slug, grade)
+    if stage is None:
+        return pairs
+    return [(c, v) for c, v in pairs if _stage_key(v['round']) == stage]
+
+
+def has_unused(slug: str, grade: Optional[int], used_codes: set,
+               stage: Optional[str] = None) -> bool:
+    """Остался ли невыданный вариант (с учётом смены хеша состава)."""
+    used_keys = {_code_key(c) for c in used_codes}
+    return any(not _is_used(c, used_codes, used_keys)
+               for c, _ in stage_codes(slug, grade, stage))
+
+
+_CODE_STAGES = ('school', 'municipal', 'regional', 'final')
+
+
+def parse_code(code: str) -> Optional[Dict[str, Any]]:
+    """real-<slug>-<год>-<этап+теги>-g<класс> → {'slug','year','stage','grade'}.
+
+    stage — 'school'/'municipal'/'regional'/'final' для этапов ВсОШ-типа,
+    иначе None. Не реальный код → None.
+    """
+    if not code or not code.startswith('real-'):
+        return None
+    parts = code.split('-')
+    if len(parts) < 5 or not parts[-1].startswith('g'):
+        return None
+    for idx in range(2, len(parts) - 1):
+        cand = _as_int(parts[idx])
+        if cand is not None and len(parts[idx]) == 4 and _MIN_YEAR <= cand <= 2100:
+            part = parts[idx + 1] if idx + 1 < len(parts) - 1 else ''
+            stage = next((s for s in _CODE_STAGES if part.startswith(s)), None)
+            return {'slug': '-'.join(parts[1:idx]), 'year': cand,
+                    'stage': stage, 'grade': _as_int(parts[-1][1:])}
+    return None
+
+
 def next_real_probnik(slug: str, grade: Optional[int],
-                      used_codes: set) -> Optional[Dict[str, str]]:
+                      used_codes: set,
+                      stage: Optional[str] = None) -> Optional[Dict[str, str]]:
     """Следующий реальный вариант по порядку (свежий год → старый).
 
     Сначала ОДНОЗНАЧНО определяем следующий вариант (первый
@@ -601,11 +667,12 @@ def next_real_probnik(slug: str, grade: Optional[int],
     peek_next_probnik (контекст куратора). Если создание не удалось и
     пробника нет в БД — возвращаем None (занятие-пробник без кода).
     """
-    pairs = variant_codes(slug, grade)
+    pairs = stage_codes(slug, grade, stage)
     if not pairs:
         return None
+    used_keys = {_code_key(c) for c in used_codes}
     choice = next(((i, c, v) for i, (c, v) in enumerate(pairs, start=1)
-                  if c not in used_codes), None)
+                  if not _is_used(c, used_codes, used_keys)), None)
     if choice is None:  # все варианты уже выдавались — снова самый свежий
         choice = (1, pairs[0][0], pairs[0][1])
     idx, code, v = choice
@@ -624,17 +691,19 @@ def next_real_probnik(slug: str, grade: Optional[int],
 
 
 def peek_next_probnik(slug: str, grade: Optional[int],
-                      used_codes: set) -> Optional[Dict[str, str]]:
+                      used_codes: set,
+                      stage: Optional[str] = None) -> Optional[Dict[str, str]]:
     """Ближайший реальный вариант БЕЗ записи в БД (для контекста куратора).
 
     Порядок тот же, что и у next_real_probnik — куратор видит заранее,
     какой вариант олимпиады ждёт ученика на занятии-пробнике.
     """
-    for code, v in variant_codes(slug, grade):
-        if code in used_codes:
+    used_keys = {_code_key(c) for c in used_codes}
+    pairs = stage_codes(slug, grade, stage)
+    for code, v in pairs:
+        if _is_used(code, used_codes, used_keys):
             continue
         return {'code': code, 'title': _variant_title(slug, v)}
-    pairs = variant_codes(slug, grade)
     if pairs:
         code, v = pairs[0]
         return {'code': code, 'title': _variant_title(slug, v)}

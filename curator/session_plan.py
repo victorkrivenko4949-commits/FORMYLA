@@ -9,7 +9,11 @@ curator/session_plan.py — SESSION_PLAN_V1 (26.10.2026): план заняти�
 ПРОБНИК УБРАН ИЗ РОТАЦИИ (владелец, 03.11.2026): всем Premium-пользователям
 на 6-й позиции блока выдаётся практика, а не пробник. Пробник остаётся
 доступен вручную: через олимпиадный каталог и админ-кнопку
-force-probnik-day.
+force-probnik-day. Вернуть в ротацию — PROBNIK_IN_ROTATION=1.
+
+OLYMPIAD_LADDER_V1 (06.11.2026): какой пробник выдать, решает лестница
+под класс (services/olympiad_ladder.py): школьный этап ВсОШ → по
+результату муниципальный (или снова школьный) → перечневые от куратора.
 
 Для «Работяги» (6 занятий/нед) блок = 1 неделя: метод + 5 практик.
 Для «Спокойного» (3 занятия/нед) блок = 2 недели.
@@ -41,6 +45,27 @@ from models import db
 logger = logging.getLogger(__name__)
 
 BLOCK_SIZE = 6
+
+
+def probnik_in_rotation(user_id: Optional[int] = None) -> bool:
+    """OLYMPIAD_LADDER_V1: пробник на 6-й позиции блока.
+
+    Пробник убран из ротации 03.11.2026. Возвращён ПОКА ТОЛЬКО АДМИНАМ
+    (владелец, 06.11.2026) — обкатать лестницу пробников. Всем остальным —
+    флагом окружения PROBNIK_IN_ROTATION=1 (по умолчанию выключен).
+    """
+    import os
+    if os.environ.get('PROBNIK_IN_ROTATION', '').strip().lower() in (
+            '1', 'true', 'yes', 'on'):
+        return True
+    if user_id is None:
+        return False
+    try:
+        from models import User
+        u = db.session.get(User, int(user_id))
+        return bool(u and getattr(u, 'is_admin', False))
+    except Exception:  # noqa: BLE001
+        return False
 
 # Короткие имена дней недели для полосы «План на 7 дней»
 WEEKDAY_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
@@ -242,10 +267,21 @@ def _pick_probnik(user_id: int, olympiad_slug: Optional[str],
     None (занятие-пробник остаётся без кода и закрывается сдачей
     любого пробника через maybe_complete_probnik).
     """
-    if not olympiad_slug:
-        return None
     grade = _user_grade(user_id)
     if not grade:
+        return None
+    # OLYMPIAD_LADDER_V1 (06.11.2026): лестница под класс — школьный
+    # этап ВсОШ → (по результату) муниципальный → перечневые, которые
+    # предлагает куратор. Выбранная учеником олимпиада — первая среди
+    # перечневых. Лестница ничего не дала — прежний выбор по prep-плану.
+    try:
+        from services.olympiad_ladder import pick_next
+        p = pick_next(user_id, grade, used_codes, preferred_slug=olympiad_slug)
+        if p:
+            return p
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[session_plan] ladder pick failed: %r', e)
+    if not olympiad_slug:
         return None
     try:
         from services.real_probnik import next_real_probnik
@@ -387,6 +423,8 @@ def _lesson_type_for_position(user_id: int, completed: int,
     pos = (completed % BLOCK_SIZE) + 1
     if pos == 1:
         return 'method'
+    if pos == BLOCK_SIZE and probnik_in_rotation(user_id):
+        return 'probnik'
     return 'practice'
 
 
@@ -405,6 +443,7 @@ def _insert_lesson(user_id: int, seq: int, lesson_type: str,
         p = _pick_probnik(user_id, olympiad_slug, used)
         if p:
             probnik_code, probnik_title = p['code'], p['title']
+            olympiad_slug = p.get('slug') or olympiad_slug
     db.session.execute(text(
         f"INSERT INTO {TABLE_NAME} "
         f"(user_id, seq, lesson_type, status, theme, method_code, method_name, "
@@ -560,6 +599,8 @@ def _advance_stale(user_id: int) -> None:
             # пробник убран из ротации (владелец, 03.11.2026): 6-я позиция —
             # практика; _pick_probnik ниже остаётся для обратной совместимости
             lesson_type = 'method' if pos == 1 else 'practice'
+            if pos == BLOCK_SIZE and probnik_in_rotation(user_id):
+                lesson_type = 'probnik'
         # тема прошлого дня не восстанавливается — не подставляем сегодняшнюю;
         # метод/пробник — детерминированный выбор (как в _insert_lesson)
         theme = method_code = method_name = probnik_code = probnik_title = None
@@ -1077,12 +1118,19 @@ def upcoming_probnik_preview(user_id: int) -> Optional[Dict[str, str]]:
         if not _pilot(user_id):
             return None
         slug = _user_olympiad(user_id)
-        if not slug:
-            return None
         grade = _user_grade(user_id)
         if not grade:
             return None
         used = {l['probnik_code'] for l in _lessons(user_id) if l['probnik_code']}
+        try:
+            from services.olympiad_ladder import pick_next
+            p = pick_next(user_id, grade, used, preferred_slug=slug, create=False)
+            if p:
+                return p
+        except Exception as e:  # noqa: BLE001
+            logger.warning('[session_plan] ladder preview failed: %r', e)
+        if not slug:
+            return None
         from services.real_probnik import peek_next_probnik
         return peek_next_probnik(slug, grade, used)
     except Exception as e:  # noqa: BLE001

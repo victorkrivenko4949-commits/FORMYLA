@@ -350,7 +350,7 @@ def _olympiad_cycle_themes(user_id: int, grade: int, covered: set, mc: Optional[
         uo = user_olympiad(user_id)
         if not uo:
             return None
-        prof = profile_for(uo['slug'], grade)
+        prof = profile_for(uo['slug'], grade, user_id=user_id)
         if not prof or not prof['themes']:
             return None
         pool = list(prof['themes'])
@@ -378,8 +378,12 @@ def _olympiad_cycle_themes(user_id: int, grade: int, covered: set, mc: Optional[
             offset = int((mc or {}).get('olympiad_offset') or 0)
         except (TypeError, ValueError):
             offset = 0
-        offset %= len(pool)
-        rotated = pool[offset:] + pool[:offset]
+        # OLYMPIAD_FREQ_V1: самые частые темы олимпиады (pinned) идут в
+        # КАЖДЫЙ месяц, по кругу ротируется только остальной пул
+        pinned = [t for t in (prof.get('pinned') or []) if t in pool]
+        rest = [t for t in pool if t not in pinned] or list(pool)
+        offset %= len(rest)
+        rotated = pinned + rest[offset:] + rest[:offset]
 
         # ── слабость: тема → свой mu → mu раздела → редакция ──────
         measured = _measured_themes_for_user(user_id)
@@ -417,19 +421,36 @@ def _olympiad_cycle_themes(user_id: int, grade: int, covered: set, mc: Optional[
         # позиционное окно с соблюдением лимита секций (порядок — ротация)
         window: List[str] = []
         counts: Dict[str, int] = {}
-        for t in rotated:
+        first_skipped: Optional[int] = None   # позиция в ротации rest
+        last_taken = -1
+        n_pinned = len(pinned)
+        for pos, t in enumerate(rotated):
             if len(window) >= 7:
                 break
             sec = (section_of_theme(t) if section_of_theme else '') or '?'
             if counts.get(sec, 0) >= MAX_PER_SECTION:
+                if pos >= n_pinned and first_skipped is None:
+                    first_skipped = pos - n_pinned
                 continue
             window.append(t)
             counts[sec] = counts.get(sec, 0) + 1
+            if pos >= n_pinned:
+                last_taken = pos - n_pinned
         if not window:
             return None
         # слабость упорядочивает темы ВНУТРИ месяца (день 1 — слабейшая)
         selected = sorted(window, key=_key)
-        new_offset = (offset + len(window)) % len(pool)
+        # Следующий месяц начинается с первой темы, пропущенной из-за
+        # лимита раздела (иначе она терялась бы при сдвиге), а если таких
+        # нет — сразу после последней взятой.
+        # (пока только для частотных профилей админов — у остальных прежний сдвиг)
+        if prof.get('source') != 'catalog_frequency':
+            step = len(window)
+        elif first_skipped is not None and first_skipped > 0:
+            step = first_skipped
+        else:
+            step = last_taken + 1
+        new_offset = (offset + max(step, 1)) % len(rest)
         mark = {
             'olympiad_slug': prof['slug'],
             'olympiad_profile_version': prof['version'],
@@ -480,7 +501,7 @@ def apply_olympiad_cycle(user_id: int) -> Dict[str, Any]:
         mc = _get_monthly_cycle(cs)
 
         if uo:
-            prof = profile_for(uo['slug'], grade)
+            prof = profile_for(uo['slug'], grade, user_id=user_id)
         else:
             prof = None
 

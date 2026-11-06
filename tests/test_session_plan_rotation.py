@@ -27,6 +27,9 @@ from curator import session_plan
 def pilot_user(app, monkeypatch):
     """Пилотный пользователь: гейт is_pilot_user подменяем на True."""
     monkeypatch.setattr(pilot_mod, 'is_pilot_user', lambda u=None, **k: True)
+    # обычный ученик, не админ: у админов пробник в ротации (06.11.2026),
+    # а id=1 в тестовой БД — админ по правилу User.is_admin
+    monkeypatch.setattr(User, 'is_admin', property(lambda self: False))
     u = User(email='rot@test.ru', nickname='rot')
     db.session.add(u)
     db.session.commit()
@@ -193,7 +196,13 @@ def test_pick_probnik_real_catalog_only_no_db_fallback(pilot_user, app):
     assert picked['code'] not in ('full_p', 'empty_p'), (
         'выбрана заглушка из БД — подмены запрещены (REAL_PROBNIK_V1)')
 
-    # а олимпиада без реальных вариантов даёт None — без подмен заглушками
+    # OLYMPIAD_LADDER_V1: олимпиада без вариантов не ломает выбор —
+    # лестница класса даёт реальный вариант (школьный этап ВсОШ)
+    other = session_plan._pick_probnik(uid, 'itmo', set())
+    assert other is not None and other['code'].startswith('real-vsosh-')
+    # класс без вариантов в каталоге — None, без подмен заглушками
+    cs.grade = 3
+    db.session.commit()
     assert session_plan._pick_probnik(uid, 'itmo', set()) is None
 
 
