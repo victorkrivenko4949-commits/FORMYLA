@@ -19,7 +19,8 @@
  * Статистика: факт установки — один раз на POST /api/pwa/installed.
  * Обновления: проверка новой версии service worker при открытии и возврате на вкладку.
  * Внутри установленного приложения (standalone): кнопок нет, показываем заставку.
- * Подключается автоматически (routes/pwa.py) только разрешённым пользователям (PWA_ALLOWED_USERS).
+ * Подключается автоматически (routes/pwa.py): всем на Android (PWA_PLATFORMS), тестовым аккаунтам — везде.
+ * V6 (06.11.2026): на Android кнопка подписана «Скачать приложение для Android».
  */
 (function () {
   'use strict';
@@ -239,8 +240,9 @@
   var buttons = [];
   var labels = [];
 
+  var INSTALL_TEXT = platform() === 'android' ? 'Скачать приложение для Android' : 'Скачать приложение';
   var LABELS = {
-    install:    '<span>📲</span><span>Скачать приложение</span>',
+    install:    '<span>📲</span><span>' + INSTALL_TEXT + '</span>',
     installing: '<span class="pwa-spin"></span><span>Устанавливаем…</span>',
     installed:  '<span>✅</span><span>Открыть приложение</span>',
     done:       '<span>✅</span><span>Приложение установлено</span>'

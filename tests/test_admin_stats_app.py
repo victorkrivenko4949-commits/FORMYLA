@@ -132,7 +132,7 @@ def test_app_section_without_table(app):
     assert r.status_code == 200
     html = r.get_data(as_text=True)
     assert 'Людей с приложением' in html
-    assert 'Только: lavrik, victor' in html or 'Всем пользователям' in html
+    assert 'Кому видна кнопка' in html and 'Всем, только Android' in html
     r = c.get('/admin/stats/overview?p=7')
     assert r.status_code == 200 and 'С приложением' in r.get_data(as_text=True)
 
