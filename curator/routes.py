@@ -1258,6 +1258,40 @@ def curator_force_probnik_day():
         return jsonify({'error': str(e)}), 500
 
 
+@curator_bp.route("/admin/olympiad-ladder", methods=["GET"])
+@login_required
+def curator_olympiad_ladder():
+    """ADMIN: ступень лестницы пробников ученика (OLYMPIAD_LADDER_V1).
+
+    ?user_id= (по умолчанию сам админ). Показывает ступени класса,
+    сданные пробники с результатами, текущую ступень, предложение
+    куратора по перечневым и какой пробник будет следующим (без записи).
+    """
+    if not current_user.is_admin:
+        return jsonify({'error': 'forbidden'}), 403
+    try:
+        user_id = int(request.args.get('user_id') or current_user.id)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'bad user_id'}), 400
+    try:
+        from curator.session_plan import (
+            _lessons, _user_grade, _user_olympiad, probnik_in_rotation,
+        )
+        from services.olympiad_ladder import ladder_state, pick_next
+        grade = _user_grade(user_id)
+        slug = _user_olympiad(user_id)
+        used = {l['probnik_code'] for l in _lessons(user_id) if l.get('probnik_code')}
+        st = ladder_state(user_id, grade, used, preferred_slug=slug)
+        nxt = pick_next(user_id, grade, used, preferred_slug=slug, create=False)
+        return jsonify({'user_id': user_id, 'grade': grade,
+                        'prep_plan_olympiad': slug,
+                        'probnik_in_rotation': probnik_in_rotation(user_id),
+                        'state': st, 'next': nxt})
+    except Exception as e:  # noqa: BLE001
+        logger.exception('olympiad-ladder failed')
+        return jsonify({'error': str(e)}), 500
+
+
 @curator_bp.route("/admin/restore-practice-day", methods=["POST"])
 @login_required
 def curator_restore_practice_day():
