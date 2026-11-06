@@ -4446,7 +4446,7 @@ def track_site_time():
     (visibilitychange/pagehide добивают остаток sendBeacon-ом).
     Клампим до (0, 120] сек, чтобы нельзя было налить часы одним запросом.
     """
-    if not (current_user.is_authenticated and not getattr(current_user, 'is_guest', False)):
+    if not current_user.is_authenticated:
         return jsonify(ok=False), 401
     data = request.get_json(silent=True) or {}
     try:
@@ -4456,6 +4456,17 @@ def track_site_time():
     if seconds <= 0:
         return jsonify(ok=False), 400
     seconds = min(seconds, 120)
+    if getattr(current_user, 'is_guest', False):
+        # Гость: только пульс присутствия («онлайн прямо сейчас»),
+        # без учёта времени и без записи событий.
+        try:
+            from routes.chat_presence import bump_last_seen
+            bump_last_seen(current_user.id)
+            db.session.commit()
+        except Exception as _e_gp:
+            db.session.rollback()
+            app.logger.warning(f"guest presence fail: {_e_gp}")
+        return jsonify(ok=True, feedback_pending=False)
     try:
         u = db.session.get(User, current_user.id)
         if u is not None:

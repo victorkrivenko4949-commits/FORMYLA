@@ -962,7 +962,7 @@
     }
     </script>
 
-    {% if current_user.is_authenticated and not current_user.is_guest %}
+    {% if current_user.is_authenticated %}
     <script>
     // ── SITE_TIME_V1: heartbeat времени на сайте ──
     // Каждые 30 секунд активного времени шлём серверу "+30 сек".

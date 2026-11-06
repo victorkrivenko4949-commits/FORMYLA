@@ -413,6 +413,27 @@ def test_surveys_section_period_filter(app):
     assert 'плохо' in cl.get(f'/admin/stats/surveys?p=custom&from={(datetime.utcnow() - timedelta(days=90)).date()}&to={datetime.utcnow().date()}').get_data(as_text=True)
 
 
+def test_wish_survey_in_stats(app):
+    """WISH_SURVEY_V1: ответы «Что ты хочешь от Формулы?» видны в «Опросах» и в карточке человека."""
+    _prep_journey_tables(app)
+    a = _user(app, 'wisher')
+    now = datetime.utcnow()
+    with app.app_context():
+        app.db.session.execute(app.db.text(
+            'CREATE TABLE IF NOT EXISTS wish_survey_answers (user_id INTEGER PRIMARY KEY, answer_text TEXT NOT NULL, '
+            'answer_len INTEGER NOT NULL, discount_granted INTEGER NOT NULL DEFAULT 0, answered_at DATETIME)'))
+        app.db.session.execute(app.db.text(
+            "INSERT INTO wish_survey_answers VALUES (:u, 'Хочу разбирать сложные задачи по геометрии', 43, 1, :t)"),
+            {'u': a, 't': now})
+        app.db.session.commit()
+    cl = _admin_client(app)
+    html = cl.get('/admin/stats/surveys?p=7').get_data(as_text=True)
+    assert 'Что ты хочешь от Формулы?' in html
+    assert 'Хочу разбирать сложные задачи по геометрии' in html and 'wisher' in html
+    person = cl.get(f'/admin/stats/person?id={a}').get_data(as_text=True)
+    assert 'Что ты хочешь от Формулы?' in person and 'скидка 30%' in person
+
+
 # ───────────── точечное отслеживание: причины ухода, путь человека, оплата ─────────────
 def _yk_table(app):
     with app.app_context():

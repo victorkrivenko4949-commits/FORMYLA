@@ -222,6 +222,11 @@ def timeline(uid: int):
     if _has_table('readiness_survey_answers'):
         for a, t in (_q('SELECT answer, answered_at FROM readiness_survey_answers WHERE user_id = :u', u=uid) or []):
             items.append((_dt(t), 'Опрос «Готов заниматься каждый день?»', READINESS.get(a, a)))
+    if _has_table('wish_survey_answers'):
+        for txt, g, t in (_q('SELECT answer_text, discount_granted, answered_at FROM wish_survey_answers '
+                             'WHERE user_id = :u', u=uid) or []):
+            items.append((_dt(t), 'Опрос «Что ты хочешь от Формулы?»',
+                          f'«{txt}»' + (' — скидка 30%' if int(g or 0) else ' — без скидки')))
     if _has_table('site_feedback'):
         for r, txt, t in (_q('SELECT rating, feedback_text, answered_at FROM site_feedback WHERE user_id = :u '
                              'AND answered_at IS NOT NULL', u=uid) or []):

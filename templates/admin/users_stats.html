@@ -75,7 +75,7 @@
 {% block content %}
 <div class="us-wrap">
   <h1 class="us-title">Статистика пользователей</h1>
-  <div class="us-subtitle">Онлайн, активность по дням, пики, топы. «На сайте» = любое действие за последние 60 мин, включая гостей. Граница дня и часы — московские (МСК); метки времени в таблицах — UTC. Обновляется с каждым heartbeat (~30 сек).</div>
+  <div class="us-subtitle">Онлайн, активность по дням, пики, топы. «Сейчас на сайте» = открытая вкладка с пульсом за последние ~75 сек, включая гостей; пики и визиты считаются по паузе ≤ 60 мин. Граница дня и часы — московские (МСК); метки времени в таблицах — UTC. Обновляется с каждым heartbeat (~30 сек).</div>
 
   {# ══ USER_RETURNS_V1 (11.10.2026): сколько людей пришли 2-й, 3-й, 4-й… раз. ══ #}
   {# ══ Визит = серия действий с паузами ≤ 60 мин; пауза > 60 мин = новый визит. ══ #}
@@ -178,7 +178,7 @@
 
   <div class="us-sec">Прямо сейчас</div>
   <div class="us-summary">
-    <div class="us-card"><div class="us-card-num online"><span class="us-dot"></span>{{ total.online_now }}</div><div class="us-card-label">сейчас на сайте</div><div class="us-card-sub">действие за последние 60 мин — как в блоке выше</div></div>
+    <div class="us-card"><div class="us-card-num online"><span class="us-dot"></span>{{ total.online_now }}</div><div class="us-card-label">сейчас на сайте</div><div class="us-card-sub">пульс за последние ~75 сек</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.peak_today }}</div><div class="us-card-label">макс онлайн сегодня</div><div class="us-card-sub">сколько людей было в один момент (UTC)</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.peak_yesterday }}</div><div class="us-card-label">макс онлайн вчера</div><div class="us-card-sub">в один момент (UTC)</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.peak_ever }}</div><div class="us-card-label">рекорд онлайна</div><div class="us-card-sub">{{ total.peak_ever_at }} — по сохранённым данным</div></div>

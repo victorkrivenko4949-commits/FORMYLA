@@ -70,7 +70,7 @@ def _online(c):
     ret, ls = _returns_and_last_seen()
     blocks = [
         {'type': 'cards', 'title': 'Прямо сейчас', 'items': [
-            {'title': 'Сейчас на сайте', 'value': t['online_now'], 'sub': 'действие за последние 60 мин, включая гостей', 'accent': 'green'},
+            {'title': 'Сейчас на сайте', 'value': t['online_now'], 'sub': 'прямо сейчас (пульс за последние ~75 сек), включая гостей', 'accent': 'green'},
             {'title': 'Макс. онлайн сегодня', 'value': t['peak_today'], 'sub': 'людей в один момент'},
             {'title': 'Макс. онлайн вчера', 'value': t['peak_yesterday']},
             {'title': 'Рекорд онлайна', 'value': t['peak_ever'], 'sub': str(t['peak_ever_at'])},

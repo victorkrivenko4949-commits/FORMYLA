@@ -1050,7 +1050,7 @@ def ensure_site_events_tables():
         logger.warning('ensure_site_events_tables: %r', e)
 
 
-ONLINE_WINDOW_SEC = 300  # 5 минут — «онлайн»
+ONLINE_WINDOW_SEC = 75  # «онлайн прямо сейчас»: heartbeat раз в 30 сек + запас на сеть
 
 FEEDBACK_MIN_SECONDS = 25 * 60  # 25 минут на сайте → задаём вопрос «Как тебе сайт?»
 
@@ -1391,10 +1391,12 @@ def users_stats_context() -> dict:
         peak_yesterday = po['peak_yesterday']
         peak_ever = po['peak_ever']
         peak_ever_at = po['peak_ever_at']
-        # «сейчас на сайте» — по визитам, чтобы число совпадало с блоком выше
-        online_now = po['online_now']
     except Exception as _po_err:
         current_app.logger.exception('admin_users_stats: peak_online failed: %r', _po_err)
+    # «сейчас на сайте» — ровно сейчас: heartbeat (presence) за последние
+    # ONLINE_WINDOW_SEC секунд, включая гостей.
+    online_now = sum(1 for _seen in presence_map.values()
+                     if _seen and 0 <= (now - _seen).total_seconds() < ONLINE_WINDOW_SEC)
 
     # DEVICES_V1 (25.10.2026): кто с какого устройства заходит
     devices_stats = {'pc_only': 0, 'mobile_only': 0, 'both': 0,
