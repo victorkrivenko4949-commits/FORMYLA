@@ -269,3 +269,65 @@ def test_non_admin_curator_unchanged(app, monkeypatch):
     assert 'Справка FORMYLA' not in joined and 'raise_level' not in joined
     assert get_state(uid)['level'] == 1                       # действие НЕ выполнено
     assert '[[ACTION' not in out['content']
+    assert 'Могу сам' not in out['content']                   # подсказка только админам
+
+
+# ─── Только по плану + всегда предлагать, что умеет ─────────────────────
+
+@pytest.mark.parametrize('text,bad', [
+    ('Решай геометрию, алгебру и комбинаторику по 43 задачи в день.', [43]),
+    ('Сегодня реши 30 задач по алгебре.', [30]),
+    ('Сделай 25 задач сегодня.', [25]),
+    ('Нужно 15-20 задач в день.', [15]),
+    ('За неделю ты решил 43 задачи — отлично!', []),          # статистика — можно
+    ('Реши 10 задач дня, это ~40 минут.', []),                 # норма плана
+    ('Метод: разбор + 3 задачи на закрепление.', []),
+])
+def test_off_plan_numbers(text, bad):
+    assert ca.off_plan_numbers(text, 10) == bad
+
+
+def _fake_seq(monkeypatch, replies):
+    calls = []
+
+    def fake(msgs, thinking=False, max_tokens=1200):
+        calls.append(msgs)
+        return replies[min(len(calls) - 1, len(replies) - 1)]
+    monkeypatch.setattr(curator_chat, '_call_deepseek', fake)
+    return calls
+
+
+def test_off_plan_reply_rewritten(app, monkeypatch):
+    uid = _user('adm_plan@test.ru')
+    calls = _fake_seq(monkeypatch, [
+        'Реши геометрию и алгебру по 43 задачи в день.',
+        'Сегодня — задачи дня по плану, около 40 минут.',
+    ])
+    out = curator_chat.generate_reply(uid, 'что мне делать?')
+    assert len(calls) == 2                                     # попросили переписать
+    assert '43' not in out['content']
+    assert out['content'].startswith('Сегодня — задачи дня по плану')
+    assert ca.CAPABILITIES_HINT in out['content']              # всегда предлагает
+
+
+def test_off_plan_reply_cut_if_still_bad(app, monkeypatch):
+    uid = _user('adm_plan2@test.ru')
+    _fake_seq(monkeypatch, ['Открой задачи дня. Реши по 43 задачи в день.'])
+    out = curator_chat.generate_reply(uid, 'что мне делать?')
+    assert '43' not in out['content']
+    assert 'Открой задачи дня.' in out['content']
+
+
+def test_plan_lines_in_context(app, monkeypatch):
+    uid = _user('adm_plan3@test.ru')
+    calls = _fake_seq(monkeypatch, ['Ок.'])
+    out = curator_chat.generate_reply(uid, 'привет')
+    joined = '\n'.join(m['content'] for m in calls[0])
+    assert 'ПЛАН: задач дня сегодня —' in joined
+    assert 'ЗАПРЕЩЕНО придумывать' in joined
+    assert out['content'].endswith(ca.CAPABILITIES_HINT)
+
+
+def test_hint_not_duplicated():
+    t = ca.with_capabilities_hint('Привет')
+    assert ca.with_capabilities_hint(t) == t
