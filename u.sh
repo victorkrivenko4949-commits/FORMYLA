@@ -86,5 +86,26 @@ for conf in /etc/nginx/sites-enabled/* /etc/nginx/conf.d/*.conf; do
 done
 nginx -t && systemctl reload nginx || true
 
-systemctl restart formyla
-echo "=== DONE! FORMYLA UPDATED + NGINX HOST HEADER FIXED ==="
+# 4. Zero-downtime restart: precompile .pyc, add ExecReload to the unit, reload instead of restart, warm up
+python3 -m compileall -q . >/dev/null 2>&1 || true
+UNIT=$(systemctl show -p FragmentPath --value formyla 2>/dev/null || true)
+if [ -n "$UNIT" ] && [ -f "$UNIT" ] && ! grep -q '^ExecReload=' "$UNIT"; then
+  sed -i '/^ExecStart=/a ExecReload=/bin/kill -s HUP $MAINPID' "$UNIT"
+  systemctl daemon-reload
+fi
+if systemctl is-active --quiet formyla && [ -n "$UNIT" ] && grep -q '^ExecReload=' "$UNIT"; then
+  systemctl reload formyla
+  echo "formyla: graceful reload (old workers keep serving while new ones boot)"
+else
+  systemctl restart formyla
+  echo "formyla: full restart"
+fi
+# Warm-up: wait until a fresh worker answers so the first visitor does not pay the cold start
+for i in $(seq 1 60); do
+  if curl -s -o /dev/null -m 2 http://127.0.0.1:8000/; then
+    echo "formyla: warmed up after ${i}s"
+    break
+  fi
+  sleep 1
+done
+echo "=== DONE! FORMYLA UPDATED (zero-downtime reload) ==="
