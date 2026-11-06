@@ -161,6 +161,29 @@ def surveys(d_from: date, d_to: date):
              'rows': [[_user_cell(int(u), nicks), READINESS.get(a, a), _fmt_dt(t)] for u, a, t in rows[:100]],
              'empty': 'Ответов за период нет.'},
         ]
+    if _has_table('wish_survey_answers'):
+        # WISH_SURVEY_V1: «Что ты хочешь от Формулы?» + скидка 30%.
+        rows = _q('SELECT user_id, answer_text, discount_granted, answered_at FROM wish_survey_answers '
+                  'WHERE answered_at >= :s AND answered_at < :e ORDER BY answered_at DESC', s=start, e=end) or []
+        granted = sum(1 for r in rows if int(r[2] or 0))
+        paid = 0
+        if _has_table('wish_discount_orders') and _has_table('yookassa_payments'):
+            paid = int((_q('SELECT COUNT(DISTINCT d.user_id) FROM wish_discount_orders d '
+                           'JOIN yookassa_payments p ON p.order_id = d.order_id '
+                           'WHERE p.paid_at IS NOT NULL') or [[0]])[0][0] or 0)
+        nicks = _nicks([int(r[0]) for r in rows[:200]])
+        blocks += [
+            {'type': 'cards', 'items': [
+                {'title': 'Ответили «Что ты хочешь от Формулы?»', 'value': len(rows), 'sub': 'за период'},
+                {'title': 'Получили скидку 30%', 'value': granted, 'sub': 'ответ длиннее 30 символов'},
+                {'title': 'Оплатили со скидкой', 'value': paid, 'sub': 'за всё время'},
+            ]},
+            {'type': 'table', 'left': True, 'title': 'Опрос «Что ты хочешь от Формулы?»: ответы (до 200)',
+             'header': ['Пользователь', 'Ответ', 'Скидка', 'Когда'],
+             'rows': [[_user_cell(int(u), nicks), t or '—', 'да' if int(g or 0) else 'нет', _fmt_dt(a)]
+                      for u, t, g, a in rows[:200]],
+             'empty': 'Ответов за период нет.'},
+        ]
     if _has_table('exit_answers'):
         from services.exit_question import OPTIONS, TRIGGER_TITLES
         rows = _q('SELECT user_id, kind, answer, answer_text, status, created_at FROM exit_answers '
