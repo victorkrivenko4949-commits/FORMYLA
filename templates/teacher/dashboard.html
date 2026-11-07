@@ -183,6 +183,23 @@
 <div class="teacher-page">
     <h1>👨‍🏫 Мои ученики</h1>
 
+    {% if seat and seat.sub %}
+    <div class="add-cta-card" style="border-style: solid; border-color: rgba(34,197,94,0.4);">
+        <div>
+            <div class="cta-title">⭐ Подписка «{{ seat.sub.title }}» активна</div>
+            <div class="cta-sub">
+                Мест: {{ seat.seats }} · занято {{ seat.used }} ·
+                действует до {{ seat.sub.expires_at.strftime('%d.%m.%Y') }}.
+                {% if seat.can_add %}Добавляйте учеников внутри группы.{% else %}Места закончились — тариф можно расширить в разделе «Тарифы».{% endif %}
+            </div>
+        </div>
+        {% if seat.can_add %}
+        <a href="/tariffs/teacher" class="btn-add-students" style="background: linear-gradient(135deg, #22c55e, #0ea5a4);">Добавить учеников →</a>
+        {% else %}
+        <a href="/tariffs/teacher" class="btn-add-students" style="background: linear-gradient(135deg, #22c55e, #0ea5a4);">Расширить тариф →</a>
+        {% endif %}
+    </div>
+    {% else %}
     <div class="add-cta-card">
         <div>
             <div class="cta-title">Добавление учеников — по подписке</div>
@@ -193,6 +210,7 @@
         </div>
         <a href="/demo" class="btn-add-students">Добавить учеников →</a>
     </div>
+    {% endif %}
 
     <div class="how-card">
         <div class="step-row"><span class="step">1</span><span class="step-text">Создайте <b>группу</b> и отправьте ученикам код приглашения — они вступят сами.</span></div>

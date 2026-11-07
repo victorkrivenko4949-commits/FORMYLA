@@ -310,9 +310,11 @@ def teacher_dashboard():
             'pending_count': len(pending_members),
         })
 
+    from routes.seat_pay import seat_gate
     return render_template(
         'teacher/dashboard.html',
         group_stats=group_stats,
+        seat=seat_gate(current_user.id, 'teacher'),
     )
 
 
@@ -381,6 +383,7 @@ def teacher_group_view(gid: int):
     pending_data = [_pending_info(m) for m in pending_members]
     rejected_data = [_pending_info(m) for m in rejected_members]
 
+    from routes.seat_pay import seat_gate
     return render_template(
         'teacher/group.html',
         group=g,
@@ -388,6 +391,7 @@ def teacher_group_view(gid: int):
         group_avg=group_avg,
         pending_students=pending_data,
         rejected_students=rejected_data,
+        seat=seat_gate(current_user.id, 'teacher'),
     )
 
 
@@ -399,11 +403,25 @@ def teacher_group_add_student(gid: int):
     Ученик НЕ добавляется мгновенно: создаётся T10GroupMember(status='pending'),
     ученик получает уведомление и решает сам. Статистика откроется учителю
     только после подтверждения.
+
+    SEAT_SUBSCRIPTION_V1: добавление новых учеников — только с активной
+    подпиской на места и в пределах лимита мест.
     """
     _require_role('teacher')
     g = T10Group.query.get(gid)
     if g is None or g.teacher_id != current_user.id:
         abort(404)
+
+    from routes.seat_pay import seat_gate
+    gate = seat_gate(current_user.id, 'teacher')
+    if gate['sub'] is None:
+        flash('Добавление учеников — по подписке. Как это работает — '
+              'на странице «Как это будет работать».', 'error')
+        return redirect('/demo')
+    if not gate['can_add']:
+        flash(f'Места закончились: {gate["used"]} из {gate["seats"]}. '
+              'Расширить тариф можно в разделе «Тарифы».', 'error')
+        return redirect('/tariffs/teacher')
 
     nickname = (request.form.get('nickname', '') or '').strip()
     if not nickname:
@@ -565,6 +583,9 @@ def parent_dashboard():
     ]
     pending_children = [(c, p) for c, p in pending_children if c is not None]
 
+    from routes.seat_pay import seat_gate
+    seat = seat_gate(current_user.id, 'parent')
+
     if not children:
         # Привязанного ребёнка нет: форма добавления + статус pending-запросов.
         # Легаси-путь через User.child_email убран: без подтверждённой
@@ -572,13 +593,14 @@ def parent_dashboard():
         legacy_nick = getattr(current_user, 'child_email', None)
         return render_template(
             'parent/dashboard.html',
-            invite_code=invite_code,
+            invite_code=invite_code if seat['sub'] else None,
             children=[],
             pending_children=[
                 {'nickname': c.nickname, 'created_at': p.created_at}
                 for c, p in pending_children
             ],
             legacy_hint=bool(legacy_nick),
+            seat=seat,
         )
 
     today = date.today()
@@ -596,13 +618,14 @@ def parent_dashboard():
 
     return render_template(
         'parent/dashboard.html',
-        invite_code=invite_code,
+        invite_code=invite_code if (seat['sub'] or child_cards) else None,
         children=child_cards,
         pending_children=[
             {'nickname': c.nickname, 'created_at': p.created_at}
             for c, p in pending_children
         ],
         legacy_hint=False,
+        seat=seat,
     )
 
 
@@ -666,10 +689,14 @@ def _tariff_plans():
 @login_required
 def teacher_tariffs():
     _require_role('teacher')
+    from routes.seat_pay import SEAT_PLANS, seat_gate
     return render_template(
         'tariffs/teacher.html',
         students=_tariff_students_for_teacher(),
         plans=_tariff_plans(),
+        seat_plans=[{'key': k, **v} for k, v in SEAT_PLANS.items()
+                    if v['role'] == 'teacher'],
+        seat=seat_gate(current_user.id, 'teacher'),
     )
 
 
@@ -677,10 +704,14 @@ def teacher_tariffs():
 @login_required
 def parent_tariffs():
     _require_role('parent')
+    from routes.seat_pay import SEAT_PLANS, seat_gate
     return render_template(
         'tariffs/parent.html',
         children=_tariff_children_for_parent(),
         plans=_tariff_plans(),
+        seat_plans=[{'key': k, **v} for k, v in SEAT_PLANS.items()
+                    if v['role'] == 'parent'],
+        seat=seat_gate(current_user.id, 'parent'),
     )
 
 
@@ -917,6 +948,16 @@ def _join_teacher_group_by_code(user, code: str) -> tuple[bool, str]:
         db.session.commit()
         return True, f'Вы вступили в группу «{g.name}»'
 
+    # SEAT_SUBSCRIPTION_V1: новый участник по коду занимает место учителя —
+    # проверяем активную подписку и лимит (upgrade существующих не трогаем).
+    from routes.seat_pay import seat_gate
+    t_gate = seat_gate(g.teacher_id, 'teacher')
+    if t_gate['sub'] is None:
+        return False, ('У учителя пока нет активной подписки на группу — '
+                       'попросите его оформить её на formyla.net')
+    if not t_gate['can_add']:
+        return False, 'У учителя закончились места в подписке'
+
     gm = T10GroupMember(
         group_id=g.id, user_id=user.id, role='student', status='accepted',
     )
@@ -959,6 +1000,16 @@ def _link_parent_by_code(user, code: str) -> tuple[bool, str]:
         existing.accept()
         db.session.commit()
         return True, f'Вы привязаны к родителю {_display(parent)}'
+
+    # SEAT_SUBSCRIPTION_V1: новая привязка занимает место родителя —
+    # проверяем активную подписку и лимит (upgrade существующих не трогаем).
+    from routes.seat_pay import seat_gate
+    p_gate = seat_gate(parent.id, 'parent')
+    if p_gate['sub'] is None:
+        return False, ('У родителя пока нет активной подписки — попросите его '
+                       'оформить её на formyla.net')
+    if not p_gate['can_add']:
+        return False, 'У родителя закончились места в подписке'
 
     link = ParentChildLink(
         parent_id=parent.id, child_id=user.id, status='accepted',
@@ -1074,8 +1125,22 @@ def parent_bind_child():
 
     Создаётся ParentChildLink со статусом pending, а решение
     (принять / отклонить / заблокировать) принимает сам ученик.
+
+    SEAT_SUBSCRIPTION_V1: добавление детей — только с активной
+    подпиской на места и в пределах лимита мест.
     """
     _require_role('parent')
+    from routes.seat_pay import seat_gate
+    gate = seat_gate(current_user.id, 'parent')
+    if gate['sub'] is None:
+        flash('Добавление ребёнка — по подписке. Как это работает — '
+              'на странице «Как это будет работать».', 'error')
+        return redirect('/demo')
+    if not gate['can_add']:
+        flash(f'Места закончились: {gate["used"]} из {gate["seats"]}. '
+              'Расширить тариф можно в разделе «Тарифы».', 'error')
+        return redirect('/tariffs/parent')
+
     nickname = (request.form.get('child_nickname', '') or '').strip()
     if not nickname:
         flash('Введите никнейм ребёнка', 'error')

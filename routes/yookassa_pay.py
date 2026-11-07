@@ -707,6 +707,24 @@ def _yookassa_webhook_inner():
                     upsert_from_payment(int(user_id_raw), payment_id, item_code)
                 except Exception as e:  # noqa: BLE001
                     logger.warning("[yookassa_pay] save payment method failed: %r", e)
+        elif item_code.startswith("seat_"):
+            # SEAT_SUBSCRIPTION_V1: подписка на места (учитель/родитель).
+            # FAIL-CLOSED: активация только по платежу, подтверждённому
+            # прямым запросом в API ЮKassa, и по ЛОКАЛЬНОМУ заказу.
+            if not verified_by_api or verified_status != "succeeded" or not verified_paid:
+                logger.warning(
+                    "[yookassa_pay] seat payment %s NOT verified via API — activation skipped",
+                    payment_id)
+                return jsonify({"ok": True, "status": "unverified"}), 200
+            if not item_code_row_found:
+                logger.warning(
+                    "[yookassa_pay] seat payment %s has no local order — activation skipped",
+                    payment_id)
+                return jsonify({"ok": True, "status": "unknown_order"}), 200
+            from routes.seat_pay import activate_seats_for_payment
+            activate_seats_for_payment(
+                user_id=int(user_id_raw), plan=item_code,
+                payment_id=payment_id, order_id=order_id)
         else:
             _activate_diamond_for_user(user_id=int(user_id_raw), payment_id=payment_id, order_id=order_id)
         return jsonify({"ok": True, "status": "succeeded"}), 200

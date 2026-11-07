@@ -198,18 +198,20 @@
         </button>
 
         <nav class="nav" id="navLinks">
-            {# FULL_ACCESS_V1 (25.09.2026): учитель И родитель видят все разделы
-               ученика (Олимпиады, Задачи дня, Куратор, Прочее, Профиль) плюс
-               свой собственный раздел — «Мои ученики» / «Мои гении (дети)». #}
+            {# FULL_ACCESS_V1 (25.09.2026): учитель видит все разделы ученика
+               плюс свой раздел «Мои ученики». PARENT_ONLY_V1 (08.11.2026):
+               родитель — ТОЛЬКО родительский кабинет (без разделов ученика). #}
+            {% set parent_only = current_user.is_authenticated and current_user.role == 'parent' %}
             {% if current_user.is_authenticated and current_user.role == 'teacher' %}
             <a href="/teacher" class="nav-item">👨‍🏫 Мои ученики</a>
             <a href="/tariffs/teacher" class="nav-item">💳 Тарифы</a>
             {% endif %}
-            {% if current_user.is_authenticated and current_user.role == 'parent' %}
+            {% if parent_only %}
             <a href="/parent" class="nav-item">👨‍👩‍👧 Мои гении (дети)</a>
             <a href="/tariffs/parent" class="nav-item">💳 Тарифы</a>
             {% endif %}
 
+            {% if not parent_only %}
             <!-- 1. Олимпиады (dropdown) — виден всем ролям -->
             <div class="nav-dropdown">
                 <button class="nav-item nav-toggle" type="button">
@@ -236,6 +238,7 @@
 
             <!-- Закреплённые пункты (из «Прочее» 📌, заполняется nav.js) -->
             <span class="nav-pinned" id="pinnedNavItems"></span>
+            {% endif %}
         </nav>
         
 
@@ -339,7 +342,8 @@
 
         <!-- Navigation links -->
         <nav class="drawer-nav">
-            {# FULL_ACCESS_V1: учитель И родитель видят разделы ученика + свой раздел #}
+            {# FULL_ACCESS_V1: учитель видит разделы ученика + свой раздел.
+               PARENT_ONLY_V1: родитель — только родительский кабинет. #}
             {% if current_user.is_authenticated and current_user.role == 'teacher' %}
             <a href="/teacher" class="drawer-link">
                 <span class="drawer-link-icon">👨‍🏫</span>
@@ -351,7 +355,7 @@
             </a>
             <div class="drawer-divider"></div>
             {% endif %}
-            {% if current_user.is_authenticated and current_user.role == 'parent' %}
+            {% if parent_only %}
             <a href="/parent" class="drawer-link">
                 <span class="drawer-link-icon">👨‍👩‍👧</span>
                 Мои гении (дети)
@@ -362,6 +366,7 @@
             </a>
             <div class="drawer-divider"></div>
             {% endif %}
+            {% if not parent_only %}
             <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="drawer-link">
                 <span class="drawer-link-icon">🔥</span>
                 Задачи дня
@@ -393,11 +398,12 @@
                 <span class="drawer-link-icon">📊</span>
                 Статистика
             </a>
+            {% endif %}
         </nav>
 
         <!-- Footer: auth actions -->
         <div class="drawer-footer">
-            {% if current_user.is_authenticated and not current_user.is_guest %}
+            {% if current_user.is_authenticated and not current_user.is_guest and not parent_only %}
             <a href="{{ url_for('subscribe_page') }}" class="drawer-link">
                 <span class="drawer-link-icon">💳</span>
                 Тарифы и платные услуги
@@ -421,19 +427,21 @@
          BOTTOM NAVIGATION BAR (hidden on desktop via CSS)
          ═══════════════════════════════════════════════ -->
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
-        {# FULL_ACCESS_V1: учитель И родитель видят разделы ученика + свой раздел #}
+        {# FULL_ACCESS_V1: учитель видит разделы ученика + свой раздел.
+           PARENT_ONLY_V1: родитель — только родительский кабинет. #}
         {% if current_user.is_authenticated and current_user.role == 'teacher' %}
         <a href="/teacher" class="bottom-nav-item" data-path="/teacher*,/student*">
             <span class="bottom-nav-icon">👨‍🏫</span>
             <span class="bottom-nav-label">Мои ученики</span>
         </a>
         {% endif %}
-        {% if current_user.is_authenticated and current_user.role == 'parent' %}
+        {% if parent_only %}
         <a href="/parent" class="bottom-nav-item" data-path="/parent*,/student*">
             <span class="bottom-nav-icon">👨‍👩‍👧</span>
             <span class="bottom-nav-label">Мои гении</span>
         </a>
         {% endif %}
+        {% if not parent_only %}
         <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="bottom-nav-item" data-path="/daily*">
             <span class="bottom-nav-icon">🔥</span>
             <span class="bottom-nav-label">Задачи дня</span>
@@ -465,6 +473,7 @@
             <span class="bottom-nav-icon">📦</span>
             <span class="bottom-nav-label">Прочее</span>
         </a>
+        {% endif %}
     </nav>
 
     <main class="main">

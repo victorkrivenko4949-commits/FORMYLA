@@ -156,8 +156,40 @@
     <a href="/teacher" class="tariffs-back">← Мои ученики</a>
     <h1>Тарифы для учителя</h1>
     <div class="tariffs-sub">
-        Вы оформляете Premium для учеников своих групп: платите вы — полный доступ
-        открывается у ученика сразу после оплаты. Автопродление не подключается.
+        Подписка на группу открывает места для учеников — статистика всей группы
+        в вашем кабинете. Ниже — Premium для отдельных учеников.
+    </div>
+
+    {% if seat and seat.sub %}
+    <div style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.35); border-radius: 14px; padding: 14px 18px; margin-bottom: 20px; font-size: 14px; color: #86efac;">
+        ⭐ Подписка «{{ seat.sub.title }}» активна: мест {{ seat.seats }}, занято {{ seat.used }},
+        до {{ seat.sub.expires_at.strftime('%d.%m.%Y') }}. Новая оплата продлит срок, мест станет максимум из двух тарифов.
+    </div>
+    {% endif %}
+
+    <div class="tariffs-list-title">Подписка на группу (места для учеников)</div>
+    <div class="plan-cards">
+        {% for p in seat_plans %}
+        <div class="plan-card">
+            <div class="plan-icon">{{ p.icon }}</div>
+            <div class="plan-title">{{ p.title }}</div>
+            <div class="plan-tagline">{{ p.tagline }}</div>
+            <div class="plan-price">{{ p.price_rub }} ₽ / 30 дней</div>
+            <ul>
+                {% for f in p.features %}<li>{{ f }}</li>{% endfor %}
+            </ul>
+            <a href="/payments/seats/checkout?plan={{ p.key }}"
+               style="display: block; text-align: center; padding: 11px 16px; border-radius: 10px; background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; text-decoration: none; font-weight: 700; font-size: 14px;">
+                Купить · {{ p.price_rub }} ₽
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="tariffs-list-title">Premium для отдельного ученика</div>
+    <div class="tariffs-sub" style="margin-bottom: 14px;">
+        Платите вы — полный доступ открывается у ученика сразу после оплаты.
+        Автопродление не подключается.
     </div>
 
     <div class="plan-cards">

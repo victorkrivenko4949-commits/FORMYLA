@@ -275,18 +275,33 @@
         </form>
     </div>
 
+    {% if seat and seat.can_add %}
+    <form method="POST" action="{{ url_for('parent_teacher.teacher_group_add_student', gid=group.id) }}" class="rename-form">
+        <input type="text" name="nickname" placeholder="Никнейм ученика" required maxlength="50">
+        <button type="submit" class="btn btn-accent">➕ Отправить запрос ученику</button>
+    </form>
+    <div class="add-hint">
+        Ученик получит уведомление «Подтвердить, что вы хотите его добавить» — в группе он появится только после согласия.
+        Мест по подписке: {{ seat.seats }}, занято {{ seat.used }}.
+    </div>
+    {% else %}
     <div class="add-paywall" style="background: var(--surface); border: 1px dashed rgba(56,189,248,0.45); border-radius: 14px; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
         <div>
             <div style="font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px;">
-                Добавление учеников — по подписке
+                {% if seat and seat.sub %}Места закончились — {{ seat.used }} из {{ seat.seats }}{% else %}Добавление учеников — по подписке{% endif %}
             </div>
             <div style="font-size: 13px; color: var(--muted); line-height: 1.5;">
                 Уже добавленные ученики продолжают заниматься как раньше.
-                Новых учеников можно подключить после оформления подписки.
+                {% if seat and seat.sub %}Расширьте тариф, чтобы добавить ещё.{% else %}Новых учеников можно подключить после оформления подписки.{% endif %}
             </div>
         </div>
+        {% if seat and seat.sub %}
+        <a href="/tariffs/teacher" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 12px; background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; text-decoration: none; font-weight: 700; font-size: 15px; white-space: nowrap;">Расширить тариф →</a>
+        {% else %}
         <a href="/demo" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 12px; background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; text-decoration: none; font-weight: 700; font-size: 15px; white-space: nowrap;">Добавить учеников →</a>
+        {% endif %}
     </div>
+    {% endif %}
 
     <div class="group-avg">
         Среднее количество задач дня по группе за 7 дней:

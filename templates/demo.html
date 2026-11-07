@@ -260,6 +260,10 @@
 
 <script>
 var role = 'teacher';
+{# SEAT_SUBSCRIPTION_V1: залогиненный учитель/родитель платит по-настоящему —
+   кнопка оплаты ведёт на реальное оформление через ЮKassa. Аноним видит демо. #}
+var REAL_PAY = {% if current_user.is_authenticated and current_user.role in ('teacher', 'parent') %}true{% else %}false{% endif %};
+var REAL_PLAN = {% if current_user.is_authenticated and current_user.role == 'teacher' %}'seat_teacher_group'{% elif current_user.is_authenticated and current_user.role == 'parent' %}'seat_parent_family'{% else %}''{% endif %};
 
 var DATA = {
   teacher: {
@@ -407,8 +411,12 @@ function openPay(title, price, what) {
 }
 function closePay() { document.getElementById('payOverlay').classList.remove('open'); }
 function payGo() {
+  if (REAL_PAY) {
+    window.location.href = '/payments/seats/checkout?plan=' + REAL_PLAN;
+    return;
+  }
   var p = document.querySelector('.pay-card');
-  p.innerHTML = '<div class="pay-eyebrow">FORMYLA · ОПЛАТА</div><div class="pay-title">Переход к ЮKassa…</div><div class="pay-row" style="border:none; color:var(--muted); font-size:.9rem;">В живой версии здесь откроется платёжная страница ЮKassa. После успешной оплаты подписка активируется автоматически.</div><div class="pay-actions" style="margin-top:20px;"><button class="btn btn--ghost" onclick="location.reload()">Закрыть</button></div>';
+  p.innerHTML = '<div class="pay-eyebrow">FORMYLA · ОПЛАТА</div><div class="pay-title">Переход к ЮKassa…</div><div class="pay-row" style="border:none; color:var(--muted); font-size:.9rem;">Зарегистрируйтесь и выберите роль учителя или родителя — здесь откроется платёжная страница ЮKassa. После успешной оплаты подписка активируется автоматически.</div><div class="pay-actions" style="margin-top:20px;"><button class="btn btn--ghost" onclick="location.reload()">Закрыть</button></div>';
 }
 
 render();
