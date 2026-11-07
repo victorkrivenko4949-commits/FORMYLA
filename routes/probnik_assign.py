@@ -101,8 +101,7 @@ def page(aid):
         hours=svc.hours_text(a.duration_minutes), task_max=svc.TASK_MAX,
         is_owner=(a.user_id == current_user.id),
         not_yet=(a.assigned_date > _today() and not current_user.is_admin),
-        can_swap=(a.status == 'assigned'
-                  and len(svc.candidate_variants(a.olympiad_slug, a.grade, a.stage)) > 1),
+        nav=svc.variant_nav(a),
     )
 
 
@@ -131,12 +130,18 @@ def start(aid):
 def swap(aid):
     if not _csrf_ok():
         return _err('Обновите страницу и попробуйте ещё раз.', 403)
+    svc = _svc()
     a = _load(aid, owner_only=True)
-    if a.status != 'assigned':
-        return _err('Пробник уже начат — сменить его нельзя.')
-    if not _svc().swap_variant(a):
-        return _err('Другого полного варианта для вашего класса нет.')
-    return jsonify({'ok': True, 'title': a.title})
+    svc.refresh(a)
+    if a.status not in ('assigned', 'started') or (a.status == 'started' and not svc.can_edit(a)):
+        return _err('Работа уже сдана — сменить вариант нельзя.')
+    direction = -1 if (request.get_json(silent=True) or {}).get('dir') == -1 else 1
+    if not svc.switch_variant(a, direction):
+        return _err('Это первый вариант в списке.' if direction < 0
+                    else 'Другого полного варианта для вашего класса нет.')
+    nav = svc.variant_nav(a)
+    return jsonify({'ok': True, 'title': a.title, 'can_prev': nav['can_prev'],
+                    'url': url_for('probnik_assign.page', aid=a.id)})
 
 
 @probnik_assign_bp.route('/<int:aid>/text', methods=['POST'])
@@ -204,7 +209,7 @@ def delete_photo(aid, pid):
     if not svc.can_edit(a):
         return _err('Время вышло — работа уже сдана.', 409)
     p = db.session.get(ProbnikAssignmentPhoto, pid)
-    if p is None or p.assignment_id != a.id:
+    if p is None or p.assignment_id != a.id or p.variant_key != a.variant_key:
         abort(404)
     db.session.delete(p)
     db.session.commit()

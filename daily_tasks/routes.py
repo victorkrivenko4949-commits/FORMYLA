@@ -685,8 +685,8 @@ def get_daily_tasks():
                     "total_score": _pa.total_score,
                     "max_score": _pa.max_score,
                     "url": f"/probnik-assign/{_pa.id}",
-                    "can_swap": _pa.status == "assigned" and len(
-                        _pa_svc.candidate_variants(_pa.olympiad_slug, _pa.grade, _pa.stage)) > 1,
+                    "can_swap": _pa_svc.variant_nav(_pa)["can_next"],
+                    "can_prev": _pa_svc.variant_nav(_pa)["can_prev"],
                 },
             }
             return render_template(

@@ -293,26 +293,55 @@ def assign(user_id: int, on_date: date, slug: str = 'rosatom', stage: str = 'fin
     return a
 
 
-def swap_variant(a) -> bool:
-    """«Сменить пробник»: следующий полный вариант того же класса (до старта)."""
-    db, *_ = _models()
-    if a.status != 'assigned':
-        return False
+def variant_nav(a) -> Dict[str, Any]:
+    """Где текущий вариант в списке подбора: можно ли «Сменить» и «Предыдущий»."""
     variants = candidate_variants(a.olympiad_slug, a.grade, a.stage)
-    if len(variants) < 2:
+    keys = [v['key'] for v in variants]
+    idx = keys.index(a.variant_key) if a.variant_key in keys else -1
+    open_ = a.status == 'assigned' or (a.status == 'started' and (seconds_left(a) or 0) > 0)
+    return {'variants': variants, 'idx': idx,
+            'can_next': open_ and len(variants) > 1,
+            'can_prev': open_ and idx > 0}
+
+
+def switch_variant(a, direction: int = 1) -> bool:
+    """«Сменить пробник» (+1) / «Предыдущий» (-1) — и до, и после старта.
+
+    Смысл (владелец, 07.11): ученик нажал «Старт», увидел, что этот вариант
+    уже решал, — меняет его. Решения хранятся отдельно по вариантам
+    (variant_key у ответов и фото), поэтому «Предыдущий» возвращает и
+    вариант, и уже приложенные к нему фото/текст. После старта таймер на
+    новом варианте начинается заново — на полный срок.
+    """
+    db, *_ = _models()
+    nav = variant_nav(a)
+    variants, idx = nav['variants'], nav['idx']
+    if direction > 0:
+        if not nav['can_next']:
+            return False
+        nxt = variants[(idx + 1) % len(variants)]      # по кругу
+    else:
+        if not nav['can_prev']:
+            return False
+        nxt = variants[idx - 1]
+    if nxt['key'] == a.variant_key:
         return False
     used = json.loads(a.used_variants_json or '[]')
-    nxt = next((v for v in variants if v['key'] not in used), None)
-    if nxt is None:            # все перебраны — по кругу, но не текущий
-        used = [a.variant_key]
-        nxt = next(v for v in variants if v['key'] != a.variant_key)
     a.variant_key = nxt['key']
     a.title = _variant_title(a.olympiad_slug, nxt)
     a.tasks_json = json.dumps(nxt['tasks'], ensure_ascii=False)
     a.used_variants_json = json.dumps(used + [nxt['key']], ensure_ascii=False)
     a.swaps = (a.swaps or 0) + 1
+    if a.status == 'started':
+        now = datetime.utcnow()
+        a.started_at = now
+        a.deadline_at = now + timedelta(minutes=int(a.duration_minutes or DEFAULT_DURATION_MIN))
     db.session.commit()
     return True
+
+
+def swap_variant(a) -> bool:
+    return switch_variant(a, +1)
 
 
 def for_date(user_id: int, on_date: date):
@@ -373,9 +402,9 @@ def can_edit(a) -> bool:
 
 def save_text(a, idx: int, text: str) -> None:
     db, _, PAA, _ = _models()
-    row = PAA.query.filter_by(assignment_id=a.id, task_idx=idx).first()
+    row = PAA.query.filter_by(assignment_id=a.id, variant_key=a.variant_key, task_idx=idx).first()
     if row is None:
-        row = PAA(assignment_id=a.id, task_idx=idx)
+        row = PAA(assignment_id=a.id, variant_key=a.variant_key, task_idx=idx)
         db.session.add(row)
     row.text = (text or '')[:TEXT_LIMIT]
     row.updated_at = datetime.utcnow()
@@ -388,7 +417,7 @@ def add_photo(a, idx: int, photo_bytes: bytes, content_type: str, filename: str,
     db, _, _, PAP = _models()
     from services.photo_upload import prepare_photo
     photo_bytes, content_type = prepare_photo(photo_bytes, content_type, filename or '')
-    if PAP.query.filter_by(assignment_id=a.id, task_idx=idx).count() >= MAX_PHOTOS_PER_TASK:
+    if PAP.query.filter_by(assignment_id=a.id, variant_key=a.variant_key, task_idx=idx).count() >= MAX_PHOTOS_PER_TASK:
         raise ValueError(f'К одной задаче — не больше {MAX_PHOTOS_PER_TASK} фото.')
     url = None
     try:
@@ -396,7 +425,7 @@ def add_photo(a, idx: int, photo_bytes: bytes, content_type: str, filename: str,
         url, _ = upload_photo(photo_bytes, a.user_id, content_type)
     except Exception as e:  # noqa: BLE001 — хранилища может не быть: распознаём всё равно
         logger.warning('[probnik_assign] storage unavailable: %s', e)
-    row = PAP(assignment_id=a.id, task_idx=idx, url=url, ocr_status='pending')
+    row = PAP(assignment_id=a.id, variant_key=a.variant_key, task_idx=idx, url=url, ocr_status='pending')
     db.session.add(row)
     db.session.commit()
     task_text = (tasks_of(a)[idx] or {}).get('text', '') if idx < len(tasks_of(a)) else ''
@@ -445,10 +474,10 @@ def _bg(app, fn, *args) -> None:
 def work_state(a) -> List[Dict[str, Any]]:
     """Задачи + работа ученика + итоги проверки (для страницы и JSON)."""
     db, _, PAA, PAP = _models()
-    answers = {r.task_idx: r for r in PAA.query.filter_by(assignment_id=a.id).all()}
+    answers = {r.task_idx: r for r in PAA.query.filter_by(assignment_id=a.id, variant_key=a.variant_key).all()}
     photos: Dict[int, list] = {}
     stale = datetime.utcnow() - timedelta(minutes=5)
-    for p in PAP.query.filter_by(assignment_id=a.id).order_by(PAP.id).all():
+    for p in PAP.query.filter_by(assignment_id=a.id, variant_key=a.variant_key).order_by(PAP.id).all():
         if p.ocr_status == 'pending' and p.created_at and p.created_at < stale:
             p.ocr_status = 'failed'      # фоновое распознавание потерялось (рестарт)
             db.session.commit()
@@ -631,9 +660,9 @@ def grade_and_review(assignment_id: int) -> None:
 
     rows = []
     for (t, _w), r in zip(works, results):
-        ans = PAA.query.filter_by(assignment_id=a.id, task_idx=t['idx']).first()
+        ans = PAA.query.filter_by(assignment_id=a.id, variant_key=a.variant_key, task_idx=t['idx']).first()
         if ans is None:
-            ans = PAA(assignment_id=a.id, task_idx=t['idx'])
+            ans = PAA(assignment_id=a.id, variant_key=a.variant_key, task_idx=t['idx'])
             db.session.add(ans)
         ans.score = r['score']
         ans.max_score = TASK_MAX
@@ -763,6 +792,29 @@ def sweep(app=None) -> int:
         refresh(a, app=app)
         n += int(a.status != before)
     return n
+
+
+def migrate_variant_work() -> None:
+    """Идемпотентно (старт приложения): решения хранятся по вариантам.
+
+    Первая версия держала UNIQUE(assignment_id, task_idx) — с переключением
+    вариантов на одну задачу бывает несколько строк, ограничение снимаем.
+    Старым строкам без варианта проставляем текущий вариант назначения.
+    """
+    from models import db
+    from sqlalchemy import text
+    try:
+        if db.engine.dialect.name == 'postgresql':
+            db.session.execute(text('ALTER TABLE probnik_assignment_answers '
+                                    'DROP CONSTRAINT IF EXISTS uq_probnik_assign_answer'))
+        for tbl in ('probnik_assignment_answers', 'probnik_assignment_photos'):
+            db.session.execute(text(
+                f'UPDATE {tbl} SET variant_key = (SELECT pa.variant_key FROM probnik_assignments pa '
+                f'WHERE pa.id = {tbl}.assignment_id) WHERE variant_key IS NULL'))
+        db.session.commit()
+    except Exception as e:  # noqa: BLE001
+        db.session.rollback()
+        logger.warning('[probnik_assign] migrate_variant_work: %r', e)
 
 
 def _resolve_user(who: Dict[str, Any]):

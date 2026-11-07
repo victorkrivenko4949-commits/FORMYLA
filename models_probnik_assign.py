@@ -68,6 +68,8 @@ class ProbnikAssignmentAnswer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     assignment_id = db.Column(db.Integer, nullable=False, index=True)
     task_idx = db.Column(db.Integer, nullable=False)
+    # решения хранятся по вариантам: «Сменить»/«Предыдущий» не теряют работу
+    variant_key = db.Column(db.String(200), nullable=True)
     text = db.Column(db.Text, nullable=True)
     score = db.Column(db.Integer, nullable=True)
     max_score = db.Column(db.Integer, nullable=True)
@@ -75,9 +77,6 @@ class ProbnikAssignmentAnswer(db.Model):
     feedback = db.Column(db.Text, nullable=True)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    __table_args__ = (
-        db.UniqueConstraint('assignment_id', 'task_idx', name='uq_probnik_assign_answer'),
-    )
 
 
 class ProbnikAssignmentPhoto(db.Model):
@@ -87,6 +86,7 @@ class ProbnikAssignmentPhoto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     assignment_id = db.Column(db.Integer, nullable=False, index=True)
     task_idx = db.Column(db.Integer, nullable=False)
+    variant_key = db.Column(db.String(200), nullable=True)
     url = db.Column(db.String(500), nullable=True)
     ocr_status = db.Column(db.String(20), nullable=False, default='pending',
                            server_default='pending')   # pending | ok | failed
