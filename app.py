@@ -6622,45 +6622,44 @@ def tutor_send():
                                 )
                         # image_data остаётся первым фото — vision-модель прочитает рукопись сама.
                     else:
-                        # Обычный чат с фото (не режим проверки): единая OCR-цепочка
-                        # (Gemini через OpenRouter -> Tesseract -> Novita) + фото для vision.
-                        recognized = None
-                        ocr_err = None
-                        # 2026-09-15: сначала пробуем Gemini через OpenRouter — она
-                        # лучше всего читает рукописную математику.
+                        # Обычный чат с фото (не режим проверки).
+                        # 2026-11-07 FIX: раньше здесь была медленная цепочка
+                        # Gemini(OpenRouter) -> Tesseract -> Novita, а при её провале
+                        # фото уходило в vision-цепочку из 9 моделей OpenRouter
+                        # (худший случай ~7 минут на один HTTP-запрос) — соединение
+                        # обрывалось, фронт показывал «Не удалось связаться с сервером».
+                        # Теперь: единый OCR-слой services.solution_ocr (DeepSeek
+                        # vision -> Gemini -> Tesseract) — тот же, что в задачах дня.
+                        # Уверенный OCR -> текст уходит быстрой текстовой модели,
+                        # фото не нужно. Неуверенный/пустой OCR -> фото остаётся
+                        # приложенным для vision-модели.
+                        recognized = ''
+                        ocr_low = False
                         try:
-                            from services.solution_ocr import _ocr_openrouter_gemini as _og
-                            _openrouter_ocr = _og(image_data, (message or '')[:600])
-                            if _openrouter_ocr:
-                                recognized = _openrouter_ocr
-                                app.logger.info("[tutor] OpenRouter Gemini OCR recognized %d chars", len(recognized))
-                        except Exception as _og_exc:
-                            app.logger.warning("[tutor] OpenRouter Gemini OCR error: %s", _og_exc)
+                            from services.solution_ocr import ocr_solution_images as _ocr_all
+                            _ocr_meta = _ocr_all([image_data], task_text=(message or '')[:600])
+                            recognized = (_ocr_meta.get('text') or '').strip()
+                            ocr_low = bool(_ocr_meta.get('low_confidence'))
+                            app.logger.info(
+                                "[tutor] solution_ocr: engine=%s low=%s chars=%d",
+                                _ocr_meta.get('engine'), ocr_low, len(recognized),
+                            )
+                        except Exception as _ocr_exc:
+                            app.logger.exception("[tutor] solution_ocr failed: %s", _ocr_exc)
+                            recognized = ''
 
-                        if not recognized:
-                            try:
-                                from services.tesseract_ocr import recognize_bytes as _tesseract_ocr
-                                recognized, ocr_err = _tesseract_ocr(raw_bytes, first_file.mimetype or 'image/jpeg')
-                                if recognized:
-                                    app.logger.info("[tutor] Tesseract recognized %d chars", len(recognized))
-                            except Exception as _tess_exc:
-                                ocr_err = str(_tess_exc)
-                                app.logger.warning("[tutor] Tesseract error: %s", _tess_exc)
-
-                        if not recognized:
-                            try:
-                                from services.novita_vision import transcribe_handwritten_solution as _novita_ocr
-                                recognized = _novita_ocr(image_data)
-                                if recognized:
-                                    app.logger.info("[tutor] Novita recognized %d chars", len(recognized))
-                                else:
-                                    app.logger.warning("[tutor] Novita returned empty")
-                            except Exception as _novita_exc:
-                                app.logger.warning("[tutor] Novita error: %s", _novita_exc)
-
-                        if recognized:
-                            message = (recognized + "\n\n[Пользователь также написал: " + message + "]" if message else recognized)
+                        if recognized and not ocr_low:
+                            # OCR уверенный: отвечаем по тексту, без vision-цепочки.
+                            message = (recognized + "\n\n[Пользователь также написал: " + message + "]") if message else recognized
                             image_data = None
+                        elif recognized:
+                            # OCR неуверенный: фото остаётся приложенным, чтобы
+                            # vision-модель сверилась с рукописью, а не с текстом OCR.
+                            message = (
+                                ((message + "\n\n") if message else "")
+                                + "[OCR распознал фото неуверенно — доверяй фото, а не тексту ниже.]\n"
+                                + recognized
+                            )
                         else:
                             # 2026-09-15 FIX: OCR не сработал — НЕ возвращаем 422,
                             # а отдаём само фото vision-цепочке тьютора

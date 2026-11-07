@@ -1205,9 +1205,11 @@ document.getElementById('answerForm').addEventListener('submit', async function(
         task_id: formData.get('task_id'),
         user_answer: userAnswer,
         user_solution: userSolution,
-        // legacy single-photo поле — для совместимости передаём первое фото
-        solution_image_b64: solutionImagesB64[0] || '',
-        // новое поле — массив со всеми фото
+        // 2026-11-07 FIX: НЕ дублируем фото в legacy-поле solution_image_b64.
+        // Бэкенд склеивает solution_image_b64 + solution_images_b64 без
+        // дедупликации, и одно фото распознавалось ДВАЖДЫ (двойной расход
+        // vision-API + ложное «Фото 2: не удалось распознать» при одном фото).
+        // Отправляем только массив — все актуальные бэкенды его понимают.
         solution_images_b64: solutionImagesB64,
     };
 

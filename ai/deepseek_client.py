@@ -828,7 +828,8 @@ class DeepSeekClient:
                 headers["X-Title"] = "FORMYLA AI Tutor"
             # Для OpenRouter (vision) используем более короткий таймаут на ОДИН запрос,
             # чтобы цепочка фолбэков по vision-моделям успела выполниться целиком.
-            _per_call_timeout = 45 if is_openrouter else self.timeout
+            # 2026-11-07: 45с -> 30с + общий дедлайн цепочки выше (75с).
+            _per_call_timeout = 30 if is_openrouter else self.timeout
             resp = requests.post(api_url, headers=headers, json=payload, timeout=_per_call_timeout)
             if resp.status_code == 200:
                 data = resp.json()
@@ -895,7 +896,17 @@ class DeepSeekClient:
                 if openrouter_key:
                     last_err = None
                     last_poisoned_response = None
+                    # 2026-11-07 FIX: общий дедлайн на всю vision-цепочку.
+                    # Раньше до 9 моделей x 45с = ~7 минут в одном HTTP-запросе —
+                    # соединение обрывалось («Не удалось связаться с сервером»).
+                    # Теперь цепочка гарантированно укладывается в ~2 минуты
+                    # вместе с OCR и текстовым ответом.
+                    import time as _time_mod
+                    _vision_deadline = _time_mod.monotonic() + 75.0
                     for vm in vision_models:
+                        if _time_mod.monotonic() > _vision_deadline:
+                            logger.warning("Vision chain deadline (75s) exceeded — stop trying more models")
+                            break
                         try:
                             content = _call_api(
                                 "https://openrouter.ai/api/v1/chat/completions",
