@@ -263,7 +263,7 @@ var role = 'teacher';
 {# SEAT_SUBSCRIPTION_V1: залогиненный учитель/родитель платит по-настоящему —
    кнопка оплаты ведёт на реальное оформление через ЮKassa. Аноним видит демо. #}
 var REAL_PAY = {% if current_user.is_authenticated and current_user.role in ('teacher', 'parent') %}true{% else %}false{% endif %};
-var REAL_PLAN = {% if current_user.is_authenticated and current_user.role == 'teacher' %}'seat_teacher_group'{% elif current_user.is_authenticated and current_user.role == 'parent' %}'seat_parent_family'{% else %}''{% endif %};
+var REAL_PLAN = {% if current_user.is_authenticated and current_user.role == 'teacher' %}'seat_start'{% elif current_user.is_authenticated and current_user.role == 'parent' %}'seat_one'{% else %}''{% endif %};
 
 var DATA = {
   teacher: {

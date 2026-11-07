@@ -2,9 +2,9 @@
 """
 routes/seat_pay.py — SEAT_SUBSCRIPTION_V1 (07.11.2026)
 
-Подписки на МЕСТА для учителя (группы учеников) и родителя (дети):
-  teacher: Старт 1–5 мест 1500 ₽ / Группа 6–15 мест 3000 ₽ / Кружок 16–50 мест 5000 ₽
-  parent:  Один ребёнок 800 ₽ / Двое–трое 1500 ₽ / Большая семья 2500 ₽
+Подписки на МЕСТА — единая линейка для учителя и родителя
+(UNIFIED_SEATS_V1, 08.11.2026):
+  Одно место 800 ₽ / Старт до 5 мест 1500 ₽ / Группа до 15 мест 3000 ₽ / Кружок до 50 мест 5000 ₽
 
 Реальная оплата через ЮKassa (разовая, 30 дней, без автопродления —
 контур тот же, что у Premium: yookassa_payments + вебхук + страница возврата).
@@ -40,69 +40,65 @@ seat_pay_bp = Blueprint('seat_pay', __name__)
 YOOKASSA_API_BASE = "https://api.yookassa.ru/v3"
 
 SEAT_PLANS = {
-    # ── Учитель ──────────────────────────────────────────────────────────
-    'seat_teacher_start': {
-        'role': 'teacher', 'icon': '🌱', 'title': 'Старт',
-        'seats': 5, 'price_rub': 1500, 'tagline': '1–5 мест',
-        'features': [
-            'До 5 учеников в группах',
-            'Статистика каждого ученика: задачи дня, серия, уровни',
-            'Красная зона и рекомендации по режиму',
-            'Приглашения по коду и по никнейму',
-        ],
-    },
-    'seat_teacher_group': {
-        'role': 'teacher', 'icon': '👥', 'title': 'Группа',
-        'seats': 15, 'price_rub': 3000, 'tagline': '6–15 мест',
-        'features': [
-            'До 15 учеников во всех группах',
-            'Статистика каждого ученика: задачи дня, серия, уровни',
-            'Красная зона и рекомендации по режиму',
-            'Приглашения по коду и по никнейму',
-        ],
-    },
-    'seat_teacher_kruzhok': {
-        'role': 'teacher', 'icon': '🏫', 'title': 'Кружок',
-        'seats': 50, 'price_rub': 5000, 'tagline': '16–50 мест',
-        'features': [
-            'До 50 учеников во всех группах',
-            'Статистика каждого ученика: задачи дня, серия, уровни',
-            'Красная зона и рекомендации по режиму',
-            'Приглашения по коду и по никнейму',
-        ],
-    },
-    # ── Родитель ─────────────────────────────────────────────────────────
-    'seat_parent_one': {
-        'role': 'parent', 'icon': '🧒', 'title': 'Один ребёнок',
+    # UNIFIED_SEATS_V1 (08.11.2026, владелец): единая линейка для учителя
+    # и родителя — без деления по роли. Роль видна только в кабинете
+    # («Мои ученики» — учитель, «Мои гении» — родитель).
+    'seat_one': {
+        'icon': '🧒', 'title': 'Одно место',
         'seats': 1, 'price_rub': 800, 'tagline': '1 место',
         'features': [
-            'Одно место для ребёнка',
+            'Одно место для ученика или ребёнка',
             'Статистика: задачи дня, серия, уровни',
             'Красная зона и рекомендации',
-            'Premium-доступ ребёнка',
         ],
     },
-    'seat_parent_family': {
-        'role': 'parent', 'icon': '👨‍👩‍👧', 'title': 'Двое–трое детей',
-        'seats': 3, 'price_rub': 1500, 'tagline': 'до 3 мест',
+    'seat_start': {
+        'icon': '🌱', 'title': 'Старт',
+        'seats': 5, 'price_rub': 1500, 'tagline': 'до 5 мест',
         'features': [
-            'До трёх мест для детей',
-            'Статистика каждого ребёнка: задачи дня, серия, уровни',
-            'Красная зона и рекомендации',
-            'Premium-доступ детей',
+            'До 5 мест для учеников или детей',
+            'Статистика каждого: задачи дня, серия, уровни',
+            'Красная зона и рекомендации по режиму',
+            'Приглашения по коду и по никнейму',
         ],
     },
-    'seat_parent_big': {
-        'role': 'parent', 'icon': '🏡', 'title': 'Большая семья',
-        'seats': 5, 'price_rub': 2500, 'tagline': 'до 5 мест',
+    'seat_group': {
+        'icon': '👥', 'title': 'Группа',
+        'seats': 15, 'price_rub': 3000, 'tagline': 'до 15 мест',
         'features': [
-            'До пяти мест для детей',
-            'Статистика каждого ребёнка: задачи дня, серия, уровни',
-            'Красная зона и рекомендации',
-            'Premium-доступ детей',
+            'До 15 мест для учеников или детей',
+            'Статистика каждого: задачи дня, серия, уровни',
+            'Красная зона и рекомендации по режиму',
+            'Приглашения по коду и по никнейму',
+        ],
+    },
+    'seat_kruzhok': {
+        'icon': '🏫', 'title': 'Кружок',
+        'seats': 50, 'price_rub': 5000, 'tagline': 'до 50 мест',
+        'features': [
+            'До 50 мест для учеников или детей',
+            'Статистика каждого: задачи дня, серия, уровни',
+            'Красная зона и рекомендации по режиму',
+            'Приглашения по коду и по никнейму',
         ],
     },
 }
+
+# Старые коды тарифов (до объединения линейки) — для отображения уже
+# активных подписок и активации незавершённых заказов.
+SEAT_ALIASES = {
+    'seat_teacher_start': 'seat_start',
+    'seat_teacher_group': 'seat_group',
+    'seat_teacher_kruzhok': 'seat_kruzhok',
+    'seat_parent_one': 'seat_one',
+    'seat_parent_family': 'seat_start',
+    'seat_parent_big': 'seat_start',
+}
+
+
+def resolve_seat_plan(plan: str) -> str:
+    """Код тарифа (в т.ч. старый) → код в SEAT_PLANS."""
+    return SEAT_ALIASES.get(plan, plan)
 
 
 # ── Таблицы ─────────────────────────────────────────────────────────────
@@ -159,7 +155,7 @@ def active_seat_sub(user_id: int) -> dict | None:
         return None
     if not row:
         return None
-    info = SEAT_PLANS.get(row[0]) or {}
+    info = SEAT_PLANS.get(resolve_seat_plan(row[0])) or {}
     return {
         'plan': row[0], 'seats': row[1],
         'expires_at': _as_dt(row[2]),
@@ -208,6 +204,7 @@ def activate_seats_for_payment(user_id: int, plan: str,
     yookassa_payments (как в premium_pay). Повторный вебхук или повторное
     открытие ссылки возврата не продлевает срок повторно.
     """
+    plan = resolve_seat_plan(plan)
     if plan not in SEAT_PLANS:
         return {'ok': False, 'error': 'unknown plan'}
     info = SEAT_PLANS[plan]
@@ -284,17 +281,17 @@ def checkout():
     role = getattr(current_user, 'role', 'student') or 'student'
     if role not in ('teacher', 'parent'):
         abort(404)
-    plan = request.args.get('plan', '')
-    if plan not in SEAT_PLANS or SEAT_PLANS[plan]['role'] != role:
-        # первый тариф роли по цене
-        plan = next(k for k, v in SEAT_PLANS.items() if v['role'] == role)
+    plan = resolve_seat_plan(request.args.get('plan', ''))
+    if plan not in SEAT_PLANS:
+        # стартовый тариф по цене (родителю с одним ребёнком — «Одно место»)
+        plan = 'seat_one' if role == 'parent' else 'seat_start'
     info = SEAT_PLANS[plan]
     cfg = _yk_config()
     gate = seat_gate(current_user.id, role)
     others = [
         {'key': k, 'icon': v['icon'], 'title': v['title'],
          'price_rub': v['price_rub'], 'tagline': v['tagline'], 'seats': v['seats']}
-        for k, v in SEAT_PLANS.items() if v['role'] == role and k != plan
+        for k, v in SEAT_PLANS.items() if k != plan
     ]
     return render_template('payments/seat_checkout.html',
                            plan=plan, info=info, cfg=cfg, gate=gate,
@@ -307,10 +304,10 @@ def checkout():
 @login_required
 def create_payment():
     data = request.get_json(silent=True) or {}
-    plan = data.get('plan') or request.form.get('plan') or ''
+    plan = resolve_seat_plan(data.get('plan') or request.form.get('plan') or '')
     role = getattr(current_user, 'role', 'student') or 'student'
-    if plan not in SEAT_PLANS or SEAT_PLANS[plan]['role'] != role:
-        return jsonify({'error': 'Неизвестный тариф для вашей роли'}), 400
+    if plan not in SEAT_PLANS:
+        return jsonify({'error': 'Неизвестный тариф'}), 400
 
     info = SEAT_PLANS[plan]
     amount = int(info['price_rub'])
@@ -440,7 +437,7 @@ def payment_return():
 
     if not row:
         return render_template('payments/seat_result.html',
-                               status='not_found', info=None, plan=None), 404
+                               status='not_found', info=None, plan=None, role=role), 404
 
     p_user_id, item_code, p_status, payment_id = row[0], row[1], row[2], row[3]
     try:
@@ -450,8 +447,11 @@ def payment_return():
     if p_user_id != current_user.id:
         abort(403)
 
-    plan = item_code if item_code in SEAT_PLANS else None
+    plan = resolve_seat_plan(item_code) if item_code else None
+    if plan not in SEAT_PLANS:
+        plan = None
     info = SEAT_PLANS.get(plan) if plan else None
+    role = getattr(current_user, 'role', '') or ''
 
     def _activate():
         return activate_seats_for_payment(current_user.id, plan, payment_id, order_id)
@@ -460,11 +460,11 @@ def payment_return():
         result = _activate() if plan else {'ok': False}
         sub = active_seat_sub(current_user.id)
         return render_template('payments/seat_result.html',
-                               status='succeeded', info=info, plan=plan,
+                               status='succeeded', info=info, plan=plan, role=role,
                                paid_amount=paid_amount, demo=True,
                                expires=str(sub['expires_at'])[:16] if sub else None,
                                seats=sub['seats'] if sub else None,
-                               cabinet='/teacher' if SEAT_PLANS.get(plan, {}).get('role') == 'teacher' else '/parent')
+                               cabinet='/teacher' if (getattr(current_user, 'role', '') or '') == 'teacher' else '/parent')
 
     # Реальный платёж: перепроверяем статус в API ЮKassa
     cfg = _yk_config()
@@ -485,18 +485,18 @@ def payment_return():
         _activate() if plan else None
         sub = active_seat_sub(current_user.id)
         return render_template('payments/seat_result.html',
-                               status='succeeded', info=info, plan=plan,
+                               status='succeeded', info=info, plan=plan, role=role,
                                paid_amount=paid_amount,
                                expires=str(sub['expires_at'])[:16] if sub else None,
                                seats=sub['seats'] if sub else None,
-                               cabinet='/teacher' if SEAT_PLANS.get(plan, {}).get('role') == 'teacher' else '/parent')
+                               cabinet='/teacher' if (getattr(current_user, 'role', '') or '') == 'teacher' else '/parent')
 
     if p_status == 'canceled':
         return render_template('payments/seat_result.html',
-                               status='canceled', info=info, plan=plan, paid_amount=paid_amount)
+                               status='canceled', info=info, plan=plan, role=role, paid_amount=paid_amount)
 
     return render_template('payments/seat_result.html',
-                           status='pending', info=info, plan=plan, paid_amount=paid_amount)
+                           status='pending', info=info, plan=plan, role=role, paid_amount=paid_amount)
 
 
 def install_seat_pay(app, register=None) -> None:

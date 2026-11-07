@@ -694,8 +694,7 @@ def teacher_tariffs():
         'tariffs/teacher.html',
         students=_tariff_students_for_teacher(),
         plans=_tariff_plans(),
-        seat_plans=[{'key': k, **v} for k, v in SEAT_PLANS.items()
-                    if v['role'] == 'teacher'],
+        seat_plans=[{'key': k, **v} for k, v in SEAT_PLANS.items()],
         seat=seat_gate(current_user.id, 'teacher'),
     )
 
@@ -709,8 +708,7 @@ def parent_tariffs():
         'tariffs/parent.html',
         children=_tariff_children_for_parent(),
         plans=_tariff_plans(),
-        seat_plans=[{'key': k, **v} for k, v in SEAT_PLANS.items()
-                    if v['role'] == 'parent'],
+        seat_plans=[{'key': k, **v} for k, v in SEAT_PLANS.items()],
         seat=seat_gate(current_user.id, 'parent'),
     )
 

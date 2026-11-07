@@ -40,7 +40,7 @@
     <div class="sr-title">Подписка оплачена</div>
     <div class="sr-sub sr-ok">
       {% if info %}«{{ info.title }}» — {{ info.tagline }}. Форма добавления
-      {{ 'учеников' if info.role == 'teacher' else 'детей' }} уже вернулась в ваш кабинет.{% endif %}
+      {{ 'учеников' if (role or '') == 'teacher' else 'детей' }} уже вернулась в ваш кабинет.{% endif %}
     </div>
     <div class="sr-rows">
       {% if paid_amount %}<div class="sr-row"><span>Оплачено</span><b>{{ paid_amount }} ₽</b></div>{% endif %}
