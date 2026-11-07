@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}FORMYLA — макеты подписок{% endblock %}
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  .mk {
+    --bg:#0a0f1e; --bg-raise:#0d1426; --ink:#eaf0fa; --muted:#9aa6bb; --faint:#5d6a84;
+    --gold:#8fe3ff; --sky:#8ccbff; --hair:rgba(234,240,250,.12);
+    --font-display:"STIX Two Text",Georgia,serif;
+    --font-mono:"JetBrains Mono",monospace;
+  }
+  .mk .wrap { max-width:960px; margin:0 auto; padding:48px 24px 72px; }
+  .mk .eyebrow { font-family:var(--font-mono); font-size:.75rem; color:var(--gold); letter-spacing:.22em; text-transform:uppercase; }
+  .mk h1 { font-family:var(--font-display); font-size:clamp(2rem,5vw,3.2rem); font-weight:600; line-height:1.12; margin:18px 0 14px; color:var(--ink); }
+  .mk h1 em { font-style:italic; color:var(--gold); }
+  .mk .sub { color:var(--muted); max-width:62ch; line-height:1.65; margin-bottom:40px; }
+  .mk .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
+  .mk .card { border:1px solid var(--hair); border-radius:8px; background:var(--bg-raise); padding:28px 26px; text-decoration:none; color:var(--ink); transition:border-color .2s, transform .2s; display:block; }
+  .mk .card:hover { border-color:rgba(143,227,255,.45); transform:translateY(-3px); }
+  .mk .c-no { font-family:var(--font-mono); font-size:.72rem; color:var(--gold); letter-spacing:.18em; }
+  .mk .c-title { font-family:var(--font-display); font-size:1.5rem; font-weight:600; margin:10px 0 8px; }
+  .mk .c-desc { font-size:.9rem; color:var(--muted); line-height:1.6; margin-bottom:16px; }
+  .mk .c-tags { display:flex; gap:8px; flex-wrap:wrap; }
+  .mk .tag { font-family:var(--font-mono); font-size:.72rem; color:var(--sky); border:1px solid var(--hair); border-radius:4px; padding:4px 8px; letter-spacing:.06em; }
+  .mk .note { margin-top:36px; border:1px dashed rgba(143,227,255,.35); border-radius:6px; padding:16px 20px; background:rgba(143,227,255,.05); font-size:.88rem; color:var(--muted); line-height:1.6; }
+  .mk .note b { color:var(--gold); }
+  .mk footer { border-top:1px solid var(--hair); margin-top:48px; padding-top:24px; font-family:var(--font-mono); font-size:.75rem; color:var(--faint); letter-spacing:.08em; }
+  .mk footer a { color:var(--sky); text-decoration:none; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="mk">
+<div class="wrap">
+  <div class="eyebrow">FORMYLA · макеты подписок</div>
+  <h1>Два кабинета — <em>одна механика мест</em></h1>
+  <p class="sub">Макеты новых подписок: покупка прямо из кабинета, тарифы по роли, глубокая статистика по принципу «увидел — понял — закрыл — сделал». Это прототипы для команды, не продакшен.</p>
+
+  <div class="cards">
+    <a class="card" href="/teachers">
+      <div class="c-no">01 / УЧИТЕЛЮ</div>
+      <div class="c-title">Кабинет учителя</div>
+      <div class="c-desc">Подписка на группу: места, режим каждому ученику, статистика группы, пробники и сводные отчёты родителям.</div>
+      <div class="c-tags">
+        <span class="tag">1 500 ₽ · 1–5 мест</span>
+        <span class="tag">3 000 ₽ · 6–15</span>
+        <span class="tag">5 000 ₽ · 16–50</span>
+        <span class="tag">2 места бесплатно</span>
+      </div>
+    </a>
+    <a class="card" href="/family">
+      <div class="c-no">02 / РОДИТЕЛЮ</div>
+      <div class="c-title">Кабинет родителя</div>
+      <div class="c-desc">Семейная подписка: до 5 мест на детей, покупка в аккаунте родителя, режимы и статистика по каждому ребёнку.</div>
+      <div class="c-tags">
+        <span class="tag">800 ₽ · 1 место</span>
+        <span class="tag">1 500 ₽ · до 3</span>
+        <span class="tag">2 500 ₽ · до 5</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="note"><b>Как читать макеты.</b> Полоса покупки в разделе «Мои ученики» / «Мои дети» показана в двух состояниях: активная подписка («Продлить») и без подписки («Купить»). В живом кабинете видна только одна. Тарифы показываются по роли: ученические 500/800 ₽ остаются у учеников.</div>
+
+  <footer>FORMYLA · макеты подписок · 7 ноября 2026 · <a href="/about">о проекте</a></footer>
+</div>
+</div>
+{% endblock %}

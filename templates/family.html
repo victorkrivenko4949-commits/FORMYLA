@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+{% block title %}FORMYLA — семейная подписка{% endblock %}
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+
+  :root {
+    --bg:#0a0f1e; --bg-raise:#0d1426; --bg-deep:#070b16;
+    --ink:#eaf0fa; --muted:#9aa6bb; --faint:#5d6a84;
+    --gold:#8fe3ff; --violet:#a78bfa; --sky:#8ccbff;
+    --hair:rgba(234,240,250,.12); --hair-strong:rgba(234,240,250,.22);
+    --font-display:'STIX Two Text',Georgia,serif;
+    --font-body:'Golos Text','Segoe UI',sans-serif;
+    --font-mono:'JetBrains Mono','Courier New',monospace;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    line-height:1.6; font-family:var(--font-body); font-size:16px; color:var(--ink);
+    background-color:var(--bg);
+    background-image:
+      radial-gradient(ellipse 80% 34% at 50% -4%,rgba(140,203,255,.07),transparent 62%),
+      repeating-linear-gradient(0deg,transparent 0 31px,rgba(255,255,255,.018) 31px 32px),
+      repeating-linear-gradient(90deg,transparent 0 31px,rgba(255,255,255,.018) 31px 32px);
+  }
+  a { color:inherit; }
+  ::selection { background:rgba(56,189,248,.28); }
+  .wrap { max-width:1140px; margin:0 auto; padding:0 var(--s6,24px); }
+  section { padding:clamp(48px,7vw,80px) 0; }
+
+  .eyebrow {
+    font-family:var(--font-mono); font-size:.78rem; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--gold);
+    display:flex; align-items:center; gap:12px;
+  }
+  .eyebrow::before { content:""; width:2.2em; height:1px; background:var(--gold); opacity:.6; }
+
+  .hero { padding:clamp(64px,9vw,96px) 0 clamp(40px,5vw,56px); }
+  .hero h1 {
+    font-family:var(--font-display); font-weight:600;
+    font-size:clamp(2.6rem, 1rem + 6vw, 4.6rem);
+    line-height:1.04; letter-spacing:-.015em; margin:20px 0 12px;
+  }
+  .hero h1 em { color:var(--gold); font-weight:400; }
+  .hero .sub { font-family:var(--font-display); font-style:italic; font-size:1.25rem; color:var(--muted); margin-bottom:20px; }
+  .hero .desc { color:var(--muted); max-width:56ch; }
+  .proof { margin-top:32px; border-top:1px solid var(--hair); padding-top:20px; display:flex; flex-wrap:wrap; gap:8px 28px; list-style:none; }
+  .proof li { font-size:.92rem; color:var(--muted); }
+  .proof li::before { content:"—"; color:var(--gold); margin-right:.55em; }
+  .proof b { color:var(--ink); font-weight:600; }
+
+  .btn {
+    display:inline-block; text-decoration:none; font-weight:600; font-size:.95rem;
+    padding:.9em 1.9em; border-radius:4px; cursor:pointer; border:none;
+    transition:transform .18s var(--ease), box-shadow .18s var(--ease), border-color .18s var(--ease);
+    font-family:var(--font-body);
+  }
+  .btn--primary { background:linear-gradient(135deg,#38bdf8,#6366f1); color:#fff; }
+  .btn--primary:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(99,102,241,.45); }
+  .btn--ghost { border:1px solid var(--hair-strong); color:var(--muted); background:none; }
+  .btn--ghost:hover { border-color:var(--gold); color:var(--gold); }
+  .btn--sm { padding:.55em 1.2em; font-size:.85rem; }
+  .cta-row { margin-top:32px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+  .cta-note { font-size:.8rem; color:var(--muted); max-width:34ch; }
+
+  .sec-head { display:flex; align-items:baseline; gap:20px; margin-bottom:40px; }
+  .sec-no { font-family:var(--font-mono); font-size:.78rem; color:var(--gold); letter-spacing:.18em; white-space:nowrap; }
+  .sec-title { font-family:var(--font-display); font-weight:600; font-size:clamp(1.5rem,1.2rem + 1.25vw,2.25rem); line-height:1.15; letter-spacing:-.01em; }
+
+  .panel { border:1px solid var(--hair); border-radius:6px; background:var(--bg-raise); }
+  .ledger { border-top:1px solid var(--hair); font-family:var(--font-mono); }
+  .ledger-row { display:flex; justify-content:space-between; gap:16px; padding:10px 20px; border-bottom:1px solid var(--hair); font-size:.82rem; color:var(--muted); flex-wrap:wrap; }
+  .ledger-row:last-child { border-bottom:none; }
+  .ledger-row b { color:var(--gold); font-weight:500; white-space:nowrap; }
+
+  .kids { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:16px; }
+
+  .buy-bar { display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap; margin-top:20px; border:1px solid rgba(143,227,255,.28); border-radius:8px; padding:20px 24px; background:linear-gradient(135deg, rgba(56,189,248,.10), rgba(99,102,241,.12)); }
+  .buy-bar .bb-title { font-family:var(--font-display); font-size:1.15rem; font-weight:600; }
+  .buy-bar .bb-sub { font-size:.85rem; color:var(--muted); margin-top:4px; }
+  .buy-bar .bb-actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .t-buy { margin-top:16px; }
+  .kid { border:1px solid var(--hair); border-radius:6px; padding:18px 20px; background:var(--bg-raise); }
+  .kid .k-head { display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:4px; }
+  .kid .k-name { font-family:var(--font-display); font-size:1.15rem; font-weight:600; }
+  .kid .k-meta { font-size:.85rem; color:var(--muted); margin:2px 0 14px; }
+  .badge { font-family:var(--font-mono); font-size:.72rem; letter-spacing:.08em; padding:3px 10px; border-radius:999px; border:1px solid var(--hair-strong); color:var(--muted); white-space:nowrap; }
+  .badge--ok { color:var(--gold); border-color:rgba(143,227,255,.35); }
+  .badge--warn { color:var(--violet); border-color:rgba(167,139,250,.35); }
+  .mode-switch { display:inline-flex; border:1px solid var(--hair-strong); border-radius:4px; overflow:hidden; font-size:.82rem; }
+  .mode-switch span { padding:7px 14px; color:var(--muted); white-space:nowrap; }
+  .mode-switch span.on { background:linear-gradient(135deg,rgba(56,189,248,.22),rgba(99,102,241,.28)); color:var(--ink); font-weight:600; }
+  .code-line { display:flex; align-items:center; gap:16px; margin-top:14px; padding:12px 16px; border:1px dashed rgba(143,227,255,.3); border-radius:6px; background:rgba(143,227,255,.05); flex-wrap:wrap; }
+  .code-line .code { font-family:var(--font-mono); font-size:1.35rem; font-weight:500; letter-spacing:.35em; color:var(--gold); }
+  .code-line .hint { font-size:.82rem; color:var(--muted); }
+
+  /* deep stats */
+  details.stat-block { border:1px solid var(--hair); border-radius:6px; background:var(--bg-raise); margin-bottom:14px; overflow:hidden; }
+  details.stat-block summary {
+    cursor:pointer; list-style:none; padding:16px 20px;
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  details.stat-block summary::-webkit-details-marker { display:none; }
+  details.stat-block summary .k-name { font-family:var(--font-display); font-size:1.2rem; font-weight:600; }
+  details.stat-block summary .chev { margin-left:auto; color:var(--faint); font-family:var(--font-mono); font-size:.8rem; }
+  details[open] summary .chev { color:var(--gold); }
+  .stat-in { padding:0 20px 20px; }
+  .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; }
+  .metric { border:1px solid var(--hair); border-radius:6px; padding:14px 16px; background:var(--bg-deep); }
+  .metric .m-label { font-family:var(--font-mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); margin-bottom:6px; }
+  .metric .m-value { font-family:var(--font-display); font-size:1.6rem; font-weight:600; line-height:1.1; }
+  .metric .m-value small { font-size:.85rem; color:var(--muted); font-weight:400; }
+  .metric .m-mean { font-size:.82rem; color:var(--muted); margin:6px 0 10px; }
+  .metric .m-act { font-size:.8rem; }
+
+  .bars { margin-top:8px; }
+  .bar-row { display:grid; grid-template-columns:130px 1fr 40px; gap:10px; align-items:center; margin-bottom:7px; font-size:.82rem; }
+  .bar-row .b-name { color:var(--muted); }
+  .bar-track { height:6px; background:rgba(234,240,250,.08); border-radius:3px; overflow:hidden; }
+  .bar-fill { height:100%; background:linear-gradient(90deg,#38bdf8,#6366f1); border-radius:3px; }
+  .bar-row .b-val { font-family:var(--font-mono); color:var(--gold); text-align:right; }
+  .bar-row.low .bar-fill { background:linear-gradient(90deg,#f59e0b,#ef4444); }
+  .bar-row.low .b-val { color:#fbbf24; }
+
+  .tour-note { display:flex; align-items:center; gap:12px; margin-top:12px; padding:12px 16px; border:1px solid rgba(167,139,250,.3); border-radius:6px; background:rgba(167,139,250,.07); flex-wrap:wrap; }
+  .tour-note .t-days { font-family:var(--font-display); font-size:1.5rem; font-weight:600; color:var(--violet); }
+  .tour-note .t-txt { font-size:.85rem; color:var(--muted); }
+
+  .tariffs { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+  .tariff { border:1px solid var(--hair); border-radius:6px; padding:22px 20px 18px; background:var(--bg-raise); position:relative; }
+  .tariff--best { border-color:rgba(143,227,255,.45); box-shadow:0 0 0 1px rgba(143,227,255,.15), 0 12px 40px rgba(99,102,241,.15); }
+  .t-badge { position:absolute; top:-11px; left:20px; background:linear-gradient(135deg,#38bdf8,#6366f1); color:#fff; font-size:.72rem; font-weight:600; padding:3px 12px; border-radius:999px; font-family:var(--font-mono); letter-spacing:.06em; }
+  .t-name { font-family:var(--font-display); font-size:1.2rem; font-weight:600; }
+  .t-price { font-family:var(--font-display); font-size:2rem; font-weight:600; color:var(--gold); margin:6px 0 2px; }
+  .t-price small { font-size:.95rem; color:var(--muted); font-weight:400; }
+  .t-per { font-family:var(--font-mono); font-size:.75rem; color:var(--faint); letter-spacing:.1em; margin-bottom:14px; }
+  .tariff ul { list-style:none; }
+  .tariff li { font-size:.85rem; color:var(--muted); padding:5px 0; border-top:1px solid var(--hair); }
+  .tariff li::before { content:"—"; color:var(--gold); margin-right:.5em; }
+
+  .rules-list { border:1px solid var(--hair); border-radius:6px; }
+  .rule-row { display:grid; grid-template-columns:220px 1fr; gap:18px; padding:16px 20px; border-bottom:1px solid var(--hair); font-size:.92rem; }
+  .rule-row:last-child { border-bottom:none; }
+  .rule-row b { color:var(--ink); font-weight:600; }
+  .rule-row span { color:var(--muted); }
+  @media (max-width:640px) { .rule-row { grid-template-columns:1fr; gap:4px; } }
+
+  .join-card { max-width:460px; margin:0 auto; border:1px solid var(--hair); border-radius:6px; background:var(--bg-raise); padding:28px 26px; text-align:center; }
+  .join-card .j-title { font-family:var(--font-display); font-size:1.4rem; font-weight:600; margin-bottom:6px; }
+  .join-card .j-sub { font-size:.88rem; color:var(--muted); margin-bottom:18px; }
+  .join-code { font-family:var(--font-mono); font-size:1.6rem; letter-spacing:.4em; color:var(--gold); border:1px dashed rgba(143,227,255,.35); border-radius:6px; padding:14px 10px; background:rgba(143,227,255,.05); }
+  .join-hint { font-size:.8rem; color:var(--muted); margin:14px 0 18px; }
+
+  .why-note { max-width:680px; margin:0 auto; text-align:center; font-family:var(--font-display); font-style:italic; font-size:1.15rem; color:var(--muted); line-height:1.7; }
+  .why-note b { color:var(--ink); font-style:normal; font-weight:600; }
+
+  footer { border-top:1px solid var(--hair); padding:28px 0 48px; font-family:var(--font-mono); font-size:.75rem; color:var(--faint); letter-spacing:.08em; text-align:center; }
+
+  .tscroll { overflow-x:auto; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="wrap">
+
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="eyebrow">FORMYLA · кабинет родителя</div>
+    <h1>Семейная <em>подписка</em></h1>
+    <p class="sub">платите за всех детей из одного аккаунта</p>
+    <p class="desc">Один тариф на семью: места для детей, режим каждому свой, глубокая статистика — и ни одной покупки в детских аккаунтах.</p>
+    <div class="cta-row">
+      <span class="btn btn--primary">Оформить семейную подписку</span>
+      <span class="btn btn--ghost">Посмотреть статистику детей</span>
+      <span class="cta-note">разовая оплата за 30 дней · ЮKassa · отмена сохраняет доступ до конца периода</span>
+    </div>
+    <ul class="proof">
+      <li><b>1–5 мест</b> на детей в одном тарифе</li>
+      <li><b>свой режим</b> каждому ребёнку</li>
+      <li><b>ответы ребёнка</b> не видны никому, кроме него</li>
+    </ul>
+  </div>
+
+  <!-- 01 ПОДПИСКА -->
+  <section>
+    <div class="sec-head"><span class="sec-no">01 / МОИ ДЕТИ</span><h2 class="sec-title">Мои дети: места и режимы</h2></div>
+
+    <div class="panel">
+      <div class="ledger">
+        <div class="ledger-row"><span>Тариф «Двое–трое детей»</span><b>1 500 ₽ / 30 дней</b></div>
+        <div class="ledger-row"><span>Активна до</span><b>7 декабря 2026</b></div>
+        <div class="ledger-row"><span>Занято мест</span><b>2 из 3</b></div>
+      </div>
+    </div>
+
+    <div class="kids">
+      <div class="kid">
+        <div class="k-head"><span class="k-name">Максим</span><span class="badge badge--ok">место занято</span></div>
+        <div class="k-meta">9 класс · готовится к «Ломоносову»</div>
+        <div class="mode-switch"><span class="on">Работяга · 6 дней</span><span>Спокойный · 3 дня</span></div>
+      </div>
+      <div class="kid">
+        <div class="k-head"><span class="k-name">Соня</span><span class="badge badge--ok">место занято</span></div>
+        <div class="k-meta">6 класс · задача дня, уровень 2 из 4</div>
+        <div class="mode-switch"><span>Работяга · 6 дней</span><span class="on">Спокойный · 3 дня</span></div>
+      </div>
+      <div class="kid">
+        <div class="k-head"><span class="k-name">Свободное место</span><span class="badge badge--warn">ждёт ребёнка</span></div>
+        <div class="k-meta">покажите ребёнку код — он введёт его на /join и займёт место</div>
+        <div class="code-line"><span class="code">К4РТ8Н</span><span class="hint">код приглашения · обновить можно в любой момент</span></div>
+      </div>
+    </div>
+
+    <div class="cta-row" style="margin-top:20px;">
+      <span class="btn btn--ghost btn--sm">Добавить место</span>
+    </div>
+
+    <div class="buy-bar">
+      <div>
+        <div class="bb-title">Семейная подписка</div>
+        <div class="bb-sub">Активна до 7 декабря 2026 · Продление добавит 30 дней к текущей дате.</div>
+      </div>
+      <div class="bb-actions">
+        <span class="btn btn--ghost btn--sm">Изменить тариф</span>
+        <span class="btn btn--primary btn--sm">Продлить · 1 500 ₽</span>
+      </div>
+    </div>
+
+    <div class="buy-bar" style="border-style:dashed; background:none;">
+      <div>
+        <div class="bb-title">Нет активной подписки</div>
+        <div class="bb-sub">Покупка прямо из кабинета: тариф «Двое–трое детей» открывает до 3 мест. Оплата — в аккаунте родителя, детские аккаунты не трогаем.</div>
+      </div>
+      <div class="bb-actions">
+        <span class="btn btn--primary">Купить подписку · 1 500 ₽</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 ГЛУБОКАЯ СТАТИСТИКА -->
+  <section>
+    <div class="sec-head"><span class="sec-no">02 / СТАТИСТИКА</span><h2 class="sec-title">Глубокая статистика</h2></div>
+    <p style="color:var(--muted); max-width:62ch; margin-bottom:24px;">Каждый показатель — с пояснением простыми словами и действием. Блоки сворачиваются: закрыли — осталась одна строка ребёнка.</p>
+
+    <details class="stat-block" open>
+      <summary>
+        <span class="k-name">Максим</span>
+        <span class="badge">9 класс · «Ломоносов»</span>
+        <span class="badge badge--ok">серия 6 дней</span>
+        <span class="chev">свернуть ▲</span>
+      </summary>
+      <div class="stat-in">
+        <div class="metrics">
+          <div class="metric">
+            <div class="m-label">Задач / день · 7 дней</div>
+            <div class="m-value">7.1 <small>норма 4+</small></div>
+            <svg viewBox="0 0 120 28" style="width:100%; height:28px; margin:4px 0 2px;" aria-hidden="true">
+              <polyline points="0,14 20,10 40,8 60,11 80,5 100,10 120,12" fill="none" stroke="#8fe3ff" stroke-width="1.6"/>
+              <line x1="0" y1="20" x2="120" y2="20" stroke="rgba(234,240,250,.18)" stroke-width="1" stroke-dasharray="3 3"/>
+            </svg>
+            <div class="m-mean">Устойчивая практика выше нормы — режим подходит.</div>
+            <div class="m-act"><span class="btn btn--ghost btn--sm">Оставить «Работягу»</span></div>
+          </div>
+          <div class="metric">
+            <div class="m-label">Долг задач</div>
+            <div class="m-value">2 <small>задачи</small></div>
+            <div class="m-mean">Нерешённое висит неделю и исчезает без штрафа — стресса нет.</div>
+            <div class="m-act"><span class="btn btn--ghost btn--sm">Напомнить ребёнку</span></div>
+          </div>
+          <div class="metric">
+            <div class="m-label">До отборочного «Ломоносова»</div>
+            <div class="m-value">6 <small>дней</small></div>
+            <div class="m-mean">Тур 13–20 ноября. Уровень уверенности растёт третий день подряд.</div>
+            <div class="m-act"><span class="btn btn--primary btn--sm">Пробник на выходных</span></div>
+          </div>
+        </div>
+        <div class="metric" style="margin-top:14px;">
+          <div class="m-label">Темы · уверенность</div>
+          <div class="bars">
+            <div class="bar-row"><span class="b-name">Алгебра</span><div class="bar-track"><div class="bar-fill" style="width:81%"></div></div><span class="b-val">81%</span></div>
+            <div class="bar-row"><span class="b-name">Теория чисел</span><div class="bar-track"><div class="bar-fill" style="width:72%"></div></div><span class="b-val">72%</span></div>
+            <div class="bar-row low"><span class="b-name">Комбинаторика</span><div class="bar-track"><div class="bar-fill" style="width:48%"></div></div><span class="b-val">48%</span></div>
+            <div class="bar-row low"><span class="b-name">Геометрия</span><div class="bar-track"><div class="bar-fill" style="width:35%"></div></div><span class="b-val">35%</span></div>
+          </div>
+          <div class="m-mean">Слабые темы выделены: по ним куратор добавит практики — подтвердите, и расписание пересоберётся.</div>
+          <div class="m-act"><span class="btn btn--primary btn--sm">Добавить практику по геометрии</span></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="stat-block">
+      <summary>
+        <span class="k-name">Соня</span>
+        <span class="badge">6 класс · Матпраздник</span>
+        <span class="badge badge--warn">серия 2 дня</span>
+        <span class="chev">развернуть ▼</span>
+      </summary>
+      <div class="stat-in">
+        <div class="metrics">
+          <div class="metric">
+            <div class="m-label">Задач / день · 7 дней</div>
+            <div class="m-value">2.6 <small>ниже нормы 4</small></div>
+            <svg viewBox="0 0 120 28" style="width:100%; height:28px; margin:4px 0 2px;" aria-hidden="true">
+              <polyline points="0,16 20,14 40,20 60,10 80,14 100,17 120,13" fill="none" stroke="#a78bfa" stroke-width="1.6"/>
+              <line x1="0" y1="12" x2="120" y2="12" stroke="rgba(234,240,250,.18)" stroke-width="1" stroke-dasharray="3 3"/>
+            </svg>
+            <div class="m-mean">Практика неровная: 3 дня подряд ниже нормы, серия чуть не сгорела.</div>
+            <div class="m-act"><span class="btn btn--primary btn--sm">Сменить на «Спокойный»</span></div>
+          </div>
+          <div class="metric">
+            <div class="m-label">Долг задач</div>
+            <div class="m-value">0 <small>задач</small></div>
+            <div class="m-mean">Всё решает в день выдачи — привычка хорошая.</div>
+            <div class="m-act"><span class="btn btn--ghost btn--sm">Похвалить в чате</span></div>
+          </div>
+          <div class="metric">
+            <div class="m-label">Ближайшая цель</div>
+            <div class="m-value">106 <small>дней</small></div>
+            <div class="m-mean">Матпраздник — 21 февраля. Времени достаточно, темп спокойный.</div>
+            <div class="m-act"><span class="btn btn--ghost btn--sm">Посмотреть план</span></div>
+          </div>
+        </div>
+        <div class="metric" style="margin-top:14px;">
+          <div class="m-label">Темы · уверенность</div>
+          <div class="bars">
+            <div class="bar-row"><span class="b-name">Арифметика</span><div class="bar-track"><div class="bar-fill" style="width:70%"></div></div><span class="b-val">70%</span></div>
+            <div class="bar-row"><span class="b-name">Логика</span><div class="bar-track"><div class="bar-fill" style="width:55%"></div></div><span class="b-val">55%</span></div>
+            <div class="bar-row low"><span class="b-name">Комбинаторика</span><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div><span class="b-val">40%</span></div>
+          </div>
+          <div class="m-mean">Комбинаторика просела — курсор сам добавит задачек, тревожиться не о чем.</div>
+          <div class="m-act"><span class="btn btn--ghost btn--sm">Добавить практику</span></div>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- 03 ТАРИФЫ -->
+  <section>
+    <div class="sec-head"><span class="sec-no">03 / ТАРИФЫ</span><h2 class="sec-title">Тарифы родителя</h2></div>
+    <p style="color:var(--muted); max-width:62ch; margin-bottom:24px;">Раздел тарифов внутри родительского кабинета: здесь только семейные пакеты. Ученические тарифы 500/800 ₽ родителю не показываются — они остаются у детей.</p>
+    <div class="tariffs">
+      <div class="tariff">
+        <div class="t-name">Один ребёнок</div>
+        <div class="t-price">800 ₽ <small>/ 30 дней</small></div>
+        <div class="t-per">1 МЕСТО · РАЗОВАЯ ОПЛАТА</div>
+        <ul>
+          <li>полный доступ: задачи, куратор, тьютор</li>
+          <li>режим выбираете вы</li>
+          <li>как «Работяга», но покупка здесь</li>
+        </ul>
+        <div class="t-buy"><span class="btn btn--ghost">Купить · 800 ₽</span></div>
+      </div>
+      <div class="tariff tariff--best">
+        <span class="t-badge">ПОПУЛЯРНЫЙ</span>
+        <div class="t-name">Двое–трое детей</div>
+        <div class="t-price">1 500 ₽ <small>/ 30 дней</small></div>
+        <div class="t-per">ДО 3 МЕСТ · 500–750 ₽ ЗА РЕБЁНКА</div>
+        <ul>
+          <li>всё из «Одного ребёнка»</li>
+          <li>свой режим каждому</li>
+          <li>годовой: 10 месяцев за 12</li>
+        </ul>
+        <div class="t-buy"><span class="btn btn--primary">Купить · 1 500 ₽</span></div>
+      </div>
+      <div class="tariff">
+        <div class="t-name">Большая семья</div>
+        <div class="t-price">2 500 ₽ <small>/ 30 дней</small></div>
+        <div class="t-per">ДО 5 МЕСТ · 500–625 ₽ ЗА РЕБЁНКА</div>
+        <ul>
+          <li>всё то же, мест больше</li>
+          <li>код приглашения для каждого</li>
+          <li>годовой: 10 месяцев за 12</li>
+        </ul>
+        <div class="t-buy"><span class="btn btn--ghost">Купить · 2 500 ₽</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 ПОДКЛЮЧЕНИЕ -->
+  <section>
+    <div class="sec-head"><span class="sec-no">04 / ПОДКЛЮЧЕНИЕ</span><h2 class="sec-title">Как ребёнок занимает место</h2></div>
+    <div class="join-card">
+      <div class="j-title">Введите код родителя</div>
+      <p class="j-sub">код покажет мама или папа в своём кабинете</p>
+      <div class="join-code">_ _ _ _ _ _</div>
+      <p class="join-hint">Ввод кода подключает вас к семье и занимает место в подписке. Родитель увидит темы, активность и затруднения — но не ответы и решения задач.</p>
+      <span class="btn btn--primary">Подключиться</span>
+    </div>
+  </section>
+
+  <!-- 05 ПРАВИЛА -->
+  <section>
+    <div class="sec-head"><span class="sec-no">05 / ПРАВИЛА</span><h2 class="sec-title">Как это работает</h2></div>
+    <div class="rules-list">
+      <div class="rule-row"><b>Покупает родитель</b><span>семейный тариф — в аккаунте родителя; ученические тарифы родителю по-прежнему недоступны</span></div>
+      <div class="rule-row"><b>Место занимает подтверждённая связь</b><span>код или ник → подтверждение ребёнка → место занято; выход ребёнка возвращает место</span></div>
+      <div class="rule-row"><b>Места живут с подпиской</b><span>отмена — доступ у всех детей до конца оплаченного периода, потом закрывается</span></div>
+      <div class="rule-row"><b>Режим — на карточке ребёнка</b><span>«Спокойный» 3 дня или «Работяга» 6 дней, переключается в один тап</span></div>
+      <div class="rule-row"><b>Личная подписка параллельно</b><span>доступ ребёнка — максимум из семейной и личной</span></div>
+      <div class="rule-row"><b>Приватность не меняется</b><span>ответы и решения задач не видны никому, кроме ребёнка</span></div>
+    </div>
+  </section>
+
+  <!-- PULL -->
+  <section>
+    <p class="why-note">Принцип статистики: <b>увидел</b> показатель — <b>понял</b>, что он значит, — <b>закрыл</b> блок, если всё хорошо, — <b>сделал</b> одно действие кнопкой, если есть сигнал. Ни одной цифры без смысла.</p>
+  </section>
+
+  <footer>FORMYLA · семейная подписка · макет в стиле сайта · 7 ноября 2026</footer>
+
+</div>
+{% endblock %}
