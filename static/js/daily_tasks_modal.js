@@ -434,7 +434,7 @@ function openTaskModal(item, index){
   h += '<div id="dt-ai-loader" class="dt-ai-loader">';
   h += '<div class="dt-ai-spinner"></div>';
   h += '<div class="dt-ai-text-main" id="dt-ai-text-main"> AI решает задачу...</div>';
-  h += '<div class="dt-ai-text-sub">Это может занять 5–10 секунд</div>';
+  h += '<div class="dt-ai-text-sub" id="dt-ai-text-sub">Это может занять 5–10 секунд</div>';
   h += '</div>';
 
   // Блок для решения от AI-тьютора (превью)
@@ -483,6 +483,7 @@ function openTaskModal(item, index){
   h += '</button>';
   h += '<div id="dt-photo-preview-list" class="dt-photo-preview-list"></div>';
   h += '<p class="dt-field-hint"> Нажимайте кнопку повторно, чтобы <strong>добавить</strong> ещё фото. Каждое распознаётся отдельно и подмешивается в решение для AI-тьютора.</p>';
+  h += '<p class="dt-field-hint">⏱ Если прикрепить фото, проверка может занять до 20 секунд.</p>';
   h += '</div>';
   h += '<div id="dt-submit-error" class="dt-field-hint" style="display:none;color:#fca5a5;text-align:center;margin-top:12px;"></div>';
   h += '<div class="dt-actions">';
@@ -694,7 +695,7 @@ function submitAnswer(itemId, KA, KS){
   }
 
   _dtSubmitting = true;
-  _dtShowLoader();
+  _dtShowLoader(hasPhoto);
   encodePhotos.then(function(images){
     var payload = {
       user_answer: userAnswer,
@@ -756,13 +757,19 @@ function submitAnswer(itemId, KA, KS){
 }
 window.submitAnswer = submitAnswer;
 
-function _dtShowLoader(){
+function _dtShowLoader(withPhoto){
   var form = document.getElementById('dt-answer-form');
   var loader = document.getElementById('dt-ai-loader');
   var mainT = document.getElementById('dt-ai-text-main');
+  var subT = document.getElementById('dt-ai-text-sub');
   var btn = document.getElementById('dt-submit-btn');
   if(form) form.style.display = 'none';
-  if(mainT) mainT.textContent = ' AI проверяет ваше решение...';
+  if(mainT) mainT.textContent = withPhoto
+    ? ' AI распознаёт фото и проверяет решение...'
+    : ' AI проверяет ваше решение...';
+  if(subT) subT.textContent = withPhoto
+    ? 'С фото проверка может занять до 20 секунд'
+    : 'Это может занять 5–10 секунд';
   if(loader) loader.classList.add('show');
   if(btn) btn.disabled = true;
 }
