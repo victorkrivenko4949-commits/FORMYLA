@@ -154,11 +154,15 @@ def test_swap_then_start_then_submit_and_review(svc, client):
     # без CSRF — отказ
     assert client.post(f'/probnik-assign/{a.id}/swap').status_code == 403
     r = client.post(f'/probnik-assign/{a.id}/swap', headers=H).get_json()
-    assert r['ok'] and a.variant_key != first
+    assert r['ok'] and a.variant_key != first and r['can_prev']
+    # «Предыдущий» до старта — назад к первому; дальше назад некуда
+    r = client.post(f'/probnik-assign/{a.id}/swap', json={'dir': -1}, headers=H).get_json()
+    assert r['ok'] and a.variant_key == first and not r['can_prev']
+    assert not client.post(f'/probnik-assign/{a.id}/swap', json={'dir': -1}, headers=H).get_json()['ok']
+    client.post(f'/probnik-assign/{a.id}/swap', headers=H)
 
     r = client.post(f'/probnik-assign/{a.id}/start', headers=H).get_json()
     assert r['ok'] and a.status == 'started' and a.deadline_at > datetime.utcnow()
-    assert not client.post(f'/probnik-assign/{a.id}/swap', headers=H).get_json()['ok']
 
     page = client.get(f'/probnik-assign/{a.id}').get_data(as_text=True)
     assert 'Задача 1' in page and 'Добавить фото решения' in page and 'Сдать работу' in page
@@ -195,6 +199,57 @@ def test_swap_then_start_then_submit_and_review(svc, client):
     # после сдачи править нельзя
     assert client.post(f'/probnik-assign/{a.id}/text', json={'idx': 0, 'text': 'y'},
                        headers=H).status_code == 409
+
+
+def test_switch_after_start_keeps_work_per_variant(svc, client):
+    """Нажал «Старт», увидел, что вариант уже решал → «Сменить»; «Предыдущий»
+    возвращает и вариант, и приложенную к нему работу. Таймер — заново."""
+    from models import db
+    u = _user()
+    a = svc.assign(u.id, date.today())
+    _login(client, u.id)
+    client.post(f'/probnik-assign/{a.id}/start', headers=H)
+    v1, title1 = a.variant_key, a.title
+    client.post(f'/probnik-assign/{a.id}/text', json={'idx': 0, 'text': 'решал раньше'}, headers=H)
+    client.post(f'/probnik-assign/{a.id}/photo', headers=H,
+                data={'idx': '0', 'photo': (io.BytesIO(_png()), 'p.png', 'image/png')},
+                content_type='multipart/form-data')
+    # прошло 40 минут
+    a.deadline_at = datetime.utcnow() + timedelta(minutes=140)
+    db.session.commit()
+
+    page = client.get(f'/probnik-assign/{a.id}').get_data(as_text=True)
+    assert 'Сменить пробник' in page and 'Уже решал этот вариант?' in page
+
+    r = client.post(f'/probnik-assign/{a.id}/swap', json={'dir': 1}, headers=H).get_json()
+    assert r['ok'] and a.variant_key != v1 and a.status == 'started'
+    assert svc.seconds_left(a) > 175 * 60, 'на новом варианте таймер с начала'
+    st = svc.work_state(a)
+    assert st[0]['student_text'] == '' and st[0]['photos'] == []
+    page = client.get(f'/probnik-assign/{a.id}').get_data(as_text=True)
+    assert '← Предыдущий' in page
+
+    r = client.post(f'/probnik-assign/{a.id}/swap', json={'dir': -1}, headers=H).get_json()
+    assert r['ok'] and a.variant_key == v1 and a.title == title1
+    st = svc.work_state(a)
+    assert st[0]['student_text'] == 'решал раньше' and len(st[0]['photos']) == 1
+
+    # после сдачи менять нельзя; проверяется работа текущего варианта
+    client.post(f'/probnik-assign/{a.id}/submit', headers=H)
+    db.session.refresh(a)
+    assert a.status == 'reviewed' and a.total_score == 5
+    assert not client.post(f'/probnik-assign/{a.id}/swap', headers=H).get_json()['ok']
+
+
+def test_migrate_variant_work(svc):
+    from models import db
+    from models_probnik_assign import ProbnikAssignmentAnswer as PAA
+    u = _user()
+    a = svc.assign(u.id, date.today())
+    db.session.add(PAA(assignment_id=a.id, task_idx=0, text='старое'))
+    db.session.commit()
+    svc.migrate_variant_work()
+    assert PAA.query.one().variant_key == a.variant_key
 
 
 def test_auto_submit_on_timeout(svc, client):

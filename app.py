@@ -411,8 +411,9 @@ except Exception as _e_pilot:
 # PROBNIK_ASSIGN_V1: разовые назначения пробников из services/probnik_assign.SEED
 # (идемпотентно, прошедшие даты пропускаются). Никогда не роняет старт.
 try:
-    from services.probnik_assign import ensure_seed as _pa_seed
+    from services.probnik_assign import ensure_seed as _pa_seed, migrate_variant_work as _pa_mig
     with app.app_context():
+        _pa_mig()
         for _line in _pa_seed():
             print(f"[PROBNIK_ASSIGN] seed: {_line}")
 except Exception as _e_pa_seed:

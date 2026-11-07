@@ -1123,6 +1123,7 @@
       <div style="color:var(--muted);font-size:13px;margin-top:8px;">{{ _pa.task_count }} задач · {{ _pa.hours }} · краткий ответ не нужен — фото решения из тетради к каждой задаче.</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
         <button type="button" id="dt-pa-start" style="border:0;border-radius:10px;padding:11px 22px;background:#16a34a;color:#fff;font-weight:800;font-size:15px;cursor:pointer;">▶ Старт</button>
+        <button type="button" id="dt-pa-prev" {{ '' if _pa.can_prev else 'hidden' }} style="border:1px solid var(--border);border-radius:10px;padding:11px 18px;background:transparent;color:var(--text);font-weight:700;font-size:14px;cursor:pointer;">← Предыдущий</button>
         {% if _pa.can_swap %}<button type="button" id="dt-pa-swap" style="border:1px solid var(--border);border-radius:10px;padding:11px 18px;background:transparent;color:var(--text);font-weight:700;font-size:14px;cursor:pointer;">🔄 Сменить пробник</button>{% endif %}
       </div>
       <div id="dt-pa-err" style="color:#f87171;font-size:13px;margin-top:8px;"></div>
@@ -1141,18 +1142,25 @@
   (function () {
     var box = document.getElementById('dt-probnik-assign'); if (!box) return;
     var id = box.dataset.paId, csrf = box.dataset.csrf, err = document.getElementById('dt-pa-err');
-    function post(u) { return fetch(u, { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-Token': csrf } }).then(function (r) { return r.json(); }); }
+    function post(u, body) { return fetch(u, { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-Token': csrf, 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) }).then(function (r) { return r.json(); }); }
     var bs = document.getElementById('dt-pa-start');
     if (bs) bs.onclick = function () {
       if (!confirm('Запустить таймер? Остановить его будет нельзя.')) return;
       bs.disabled = true;
       post('/probnik-assign/' + id + '/start').then(function (d) { if (d.ok) location.href = d.url; else { err.textContent = d.error || 'Ошибка'; bs.disabled = false; } });
     };
-    var bw = document.getElementById('dt-pa-swap');
-    if (bw) bw.onclick = function () {
-      bw.disabled = true;
-      post('/probnik-assign/' + id + '/swap').then(function (d) { bw.disabled = false; if (d.ok) { document.getElementById('dt-pa-title').textContent = d.title; err.textContent = ''; } else err.textContent = d.error || 'Ошибка'; });
-    };
+    var bp = document.getElementById('dt-pa-prev');
+    [[document.getElementById('dt-pa-swap'), 1], [bp, -1]].forEach(function (pair) {
+      var b = pair[0]; if (!b) return;
+      b.onclick = function () {
+        b.disabled = true;
+        post('/probnik-assign/' + id + '/swap', { dir: pair[1] }).then(function (d) {
+          b.disabled = false;
+          if (d.ok) { document.getElementById('dt-pa-title').textContent = d.title; err.textContent = ''; if (bp) bp.hidden = !d.can_prev; }
+          else err.textContent = d.error || 'Ошибка';
+        });
+      };
+    });
   })();
   </script>
   {% endif %}
