@@ -607,6 +607,84 @@ def parent_dashboard():
 
 
 # ---------------------------------------------------------------------------
+# TARIFFS_SECTIONS_V1 (07.11.2026): отдельные тарифы для учителя и родителя.
+# Покупка Premium — подарочно для ученика (PREMIUM_GIFT_V1, for_user=<id>):
+# платит взрослый, Premium активируется ученику. Автопродление не
+# подключается. Попап «Как работает подготовка» — на самих страницах
+# (1 раз, ключ localStorage по роли).
+# ---------------------------------------------------------------------------
+
+def _tariff_students_for_teacher():
+    """Все accepted-ученики всех групп учителя: [{id, name, group, premium}]."""
+    rows = []
+    groups = T10Group.query.filter_by(teacher_id=current_user.id).all()
+    for g in groups:
+        members = T10GroupMember.query.filter_by(
+            group_id=g.id, status='accepted').all()
+        for m in members:
+            s = User.query.get(m.user_id)
+            if s is None:
+                continue
+            rows.append({
+                'id': s.id,
+                'name': _display(s),
+                'group': g.name,
+                'premium': _premium_brief(s.id),
+            })
+    return rows
+
+
+def _tariff_children_for_parent():
+    """Все подтверждённые дети родителя: [{id, name, premium}]."""
+    links = ParentChildLink.query.filter_by(
+        parent_id=current_user.id, status='accepted').all()
+    rows = []
+    for l in links:
+        c = User.query.get(l.child_id)
+        if c is None:
+            continue
+        rows.append({
+            'id': c.id,
+            'name': _display(c),
+            'premium': _premium_brief(c.id),
+        })
+    return rows
+
+
+def _tariff_plans():
+    """Тарифы для страниц учителя/родителя (общие планы Premium)."""
+    from routes.premium_pay import PLAN_INFO
+    return [
+        {'key': k, 'icon': v['icon'], 'title': v['title'],
+         'price_rub': v['price_rub'], 'tagline': v['tagline'],
+         'features': v['features']}
+        for k, v in PLAN_INFO.items()
+    ]
+
+
+@parent_teacher_bp.route('/tariffs/teacher')
+@login_required
+def teacher_tariffs():
+    _require_role('teacher')
+    return render_template(
+        'tariffs/teacher.html',
+        students=_tariff_students_for_teacher(),
+        plans=_tariff_plans(),
+    )
+
+
+@parent_teacher_bp.route('/tariffs/parent')
+@login_required
+def parent_tariffs():
+    _require_role('parent')
+    return render_template(
+        'tariffs/parent.html',
+        children=_tariff_children_for_parent(),
+        plans=_tariff_plans(),
+    )
+
+
+# ---------------------------------------------------------------------------
 # Student detail page (accessible by teacher / parent)
 # ---------------------------------------------------------------------------
 

@@ -1042,4 +1042,9 @@ function cancelSubscription(){
   });
 }
 </script>
+
+{# TARIFFS_SECTIONS_V1 (07.11.2026): попап «Как работает подготовка» —
+   1 раз при первом входе, закрытие только кнопкой «Я понял». #}
+{% set popup_role = 'student' %}
+{% include 'partials/how_it_works_popup.html' %}
 {% endblock %}

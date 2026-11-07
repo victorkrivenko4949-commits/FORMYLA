@@ -107,16 +107,19 @@ def _pilot_or_404():
 def _is_parent_or_teacher() -> bool:
     """Роль из первого вопроса анкеты — родитель или учитель.
 
-    PARENT_TEACHER_NO_BUY (02.11.2026, владелец): такие аккаунты не
-    оформляют Premium-пилот в принципе — ни себе, ни подарочно для
-    ребёнка. Покупка и пробный день выполняются в аккаунте ученика.
+    TARIFFS_SECTIONS_V1 (07.11.2026, владелец): родитель и учитель имеют
+    СВОИ разделы тарифов (/tariffs/parent, /tariffs/teacher) и покупают
+    Premium подарочно для своего ученика (for_user, PREMIUM_GIFT_V1).
+    Для СЕБЯ они по-прежнему не покупают — ни Premium, ни пробный день:
+    это делается в аккаунте ученика.
     """
     return (getattr(current_user, 'role', 'student') or 'student') in ('parent', 'teacher')
 
 
 PARENT_TEACHER_BUY_MESSAGE = (
-    'Оформите это в аккаунте ребёнка: Premium-пилот оформляется '
-    'в аккаунте ученика, а не в аккаунте родителя или учителя.'
+    'Premium оформляется для ученика: на странице «Тарифы» выберите '
+    'ученика и нажмите «Купить подписку». Покупка для себя недоступна '
+    'в аккаунте родителя или учителя.'
 )
 
 
@@ -339,14 +342,19 @@ def activate_premium_for_payment(user_id: int, plan: str,
 @premium_pay_bp.route('/payments/premium/checkout', methods=['GET'])
 @login_required
 def checkout():
-    # PARENT_TEACHER_NO_BUY (02.11.2026): родитель и учитель не покупают
-    # Premium-пилот вообще — страница /subscribe сама покажет им
-    # «Оформите это в аккаунте ребёнка».
+    # TARIFFS_SECTIONS_V1 (07.11.2026): родитель и учитель покупают Premium
+    # только подарочно для ученика (for_user). Без for_user — редирект на
+    # их собственный раздел тарифов.
     if _is_parent_or_teacher():
-        return redirect('/subscribe')
-
-    # PREMIUM_GIFT_V1: родитель/учитель может оформить Premium для ребёнка.
-    child = _pilot_or_gift_or_404(request.args.get('for_user'))
+        child = _gift_child(request.args.get('for_user'))
+        if child is None:
+            role = getattr(current_user, 'role', 'student')
+            return redirect('/tariffs/teacher' if role == 'teacher'
+                            else '/tariffs/parent')
+    else:
+        # PREMIUM_GIFT_V1: ученик тоже может оформить Premium для другого
+        # (например, для себя) по общим правилам доступа.
+        child = _pilot_or_gift_or_404(request.args.get('for_user'))
     plan = request.args.get('plan', 'premium_intense')
     if plan not in PLAN_INFO:
         plan = 'premium_intense'
@@ -399,12 +407,6 @@ def checkout():
 @premium_pay_bp.route('/payments/premium/create', methods=['POST'])
 @login_required
 def create_payment():
-    # PARENT_TEACHER_NO_BUY (02.11.2026): родитель и учитель не могут
-    # купить Premium-пилот — ни себе, ни для ребёнка. Оформление —
-    # в аккаунте ученика.
-    if _is_parent_or_teacher():
-        return jsonify({'error': PARENT_TEACHER_BUY_MESSAGE}), 403
-
     data = request.get_json(silent=True) or {}
     plan = data.get('plan') or request.form.get('plan') or 'premium_intense'
     if plan not in PLAN_INFO:
@@ -412,7 +414,15 @@ def create_payment():
 
     # PREMIUM_GIFT_V1: for_user — ребёнок, для которого покупают Premium.
     for_user = data.get('for_user') or request.form.get('for_user')
-    child = _pilot_or_gift_or_404(for_user)
+
+    # TARIFFS_SECTIONS_V1 (07.11.2026): родитель и учитель покупают только
+    # подарочно — для подтверждённого ученика (for_user). Для себя — 403.
+    if _is_parent_or_teacher():
+        child = _gift_child(for_user)
+        if child is None:
+            return jsonify({'error': PARENT_TEACHER_BUY_MESSAGE}), 403
+    else:
+        child = _pilot_or_gift_or_404(for_user)
     beneficiary_id = child.id if child is not None else None
 
     info = PLAN_INFO[plan]
