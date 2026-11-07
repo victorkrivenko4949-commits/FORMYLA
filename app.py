@@ -3258,6 +3258,9 @@ _PUBLIC_PATHS = (
     '/__version',
     '/__diag/',
     '/about',
+    '/mockups',   # макеты новых подписок (оглавление)
+    '/teachers',  # макет кабинета учителя (подписка на группу)
+    '/family',    # макет кабинета родителя (семейная подписка)
     '/welcome',
     '/login',
     '/verify-code',
@@ -3402,6 +3405,10 @@ def force_intake_completion():
         '/dev_login',
         # Необязательная анкета: «пропустить и почитать, что за сайт»
         '/about',
+        # Макеты подписок: команда и пилотные учителя смотрят без анкеты
+        '/mockups',
+        '/teachers',
+        '/family',
         '/olympiad-start',
         '/articles',      # Раздел «Статьи» — публичные материалы
         '/api/track/page-time',
@@ -13811,6 +13818,24 @@ def about_page():
             pass
         app.logger.warning(f"[about] failed to set onboarded_at: {_onb_err}")
     return render_template('about.html', need_intake=_user_needs_intake())
+
+
+@app.route('/mockups')
+def mockups_page():
+    """Оглавление макетов новых подписок (учитель / семья)."""
+    return render_template('mockups.html')
+
+
+@app.route('/teachers')
+def teachers_mockup_page():
+    """Макет кабинета учителя: подписка на группу — места, тарифы, статистика."""
+    return render_template('teachers.html')
+
+
+@app.route('/family')
+def family_mockup_page():
+    """Макет кабинета родителя: семейная подписка — места, тарифы, статистика."""
+    return render_template('family.html')
 
 
 @app.route('/misc')
