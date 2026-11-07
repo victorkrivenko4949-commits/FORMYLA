@@ -89,6 +89,13 @@ ADMIN_PROMPT_EXTRA = """Дополнительные правила:
 - Как устроена платформа (тарифы, задачи дня, уровни, серии, пробники, роли) — отвечай СТРОГО по блоку «Справка FORMYLA». Чего там нет — не выдумывай.
 - Если ученик пишет о проблеме с сайтом, об оплате, или просит то, что ты сделать не можешь, — скажи: «Нажми справа от меня на иконку поддержки 💬 и напиши свою просьбу или проблему».
 
+ПЛАН — ТОЛЬКО ИЗ ДАННЫХ (это главное правило, важнее правила «давай план на день»):
+- Что делать сегодня, сколько задач решать и какие темы — бери ТОЛЬКО из строк «ПЛАН:» в «Данных ученика».
+- ЗАПРЕЩЕНО придумывать своё количество задач («по 20 задач», «43 задачи в день»), своё расписание, свои разделы («реши геометрию, алгебру и комбинаторику») и темы, которых нет в строках «ПЛАН:». Задач дня — ровно столько, сколько написано в плане.
+- Если сегодня выходной по плану — так и скажи: отдых, новых задач нет.
+- Если строк «ПЛАН:» нет — не сочиняй план: предложи открыть «Задачи дня» и решить то, что там выдано.
+- Хочет больше, сложнее или другое — предложи то, что умеешь сам (ниже), а остальное — через поддержку.
+
 Что ты умеешь делать сам (только когда ученик ЯВНО просит или соглашается на твоё предложение):
 1. Поднять уровень задач дня на 1 (шкала 1–4)  → [[ACTION {"type": "raise_level"}]]
 2. Снизить уровень задач дня на 1               → [[ACTION {"type": "lower_level"}]]
@@ -374,7 +381,9 @@ def build_context(user_id: int, since: Optional[datetime] = None,
         from services.curator_actions import is_admin_id, state_lines
         ctx['admin_features'] = is_admin_id(user_id)
         if ctx['admin_features']:
+            from services.curator_actions import daily_task_count
             ctx['state_lines'] = state_lines(user_id, grade)
+            ctx['daily_count'] = daily_task_count(user_id)
     except Exception as e:  # noqa: BLE001
         logger.warning('[curator_chat] state lines failed: %r', e)
 
@@ -473,6 +482,51 @@ def _strip_actions(text: Optional[str]) -> str:
         return (text or '').strip()
 
 
+def _admin_hint(text: str, ctx: Dict[str, Any]) -> str:
+    """Админам — в конце сообщения подсказка, что куратор умеет сам."""
+    if not ctx.get('admin_features'):
+        return text
+    try:
+        from services.curator_actions import with_capabilities_hint
+        return with_capabilities_hint(text)
+    except Exception:  # noqa: BLE001
+        return text
+
+
+def _enforce_plan(messages: List[Dict[str, str]], text: str,
+                  ctx: Dict[str, Any], thinking: bool = False,
+                  max_tokens: int = 1200) -> str:
+    """CURATOR_PLAN_GUARD_V1: ответ не должен выдумывать число задач.
+
+    Нашли «43 задачи в день» сверх нормы плана → один раз просим модель
+    переписать строго по плану; не помогло — вырезаем такие предложения.
+    """
+    try:
+        from services.curator_actions import off_plan_numbers, drop_off_plan_sentences
+    except Exception:  # noqa: BLE001
+        return text
+    n = ctx.get('daily_count')
+    bad = off_plan_numbers(text, n)
+    if not bad:
+        return text
+    logger.info('[curator_chat] off-plan numbers %s (plan %s) — rewrite', bad, n)
+    retry = list(messages) + [
+        {'role': 'assistant', 'content': text},
+        {'role': 'system', 'content': (
+            f'Ты написал число задач {", ".join(map(str, bad))} — этого НЕТ в плане. '
+            f'Задач дня по плану: {n or "столько, сколько выдано в «Задачах дня»"}. '
+            'Перепиши ответ ученику строго по строкам «ПЛАН:», без своих цифр, '
+            'разделов и расписания. Дай только новый ответ.')},
+    ]
+    try:
+        again = (_call_deepseek(retry, thinking=thinking, max_tokens=max_tokens) or '').strip()
+        if again and not off_plan_numbers(again, n):
+            return again
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[curator_chat] plan rewrite failed: %r', e)
+    return drop_off_plan_sentences(text, n)
+
+
 def generate_reply(user_id: int, user_text: str,
                    ctx: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Ответ куратора на сообщение ученика. Никогда не бросает.
@@ -497,13 +551,16 @@ def generate_reply(user_id: int, user_text: str,
     try:
         text = _call_deepseek(messages)
         text = (text or '').strip()
+        if text and ctx.get('admin_features'):
+            text = _enforce_plan(messages, text, ctx)
         if text:
             # действия куратора: [[ACTION {...}]] → выполнить, вырезать, дописать итог
             results = []
             if ctx.get('admin_features'):
                 try:
-                    from services.curator_actions import apply_reply
+                    from services.curator_actions import apply_reply, with_capabilities_hint
                     text, results = apply_reply(user_id, text)
+                    text = with_capabilities_hint(text)
                 except Exception as e:  # noqa: BLE001
                     logger.warning('[curator_chat] actions failed: %r', e)
             else:
@@ -609,11 +666,14 @@ def send_welcome_message(user_id: int) -> bool:
             messages: List[Dict[str, str]] = _system_messages(ctx, plan_line)
             messages.append({'role': 'user', 'content': WELCOME_PROMPT_INSTRUCTION})
             text = _strip_actions(_call_deepseek(messages))
+            if text and ctx.get('admin_features'):
+                text = _enforce_plan(messages, text, ctx)
         except Exception as e:  # noqa: BLE001
             logger.warning('[curator_chat] welcome generation failed: %s', e)
 
         if not text:
             text = WELCOME_FALLBACK
+        text = _admin_hint(text, ctx)
 
         add_message(user_id, 'system', text, meta={'kind': 'welcome'})
         db.session.commit()
@@ -739,6 +799,8 @@ def _send_weekly_message_locked(user_id: int) -> bool:
             messages: List[Dict[str, str]] = _system_messages(ctx)
             messages.append({'role': 'user', 'content': WEEKLY_PROMPT_INSTRUCTION})
             text = _strip_actions(_call_deepseek(messages, thinking=True, max_tokens=3000))
+            if text and ctx.get('admin_features'):
+                text = _enforce_plan(messages, text, ctx, thinking=True, max_tokens=3000)
         except Exception as e:  # noqa: BLE001
             logger.warning('[curator_chat] weekly generation failed: %s', e)
 
@@ -756,6 +818,7 @@ def _send_weekly_message_locked(user_id: int) -> bool:
                 else:
                     activity = WEEK1_ACTIVITY_ZERO.format(solved=0)
             text = WEEK1_SYSTEM_MESSAGE_TEMPLATE.format(activity_line=activity)
+        text = _admin_hint(text, ctx)
 
         add_message(user_id, 'system', text,
                     meta={'kind': 'weekly', 'week': week_n})
