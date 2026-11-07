@@ -3,14 +3,15 @@
 services/solution_ocr.py — OCR-препроцессинг фотографий решения (единый слой).
 
 Для всех трёх режимов (regular / srez / daily_task):
-  photo bytes -> Tesseract (local, free) -> fallback DeepSeek vision ->
-  normalization (utils.math_text_fixer) -> structured text.
+  photo bytes -> DeepSeek vision (основной) -> Gemini через OdiRouter ->
+  Tesseract (local) -> Novita -> normalization (utils.math_text_fixer) ->
+  structured text.
 
 Возвращает словарь с метаданными для аудита и low-confidence handling:
 
     {
       "text": str,               # нормализованный LaTeX-текст решения
-      "engine": "tesseract"|"deepseek_vision"|"none",
+      "engine": "deepseek_vision"|"gemini_vision"|"tesseract"|"novita_vision"|"none",
       "confidence": float,       # 0.0..1.0
       "low_confidence": bool,    # True — распознавание ненадёжно
       "parts": int,              # сколько фото обработано
@@ -146,11 +147,11 @@ def _ocr_novita_vision(b64: str, task_text: str) -> Optional[str]:
 
 
 def _ocr_openrouter_gemini(b64: str, task_text: str) -> Optional[str]:
-    """Gemini flash через OpenRouter — распознавание рукописи (основной движок).
+    """Gemini flash через OpenRouter.
 
-    2026-09-15: добавлено, т.к. GEMINI_API_KEY/OdiRouter на проде может
-    отсутствовать, а OPENROUTER_API_KEY всегда есть. Распознаём фото ->
-    ВЕСЬ текст уходит DeepSeek-проверяльщику как текст (см. pipeline).
+    В цепочку ocr_solution_images (задачи дня / срезы) НЕ входит — там
+    Gemini идёт через OdiRouter (_ocr_gemini_vision). Чат ИИ-тьютора
+    тоже переведён на ocr_solution_images; сейчас функция не используется.
     """
     try:
         import os as _os
@@ -414,26 +415,21 @@ def ocr_solution_images(
 
         # Шаг 1: DeepSeek vision — ОСНОВНОЙ распознаватель (OCR_PRIMARY_V1).
         # Та же система, что в «Генерации чертежей» и ИИ-тьюторе — она
-        # стабильно работает. Gemini/OpenRouter — резервы ниже.
+        # стабильно работает. Ниже — резервы.
         text = None
         engine = "none"
         text = _ocr_deepseek_vision(b64, task_text)
         if text:
             engine = "deepseek_vision"
 
-        # Шаг 2: Gemini flash через OpenRouter (резерв).
-        if not text:
-            text = _ocr_openrouter_gemini(b64, task_text)
-            if text:
-                engine = "openrouter_gemini"
-
-        # Шаг 3: Gemini через OdiRouter (резерв, если задан GEMINI_API_KEY).
+        # Шаг 2: Gemini через OdiRouter (резерв, если задан GEMINI_API_KEY).
+        # OpenRouter в цепочке не участвует: Gemini у нас только на OdiRouter.
         if not text:
             text = _ocr_gemini_vision(b64, task_text)
             if text:
                 engine = "gemini_vision"
 
-        # Шаг 4: локальный Tesseract (резерв).
+        # Шаг 3: локальный Tesseract (резерв).
         if not text:
             try:
                 img_bytes = base64.b64decode(b64)
@@ -443,7 +439,7 @@ def ocr_solution_images(
             except Exception as e:
                 logger.warning("[solution_ocr] b64 decode failed #%d: %s", idx, e)
 
-        # Шаг 5: Novita vision (резерв).
+        # Шаг 4: Novita vision (резерв).
         if not text:
             text = _ocr_novita_vision(b64, task_text)
             if text:
@@ -455,6 +451,11 @@ def ocr_solution_images(
                 any_normalized = True
                 text = normalized
             conf, low, warn = _estimate_confidence(text)
+            if engine == "tesseract" and not low:
+                # Tesseract не умеет рукописную математику: выдаёт
+                # правдоподобный на вид мусор («Da 292а 4»). Не доверяем.
+                low = True
+                warn = "Распознавание фото ненадёжно — сверь с фото."
             if low:
                 any_low = True
                 if warn:

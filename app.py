@@ -370,6 +370,10 @@ try:
     import models_olympiad             # noqa: F401  — Probnik, OlympiadTask, etc. (re-imported by models.py too)
     import models_tg_trial             # noqa: F401  — TgTrialGrant (неделя за подписку на ТГ)
     try:
+        import models_probnik_assign   # noqa: F401  — назначенный пробник (PROBNIK_ASSIGN_V1)
+    except Exception as _e_pa:
+        print(f"[PROBNIK_ASSIGN] models import failed: {_e_pa}")
+    try:
         import models_grade            # noqa: F401  — grade 5-6 models
     except ImportError:
         pass
@@ -403,6 +407,17 @@ try:
             print("[PILOT] premium launch notice scheduled (3 Nov 19:00 MSK)")
 except Exception as _e_pilot:
     print(f"[PILOT] ensure_pilot_subscriptions skipped: {_e_pilot}")
+
+# PROBNIK_ASSIGN_V1: разовые назначения пробников из services/probnik_assign.SEED
+# (идемпотентно, прошедшие даты пропускаются). Никогда не роняет старт.
+try:
+    from services.probnik_assign import ensure_seed as _pa_seed, migrate_variant_work as _pa_mig
+    with app.app_context():
+        _pa_mig()
+        for _line in _pa_seed():
+            print(f"[PROBNIK_ASSIGN] seed: {_line}")
+except Exception as _e_pa_seed:
+    print(f"[PROBNIK_ASSIGN] seed skipped: {_e_pa_seed}")
 
 # 2026-10-23: норма задач дня — 10 для всех. Пересоздаём сегодняшние
 # «урезанные» сеты (без ответов): при следующем заходе ученик получит
@@ -2970,6 +2985,19 @@ def curator_pilot_week1_sweep_job():
             app.logger.warning('[PILOT] curator week1 sweep failed: %s', e)
 
 
+@scheduler.task('interval', id='probnik_assign_sweep', minutes=5)
+def probnik_assign_sweep_job():
+    """PROBNIK_ASSIGN_V1: автосдача по таймеру и перезапуск зависших проверок."""
+    with app.app_context():
+        try:
+            from services.probnik_assign import sweep
+            n = sweep(app=app)
+            if n:
+                app.logger.info('[PROBNIK_ASSIGN] sweep: changed %d', n)
+        except Exception as e:
+            app.logger.warning('[PROBNIK_ASSIGN] sweep failed: %s', e)
+
+
 @scheduler.task('cron', id='daily_midnight_assign', hour=0, minute=5)
 def daily_midnight_assign_job():
     """At 00:05 MSK, auto-assign daily tasks to active users.
@@ -3231,6 +3259,9 @@ _PUBLIC_PATHS = (
     '/__version',
     '/__diag/',
     '/about',
+    '/mockups',   # макеты новых подписок (оглавление)
+    '/teachers',  # макет кабинета учителя (подписка на группу)
+    '/family',    # макет кабинета родителя (семейная подписка)
     '/welcome',
     '/login',
     '/verify-code',
@@ -3375,6 +3406,10 @@ def force_intake_completion():
         '/dev_login',
         # Необязательная анкета: «пропустить и почитать, что за сайт»
         '/about',
+        # Макеты подписок: команда и пилотные учителя смотрят без анкеты
+        '/mockups',
+        '/teachers',
+        '/family',
         '/olympiad-start',
         '/articles',      # Раздел «Статьи» — публичные материалы
         '/api/track/page-time',
@@ -6622,51 +6657,37 @@ def tutor_send():
                                 )
                         # image_data остаётся первым фото — vision-модель прочитает рукопись сама.
                     else:
-                        # Обычный чат с фото (не режим проверки).
-                        # 2026-11-07 FIX: раньше здесь была медленная цепочка
-                        # Gemini(OpenRouter) -> Tesseract -> Novita, а при её провале
-                        # фото уходило в vision-цепочку из 9 моделей OpenRouter
-                        # (худший случай ~7 минут на один HTTP-запрос) — соединение
-                        # обрывалось, фронт показывал «Не удалось связаться с сервером».
-                        # Теперь: единый OCR-слой services.solution_ocr (DeepSeek
-                        # vision -> Gemini -> Tesseract) — тот же, что в задачах дня.
-                        # Уверенный OCR -> текст уходит быстрой текстовой модели,
-                        # фото не нужно. Неуверенный/пустой OCR -> фото остаётся
-                        # приложенным для vision-модели.
+                        # Обычный чат с фото: та же цепочка, что в задачах дня
+                        # (DeepSeek vision -> Gemini/OdiRouter -> Tesseract -> Novita).
+                        # Раньше здесь первым шёл OpenRouter (ключа нет), затем
+                        # Tesseract, чей мусор считался успехом, а DeepSeek не
+                        # вызывался вовсе — тьютор получал бессмысленный текст.
+                        all_images = []
+                        for _f in files:
+                            _f.seek(0)
+                            all_images.append(base64.b64encode(_f.read()).decode('utf-8'))
                         recognized = ''
-                        ocr_low = False
+                        ocr_low = True
                         try:
-                            from services.solution_ocr import ocr_solution_images as _ocr_all
-                            _ocr_meta = _ocr_all([image_data], task_text=(message or '')[:600])
-                            recognized = (_ocr_meta.get('text') or '').strip()
-                            ocr_low = bool(_ocr_meta.get('low_confidence'))
+                            from services.solution_ocr import ocr_solution_images
+                            ocr_meta = ocr_solution_images(all_images, task_text=(message or '')[:600])
+                            recognized = (ocr_meta.get('text') or '').strip()
+                            ocr_low = bool(ocr_meta.get('low_confidence'))
                             app.logger.info(
-                                "[tutor] solution_ocr: engine=%s low=%s chars=%d",
-                                _ocr_meta.get('engine'), ocr_low, len(recognized),
+                                "[tutor] chat OCR: engine=%s parts=%d chars=%d low=%s",
+                                ocr_meta.get('engine'), ocr_meta.get('parts'), len(recognized), ocr_low,
                             )
                         except Exception as _ocr_exc:
-                            app.logger.exception("[tutor] solution_ocr failed: %s", _ocr_exc)
-                            recognized = ''
+                            app.logger.exception("[tutor] chat OCR failed: %s", _ocr_exc)
 
-                        if recognized and not ocr_low:
-                            # OCR уверенный: отвечаем по тексту, без vision-цепочки.
-                            message = (recognized + "\n\n[Пользователь также написал: " + message + "]") if message else recognized
-                            image_data = None
-                        elif recognized:
-                            # OCR неуверенный: фото остаётся приложенным, чтобы
-                            # vision-модель сверилась с рукописью, а не с текстом OCR.
-                            message = (
-                                ((message + "\n\n") if message else "")
-                                + "[OCR распознал фото неуверенно — доверяй фото, а не тексту ниже.]\n"
-                                + recognized
-                            )
+                        if recognized:
+                            message = (recognized + "\n\n[Пользователь также написал: " + message + "]" if message else recognized)
+                            if not ocr_low:
+                                # Текст надёжный — дальше работает сильная текстовая модель.
+                                image_data = None
+                            # Иначе фото остаётся приложенным: vision-модель сверит сама.
                         else:
-                            # 2026-09-15 FIX: OCR не сработал — НЕ возвращаем 422,
-                            # а отдаём само фото vision-цепочке тьютора
-                            # (chat_with_tutor сам прочитает картинку через
-                            # OpenRouter vision-модели).
                             app.logger.info("[tutor] OCR пустой — фото уходит в vision-цепочку")
-                            pass
         
         if not message and not image_data:
             return jsonify({'error': 'Сообщение пустое'}), 400
@@ -13385,12 +13406,15 @@ def api_progress(user_id):
 def subscribe_page():
     """Страница выбора тарифа."""
     current_plan = current_user.current_plan or 'free'
-    # PARENT_TEACHER_NO_BUY (02.11.2026, владелец): родитель и учитель
-    # (роль из первого вопроса анкеты) не могут оформить Premium-пилот
-    # в своём аккаунте — страница показывает «Оформите это в аккаунте
-    # ребёнка», покупка и пробный день им закрыты и на сервере.
+    # TARIFFS_SECTIONS_V1 (07.11.2026, владелец): у родителя и учителя
+    # СВОИ разделы тарифов — /tariffs/parent и /tariffs/teacher (покупка
+    # Premium подарочно для ученика). Общая страница /subscribe — для
+    # учеников, родителя/учителя перенаправляем в их раздел.
     user_role = (getattr(current_user, 'role', 'student') or 'student')
-    is_parent_or_teacher = user_role in ('parent', 'teacher')
+    if user_role in ('parent', 'teacher'):
+        return redirect('/tariffs/parent' if user_role == 'parent'
+                        else '/tariffs/teacher')
+    is_parent_or_teacher = False
     # PAYMENTS_DOC_V1 (24.10.2026): менеджер ЮKassa просил показать
     # понятное описание платных товаров/услуг и тарифов для проверки анкеты.
     # Показываем таблицу всех доступных платных товаров/тарифов, чтобы покупатель
@@ -13522,6 +13546,22 @@ def _inject_subscription_flags():
     return {'is_premium': False, 'is_pilot': False, 'has_premium': False,
             'open_sales': _open_sales, 'pilot_session': None,
             'is_free_user': False}
+
+
+@app.context_processor
+def _inject_probnik_assign():
+    """PROBNIK_ASSIGN_V1: пробник на сегодня (плашка пилота) и неоткрытый
+    разбор куратора (баннер-уведомление на всех страницах)."""
+    out = {'probnik_today': None, 'probnik_review_unseen': None}
+    try:
+        if current_user.is_authenticated:
+            from services import probnik_assign as _pa_svc
+            from daily_tasks.services import today_in_user_tz
+            out['probnik_today'] = _pa_svc.for_date(current_user.id, today_in_user_tz())
+            out['probnik_review_unseen'] = _pa_svc.unseen_review(current_user.id)
+    except Exception:
+        pass
+    return out
 
 
 @app.context_processor
@@ -13782,6 +13822,24 @@ def about_page():
             pass
         app.logger.warning(f"[about] failed to set onboarded_at: {_onb_err}")
     return render_template('about.html', need_intake=_user_needs_intake())
+
+
+@app.route('/mockups')
+def mockups_page():
+    """Оглавление макетов новых подписок (учитель / семья)."""
+    return render_template('mockups.html')
+
+
+@app.route('/teachers')
+def teachers_mockup_page():
+    """Макет кабинета учителя: подписка на группу — места, тарифы, статистика."""
+    return render_template('teachers.html')
+
+
+@app.route('/family')
+def family_mockup_page():
+    """Макет кабинета родителя: семейная подписка — места, тарифы, статистика."""
+    return render_template('family.html')
 
 
 @app.route('/misc')

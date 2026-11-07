@@ -894,9 +894,13 @@
     </div>
     {% endif %}
     <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
-      <span style="font-size:1.6em;">{% if _s.today_rest %}😌{% elif _s.today_done %}✅{% elif _s.lesson_type == 'method' %}📘{% elif _s.lesson_type == 'probnik' %}🏆{% else %}✏️{% endif %}</span>
+      <span style="font-size:1.6em;">{% if data.assignment %}🏆{% elif _s.today_rest %}😌{% elif _s.today_done %}✅{% elif _s.lesson_type == 'method' %}📘{% elif _s.lesson_type == 'probnik' %}🏆{% else %}✏️{% endif %}</span>
       <div style="flex:1;">
-        {% if _s.today_rest %}
+        {% if data.assignment %}
+        {# PROBNIK_ASSIGN_V1: назначенный пробник вместо «выходной»/занятия #}
+        <div style="font-weight:700;color:var(--text);font-size:15px;">Сегодня — пробник по вашей просьбе: {{ data.assignment.title }}</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:2px;">Карточка пробника — ниже. План занятий продолжится в следующий день занятий.</div>
+        {% elif _s.today_rest %}
         <div style="font-weight:700;color:var(--text);font-size:15px;">Сегодня выходной — отдыхай.</div>
         <div style="color:var(--muted);font-size:13px;margin-top:2px;">Следующее занятие — в {{ _s.next_lesson_day }}. План продолжается, долги за выходной не начисляются.</div>
         {% elif _s.today_done %}
@@ -931,7 +935,7 @@
       </div>
       {# PROBNIK_DAILY_V1: в день пробника кнопка не нужна — задачи
          варианта уже в задачах дня, отдельный переход лишний (владелец, 02.11) #}
-      {% if not _s.today_done and not _s.today_rest and _s.lesson_type != 'probnik' %}
+      {% if not data.assignment and not _s.today_done and not _s.today_rest and _s.lesson_type != 'probnik' %}
       <a href="{{ _s.cta_url }}" style="flex:none;padding:10px 18px;border-radius:10px;background:linear-gradient(135deg,#4f6cff,#5eead4);color:#fff;font-weight:700;font-size:13px;text-decoration:none;">
         {% if _s.lesson_type == 'method' %}Изучить метод{% else %}Начать{% endif %}
       </a>
@@ -1107,6 +1111,59 @@
     <script src="/static/method_week.js?v=4" defer></script>
     {% endif %}
   </div>
+
+  <!-- PROBNIK_ASSIGN_V1: назначенный пробник на сегодня (вместо занятия/выходного) -->
+  {% if data and data.status == 'probnik_assignment' and data.assignment %}
+  {% set _pa = data.assignment %}
+  <div id="dt-probnik-assign" class="dt-empty-card" style="text-align:left;border-color:rgba(79,108,255,0.45);background:linear-gradient(135deg,rgba(79,108,255,0.12),rgba(94,234,212,0.08));" data-pa-id="{{ _pa.id }}" data-csrf="{{ csrf_token() }}">
+    <div style="color:var(--muted);font-size:13px;">🏆 Пробник на сегодня</div>
+    <div class="dt-empty-title" id="dt-pa-title" style="margin:4px 0 8px;font-size:18px;line-height:1.35;">{{ _pa.title }}</div>
+    {% if _pa.status == 'assigned' %}
+      <div style="font-size:15px;line-height:1.6;color:var(--text);">{{ _pa.intro }}</div>
+      <div style="color:var(--muted);font-size:13px;margin-top:8px;">{{ _pa.task_count }} задач · {{ _pa.hours }} · краткий ответ не нужен — фото решения из тетради к каждой задаче.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+        <button type="button" id="dt-pa-start" style="border:0;border-radius:10px;padding:11px 22px;background:#16a34a;color:#fff;font-weight:800;font-size:15px;cursor:pointer;">▶ Старт</button>
+        <button type="button" id="dt-pa-prev" {{ '' if _pa.can_prev else 'hidden' }} style="border:1px solid var(--border);border-radius:10px;padding:11px 18px;background:transparent;color:var(--text);font-weight:700;font-size:14px;cursor:pointer;">← Предыдущий</button>
+        {% if _pa.can_swap %}<button type="button" id="dt-pa-swap" style="border:1px solid var(--border);border-radius:10px;padding:11px 18px;background:transparent;color:var(--text);font-weight:700;font-size:14px;cursor:pointer;">🔄 Сменить пробник</button>{% endif %}
+      </div>
+      <div id="dt-pa-err" style="color:#f87171;font-size:13px;margin-top:8px;"></div>
+    {% elif _pa.status == 'started' %}
+      <div style="font-size:15px;color:var(--text);">Пробник идёт — таймер запущен.</div>
+      <a href="{{ _pa.url }}" style="display:inline-block;margin-top:12px;padding:11px 22px;border-radius:10px;background:#4f6cff;color:#fff;font-weight:800;text-decoration:none;">Продолжить решать</a>
+    {% elif _pa.status == 'grading' %}
+      <div style="font-size:15px;color:var(--text);">Работа сдана. ИИ проверяет задачи, затем куратор разберёт работу и составит план обучения — придёт уведомление.</div>
+      <a href="{{ _pa.url }}" style="display:inline-block;margin-top:12px;padding:10px 20px;border-radius:10px;border:1px solid var(--border);color:var(--text);font-weight:700;text-decoration:none;">Открыть работу</a>
+    {% else %}
+      <div style="font-size:15px;color:var(--text);">Итог: <b>{{ _pa.total_score }} из {{ _pa.max_score }}</b> баллов. Куратор разобрал работу и составил план обучения.</div>
+      <a href="{{ _pa.url }}" style="display:inline-block;margin-top:12px;padding:11px 22px;border-radius:10px;background:#4f6cff;color:#fff;font-weight:800;text-decoration:none;">Открыть разбор</a>
+    {% endif %}
+  </div>
+  <script>
+  (function () {
+    var box = document.getElementById('dt-probnik-assign'); if (!box) return;
+    var id = box.dataset.paId, csrf = box.dataset.csrf, err = document.getElementById('dt-pa-err');
+    function post(u, body) { return fetch(u, { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-Token': csrf, 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) }).then(function (r) { return r.json(); }); }
+    var bs = document.getElementById('dt-pa-start');
+    if (bs) bs.onclick = function () {
+      if (!confirm('Запустить таймер? Остановить его будет нельзя.')) return;
+      bs.disabled = true;
+      post('/probnik-assign/' + id + '/start').then(function (d) { if (d.ok) location.href = d.url; else { err.textContent = d.error || 'Ошибка'; bs.disabled = false; } });
+    };
+    var bp = document.getElementById('dt-pa-prev');
+    [[document.getElementById('dt-pa-swap'), 1], [bp, -1]].forEach(function (pair) {
+      var b = pair[0]; if (!b) return;
+      b.onclick = function () {
+        b.disabled = true;
+        post('/probnik-assign/' + id + '/swap', { dir: pair[1] }).then(function (d) {
+          b.disabled = false;
+          if (d.ok) { document.getElementById('dt-pa-title').textContent = d.title; err.textContent = ''; if (bp) bp.hidden = !d.can_prev; }
+          else err.textContent = d.error || 'Ошибка';
+        });
+      };
+    });
+  })();
+  </script>
+  {% endif %}
 
   <!-- Generating state -->
   <div id="dt-generating-state" class="dt-hidden">

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Назначить пробник — FORMYLA.net{% endblock %}
+{% block extra_css %}
+<style>
+.pad { max-width: 1000px; margin: 18px auto 90px; padding: 0 16px; color: var(--text, #e2e8f0); }
+.pad .card { border: 1px solid var(--border, #334155); background: var(--surface, rgba(20,26,46,.75)); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+.pad h1 { font-size: 22px; margin: 0 0 4px; }
+.pad .muted { color: var(--muted, #94a3b8); font-size: 13px; line-height: 1.5; }
+.pad label { display: block; font-size: 13px; color: var(--muted, #94a3b8); margin: 10px 0 4px; }
+.pad input, .pad select, .pad textarea { width: 100%; box-sizing: border-box; padding: 9px 11px; border-radius: 9px; border: 1px solid var(--border, #334155); background: rgba(0,0,0,.2); color: inherit; font: inherit; font-size: 14px; }
+.pad .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0 12px; }
+.pad button, .pad .btn { border: 0; border-radius: 10px; padding: 9px 16px; font-weight: 700; cursor: pointer; background: #4f6cff; color: #fff; text-decoration: none; display: inline-block; font-size: 14px; }
+.pad button.ghost { background: transparent; border: 1px solid var(--border, #334155); color: inherit; }
+.pad table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.pad th, .pad td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border, #334155); vertical-align: top; }
+.pad .scroll { overflow-x: auto; }
+.pad .log { padding: 10px 12px; border-radius: 10px; background: rgba(79,108,255,.12); margin-bottom: 14px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="pad">
+  <h1>🏆 Назначенный пробник</h1>
+  <div class="muted" style="margin-bottom:14px;">Ученик увидит пробник в «Задачах дня» в выбранную дату — вместо занятия или выходного. Вариант подбирается под класс ученика: самый свежий полный комплект с решениями (без задач «требует проверки»); ученик может нажать «Сменить пробник» до старта. После сдачи ИИ проверяет задачи (0–7), куратор пишет разбор и план обучения в чат, приходит push и баннер на сайте.</div>
+  {% if seed_log %}<div class="log">{{ seed_log }}</div>{% endif %}
+
+  <div class="card">
+    <form method="get">
+      <label>Найти ученика (id, имя, ник или email)</label>
+      <div style="display:flex;gap:8px;"><input name="q" value="{{ q }}" placeholder="например, Роман"><button>Найти</button></div>
+    </form>
+    {% if q %}
+    <div class="scroll" style="margin-top:10px;"><table>
+      <tr><th>id</th><th>Имя</th><th>Ник</th><th>Email</th><th>Класс</th><th></th></tr>
+      {% for u in found %}
+      <tr><td>{{ u.id }}</td><td>{{ u.name or '' }}</td><td>{{ u.nickname or '' }}</td><td>{{ u.email }}</td><td>{{ svc.user_grade(u.id) or '—' }}</td>
+        <td><button class="ghost" type="button" onclick="document.getElementById('f-uid').value='{{ u.id }}';document.getElementById('f-uid').scrollIntoView({block:'center'});">Выбрать</button></td></tr>
+      {% else %}<tr><td colspan="6" class="muted">Никого не нашли.</td></tr>{% endfor %}
+    </table></div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <form method="post" action="{{ url_for('probnik_assign.admin_create') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="row">
+        <div><label>id ученика</label><input id="f-uid" name="user_id" required></div>
+        <div><label>Дата</label><input type="date" name="date" value="{{ today.isoformat() }}" required></div>
+        <div><label>Олимпиада (slug каталога)</label><input name="slug" value="rosatom"></div>
+        <div><label>Этап</label><select name="stage">{% for k, v in stages.items() %}<option value="{{ k }}" {{ 'selected' if k == 'final' }}>{{ v }}</option>{% endfor %}</select></div>
+        <div><label>Класс (пусто — из профиля)</label><input name="grade" placeholder="авто"></div>
+        <div><label>Время, минут</label><input name="duration" value="{{ svc.DEFAULT_DURATION_MIN }}"></div>
+      </div>
+      <label>Текст вступления (пусто — стандартный; подстановки {olympiad}, {stage}, {hours}, {title})</label>
+      <textarea name="intro" rows="3" placeholder="{{ default_intro }}"></textarea>
+      <div style="margin-top:12px;"><button>Назначить</button></div>
+    </form>
+  </div>
+
+  <div class="card scroll">
+    <table>
+      <tr><th>#</th><th>Дата</th><th>Ученик</th><th>Пробник</th><th>Статус</th><th>Баллы</th><th></th></tr>
+      {% for r in rows %}{% set u = users.get(r.user_id) %}
+      <tr>
+        <td>{{ r.id }}</td>
+        <td>{{ r.assigned_date.strftime('%d.%m.%Y') }}</td>
+        <td>{{ r.user_id }} {% if u %}<span class="muted">{{ u.name or u.nickname or u.email }}</span>{% endif %}</td>
+        <td><a href="{{ url_for('probnik_assign.page', aid=r.id) }}" style="color:#a5b4fc;">{{ r.title }}</a>{% if r.swaps %} <span class="muted">(смен: {{ r.swaps }})</span>{% endif %}</td>
+        <td>{{ {'assigned':'назначен','started':'пишет','grading':'проверка','reviewed':'разобран'}.get(r.status, r.status) }}{% if r.grading_error %}<br><span class="muted">{{ r.grading_error }}</span>{% endif %}</td>
+        <td>{% if r.total_score is not none %}{{ r.total_score }} / {{ r.max_score }}{% endif %}</td>
+        <td style="white-space:nowrap;">
+          {% if r.status in ('grading', 'reviewed') %}
+          <form method="post" action="{{ url_for('probnik_assign.admin_regrade', aid=r.id) }}" style="display:inline;"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="ghost">Перепроверить</button></form>
+          {% endif %}
+          <form method="post" action="{{ url_for('probnik_assign.admin_delete', aid=r.id) }}" style="display:inline;" onsubmit="return confirm('Удалить назначение #{{ r.id }} вместе с работой ученика?');"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="ghost">Удалить</button></form>
+        </td>
+      </tr>
+      {% else %}<tr><td colspan="7" class="muted">Назначений пока нет.</td></tr>{% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

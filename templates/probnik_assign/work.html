@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% block title %}Пробник — FORMYLA.net{% endblock %}
+{% block extra_css %}
+<style>
+.pa-wrap { max-width: 860px; margin: 18px auto 110px; padding: 0 16px; color: var(--text, #e2e8f0); }
+.pa-card { border: 1px solid var(--border, #334155); background: var(--surface, rgba(20,26,46,.75)); border-radius: 16px; padding: 18px; margin-bottom: 16px; }
+.pa-hero { border-color: rgba(79,108,255,.45); background: linear-gradient(135deg, rgba(79,108,255,.12), rgba(94,234,212,.08)); }
+.pa-title { font-size: 20px; font-weight: 800; margin: 0 0 6px; line-height: 1.3; }
+.pa-muted { color: var(--muted, #94a3b8); font-size: 13.5px; line-height: 1.5; }
+.pa-intro { font-size: 15px; line-height: 1.6; margin: 10px 0 14px; }
+.pa-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.pa-btn { border: 0; border-radius: 12px; padding: 12px 20px; font-weight: 800; font-size: 15px; cursor: pointer; background: #4f6cff; color: #fff; }
+.pa-btn:disabled { opacity: .55; cursor: default; }
+.pa-btn.ghost { background: transparent; color: var(--text, #e2e8f0); border: 1px solid var(--border, #334155); font-weight: 700; }
+.pa-btn.go { background: #16a34a; }
+.pa-timer { position: sticky; top: 8px; z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(79,108,255,.5); background: rgba(15,20,40,.92); backdrop-filter: blur(6px); margin-bottom: 16px; }
+.pa-timer b { font-size: 22px; font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+.pa-timer.low b { color: #f59e0b; }
+.pa-task-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.pa-task-num { font-weight: 800; font-size: 16px; }
+.pa-score { font-weight: 800; padding: 3px 10px; border-radius: 999px; font-size: 13px; background: rgba(148,163,184,.15); }
+.pa-score.full { background: rgba(22,163,74,.2); color: #4ade80; }
+.pa-score.partial { background: rgba(245,158,11,.18); color: #fbbf24; }
+.pa-score.wrong, .pa-score.empty { background: rgba(239,68,68,.15); color: #f87171; }
+.pa-text { white-space: pre-line; font-size: 15px; line-height: 1.65; overflow-x: auto; }
+.pa-fig { display: block; max-width: 100%; max-height: 360px; margin: 10px auto; border-radius: 8px; background: #fff; }
+.pa-work { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border, #334155); }
+.pa-photos { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+.pa-ph { width: 132px; border: 1px solid var(--border, #334155); border-radius: 10px; overflow: hidden; font-size: 12px; background: rgba(255,255,255,.03); }
+.pa-ph img { display: block; width: 100%; height: 96px; object-fit: cover; background: #111; }
+.pa-ph .noimg { height: 96px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.pa-ph .st { padding: 6px 8px; line-height: 1.35; }
+.pa-ph .st.ok { color: #4ade80; } .pa-ph .st.failed { color: #f87171; } .pa-ph .st.pending { color: #fbbf24; }
+.pa-ph button { width: 100%; border: 0; border-top: 1px solid var(--border, #334155); background: transparent; color: var(--muted, #94a3b8); padding: 5px; cursor: pointer; font-size: 12px; }
+.pa-upload { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px; border: 1px solid rgba(79,108,255,.6); color: #a5b4fc; font-weight: 700; cursor: pointer; }
+.pa-upload input { display: none; }
+.pa-ta { width: 100%; min-height: 84px; margin-top: 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border, #334155); background: rgba(0,0,0,.18); color: inherit; font: inherit; font-size: 14px; resize: vertical; box-sizing: border-box; }
+.pa-saved { font-size: 12px; color: var(--muted, #94a3b8); min-height: 16px; }
+.pa-ocr { white-space: pre-line; font-size: 13px; color: var(--muted, #94a3b8); margin-top: 6px; }
+details.pa-det { margin-top: 10px; }
+details.pa-det summary { cursor: pointer; font-weight: 700; color: #a5b4fc; font-size: 14px; }
+.pa-total { font-size: 34px; font-weight: 900; }
+.pa-review { white-space: pre-line; line-height: 1.65; font-size: 15px; }
+.pa-err { color: #f87171; font-size: 13.5px; margin-top: 8px; min-height: 18px; }
+.pa-spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.25); border-top-color: #a5b4fc; border-radius: 50%; animation: paspin 1s linear infinite; vertical-align: -2px; }
+@keyframes paspin { to { transform: rotate(360deg); } }
+@media (max-width: 600px) { .pa-ph { width: calc(50% - 5px); } .pa-btn { flex: 1; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="pa-wrap" id="pa" data-id="{{ a.id }}" data-status="{{ a.status }}" data-csrf="{{ csrf_token() }}">
+
+  {# ── До старта ─────────────────────────────────────────────── #}
+  {% if a.status == 'assigned' %}
+  <div class="pa-card pa-hero">
+    <div class="pa-muted">🏆 Пробник на {{ a.assigned_date.strftime('%d.%m.%Y') }}</div>
+    <h1 class="pa-title" id="pa-title">{{ a.title }}</h1>
+    <div class="pa-intro">{{ intro }}</div>
+    <div class="pa-muted" style="margin-bottom:14px;">{{ tasks|length }} задач · {{ hours }} · краткий ответ не нужен: к каждой задаче — фото решения из тетради (можно и текстом). Задачи откроются после старта.</div>
+    {% if is_owner %}
+      {% if not_yet %}
+      <div class="pa-muted"><b>Пробник откроется {{ a.assigned_date.strftime('%d.%m') }}.</b></div>
+      {% else %}
+      <div class="pa-btns">
+        <button class="pa-btn go" id="pa-start">▶ Старт</button>
+        <button class="pa-btn ghost" data-switch="-1" {{ '' if nav.can_prev else 'hidden' }}>← Предыдущий</button>
+        {% if nav.can_next %}<button class="pa-btn ghost" data-switch="1">🔄 Сменить пробник</button>{% endif %}
+      </div>
+      {% endif %}
+    {% else %}
+      <div class="pa-muted">Режим просмотра (админ): ниже — задачи так, как их увидит ученик после старта.</div>
+    {% endif %}
+    <div class="pa-err" id="pa-err"></div>
+  </div>
+  {% endif %}
+
+  {# ── Идёт работа ───────────────────────────────────────────── #}
+  {% if a.status == 'started' %}
+  <div class="pa-timer" id="pa-timer" data-left="{{ seconds_left or 0 }}">
+    <div><div class="pa-muted" style="font-size:12px;">Осталось</div><b id="pa-clock">--:--:--</b></div>
+    {% if is_owner %}<button class="pa-btn go" id="pa-submit">Сдать работу</button>{% endif %}
+  </div>
+  <div class="pa-card">
+    <h1 class="pa-title">{{ a.title }}</h1>
+    <div class="pa-muted">К каждой задаче приложи фото решения из тетради — ИИ распознает и проверит. Можно дописать текстом. Краткий ответ не нужен. Когда закончишь — «Сдать работу»; по окончании времени работа сдастся сама.</div>
+    {% if is_owner and (nav.can_next or nav.can_prev) %}
+    <div class="pa-muted" style="margin-top:12px;">Уже решал этот вариант? Смени его — таймер на новом варианте начнётся заново, а решения этого сохранятся: к ним можно вернуться кнопкой «Предыдущий».</div>
+    <div class="pa-btns" style="margin-top:10px;">
+      {% if nav.can_prev %}<button class="pa-btn ghost" data-switch="-1">← Предыдущий</button>{% endif %}
+      {% if nav.can_next %}<button class="pa-btn ghost" data-switch="1">🔄 Сменить пробник</button>{% endif %}
+    </div>
+    <div class="pa-err" id="pa-err"></div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# ── Проверка ─────────────────────────────────────────────── #}
+  {% if a.status == 'grading' %}
+  <div class="pa-card pa-hero">
+    <h1 class="pa-title">Работа сдана{% if a.auto_submitted %} (закончилось время){% endif %}</h1>
+    <div class="pa-intro"><span class="pa-spin"></span> ИИ проверяет каждую задачу, затем куратор разберёт работу и составит план обучения. Обычно это 5–15 минут — страницу можно закрыть: придёт уведомление, а разбор появится в чате куратора.</div>
+  </div>
+  {% endif %}
+
+  {# ── Итоги ────────────────────────────────────────────────── #}
+  {% if a.status == 'reviewed' %}
+  <div class="pa-card pa-hero">
+    <div class="pa-muted">{{ a.title }}</div>
+    <div class="pa-total">{{ a.total_score }} <span style="font-size:20px;color:var(--muted,#94a3b8);">из {{ a.max_score }} баллов</span></div>
+    <div class="pa-muted">Каждая задача — по шкале 0–{{ task_max }} (как на ВсОШ).{% if a.grading_error %} {{ a.grading_error }} — куратор проверит вручную.{% endif %}</div>
+  </div>
+  {% if a.curator_review %}
+  <div class="pa-card">
+    <div style="font-weight:800;margin-bottom:8px;">💬 Разбор куратора и план обучения</div>
+    <div class="pa-review">{{ a.curator_review }}</div>
+    <div class="pa-muted" style="margin-top:10px;">Это сообщение есть и в <a href="/curator" style="color:#a5b4fc;">чате куратора</a> — там можно задать вопросы.</div>
+  </div>
+  {% endif %}
+  {% endif %}
+
+  {# ── Задачи ───────────────────────────────────────────────── #}
+  {% if a.status != 'assigned' or not is_owner %}
+  {% for t in tasks %}
+  <div class="pa-card" id="task-{{ t.idx }}" data-idx="{{ t.idx }}">
+    <div class="pa-task-head">
+      <div class="pa-task-num">Задача {{ t.num }}</div>
+      {% if a.status == 'reviewed' %}
+        <span class="pa-score {{ t.verdict or '' }}">{% if t.score is none %}не проверено{% else %}{{ t.score }} / {{ t.max_score }}{% endif %}</span>
+      {% endif %}
+    </div>
+    <div class="pa-text task-text">{{ t.text }}</div>
+    {% for f in t.fig_statement %}<img class="pa-fig" src="{{ f }}" alt="Чертёж к задаче {{ t.num }}" loading="lazy">{% endfor %}
+
+    {% if a.status == 'started' and is_owner %}
+    <div class="pa-work">
+      <label class="pa-upload">📷 Добавить фото решения<input type="file" accept="image/*" multiple data-photo="{{ t.idx }}"></label>
+      <div class="pa-photos" data-photos="{{ t.idx }}"></div>
+      <textarea class="pa-ta" data-text="{{ t.idx }}" placeholder="Решение текстом (необязательно, если есть фото)">{{ t.student_text }}</textarea>
+      <div class="pa-saved" data-saved="{{ t.idx }}"></div>
+    </div>
+    {% endif %}
+
+    {% if a.status in ('grading', 'reviewed') %}
+    <div class="pa-work">
+      {% if t.photos %}
+      <div class="pa-photos">
+        {% for p in t.photos %}<div class="pa-ph">{% if p.url %}<a href="{{ p.url }}" target="_blank" rel="noopener"><img src="{{ p.url }}" alt="Фото решения"></a>{% else %}<div class="noimg">📄</div>{% endif %}</div>{% endfor %}
+      </div>
+      {% endif %}
+      {% if t.student_text %}<div class="pa-ocr">{{ t.student_text }}</div>{% endif %}
+      {% if not t.photos and not t.student_text %}<div class="pa-muted">Решение не прислано.</div>{% endif %}
+      {% if a.status == 'reviewed' and t.feedback %}
+      <div style="margin-top:10px;"><b>Разбор:</b> <span class="pa-text task-text">{{ t.feedback }}</span></div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if a.status == 'reviewed' or (not is_owner) %}
+    <details class="pa-det">
+      <summary>Официальное решение{% if t.answer %} и ответ{% endif %}</summary>
+      {% if t.answer %}<div style="margin:8px 0;"><b>Ответ:</b> <span class="task-text">{{ t.answer }}</span></div>{% endif %}
+      <div class="pa-text task-text">{{ t.solution }}</div>
+      {% for f in t.fig_solution %}<img class="pa-fig" src="{{ f }}" alt="Чертёж к решению" loading="lazy">{% endfor %}
+    </details>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
+</div>
+
+<script>
+(function () {
+  var root = document.getElementById('pa');
+  if (!root) return;
+  var id = root.dataset.id, csrf = root.dataset.csrf, status = root.dataset.status;
+  var base = '/probnik-assign/' + id;
+  var errBox = document.getElementById('pa-err');
+
+  function post(url, body, isForm) {
+    var opt = { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-Token': csrf } };
+    if (isForm) { opt.body = body; } else { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body || {}); }
+    return fetch(url, opt).then(function (r) { return r.json().catch(function () { return { ok: false, error: 'Ошибка сети' }; }); });
+  }
+  function showErr(msg) { if (errBox) errBox.textContent = msg || ''; else if (msg) alert(msg); }
+  function esc(s) { return String(s || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function math(el) { try { if (window.reRenderMath) window.reRenderMath(el); } catch (e) {} }
+
+  // ── старт / смена ──
+  var bStart = document.getElementById('pa-start');
+  if (bStart) bStart.onclick = function () {
+    if (!confirm('Запустить таймер? Остановить его будет нельзя.')) return;
+    bStart.disabled = true;
+    post(base + '/start').then(function (d) { if (d.ok) location.reload(); else { showErr(d.error); bStart.disabled = false; } });
+  };
+  document.querySelectorAll('[data-switch]').forEach(function (b) {
+    b.onclick = function () {
+      var dir = parseInt(b.dataset.switch, 10);
+      if (status === 'started' && !confirm(dir < 0
+          ? 'Вернуться к предыдущему варианту? Таймер начнётся заново, твои решения того варианта на месте.'
+          : 'Сменить вариант? Таймер начнётся заново. Решения этого варианта сохранятся — вернуться можно кнопкой «Предыдущий».')) return;
+      b.disabled = true;
+      var go = function () { return post(base + '/swap', { dir: dir }); };
+      (status === 'started' ? flushAll().then(go) : go()).then(function (d) {
+        b.disabled = false;
+        if (!d.ok) { showErr(d.error); return; }
+        if (status === 'started') { location.reload(); return; }
+        document.getElementById('pa-title').textContent = d.title; showErr('');
+        var p = document.querySelector('[data-switch="-1"]'); if (p) p.hidden = !d.can_prev;
+      });
+    };
+  });
+
+  // ── таймер ──
+  var timer = document.getElementById('pa-timer');
+  if (timer) {
+    var end = Date.now() + parseInt(timer.dataset.left || '0', 10) * 1000;
+    var clock = document.getElementById('pa-clock');
+    var tick = function () {
+      var s = Math.max(0, Math.round((end - Date.now()) / 1000));
+      var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60;
+      clock.textContent = h + ':' + (m < 10 ? '0' : '') + m + ':' + (ss < 10 ? '0' : '') + ss;
+      timer.classList.toggle('low', s < 600);
+      if (s <= 0) { clearInterval(iv); flushAll().then(function () { setTimeout(function () { location.reload(); }, 35000); }); }
+    };
+    var iv = setInterval(tick, 1000); tick();
+  }
+
+  // ── текст: автосохранение ──
+  var timers = {};
+  function saveText(ta) {
+    var idx = ta.dataset.text, mark = document.querySelector('[data-saved="' + idx + '"]');
+    return post(base + '/text', { idx: +idx, text: ta.value }).then(function (d) {
+      if (mark) mark.textContent = d.ok ? 'Сохранено' : (d.error || 'Не сохранено');
+    });
+  }
+  function flushAll() {
+    var ps = [];
+    document.querySelectorAll('textarea[data-text]').forEach(function (ta) { if (ta.dataset.dirty) { delete ta.dataset.dirty; ps.push(saveText(ta)); } });
+    return Promise.all(ps);
+  }
+  document.querySelectorAll('textarea[data-text]').forEach(function (ta) {
+    ta.addEventListener('input', function () {
+      ta.dataset.dirty = '1';
+      var mark = document.querySelector('[data-saved="' + ta.dataset.text + '"]'); if (mark) mark.textContent = '…';
+      clearTimeout(timers[ta.dataset.text]);
+      timers[ta.dataset.text] = setTimeout(function () { delete ta.dataset.dirty; saveText(ta); }, 1200);
+    });
+  });
+
+  // ── фото ──
+  function renderPhotos(tasks) {
+    var pending = false;
+    (tasks || []).forEach(function (t) {
+      var box = document.querySelector('[data-photos="' + t.idx + '"]');
+      if (!box) return;
+      box.innerHTML = t.photos.map(function (p) {
+        if (p.ocr_status === 'pending') pending = true;
+        var st = p.ocr_status === 'ok' ? '✓ распознано' : p.ocr_status === 'failed' ? 'не разобрать — переснимите чётче' : '<span class="pa-spin"></span> распознаём…';
+        var img = p.url ? '<img src="' + esc(p.url) + '" alt="Фото решения">' : '<div class="noimg">📄</div>';
+        return '<div class="pa-ph">' + img + '<div class="st ' + p.ocr_status + '">' + st + '</div>' +
+          '<button data-del="' + p.id + '">Удалить</button></div>';
+      }).join('');
+    });
+    document.querySelectorAll('[data-del]').forEach(function (b) {
+      b.onclick = function () {
+        if (!confirm('Удалить это фото?')) return;
+        post(base + '/photo/' + b.dataset.del + '/delete').then(function (d) { if (d.tasks) renderPhotos(d.tasks); else showErr(d.error); });
+      };
+    });
+    return pending;
+  }
+  var pollT = null;
+  function poll() {
+    clearTimeout(pollT);
+    fetch(base + '/state', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.status !== status) { location.reload(); return; }
+      var pending = status === 'started' ? renderPhotos(d.tasks) : false;
+      if (status === 'grading') pollT = setTimeout(poll, 10000);
+      else if (pending) pollT = setTimeout(poll, 4000);
+      else if (status === 'started') pollT = setTimeout(poll, 60000);
+    }).catch(function () { pollT = setTimeout(poll, 15000); });
+  }
+  document.querySelectorAll('input[data-photo]').forEach(function (inp) {
+    inp.addEventListener('change', function () {
+      if (!inp.files || !inp.files.length) return;
+      var fd = new FormData(); fd.append('idx', inp.dataset.photo);
+      for (var i = 0; i < inp.files.length; i++) fd.append('photo', inp.files[i]);
+      var lbl = inp.parentNode; lbl.style.opacity = .5;
+      post(base + '/photo', fd, true).then(function (d) {
+        lbl.style.opacity = 1; inp.value = '';
+        if (d.ok) { renderPhotos(d.tasks); poll(); } else alert(d.error || 'Не удалось загрузить фото');
+      });
+    });
+  });
+
+  // ── сдача ──
+  var bSub = document.getElementById('pa-submit');
+  if (bSub) bSub.onclick = function () {
+    if (!confirm('Сдать работу? После этого изменить решения будет нельзя.')) return;
+    bSub.disabled = true;
+    flushAll().then(function () { return post(base + '/submit'); }).then(function (d) {
+      if (d.ok) location.reload(); else { alert(d.error); bSub.disabled = false; }
+    });
+  };
+  window.addEventListener('beforeunload', function () { flushAll(); });
+
+  if (status === 'started' || status === 'grading') poll();
+})();
+</script>
+{% endblock %}

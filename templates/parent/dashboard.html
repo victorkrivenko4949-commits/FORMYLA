@@ -270,11 +270,12 @@
                         ⭐ Premium активен{% if c.premium.expires_at %} до {{ c.premium.expires_at }}{% endif %}
                     </span>
                     {% else %}
-                    {# 2026-11-02: покупка Premium — только в аккаунте ребёнка #}
-                    <span class="premium-active-badge" style="opacity:.85"
-                          title="Premium оформляется в аккаунте ребёнка">
-                        ⭐ Оформите это в аккаунте ребёнка
-                    </span>
+                    {# TARIFFS_SECTIONS_V1 (07.11.2026): большая кнопка покупки —
+                       подарочный Premium для этого ребёнка (for_user). #}
+                    <a href="/payments/premium/checkout?plan=premium_intense&for_user={{ c.id }}"
+                       style="display: inline-flex; align-items: center; gap: 6px; padding: 12px 20px; border-radius: 12px; background: linear-gradient(135deg, #2dd4bf, #0ea5a4); color: #06281f; text-decoration: none; font-weight: 800; font-size: 13px; white-space: nowrap;">
+                        Купить подписку
+                    </a>
                     {% endif %}
                 </div>
                 {% else %}
@@ -284,11 +285,10 @@
                         ⭐ Premium активен{% if c.premium.expires_at %} до {{ c.premium.expires_at }}{% endif %}
                     </span>
                     {% else %}
-                    {# 2026-11-02: покупка Premium — только в аккаунте ребёнка #}
-                    <span class="premium-active-badge" style="opacity:.85"
-                          title="Premium оформляется в аккаунте ребёнка">
-                        ⭐ Оформите это в аккаунте ребёнка
-                    </span>
+                    <a href="/payments/premium/checkout?plan=premium_intense&for_user={{ c.id }}"
+                       style="display: inline-flex; align-items: center; gap: 6px; padding: 12px 20px; border-radius: 12px; background: linear-gradient(135deg, #2dd4bf, #0ea5a4); color: #06281f; text-decoration: none; font-weight: 800; font-size: 13px; white-space: nowrap;">
+                        Купить подписку
+                    </a>
                     {% endif %}
                 </div>
                 {% endif %}

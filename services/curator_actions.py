@@ -227,9 +227,104 @@ def olympiads_for_grade(grade: Optional[int]) -> List[Tuple[str, str]]:
     return out
 
 
-def state_lines(user_id: int, grade: Optional[int]) -> List[str]:
-    """Строки «Данных ученика» про уровень, дни и олимпиаду."""
+def daily_task_count(user_id: int) -> Optional[int]:
+    """Сколько задач дня выдаётся ученику сегодня (единый источник правды)."""
+    try:
+        from services.daily_task_rotation import get_daily_task_count
+        return int(get_daily_task_count(user_id))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def plan_lines(user_id: int) -> List[str]:
+    """CURATOR_PLAN_GUARD_V1: реальный план ученика для «Данных ученика».
+
+    Куратор советует ТОЛЬКО по этим строкам: занятие сегодня, сколько
+    задач дня, тема дня и темы месяца. Своих цифр и разделов не придумывает.
+    """
     lines: List[str] = []
+    try:
+        from curator.session_plan import _is_rest_day
+        if _is_rest_day(user_id):
+            lines.append('- ПЛАН: сегодня ВЫХОДНОЙ по расписанию ученика — новых задач нет, отдых')
+    except Exception:
+        pass
+    try:
+        from services.curator_chat import daily_plan_block
+        p = daily_plan_block(user_id)
+        if p:
+            lines.append('- ПЛАН: ' + p.lstrip('- '))
+    except Exception:
+        pass
+    n = daily_task_count(user_id)
+    if n:
+        lines.append(f'- ПЛАН: задач дня сегодня — {n} (это фиксированная норма, '
+                     f'больше задач в день не выдаётся)')
+    try:
+        from curator.monthly_cycle import get_cycle_info
+        from services.theme_registry import theme_title
+        cyc = get_cycle_info(user_id) or {}
+        if cyc.get('active'):
+            cur = cyc.get('current_theme')
+            if cur:
+                lines.append(f'- ПЛАН: тема задач дня сегодня — «{theme_title(cur)}»')
+            themes = [theme_title(t) for t in (cyc.get('themes') or [])]
+            if themes:
+                lines.append('- ПЛАН: темы задач дня в этом месяце (по очереди): '
+                             + '; '.join(f'«{t}»' for t in themes))
+    except Exception:
+        pass
+    return lines
+
+
+# Подсказка, что куратор умеет сам — дописывается к каждому ответу админам
+CAPABILITIES_HINT = ('💡 Могу сам: поднять или снизить уровень задач, поменять дни '
+                     'занятий, настроить задачи дня под олимпиаду — просто попроси.')
+
+# Предписания «сколько решать»: «по 20 задач», «43 задачи в день»,
+# «реши 30 задач», «15 задач сегодня». Статистику прошлого («за неделю
+# 43 попытки», «решил 25 задач») не трогаем.
+_N = r'(\d+)(?:\s*[-–]\s*\d+)?\s*задач\w*'
+_TASK_NUM_RES = [
+    re.compile(r'\bпо\s+' + _N, re.I),
+    re.compile(_N + r'(?:\s+\S+){0,3}?\s+(?:в|за)\s+(?:день|сутки)', re.I),
+    re.compile(_N + r'\s+(?:ежедневно|каждый\s+день|сегодня|завтра)', re.I),
+    re.compile(r'\b(?:реши|решай|решайте|решите|решить|сделай|сделайте|сделать|возьми)\s+'
+               r'(?:ещё\s+|еще\s+)?' + _N, re.I),
+]
+
+
+def off_plan_numbers(text: str, daily_count: Optional[int]) -> List[int]:
+    """Числа задач «на день» в ответе сверх нормы плана задач дня."""
+    limit = max(10, int(daily_count or 0))
+    bad: List[int] = []
+    for rx in _TASK_NUM_RES:
+        for m in rx.finditer(text or ''):
+            try:
+                n = int(m.group(1))
+            except ValueError:
+                continue
+            if n > limit and n not in bad:
+                bad.append(n)
+    return bad
+
+
+def drop_off_plan_sentences(text: str, daily_count: Optional[int]) -> str:
+    """Последний рубеж: вырезать предложения с выдуманным числом задач."""
+    parts = re.split(r'(?<=[.!?\n])\s+', text or '')
+    keep = [p for p in parts if not off_plan_numbers(p, daily_count)]
+    return ' '.join(keep).strip()
+
+
+def with_capabilities_hint(text: str) -> str:
+    if not text or 'Могу сам' in text:
+        return text
+    return text.rstrip() + '\n\n' + CAPABILITIES_HINT
+
+
+def state_lines(user_id: int, grade: Optional[int]) -> List[str]:
+    """Строки «Данных ученика»: реальный план, уровень, дни и олимпиада."""
+    lines: List[str] = plan_lines(user_id)
     try:
         from services.level_engine import get_state
         lines.append(f"- уровень задач дня: {get_state(user_id)['level']} из 4")

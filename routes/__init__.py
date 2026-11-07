@@ -287,7 +287,21 @@ def _install_curator_chat(app) -> None:
         logger.exception("[curator_chat] auto-register failed: %r", e)
 
 
+def _install_probnik_assign(app) -> None:
+    """PROBNIK_ASSIGN_V1: назначенный пробник (/probnik-assign/*)."""
+    if getattr(app, "_probnik_assign_installed", False):
+        return
+    app._probnik_assign_installed = True
+    try:
+        from routes.probnik_assign import probnik_assign_bp
+        if "probnik_assign" not in app.blueprints:
+            _ORIG_REGISTER(app, probnik_assign_bp)
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[probnik_assign] auto-register failed: %r", e)
+
+
 def _install(app) -> None:
+    _install_probnik_assign(app)
     _install_pwa(app)
     _install_site_notices(app)
     _install_olymp_catalog(app)

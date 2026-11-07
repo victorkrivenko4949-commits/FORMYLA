@@ -247,6 +247,7 @@ def maybe_finish_probnik_day(user_id: int) -> bool:
         if not rows:
             return False
         answered = BankIssue.query.filter(
+            BankIssue.user_id == user_id,   # раньше считались ответы ВСЕХ учеников
             BankIssue.task_id.in_([r.id for r in rows]),
             BankIssue.user_answer.isnot(None),
         ).count()
