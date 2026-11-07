@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+{% block title %}FORMYLA — как это будет работать{% endblock %}
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+
+  :root {
+    --bg:#0a0f1e; --bg-raise:#0d1426; --bg-deep:#070b16;
+    --ink:#eaf0fa; --muted:#9aa6bb; --faint:#5d6a84;
+    --gold:#8fe3ff; --violet:#a78bfa; --sky:#8ccbff;
+    --red:#f87171; --amber:#fbbf6e; --green:#6ee7a0;
+    --hair:rgba(234,240,250,.12); --hair-strong:rgba(234,240,250,.22);
+    --font-display:"STIX Two Text",Georgia,serif;
+    --font-body:"Golos Text",system-ui,sans-serif;
+    --font-mono:"JetBrains Mono",monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--font-body); line-height:1.6;
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0 31px, rgba(255,255,255,.018) 31px 32px),
+      repeating-linear-gradient(90deg, transparent 0 31px, rgba(255,255,255,.018) 31px 32px),
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(140,203,255,.08), transparent);
+  }
+  .wrap { max-width:1000px; margin:0 auto; padding:0 24px 64px; }
+
+  /* ─── ШАПКА С РОЛЯМИ ─── */
+  .rolebar { position:sticky; top:0; z-index:50; background:rgba(10,15,30,.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--hair); }
+  .rolebar-in { max-width:1000px; margin:0 auto; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+  .rb-logo { font-family:var(--font-mono); font-size:.78rem; color:var(--gold); letter-spacing:.18em; }
+  .tabs { display:flex; gap:6px; border:1px solid var(--hair-strong); border-radius:999px; padding:4px; background:var(--bg-raise); }
+  .tab { font-family:var(--font-body); font-size:.84rem; font-weight:600; border:none; background:transparent; color:var(--muted); padding:7px 18px; border-radius:999px; cursor:pointer; transition:all .18s; }
+  .tab.on { background:linear-gradient(135deg,#38bdf8,#6366f1); color:#fff; }
+
+  .hero { padding:clamp(32px,5vw,52px) 0 6px; }
+  .eyebrow { font-family:var(--font-mono); font-size:.78rem; color:var(--gold); letter-spacing:.22em; text-transform:uppercase; }
+  h1 { font-family:var(--font-display); font-size:clamp(1.7rem,4.2vw,2.5rem); font-weight:600; line-height:1.15; margin:14px 0 10px; }
+  h1 em { font-style:italic; color:var(--gold); }
+  .sub { color:var(--muted); max-width:64ch; margin-bottom:26px; }
+
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; font-family:var(--font-body); font-size:.92rem; font-weight:600; border-radius:6px; padding:12px 22px; cursor:pointer; border:1px solid transparent; text-decoration:none; color:var(--ink); transition:transform .15s, box-shadow .15s, border-color .15s; }
+  .btn--primary { background:linear-gradient(135deg,#38bdf8,#6366f1); color:#fff; }
+  .btn--primary:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(99,102,241,.45); }
+  .btn--ghost { border-color:var(--hair-strong); background:transparent; }
+  .btn--ghost:hover { border-color:rgba(143,227,255,.45); }
+  .btn--sm { font-size:.82rem; padding:8px 14px; }
+  .btn--lg { font-size:1rem; padding:16px 32px; }
+
+  section { padding:clamp(34px,5vw,52px) 0; border-top:1px solid var(--hair); }
+  .sec-head { margin-bottom:20px; }
+  .sec-no { font-family:var(--font-mono); font-size:.78rem; color:var(--gold); letter-spacing:.18em; }
+  .sec-title { font-family:var(--font-display); font-size:clamp(1.3rem,3vw,1.8rem); font-weight:600; margin-top:6px; }
+
+  .panel { border:1px solid var(--hair); border-radius:10px; background:var(--bg-raise); padding:24px 22px; }
+
+  .badge { font-family:var(--font-mono); font-size:.7rem; border:1px solid var(--hair-strong); border-radius:4px; padding:4px 10px; letter-spacing:.06em; color:var(--muted); white-space:nowrap; }
+  .badge--ok { color:var(--green); border-color:rgba(110,231,160,.35); }
+  .badge--red { color:var(--red); border-color:rgba(248,113,113,.4); }
+
+  /* ─── ТЕКУЩИЙ КАБИНЕТ (ПРОСТОЙ) ─── */
+  .row { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:13px 0; border-bottom:1px solid var(--hair); }
+  .row:last-child { border-bottom:none; }
+  .row .r-name { font-family:var(--font-display); font-size:1.05rem; font-weight:600; }
+  .row .r-meta { font-size:.82rem; color:var(--muted); }
+  .row .r-right { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+  .cta-big { display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap; margin-top:22px; border:1px solid rgba(143,227,255,.3); border-radius:12px; padding:24px 26px; background:linear-gradient(135deg, rgba(56,189,248,.10), rgba(99,102,241,.12)); }
+  .cta-title { font-family:var(--font-display); font-size:1.25rem; font-weight:600; }
+  .cta-sub { font-size:.88rem; color:var(--muted); margin-top:4px; max-width:54ch; }
+
+  /* ─── ДЕМО ─── */
+  #demoView { display:none; }
+  .demo-flag { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; border:1px dashed rgba(167,139,250,.45); border-radius:10px; padding:14px 18px; background:rgba(167,139,250,.07); margin-bottom:22px; }
+  .demo-flag .df-txt { font-family:var(--font-mono); font-size:.74rem; color:var(--violet); letter-spacing:.14em; }
+  .demo-flag .df-sub { font-size:.84rem; color:var(--muted); margin-top:3px; }
+
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:22px; }
+  .kpi { border:1px solid var(--hair); border-radius:8px; background:var(--bg-raise); padding:18px 20px; position:relative; overflow:hidden; }
+  .kpi::before { content:""; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg, rgba(56,189,248,.5), rgba(99,102,241,.5)); }
+  .kpi--warn::before { background:linear-gradient(90deg, rgba(248,113,113,.55), rgba(251,191,110,.4)); }
+  .kpi-ico { font-size:1.1rem; margin-bottom:8px; }
+  .kpi-val { font-family:var(--font-display); font-size:1.8rem; font-weight:600; line-height:1.1; }
+  .kpi-val small { font-size:.82rem; color:var(--muted); font-weight:400; }
+  .kpi-label { font-family:var(--font-mono); font-size:.66rem; color:var(--faint); letter-spacing:.14em; text-transform:uppercase; margin-top:6px; }
+
+  .kids { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:14px; margin-bottom:18px; }
+  .kid { border:1px solid var(--hair); border-radius:8px; padding:18px 20px; background:var(--bg-deep); }
+  .kid--add { border-style:dashed; background:transparent; }
+  .k-head { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .avatar { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:1.05rem; font-weight:600; color:#fff; flex:none; }
+  .av-1 { background:linear-gradient(135deg,#38bdf8,#6366f1); }
+  .av-2 { background:linear-gradient(135deg,#a78bfa,#6d28d9); }
+  .av-add { background:transparent; border:1px dashed var(--hair-strong); color:var(--muted); }
+  .k-id { flex:1; min-width:0; }
+  .k-name { font-family:var(--font-display); font-size:1.1rem; font-weight:600; line-height:1.2; }
+  .k-meta { font-size:.8rem; color:var(--muted); }
+  .streak { font-family:var(--font-mono); font-size:.72rem; color:var(--amber); white-space:nowrap; }
+  .mode-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .mode { font-size:.78rem; border:1px solid var(--hair); border-radius:999px; padding:5px 12px; color:var(--muted); white-space:nowrap; }
+  .mode.on { color:var(--gold); border-color:rgba(143,227,255,.4); background:rgba(143,227,255,.07); }
+
+  .buy-bar { display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap; margin-top:6px; border:1px solid rgba(143,227,255,.28); border-radius:10px; padding:20px 24px; background:linear-gradient(135deg, rgba(56,189,248,.10), rgba(99,102,241,.12)); }
+  .bb-title { font-family:var(--font-display); font-size:1.1rem; font-weight:600; }
+  .bb-sub { font-size:.84rem; color:var(--muted); margin-top:4px; max-width:52ch; }
+  .bb-actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+
+  .attention { display:flex; align-items:flex-start; gap:14px; border:1px solid rgba(248,113,113,.35); border-left:4px solid rgba(248,113,113,.65); border-radius:8px; padding:16px 20px; background:rgba(248,113,113,.05); margin-bottom:18px; }
+  .at-ico { font-size:1.2rem; flex:none; }
+  .at-txt { font-size:.88rem; color:var(--muted); }
+  .at-txt b { color:var(--ink); }
+
+  .stat-block { border:1px solid var(--hair); border-radius:10px; background:var(--bg-raise); overflow:hidden; }
+  .stat-block summary { list-style:none; cursor:pointer; padding:16px 20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .stat-block summary::-webkit-details-marker { display:none; }
+  .s-name { font-family:var(--font-display); font-size:1.08rem; font-weight:600; }
+  .chev { margin-left:auto; font-family:var(--font-mono); font-size:.72rem; color:var(--faint); }
+  .stat-in { padding:4px 20px 20px; border-top:1px solid var(--hair); }
+  .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-top:16px; }
+  .metric { border:1px solid var(--hair); border-radius:8px; padding:16px 18px; background:var(--bg-deep); }
+  .m-label { font-family:var(--font-mono); font-size:.66rem; color:var(--faint); letter-spacing:.12em; text-transform:uppercase; }
+  .m-value { font-family:var(--font-display); font-size:1.6rem; font-weight:600; color:var(--gold); line-height:1.2; margin:6px 0 2px; }
+  .m-value small { font-size:.8rem; color:var(--muted); font-weight:400; }
+  .m-mean { font-size:.82rem; color:var(--muted); margin:8px 0 12px; }
+  .m-act .btn { width:100%; }
+  .bars { margin:10px 0; }
+  .bar-row { display:grid; grid-template-columns:110px 1fr 44px; gap:10px; align-items:center; padding:5px 0; }
+  .b-name { font-size:.82rem; color:var(--muted); }
+  .bar-track { height:8px; border-radius:999px; background:rgba(234,240,250,.08); overflow:hidden; }
+  .bar-fill { height:100%; border-radius:999px; background:linear-gradient(90deg,#38bdf8,#6366f1); }
+  .bar-row.low .bar-fill { background:linear-gradient(90deg,#f87171,#fbbf6e); }
+  .b-val { font-family:var(--font-mono); font-size:.74rem; color:var(--muted); text-align:right; }
+
+  .note { border:1px dashed rgba(143,227,255,.35); border-radius:8px; padding:14px 18px; background:rgba(143,227,255,.05); font-size:.87rem; color:var(--muted); margin-top:18px; }
+  .note b { color:var(--gold); }
+
+  footer { border-top:1px solid var(--hair); padding:24px 0 40px; font-family:var(--font-mono); font-size:.75rem; color:var(--faint); letter-spacing:.08em; }
+
+  .pay-overlay { position:fixed; inset:0; background:rgba(4,7,15,.78); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; z-index:100; padding:20px; }
+  .pay-overlay.open { display:flex; }
+  .pay-card { width:100%; max-width:450px; border:1px solid var(--hair-strong); border-radius:12px; background:var(--bg-raise); padding:30px 28px; box-shadow:0 24px 80px rgba(0,0,0,.6); }
+  .pay-eyebrow { font-family:var(--font-mono); font-size:.7rem; color:var(--gold); letter-spacing:.2em; margin-bottom:10px; }
+  .pay-title { font-family:var(--font-display); font-size:1.35rem; font-weight:600; margin-bottom:18px; }
+  .pay-ledger { border:1px solid var(--hair); border-radius:8px; margin-bottom:20px; }
+  .pay-row { display:flex; justify-content:space-between; gap:10px; padding:10px 14px; border-bottom:1px solid var(--hair); font-size:.88rem; color:var(--muted); }
+  .pay-row:last-child { border-bottom:none; }
+  .pay-row b { color:var(--gold); font-weight:500; }
+  .pay-total { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:20px; }
+  .pay-total span { color:var(--muted); font-size:.9rem; }
+  .pay-total b { font-family:var(--font-display); font-size:1.5rem; color:var(--ink); }
+  .pay-actions { display:flex; gap:10px; flex-wrap:wrap; }
+  .pay-hint { font-size:.78rem; color:var(--faint); margin-top:14px; }
+
+  @media (max-width:640px) { .bar-row { grid-template-columns:90px 1fr 40px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="rolebar">
+  <div class="rolebar-in">
+    <span class="rb-logo">FORMYLA · ДЕМО</span>
+    <div class="tabs">
+      <button class="tab on" id="tabT" onclick="setRole('teacher')">Кабинет учителя</button>
+      <button class="tab" id="tabP" onclick="setRole('parent')">Кабинет родителя</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ═══════════ ТЕКУЩИЙ КАБИНЕТ ═══════════ -->
+  <div id="cabinetView">
+    <div class="hero">
+      <div class="eyebrow">FORMYLA · <span id="cabRole">кабинет учителя</span></div>
+      <h1 id="cabTitle">Ваша группа — <em>как сейчас</em></h1>
+      <p class="sub" id="cabSub">Это ваш обычный кабинет. Всё работает как прежде. Новое — по кнопке ниже.</p>
+    </div>
+
+    <section>
+      <div class="panel" id="cabPanel"></div>
+
+      <div class="cta-big">
+        <div>
+          <div class="cta-title" id="ctaTitle">Добавление учеников — по подписке</div>
+          <div class="cta-sub" id="ctaSub">Нажмите — откроется страница с примером, как всё будет работать. Оттуда же можно оформить подписку.</div>
+        </div>
+        <button class="btn btn--primary btn--lg" id="ctaBtn" onclick="showDemo()">Добавить учеников →</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══════════ ДЕМО ═══════════ -->
+  <div id="demoView">
+    <div class="hero">
+      <div class="eyebrow">FORMYLA · пример</div>
+      <h1>Как это будет <em>работать</em></h1>
+      <p class="sub">Страница с примером: места, режимы, статистика. Оформить подписку можно прямо здесь — кнопки оплаты ниже.</p>
+    </div>
+
+    <div class="demo-flag">
+      <div>
+        <div class="df-txt">ПРИМЕР · КАК БУДЕТ РАБОТАТЬ</div>
+        <div class="df-sub">Демо-данные. В вашем кабинете будут ваши ученики и ваша статистика.</div>
+      </div>
+      <button class="btn btn--ghost btn--sm" onclick="showCabinet()">← Назад в кабинет</button>
+    </div>
+
+    <section>
+      <div class="sec-head"><span class="sec-no" id="dSecNo">01 / МОИ УЧЕНИКИ</span><h2 class="sec-title" id="dSecTitle">Мои ученики</h2></div>
+
+      <div class="kpis" id="dKpis"></div>
+
+      <div class="kids" id="dKids"></div>
+
+      <div class="buy-bar">
+        <div>
+          <div class="bb-title" id="dBuyTitle">Подписка на группу не активна</div>
+          <div class="bb-sub" id="dBuySub"></div>
+        </div>
+        <div class="bb-actions">
+          <button class="btn btn--ghost btn--sm" onclick="showCabinet()">← Назад в кабинет</button>
+          <button class="btn btn--primary btn--sm" id="dBuyBtn">Купить</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="sec-no">02 / СТАТИСТИКА</span><h2 class="sec-title">Статистика</h2></div>
+
+      <div class="attention" id="dAttention"></div>
+
+      <details class="stat-block" open id="dStat1"></details>
+      <details class="stat-block" id="dStat2" style="margin-top:14px;"></details>
+    </section>
+
+    <div class="note"><b>Это пример.</b> Настоящий кабинет останется вашим: те же ученики, те же данные — в новом виде. Ничего не меняется до покупки подписки.</div>
+  </div>
+
+  <footer>FORMYLA · кабинет + демо новой подписки · 7 ноября 2026</footer>
+</div>
+
+<!-- ОКНО ОПЛАТЫ -->
+<div class="pay-overlay" id="payOverlay" onclick="if(event.target===this)closePay()">
+  <div class="pay-card">
+    <div class="pay-eyebrow">FORMYLA · ОПЛАТА</div>
+    <div class="pay-title" id="payTitle">Тариф</div>
+    <div class="pay-ledger">
+      <div class="pay-row"><span>Что покупаете</span><b id="payWhat">—</b></div>
+      <div class="pay-row"><span>Срок</span><b>30 дней</b></div>
+      <div class="pay-row"><span>Способ оплаты</span><b>Карта · ЮKassa</b></div>
+    </div>
+    <div class="pay-total"><span>Итого</span><b id="payPrice">0 ₽</b></div>
+    <div class="pay-actions">
+      <button class="btn btn--primary btn--lg" style="flex:1;" onclick="payGo()">Перейти к оплате</button>
+      <button class="btn btn--ghost" onclick="closePay()">Отмена</button>
+    </div>
+    <div class="pay-hint">После оплаты ЮKassa вернёт в кабинет — подписка активируется сразу.</div>
+  </div>
+</div>
+
+<script>
+var role = 'teacher';
+
+var DATA = {
+  teacher: {
+    cabRole: 'ваш кабинет',
+    cabTitle: 'Ваш <em>кабинет</em>',
+    cabSub: 'Пока никого нет. Добавьте первого ученика — откроется страница с примером, как всё будет работать.',
+    cabPanel: '<div style="text-align:center; padding:34px 10px 26px;"><div style="font-size:2.2rem; margin-bottom:12px;">👥</div><div style="font-family:var(--font-display); font-size:1.3rem; font-weight:600;">У вас пока нет учеников</div><div style="color:var(--muted); font-size:.88rem; margin-top:6px;">добавление учеников — по подписке на группу</div></div>',
+    ctaTitle: 'Добавление учеников — по подписке',
+    ctaSub: 'Нажмите — откроется страница с примером, как всё будет работать. Оттуда же можно оформить подписку.',
+    ctaBtn: 'Добавить учеников →',
+    dSecTitle: 'Мои ученики',
+    kpis: [
+      ['👥','2','ученика','занимаются сейчас'],
+      ['📈','5.4','задач/день','среднее по группе'],
+      ['⚠️','1','ученик','красная зона · менее 4 задач'],
+      ['🔥','9','дней','лучшая серия · Артём']
+    ],
+    kids: [
+      {av:'А',cls:'av-1',name:'Артём',meta:'9 класс · уровень 3 из 4',streak:'🔥 9 дней',modes:[['Работяга · 6 дней',1],['Спокойный · 3 дня',0]]},
+      {av:'Д',cls:'av-2',name:'Даша',meta:'9 класс · уровень 2 из 4',streak:'🔥 4 дня',modes:[['Работяга · 6 дней',0],['Спокойный · 3 дня',1]]},
+      {add:true,name:'Новый ученик',meta:'добавление — после покупки подписки',btn:'Купить подписку · от 1 500 ₽',pay:['Тариф «Группа»','3 000 ₽','6–15 мест · подписка на 30 дней']}
+    ],
+    buyTitle: 'Подписка на группу не активна',
+    buySub: 'Тариф «Группа»: 6–15 мест за 3 000 ₽ / 30 дней — от 200 ₽ за ученика.',
+    buyBtn: 'Купить · 3 000 ₽',
+    buyPay: ['Тариф «Группа»','3 000 ₽','6–15 мест · подписка на 30 дней'],
+    attention: '<b>Красная зона.</b> Даша решает меньше 4 задач в день третью неделю. Рекомендация: снизить режим или назначить догоняющий день.',
+    stat1: {name:'Артём',badge:'9 класс · «Ломоносов»',badge2:'серия 9 дней',open:true,
+      metrics:[
+        ['Задач / день · 7 дней','8.3','норма 4+','Лидер группы. Готов к пробнику уровня финала.','Назначить пробник «Физтех»','primary'],
+        ['Уровень · mu / sigma','3.2','из 4 · растёт','Сложность выдачи подобрана верно.','Оставить режим','ghost'],
+        ['До отборочного «Ломоносова»','6','дней','Тур 13–20 ноября. Пробник лучше до субботы.','Написать родителям','ghost']
+      ],
+      bars:true, barsNote:'Геометрия — единственное слабое место: добавьте практику, расписание пересоберётся.', barsAct:'Добавить практику по геометрии'},
+    stat2: {name:'Даша',badge:'9 класс · ВсОШ',badge2:'красная зона',red:true,open:false,
+      metrics:[
+        ['Задач / день · 7 дней','2.1','ниже нормы 4','Третья неделя ниже нормы — в одиночку не вытягивает.','Сменить на «Спокойный»','primary'],
+        ['Долг занятий','2','занятия','Пропущенные дни куратора — можно закрыть на выходных.','Назначить догоняющий день','ghost'],
+        ['Серия','4','дня','Не сгорела — но ещё один пропуск, и начнёт заново.','Написать родителям','ghost']
+      ]}
+  },
+  parent: {
+    cabRole: 'ваш кабинет',
+    cabTitle: 'Ваш <em>кабинет</em>',
+    cabSub: 'Пока никого нет. Добавьте первого ребёнка — откроется страница с примером, как всё будет работать.',
+    cabPanel: '<div style="text-align:center; padding:34px 10px 26px;"><div style="font-size:2.2rem; margin-bottom:12px;">🧒</div><div style="font-family:var(--font-display); font-size:1.3rem; font-weight:600;">У вас пока нет детей</div><div style="color:var(--muted); font-size:.88rem; margin-top:6px;">новое место для ребёнка — по семейной подписке</div></div>',
+    ctaTitle: 'Добавление ребёнка — по подписке',
+    ctaSub: 'Нажмите — откроется страница с примером, как всё будет работать. Оттуда же можно оформить подписку.',
+    ctaBtn: 'Добавить ребёнка →',
+    dSecTitle: 'Мои дети',
+    kpis: [
+      ['👥','2','ребёнка','занимаются сейчас'],
+      ['📈','5.4','задач/день','среднее по детям'],
+      ['⚠️','1','ребёнок','красная зона · менее 4 задач'],
+      ['🔥','6','дней','лучшая серия · Максим']
+    ],
+    kids: [
+      {av:'М',cls:'av-1',name:'Максим',meta:'9 класс · уровень 3 из 4',streak:'🔥 6 дней',modes:[['Работяга · 6 дней',1],['Спокойный · 3 дня',0]]},
+      {av:'С',cls:'av-2',name:'Соня',meta:'6 класс · уровень 2 из 4',streak:'🔥 4 дня',modes:[['Работяга · 6 дней',0],['Спокойный · 3 дня',1]]},
+      {add:true,name:'Новое место',meta:'добавление — после покупки подписки',btn:'Купить подписку · от 800 ₽',pay:['Тариф «Двое–трое детей»','1 500 ₽','до 3 мест · подписка на 30 дней']}
+    ],
+    buyTitle: 'Семейная подписка не активна',
+    buySub: 'Тариф «Двое–трое детей»: до 3 мест за 1 500 ₽ / 30 дней. Оплата в аккаунте родителя.',
+    buyBtn: 'Купить · 1 500 ₽',
+    buyPay: ['Тариф «Двое–трое детей»','1 500 ₽','до 3 мест · подписка на 30 дней'],
+    attention: '<b>Красная зона.</b> Соня решает меньше 4 задач в день третью неделю. Рекомендация: снизить режим или выбрать день вместе с ребёнком.',
+    stat1: {name:'Максим',badge:'9 класс · «Ломоносов»',badge2:'серия 6 дней',open:true,
+      metrics:[
+        ['Задач / день · 7 дней','7.1','норма 4+','Устойчивая практика выше нормы — режим подходит.','Оставить «Работягу»','ghost'],
+        ['Уровень · mu / sigma','3.0','из 4 · растёт','Сложность выдачи подобрана верно.','Оставить режим','ghost'],
+        ['До отборочного «Ломоносова»','6','дней','Тур 13–20 ноября. Пробник лучше до субботы.','Обсудить с ребёнком','ghost']
+      ],
+      bars:true, barsNote:'Геометрия — единственное слабое место: добавьте практику, расписание пересоберётся.', barsAct:'Добавить практику по геометрии'},
+    stat2: {name:'Соня',badge:'6 класс · задача дня',badge2:'красная зона',red:true,open:false,
+      metrics:[
+        ['Задач / день · 7 дней','2.1','ниже нормы 4','Третья неделя ниже нормы — режим пока слишком плотный.','Сменить на «Спокойный»','primary'],
+        ['Долг занятий','2','занятия','Пропущенные дни куратора — можно закрыть на выходных.','Назначить догоняющий день','ghost'],
+        ['Серия','4','дня','Не сгорела — но ещё один пропуск, и начнёт заново.','Обсудить с ребёнком','ghost']
+      ]}
+  }
+};
+
+function render() {
+  var d = DATA[role];
+  document.getElementById('cabRole').textContent = d.cabRole;
+  document.getElementById('cabTitle').innerHTML = d.cabTitle;
+  document.getElementById('cabSub').textContent = d.cabSub;
+  document.getElementById('cabPanel').innerHTML = d.cabPanel;
+  document.getElementById('ctaSub').textContent = d.ctaSub;
+  document.getElementById('ctaTitle').textContent = d.ctaTitle;
+  document.getElementById('ctaBtn').textContent = d.ctaBtn;
+  document.getElementById('dSecTitle').textContent = d.dSecTitle;
+  document.getElementById('dSecNo').textContent = role === 'teacher' ? '01 / МОИ УЧЕНИКИ' : '01 / МОИ ДЕТИ';
+
+  document.getElementById('dKpis').innerHTML = d.kpis.map(function (k) {
+    return '<div class="kpi' + (k[2].indexOf('красная') >= 0 ? ' kpi--warn' : '') + '"><div class="kpi-ico">' + k[0] + '</div><div class="kpi-val">' + k[1] + ' <small>' + k[2] + '</small></div><div class="kpi-label">' + k[3] + '</div></div>';
+  }).join('');
+
+  document.getElementById('dKids').innerHTML = d.kids.map(function (k) {
+    if (k.add) {
+      return '<div class="kid kid--add"><div class="k-head"><div class="avatar av-add">+</div><div class="k-id"><div class="k-name">' + k.name + '</div><div class="k-meta">' + k.meta + '</div></div></div><div class="mode-row"><button class="btn btn--ghost btn--sm" onclick="openPay(\'' + k.pay[0] + '\', \'' + k.pay[1] + '\', \'' + k.pay[2] + '\')">' + k.btn + '</button></div></div>';
+    }
+    var modes = k.modes.map(function (m) { return '<span class="mode' + (m[1] ? ' on' : '') + '">' + m[0] + '</span>'; }).join('');
+    return '<div class="kid"><div class="k-head"><div class="avatar ' + k.cls + '">' + k.av + '</div><div class="k-id"><div class="k-name">' + k.name + '</div><div class="k-meta">' + k.meta + '</div></div><span class="streak">' + k.streak + '</span></div><div class="mode-row">' + modes + '</div></div>';
+  }).join('');
+
+  document.getElementById('dBuyTitle').textContent = d.buyTitle;
+  document.getElementById('dBuySub').textContent = d.buySub;
+  var bb = document.getElementById('dBuyBtn');
+  bb.textContent = d.buyBtn;
+  bb.onclick = function () { openPay(d.buyPay[0], d.buyPay[1], d.buyPay[2]); };
+
+  document.getElementById('dAttention').innerHTML = '<span class="at-ico">⚠️</span><div class="at-txt">' + d.attention + '</div>';
+
+  function statHtml(s) {
+    var m = s.metrics.map(function (x) {
+      return '<div class="metric"><div class="m-label">' + x[0] + '</div><div class="m-value">' + x[1] + ' <small>' + x[2] + '</small></div><div class="m-mean">' + x[3] + '</div><div class="m-act"><button class="btn btn--' + x[5] + ' btn--sm">' + x[4] + '</button></div></div>';
+    }).join('');
+    var bars = '';
+    if (s.bars) {
+      bars = '<div class="metric" style="margin-top:14px;"><div class="m-label">Темы · уверенность</div><div class="bars"><div class="bar-row"><span class="b-name">Алгебра</span><div class="bar-track"><div class="bar-fill" style="width:84%"></div></div><span class="b-val">84%</span></div><div class="bar-row"><span class="b-name">Теория чисел</span><div class="bar-track"><div class="bar-fill" style="width:76%"></div></div><span class="b-val">76%</span></div><div class="bar-row low"><span class="b-name">Геометрия</span><div class="bar-track"><div class="bar-fill" style="width:41%"></div></div><span class="b-val">41%</span></div></div><div class="m-mean">' + s.barsNote + '</div><div class="m-act"><button class="btn btn--primary btn--sm">' + s.barsAct + '</button></div></div>';
+    }
+    var summary = '<summary><span class="s-name">' + s.name + '</span><span class="badge">' + s.badge + '</span>' + (s.red ? '<span class="badge badge--red">' + s.badge2 + '</span>' : '<span class="badge badge--ok">' + s.badge2 + '</span>') + '<span class="chev">' + (s.open ? 'свернуть ▲' : 'развернуть ▼') + '</span></summary>';
+    return summary + '<div class="stat-in"><div class="metrics">' + m + '</div>' + bars + '</div>';
+  }
+
+  var s1 = document.getElementById('dStat1'); s1.innerHTML = statHtml(d.stat1); s1.open = d.stat1.open;
+  var s2 = document.getElementById('dStat2'); s2.innerHTML = statHtml(d.stat2); s2.open = d.stat2.open;
+}
+
+function setRole(r) {
+  role = r;
+  document.getElementById('tabT').classList.toggle('on', r === 'teacher');
+  document.getElementById('tabP').classList.toggle('on', r === 'parent');
+  render();
+}
+function showDemo() { document.getElementById('cabinetView').style.display = 'none'; document.getElementById('demoView').style.display = 'block'; window.scrollTo(0, 0); }
+function showCabinet() { document.getElementById('demoView').style.display = 'none'; document.getElementById('cabinetView').style.display = 'block'; window.scrollTo(0, 0); }
+
+function openPay(title, price, what) {
+  document.getElementById('payTitle').textContent = title;
+  document.getElementById('payPrice').textContent = price;
+  document.getElementById('payWhat').textContent = what;
+  document.getElementById('payOverlay').classList.add('open');
+}
+function closePay() { document.getElementById('payOverlay').classList.remove('open'); }
+function payGo() {
+  var p = document.querySelector('.pay-card');
+  p.innerHTML = '<div class="pay-eyebrow">FORMYLA · ОПЛАТА</div><div class="pay-title">Переход к ЮKassa…</div><div class="pay-row" style="border:none; color:var(--muted); font-size:.9rem;">В живой версии здесь откроется платёжная страница ЮKassa. После успешной оплаты подписка активируется автоматически.</div><div class="pay-actions" style="margin-top:20px;"><button class="btn btn--ghost" onclick="location.reload()">Закрыть</button></div>';
+}
+
+render();
+</script>
+{% endblock %}

@@ -3262,6 +3262,7 @@ _PUBLIC_PATHS = (
     '/mockups',   # макеты новых подписок (оглавление)
     '/teachers',  # макет кабинета учителя (подписка на группу)
     '/family',    # макет кабинета родителя (семейная подписка)
+    '/demo',      # интерактивное демо «как это будет работать»
     '/welcome',
     '/login',
     '/verify-code',
@@ -3410,6 +3411,7 @@ def force_intake_completion():
         '/mockups',
         '/teachers',
         '/family',
+        '/demo',
         '/olympiad-start',
         '/articles',      # Раздел «Статьи» — публичные материалы
         '/api/track/page-time',
@@ -13840,6 +13842,12 @@ def teachers_mockup_page():
 def family_mockup_page():
     """Макет кабинета родителя: семейная подписка — места, тарифы, статистика."""
     return render_template('family.html')
+
+
+@app.route('/demo')
+def demo_page():
+    """Интерактивное демо: как будет работать подписка (учитель / родитель)."""
+    return render_template('demo.html')
 
 
 @app.route('/misc')
