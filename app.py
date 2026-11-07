@@ -3460,6 +3460,50 @@ def force_intake_completion():
 
 
 @app.before_request
+def parent_only_account():
+    """PARENT_ONLY_V1 (08.11.2026): родитель — только родительский кабинет.
+
+    Если в анкете выбрана роль «родитель», аккаунт работает как
+    исключительно родительский: любые ученические разделы (задачи дня,
+    олимпиады, статистика, чат и т.д.) редиректят в /parent.
+    Учитель не затронут — у него по-прежнему полный доступ.
+    """
+    path = request.path
+
+    if not (current_user.is_authenticated
+            and not getattr(current_user, 'is_guest', False)):
+        return
+
+    if (getattr(current_user, 'role', 'student') or 'student') != 'parent':
+        return
+
+    # Разрешённые родителю пути
+    for _p in (
+        '/parent',            # кабинет родителя (+ bind-child, invite-code, student)
+        '/tariffs',           # тарифы (редирект на /tariffs/parent)
+        '/payments',          # платёжный контур (возврат с ЮKassa)
+        '/profile',           # профиль (сам редиректит в /parent)
+        '/account',           # настройки/удаление аккаунта
+        '/demo',              # «как это будет работать»
+        '/about',
+        '/articles',
+        '/mockups', '/teachers', '/family',
+        '/support', '/my/support',
+        '/api/',              # API виджетов (уведомления, поддержка)
+        '/chat',
+        '/intake',            # смена роли через перепрохождение анкеты
+        '/static/', '/favicon.ico', '/sw.js', '/manifest',
+        '/uploads', '/pwa',
+        '/login', '/logout', '/verify-code',
+        '/webhooks',
+    ):
+        if path == _p or path.startswith(_p):
+            return
+
+    return redirect('/parent')
+
+
+@app.before_request
 def force_schedule_selection():
     """PILOT_SCHEDULE_DAYS_V1: пока дни занятий не выбраны — не выпускаем.
 
@@ -6964,7 +7008,11 @@ def get_ai_solution(problem_id):
 @login_required
 def profile():
     """Личный кабинет пользователя с прогрессом и учениками."""
-    # FULL_ACCESS_V1 (25.09.2026): родитель, как и учитель, видит ПОЛНЫЙ
+    # PARENT_ONLY_V1 (08.11.2026): у родителя профиль ученика больше не
+    # показывается — его аккаунт работает только как родительский кабинет.
+    if (getattr(current_user, 'role', 'student') or 'student') == 'parent':
+        return redirect('/parent')
+    # FULL_ACCESS_V1 (25.09.2026): учитель видит ПОЛНЫЙ
     # профиль (прогресс по темам, тесты, mastery, streak) — у него теперь
     # всё, что у ученика, плюс раздел «Мои гении (дети)». Упрощённый
     # пустой профиль для родителя убран.

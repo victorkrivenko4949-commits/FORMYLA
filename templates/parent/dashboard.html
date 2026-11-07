@@ -159,7 +159,7 @@
 <div class="parent-page">
     <h1>Мои дети</h1>
 
-    {% if invite_code and children %}
+    {% if invite_code %}
     <div class="card">
         <h2>Код для подключения ребёнка</h2>
         <p style="color: var(--muted); margin-bottom: 12px;">
@@ -179,6 +179,35 @@
     {% endif %}
 
     {% if not children %}
+        {% if seat and seat.can_add %}
+        <div class="card">
+            <h2>Добавить ребёнка</h2>
+            <p style="color: var(--muted); margin-bottom: 16px;">
+                Укажите никнейм ребёнка, чтобы видеть его статистику. Ребёнок должен быть
+                зарегистрирован в FORMYLA.net с этим никнеймом.
+                {% if seat.sub %}Мест по подписке: {{ seat.seats }}, занято {{ seat.used }}.{% endif %}
+            </p>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div style="padding: 10px 14px; margin-bottom: 12px; border-radius: 8px; font-size: 14px; {% if category == 'error' %}background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.35);{% else %}background: rgba(34,197,94,0.1); color: #86efac; border: 1px solid rgba(34,197,94,0.35);{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <form method="POST" action="/parent/bind-child">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="text" name="child_nickname" required placeholder="Никнейм ребёнка"
+                           style="flex: 1 1 220px; padding: 12px 14px; background: rgba(15,23,42,0.6); border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; font-size: 16px;">
+                    <button type="submit" style="padding: 12px 20px; min-height: 44px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Отправить запрос</button>
+                </div>
+            </form>
+            <p style="color: var(--muted); margin-top: 12px; font-size: 13px;">
+                Ребёнку придёт запрос на привязку — статистика станет видна только после его согласия.
+            </p>
+        </div>
+        {% else %}
         <div class="card" style="text-align: center; padding: 48px 24px;">
             <h2 style="justify-content: center;">У вас пока нет привязанных детей</h2>
             <p style="color: var(--muted); margin: 0 auto 20px; max-width: 460px; line-height: 1.6;">
@@ -187,6 +216,7 @@
             </p>
             <a href="/demo" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; border-radius: 12px; background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; text-decoration: none; font-weight: 700; font-size: 16px;">Добавить ребёнка →</a>
         </div>
+        {% endif %}
         {% if pending_children %}
         {% for p in pending_children %}
         <div class="pending-card">
@@ -273,18 +303,39 @@
         </div>
         {% endfor %}
 
+        {% if seat and seat.can_add %}
+        <div class="card">
+            <h2>Добавить ещё ребёнка</h2>
+            <p style="color: var(--muted); margin-bottom: 16px;">
+                Мест по подписке: {{ seat.seats }}, занято {{ seat.used }}.
+                Укажите никнейм — ребёнок подтвердит привязку сам.
+            </p>
+            <form method="POST" action="/parent/bind-child">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="text" name="child_nickname" required placeholder="Никнейм ребёнка"
+                           style="flex: 1 1 220px; padding: 12px 14px; background: rgba(15,23,42,0.6); border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; font-size: 16px;">
+                    <button type="submit" style="padding: 12px 20px; min-height: 44px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Отправить запрос</button>
+                </div>
+            </form>
+        </div>
+        {% else %}
         <div class="card" style="border: 1px dashed rgba(56,189,248,0.45); display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
             <div>
                 <div style="font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px;">
-                    Добавление детей — по подписке
+                    {% if seat and seat.sub %}Места закончились — {{ seat.used }} из {{ seat.seats }}{% else %}Добавление детей — по подписке{% endif %}
                 </div>
                 <div style="font-size: 13px; color: var(--muted); line-height: 1.5;">
                     Подключённые дети продолжают заниматься как раньше.
-                    Ещё одного ребёнка можно добавить после оформления подписки.
+                    {% if seat and seat.sub %}Расширьте тариф, чтобы добавить ещё.{% else %}Ещё одного ребёнка можно добавить после оформления подписки.{% endif %}
                 </div>
             </div>
+            {% if seat and seat.sub %}
+            <a href="/tariffs/parent" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 12px; background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; text-decoration: none; font-weight: 700; font-size: 15px; white-space: nowrap;">Расширить тариф →</a>
+            {% else %}
             <a href="/demo" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 12px; background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; text-decoration: none; font-weight: 700; font-size: 15px; white-space: nowrap;">Добавить ребёнка →</a>
+            {% endif %}
         </div>
+        {% endif %}
     {% endif %}
 </div>
 {% endblock %}

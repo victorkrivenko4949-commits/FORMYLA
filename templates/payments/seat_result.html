@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Оплата подписки — FORMYLA.net{% endblock %}
+
+{% block extra_css %}
+<style>
+.sr-wrap { max-width: 560px; margin: 0 auto; padding: 40px 16px 60px; text-align: center; }
+.sr-card {
+  background: linear-gradient(160deg, rgba(56,189,248,0.08), rgba(139,92,246,0.06));
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 22px; padding: 36px 28px 30px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+}
+.sr-ico { font-size: 3em; margin-bottom: 10px; }
+.sr-title { font-size: 1.4em; font-weight: 800; color: #eaf3ff; margin-bottom: 6px; }
+.sr-sub { color: #8fa3c0; font-size: .95em; line-height: 1.6; }
+.sr-rows { margin: 18px 0; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.sr-row {
+  display: flex; justify-content: space-between; gap: 12px;
+  font-size: .92em; color: #b9c8de;
+  padding: 11px 14px; border-radius: 10px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+}
+.sr-row b { color: #eaf3ff; }
+.sr-btn {
+  display: inline-block; margin-top: 10px; padding: 14px 28px; border-radius: 14px;
+  background: linear-gradient(135deg, #38bdf8, #8b5cf6); color: #fff;
+  font-weight: 700; font-size: 1em; text-decoration: none;
+}
+.sr-btn:hover { opacity: .9; }
+.sr-warn { color: #fca5a5; }
+.sr-ok { color: #86efac; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sr-wrap">
+  <div class="sr-card">
+    {% if status == 'succeeded' %}
+    <div class="sr-ico">✅</div>
+    <div class="sr-title">Подписка оплачена</div>
+    <div class="sr-sub sr-ok">
+      {% if info %}«{{ info.title }}» — {{ info.tagline }}. Форма добавления
+      {{ 'учеников' if info.role == 'teacher' else 'детей' }} уже вернулась в ваш кабинет.{% endif %}
+    </div>
+    <div class="sr-rows">
+      {% if paid_amount %}<div class="sr-row"><span>Оплачено</span><b>{{ paid_amount }} ₽</b></div>{% endif %}
+      {% if seats %}<div class="sr-row"><span>Мест в подписке</span><b>{{ seats }}</b></div>{% endif %}
+      {% if expires %}<div class="sr-row"><span>Действует до</span><b>{{ expires }}</b></div>{% endif %}
+      {% if demo %}<div class="sr-row"><span>Режим</span><b>тестовый · без списания</b></div>{% endif %}
+    </div>
+    <a class="sr-btn" href="{{ cabinet or '/demo' }}">Вернуться в кабинет →</a>
+
+    {% elif status == 'canceled' %}
+    <div class="sr-ico">❌</div>
+    <div class="sr-title sr-warn">Оплата отменена</div>
+    <div class="sr-sub">Платёж не прошёл — деньги не списаны. Подписку можно оформить в любой момент.</div>
+    <a class="sr-btn" href="/demo">Попробовать ещё раз</a>
+
+    {% elif status == 'pending' %}
+    <div class="sr-ico">⏳</div>
+    <div class="sr-title">Платёж в обработке</div>
+    <div class="sr-sub">ЮKassa ещё подтверждает оплату. Обновите страницу через минуту — подписка активируется автоматически.</div>
+
+    {% else %}
+    <div class="sr-ico">🔍</div>
+    <div class="sr-title sr-warn">Платёж не найден</div>
+    <div class="sr-sub">Заказ с таким номером не найден. Если деньги списались — напишите в поддержку, вернём или активируем вручную.</div>
+    <a class="sr-btn" href="/demo">К оформлению подписки</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
