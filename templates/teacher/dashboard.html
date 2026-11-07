@@ -125,6 +125,52 @@
         color: var(--muted);
         font-size: 16px;
     }
+    .add-cta-card {
+        background: var(--surface);
+        border: 1px dashed rgba(56,189,248,0.45);
+        border-radius: 14px;
+        padding: 22px 24px;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .add-cta-card .cta-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 4px;
+    }
+    .add-cta-card .cta-sub {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.5;
+    }
+    .btn-add-students {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 22px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #38bdf8, #6366f1);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 15px;
+        white-space: nowrap;
+        border: none;
+        cursor: pointer;
+    }
+    .btn-add-students:hover { opacity: 0.88; }
+    .empty-state .btn-add-students { margin-top: 18px; }
+    .empty-state .empty-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 6px;
+    }
     @media (max-width: 600px) {
         .teacher-page { padding: 24px 16px 100px; }
         .form-row { flex-direction: column; }
@@ -135,7 +181,18 @@
 
 {% block content %}
 <div class="teacher-page">
-    <h1>👨‍🏫 Мои группы</h1>
+    <h1>👨‍🏫 Мои ученики</h1>
+
+    <div class="add-cta-card">
+        <div>
+            <div class="cta-title">Добавление учеников — по подписке</div>
+            <div class="cta-sub">
+                Уже добавленные ученики продолжают заниматься как раньше.
+                Новых учеников можно подключить после оформления подписки.
+            </div>
+        </div>
+        <a href="/demo" class="btn-add-students">Добавить учеников →</a>
+    </div>
 
     <div class="how-card">
         <div class="step-row"><span class="step">1</span><span class="step-text">Создайте <b>группу</b> и отправьте ученикам код приглашения — они вступят сами.</span></div>
@@ -174,7 +231,13 @@
         </div>
         {% endfor %}
     {% else %}
-        <div class="empty-state">У вас пока нет групп. Создайте первую группу выше.</div>
+        <div class="empty-state">
+            <div class="empty-title">У вас пока нет учеников</div>
+            Создайте группу и подключите первых учеников — как это работает,
+            покажем на отдельной странице.
+            <br>
+            <a href="/demo" class="btn-add-students">Добавить учеников →</a>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

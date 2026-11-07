@@ -473,11 +473,18 @@
             {% endif %}
           </p>
         </div>
-        <a href="{{ '/teacher' if user_role == 'teacher' else '/parent' }}"
-           style="display: inline-block; padding: 10px 20px; border-radius: 10px; background: linear-gradient(135deg, #38ef7d, #11998e); color: #000; font-weight: 700; text-decoration: none; font-size: 0.95em; transition: transform 0.2s;"
-           onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-          Перейти в раздел
-        </a>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <a href="{{ '/teacher' if user_role == 'teacher' else '/parent' }}"
+             style="display: inline-block; padding: 10px 20px; border-radius: 10px; background: linear-gradient(135deg, #38ef7d, #11998e); color: #000; font-weight: 700; text-decoration: none; font-size: 0.95em; transition: transform 0.2s;"
+             onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            Перейти в раздел
+          </a>
+          <a href="/demo"
+             style="display: inline-block; padding: 10px 20px; border-radius: 10px; background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; font-weight: 700; text-decoration: none; font-size: 0.95em; transition: transform 0.2s;"
+             onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            Как это будет работать →
+          </a>
+        </div>
       </div>
     </div>
     {% endif %}
