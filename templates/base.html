@@ -203,9 +203,11 @@
                свой собственный раздел — «Мои ученики» / «Мои гении (дети)». #}
             {% if current_user.is_authenticated and current_user.role == 'teacher' %}
             <a href="/teacher" class="nav-item">👨‍🏫 Мои ученики</a>
+            <a href="/tariffs/teacher" class="nav-item">💳 Тарифы</a>
             {% endif %}
             {% if current_user.is_authenticated and current_user.role == 'parent' %}
             <a href="/parent" class="nav-item">👨‍👩‍👧 Мои гении (дети)</a>
+            <a href="/tariffs/parent" class="nav-item">💳 Тарифы</a>
             {% endif %}
 
             <!-- 1. Олимпиады (dropdown) — виден всем ролям -->
@@ -343,12 +345,20 @@
                 <span class="drawer-link-icon">👨‍🏫</span>
                 Мои ученики
             </a>
+            <a href="/tariffs/teacher" class="drawer-link">
+                <span class="drawer-link-icon">💳</span>
+                Тарифы
+            </a>
             <div class="drawer-divider"></div>
             {% endif %}
             {% if current_user.is_authenticated and current_user.role == 'parent' %}
             <a href="/parent" class="drawer-link">
                 <span class="drawer-link-icon">👨‍👩‍👧</span>
                 Мои гении (дети)
+            </a>
+            <a href="/tariffs/parent" class="drawer-link">
+                <span class="drawer-link-icon">💳</span>
+                Тарифы
             </a>
             <div class="drawer-divider"></div>
             {% endif %}

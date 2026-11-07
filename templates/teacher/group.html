@@ -375,11 +375,12 @@
                         ⭐ Premium{% if s.premium.expires_at %} до {{ s.premium.expires_at }}{% endif %}
                     </div>
                     {% else %}
-                    {# 2026-11-02: покупка Premium — только в аккаунте ученика #}
-                    <div class="premium-active-badge" style="opacity:.85"
-                          title="Premium оформляется в аккаунте ученика">
-                        ⭐ Оформите это в аккаунте ученика
-                    </div>
+                    {# TARIFFS_SECTIONS_V1 (07.11.2026): большая кнопка покупки —
+                       подарочный Premium для этого ученика (for_user). #}
+                    <a href="/payments/premium/checkout?plan=premium_intense&for_user={{ s.id }}"
+                       style="display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 10px 18px; border-radius: 10px; background: linear-gradient(135deg, #2dd4bf, #0ea5a4); color: #06281f; text-decoration: none; font-weight: 800; font-size: 13px; white-space: nowrap;">
+                        Купить подписку
+                    </a>
                     {% endif %}
                 </td>
             </tr>

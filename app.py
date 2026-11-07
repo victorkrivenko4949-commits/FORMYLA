@@ -13398,12 +13398,15 @@ def api_progress(user_id):
 def subscribe_page():
     """Страница выбора тарифа."""
     current_plan = current_user.current_plan or 'free'
-    # PARENT_TEACHER_NO_BUY (02.11.2026, владелец): родитель и учитель
-    # (роль из первого вопроса анкеты) не могут оформить Premium-пилот
-    # в своём аккаунте — страница показывает «Оформите это в аккаунте
-    # ребёнка», покупка и пробный день им закрыты и на сервере.
+    # TARIFFS_SECTIONS_V1 (07.11.2026, владелец): у родителя и учителя
+    # СВОИ разделы тарифов — /tariffs/parent и /tariffs/teacher (покупка
+    # Premium подарочно для ученика). Общая страница /subscribe — для
+    # учеников, родителя/учителя перенаправляем в их раздел.
     user_role = (getattr(current_user, 'role', 'student') or 'student')
-    is_parent_or_teacher = user_role in ('parent', 'teacher')
+    if user_role in ('parent', 'teacher'):
+        return redirect('/tariffs/parent' if user_role == 'parent'
+                        else '/tariffs/teacher')
+    is_parent_or_teacher = False
     # PAYMENTS_DOC_V1 (24.10.2026): менеджер ЮKassa просил показать
     # понятное описание платных товаров/услуг и тарифов для проверки анкеты.
     # Показываем таблицу всех доступных платных товаров/тарифов, чтобы покупатель

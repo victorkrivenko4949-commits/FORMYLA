@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Тарифы — Родительский кабинет — FORMYLA.net{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tariffs-page {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+    }
+    .tariffs-page h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 8px;
+    }
+    .tariffs-sub {
+        color: var(--muted);
+        font-size: 14px;
+        margin-bottom: 28px;
+        line-height: 1.6;
+    }
+    .plan-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        margin-bottom: 36px;
+    }
+    .plan-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+    }
+    .plan-card .plan-icon { font-size: 28px; margin-bottom: 8px; }
+    .plan-card .plan-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 2px;
+    }
+    .plan-card .plan-tagline {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 12px;
+    }
+    .plan-card .plan-price {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--accent-hi, #f4b942);
+        margin-bottom: 14px;
+    }
+    .plan-card ul {
+        list-style: none;
+        margin: 0 0 18px;
+        padding: 0;
+        flex: 1;
+    }
+    .plan-card li {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.5;
+        padding: 4px 0 4px 20px;
+        position: relative;
+    }
+    .plan-card li::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: var(--accent-hi, #f4b942);
+        font-weight: 700;
+    }
+    .tariffs-list-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 14px;
+    }
+    .child-row {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+    .child-row .child-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+    }
+    .buy-premium-btn {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 22px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #2dd4bf, #0ea5a4);
+        color: #06281f;
+        text-decoration: none;
+        font-weight: 800;
+        font-size: 14px;
+        white-space: nowrap;
+        border: none;
+    }
+    .buy-premium-btn:hover { opacity: 0.92; }
+    .premium-active-badge {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        background: rgba(244,185,66,0.12);
+        color: var(--accent-hi, #f4b942);
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .tariffs-empty {
+        background: var(--surface);
+        border: 1px dashed var(--border);
+        border-radius: 14px;
+        padding: 28px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    .tariffs-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 20px;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 13.5px;
+    }
+    .tariffs-back:hover { color: var(--text); }
+</style>
+{% endblock %}
+
+{% block content %}
+{% set popup_role = 'parent' %}
+<div class="tariffs-page">
+    <a href="/parent" class="tariffs-back">← Мои гении (дети)</a>
+    <h1>Тарифы для родителей</h1>
+    <div class="tariffs-sub">
+        Вы оформляете Premium для своего ребёнка: платите вы — полный доступ
+        открывается у ребёнка сразу после оплаты. Автопродление не подключается.
+    </div>
+
+    <div class="plan-cards">
+        {% for p in plans %}
+        <div class="plan-card">
+            <div class="plan-icon">{{ p.icon }}</div>
+            <div class="plan-title">{{ p.title }}</div>
+            <div class="plan-tagline">{{ p.tagline }}</div>
+            <div class="plan-price">{{ p.price_rub }} ₽ / 30 дней</div>
+            <ul>
+                {% for f in p.features %}<li>{{ f }}</li>{% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="tariffs-list-title">Ваши дети</div>
+    {% if children %}
+        {% for c in children %}
+        <div class="child-row">
+            <div class="child-name">{{ c.name }}</div>
+            {% if c.premium %}
+            <span class="premium-active-badge" title="Premium уже активен">
+                ⭐ Premium{% if c.premium.expires_at %} до {{ c.premium.expires_at }}{% endif %}
+            </span>
+            {% else %}
+            <a class="buy-premium-btn"
+               href="/payments/premium/checkout?plan=premium_intense&for_user={{ c.id }}">
+                Купить подписку
+            </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="tariffs-empty">
+            Пока нет привязанных детей.<br>
+            Привяжите ребёнка в разделе «Мои гении (дети)» — после подтверждения
+            он появится здесь.
+        </div>
+    {% endif %}
+</div>
+
+{% include 'partials/how_it_works_popup.html' %}
+{% endblock %}

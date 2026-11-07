@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""PARENT_TEACHER_NO_BUY (02.11.2026) — родитель и учитель НЕ покупают Premium.
+"""TARIFFS_SECTIONS_V1 (07.11.2026) — тарифы родителя и учителя.
 
-Роль берётся из первого вопроса анкеты (User.role). Правило:
-  * родитель/учитель не может оформить Premium-пилот вообще — ни себе,
-    ни подарочно для ребёнка (подарочный поток PREMIUM_GIFT_V1 закрыт);
-  * checkout для него — редирект на /subscribe (там показывается
-    «Оформите это в аккаунте ребёнка»);
-  * create — 403 с этим же сообщением;
-  * пробный день (/api/subscribe/trial) — тоже 403;
+Роль берётся из первого вопроса анкеты (User.role). Правила:
+  * родитель/учитель покупает Premium ТОЛЬКО подарочно для ученика
+    (for_user, PREMIUM_GIFT_V1): платит взрослый, Premium — ученику;
+  * checkout с валидным for_user — 200; без for_user — редирект на
+    свой раздел тарифов (/tariffs/parent, /tariffs/teacher);
+  * create без валидного for_user — 403;
+  * пробный день (/api/subscribe/trial) — по-прежнему 403;
   * ученик (роль student, пилотный id) покупает как раньше.
 
 Запуск: pytest tests/test_premium_gift.py -q
@@ -27,6 +27,10 @@ def gift_app(app, monkeypatch):
 
     install_premium_pay(app)
     db.create_all()
+
+    # base.html зовёт tg_trial_state() — на проде его даёт app.py, тут заглушка
+    # (как в test_wish_survey_discount.py / test_probnik_assign.py).
+    app.context_processor(lambda: {'tg_trial_state': lambda: {'state': 'hidden'}})
 
     # Таблицы, которые создаёт _ensure_tables (с колонкой beneficiary_user_id)
     with db.engine.begin() as conn:
@@ -112,6 +116,15 @@ def _make_user(email, nickname, role='student', uid=None):
 
 
 def _login(client, user):
+    # Flask-Login кеширует g._login_user на уровне контекста приложения,
+    # а conftest держит один app-context на весь тест — сбрасываем кеш,
+    # иначе следующий запрос «помнит» предыдущего пользователя
+    # (как в test_teacher_link_requests.py).
+    from flask import g
+    try:
+        g.pop('_login_user', None)
+    except Exception:
+        pass
     with client.session_transaction() as s:
         s['_user_id'] = str(user.id)
 
@@ -121,10 +134,10 @@ def _plan(user_id):
     return get_subscription_service().get_user_plan(user_id)
 
 
-# ─────────────────────────── новое правило ────────────────────────────────
+# ─────────────────── новые правила TARIFFS_SECTIONS_V1 ───────────────────
 
-def test_parent_cannot_buy_for_child(gift_app):
-    """Родитель (роль из анкеты) не покупает Premium даже для ребёнка."""
+def test_parent_can_buy_for_child(gift_app):
+    """Родитель покупает Premium для подтверждённого ребёнка (подарок)."""
     from models import db, ParentChildLink
 
     parent = _make_user('gift_parent@example.invalid', 'gift_parent', role='parent')
@@ -136,32 +149,28 @@ def test_parent_cannot_buy_for_child(gift_app):
     client = gift_app.test_client()
     _login(client, parent)
 
-    # Checkout — редирект на /subscribe (там сообщение про аккаунт ребёнка)
+    # Checkout с for_user — страница оформления подарка (200)
     resp = client.get(f'/payments/premium/checkout?plan=premium_intense&for_user={child.id}')
-    assert resp.status_code == 302
-    assert '/subscribe' in resp.headers['Location']
+    assert resp.status_code == 200
 
-    # Создание платежа — 403 с сообщением, заказа не создаётся
+    # Создание платежа — ок (демо-режим), заказ с beneficiary = ребёнок
     resp = client.post('/payments/premium/create', json={
         'plan': 'premium_intense', 'for_user': child.id,
     })
-    assert resp.status_code == 403
+    assert resp.status_code == 200
     data = resp.get_json()
-    assert 'аккаунте ребёнка' in data.get('error', '')
+    assert data.get('ok') and data.get('demo')
 
-    from sqlalchemy import text
-    rows = db.session.execute(text(
-        'SELECT COUNT(*) FROM yookassa_payments WHERE user_id = :u'
-    ), {'u': parent.id}).fetchone()
-    assert rows[0] == 0, 'Заказ для родителя создаваться не должен'
-
-    # Ни у кого Premium не появился
-    assert not _plan(child.id)['is_premium']
+    # Возврат с оплаты — Premium активен у РЕБЁНКА, не у родителя
+    resp = client.get(f"/payments/premium/return?order_id={data['order_id']}&demo=1")
+    assert resp.status_code == 200
+    assert _plan(child.id)['is_premium']
+    assert _plan(child.id)['plan'] == 'premium_intense'
     assert not _plan(parent.id)['is_premium']
 
 
-def test_teacher_cannot_buy_for_student(gift_app):
-    """Учитель тоже не может купить Premium ученику своей группы."""
+def test_teacher_can_buy_for_student(gift_app):
+    """Учитель покупает Premium ученику своей группы."""
     from models import db, T10Group, T10GroupMember
 
     teacher = _make_user('gift_teacher@example.invalid', 'gift_teacher', role='teacher')
@@ -177,30 +186,126 @@ def test_teacher_cannot_buy_for_student(gift_app):
     _login(client, teacher)
 
     resp = client.get(f'/payments/premium/checkout?plan=premium_calm&for_user={student.id}')
-    assert resp.status_code == 302
+    assert resp.status_code == 200
 
     resp = client.post('/payments/premium/create', json={
         'plan': 'premium_calm', 'for_user': student.id,
     })
-    assert resp.status_code == 403
-    assert 'аккаунте ребёнка' in resp.get_json().get('error', '')
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data.get('ok') and data.get('demo')
 
-    assert not _plan(student.id)['is_premium']
+    resp = client.get(f"/payments/premium/return?order_id={data['order_id']}&demo=1")
+    assert resp.status_code == 200
+    assert _plan(student.id)['is_premium']
+    assert _plan(student.id)['plan'] == 'premium_calm'
     assert not _plan(teacher.id)['is_premium']
 
 
-def test_parent_cannot_buy_for_self(gift_app):
-    """Родитель не покупает Premium и в своём аккаунте."""
+def test_parent_without_for_user_redirected_to_own_tariffs(gift_app):
+    """Родитель без for_user — редирект на свой раздел тарифов, не /subscribe."""
     parent = _make_user('self_parent@example.invalid', 'self_parent', role='parent')
     client = gift_app.test_client()
     _login(client, parent)
 
     resp = client.get('/payments/premium/checkout?plan=premium_intense')
     assert resp.status_code == 302
+    assert '/tariffs/parent' in resp.headers['Location']
 
     resp = client.post('/payments/premium/create', json={'plan': 'premium_intense'})
     assert resp.status_code == 403
-    assert 'аккаунте ребёнка' in resp.get_json().get('error', '')
+
+
+def test_teacher_without_for_user_redirected_to_own_tariffs(gift_app):
+    """Учитель без for_user — редирект на /tariffs/teacher."""
+    teacher = _make_user('self_teacher@example.invalid', 'self_teacher', role='teacher')
+    client = gift_app.test_client()
+    _login(client, teacher)
+
+    resp = client.get('/payments/premium/checkout?plan=premium_intense')
+    assert resp.status_code == 302
+    assert '/tariffs/teacher' in resp.headers['Location']
+
+    resp = client.post('/payments/premium/create', json={'plan': 'premium_intense'})
+    assert resp.status_code == 403
+
+
+def test_parent_cannot_buy_for_stranger(gift_app):
+    """for_user без подтверждённой связи — покупка не проходит."""
+    parent = _make_user('stranger_parent@example.invalid', 'stranger_parent', role='parent')
+    stranger = _make_user('stranger_kid@example.invalid', 'stranger_kid', role='student')
+
+    client = gift_app.test_client()
+    _login(client, parent)
+
+    resp = client.get(f'/payments/premium/checkout?plan=premium_intense&for_user={stranger.id}')
+    assert resp.status_code == 302
+    assert '/tariffs/parent' in resp.headers['Location']
+
+    resp = client.post('/payments/premium/create', json={
+        'plan': 'premium_intense', 'for_user': stranger.id,
+    })
+    assert resp.status_code == 403
+
+
+def test_tariffs_teacher_page(gift_app):
+    """Раздел тарифов учителя: только для роли teacher, рендер со списком."""
+    from models import db, T10Group, T10GroupMember
+
+    teacher = _make_user('tar_teacher@example.invalid', 'tar_teacher', role='teacher')
+    student = _make_user('tar_student@example.invalid', 'tar_student', role='student')
+    g = T10Group(name='Физтех', teacher_id=teacher.id, invite_code='ZZZ999')
+    db.session.add(g)
+    db.session.commit()
+    db.session.add(T10GroupMember(
+        group_id=g.id, user_id=student.id, role='student', status='accepted'))
+    db.session.commit()
+
+    client = gift_app.test_client()
+    _login(client, teacher)
+    resp = client.get('/tariffs/teacher')
+    assert resp.status_code == 200
+    body = resp.data.decode('utf-8')
+    assert 'Тарифы' in body
+    assert 'tar_student' in body
+    assert 'Купить подписку' in body
+    # попап «Как работает подготовка» присутствует и показывается 1 раз
+    assert 'hwPopup' in body
+    assert 'formyla_how_it_works_seen_teacher' in body
+
+    # Родителю раздел учителя закрыт
+    parent = _make_user('tar_parent@example.invalid', 'tar_parent', role='parent')
+    _login(client, parent)
+    resp = client.get('/tariffs/teacher')
+    assert resp.status_code in (302, 403)
+
+
+def test_tariffs_parent_page(gift_app):
+    """Раздел тарифов родителя: только для роли parent, рендер со списком."""
+    from models import db, ParentChildLink
+
+    parent = _make_user('tar2_parent@example.invalid', 'tar2_parent', role='parent')
+    child = _make_user('tar2_child@example.invalid', 'tar2_child', role='student')
+    db.session.add(ParentChildLink(
+        parent_id=parent.id, child_id=child.id, status='accepted'))
+    db.session.commit()
+
+    client = gift_app.test_client()
+    _login(client, parent)
+    resp = client.get('/tariffs/parent')
+    assert resp.status_code == 200
+    body = resp.data.decode('utf-8')
+    assert 'Тарифы' in body
+    assert 'tar2_child' in body
+    assert 'Купить подписку' in body
+    assert 'hwPopup' in body
+    assert 'formyla_how_it_works_seen_parent' in body
+
+    # Учителю раздел родителя закрыт
+    teacher = _make_user('tar2_teacher@example.invalid', 'tar2_teacher', role='teacher')
+    _login(client, teacher)
+    resp = client.get('/tariffs/parent')
+    assert resp.status_code in (302, 403)
 
 
 def _trial_as_role(email, nickname, role):
@@ -229,20 +334,18 @@ def _trial_as_role(email, nickname, role):
 
 
 def test_parent_cannot_start_trial():
-    """Пробный день Premium родителю тоже закрыт."""
+    """Пробный день Premium родителю по-прежнему закрыт."""
     resp, plan = _trial_as_role('trial_parent@example.invalid',
                                 'trial_parent', 'parent')
     assert resp.status_code == 403
-    assert 'аккаунте ребёнка' in resp.get_json().get('error', '')
     assert not plan['is_premium']
 
 
 def test_teacher_cannot_start_trial():
-    """Пробный день Premium учителю закрыт."""
+    """Пробный день Premium учителю по-прежнему закрыт."""
     resp, plan = _trial_as_role('trial_teacher@example.invalid',
                                 'trial_teacher', 'teacher')
     assert resp.status_code == 403
-    assert 'аккаунте ребёнка' in resp.get_json().get('error', '')
     assert not plan['is_premium']
 
 
