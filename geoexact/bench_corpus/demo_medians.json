@@ -1,0 +1,243 @@
+{
+ "problem": "в треугольнике ABC медианы из A и B соответственно пересекают стороны в точках A1 и B1, и медианы пересекаются под углом 150, они равны 9 и 12 соответственно, найти площадь ABC",
+ "plan": {
+  "space": "plane",
+  "points": [
+   "A",
+   "B",
+   "C",
+   "A_1",
+   "B_1",
+   "G"
+  ],
+  "constructions": [
+   {
+    "op": "free_point",
+    "out": "A",
+    "args": [],
+    "value": null
+   },
+   {
+    "op": "free_point",
+    "out": "B",
+    "args": [],
+    "value": null
+   },
+   {
+    "op": "free_point",
+    "out": "C",
+    "args": [],
+    "value": null
+   },
+   {
+    "op": "midpoint",
+    "out": "A_1",
+    "args": [
+     "B",
+     "C"
+    ],
+    "value": null
+   },
+   {
+    "op": "midpoint",
+    "out": "B_1",
+    "args": [
+     "A",
+     "C"
+    ],
+    "value": null
+   },
+   {
+    "op": "line_intersect",
+    "out": "G",
+    "args": [
+     "A",
+     "A_1",
+     "B",
+     "B_1"
+    ],
+    "value": null
+   }
+  ],
+  "constraints": [
+   {
+    "type": "dist",
+    "args": [
+     "A",
+     "A_1"
+    ],
+    "value": 9
+   },
+   {
+    "type": "dist",
+    "args": [
+     "B",
+     "B_1"
+    ],
+    "value": 12
+   },
+   {
+    "type": "angle",
+    "args": [
+     "A",
+     "G",
+     "B"
+    ],
+    "value": 150
+   }
+  ],
+  "draw": {
+   "segments": [
+    [
+     "A",
+     "B"
+    ],
+    [
+     "B",
+     "C"
+    ],
+    [
+     "C",
+     "A"
+    ],
+    [
+     "A",
+     "A_1"
+    ],
+    [
+     "B",
+     "B_1"
+    ]
+   ],
+   "aux_segments": [],
+   "lines": [],
+   "rays": [],
+   "aux_lines": [],
+   "aux_rays": [],
+   "extensions": [],
+   "aux_extensions": [],
+   "aux_points": [],
+   "circles": [],
+   "aux_circles": [],
+   "right_angles": [],
+   "angle_marks": [
+    {
+     "pts": [
+      "A",
+      "G",
+      "B"
+     ],
+     "text": "150°"
+    }
+   ],
+   "length_marks": [
+    {
+     "pts": [
+      "A",
+      "A_1"
+     ],
+     "text": "AA_1 = 9"
+    },
+    {
+     "pts": [
+      "B",
+      "B_1"
+     ],
+     "text": "BB_1 = 12"
+    }
+   ],
+   "equal_marks": [],
+   "arcs": [],
+   "hide_labels": [
+    "G"
+   ]
+  },
+  "target": {
+   "kind": "none",
+   "args": []
+  },
+  "scale_free": true,
+  "notes": ""
+ },
+ "aux": {
+  "idea": "Провести отрезок из C в точку пересечения медиан G: три равновеликих треугольника, AG = 6, BG = 8.",
+  "steps": [],
+  "aux_segments": [
+   [
+    "C",
+    "G"
+   ]
+  ],
+  "result_marks": [
+   {
+    "pts": [
+     "A",
+     "G"
+    ],
+    "text": "6"
+   },
+   {
+    "pts": [
+     "G",
+     "A_1"
+    ],
+    "text": "3"
+   },
+   {
+    "pts": [
+     "B",
+     "G"
+    ],
+    "text": "8"
+   },
+   {
+    "pts": [
+     "G",
+     "B_1"
+    ],
+    "text": "4"
+   }
+  ]
+ },
+ "expert_text": "Обозначить точку пересечения медиан O и провести отрезок CO, чтобы разбить треугольник на три равновеликих треугольника AOB, BOC, COA. Медиана делится точкой пересечения 2:1, поэтому AO = 6, BO = 8, OA1 = 3, OB1 = 4.",
+ "uid": "demo_medians",
+ "with_aux": true,
+ "checks": [
+  {
+   "type": "collinear",
+   "args": [
+    "A",
+    "G",
+    "A_1"
+   ]
+  },
+  {
+   "type": "collinear",
+   "args": [
+    "B",
+    "G",
+    "B_1"
+   ]
+  },
+  {
+   "type": "angle",
+   "args": [
+    "A",
+    "G",
+    "B"
+   ],
+   "value": 150
+  }
+ ],
+ "expect": {
+  "points": [
+   "G"
+  ],
+  "segments": [
+   [
+    "C",
+    "G"
+   ]
+  ]
+ }
+}
