@@ -3,103 +3,165 @@
 
 {% block extra_css %}
 <style>
-.sc-wrap { max-width: 560px; margin: 0 auto; padding: 24px 16px 48px; }
+.sc-wrap { max-width: 600px; margin: 0 auto; padding: 24px 16px 48px; }
 .sc-back { display: inline-block; color: #8fa3c0; text-decoration: none; font-size: .9em; margin-bottom: 14px; }
 .sc-back:hover { color: #d7e6fb; }
 .sc-card {
   background: linear-gradient(160deg, rgba(56,189,248,0.08), rgba(139,92,246,0.06));
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 22px; padding: 30px 26px 26px;
+  border-radius: 22px; padding: 26px 22px 24px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.35);
 }
-.sc-head { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+.sc-h { margin: 0 0 4px; font-size: 1.3em; color: #eaf3ff; }
+.sc-lead { margin: 0 0 16px; color: #8fa3c0; font-size: .92em; line-height: 1.5; }
+.sc-lead b { color: #d7e6fb; }
+
+/* переключатель тарифов */
+.sc-plans { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 6px 0 18px; }
+.sc-plan {
+  position: relative; text-align: left; cursor: pointer;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  padding: 14px 12px 12px; border-radius: 14px; width: 100%;
+  background: rgba(255,255,255,0.03); border: 1.5px solid rgba(255,255,255,0.1);
+  color: #b9c8de; transition: border-color .15s, background .15s;
+  font: inherit; line-height: 1.3; min-height: 44px;
+}
+.sc-plan:hover { border-color: rgba(56,189,248,0.45); }
+.sc-plan.on {
+  background: linear-gradient(135deg, rgba(56,189,248,0.18), rgba(139,92,246,0.18));
+  border-color: #38bdf8; color: #eaf3ff;
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.18);
+}
+.sc-plan .p-top { display: flex; align-items: center; gap: 7px; width: 100%; }
+.sc-plan .p-ico { font-size: 1.25em; line-height: 1; }
+.sc-plan .p-title { font-weight: 700; font-size: .98em; }
+.sc-plan .p-seats { font-size: .8em; color: #8fa3c0; }
+.sc-plan.on .p-seats { color: #c7d7ee; }
+.sc-plan .p-price { font-weight: 800; font-size: 1em; margin-top: 5px; color: #7dd3fc; white-space: nowrap; }
+.sc-plan .p-rec {
+  position: absolute; top: -9px; left: 10px; right: auto;
+  font-size: .64em; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: #052e16; background: #34d399; border-radius: 999px; padding: 2px 8px;
+  white-space: nowrap;
+}
+.sc-plan.p-small { opacity: .75; }
+.sc-plan.p-small.on { opacity: 1; }
+
+.sc-head { display: flex; align-items: center; gap: 14px; margin: 4px 0 6px; }
 .sc-icon {
-  width: 56px; height: 56px; border-radius: 16px; flex: 0 0 auto;
-  display: flex; align-items: center; justify-content: center; font-size: 1.8em;
+  width: 52px; height: 52px; border-radius: 14px; flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: center; font-size: 1.7em;
   background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(139,92,246,0.25));
   border: 1px solid rgba(56,189,248,0.35);
 }
-.sc-head h1 { margin: 0; font-size: 1.35em; color: #eaf3ff; }
-.sc-head p { margin: 2px 0 0; color: #8fa3c0; font-size: .9em; }
+.sc-head h2 { margin: 0; font-size: 1.15em; color: #eaf3ff; }
+.sc-head p { margin: 2px 0 0; color: #8fa3c0; font-size: .88em; }
 .sc-price-row {
-  display: flex; align-items: baseline; gap: 10px; margin: 18px 0 4px;
+  display: flex; align-items: baseline; gap: 10px; margin: 14px 0 4px; flex-wrap: wrap;
   padding: 14px 16px; border-radius: 14px;
   background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
 }
 .sc-price { font-size: 2.1em; font-weight: 800; color: #eaf3ff; }
 .sc-price-note { color: #8fa3c0; font-size: .88em; }
-.sc-feats { list-style: none; margin: 16px 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
-.sc-feats li { color: #b9c8de; font-size: .94em; line-height: 1.5; padding-left: 26px; position: relative; }
+.sc-feats { list-style: none; margin: 14px 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sc-feats li { color: #b9c8de; font-size: .93em; line-height: 1.5; padding-left: 26px; position: relative; }
 .sc-feats li::before { content: "✓"; position: absolute; left: 2px; color: #34d399; font-weight: 700; }
-.sc-feats b { color: #e2ecfa; }
+
+/* что будет после оплаты */
+.sc-after {
+  margin: 4px 0 14px; padding: 12px 14px; border-radius: 12px;
+  font-size: .9em; line-height: 1.55; color: #b9c8de;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+}
+.sc-after b { color: #eaf3ff; }
+.sc-after.ok { color: #86efac; background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.35); }
+.sc-after.ok b { color: #bbf7d0; }
+.sc-after.warn { color: #fcd34d; background: rgba(244,185,66,0.08); border-color: rgba(244,185,66,0.35); }
+.sc-after.warn b { color: #fde68a; }
+
 .sc-btn {
   width: 100%; padding: 16px; border: none; border-radius: 14px; cursor: pointer;
   font-size: 1.05em; font-weight: 700; color: #fff;
   background: linear-gradient(135deg, #38bdf8, #8b5cf6);
-  transition: transform .2s, box-shadow .2s; margin-top: 6px;
+  transition: transform .2s, box-shadow .2s; margin-top: 2px;
 }
 .sc-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(56,189,248,0.4); }
-.sc-btn:disabled { opacity: .6; cursor: wait; transform: none; }
+.sc-btn:disabled { opacity: .6; cursor: wait; transform: none; box-shadow: none; }
+.sc-err {
+  display: none; margin-top: 10px; padding: 10px 14px; border-radius: 10px;
+  font-size: .88em; line-height: 1.5; color: #fca5a5;
+  background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.4);
+}
+.sc-err.show { display: block; }
 .sc-demo-badge {
-  margin-top: 14px; text-align: center; font-size: .82em; color: #f4b942;
+  margin-top: 12px; text-align: center; font-size: .82em; color: #f4b942;
   background: rgba(244,185,66,0.1); border: 1px solid rgba(244,185,66,0.35);
   border-radius: 10px; padding: 8px 12px;
 }
-.sc-others { margin-top: 18px; }
-.sc-others-t { color: #8fa3c0; font-size: .86em; margin-bottom: 8px; }
-.sc-other {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 11px 14px; border-radius: 12px; margin-bottom: 8px;
-  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-  color: #b9c8de; font-size: .9em; text-decoration: none; transition: border-color .2s;
-}
-.sc-other:hover { border-color: rgba(56,189,248,0.45); color: #d7e6fb; }
-.sc-other b { color: #eaf3ff; }
-.sc-other .sc-other-price { font-weight: 700; color: #7dd3fc; white-space: nowrap; }
-.sc-notes { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+.sc-notes { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
 .sc-notes div {
   font-size: .84em; color: #8fa3c0; line-height: 1.5;
   padding: 10px 14px; border-radius: 10px;
   background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
 }
-.sc-active {
-  margin: 0 0 14px; padding: 12px 16px; border-radius: 12px;
-  font-size: .9em; color: #86efac; line-height: 1.55;
-  background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.35);
+@media (max-width: 520px) {
+  .sc-plans { grid-template-columns: repeat(2, 1fr); gap: 12px 10px; }
+  .sc-card { padding: 22px 16px 20px; }
+  .sc-price { font-size: 1.8em; }
 }
-.sc-active b { color: #bbf7d0; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="sc-wrap">
-  <a class="sc-back" href="{{ '/teacher' if role == 'teacher' else '/parent' }}">← {{ 'Мои ученики' if role == 'teacher' else 'Мои дети' }}</a>
+  <a class="sc-back" href="{{ cabinet }}">← {{ 'Мои ученики' if role == 'teacher' else 'Мои дети' }}</a>
   <div class="sc-card">
+    <h1 class="sc-h">Подписка на места</h1>
+    <p class="sc-lead">
+      {% if gate.sub %}
+        Сейчас у вас «{{ gate.sub.title }}»: <b>{{ gate.seats }} {{ 'место' if gate.seats == 1 else ('места' if gate.seats in (2,3,4) else 'мест') }}</b>, занято <b>{{ gate.used }}</b>, действует до <b>{{ gate.sub.expires_at.strftime('%d.%m.%Y') }}</b>.
+        Выберите тариф — срок продлится, а мест станет больше, если тариф крупнее.
+      {% elif gate.used %}
+        У вас уже {{ gate.used }} {{ used_word }} занято — мы подсветили тариф, в который все поместятся. Выберите подходящий и оплатите.
+      {% else %}
+        Одно место — один {{ 'ученик' if role == 'teacher' else 'ребёнок' }}. Выберите, сколько мест нужно, — тариф можно расширить в любой момент.
+      {% endif %}
+    </p>
+
+    <div class="sc-plans" id="scPlans" role="radiogroup" aria-label="Тариф">
+      {% for p in plans %}
+      <button type="button" class="sc-plan{% if p.key == plan %} on{% endif %}{% if gate.sub and not p.adds_seats %} p-small{% endif %}"
+              role="radio" aria-checked="{{ 'true' if p.key == plan else 'false' }}"
+              data-plan="{{ p.key }}" onclick="scSelect('{{ p.key }}')">
+        {% if p.recommended %}<span class="p-rec">{{ 'Следующий' if gate.sub else 'Подходит вам' }}</span>{% endif %}
+        <div class="p-top"><span class="p-ico">{{ p.icon }}</span><span class="p-title">{{ p.title }}</span></div>
+        <div class="p-seats">{{ p.tagline }}</div>
+        <div class="p-price">{{ p.price_rub }} ₽</div>
+      </button>
+      {% endfor %}
+    </div>
+
     <div class="sc-head">
-      <div class="sc-icon">{{ info.icon }}</div>
+      <div class="sc-icon" id="scIcon">{{ info.icon }}</div>
       <div>
-        <h1>Подписка «{{ info.title }}»</h1>
-        <p>{{ info.tagline }} · ученики или дети</p>
+        <h2 id="scTitle">«{{ info.title }}»</h2>
+        <p id="scTag">{{ info.tagline }} · 30 дней · без автопродления</p>
       </div>
     </div>
 
-    {% if gate.sub %}
-    <div class="sc-active">
-      ⭐ У вас уже активна подписка <b>«{{ gate.sub.title }}»</b> (до {{ gate.sub.expires_at.strftime('%d.%m.%Y') }}).
-      Новая оплата продлит срок на 30 дней от текущего конца, а мест станет максимум из двух тарифов.
-    </div>
-    {% endif %}
-
     <div class="sc-price-row">
-      <span class="sc-price">{{ info.price_rub }} ₽</span>
-      <span class="sc-price-note">разово · 30 дней · {{ info.seats }} {{ 'мест' if info.seats not in (1,) else 'место' }}</span>
+      <span class="sc-price" id="scPrice">{{ info.price_rub }} ₽</span>
+      <span class="sc-price-note">разово за 30 дней</span>
     </div>
 
-    <ul class="sc-feats">
+    <ul class="sc-feats" id="scFeats">
       {% for f in info.features %}<li>{{ f }}</li>{% endfor %}
     </ul>
 
+    <div class="sc-after" id="scAfter"></div>
+
     <button class="sc-btn" id="scPayBtn" onclick="scPay()">Оплатить {{ info.price_rub }} ₽</button>
+    <div class="sc-err" id="scErr" role="alert"></div>
 
     {% if not cfg.configured %}
     <div class="sc-demo-badge">
@@ -107,49 +169,116 @@
     </div>
     {% endif %}
 
-    {% if others %}
-    <div class="sc-others">
-      <div class="sc-others-t">Другие тарифы:</div>
-      {% for o in others %}
-      <a class="sc-other" href="/payments/seats/checkout?plan={{ o.key }}">
-        <span>{{ o.icon }} <b>«{{ o.title }}»</b> · {{ o.tagline }}</span>
-        <span class="sc-other-price">{{ o.price_rub }} ₽</span>
-      </a>
-      {% endfor %}
-    </div>
-    {% endif %}
-
     <div class="sc-notes">
-      <div>💳 Оплата через ЮKassa: Мир, Visa, Mastercard, СБП</div>
-      <div>⚡ Места активируются сразу после оплаты — форма добавления учеников вернётся в кабинет</div>
-      <div>🕐 Оплата разовая, на 30 дней — автопродление не подключается</div>
+      <div>💳 Оплата через ЮKassa: Мир, Visa, Mastercard, СБП. После оплаты вы вернётесь сюда автоматически</div>
+      <div>⚡ Места активируются сразу — форма добавления {{ 'учеников' if role == 'teacher' else 'детей' }} появится в кабинете</div>
+      <div>🕐 Оплата разовая, на 30 дней — автопродление не подключается, карта не сохраняется</div>
     </div>
   </div>
 </div>
 
 <script>
+var SC_PLANS = {{ plans | tojson }};
+var SC_CUR_SEATS = {{ cur_seats | tojson }};
+var SC_HAS_SUB = {{ 'true' if gate.sub else 'false' }};
+var SC_USED = {{ gate.used | tojson }};
+var SC_EXPIRES = {{ expires_preview | tojson }};
+var SC_WHO = {{ ('учеников' if role == 'teacher' else 'детей') | tojson }};
+var scPlan = {{ plan | tojson }};
+
+function scFind(key) {
+  for (var i = 0; i < SC_PLANS.length; i++) if (SC_PLANS[i].key === key) return SC_PLANS[i];
+  return null;
+}
+
+function scRenderAfter(p) {
+  var box = document.getElementById('scAfter');
+  var html = '', cls = 'sc-after';
+  if (SC_HAS_SUB) {
+    if (p.adds_seats) {
+      cls += ' ok';
+      html = 'После оплаты: <b>' + p.seats_after + ' ' + p.seats_after_word + '</b> (сейчас ' + SC_CUR_SEATS + '), ' +
+             'свободно будет <b>' + Math.max(0, p.seats_after - SC_USED) + '</b>. Срок продлится до <b>' + SC_EXPIRES + '</b>.';
+    } else {
+      cls += ' warn';
+      html = 'В этом тарифе мест не больше, чем у вас сейчас (' + SC_CUR_SEATS + '). Оплата продлит срок до <b>' + SC_EXPIRES + '</b>, ' +
+             'но новых мест не добавит. Чтобы добавить ' + SC_WHO + ', выберите тариф крупнее.';
+    }
+  } else if (SC_USED > p.seats) {
+    cls += ' warn';
+    html = 'У вас уже занято ' + SC_USED + ', а в этом тарифе только ' + p.seats + ' ' + p.seats_word + ' — ' +
+           'добавить новых ' + SC_WHO + ' не получится. Выберите тариф крупнее.';
+  } else {
+    cls += ' ok';
+    var free = p.seats - SC_USED;
+    html = 'После оплаты: <b>' + p.seats + ' ' + p.seats_word + '</b>' +
+           (SC_USED ? ', свободно <b>' + free + '</b>' : '') +
+           ' до <b>' + SC_EXPIRES + '</b>. Добавить ' + SC_WHO + ' можно будет сразу.';
+  }
+  box.className = cls;
+  box.innerHTML = html;
+}
+
+function scSelect(key) {
+  var p = scFind(key);
+  if (!p) return;
+  scPlan = key;
+  var cards = document.querySelectorAll('.sc-plan');
+  for (var i = 0; i < cards.length; i++) {
+    var on = cards[i].getAttribute('data-plan') === key;
+    cards[i].classList.toggle('on', on);
+    cards[i].setAttribute('aria-checked', on ? 'true' : 'false');
+  }
+  document.getElementById('scIcon').textContent = p.icon;
+  document.getElementById('scTitle').textContent = '«' + p.title + '»';
+  document.getElementById('scTag').textContent = p.tagline + ' · 30 дней · без автопродления';
+  document.getElementById('scPrice').textContent = p.price_rub + ' ₽';
+  document.getElementById('scFeats').innerHTML = p.features.map(function (f) {
+    return '<li>' + f.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</li>';
+  }).join('');
+  var btn = document.getElementById('scPayBtn');
+  btn.disabled = false;
+  btn.textContent = 'Оплатить ' + p.price_rub + ' ₽';
+  document.getElementById('scErr').classList.remove('show');
+  scRenderAfter(p);
+  if (window.history && history.replaceState) {
+    history.replaceState(null, '', '/payments/seats/checkout?plan=' + key);
+  }
+}
+
+function scShowErr(msg) {
+  var e = document.getElementById('scErr');
+  e.textContent = msg;
+  e.classList.add('show');
+}
+
 function scPay() {
+  var p = scFind(scPlan);
   var btn = document.getElementById('scPayBtn');
   btn.disabled = true;
-  btn.textContent = 'Создаём платёж...';
+  btn.textContent = 'Создаём платёж…';
+  document.getElementById('scErr').classList.remove('show');
   fetch('/payments/seats/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ plan: {{ plan | tojson }} })
+    body: JSON.stringify({ plan: scPlan })
   }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
     .then(function (res) {
       if (res.d && res.d.redirect) {
+        btn.textContent = 'Переходим к оплате…';
         window.location.href = res.d.redirect;
       } else {
-        alert((res.d && res.d.error) || 'Не удалось создать платёж');
+        scShowErr((res.d && res.d.error) || 'Не удалось создать платёж. Деньги не списаны — попробуйте ещё раз.');
         btn.disabled = false;
-        btn.textContent = 'Оплатить {{ info.price_rub }} ₽';
+        btn.textContent = 'Оплатить ' + p.price_rub + ' ₽';
       }
     }).catch(function () {
-      alert('Ошибка сети');
+      scShowErr('Нет связи с сервером. Деньги не списаны — проверьте интернет и попробуйте ещё раз.');
       btn.disabled = false;
-      btn.textContent = 'Оплатить {{ info.price_rub }} ₽';
+      btn.textContent = 'Оплатить ' + p.price_rub + ' ₽';
     });
 }
+
+scRenderAfter(scFind(scPlan));
 </script>
 {% endblock %}
