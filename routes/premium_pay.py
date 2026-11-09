@@ -415,6 +415,13 @@ def create_payment():
     # PREMIUM_GIFT_V1: for_user — ребёнок, для которого покупают Premium.
     for_user = data.get('for_user') or request.form.get('for_user')
 
+    # PARENT_PAYLINK_V1: ученик создаёт платёж ЮKassa на свой аккаунт и
+    # отправляет родителю САМУ ссылку на оплату (страница ЮKassa), а не
+    # ссылку на сайт. Родителю не нужен аккаунт и вход.
+    link_mode = (data.get('mode') or request.form.get('mode')) == 'parent_link'
+    if link_mode and (for_user or _is_parent_or_teacher()):
+        return jsonify({'error': 'Ссылку на оплату для родителя создаёт ученик в своём аккаунте.'}), 400
+
     # TARIFFS_SECTIONS_V1 (07.11.2026): родитель и учитель покупают только
     # подарочно — для подтверждённого ученика (for_user). Для себя — 403.
     if _is_parent_or_teacher():
@@ -451,6 +458,14 @@ def create_payment():
             return jsonify({'error': f'Цена обновилась: к оплате {amount} ₽. Обновите страницу и проверьте сумму.',
                             'price_changed': True, 'amount': amount}), 409
     amount_str = f"{amount}.00"
+
+    # PARENT_PAYLINK_V1: повторное нажатие не плодит заказы — отдаём уже
+    # созданную недавно ссылку на тот же тариф и ту же сумму.
+    if link_mode and cfg.get('configured'):
+        reuse = _recent_paylink(current_user.id, plan, amount)
+        if reuse:
+            return jsonify({'ok': True, 'pay_url': reuse, 'redirect': reuse,
+                            'amount': amount, 'title': info['title'], 'reused': True})
     discount_note = f" (скидка {price['discount_pct']}%)" if price['discount_pct'] else ''
 
     order_id = uuid.uuid4().hex
@@ -507,12 +522,36 @@ def create_payment():
         except Exception as e:  # noqa: BLE001
             db.session.rollback()
             logger.warning('[premium_pay] demo update failed: %r', e)
+        if link_mode:
+            demo_url = url_for('premium_pay.paylink_done', order_id=order_id,
+                               demo=1, _external=True)
+            return jsonify({'ok': True, 'demo': True, 'order_id': order_id,
+                            'pay_url': demo_url, 'redirect': demo_url,
+                            'amount': amount, 'title': info['title']})
         return jsonify({'ok': True, 'demo': True, 'order_id': order_id,
                         'redirect': f"/payments/premium/return?order_id={order_id}&demo=1"})
 
     # ── Реальный платёж ЮKassa ──────────────────────────────────────────
     return_url = url_for('premium_pay.payment_return', order_id=order_id, _external=True)
-    if beneficiary_id:
+    if link_mode:
+        # Платит родитель по ссылке, Premium получает ученик (владелец заказа).
+        # Возврат — на публичную страницу «Оплата прошла» (родитель не входит
+        # в аккаунт). Способ оплаты родителя НЕ сохраняем — без автосписаний.
+        payload = {
+            "amount": {"value": amount_str, "currency": "RUB"},
+            "capture": True,
+            "confirmation": {"type": "redirect",
+                             "return_url": url_for('premium_pay.paylink_done',
+                                                   order_id=order_id, _external=True)},
+            "description": f"{info['title']} на FORMYLA (30 дней){discount_note} для ученика @{nick_label}",
+            "metadata": {
+                "order_id": order_id,
+                "user_id": str(current_user.id),
+                "item": plan,
+                "via": "parent_link",
+            },
+        }
+    elif beneficiary_id:
         # Подарочная покупка: платит взрослый, Premium получает ребёнок.
         # save_payment_method НЕ включаем — автопродление для подарков
         # не подключается (взрослый платит разово, без подписки).
@@ -598,7 +637,96 @@ def create_payment():
 
     if not confirmation_url:
         return jsonify({'error': 'ЮKassa не вернула ссылку на оплату'}), 502
+    if link_mode:
+        return jsonify({'ok': True, 'pay_url': confirmation_url, 'redirect': confirmation_url,
+                        'amount': amount, 'title': info['title']})
     return jsonify({'ok': True, 'redirect': confirmation_url})
+
+
+# ── PARENT_PAYLINK_V1: ссылка на оплату для родителя ──────────────────────
+
+PAYLINK_REUSE_MINUTES = 30
+
+
+def _recent_paylink(user_id: int, plan: str, amount: int):
+    """Недавняя неоплаченная ссылка ЮKassa того же ученика/тарифа/суммы."""
+    try:
+        from datetime import timedelta
+        row = db.session.execute(text(
+            "SELECT confirmation_url FROM yookassa_payments"
+            " WHERE user_id = :uid AND item_code = :item AND amount_rub = :amt"
+            " AND status = 'pending' AND paid_at IS NULL AND beneficiary_user_id IS NULL"
+            " AND confirmation_url IS NOT NULL AND created_at >= :since"
+            " AND confirmation_url NOT LIKE '%/payments/premium/return%'"
+            " ORDER BY created_at DESC LIMIT 1"
+        ), {'uid': user_id, 'item': plan, 'amt': float(amount),
+            'since': datetime.utcnow() - timedelta(minutes=PAYLINK_REUSE_MINUTES)}).fetchone()
+        return row[0] if row and row[0] else None
+    except Exception:  # noqa: BLE001
+        db.session.rollback()
+        return None
+
+
+@premium_pay_bp.route('/pay/premium/done', methods=['GET'])
+def paylink_done():
+    """Публичная страница после оплаты по ссылке (родитель без входа).
+
+    Статус берём только из API ЮKassa; активация — та же идемпотентная
+    activate_premium_for_payment (захват paid_at), что и у вебхука.
+    Показываем лишь имя ученика, тариф и срок — без других данных аккаунта.
+    """
+    order_id = (request.args.get('order_id') or '').strip()
+    if not order_id or len(order_id) > 64:
+        abort(404)
+    row = None
+    try:
+        row = db.session.execute(text(
+            "SELECT user_id, item_code, status, payment_id, amount_rub, beneficiary_user_id"
+            " FROM yookassa_payments WHERE order_id = :oid LIMIT 1"
+        ), {'oid': order_id}).fetchone()
+    except Exception as e:  # noqa: BLE001
+        db.session.rollback()
+        logger.warning('[premium_paylink] lookup failed: %r', e)
+    if not row or row[1] not in PLAN_INFO or row[5]:
+        return render_template('payments/premium_paylink.html', status='not_found',
+                               info=None, student=None), 404
+
+    student_id, plan, p_status, payment_id = int(row[0]), row[1], row[2], row[3]
+    info = PLAN_INFO[plan]
+    try:
+        amount = int(round(float(row[4]))) if row[4] is not None else info['price_rub']
+    except (TypeError, ValueError):
+        amount = info['price_rub']
+    student = _user_display_by_id(student_id) or 'ученик'
+    cfg = _yk_config()
+
+    is_demo = str(payment_id or '').startswith('demo_')
+    if is_demo:
+        ok = (not cfg.get('configured')) and request.args.get('demo') == '1' \
+            and p_status == 'succeeded'
+        p_status = 'succeeded' if ok else 'pending'
+    elif cfg.get('configured') and payment_id:
+        try:
+            resp = requests.get(f"{YOOKASSA_API_BASE}/payments/{payment_id}",
+                                auth=(cfg['shop_id'], cfg['secret_key']), timeout=10)
+            if resp.status_code == 200:
+                remote = resp.json() or {}
+                p_status = remote.get('status') or p_status
+                if p_status == 'succeeded' and not remote.get('paid'):
+                    p_status = 'pending'
+        except Exception as e:  # noqa: BLE001
+            logger.warning('[premium_paylink] verify failed: %r', e)
+            p_status = 'pending'
+    else:
+        p_status = 'pending'
+
+    expires = None
+    if p_status == 'succeeded':
+        activate_premium_for_payment(student_id, plan, payment_id, order_id)
+        expires = _top_premium_expires(student_id)
+    return render_template('payments/premium_paylink.html', status=p_status,
+                           info=info, student=student, amount=amount,
+                           expires=str(expires)[:10] if expires else None)
 
 
 def _top_premium_expires(user_id):

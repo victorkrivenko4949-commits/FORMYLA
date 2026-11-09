@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{# PARENT_PAYLINK_V1: публичная страница после оплаты по ссылке (родитель без входа) #}
+{% block title %}Оплата Premium — FORMYLA.net{% endblock %}
+{% block extra_css %}
+<style>
+.pl-wrap { max-width: 560px; margin: 0 auto; padding: 40px 16px 48px; text-align: center; }
+.pl-badge { width: 92px; height: 92px; margin: 0 auto 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 2.6em;
+  background: linear-gradient(135deg, rgba(56,239,125,0.16), rgba(56,189,248,0.16));
+  border: 1px solid rgba(56,239,125,0.45); }
+.pl-wrap h1 { font-size: 1.45em; color: #eaf3ff; margin: 0 0 8px; }
+.pl-wrap p { color: #a9b9d3; line-height: 1.6; }
+.pl-card { margin: 22px 0; padding: 18px 22px; border-radius: 18px; text-align: left;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); }
+.pl-card .row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; color: #b9c8de; }
+.pl-card .row b { color: #eaf3ff; text-align: right; }
+.pl-btn { display: inline-block; padding: 14px 30px; border-radius: 12px; text-decoration: none;
+  font-weight: 700; color: #fff; background: linear-gradient(135deg, #38bdf8, #8b5cf6); border: none; cursor: pointer; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="pl-wrap">
+  {% if status == 'succeeded' %}
+    <div class="pl-badge">✓</div>
+    <h1>Оплата прошла — спасибо</h1>
+    <p>Premium {{ info.title }} открыт у ученика <b>{{ student }}</b>. Ему ничего делать не нужно — доступ уже в его аккаунте.</p>
+    <div class="pl-card">
+      <div class="row"><span>Тариф</span><b>{{ info.icon }} {{ info.title }}</b></div>
+      <div class="row"><span>Оплачено</span><b>{{ amount }} ₽</b></div>
+      <div class="row"><span>Ученик</span><b>{{ student }}</b></div>
+      {% if expires %}<div class="row"><span>Доступ до</span><b>{{ expires }}</b></div>{% endif %}
+    </div>
+    <p style="font-size:.88em">Чек ЮKassa придёт на почту, указанную при оплате. Автосписаний нет: оплата разовая, на 30 дней.</p>
+  {% elif status == 'canceled' %}
+    <div class="pl-badge" style="border-color:rgba(248,113,113,.5)">✕</div>
+    <h1>Оплата не прошла</h1>
+    <p>Деньги не списаны. Попросите ученика нажать «Скопировать оплату для родителя» ещё раз — придёт новая ссылка.</p>
+  {% elif status == 'not_found' %}
+    <div class="pl-badge" style="border-color:rgba(248,113,113,.5)">?</div>
+    <h1>Платёж не найден</h1>
+    <p>Ссылка неполная или устарела. Попросите ученика отправить её заново.</p>
+  {% else %}
+    <div class="pl-badge" style="border-color:rgba(244,185,66,.5)">⏳</div>
+    <h1>Проверяем оплату</h1>
+    <p>ЮKassa ещё подтверждает платёж для ученика <b>{{ student }}</b>. Обычно это несколько секунд.</p>
+    <button class="pl-btn" onclick="location.reload()">Обновить</button>
+    <script>setTimeout(function () { location.reload(); }, 5000);</script>
+  {% endif %}
+</div>
+{% endblock %}

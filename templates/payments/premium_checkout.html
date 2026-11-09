@@ -240,6 +240,11 @@
       {% if beneficiary %}Оплатить {{ pay_amount }} ₽ для {{ beneficiary }}{% else %}Оплатить {{ pay_amount }} ₽{% endif %}
     </button>
 
+    {% if not beneficiary %}
+    {% set pl_plan = plan %}{% set pl_id = 'checkout' %}{% set pl_amount = pay_amount %}
+    {% include 'payments/_parent_paylink_button.html' %}
+    {% endif %}
+
     {% if beneficiary %}
     <div class="pm-plan-switch">
       Другой тариф:
