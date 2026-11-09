@@ -23,3 +23,14 @@ def test_llm_restored_after_run():
     before = L.formalize
     run_spec(json.loads(DEMO.read_text(encoding="utf-8")), with_aux=False)
     assert L.formalize is before
+
+
+def test_extension_registry_arc_midpoint():
+    import numpy as np
+    from geoexact.core import auxplan, llm, schema
+    from geoexact.core.constructions import OPS
+    assert "arc_midpoint" in schema.plan_json_schema()
+    assert "arc_midpoint" in auxplan.ALLOWED and "arc_midpoint" in auxplan.SYS_AUXPLAN
+    assert "arc_midpoint" in llm.SYS_FORMALIZE
+    P = OPS["arc_midpoint"](np.array([-1.0, 0]), np.array([1.0, 0]), np.array([0.0, 1]))
+    assert np.allclose(P, [0, -1])
