@@ -440,11 +440,15 @@
         <div class="sp-status__label">Текущий тариф</div>
         <div class="sp-status__plan">
           <em>{{ current_plan or 'free' }}</em>
-          {% if plan_expires_at %}<span class="sp-status__until"> · до {{ plan_expires_at }}</span>{% endif %}
+          {% if plan_expires_at %}<span class="sp-status__until"> · {% if sub_cancelled %}отменена · действует до {{ plan_expires_at }}{% else %}до {{ plan_expires_at }}{% endif %}</span>{% endif %}
         </div>
       </div>
       {% if current_plan and current_plan != 'free' %}
+      {% if sub_cancelled %}
+      <span class="sp-status__until">Подписка отменена — доступ сохраняется до {{ plan_expires_at }}</span>
+      {% else %}
       <button id="cancelBtn" class="sp-btn-danger" onclick="cancelSubscription()">Отменить подписку</button>
+      {% endif %}
       {% else %}
       <a class="a2btn a2btn--ghost" href="#plans">Перейти на Premium →</a>
       {% endif %}
@@ -1009,7 +1013,7 @@ function activatePremium(plan){
 }
 
 function cancelSubscription(){
-  if(!confirm('Вы уверены, что хотите отменить подписку Premium?')) return;
+  if(!confirm('Отменить подписку? Доступ к Premium сохранится до конца оплаченного периода, автопродление выключится.')) return;
   const btn = document.getElementById('cancelBtn');
   if(btn){
     btn.disabled = true;
