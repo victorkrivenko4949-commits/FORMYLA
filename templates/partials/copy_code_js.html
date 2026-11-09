@@ -1,0 +1,21 @@
+{# CLICKABILITY_V1: кнопки «Скопировать» для кодов приглашения (data-copy). #}
+<script>
+(function () {
+    document.querySelectorAll('.copy-btn[data-copy]').forEach(function (b) {
+        b.addEventListener('click', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            var v = b.getAttribute('data-copy');
+            var label = b.textContent;
+            var done = function () { b.textContent = 'Скопировано'; setTimeout(function () { b.textContent = label; }, 1600); };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(v).then(done, function () { fallback(); });
+            } else { fallback(); }
+            function fallback() {
+                var ta = document.createElement('textarea'); ta.value = v; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (_) {}
+                document.body.removeChild(ta); done();
+            }
+        });
+    });
+})();
+</script>

@@ -910,7 +910,17 @@ def student_detail(sid: int):
         theme_radars=_theme_radars(student.id, grade),
         calendar_days=_month_calendar(student.id),
         back_url=back_url,
+        # STATS_UX_V1 (09.11.2026): данные для понятной сводки и календаря.
+        viewer_role=role if not is_self else 'self',
+        calendar_offset=today.replace(day=1).weekday(),
+        month_title=_MONTHS_RU[today.month - 1] + ' ' + str(today.year),
+        days_since_active=((today - task_stats['last_active']).days
+                           if task_stats.get('last_active') else None),
     )
+
+
+_MONTHS_RU = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль',
+              'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
 
 
 # ---------------------------------------------------------------------------

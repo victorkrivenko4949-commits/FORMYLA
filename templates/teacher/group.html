@@ -235,6 +235,19 @@
     .flash-success { background: rgba(62,207,142,0.12); border: 1px solid rgba(62,207,142,0.3); color: #3ecf8e; }
     .flash-error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #f87171; }
     .flash-info { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; }
+    /* CLICKABILITY_V1 (09.11.2026): вся строка ученика кликабельна, крупные кнопки. */
+    .student-table tbody tr.clickable { cursor: pointer; transition: background .15s; }
+    .student-table tbody tr.clickable:hover { background: rgba(56,189,248,0.06); }
+    .student-table .stat-btn, .student-table .buy-btn { min-height: 44px; box-sizing: border-box; justify-content: center; }
+    .student-table .stat-btn:hover, .student-table .buy-btn:hover { opacity: .9; text-decoration: none; }
+    .group-page a:focus-visible, .group-page button:focus-visible, .group-page input:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+    .group-page .btn, .group-page .rename-form input { min-height: 44px; box-sizing: border-box; }
+    .back-link { display: inline-flex; align-items: center; min-height: 44px; }
+    .copy-btn {
+        min-height: 36px; padding: 6px 12px; margin-left: 8px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;
+        background: rgba(56,189,248,0.12); color: #7dd3fc; border: 1px solid rgba(56,189,248,0.35); font-family: inherit; vertical-align: middle;
+    }
+    .copy-btn:hover { background: rgba(56,189,248,0.22); }
     @media (max-width: 600px) {
         .group-page { padding: 24px 16px 100px; }
         .student-table { font-size: 13px; }
@@ -248,7 +261,7 @@
     <a href="{{ url_for('parent_teacher.teacher_dashboard') }}" class="back-link">← Все группы</a>
     <h1>{{ group.name }}</h1>
     <div class="group-invite">
-        Код приглашения: <span>{{ group.invite_code }}</span> — ученики могут вступать сами
+        Код приглашения: <span>{{ group.invite_code }}</span><button type="button" class="copy-btn" data-copy="{{ group.invite_code }}">Скопировать</button> — ученики могут вступать сами
         через «Прочее → Присоединиться по коду»
     </div>
 
@@ -357,7 +370,7 @@
         </thead>
         <tbody>
             {% for s in students %}
-            <tr class="row-{{ s.row_color }}">
+            <tr class="row-{{ s.row_color }} clickable" data-href="{{ url_for('parent_teacher.student_detail', sid=s.id) }}">
                 <td>
                     <a href="{{ url_for('parent_teacher.student_detail', sid=s.id) }}">
                         {{ s.name }}
@@ -390,7 +403,7 @@
                 {% endif %}
                 <td>
                     <a href="{{ url_for('parent_teacher.student_detail', sid=s.id) }}"
-                       style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; text-decoration: none; font-weight: 600; font-size: 13px; white-space: nowrap;">
+                       class="stat-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 10px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; text-decoration: none; font-weight: 600; font-size: 14px; white-space: nowrap;">
                         📂 Статистика
                     </a>
                     {% if s.premium %}
@@ -401,7 +414,7 @@
                     {# TARIFFS_SECTIONS_V1 (07.11.2026): большая кнопка покупки —
                        подарочный Premium для этого ученика (for_user). #}
                     <a href="/payments/premium/checkout?plan=premium_intense&for_user={{ s.id }}"
-                       style="display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 10px 18px; border-radius: 10px; background: linear-gradient(135deg, #2dd4bf, #0ea5a4); color: #06281f; text-decoration: none; font-weight: 800; font-size: 13px; white-space: nowrap;">
+                       class="buy-btn" style="display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 10px 18px; border-radius: 10px; background: linear-gradient(135deg, #2dd4bf, #0ea5a4); color: #06281f; text-decoration: none; font-weight: 800; font-size: 13px; white-space: nowrap;">
                         Купить подписку
                     </a>
                     {% endif %}
@@ -415,8 +428,23 @@
         Пока никого: подключите первых учеников по кнопке «Добавить учеников» выше.
     </div>
     {% endif %}
+
+    {% set support_role = 'teacher' %}
+    {% include 'partials/support_cta.html' %}
 </div>
+{% include 'partials/copy_code_js.html' %}
 <script>
+(function() {
+    // CLICKABILITY_V1: клик по строке ученика открывает статистику
+    // (ссылки/кнопки внутри строки работают как обычно).
+    document.querySelectorAll('.student-table tr.clickable[data-href]').forEach(function (tr) {
+        tr.addEventListener('click', function (e) {
+            if (e.target.closest('a, button, input, form')) return;
+            if (window.getSelection && String(window.getSelection())) return;
+            window.location.href = tr.getAttribute('data-href');
+        });
+    });
+})();
 (function() {
     var flashes = document.querySelectorAll('.flash-msg');
     flashes.forEach(function(el) {

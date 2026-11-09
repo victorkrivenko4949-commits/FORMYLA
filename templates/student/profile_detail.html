@@ -150,158 +150,301 @@
         .stat-row { flex-direction: column; }
         .radar-wrap { grid-template-columns: 1fr; }
     }
+    /* STATS_UX_V1 (09.11.2026) */
+    .st-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .back-link { min-height: 44px; }
+    .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; font-size: 14px; font-weight: 700; border: 1px solid; white-space: nowrap; }
+    .status-pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+    .status-pill.ok { color: #86efac; background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.35); }
+    .status-pill.mid { color: #fde68a; background: rgba(250,204,21,0.08); border-color: rgba(250,204,21,0.35); }
+    .status-pill.warn { color: #fdba74; background: rgba(249,115,22,0.1); border-color: rgba(249,115,22,0.35); }
+    .status-pill.bad { color: #fca5a5; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.35); }
+    .status-pill.gray { color: var(--muted); background: var(--surface-2); border-color: var(--border); }
+    .st-tabs { position: sticky; top: 72px; z-index: 5; display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; margin-bottom: 12px; background: var(--bg, #0b1020); scrollbar-width: none; }
+    .st-tabs::-webkit-scrollbar { display: none; }
+    .st-tabs a { flex: none; min-height: 40px; display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); text-decoration: none; font-size: 14px; font-weight: 600; }
+    .st-tabs a:hover, .st-tabs a.active { border-color: rgba(56,189,248,0.6); background: rgba(56,189,248,0.1); color: #7dd3fc; }
+    .card.anchor { scroll-margin-top: 140px; }
+    .summary-text { font-size: 16px; line-height: 1.6; color: var(--text); margin: 0 0 18px; }
+    .summary-text b { color: #7dd3fc; }
+    .summary-text.muted { color: var(--muted); }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .kpi { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .kpi-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+    .kpi-value { font-size: 30px; font-weight: 800; color: var(--text); line-height: 1.1; }
+    .kpi-value small { font-size: 15px; font-weight: 600; color: var(--muted); }
+    .kpi-value.small { font-size: 22px; }
+    .kpi-value.green { color: var(--ok); } .kpi-value.red { color: var(--bad); } .kpi-value.mid { color: #fbbf24; } .kpi-value.muted { color: var(--muted); }
+    .kpi-bar { height: 6px; border-radius: 3px; background: rgba(148,163,184,0.15); margin-top: 10px; overflow: hidden; }
+    .kpi-bar span { display: block; height: 100%; border-radius: 3px; background: #38bdf8; }
+    .kpi-bar span.green { background: var(--ok); } .kpi-bar span.red { background: var(--bad); } .kpi-bar span.mid { background: #fbbf24; }
+    .kpi-hint { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+    .level-list { display: flex; flex-direction: column; gap: 14px; }
+    .level-row { display: grid; grid-template-columns: 210px 1fr 72px 170px; align-items: center; gap: 14px; }
+    .level-name { font-size: 15px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .tag { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+    .tag.ok { color: #86efac; background: rgba(34,197,94,0.12); }
+    .tag.warn { color: #fdba74; background: rgba(249,115,22,0.12); }
+    .level-track { height: 10px; border-radius: 5px; background: rgba(148,163,184,0.15); overflow: hidden; }
+    .level-track span { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #38bdf8, #22c55e); }
+    .level-num { font-size: 16px; font-weight: 700; color: var(--text); text-align: right; }
+    .level-num small { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .level-conf { font-size: 12px; color: var(--muted); }
+    .level-conf b { color: var(--text); font-weight: 600; }
+    .hint-line { font-size: 13px; color: var(--muted); line-height: 1.5; margin: 14px 0 0; }
+    details.more { margin-top: 14px; }
+    details.more > summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 16px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font-weight: 600; font-size: 14px; }
+    details.more > summary::-webkit-details-marker { display: none; }
+    details.more > summary::after { content: "▾"; color: var(--muted); transition: transform .15s; }
+    details.more[open] > summary::after { transform: rotate(180deg); }
+    details.more > summary:hover { border-color: rgba(56,189,248,0.5); }
+    #details details.more { margin-top: 0; }
+    .theme-details > summary { width: 100%; justify-content: space-between; box-sizing: border-box; }
+    .theme-details .radar-box canvas { max-height: 420px; }
+    #sections .radar-wrap { grid-template-columns: 1fr; }
+    #sections .radar-box, .theme-details .radar-box { max-width: 520px; margin-left: auto; margin-right: auto; }
+    .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
+    .dg-group { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .dg-group h3 { margin: 0 0 10px; font-size: 14px; color: var(--muted); font-weight: 700; }
+    .dg-group dl { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; margin: 0; }
+    .dg-group dt { font-size: 14px; color: var(--muted); }
+    .dg-group dd { margin: 0; font-size: 14px; font-weight: 700; color: var(--text); text-align: right; }
+    .dg-group dd.green { color: var(--ok); }
+    .cal-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+    .cal-legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .lg { width: 12px; height: 12px; border-radius: 3px; display: inline-block; border: 1px solid var(--border); }
+    .lg.good { background: rgba(34,197,94,0.35); } .lg.mid { background: rgba(250,204,21,0.3); } .lg.zero { background: rgba(239,68,68,0.25); } .lg.none { background: var(--surface-2); }
+    .cal-wd { text-align: center; font-size: 12px; color: var(--muted); font-weight: 700; padding-bottom: 2px; }
+    .cal-cell.empty { background: transparent; border-color: transparent; }
+    .cal-cell.st-good { background: rgba(34,197,94,0.14); border-color: rgba(34,197,94,0.35); }
+    .cal-cell.st-mid { background: rgba(250,204,21,0.10); border-color: rgba(250,204,21,0.3); }
+    .cal-cell.st-zero { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.28); }
+    .cal-count.none { color: var(--muted); }
+    @media (max-width: 860px) {
+        .student-page .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        .level-row { grid-template-columns: 1fr 64px; gap: 6px 12px; }
+        .level-row .level-track { grid-column: 1 / -1; grid-row: 2; }
+        .level-row .level-conf { grid-column: 1 / -1; grid-row: 3; }
+        .level-row .level-num { grid-row: 1; grid-column: 2; }
+        .detail-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+        .st-tabs { top: 56px; }
+        .kpi { padding: 12px; }
+        .kpi-value { font-size: 24px; }
+        .cal-cell { padding: 6px 2px !important; }
+        .cal-day { font-size: 11px; }
+        .cal-count { font-size: 11px !important; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
+{# STATS_UX_V1 (09.11.2026): статистика для родителя/учителя — сводка
+   простыми словами, 4 главных показателя с подсказками, сильные/слабые
+   разделы шкалами вместо mu/sigma, календарь с днями недели, подробные
+   цифры и радары подтем — в раскрывающихся блоках. #}
+{% set sec_ru = {'algebra': 'Алгебра', 'number_theory': 'Теория чисел', 'geometry': 'Геометрия', 'combinatorics': 'Комбинаторика', 'logic': 'Логика'} %}
+{% set norm = 4 %}
+{% if days_since_active is none %}
+    {% set status_cls, status_txt = 'gray', 'Ещё не начинал задачи дня' %}
+{% elif days_since_active <= 1 and avg_tasks >= norm %}
+    {% set status_cls, status_txt = 'ok', 'Занимается регулярно' %}
+{% elif days_since_active <= 2 %}
+    {% set status_cls, status_txt = 'mid', 'Занимается, но меньше нормы' %}
+{% elif days_since_active <= 6 %}
+    {% set status_cls, status_txt = 'warn', 'Пропустил несколько дней' %}
+{% else %}
+    {% set status_cls, status_txt = 'bad', 'Давно не занимался' %}
+{% endif %}
+{% set known = anchors.values()|selectattr('mu', 'ne', none)|list %}
+{% set ranked = [] %}
+{% for a, v in anchors.items() %}{% if v.mu is not none %}{% set _ = ranked.append({'key': a, 'name': sec_ru.get(a, a), 'mu': v.mu, 'sigma': v.sigma}) %}{% endif %}{% endfor %}
+{% set ranked = ranked|sort(attribute='mu', reverse=True) %}
+
 <div class="student-page">
     {% if back_url %}
-    <a href="{{ back_url }}" class="back-link">← Назад</a>
+    <a href="{{ back_url }}" class="back-link">← {% if viewer_role == 'teacher' %}К группе{% elif viewer_role == 'parent' %}Мои дети{% else %}Назад{% endif %}</a>
     {% endif %}
-    <h1>{{ student_display }}</h1>
-    <div class="student-subtitle">Полная статистика ученика</div>
+    <div class="st-head">
+        <div>
+            <h1>{{ student_display }}</h1>
+            <div class="student-subtitle">Статистика ученика · обновляется после каждой решённой задачи</div>
+        </div>
+        <span class="status-pill {{ status_cls }}">{{ status_txt }}</span>
+    </div>
 
-    <div class="card">
-        <h2>Успеваемость</h2>
-        <div class="stat-row">
-            <div class="stat-item">
-                <div class="stat-label">Задач/день (7 дн.)</div>
-                <div class="stat-value {{ 'green' if avg_tasks >= 4 else 'red' }}">{{ avg_tasks }}</div>
+    <nav class="st-tabs" aria-label="Разделы статистики">
+        <a href="#summary">Сводка</a>
+        <a href="#sections">Разделы</a>
+        <a href="#calendar">Календарь</a>
+        {% if theme_radars %}<a href="#themes">Подтемы</a>{% endif %}
+        <a href="#details">Все цифры</a>
+    </nav>
+
+    <section class="card anchor" id="summary">
+        <h2>Коротко</h2>
+        <p class="summary-text">
+            {% if days_since_active is none %}
+                Ученик пока не решал задачи дня — статистика появится после первых задач.
+            {% else %}
+                За последние 7 дней — <b>{{ task_stats.week_attempts }}</b> {{ 'задача' if task_stats.week_attempts % 10 == 1 and task_stats.week_attempts % 100 != 11 else ('задачи' if task_stats.week_attempts % 10 in [2,3,4] and task_stats.week_attempts % 100 not in [12,13,14] else 'задач') }},
+                из них верно <b>{{ task_stats.week_correct }}</b>.
+                {% if days_since_active == 0 %}Сегодня уже занимался.{% elif days_since_active == 1 %}Последний раз занимался вчера.{% else %}Последний раз занимался {{ days_since_active }} дн. назад ({{ task_stats.last_active.strftime('%d.%m') }}).{% endif %}
+                {% if ranked|length >= 2 and ranked[0].mu != ranked[-1].mu %}
+                Сильнее всего — <b>{{ ranked[0].name }}</b>, подтянуть стоит <b>{{ ranked[-1].name }}</b>.
+                {% endif %}
+            {% endif %}
+        </p>
+
+        <div class="kpi-grid">
+            <div class="kpi">
+                <div class="kpi-label">Задач в день</div>
+                <div class="kpi-value {{ 'green' if avg_tasks >= norm else 'red' }}">{{ avg_tasks }}</div>
+                <div class="kpi-bar"><span style="width: {{ [avg_tasks / norm * 100, 100]|min }}%;" class="{{ 'green' if avg_tasks >= norm else 'red' }}"></span></div>
+                <div class="kpi-hint">в среднем за неделю · норма {{ norm }}</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-label">Серия дней</div>
-                <div class="stat-value">{{ streak }}</div>
+            <div class="kpi">
+                <div class="kpi-label">Серия</div>
+                <div class="kpi-value">{{ streak }} <small>{{ 'день' if streak % 10 == 1 and streak % 100 != 11 else ('дня' if streak % 10 in [2,3,4] and streak % 100 not in [12,13,14] else 'дней') }}</small></div>
+                <div class="kpi-hint">подряд без пропусков</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-label">Точность ответов</div>
+            <div class="kpi">
+                <div class="kpi-label">Верных ответов</div>
                 {% if task_stats.accuracy is not none %}
-                <div class="stat-value {{ 'green' if task_stats.accuracy >= 70 else 'red' }}">{{ task_stats.accuracy }}%</div>
+                <div class="kpi-value {{ 'green' if task_stats.accuracy >= 70 else ('mid' if task_stats.accuracy >= 50 else 'red') }}">{{ task_stats.accuracy|round|int }}%</div>
+                <div class="kpi-bar"><span style="width: {{ task_stats.accuracy }}%;" class="{{ 'green' if task_stats.accuracy >= 70 else ('mid' if task_stats.accuracy >= 50 else 'red') }}"></span></div>
+                <div class="kpi-hint">{{ task_stats.life_correct }} из {{ task_stats.life_attempts }} · хорошо от 70%</div>
                 {% else %}
-                <div class="stat-value muted">—</div>
+                <div class="kpi-value muted">—</div>
+                <div class="kpi-hint">пока нет ответов</div>
                 {% endif %}
             </div>
-            <div class="stat-item">
-                <div class="stat-label">Активных дней всего</div>
-                <div class="stat-value">{{ task_stats.active_days }}</div>
-            </div>
-        </div>
-        <div class="stat-row">
-            <div class="stat-item">
-                <div class="stat-label">Решено верно (всего)</div>
-                <div class="stat-value small green">{{ task_stats.life_correct }}</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Попыток задач (всего)</div>
-                <div class="stat-value small">{{ task_stats.life_attempts }}</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Последняя активность</div>
+            <div class="kpi">
+                <div class="kpi-label">Последний раз</div>
                 {% if task_stats.last_active %}
-                <div class="stat-value small">{{ task_stats.last_active.strftime('%d.%m.%Y') }}</div>
+                <div class="kpi-value small">{% if days_since_active == 0 %}сегодня{% elif days_since_active == 1 %}вчера{% else %}{{ task_stats.last_active.strftime('%d.%m') }}{% endif %}</div>
+                <div class="kpi-hint">активных дней всего: {{ task_stats.active_days }}</div>
                 {% else %}
-                <div class="stat-value muted small">нет данных</div>
-                {% endif %}
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Тестов пройдено</div>
-                <div class="stat-value small">{{ tests.count }}</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Средний уровень тестов</div>
-                {% if tests.avg_level is not none %}
-                <div class="stat-value small">{{ tests.avg_level }}</div>
-                {% else %}
-                <div class="stat-value muted small">—</div>
+                <div class="kpi-value muted small">нет данных</div>
                 {% endif %}
             </div>
         </div>
-        <div class="stat-row">
-            <div class="stat-item">
-                <div class="stat-label">Всего решено задач</div>
-                <div class="stat-value small">{{ user_stats.total_solved }}</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Уровень</div>
-                <div class="stat-value small">{{ user_stats.level }}</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Опыт (XP)</div>
-                <div class="stat-value small">{{ user_stats.xp }}</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Пробников сдано</div>
-                <div class="stat-value small">{{ user_stats.mock_exams }}</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Сложнейшая задача</div>
-                {% if user_stats.highest_difficulty %}
-                <div class="stat-value small">ур. {{ user_stats.highest_difficulty }}</div>
-                {% else %}
-                <div class="stat-value muted small">—</div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+    </section>
 
-    <div class="card">
-        <h2>Радар по разделам</h2>
-        <div class="radar-wrap">
-            <div class="radar-box">
-                <h3>Разделы</h3>
-                <canvas id="sectionRadar" data-radar='{{ section_radar | tojson }}'></canvas>
-            </div>
-        </div>
-    </div>
-
-    {% if theme_radars %}
-    <div class="card">
-        <h2>Радары по подтемам</h2>
-        <div class="radar-wrap">
-            {% for tr in theme_radars %}
-            <div class="radar-box">
-                <h3>{{ tr.section_name }}</h3>
-                <canvas id="themeRadar{{ loop.index0 }}" data-radar='{{ tr.points | tojson }}'></canvas>
+    <section class="card anchor" id="sections">
+        <h2>Уровень по разделам</h2>
+        {% if ranked %}
+        <div class="level-list">
+            {% for r in ranked %}
+            {% set pct = ((r.mu - 1) / 3 * 100)|round|int %}{% set word = 'начальный' if r.mu < 1.75 else ('базовый' if r.mu < 2.5 else ('уверенный' if r.mu < 3.25 else 'сильный')) %}
+            <div class="level-row" title="mu = {{ r.mu }}, sigma = {{ r.sigma }}">
+                <div class="level-name">{{ r.name }}
+                    {% if loop.first and ranked|length > 1 and r.mu != ranked[-1].mu %}<span class="tag ok">сильная сторона</span>{% endif %}
+                    {% if loop.last and ranked|length > 1 and r.mu != ranked[0].mu %}<span class="tag warn">подтянуть</span>{% endif %}
+                </div>
+                <div class="level-track"><span style="width: {{ [[pct, 3]|max, 100]|min }}%;"></span></div>
+                <div class="level-num">{{ '%.1f'|format(r.mu) }} <small>из 4</small></div>
+                <div class="level-conf"><b>{{ word }}</b>{% if r.sigma is none %}{% elif r.sigma <= 0.8 %} · оценка точная{% elif r.sigma <= 1.3 %} · уточняется{% else %} · мало данных{% endif %}</div>
             </div>
             {% endfor %}
         </div>
-    </div>
-    {% endif %}
-
-    <div class="card">
-        <h2>Уровни по разделам (mu/sigma)</h2>
-        <div class="anchor-badges">
-            {% for anchor, vals in anchors.items() %}
-            <div class="anchor-badge">
-                {% set anchor_ru = {
-                    'algebra': 'Алгебра',
-                    'number_theory': 'Теория чисел',
-                    'geometry': 'Геометрия',
-                    'combinatorics': 'Комбинаторика',
-                    'logic': 'Логика'
-                }.get(anchor, anchor) %}
-                {% if vals.mu is none %}
-                {{ anchor_ru }} — нет данных
-                {% else %}
-                {{ anchor_ru }} <span>{{ vals.mu }}/{{ vals.sigma }}</span>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <div class="card">
-        <h2>Календарь месяца</h2>
-        <div class="calendar-grid">
-            {% for cell in calendar_days %}
-            <div class="cal-cell {{ 'today' if cell.is_today else '' }}">
-                <div class="cal-day">{{ cell.day }}</div>
-                <div class="cal-count {{ 'good' if cell.solved == cell.total and cell.total > 0 else ('mid' if cell.solved > 0 else 'zero') }}">
-                    {{ cell.solved }}/{{ cell.total }}
+        <p class="hint-line">Шкала от 1 до 4 (начальный → базовый → уверенный → сильный): уровень растёт, когда ученик верно решает задачи этого раздела. «Мало данных» — задач по разделу пока было немного, оценка может заметно измениться.</p>
+        {% else %}
+        <p class="summary-text muted">Уровни появятся после входного теста или первых задач дня.</p>
+        {% endif %}
+        <details class="more">
+            <summary>Показать радар</summary>
+            <div class="radar-wrap" style="margin-top: 14px;">
+                <div class="radar-box">
+                    <canvas id="sectionRadar" data-radar='{{ section_radar | tojson }}'></canvas>
                 </div>
             </div>
+        </details>
+    </section>
+
+    <section class="card anchor" id="calendar">
+        <h2>Календарь · {{ month_title }}</h2>
+        <div class="cal-legend">
+            <span><i class="lg good"></i>всё решено</span>
+            <span><i class="lg mid"></i>часть решена</span>
+            <span><i class="lg zero"></i>не решал</span>
+            <span><i class="lg none"></i>задач не было</span>
+        </div>
+        <div class="calendar-grid">
+            {% for wd in ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'] %}<div class="cal-wd">{{ wd }}</div>{% endfor %}
+            {% for _ in range(calendar_offset) %}<div class="cal-cell empty" aria-hidden="true"></div>{% endfor %}
+            {% for cell in calendar_days %}
+            {% set st = 'none' if cell.total == 0 else ('good' if cell.solved == cell.total else ('mid' if cell.solved > 0 else 'zero')) %}
+            <div class="cal-cell st-{{ st }} {{ 'today' if cell.is_today else '' }}" title="{{ cell.day }} число: решено {{ cell.solved }} из {{ cell.total }}">
+                <div class="cal-day">{{ cell.day }}</div>
+                <div class="cal-count {{ st }}">{% if cell.total %}{{ cell.solved }}/{{ cell.total }}{% else %}·{% endif %}</div>
+            </div>
             {% endfor %}
         </div>
-    </div>
+    </section>
+
+    {% if theme_radars %}
+    <section class="card anchor" id="themes">
+        <h2>Подтемы</h2>
+        <p class="hint-line" style="margin-top: 0;">Нажмите на раздел, чтобы увидеть уровень по каждой подтеме.</p>
+        {% for tr in theme_radars %}
+        <details class="more theme-details">
+            <summary>{{ tr.section_name }}</summary>
+            <div class="radar-box" style="margin-top: 12px;">
+                <canvas id="themeRadar{{ loop.index0 }}" data-radar='{{ tr.points | tojson }}'></canvas>
+            </div>
+        </details>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <section class="card anchor" id="details">
+        <details class="more">
+            <summary>Все цифры</summary>
+            <div class="detail-grid">
+                <div class="dg-group">
+                    <h3>Задачи дня</h3>
+                    <dl>
+                        <dt>Решено верно (всего)</dt><dd class="green">{{ task_stats.life_correct }}</dd>
+                        <dt>Попыток (всего)</dt><dd>{{ task_stats.life_attempts }}</dd>
+                        <dt>За 7 дней: попыток / верно</dt><dd>{{ task_stats.week_attempts }} / {{ task_stats.week_correct }}</dd>
+                        <dt>Активных дней</dt><dd>{{ task_stats.active_days }}</dd>
+                    </dl>
+                </div>
+                <div class="dg-group">
+                    <h3>Тесты и пробники</h3>
+                    <dl>
+                        <dt>Тестов пройдено</dt><dd>{{ tests.count }}</dd>
+                        <dt>Средний уровень тестов</dt><dd>{{ tests.avg_level if tests.avg_level is not none else '—' }}</dd>
+                        <dt>Пробников сдано</dt><dd>{{ user_stats.mock_exams }}</dd>
+                        <dt>Сложнейшая задача</dt><dd>{{ ('ур. ' ~ user_stats.highest_difficulty) if user_stats.highest_difficulty else '—' }}</dd>
+                    </dl>
+                </div>
+                <div class="dg-group">
+                    <h3>Прогресс на сайте</h3>
+                    <dl>
+                        <dt>Всего решено задач</dt><dd>{{ user_stats.total_solved }}</dd>
+                        <dt>Уровень</dt><dd>{{ user_stats.level }}</dd>
+                        <dt>Опыт (XP)</dt><dd>{{ user_stats.xp }}</dd>
+                    </dl>
+                </div>
+                <div class="dg-group">
+                    <h3>Уровни (mu / sigma)</h3>
+                    <dl>
+                        {% for anchor, vals in anchors.items() %}
+                        <dt>{{ sec_ru.get(anchor, anchor) }}</dt><dd>{% if vals.mu is none %}—{% else %}{{ vals.mu }} / {{ vals.sigma }}{% endif %}</dd>
+                        {% endfor %}
+                    </dl>
+                </div>
+            </div>
+        </details>
+    </section>
+
+    {% if viewer_role in ['parent', 'teacher'] %}
+    {% set support_role = viewer_role %}
+    {% include 'partials/support_cta.html' %}
+    {% endif %}
 </div>
 {% endblock %}
 
@@ -373,8 +516,9 @@
                 },
                 scales: {
                     r: {
+                        // STATS_UX_V1: уровни в level_engine лежат в диапазоне 1..4.
                         min: 0,
-                        max: 5,
+                        max: 4,
                         ticks: { stepSize: 1, color: 'rgba(255,255,255,0.3)', backdropColor: 'transparent', font: { size: 10 } },
                         grid: { color: 'rgba(255,255,255,0.08)' },
                         angleLines: { color: 'rgba(255,255,255,0.12)' },
@@ -385,9 +529,30 @@
         });
     }
 
-    buildRadar(document.getElementById('sectionRadar'));
-    var themeCanvases = document.querySelectorAll('canvas[id^="themeRadar"]');
-    themeCanvases.forEach(buildRadar);
+    // STATS_UX_V1: радары лежат в свёрнутых <details> — строим при первом раскрытии.
+    document.querySelectorAll('details.more').forEach(function (d) {
+        d.addEventListener('toggle', function () {
+            if (!d.open) return;
+            d.querySelectorAll('canvas[data-radar]').forEach(function (c) {
+                if (c.dataset.built) return;
+                c.dataset.built = '1';
+                buildRadar(c);
+            });
+        });
+    });
+    // Подсветка активной вкладки при прокрутке.
+    var tabs = document.querySelectorAll('.st-tabs a');
+    if ('IntersectionObserver' in window && tabs.length) {
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+                if (!e.isIntersecting) return;
+                tabs.forEach(function (t) { t.classList.toggle('active', t.getAttribute('href') === '#' + e.target.id); });
+            });
+        }, { rootMargin: '-40% 0px -55% 0px' });
+        document.querySelectorAll('.card.anchor').forEach(function (sec) { io.observe(sec); });
+    }
+    var det = document.querySelector('#details details');
+    document.querySelectorAll('a[href="#details"]').forEach(function (a) { a.addEventListener('click', function () { if (det) det.open = true; }); });
 })();
 </script>
 {% endblock %}
