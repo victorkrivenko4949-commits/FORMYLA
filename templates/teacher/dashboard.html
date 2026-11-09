@@ -190,13 +190,13 @@
             <div class="cta-sub">
                 Мест: {{ seat.seats }} · занято {{ seat.used }} ·
                 действует до {{ seat.sub.expires_at.strftime('%d.%m.%Y') }}.
-                {% if seat.can_add %}Добавляйте учеников внутри группы.{% else %}Места закончились — тариф можно расширить в разделе «Тарифы».{% endif %}
+                {% if seat.can_add %}Добавляйте учеников внутри группы — свободно {{ seat.seats - seat.used }}.{% else %}Места закончились — расширьте тариф, оплата занимает минуту.{% endif %}
             </div>
         </div>
         {% if seat.can_add %}
-        <a href="/tariffs/teacher" class="btn-add-students" style="background: linear-gradient(135deg, #22c55e, #0ea5a4);">Добавить учеников →</a>
+        <a href="/payments/seats/checkout?upgrade=1" class="btn-add-students" style="background: linear-gradient(135deg, #22c55e, #0ea5a4);">Продлить или расширить →</a>
         {% else %}
-        <a href="/tariffs/teacher" class="btn-add-students" style="background: linear-gradient(135deg, #22c55e, #0ea5a4);">Расширить тариф →</a>
+        <a href="/payments/seats/checkout?upgrade=1" class="btn-add-students" style="background: linear-gradient(135deg, #22c55e, #0ea5a4);">Расширить тариф →</a>
         {% endif %}
     </div>
     {% else %}
@@ -205,10 +205,13 @@
             <div class="cta-title">Добавление учеников — по подписке</div>
             <div class="cta-sub">
                 Уже добавленные ученики продолжают заниматься как раньше.
-                Новых учеников можно подключить после оформления подписки.
+                Новых учеников можно подключить после оформления подписки — от 800 ₽ за 30 дней.
             </div>
         </div>
-        <a href="/demo" class="btn-add-students">Добавить учеников →</a>
+        <div style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+            <a href="/demo" class="btn-add-students">Добавить учеников →</a>
+            <a href="/payments/seats/checkout" style="color: #8fa3c0; font-size: 13px; text-decoration: none; white-space: nowrap;">Сразу к оплате →</a>
+        </div>
     </div>
     {% endif %}
 

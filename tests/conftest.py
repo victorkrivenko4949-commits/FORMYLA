@@ -211,6 +211,18 @@ def app(tmp_path):
         test_app.register_blueprint(account_bp)
     except Exception:
         pass
+    try:
+        from routes.seat_pay import seat_pay_bp
+        test_app.register_blueprint(seat_pay_bp)
+    except Exception:
+        pass
+
+    # base.html вызывает tg_trial_state() (партиал «Неделя Premium за Telegram»,
+    # 05.11.2026) — в боевом app.py это context_processor; здесь заглушка,
+    # иначе любой рендер страницы в тестах падает с UndefinedError.
+    @test_app.context_processor
+    def _inject_tg_trial_stub():
+        return {'tg_trial_state': lambda: {'state': 'hidden'}}
 
     # CONFIRM_LINK_V1: недостающие эндпоинты, на которые ссылается base.html
     # (иначе BuildError при рендере страниц учителя/родителя в тестах).

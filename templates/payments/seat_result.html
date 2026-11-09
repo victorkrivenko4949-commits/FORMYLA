@@ -21,14 +21,31 @@
   background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
 }
 .sr-row b { color: #eaf3ff; }
+.sr-actions { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 14px; }
 .sr-btn {
-  display: inline-block; margin-top: 10px; padding: 14px 28px; border-radius: 14px;
+  display: inline-block; padding: 14px 28px; border-radius: 14px;
   background: linear-gradient(135deg, #38bdf8, #8b5cf6); color: #fff;
-  font-weight: 700; font-size: 1em; text-decoration: none;
+  font-weight: 700; font-size: 1em; text-decoration: none; min-width: 240px;
 }
 .sr-btn:hover { opacity: .9; }
+.sr-link { color: #8fa3c0; text-decoration: none; font-size: .9em; }
+.sr-link:hover { color: #d7e6fb; }
 .sr-warn { color: #fca5a5; }
 .sr-ok { color: #86efac; }
+.sr-next {
+  margin: 16px 0 4px; text-align: left; font-size: .9em; color: #b9c8de; line-height: 1.6;
+  padding: 12px 14px; border-radius: 12px;
+  background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.25);
+}
+.sr-next b { color: #eaf3ff; }
+.sr-spin {
+  display: inline-block; width: 42px; height: 42px; margin: 6px 0 12px;
+  border: 4px solid rgba(56,189,248,0.25); border-top-color: #38bdf8; border-radius: 50%;
+  animation: sr-rot 1s linear infinite;
+}
+@keyframes sr-rot { to { transform: rotate(360deg); } }
+.sr-poll { color: #8fa3c0; font-size: .85em; margin-top: 10px; min-height: 1.4em; }
+.sr-order { color: #5f7596; font-size: .76em; margin-top: 16px; word-break: break-all; }
 </style>
 {% endblock %}
 
@@ -39,34 +56,90 @@
     <div class="sr-ico">✅</div>
     <div class="sr-title">Подписка оплачена</div>
     <div class="sr-sub sr-ok">
-      {% if info %}«{{ info.title }}» — {{ info.tagline }}. Форма добавления
-      {{ 'учеников' if (role or '') == 'teacher' else 'детей' }} уже вернулась в ваш кабинет.{% endif %}
+      {% if info %}«{{ info.title }}» — {{ info.tagline }}.{% endif %}
+      Форма добавления {{ 'учеников' if (role or '') == 'teacher' else 'детей' }} уже в вашем кабинете.
     </div>
     <div class="sr-rows">
       {% if paid_amount %}<div class="sr-row"><span>Оплачено</span><b>{{ paid_amount }} ₽</b></div>{% endif %}
-      {% if seats %}<div class="sr-row"><span>Мест в подписке</span><b>{{ seats }}</b></div>{% endif %}
+      {% if seats %}<div class="sr-row"><span>Мест в подписке</span><b>{{ seats }} {{ seats_word }}</b></div>{% endif %}
       {% if expires %}<div class="sr-row"><span>Действует до</span><b>{{ expires }}</b></div>{% endif %}
       {% if demo %}<div class="sr-row"><span>Режим</span><b>тестовый · без списания</b></div>{% endif %}
     </div>
-    <a class="sr-btn" href="{{ cabinet or '/demo' }}">Вернуться в кабинет →</a>
+    <div class="sr-next">
+      <b>Что дальше:</b>
+      {% if (role or '') == 'teacher' %}
+      откройте группу и добавьте ученика по никнейму или отправьте ученикам код приглашения — они вступят сами.
+      {% else %}
+      введите никнейм ребёнка в кабинете — ему придёт запрос, после согласия вы увидите его статистику.
+      {% endif %}
+    </div>
+    <div class="sr-actions">
+      <a class="sr-btn" href="{{ cabinet or '/demo' }}">{{ 'Добавить учеников →' if (role or '') == 'teacher' else 'Добавить ребёнка →' }}</a>
+    </div>
 
     {% elif status == 'canceled' %}
     <div class="sr-ico">❌</div>
-    <div class="sr-title sr-warn">Оплата отменена</div>
-    <div class="sr-sub">Платёж не прошёл — деньги не списаны. Подписку можно оформить в любой момент.</div>
-    <a class="sr-btn" href="/demo">Попробовать ещё раз</a>
+    <div class="sr-title sr-warn">Оплата не прошла</div>
+    <div class="sr-sub">Платёж отменён — деньги не списаны. Можно попробовать ещё раз{% if info %} с тем же тарифом «{{ info.title }}»{% endif %} или выбрать другой.</div>
+    <div class="sr-actions">
+      <a class="sr-btn" href="{{ retry_url or '/payments/seats/checkout' }}">Попробовать ещё раз</a>
+      <a class="sr-link" href="{{ cabinet or '/demo' }}">Вернуться в кабинет</a>
+    </div>
 
     {% elif status == 'pending' %}
-    <div class="sr-ico">⏳</div>
-    <div class="sr-title">Платёж в обработке</div>
-    <div class="sr-sub">ЮKassa ещё подтверждает оплату. Обновите страницу через минуту — подписка активируется автоматически.</div>
+    <div class="sr-spin" id="srSpin"></div>
+    <div class="sr-title">Проверяем оплату</div>
+    <div class="sr-sub">ЮKassa подтверждает платёж{% if info %} за «{{ info.title }}»{% endif %}. Обычно это занимает несколько секунд — страница обновится сама, ничего нажимать не нужно.</div>
+    <div class="sr-poll" id="srPoll">Ждём подтверждение…</div>
+    <div class="sr-actions">
+      <a class="sr-link" href="{{ cabinet or '/demo' }}">Вернуться в кабинет — подписка включится автоматически</a>
+    </div>
 
     {% else %}
     <div class="sr-ico">🔍</div>
     <div class="sr-title sr-warn">Платёж не найден</div>
-    <div class="sr-sub">Заказ с таким номером не найден. Если деньги списались — напишите в поддержку, вернём или активируем вручную.</div>
-    <a class="sr-btn" href="/demo">К оформлению подписки</a>
+    <div class="sr-sub">Заказ с таким номером не найден. Если деньги списались — напишите в поддержку и укажите номер заказа ниже, вернём или активируем вручную.</div>
+    <div class="sr-actions">
+      <a class="sr-btn" href="/payments/seats/checkout">К оформлению подписки</a>
+      <a class="sr-link" href="{{ cabinet or '/demo' }}">Вернуться в кабинет</a>
+    </div>
     {% endif %}
+
+    {% if order_id %}<div class="sr-order">Номер заказа: {{ order_id }}</div>{% endif %}
   </div>
 </div>
+
+{% if status == 'pending' and order_id %}
+<script>
+(function () {
+  var orderId = {{ order_id | tojson }};
+  var attempts = 0, delay = 3000;
+  var poll = document.getElementById('srPoll');
+  function tick() {
+    attempts += 1;
+    fetch('/payments/seats/status?order_id=' + encodeURIComponent(orderId), { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.redirect && (d.status === 'succeeded' || d.status === 'canceled')) {
+          poll.textContent = d.status === 'succeeded' ? 'Оплата подтверждена, открываем…' : 'Платёж отменён…';
+          window.location.replace(d.redirect);
+          return;
+        }
+        if (attempts >= 40) {
+          poll.textContent = 'Подтверждение задерживается. Подписка включится автоматически, как только ЮKassa подтвердит оплату — можно вернуться в кабинет.';
+          document.getElementById('srSpin').style.display = 'none';
+          return;
+        }
+        if (attempts > 10) delay = 6000;
+        poll.textContent = 'Ждём подтверждение… (' + attempts + ')';
+        setTimeout(tick, delay);
+      })
+      .catch(function () {
+        if (attempts < 40) setTimeout(tick, 5000);
+      });
+  }
+  setTimeout(tick, 2000);
+})();
+</script>
+{% endif %}
 {% endblock %}
