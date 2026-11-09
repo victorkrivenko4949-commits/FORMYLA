@@ -171,17 +171,60 @@
         color: var(--text);
         margin-bottom: 6px;
     }
+    /* CLICKABILITY_V1 (09.11.2026) */
+    .pt-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .teacher-page .pt-head h1 { margin: 0; padding: 0; border: none; }
+    .quick-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .qa-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        min-height: 44px; padding: 10px 18px; border-radius: 12px;
+        background: var(--surface-2); border: 1px solid var(--border);
+        color: var(--text); text-decoration: none; font-weight: 600; font-size: 14px;
+        transition: border-color .15s, background .15s, transform .12s;
+    }
+    .qa-btn:hover { border-color: rgba(56,189,248,0.6); background: rgba(56,189,248,0.08); transform: translateY(-1px); }
+    .qa-btn.primary { background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; border-color: transparent; }
+    .qa-btn.support { color: #d8b4fe; border-color: rgba(168,85,247,0.35); background: rgba(168,85,247,0.10); }
+    .qa-btn.support:hover { background: rgba(168,85,247,0.2); border-color: rgba(168,85,247,0.6); }
+    .teacher-page a:focus-visible, .teacher-page button:focus-visible, .teacher-page input:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+    .create-form { scroll-margin-top: 90px; }
+    .form-row input, .form-row .btn { min-height: 44px; box-sizing: border-box; }
+    /* Вся карточка группы — ссылка (stretched link); кнопка «Скопировать код» поверх. */
+    .group-card { position: relative; cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .12s; gap: 16px; }
+    .group-card:hover { border-color: rgba(244,185,66,0.55); box-shadow: 0 6px 22px rgba(0,0,0,0.18); }
+    .group-card .group-link::after { content: ""; position: absolute; inset: 0; border-radius: 14px; }
+    .group-card .group-link:hover { text-decoration: none; }
+    .group-card .open-cta { min-height: 44px; white-space: nowrap; }
+    .group-card .copy-btn { position: relative; z-index: 2; }
+    .copy-btn {
+        min-height: 36px; padding: 6px 12px; margin-left: 6px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;
+        background: rgba(56,189,248,0.12); color: #7dd3fc; border: 1px solid rgba(56,189,248,0.35); font-family: inherit;
+    }
+    .copy-btn:hover { background: rgba(56,189,248,0.22); }
+    .group-meta { margin-top: 6px; line-height: 1.9; }
+    .btn-add-students { min-height: 44px; }
     @media (max-width: 600px) {
         .teacher-page { padding: 24px 16px 100px; }
-        .form-row { flex-direction: column; }
-        .group-card { flex-direction: column; gap: 8px; align-items: flex-start; }
+        .form-row { flex-direction: column; align-items: stretch; }
+        .group-card { flex-direction: column; gap: 10px; align-items: stretch; }
+        .group-card .open-cta { justify-content: center; }
+        .quick-actions { width: 100%; }
+        .quick-actions .qa-btn { flex: 1 1 auto; }
+        .add-cta-card .btn-add-students { width: 100%; justify-content: center; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="teacher-page">
-    <h1>👨‍🏫 Мои ученики</h1>
+    <div class="pt-head">
+        <h1>👨‍🏫 Мои ученики</h1>
+        <div class="quick-actions">
+            <a href="#create-group" class="qa-btn primary">➕ Создать группу</a>
+            <a href="/tariffs/teacher" class="qa-btn">Тарифы</a>
+            <a href="#support" class="qa-btn support">💬 Поддержка</a>
+        </div>
+    </div>
 
     {% if seat and seat.sub %}
     <div class="add-cta-card" style="border-style: solid; border-color: rgba(34,197,94,0.4);">
@@ -194,7 +237,7 @@
             </div>
         </div>
         {% if seat.can_add %}
-        <a href="/tariffs/teacher" class="btn-add-students" style="background: linear-gradient(135deg, #22c55e, #0ea5a4);">Добавить учеников →</a>
+        <a href="{% if group_stats %}{{ url_for('parent_teacher.teacher_group_view', gid=group_stats[0].group.id) }}{% else %}#create-group{% endif %}" class="btn-add-students" style="background: linear-gradient(135deg, #22c55e, #0ea5a4);">Добавить учеников →</a>
         {% else %}
         <a href="/tariffs/teacher" class="btn-add-students" style="background: linear-gradient(135deg, #22c55e, #0ea5a4);">Расширить тариф →</a>
         {% endif %}
@@ -218,7 +261,7 @@
         <div class="step-row"><span class="step">3</span><span class="step-text">После подтверждения откроется <b>вся статистика</b> ученика: задачи дня, серия, уровни, тесты и календарь активности.</span></div>
     </div>
 
-    <div class="create-form">
+    <div class="create-form" id="create-group">
         <h3>➕ Создать новую группу</h3>
         <form method="POST" action="{{ url_for('parent_teacher.teacher_group_create') }}">
             <div class="form-row">
@@ -232,11 +275,11 @@
         {% for gs in group_stats %}
         <div class="group-card">
             <div>
-                <a href="{{ url_for('parent_teacher.teacher_group_view', gid=gs.group.id) }}">
+                <a href="{{ url_for('parent_teacher.teacher_group_view', gid=gs.group.id) }}" class="group-link">
                     {{ gs.group.name }}
                 </a>
                 <div class="group-meta">
-                    🔑 Код: {{ gs.group.invite_code }} |
+                    🔑 Код: {{ gs.group.invite_code }}<button type="button" class="copy-btn" data-copy="{{ gs.group.invite_code }}" title="Скопировать код приглашения">Скопировать</button> |
                     👥 Учеников: {{ gs.student_count }} |
                     📊 Среднее задач/день: {{ gs.group_avg }}
                     {% if gs.pending_count %}
@@ -244,8 +287,7 @@
                     {% endif %}
                 </div>
             </div>
-            <a href="{{ url_for('parent_teacher.teacher_group_view', gid=gs.group.id) }}"
-               class="btn btn-accent">📂 Открыть</a>
+            <span class="btn btn-accent open-cta" aria-hidden="true">📂 Открыть группу →</span>
         </div>
         {% endfor %}
     {% else %}
@@ -257,5 +299,9 @@
             <a href="/demo" class="btn-add-students">Добавить учеников →</a>
         </div>
     {% endif %}
+
+    {% set support_role = 'teacher' %}
+    {% include 'partials/support_cta.html' %}
 </div>
+{% include 'partials/copy_code_js.html' %}
 {% endblock %}

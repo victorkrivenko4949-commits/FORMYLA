@@ -1,0 +1,160 @@
+{# SUPPORT_CTA_V1 (09.11.2026): блок «Написать в поддержку» для кабинетов
+   родителя и учителя. Отправляет обращение в /api/support (та же таблица
+   support_messages, что и форма на /about), ответ приходит в /my/support.
+   Параметр: support_role = 'parent' | 'teacher'. #}
+{% set _role = support_role|default('parent') %}
+<style>
+    .sup-cta {
+        background: var(--surface);
+        border: 1px solid rgba(168,85,247,0.35);
+        border-radius: 14px;
+        padding: 22px 24px;
+        margin-top: 28px;
+        scroll-margin-top: 90px;
+    }
+    .sup-cta-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+    .sup-cta-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .sup-cta-sub { font-size: 14px; color: var(--muted); line-height: 1.5; max-width: 560px; }
+    .sup-cta-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .sup-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        min-height: 44px; padding: 10px 20px; border-radius: 12px;
+        font-weight: 700; font-size: 15px; text-decoration: none; cursor: pointer;
+        border: 1px solid transparent; font-family: inherit;
+        transition: transform .12s, opacity .15s, background .15s;
+    }
+    .sup-btn:hover { opacity: .9; transform: translateY(-1px); }
+    .sup-btn:active { transform: translateY(0); }
+    .sup-btn:focus-visible { outline: 2px solid #c4b5fd; outline-offset: 2px; }
+    .sup-btn-main { background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff; }
+    .sup-btn-ghost { background: rgba(168,85,247,0.10); color: #d8b4fe; border-color: rgba(168,85,247,0.35); }
+    .sup-form { margin-top: 18px; display: none; }
+    .sup-form.open { display: block; }
+    .sup-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .sup-chip {
+        min-height: 40px; padding: 8px 14px; border-radius: 999px; font-size: 14px; cursor: pointer;
+        background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); font-family: inherit;
+    }
+    .sup-chip[aria-pressed="true"] { background: rgba(168,85,247,0.18); color: #e9d5ff; border-color: rgba(168,85,247,0.55); }
+    .sup-form textarea {
+        width: 100%; min-height: 110px; padding: 12px 14px; box-sizing: border-box;
+        background: rgba(15,23,42,0.6); border: 1px solid #334155; border-radius: 10px;
+        color: #f1f5f9; font-size: 16px; font-family: inherit; resize: vertical;
+    }
+    .sup-form-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+    .sup-status { font-size: 14px; color: var(--muted); }
+    .sup-status.ok { color: #86efac; }
+    .sup-status.err { color: #fca5a5; }
+    .sup-status a { color: #d8b4fe; }
+    @media (max-width: 600px) {
+        .sup-cta-actions, .sup-cta-actions .sup-btn { width: 100%; }
+    }
+</style>
+<div class="sup-cta" id="support">
+    <div class="sup-cta-head">
+        <div>
+            <div class="sup-cta-title">Нужна помощь?</div>
+            <div class="sup-cta-sub">
+                {% if _role == 'teacher' %}
+                Не получается добавить ученика, создать группу или оплатить места? Напишите нам — ответим в разделе «Моя поддержка».
+                {% else %}
+                Не получается привязать ребёнка, разобраться со статистикой или оплатой? Напишите нам — ответим в разделе «Моя поддержка».
+                {% endif %}
+            </div>
+        </div>
+        <div class="sup-cta-actions">
+            <button type="button" class="sup-btn sup-btn-main" id="supOpenBtn" aria-expanded="false" aria-controls="supForm">Написать в поддержку</button>
+            <a href="{{ url_for('admin_support.my_support_page') }}" class="sup-btn sup-btn-ghost">Мои обращения</a>
+        </div>
+    </div>
+    <form class="sup-form" id="supForm" novalidate>
+        <div class="sup-chips" role="group" aria-label="Тема обращения">
+            <button type="button" class="sup-chip" data-cat="question" aria-pressed="true">Вопрос</button>
+            <button type="button" class="sup-chip" data-cat="bug" aria-pressed="false">Что-то не работает</button>
+            <button type="button" class="sup-chip" data-cat="suggestion" aria-pressed="false">Предложение</button>
+        </div>
+        <textarea id="supText" maxlength="4000" placeholder="{% if _role == 'teacher' %}Например: ученик не видит приглашение в группу{% else %}Например: ребёнок не получает запрос на привязку{% endif %}"></textarea>
+        <div class="sup-form-row">
+            <button type="submit" class="sup-btn sup-btn-main" id="supSendBtn">Отправить</button>
+            <span class="sup-status" id="supStatus" role="status" aria-live="polite"></span>
+        </div>
+    </form>
+</div>
+<script>
+(function () {
+    var openBtn = document.getElementById('supOpenBtn');
+    var form = document.getElementById('supForm');
+    var text = document.getElementById('supText');
+    var sendBtn = document.getElementById('supSendBtn');
+    var status = document.getElementById('supStatus');
+    if (!openBtn || !form) return;
+    var category = 'question';
+    var role = {{ _role|tojson }};
+
+    function openForm() {
+        form.classList.add('open');
+        openBtn.setAttribute('aria-expanded', 'true');
+        setTimeout(function () { text.focus(); }, 50);
+    }
+    openBtn.addEventListener('click', function () {
+        if (form.classList.contains('open')) {
+            form.classList.remove('open');
+            openBtn.setAttribute('aria-expanded', 'false');
+        } else { openForm(); }
+    });
+    // Ссылки вида href="#support" из быстрых действий сразу раскрывают форму.
+    document.querySelectorAll('a[href="#support"]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.getElementById('support').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            openForm();
+        });
+    });
+    if (location.hash === '#support') openForm();
+
+    form.querySelectorAll('.sup-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            category = chip.getAttribute('data-cat');
+            form.querySelectorAll('.sup-chip').forEach(function (c) {
+                c.setAttribute('aria-pressed', c === chip ? 'true' : 'false');
+            });
+        });
+    });
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var msg = (text.value || '').trim();
+        if (msg.length < 5) {
+            status.className = 'sup-status err';
+            status.textContent = 'Опишите вопрос чуть подробнее (от 5 символов).';
+            text.focus();
+            return;
+        }
+        sendBtn.disabled = true;
+        status.className = 'sup-status';
+        status.textContent = 'Отправляем…';
+        try {
+            var fd = new FormData();
+            fd.append('category', category);
+            fd.append('message', '[' + (role === 'teacher' ? 'Учитель' : 'Родитель') + '] ' + msg);
+            fd.append('page_url', window.location.href);
+            var r = await fetch('/api/support', { method: 'POST', credentials: 'include', body: fd });
+            var j = {};
+            try { j = await r.json(); } catch (_) {}
+            if (r.ok && j.ok) {
+                text.value = '';
+                status.className = 'sup-status ok';
+                status.innerHTML = 'Спасибо, обращение отправлено. Ответ появится в <a href="{{ url_for('admin_support.my_support_page') }}">«Моя поддержка»</a>.';
+            } else {
+                status.className = 'sup-status err';
+                status.textContent = (j && j.error) ? ('Не отправилось: ' + j.error) : 'Не удалось отправить. Попробуйте ещё раз.';
+            }
+        } catch (err) {
+            status.className = 'sup-status err';
+            status.textContent = 'Нет связи с сервером. Попробуйте ещё раз.';
+        } finally {
+            sendBtn.disabled = false;
+        }
+    });
+})();
+</script>

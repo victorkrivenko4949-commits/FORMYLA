@@ -148,16 +148,73 @@
         color: var(--muted);
         margin-top: 12px;
     }
+    /* CLICKABILITY_V1 (09.11.2026): крупные кликабельные зоны, hover/focus,
+       быстрые действия и карточки-ссылки. */
+    .pt-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .parent-page .pt-head h1 { margin: 0; padding: 0; border: none; }
+    .quick-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .qa-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        min-height: 44px; padding: 10px 18px; border-radius: 12px;
+        background: var(--surface-2); border: 1px solid var(--border);
+        color: var(--text); text-decoration: none; font-weight: 600; font-size: 14px;
+        transition: border-color .15s, background .15s, transform .12s;
+    }
+    .qa-btn:hover { border-color: rgba(56,189,248,0.6); background: rgba(56,189,248,0.08); transform: translateY(-1px); }
+    .qa-btn.primary { background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; border-color: transparent; }
+    .qa-btn.support { color: #d8b4fe; border-color: rgba(168,85,247,0.35); background: rgba(168,85,247,0.10); }
+    .qa-btn.support:hover { background: rgba(168,85,247,0.2); border-color: rgba(168,85,247,0.6); }
+    .parent-page a:focus-visible, .parent-page button:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+    .child-card { transition: border-color .15s, box-shadow .15s; }
+    .child-card:hover { border-color: rgba(56,189,248,0.45); box-shadow: 0 6px 22px rgba(0,0,0,0.18); }
+    .child-name-link { color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .child-name-link:hover { color: #7dd3fc; }
+    .child-name-link .arrow { font-size: 16px; color: var(--muted); transition: transform .15s; }
+    .child-name-link:hover .arrow { transform: translateX(3px); color: #7dd3fc; }
+    a.stat-item { text-decoration: none; display: block; transition: border-color .15s, background .15s; }
+    a.stat-item:hover { border-color: rgba(56,189,248,0.55); background: rgba(56,189,248,0.06); }
+    .open-btn, .buy-btn { min-height: 44px; justify-content: center; transition: opacity .15s, transform .12s; }
+    .open-btn:hover, .buy-btn:hover { opacity: .9; transform: translateY(-1px); }
+    .buy-btn {
+        display: inline-flex; align-items: center; gap: 6px; padding: 12px 20px; border-radius: 12px;
+        background: linear-gradient(135deg, #2dd4bf, #0ea5a4); color: #06281f; text-decoration: none;
+        font-weight: 800; font-size: 14px; white-space: nowrap;
+    }
+    .copy-btn {
+        min-height: 44px; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;
+        background: rgba(56,189,248,0.12); color: #7dd3fc; border: 1px solid rgba(56,189,248,0.35); font-family: inherit;
+    }
+    .copy-btn:hover { background: rgba(56,189,248,0.22); }
+    .muted-btn { min-height: 44px; padding: 10px 16px; background: rgba(30,41,59,0.8); color: #94a3b8; border: 1px solid #334155; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: inherit; }
+    .muted-btn:hover { color: #cbd5e1; border-color: #475569; }
+    .add-anchor { scroll-margin-top: 90px; }
     @media (max-width: 600px) {
         .parent-page { padding: 24px 16px 100px; }
         .stat-row { flex-direction: column; }
+        .quick-actions { width: 100%; }
+        .quick-actions .qa-btn { flex: 1 1 auto; }
+        .child-actions { width: 100%; align-items: stretch; }
+        .child-actions .open-btn, .child-actions .buy-btn { width: 100%; box-sizing: border-box; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="parent-page">
-    <h1>Мои дети</h1>
+    <div class="pt-head">
+        <h1>Мои дети</h1>
+        <div class="quick-actions">
+            {% if seat and seat.can_add %}
+            <a href="#add-child" class="qa-btn primary">➕ Добавить ребёнка</a>
+            {% elif seat and seat.sub %}
+            <a href="/tariffs/parent" class="qa-btn primary">➕ Расширить тариф</a>
+            {% else %}
+            <a href="/demo" class="qa-btn primary">➕ Добавить ребёнка</a>
+            {% endif %}
+            <a href="/tariffs/parent" class="qa-btn">Тарифы</a>
+            <a href="#support" class="qa-btn support">💬 Поддержка</a>
+        </div>
+    </div>
 
     {% if invite_code %}
     <div class="card">
@@ -167,9 +224,10 @@
             и сразу привяжется к вам (с его согласия).
         </p>
         <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
-            <span style="font-size: 28px; font-weight: 700; letter-spacing: 5px; color: #7dd3fc; background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.3); padding: 10px 18px; border-radius: 10px;">{{ invite_code }}</span>
+            <span id="inviteCodeValue" style="font-size: 28px; font-weight: 700; letter-spacing: 5px; color: #7dd3fc; background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.3); padding: 10px 18px; border-radius: 10px; user-select: all;">{{ invite_code }}</span>
+            <button type="button" class="copy-btn" data-copy="{{ invite_code }}">Скопировать</button>
             <form method="POST" action="/parent/invite-code/regenerate" style="margin: 0;">
-                <button type="submit" style="padding: 10px 16px; background: rgba(30,41,59,0.8); color: #94a3b8; border: 1px solid #334155; border-radius: 8px; font-size: 13px; cursor: pointer;">Обновить код</button>
+                <button type="submit" class="muted-btn">Обновить код</button>
             </form>
         </div>
         <p style="color: var(--muted); margin-top: 10px; font-size: 13px;">
@@ -180,7 +238,7 @@
 
     {% if not children %}
         {% if seat and seat.can_add %}
-        <div class="card">
+        <div class="card add-anchor" id="add-child">
             <h2>Добавить ребёнка</h2>
             <p style="color: var(--muted); margin-bottom: 16px;">
                 Укажите никнейм ребёнка, чтобы видеть его статистику. Ребёнок должен быть
@@ -240,24 +298,28 @@
         {% endif %}
 
         {% for c in children %}
-        <div class="card">
+        <div class="card child-card">
             <div class="child-row">
                 <div style="flex: 1 1 300px; min-width: 0;">
-                    <h2 style="margin-bottom: 12px;">{{ c.name }}</h2>
+                    <h2 style="margin-bottom: 12px;">
+                        {% if not c.hidden %}
+                        <a href="{{ url_for('parent_teacher.student_detail', sid=c.id) }}" class="child-name-link">{{ c.name }} <span class="arrow">→</span></a>
+                        {% else %}{{ c.name }}{% endif %}
+                    </h2>
                     {% if c.hidden %}
                     <p style="color: var(--muted); margin: 0;">
                         🔒 Ученик закрыл доступ к своему прогрессу в настройках профиля.
                     </p>
                     {% else %}
                     <div class="stat-row" style="margin-bottom: 0;">
-                        <div class="stat-item">
+                        <a class="stat-item" href="{{ url_for('parent_teacher.student_detail', sid=c.id) }}" title="Открыть статистику">
                             <div class="stat-label">Задач/день (7 дн.)</div>
                             <div class="stat-value {{ 'green' if c.avg_tasks >= 4 else 'red' }}">{{ c.avg_tasks }}</div>
-                        </div>
-                        <div class="stat-item">
+                        </a>
+                        <a class="stat-item" href="{{ url_for('parent_teacher.student_detail', sid=c.id) }}" title="Открыть статистику">
                             <div class="stat-label">Серия дней</div>
                             <div class="stat-value">{{ c.streak }}</div>
-                        </div>
+                        </a>
                     </div>
                     <div class="stat-label" style="margin-top:12px;">Уровни по разделам (mu/sigma):</div>
                     <div class="anchor-badges">
@@ -279,8 +341,7 @@
                     {% else %}
                     {# TARIFFS_SECTIONS_V1 (07.11.2026): большая кнопка покупки —
                        подарочный Premium для этого ребёнка (for_user). #}
-                    <a href="/payments/premium/checkout?plan=premium_intense&for_user={{ c.id }}"
-                       style="display: inline-flex; align-items: center; gap: 6px; padding: 12px 20px; border-radius: 12px; background: linear-gradient(135deg, #2dd4bf, #0ea5a4); color: #06281f; text-decoration: none; font-weight: 800; font-size: 13px; white-space: nowrap;">
+                    <a href="/payments/premium/checkout?plan=premium_intense&for_user={{ c.id }}" class="buy-btn">
                         Купить подписку
                     </a>
                     {% endif %}
@@ -292,8 +353,7 @@
                         ⭐ Premium активен{% if c.premium.expires_at %} до {{ c.premium.expires_at }}{% endif %}
                     </span>
                     {% else %}
-                    <a href="/payments/premium/checkout?plan=premium_intense&for_user={{ c.id }}"
-                       style="display: inline-flex; align-items: center; gap: 6px; padding: 12px 20px; border-radius: 12px; background: linear-gradient(135deg, #2dd4bf, #0ea5a4); color: #06281f; text-decoration: none; font-weight: 800; font-size: 13px; white-space: nowrap;">
+                    <a href="/payments/premium/checkout?plan=premium_intense&for_user={{ c.id }}" class="buy-btn">
                         Купить подписку
                     </a>
                     {% endif %}
@@ -304,7 +364,7 @@
         {% endfor %}
 
         {% if seat and seat.can_add %}
-        <div class="card">
+        <div class="card add-anchor" id="add-child">
             <h2>Добавить ещё ребёнка</h2>
             <p style="color: var(--muted); margin-bottom: 16px;">
                 Мест по подписке: {{ seat.seats }}, занято {{ seat.used }}.
@@ -337,5 +397,9 @@
         </div>
         {% endif %}
     {% endif %}
+
+    {% set support_role = 'parent' %}
+    {% include 'partials/support_cta.html' %}
 </div>
+{% include 'partials/copy_code_js.html' %}
 {% endblock %}
