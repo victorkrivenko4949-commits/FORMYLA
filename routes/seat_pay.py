@@ -13,9 +13,17 @@ routes/seat_pay.py — SEAT_SUBSCRIPTION_V1 (07.11.2026)
   • маршруты добавления проверяют подписку и лимит мест.
 
 Маршруты:
-  GET  /payments/seats/checkout?plan=seat_teacher_group — оформление
+  GET  /payments/seats/checkout?plan=seat_group          — оформление
+       (?upgrade=1 — следующий тариф после текущего; тарифы переключаются
+        на странице без перезагрузки)
   POST /payments/seats/create                            — платёж ЮKassa
   GET  /payments/seats/return?order_id=...               — возврат + активация
+  GET  /payments/seats/status?order_id=...               — JSON-статус заказа
+       (страница «платёж в обработке» опрашивает его сама)
+
+SEAT_PAY_UX_V1 (09.11.2026): переключатель тарифов на странице оплаты,
+рекомендация тарифа по занятым местам, кнопка «Расширить тариф» ведёт
+сразу к оплате следующего тарифа, автопроверка статуса платежа.
 """
 from __future__ import annotations
 
@@ -99,6 +107,36 @@ SEAT_ALIASES = {
 def resolve_seat_plan(plan: str) -> str:
     """Код тарифа (в т.ч. старый) → код в SEAT_PLANS."""
     return SEAT_ALIASES.get(plan, plan)
+
+
+SEAT_PLAN_ORDER = sorted(SEAT_PLANS, key=lambda k: SEAT_PLANS[k]['seats'])
+
+
+def recommend_seat_plan(used: int = 0, current_seats: int = 0) -> str:
+    """Самый дешёвый тариф, где мест больше, чем занято сейчас и чем даёт
+    текущая подписка (для апгрейда). Если такого нет — самый большой."""
+    need = max(int(used or 0), int(current_seats or 0))
+    for key in SEAT_PLAN_ORDER:
+        if SEAT_PLANS[key]['seats'] > need:
+            return key
+    return SEAT_PLAN_ORDER[-1]
+
+
+def seats_word(n: int) -> str:
+    """1 место / 2 места / 5 мест."""
+    n = abs(int(n))
+    if n % 10 == 1 and n % 100 != 11:
+        return 'место'
+    if 2 <= n % 10 <= 4 and not 12 <= n % 100 <= 14:
+        return 'места'
+    return 'мест'
+
+
+def _plan_view(key: str) -> dict:
+    v = SEAT_PLANS[key]
+    return {'key': key, 'icon': v['icon'], 'title': v['title'],
+            'price_rub': v['price_rub'], 'tagline': v['tagline'],
+            'seats': v['seats'], 'features': list(v['features'])}
 
 
 # ── Таблицы ─────────────────────────────────────────────────────────────
@@ -281,21 +319,43 @@ def checkout():
     role = getattr(current_user, 'role', 'student') or 'student'
     if role not in ('teacher', 'parent'):
         abort(404)
+    gate = seat_gate(current_user.id, role)
+    cur_seats = gate['sub']['seats'] if gate['sub'] else 0
+    if gate['sub'] or gate['used']:
+        # есть подписка/занятые места — тариф, куда все поместятся
+        recommended = recommend_seat_plan(gate['used'], cur_seats)
+    else:
+        # с нуля: родителю — «Одно место», учителю — «Старт»
+        recommended = 'seat_one' if role == 'parent' else 'seat_start'
+
     plan = resolve_seat_plan(request.args.get('plan', ''))
     if plan not in SEAT_PLANS:
-        # стартовый тариф по цене (родителю с одним ребёнком — «Одно место»)
-        plan = 'seat_one' if role == 'parent' else 'seat_start'
+        # без явного тарифа (в т.ч. «Расширить тариф» ?upgrade=1) — рекомендованный
+        plan = recommended
     info = SEAT_PLANS[plan]
     cfg = _yk_config()
-    gate = seat_gate(current_user.id, role)
-    others = [
-        {'key': k, 'icon': v['icon'], 'title': v['title'],
-         'price_rub': v['price_rub'], 'tagline': v['tagline'], 'seats': v['seats']}
-        for k, v in SEAT_PLANS.items() if k != plan
-    ]
+
+    plans = [_plan_view(k) for k in SEAT_PLAN_ORDER]
+    for p in plans:
+        p['recommended'] = (p['key'] == recommended)
+        # после оплаты мест станет максимум из текущего и нового тарифа
+        p['seats_after'] = max(cur_seats, p['seats'])
+        p['adds_seats'] = p['seats'] > cur_seats
+        p['seats_word'] = seats_word(p['seats'])
+        p['seats_after_word'] = seats_word(p['seats_after'])
+
+    now = datetime.utcnow()
+    cur_exp = gate['sub']['expires_at'] if gate['sub'] else None
+    base = max(cur_exp, now) if cur_exp else now
+    expires_preview = (base + timedelta(days=30)).strftime('%d.%m.%Y')
+
     return render_template('payments/seat_checkout.html',
                            plan=plan, info=info, cfg=cfg, gate=gate,
-                           others=others, role=role)
+                           plans=plans, recommended=recommended,
+                           cur_seats=cur_seats, expires_preview=expires_preview,
+                           used_word=seats_word(gate['used']),
+                           role=role,
+                           cabinet='/teacher' if role == 'teacher' else '/parent')
 
 
 # ── Создание платежа ─────────────────────────────────────────────────────
@@ -426,6 +486,9 @@ def payment_return():
     if not order_id:
         return redirect('/demo')
 
+    role = getattr(current_user, 'role', '') or ''
+    cabinet = '/teacher' if role == 'teacher' else '/parent'
+
     row = None
     try:
         row = db.session.execute(text(
@@ -437,7 +500,8 @@ def payment_return():
 
     if not row:
         return render_template('payments/seat_result.html',
-                               status='not_found', info=None, plan=None, role=role), 404
+                               status='not_found', info=None, plan=None, role=role,
+                               cabinet=cabinet, order_id=order_id), 404
 
     p_user_id, item_code, p_status, payment_id = row[0], row[1], row[2], row[3]
     try:
@@ -451,7 +515,7 @@ def payment_return():
     if plan not in SEAT_PLANS:
         plan = None
     info = SEAT_PLANS.get(plan) if plan else None
-    role = getattr(current_user, 'role', '') or ''
+    retry_url = f"/payments/seats/checkout?plan={plan}" if plan else "/payments/seats/checkout"
 
     def _activate():
         return activate_seats_for_payment(current_user.id, plan, payment_id, order_id)
@@ -462,9 +526,10 @@ def payment_return():
         return render_template('payments/seat_result.html',
                                status='succeeded', info=info, plan=plan, role=role,
                                paid_amount=paid_amount, demo=True,
-                               expires=str(sub['expires_at'])[:16] if sub else None,
+                               expires=sub['expires_at'].strftime('%d.%m.%Y') if (sub and sub['expires_at']) else None,
                                seats=sub['seats'] if sub else None,
-                               cabinet='/teacher' if (getattr(current_user, 'role', '') or '') == 'teacher' else '/parent')
+                               seats_word=seats_word(sub['seats']) if sub else '',
+                               cabinet=cabinet, order_id=order_id)
 
     # Реальный платёж: перепроверяем статус в API ЮKassa
     cfg = _yk_config()
@@ -487,16 +552,84 @@ def payment_return():
         return render_template('payments/seat_result.html',
                                status='succeeded', info=info, plan=plan, role=role,
                                paid_amount=paid_amount,
-                               expires=str(sub['expires_at'])[:16] if sub else None,
+                               expires=sub['expires_at'].strftime('%d.%m.%Y') if (sub and sub['expires_at']) else None,
                                seats=sub['seats'] if sub else None,
-                               cabinet='/teacher' if (getattr(current_user, 'role', '') or '') == 'teacher' else '/parent')
+                               seats_word=seats_word(sub['seats']) if sub else '',
+                               cabinet=cabinet, order_id=order_id)
 
     if p_status == 'canceled':
         return render_template('payments/seat_result.html',
-                               status='canceled', info=info, plan=plan, role=role, paid_amount=paid_amount)
+                               status='canceled', info=info, plan=plan, role=role,
+                               paid_amount=paid_amount, cabinet=cabinet,
+                               retry_url=retry_url, order_id=order_id)
 
     return render_template('payments/seat_result.html',
-                           status='pending', info=info, plan=plan, role=role, paid_amount=paid_amount)
+                           status='pending', info=info, plan=plan, role=role,
+                           paid_amount=paid_amount, cabinet=cabinet,
+                           retry_url=retry_url, order_id=order_id)
+
+
+# ── Статус заказа (опрос со страницы «платёж в обработке») ──────────────
+
+@seat_pay_bp.route('/payments/seats/status', methods=['GET'])
+@login_required
+def payment_status():
+    """JSON: {status: pending|succeeded|canceled|not_found, redirect?}.
+
+    Страница результата опрашивает его каждые несколько секунд, пока ЮKassa
+    не подтвердит платёж — пользователю не нужно обновлять страницу вручную.
+    При succeeded подписка активируется здесь же (идемпотентно).
+    """
+    order_id = request.args.get('order_id') or ''
+    if not order_id:
+        return jsonify({'status': 'not_found'}), 404
+    try:
+        row = db.session.execute(text(
+            "SELECT user_id, item_code, status, payment_id"
+            " FROM yookassa_payments WHERE order_id = :oid LIMIT 1"
+        ), {'oid': order_id}).fetchone()
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[seat_pay] status lookup failed: %r', e)
+        row = None
+    if not row:
+        return jsonify({'status': 'not_found'}), 404
+    if row[0] != current_user.id:
+        abort(403)
+    p_status, payment_id = row[2], row[3]
+
+    cfg = _yk_config()
+    if p_status not in ('succeeded', 'canceled') and cfg.get('configured') \
+            and payment_id and not str(payment_id).startswith('demo_'):
+        try:
+            resp = requests.get(
+                f"{YOOKASSA_API_BASE}/payments/{payment_id}",
+                auth=(cfg['shop_id'], cfg['secret_key']),
+                timeout=10,
+            )
+            if resp.status_code == 200:
+                remote = resp.json() or {}
+                p_status = remote.get('status') or p_status
+                if p_status in ('succeeded', 'canceled'):
+                    try:
+                        db.session.execute(text(
+                            "UPDATE yookassa_payments SET status = :st WHERE order_id = :oid"
+                        ), {'st': p_status, 'oid': order_id})
+                        db.session.commit()
+                    except Exception:  # noqa: BLE001
+                        db.session.rollback()
+        except Exception as e:  # noqa: BLE001
+            logger.warning('[seat_pay] status verify failed: %r', e)
+
+    if p_status == 'succeeded':
+        plan = resolve_seat_plan(row[1]) if row[1] else None
+        if plan in SEAT_PLANS:
+            activate_seats_for_payment(current_user.id, plan, payment_id, order_id)
+        return jsonify({'status': 'succeeded',
+                        'redirect': url_for('seat_pay.payment_return', order_id=order_id)})
+    if p_status == 'canceled':
+        return jsonify({'status': 'canceled',
+                        'redirect': url_for('seat_pay.payment_return', order_id=order_id)})
+    return jsonify({'status': 'pending'})
 
 
 def install_seat_pay(app, register=None) -> None:

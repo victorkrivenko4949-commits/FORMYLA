@@ -420,8 +420,8 @@ def teacher_group_add_student(gid: int):
         return redirect('/demo')
     if not gate['can_add']:
         flash(f'Места закончились: {gate["used"]} из {gate["seats"]}. '
-              'Расширить тариф можно в разделе «Тарифы».', 'error')
-        return redirect('/tariffs/teacher')
+              'Выберите тариф крупнее — места добавятся сразу после оплаты.', 'error')
+        return redirect('/payments/seats/checkout?upgrade=1')
 
     nickname = (request.form.get('nickname', '') or '').strip()
     if not nickname:
@@ -1136,8 +1136,8 @@ def parent_bind_child():
         return redirect('/demo')
     if not gate['can_add']:
         flash(f'Места закончились: {gate["used"]} из {gate["seats"]}. '
-              'Расширить тариф можно в разделе «Тарифы».', 'error')
-        return redirect('/tariffs/parent')
+              'Выберите тариф крупнее — места добавятся сразу после оплаты.', 'error')
+        return redirect('/payments/seats/checkout?upgrade=1')
 
     nickname = (request.form.get('child_nickname', '') or '').strip()
     if not nickname:

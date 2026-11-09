@@ -296,9 +296,12 @@
             </div>
         </div>
         {% if seat and seat.sub %}
-        <a href="/tariffs/teacher" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 12px; background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; text-decoration: none; font-weight: 700; font-size: 15px; white-space: nowrap;">Расширить тариф →</a>
+        <a href="/payments/seats/checkout?upgrade=1" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 12px; background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; text-decoration: none; font-weight: 700; font-size: 15px; white-space: nowrap;">Расширить тариф →</a>
         {% else %}
-        <a href="/demo" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 12px; background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; text-decoration: none; font-weight: 700; font-size: 15px; white-space: nowrap;">Добавить учеников →</a>
+        <div style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+            <a href="/demo" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 12px; background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; text-decoration: none; font-weight: 700; font-size: 15px; white-space: nowrap;">Добавить учеников →</a>
+            <a href="/payments/seats/checkout" style="color: var(--muted); font-size: 13px; text-decoration: none; white-space: nowrap;">Сразу к оплате →</a>
+        </div>
         {% endif %}
     </div>
     {% endif %}

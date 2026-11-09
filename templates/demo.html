@@ -412,7 +412,7 @@ function openPay(title, price, what) {
 function closePay() { document.getElementById('payOverlay').classList.remove('open'); }
 function payGo() {
   if (REAL_PAY) {
-    window.location.href = '/payments/seats/checkout?plan=' + REAL_PLAN;
+    window.location.href = '/payments/seats/checkout';  // тариф подберётся по занятым местам
     return;
   }
   var p = document.querySelector('.pay-card');
