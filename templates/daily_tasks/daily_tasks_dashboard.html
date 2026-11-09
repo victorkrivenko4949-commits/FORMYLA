@@ -880,7 +880,7 @@
           {% if p.day_label %}<span style="font-size:11px;color:var(--muted);margin-left:auto;">{{ p.day_label }}</span>{% endif %}
         </div>
         <div style="font-weight:700;color:var(--text);font-size:13px;margin-top:4px;">
-          {% if p.lesson_type == 'rest' %}Отдых{% else %}{{ p.lesson_label }}{% if p.lesson_type == 'practice' and p.theme %}<span style="color:var(--muted);font-weight:500;"> · {{ p.theme }}</span>{% endif %}{% if p.lesson_type == 'method' and p.method_name %}<span style="color:var(--muted);font-weight:500;"> · {{ p.method_name }}</span>{% endif %}{% if p.lesson_type == 'probnik' and p.probnik_title %}<span style="color:var(--muted);font-weight:500;"> · {{ p.probnik_title }}</span>{% endif %}{% endif %}
+          {% if p.lesson_type == 'rest' %}Отдых{% else %}{{ p.lesson_label }}{% if p.lesson_type == 'practice' and p.theme %}<span style="color:var(--muted);font-weight:500;"> · {{ p.theme_title or p.theme }}</span>{% endif %}{% if p.lesson_type == 'method' and p.method_name %}<span style="color:var(--muted);font-weight:500;"> · {{ p.method_name }}</span>{% endif %}{% if p.lesson_type == 'probnik' and p.probnik_title %}<span style="color:var(--muted);font-weight:500;"> · {{ p.probnik_title }}</span>{% endif %}{% endif %}
         </div>
       </div>
       {% endfor %}
@@ -889,7 +889,7 @@
     <div style="display:flex;align-items:flex-start;gap:8px;margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(255,179,71,0.12);border:1px solid rgba(255,179,71,0.4);">
       <div style="font-size:13px;color:var(--text);line-height:1.5;">
         <b>В долгу: {{ _s.debts_count }} {{ 'занятие' if _s.debts_count == 1 else 'занятий' }}</b> — план уже идёт дальше, пропуски записаны:
-        <span style="color:var(--muted);">{% for d in _s.debts %}{{ d.lesson_label }}{% if d.theme %} ({{ d.theme }}){% elif d.method_name %} ({{ d.method_name }}){% elif d.probnik_title %} ({{ d.probnik_title }}){% endif %}{{ '; ' if not loop.last }}{% endfor %}</span>
+        <span style="color:var(--muted);">{% for d in _s.debts %}{{ d.lesson_label }}{% if d.theme %} ({{ d.theme_title or d.theme }}){% elif d.method_name %} ({{ d.method_name }}){% elif d.probnik_title %} ({{ d.probnik_title }}){% endif %}{{ '; ' if not loop.last }}{% endfor %}</span>
       </div>
     </div>
     {% endif %}

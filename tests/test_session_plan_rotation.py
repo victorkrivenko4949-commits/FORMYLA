@@ -616,3 +616,31 @@ def test_debt_accrual_is_atomic_on_failure(pilot_user, monkeypatch):
         f'{info["debts_count"]}')
     row = [l for l in _all_lessons(uid) if l['seq'] == 1][0]
     assert row['status'] == 'skipped'
+
+
+def test_theme_shows_human_title_not_slug(pilot_user):
+    """Владелец (03.11.2026): тема в интерфейсе и контексте ИИ-куратора —
+    человекочитаемое название, а не слаг G9_T05. session_info отдаёт
+    theme_title рядом со слагом (слаг остаётся для логики банка задач)."""
+    from sqlalchemy import text
+    from models import db as _db
+
+    uid = pilot_user.id
+    lesson = session_plan.current_lesson(uid)
+    _db.session.execute(text(
+        "UPDATE curator_lessons SET theme = 'G9_T05' WHERE id = :lid"),
+        {'lid': lesson['id']})
+    _db.session.commit()
+
+    info = session_plan.session_info(uid)
+    assert info['theme'] == 'G9_T05'  # слаг остаётся для логики
+    assert info['theme_title'] == 'Многочлены и алгебраические тождества'
+    assert info['plan'][0]['theme_title'] == (
+        'Многочлены и алгебраические тождества')
+
+    # пропущенное занятие с темой уходит в долг — и там название, не слаг
+    _backdate(uid, lesson['id'], days=1)
+    info = session_plan.session_info(uid)
+    debt = [d for d in info['debts'] if d['seq'] == lesson['seq']][0]
+    assert debt['theme'] == 'G9_T05'
+    assert debt['theme_title'] == 'Многочлены и алгебраические тождества'

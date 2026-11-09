@@ -335,6 +335,7 @@ def build_context(user_id: int, since: Optional[datetime] = None,
                 'position': s.get('position_in_block'),
                 'current_type': s.get('lesson_label'),
                 'theme': s.get('theme'),
+                'theme_title': s.get('theme_title'),
                 'method_name': s.get('method_name'),
                 'probnik_title': s.get('probnik_title'),
                 'debts_count': s.get('debts_count', 0),
@@ -429,7 +430,11 @@ def _context_block(ctx: Dict[str, Any]) -> str:
             f"- ротация занятий: завершено {rot.get('completed', 0)}; "
             f"сейчас занятие {rot.get('position')} из 6 — {rot.get('current_type')}")
         if rot.get('theme'):
-            lines.append(f"- тема текущей практики: {rot['theme']}")
+            # ИИ-куратору нужна человекочитаемая тема («Многочлены и
+            # алгебраические тождества»), а не слаг G9_T05 — иначе слаг
+            # попадает в сообщения ученику.
+            _theme_display = rot.get('theme_title') or rot['theme']
+            lines.append(f"- тема текущей практики: {_theme_display}")
         if rot.get('method_name'):
             lines.append(f"- текущий метод: {rot['method_name']}")
         if rot.get('probnik_title'):
