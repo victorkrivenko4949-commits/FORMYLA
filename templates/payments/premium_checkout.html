@@ -240,6 +240,10 @@
       {% if beneficiary %}Оплатить {{ pay_amount }} ₽ для {{ beneficiary }}{% else %}Оплатить {{ pay_amount }} ₽{% endif %}
     </button>
 
+    <div class="pm-trial-row">
+      Или сначала — <a href="/subscribe">попробовать день бесплатно</a>
+    </div>
+
     {% if not beneficiary %}
     {% set pl_plan = plan %}{% set pl_id = 'checkout' %}{% set pl_amount = pay_amount %}
     {% include 'payments/_parent_paylink_button.html' %}
@@ -262,14 +266,8 @@
     </div>
     {% endif %}
 
-    <div class="pm-trial-row">
-      Или сначала — <a href="/subscribe">попробовать день бесплатно</a>
-    </div>
-
     <div class="pm-pay-notes">
-      <div>💳 Оплата через ЮKassa: Мир, Visa, Mastercard, СБП</div>
-      <div>⚡ Premium открывается сразу после оплаты{% if beneficiary %} — у ученика {{ beneficiary }}{% endif %}</div>
-      <div>🛡 Отменить можно в любой момент</div>
+      <div>💳 Оплата через ЮKassa: Мир, Visa, Mastercard, СБП · ⚡ Premium открывается сразу после оплаты{% if beneficiary %} — у ученика {{ beneficiary }}{% endif %} · 🛡 Отменить можно в любой момент</div>
     </div>
 
     {% if not beneficiary and recurring_enabled %}
