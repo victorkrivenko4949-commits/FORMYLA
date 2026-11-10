@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Перечень олимпиад: список и диплом на меловой доске">
+<defs><radialGradient id="g" cx="60%" cy="40%" r="70%"><stop offset="0" stop-color="#1c2a4d"/><stop offset="1" stop-color="#0b1428"/></radialGradient><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#fff" stroke-opacity=".06"/></pattern></defs>
+<rect width="800" height="800" fill="url(#g)"/><rect width="800" height="800" fill="url(#grid)"/>
+<g fill="none" stroke-linejoin="round"><rect x="190" y="170" width="410" height="470" rx="8" stroke="#fff" stroke-width="5"/><path d="M235 230H550M305 330H530M305 420H530M305 510H450" stroke="#94a3b8" stroke-width="4"/><path d="m235 325 15 15 30-35m-45 110 15 15 30-35m-45 110 15 15 30-35" stroke="#5eead4" stroke-width="5"/><circle cx="565" cy="565" r="64" stroke="#f4a259" stroke-width="5"/><path d="m530 620-10 70 45-25 40 25-8-70" stroke="#f4a259" stroke-width="4"/></g>
+<text x="541" y="582" font-size="52" fill="#f4a259" font-family="Georgia,serif">I</text><text x="60" y="110" font-size="30" fill="#cbd5e1" font-family="Georgia,serif">Уровни 1 · 2 · 3</text><text x="60" y="750" font-size="26" font-weight="800" fill="#f4a259" font-family="system-ui,sans-serif" letter-spacing="5">ПЕРЕЧЕНЬ · ДИПЛОМ</text>
+</svg>

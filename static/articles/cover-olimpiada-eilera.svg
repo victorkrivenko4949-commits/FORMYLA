@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Олимпиада Эйлера: граф и математическая формула">
+<defs><radialGradient id="g" cx="60%" cy="40%" r="70%"><stop offset="0" stop-color="#1c2a4d"/><stop offset="1" stop-color="#0b1428"/></radialGradient><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#fff" stroke-opacity=".06"/></pattern></defs>
+<rect width="800" height="800" fill="url(#g)"/><rect width="800" height="800" fill="url(#grid)"/>
+<g fill="none" stroke-linejoin="round" stroke-width="4"><path d="m180 520 130-260 270 40 90 250-290 70Z" stroke="#fff"/><path d="M310 260 380 620 580 300 180 520 670 550" stroke="#94a3b8" stroke-dasharray="10 8"/><path d="m180 520 130-260 270 40 90 250" stroke="#f4a259" stroke-width="6"/></g>
+<g fill="#5eead4"><circle cx="180" cy="520" r="10"/><circle cx="310" cy="260" r="10"/><circle cx="580" cy="300" r="10"/><circle cx="670" cy="550" r="10"/><circle cx="380" cy="620" r="10"/></g>
+<text x="60" y="110" font-size="38" fill="#cbd5e1" font-family="Georgia,serif">V − E + F = 2</text><text x="60" y="750" font-size="26" font-weight="800" fill="#f4a259" font-family="system-ui,sans-serif" letter-spacing="5">ЭЙЛЕР · 8 КЛАСС</text>
+</svg>

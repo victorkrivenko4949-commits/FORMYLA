@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Пятый и шестой классы: первые задачи на фигуры и смекалку">
+<defs><radialGradient id="g" cx="60%" cy="40%" r="70%"><stop offset="0" stop-color="#1c2a4d"/><stop offset="1" stop-color="#0b1428"/></radialGradient><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#fff" stroke-opacity=".06"/></pattern></defs>
+<rect width="800" height="800" fill="url(#g)"/><rect width="800" height="800" fill="url(#grid)"/>
+<g fill="none" stroke-width="5" stroke-linejoin="round"><path d="m180 260 240 0-120 210Z" stroke="#fff"/><rect x="410" y="360" width="220" height="220" stroke="#5eead4"/><path d="m410 360 220 220M410 580l220-220" stroke="#94a3b8" stroke-dasharray="10 8"/><circle cx="245" cy="570" r="65" stroke="#f4a259"/><path d="M480 220h130m-65-65v130" stroke="#f4a259"/></g>
+<text x="230" y="360" font-size="70" fill="#fff" font-family="Georgia,serif">5</text><text x="496" y="495" font-size="70" fill="#fff" font-family="Georgia,serif">6</text><text x="60" y="110" font-size="30" fill="#cbd5e1" font-family="Georgia,serif">Начинаем со смекалки</text><text x="60" y="750" font-size="26" font-weight="800" fill="#f4a259" font-family="system-ui,sans-serif" letter-spacing="5">5–6 КЛАССЫ · СТАРТ</text>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Четыре ступени Всероссийской олимпиады школьников">
+<defs><radialGradient id="g" cx="60%" cy="40%" r="70%"><stop offset="0" stop-color="#1c2a4d"/><stop offset="1" stop-color="#0b1428"/></radialGradient><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#fff" stroke-opacity=".06"/></pattern></defs>
+<rect width="800" height="800" fill="url(#g)"/><rect width="800" height="800" fill="url(#grid)"/>
+<path d="M100 660H220V540H350V420H480V300H610V180H710" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/><path d="M130 560Q360 310 650 110m-45 0h45v45" fill="none" stroke="#f4a259" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 8"/>
+<g fill="#5eead4"><circle cx="220" cy="540" r="8"/><circle cx="350" cy="420" r="8"/><circle cx="480" cy="300" r="8"/><circle cx="610" cy="180" r="8"/></g>
+<g font-family="Georgia,serif" font-size="42" fill="#fff"><text x="160" y="620">1</text><text x="290" y="500">2</text><text x="420" y="380">3</text><text x="550" y="260">4</text></g>
+<text x="60" y="110" font-size="30" fill="#cbd5e1" font-family="Georgia,serif">От школьного до финала</text><text x="60" y="750" font-size="26" font-weight="800" fill="#f4a259" font-family="system-ui,sans-serif" letter-spacing="5">ВСОШ · ЧЕТЫРЕ ЭТАПА</text>
+</svg>

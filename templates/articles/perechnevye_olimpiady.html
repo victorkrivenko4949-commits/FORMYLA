@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Перечневые олимпиады по математике: что это и почему они важнее рейтинга школы | FORMYLA.net{% endblock %}
+{% block meta_description %}Что такое перечневые олимпиады по математике, чем отличаются уровни 1–3, какие льготы дают дипломы (БВИ и 100 баллов ЕГЭ) и какие перечневые олимпиады есть в каталоге FORMYLA.{% endblock %}
+{% block extra_css %}{% include "articles/_seo_styles.html" %}{% endblock %}
+{% block content %}
+<div class="fa">
+<div class="fa-progress" aria-hidden="true"><div class="fa-progress__bar" id="faBar"></div></div>
+<section class="fa-hero fa-hero--ft">
+  <img class="fa-hero__img" src="{{ url_for('static', filename='articles/cover-perechnevye-olimpiady.svg') }}" alt="Поступление: меловая схема на тёмной доске" width="800" height="800">
+  <div class="fa-hero__shade"></div>
+  <div class="fa-hero__inner">
+    <p class="fa-kicker"><span>Поступление</span> Перечневые олимпиады</p>
+    <h1>Перечневые олимпиады по математике: что это и почему они важнее рейтинга школы</h1>
+    <p class="fa-hero__lead">Слово «перечневые» звучит бюрократически, но за ним скрывается самая практичная часть олимпиадного мира: именно эти олимпиады дают льготы при поступлении в вузы. Разбираем простыми словами, что такое Перечень РСОШ, зачем нужны уровни и какие перечневые олимпиады по математике есть в каталоге FORMYLA.</p>
+  </div>
+</section>
+<div class="fa-hud" id="faHud" role="navigation" aria-label="Карта статьи"><ol>
+  <li><a href="#chapter-0" data-step="0"><i>0</i><span>Перечень</span></a></li>
+  <li><a href="#chapter-1" data-step="1"><i>1</i><span>Уровни</span></a></li>
+  <li><a href="#chapter-2" data-step="2"><i>2</i><span>Льготы</span></a></li>
+  <li><a href="#chapter-3" data-step="3"><i>3</i><span>Каталог</span></a></li>
+  <li><a href="#chapter-4" data-step="4"><i>4</i><span>Стратегия</span></a></li>
+  <li><a href="#chapter-5" data-step="5"><i>5</i><span>Старт</span></a></li>
+</ol></div>
+<div class="fa-page"><article id="faArticle">
+<section class="fa-chapter fa-chapter--wide" id="chapter-0" data-step="0">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 0 · Перечень</p>
+<h2>Что такое Перечень РСОШ</h2>
+</div>
+<ul class="fa-kpi">
+<li><b>1–3</b><span>уровни Перечня</span></li>
+<li><b>100</b><span>баллов ЕГЭ: один из видов льгот</span></li>
+<li><b>3–4</b><span>олимпиады в стратегии сезона</span></li>
+<li><b>102</b><span>метода для подготовки</span></li>
+</ul>
+<div class="fa-col">
+<p>Каждый учебный год Минпросвещения утверждает официальный список олимпиад школьников, дающих льготы при поступлении, — его и называют «Перечень» (РСОШ — «российские соревнования школьников» <span class="fa-chip fa-chip--review">[УТОЧНИТЬ: формулировку официального названия — при публикации проверить на rsr-olympiads.ru]</span>). Если олимпиады нет в Перечне — её диплом при поступлении ничего не даёт, сколько бы медалей ни вручали.</p>
+<p>Важно: Всероссийская олимпиада школьников (ВсОШ) в Перечень не входит — она стоит особняком и даёт максимальные льготы: победители и призёры её финала поступают в любой вуз России без экзаменов. Подробнее — на <a href="https://formyla.net/olympiad-prep/vsosh">странице ВсОШ</a>.</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-1" data-step="1">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 1 · Уровни</p>
+<h2>Уровни: 1, 2 и 3</h2>
+<p>Каждой олимпиаде в Перечне присваивается уровень — от 1 (самый высокий) до 3. Практический смысл:</p>
+<ul>
+<li><strong>Уровень 1</strong> — диплом может давать поступление без вступительных испытаний (БВИ) или 100 баллов ЕГЭ по предмету в большинстве вузов.</li>
+<li><strong>Уровень 2 и 3</strong> — льготы обычно скромнее: 100 баллов за ЕГЭ в части вузов или дополнительные баллы к сумме.</li>
+</ul>
+<p>Условия каждый вуз публикует сам на сайте приёмной комиссии, и они различаются. Общий принцип такой: диплом уровня 1 + подтверждение ЕГЭ (обычно от 75 баллов по профильному предмету) = либо зачисление без экзаменов, либо автоматические 100 баллов.</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-2" data-step="2">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 2 · Льготы</p>
+<h2>Что такое БВИ и «100 баллов»</h2>
+<ul>
+<li><strong>БВИ</strong> — «без вступительных испытаний»: вуз зачисляет по олимпиадному диплому, ЕГЭ сдать нужно только на подтверждение (порог обычно 75 баллов).</li>
+<li><strong>100 баллов</strong> — диплом засчитывается как 100 баллов ЕГЭ по профильному предмету вместо твоего реального результата.</li>
+</ul>
+<p>Это работает как страховка: плохой день на ЕГЭ перестаёт быть катастрофой. Более подробно про БВИ и 100 баллов — в нашем гайде <a href="https://formyla.net/olympiad-start">«Как войти в олимпиадную математику»</a>.</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-3" data-step="3">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 3 · Каталог</p>
+<h2>Перечневые олимпиады в каталоге FORMYLA</h2>
+<p>Из олимпиад сезона 2026/2027 в нашем каталоге уровень 1 Перечня имеют:</p>
+</div><div class="fa-table-scroll" tabindex="0" role="region" aria-label="Таблица: прокрутка по горизонтали"><table>
+<thead>
+<tr>
+<th scope="col">Олимпиада</th>
+<th scope="col">Классы</th>
+<th scope="col">Комментарий</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Турнир городов (№ 58 в Перечне 2026/27)</td>
+<td>8–11</td>
+<td>в зачёт 3 лучшие задачи; в Москве весной вместо него пишется ММО</td>
+</tr>
+<tr>
+<td>«Ломоносов» (МГУ)</td>
+<td>5–11</td>
+<td>отбор онлайн, финал очно</td>
+</tr>
+<tr>
+<td>«Высшая проба» (НИУ ВШЭ)</td>
+<td>7–11</td>
+<td>отбор в два тура</td>
+</tr>
+<tr>
+<td>Московская математическая (ММО)</td>
+<td>8–11</td>
+<td>одна из самых сложных в стране</td>
+</tr>
+<tr>
+<td>«Покори Воробьёвы горы!»</td>
+<td>5–11 (финал 7–11)</td>
+<td>ориентирована на школьников из регионов</td>
+</tr>
+</tbody>
+</table></div><div class="fa-col">
+<p>Даты и статусы регистрации всех этих олимпиад — в <a href="https://formyla.net/olympiad-prep/calendar">календаре FORMYLA</a>: клик на карточку открывает пошаговую инструкцию по регистрации.</p>
+<p>Олимпиады «Физтех» (МФТИ), «Курчатов», СПбГУ, «Росатом» и «Формула Единства» также проводятся вузами и дают льготы — их условия и уровни по профилю «математика» на сезон 2026/2027 <span class="fa-chip fa-chip--review">[УТОЧНИТЬ: сверить актуальные уровни в Перечне на rsr-olympiads.ru]</span>. Их страницы в каталоге: <a href="https://formyla.net/olympiad-prep/phystech">Физтех</a>, <a href="https://formyla.net/olympiad-prep/kurchatov">Курчатов</a>, <a href="https://formyla.net/olympiad-prep/spbgu">СПбГУ</a>, <a href="https://formyla.net/olympiad-prep/rosatom">Росатом</a>, <a href="https://formyla.net/olympiad-prep/formula-unity">Формула Единства</a>.</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-4" data-step="4">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 4 · Стратегия</p>
+<h2>Стратегия: как использовать Перечень</h2>
+<ol>
+<li><strong>Выбери 3–4 олимпиады, а не все десять.</strong> Перечень — это меню, а не чек-лист. Один-два «флагмана» по силам + одна-две «запасных» попроще (например, ПВГ — сложность 3/5).</li>
+<li><strong>Смотри не на название, а на условия твоего вуза.</strong> МГУ, ВШЭ, МФТИ и СПбГУ публикуют разные условия для одного и того же диплома.</li>
+<li><strong>Учитывай календарь.</strong> Отборы «Ломоносова», СПбГУ и ПВГ идут параллельно в декабре — распланируй месяц заранее.</li>
+<li><strong>Диплом действует 4 года</strong> — диплом, полученный в 8–9 классе, можно «погасить» при поступлении после 11.</li>
+</ol>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-5" data-step="5">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 5 · Старт</p>
+<h2>Если до перечневых пока далеко</h2>
+<p>Перечневые олимпиады сложнее школьных, но разрыв преодолевается быстрее, чем кажется. Что делать прямо сейчас:</p>
+<ul>
+<li>прочитать <a href="https://formyla.net/olympiad-start">«С чего начать»</a> — гайд для новичков;</li>
+<li>решать <a href="https://formyla.net/daily_tasks/">задачи дня</a> — по одной в день;</li>
+<li>разбирать <a href="https://formyla.net/olympiads/methods">102 метода решения олимпиадных задач</a> — с теорией и примерами;</li>
+<li>если в школе пятёрки, а на олимпиадах не идёт — вот <a href="https://formyla.net/articles/ot-shkoly-k-olimpiadam">почему так происходит и что делать</a>.</li>
+</ul>
+</div>
+</section>
+</article></div>
+</div>
+{% endblock %}
+{% block extra_js %}{% include "articles/_seo_scripts.html" %}{% endblock %}

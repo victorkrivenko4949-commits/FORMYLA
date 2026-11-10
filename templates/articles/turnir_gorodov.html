@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Турнир городов: олимпиада, где решают 3 задачи — и этого достаточно | FORMYLA.net{% endblock %}
+{% block meta_description %}Международный математический Турнир городов 2026/2027: базовый и сложный туры, даты (осенние туры прошли, весенний — февраль–март 2027), регистрация на turgor.ru, как засчитываются задачи.{% endblock %}
+{% block extra_css %}{% include "articles/_seo_styles.html" %}{% endblock %}
+{% block content %}
+<div class="fa">
+<div class="fa-progress" aria-hidden="true"><div class="fa-progress__bar" id="faBar"></div></div>
+<section class="fa-hero fa-hero--ft">
+  <img class="fa-hero__img" src="{{ url_for('static', filename='articles/cover-turnir-gorodov.svg') }}" alt="Турнир городов: меловая схема на тёмной доске" width="800" height="800">
+  <div class="fa-hero__shade"></div>
+  <div class="fa-hero__inner">
+    <p class="fa-kicker"><span>Турнир городов</span> Формат и стратегия</p>
+    <h1>Турнир городов: олимпиада, где решают 3 задачи — и этого достаточно</h1>
+    <p class="fa-hero__lead">Международный математический Турнир городов — одна из самых известных олимпиад для 8–11 классов (младшие — по желанию). У неё необычный формат и очень «честная» система оценки: в зачёт идут только три лучшие задачи, поэтому побеждает не тот, кто начал больше, а тот, кто довёл решения до конца. Разбираем, как устроен Турнир в сезоне 2026/2027.</p>
+  </div>
+</section>
+<div class="fa-hud" id="faHud" role="navigation" aria-label="Карта статьи"><ol>
+  <li><a href="#chapter-0" data-step="0"><i>0</i><span>Об олимпиаде</span></a></li>
+  <li><a href="#chapter-1" data-step="1"><i>1</i><span>Даты</span></a></li>
+  <li><a href="#chapter-2" data-step="2"><i>2</i><span>Формат</span></a></li>
+  <li><a href="#chapter-3" data-step="3"><i>3</i><span>3 задачи</span></a></li>
+  <li><a href="#chapter-4" data-step="4"><i>4</i><span>Результат</span></a></li>
+  <li><a href="#chapter-5" data-step="5"><i>5</i><span>Ошибки</span></a></li>
+  <li><a href="#chapter-6" data-step="6"><i>6</i><span>Подготовка</span></a></li>
+  <li><a href="#chapter-7" data-step="7"><i>7</i><span>До весны</span></a></li>
+</ol></div>
+<div class="fa-page"><article id="faArticle">
+<section class="fa-chapter fa-chapter--wide" id="chapter-0" data-step="0">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 0 · Об олимпиаде</p>
+<h2>Что за олимпиада</h2>
+</div>
+<ul class="fa-kpi">
+<li><b>3</b><span>лучшие задачи идут в зачёт</span></li>
+<li><b>5</b><span>часов на тур</span></li>
+<li><b>6–7</b><span>задач в варианте</span></li>
+<li><b>8–11</b><span>классы; младшие по желанию</span></li>
+</ul>
+<div class="fa-col">
+<ul>
+<li><strong>Классы:</strong> 8–11 (младшие — по желанию).</li>
+<li><strong>Статус:</strong> № 58 в Перечне РСОШ 2026/27, уровень 1 — то есть диплом даёт льготы при поступлении.</li>
+<li><strong>Сложность:</strong> 4/5. Базовый вариант — средняя сложность, сложный — сопоставим с финалом ВсОШ.</li>
+<li><strong>География:</strong> пишут более чем в 100 городах России и 30 странах.</li>
+</ul>
+<p>Проводится дважды в год — осенью и весной; в каждом сезоне базовый и сложный туры. Писать можно один из них или оба — на сложный тур можно прийти, даже если не писал базовый.</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-1" data-step="1">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 1 · Даты</p>
+<h2>Даты сезона 2026/2027</h2>
+</div><div class="fa-table-scroll" tabindex="0" role="region" aria-label="Таблица: прокрутка по горизонтали"><table>
+<thead>
+<tr>
+<th scope="col">Событие</th>
+<th scope="col">Когда</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Осенний базовый тур</td>
+<td>4 октября 2026 — прошёл</td>
+</tr>
+<tr>
+<td>Осенний сложный тур</td>
+<td>18 октября 2026 — прошёл</td>
+</tr>
+<tr>
+<td>Регистрация на осенние туры</td>
+<td>закрылась 17 октября 2026</td>
+</tr>
+<tr>
+<td>Весенний тур</td>
+<td>февраль – март 2027 (даты объявят позднее)</td>
+</tr>
+<tr>
+<td>Устный тур для 11 класса</td>
+<td>конец марта 2027 (по результатам письменных туров)</td>
+</tr>
+</tbody>
+</table></div><div class="fa-col">
+<p>Регистрация в личном кабинете на <a href="https://turgor.ru/">turgor.ru</a> — для Москвы; в других городах — у местных организаторов. Весенний тур откроет новую регистрацию. Статусы и карточка олимпиады — в <a href="https://formyla.net/olympiad-prep/calendar">календаре FORMYLA</a>.</p>
+<p>Важно для москвичей: в Москве весенний тур Тургора не проводится — вместо него пишется <a href="https://formyla.net/olympiad-prep/mmo">Московская математическая олимпиада</a>.</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-2" data-step="2">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 2 · Формат</p>
+<h2>Формат</h2>
+<p>Очно, 5 часов, 6–7 задач. Начало туров в Москве — в 10:00, опоздавших могут не пустить. Приходить нужно с распечатанной анкетой из личного кабинета и документом с фото (паспорт или справка из школы).</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-3" data-step="3">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 3 · 3 задачи</p>
+<h2>Почему «3 задачи достаточно»</h2>
+<p>В зачёт идут только три лучшие задачи. Отсюда стратегия: лучше полностью решить две-три задачи с полным обоснованием, чем «начать» все шесть. Оценивается глубина и полнота решения, а не количество попыток.</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-4" data-step="4">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 4 · Результат</p>
+<h2>Что даёт Турнир городов</h2>
+<ul>
+<li>Диплом 1 уровня — льготы при поступлении (для 11 класса устный тур как раз даёт льготы в вузы).</li>
+<li>Приглашение на Летнюю конференцию Турнира для 9–10 классов — туда попадают по результатам письменных туров.</li>
+</ul>
+<p>Отличие от ВсОШ ещё и в том, что Турнир — международный: писать его можно в десятках городов России и в других странах, и задачи одни для всех. Поэтому диплом Тургора одинаково понятен и школьнику из небольшого города, и москвичу — география на оценку не влияет.</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-5" data-step="5">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 5 · Ошибки</p>
+<h2>Типичные ошибки участников</h2>
+<ul>
+<li>Думать, что регистрация закрылась после базового тура, — на сложный тур ещё можно зарегистрироваться.</li>
+<li>Прийти без распечатанной анкеты.</li>
+<li>Пытаться решить все задачи понемногу: засчитываются только 3 лучшие — доводи решения до конца.</li>
+<li>Опоздать к 10:00 — старт у всех одновременно.</li>
+<li>Для 11 класса: пропустить устный тур, который как раз и даёт льготы в вузы.</li>
+</ul>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-6" data-step="6">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 6 · Подготовка</p>
+<h2>Как готовиться к Тургору</h2>
+<p>Стиль Тургора очень узнаваем — поэтому главный совет из карточки олимпиады: разбирай задачи прошлых лет на turgor.ru. Дальше — стандартная база:</p>
+<ul>
+<li><a href="https://formyla.net/olympiads/methods">102 метода решения олимпиадных задач</a> — приёмы, из которых состоят тургоровские задачи;</li>
+<li><a href="https://formyla.net/daily_tasks/">задачи дня</a> — регулярность важнее объёма;</li>
+<li><a href="https://formyla.net/olympiad-start">гайд для новичков</a> — если олимпиадный мир для тебя новый;</li>
+<li><a href="https://formyla.net/articles/ot-shkoly-k-olimpiadam">почему школьные пятёрки не работают на олимпиадах</a> — и что с этим делать.</li>
+</ul>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-7" data-step="7">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 7 · До весны</p>
+<h2>Что делать, пока весенний тур не объявили</h2>
+<p>Пока регистрация на весенний тур закрыта, есть куда приложить силы: отборочные этапы «Ломоносова» и СПбГУ идут в ноябре – декабре, в декабре открывается ПВГ, а в феврале пройдёт региональный этап <a href="https://formyla.net/olympiad-prep/vsosh">ВсОШ</a>. Полный список с датами — в <a href="https://formyla.net/olympiad-prep/calendar">календаре олимпиад</a>.</p>
+</div>
+</section>
+</article></div>
+</div>
+{% endblock %}
+{% block extra_js %}{% include "articles/_seo_scripts.html" %}{% endblock %}
