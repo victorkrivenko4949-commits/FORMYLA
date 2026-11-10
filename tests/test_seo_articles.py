@@ -75,11 +75,11 @@ class Page(HTMLParser):
 
 
 CASES = [
-    ("kalendar-olimpiad-2026-2027", "calendar-2026-2027", "Календарь олимпиад", 7, 1),
+    ("kalendar-olimpiad-2026-2027", "calendar-2026-2027", "Календарь олимпиад", 7, 0),
     ("vsosh-etapy", "vsosh-etapy", "Всероссийская олимпиада", 6, 0),
-    ("olimpiady-9-klass", "olimpiady-9-klass", "для 9 класса", 4, 1),
-    ("olimpiady-5-6-klass", "olimpiady-5-6-klass", "для 5–6 классов", 5, 1),
-    ("perechnievye-olimpiady", "perechnevye-olimpiady", "Перечневые олимпиады", 6, 2),
+    ("olimpiady-9-klass", "olimpiady-9-klass", "для 9 класса", 4, 0),
+    ("olimpiady-5-6-klass", "olimpiady-5-6-klass", "для 5–6 классов", 5, 0),
+    ("perechnievye-olimpiady", "perechnevye-olimpiady", "Перечневые олимпиады", 6, 0),
     ("olimpiada-eilera", "olimpiada-eilera", "Олимпиада Эйлера", 7, 0),
     ("turnir-gorodov", "turnir-gorodov", "Турнир городов", 8, 0),
     ("plan-podgotovki", "plan-podgotovki", "Как подготовиться", 8, 0),
