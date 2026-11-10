@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Олимпиада Эйлера для 8 класса: «младшая ВсОШ», до которой добраться проще, чем кажется | FORMYLA.net{% endblock %}
+{% block meta_description %}Олимпиада имени Эйлера для 8 класса в сезоне 2026/2027: дистанционные туры 8 ноября и 6 декабря на matol.ru, региональный и заключительный этапы, регистрация, типичные ошибки.{% endblock %}
+{% block extra_css %}{% include "articles/_seo_styles.html" %}{% endblock %}
+{% block content %}
+<div class="fa">
+<div class="fa-progress" aria-hidden="true"><div class="fa-progress__bar" id="faBar"></div></div>
+<section class="fa-hero fa-hero--ft">
+  <img class="fa-hero__img" src="{{ url_for('static', filename='articles/cover-olimpiada-eilera.svg') }}" alt="Эйлер: меловая схема на тёмной доске" width="800" height="800">
+  <div class="fa-hero__shade"></div>
+  <div class="fa-hero__inner">
+    <p class="fa-kicker"><span>Эйлер</span> 8 класс и младше</p>
+    <h1>Олимпиада Эйлера для 8 класса: «младшая ВсОШ», до которой добраться проще, чем кажется</h1>
+    <p class="fa-hero__lead">У восьмиклассников есть своя собственная «Всероссийская» — олимпиада имени Леонарда Эйлера. По сложности региональный и заключительный этапы Эйлера соответствуют региональному и заключительному этапам ВсОШ для 9 класса, поэтому в олимпиадном мире её так и называют — «младшая ВсОШ». В сезоне 2026/2027 до первого тура ещё есть время: регистрация идёт на matol.ru прямо сейчас.</p>
+  </div>
+</section>
+<div class="fa-hud" id="faHud" role="navigation" aria-label="Карта статьи"><ol>
+  <li><a href="#chapter-0" data-step="0"><i>0</i><span>Об олимпиаде</span></a></li>
+  <li><a href="#chapter-1" data-step="1"><i>1</i><span>Даты</span></a></li>
+  <li><a href="#chapter-2" data-step="2"><i>2</i><span>Участие</span></a></li>
+  <li><a href="#chapter-3" data-step="3"><i>3</i><span>Ошибки</span></a></li>
+  <li><a href="#chapter-4" data-step="4"><i>4</i><span>Результат</span></a></li>
+  <li><a href="#chapter-5" data-step="5"><i>5</i><span>Подготовка</span></a></li>
+  <li><a href="#chapter-6" data-step="6"><i>6</i><span>Параллельно</span></a></li>
+</ol></div>
+<div class="fa-page"><article id="faArticle">
+<section class="fa-chapter fa-chapter--wide" id="chapter-0" data-step="0">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 0 · Об олимпиаде</p>
+<h2>Коротко: что это за олимпиада</h2>
+</div>
+<ul class="fa-kpi">
+<li><b>8</b><span>класс и младше</span></li>
+<li><b>3</b><span>этапа олимпиады</span></li>
+<li><b>2</b><span>дистанционных тура</span></li>
+<li><b>4/5</b><span>сложность в каталоге</span></li>
+</ul>
+<div class="fa-col">
+<ul>
+<li><strong>Для кого:</strong> 8 класс (и младше).</li>
+<li><strong>Статус:</strong> в Перечне РСОШ; аналог регионального и заключительного этапов ВсОШ для восьмиклассников.</li>
+<li><strong>Сложность:</strong> 4/5 — дистанционный этап средний, дальше — уровень ВсОШ.</li>
+<li><strong>Три этапа:</strong> дистанционный (онлайн, 2 тура) → региональный → заключительный.</li>
+</ul>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-1" data-step="1">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 1 · Даты</p>
+<h2>Даты сезона 2026/2027</h2>
+</div><div class="fa-table-scroll" tabindex="0" role="region" aria-label="Таблица: прокрутка по горизонтали"><table>
+<thead>
+<tr>
+<th scope="col">Этап</th>
+<th scope="col">Когда</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Регистрация на matol.ru</td>
+<td>идёт, до туров</td>
+</tr>
+<tr>
+<td>Дистанционный этап — 1 тур</td>
+<td>8 ноября 2026, 9:00–14:00 МСК</td>
+</tr>
+<tr>
+<td>Дистанционный этап — 2 тур</td>
+<td>6 декабря 2026, 10:00–15:00 МСК</td>
+</tr>
+<tr>
+<td>Региональный этап</td>
+<td>конец января – начало февраля 2027</td>
+</tr>
+<tr>
+<td>Заключительный этап</td>
+<td>март – апрель 2027</td>
+</tr>
+</tbody>
+</table></div><div class="fa-col">
+<p>Оба дистанционных тура дают шанс: участвовать можно в любом количестве туров, и если не прошёл по первому — второй тур всё равно открыт. Актуальные статусы — в <a href="https://formyla.net/olympiad-prep/calendar">календаре FORMYLA</a>.</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-2" data-step="2">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 2 · Участие</p>
+<h2>Как участвовать: по шагам</h2>
+<ol>
+<li>Зарегистрируйся на <a href="https://www.matol.ru/">matol.ru</a> и подтверди e-mail.</li>
+<li>В личном кабинете запишись на дистанционный этап — можно сразу на оба тура.</li>
+<li>В день тура войди заранее: задания появляются ровно в указанное время.</li>
+<li>Решения загружай фото или сканом до конца тура и проверь, что файлы прикрепились.</li>
+<li>На региональный этап также проходят победители и призёры муниципального этапа ВсОШ за 8 класс — уточни условия в своём регионе.</li>
+</ol>
+<p>Региональный и заключительный этапы проходят очно и письменно; на очных этапах нужен документ, удостоверяющий личность, и справка из школы. Подробная карточка олимпиады — на <a href="https://formyla.net/olympiad-prep/euler">странице Эйлера в каталоге</a>.</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-3" data-step="3">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 3 · Ошибки</p>
+<h2>Типичные ошибки участников</h2>
+<ul>
+<li><strong>Перепутать время.</strong> Первый тур начинается в 9:00, второй — в 10:00 по Москве. Разница в час, а опоздавших онлайн-тур не ждёт.</li>
+<li><strong>Загрузить нечитаемые фото решений</strong> или не ту задачу. Проверяй файлы до отправки.</li>
+<li><strong>Отправить решения после окончания времени</strong> — они не принимаются, окно жёсткое.</li>
+<li><strong>Сдаться после первого тура.</strong> Второй тур 6 декабря — полноценный второй шанс.</li>
+</ul>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-4" data-step="4">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 4 · Результат</p>
+<h2>Что даёт олимпиада Эйлера</h2>
+<p>Диплом заключительного этапа — сильный аргумент при поступлении в профильные школы и при отборе на сборы. Но главное даже не диплом: Эйлер — это вход в «олимпиадную траекторию». Восьмиклассник, который прошёл дистанционный этап, на следующий год уже осознанно идёт на муниципальный и региональный этапы ВсОШ за 9 класс. Ещё один плюс для восьмиклассников: ВсОШ в 8 классе по математике регионального этапа не даёт — сама «младшая ВсОШ» только в 9 классе, — а Эйлер закрывает именно эту нишу.</p>
+<p>Отдельно стоит сказать про оценку решений: даже на дистанционном туре проверяется не только ответ, но и полнота обоснования. Это учит сразу писать решения так, как от них потребуется на очных этапах и на вузовских олимпиадах — навык, который потом работает на всех последующих турах.</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-5" data-step="5">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 5 · Подготовка</p>
+<h2>Как готовиться</h2>
+<p>Уровень Эйлера — это почти уровень регионального этапа ВсОШ за 9 класс, поэтому и готовиться стоит по тем же материалам:</p>
+<ul>
+<li>решай региональные этапы ВсОШ за 9 класс прошлых лет — это почти тот же уровень;</li>
+<li>разбери <a href="https://formyla.net/olympiads/methods">102 метода решения олимпиадных задач</a> — инвариант, чётность, принцип Дирихле и другие приёмы;</li>
+<li>поддерживай форму <a href="https://formyla.net/daily_tasks/">задачами дня</a>;</li>
+<li>если в школе пятёрки, а олимпиады «не идут» — прочитай <a href="https://formyla.net/articles/ot-shkoly-k-olimpiadam">разбор этой проблемы</a>;</li>
+<li>общий план старта — в гайде <a href="https://formyla.net/olympiad-start">«Как войти в олимпиадную математику»</a>.</li>
+</ul>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-6" data-step="6">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 6 · Параллельно</p>
+<h2>Параллельно с Эйлером</h2>
+<p>Декабрь у восьмиклассника плотный: второй тур Эйлера 6 декабря, заочный отбор СПбГУ до 1 декабря, регистрация на ПВГ с начала декабря. Распиши месяц по дням заранее — все даты в одном месте: <a href="https://formyla.net/olympiad-prep/calendar">календарь олимпиад FORMYLA</a>.</p>
+</div>
+</section>
+</article></div>
+</div>
+{% endblock %}
+{% block extra_js %}{% include "articles/_seo_scripts.html" %}{% endblock %}

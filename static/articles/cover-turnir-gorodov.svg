@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Условная сеть городов: три задачи Турнира городов">
+<defs><radialGradient id="g" cx="60%" cy="40%" r="70%"><stop offset="0" stop-color="#1c2a4d"/><stop offset="1" stop-color="#0b1428"/></radialGradient><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#fff" stroke-opacity=".06"/></pattern></defs>
+<rect width="800" height="800" fill="url(#g)"/><rect width="800" height="800" fill="url(#grid)"/>
+<path d="m130 470 200-220 280 80 80 250-300 30ZM130 470l480-140M330 250l60 360M330 250l360 330" fill="none" stroke="#94a3b8" stroke-width="3" stroke-dasharray="10 8"/><path d="m130 470 200-220 280 80" fill="none" stroke="#f4a259" stroke-width="5"/>
+<g fill="#0b1428" stroke="#fff" stroke-width="4"><circle cx="130" cy="470" r="24"/><circle cx="330" cy="250" r="24"/><circle cx="610" cy="330" r="24"/><circle cx="690" cy="580" r="18"/><circle cx="390" cy="610" r="18"/></g>
+<g font-family="Georgia,serif" font-size="34" fill="#f4a259"><text x="115" y="425">1</text><text x="315" y="205">2</text><text x="595" y="285">3</text></g>
+<path d="M450 520v-60h35v-45h35v105m-70-20h70" fill="none" stroke="#5eead4" stroke-width="3"/>
+<text x="60" y="110" font-size="30" fill="#cbd5e1" font-family="Georgia,serif">Три лучших решения</text><text x="60" y="750" font-size="26" font-weight="800" fill="#f4a259" font-family="system-ui,sans-serif" letter-spacing="5">ТУРНИР · ГОРОДА</text>
+</svg>

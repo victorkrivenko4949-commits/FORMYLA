@@ -11,6 +11,26 @@ from flask import render_template
 # rule -> (endpoint, шаблон в templates/ приложения)
 ARTICLE_ROUTES = {
     "/articles/fiztech": ("article_fiztech", "articles/fiztech.html"),
+    "/articles/kalendar-olimpiad-2026-2027": (
+        "article_calendar_2026_2027", "articles/calendar_2026_2027.html"
+    ),
+    "/articles/vsosh-etapy": ("article_vsosh_etapy", "articles/vsosh_etapy.html"),
+    "/articles/olimpiady-9-klass": (
+        "article_olimpiady_9_klass", "articles/olimpiady_9_klass.html"
+    ),
+    "/articles/olimpiady-5-6-klass": (
+        "article_olimpiady_5_6_klass", "articles/olimpiady_5_6_klass.html"
+    ),
+    "/articles/perechnievye-olimpiady": (
+        "article_perechnevye_olimpiady", "articles/perechnevye_olimpiady.html"
+    ),
+    "/articles/olimpiada-eilera": (
+        "article_olimpiada_eilera", "articles/olimpiada_eilera.html"
+    ),
+    "/articles/turnir-gorodov": ("article_turnir_gorodov", "articles/turnir_gorodov.html"),
+    "/articles/plan-podgotovki": (
+        "article_plan_podgotovki", "articles/plan_podgotovki.html"
+    ),
 }
 
 
