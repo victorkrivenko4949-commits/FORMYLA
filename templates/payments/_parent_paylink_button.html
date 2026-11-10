@@ -1,0 +1,68 @@
+{# PARENT_PAYLINK_V1: кнопка «Скопировать оплату для родителя».
+   Создаёт платёж ЮKassa на аккаунт ученика и копирует САМУ ссылку на оплату
+   (страница ЮKassa) — родитель открывает и платит без входа на сайт.
+   Параметры: pl_plan, pl_amount (ожидаемая сумма), pl_id (уникальный суффикс). #}
+<div class="pl-share" id="plShare-{{ pl_id }}" style="margin-top:10px;">
+  <button type="button" class="pl-share__btn" data-pl-id="{{ pl_id }}" data-pl-plan="{{ pl_plan }}" data-pl-amount="{{ pl_amount | int }}"
+    onclick="plCopyPay(this.dataset.plId, this.dataset.plPlan, parseInt(this.dataset.plAmount, 10), this)"
+    style="width:100%;padding:13px 14px;border-radius:12px;cursor:pointer;font-weight:700;font-size:.97em;
+           color:#eaf3ff;background:rgba(56,189,248,0.10);border:1px dashed rgba(56,189,248,0.6);">
+    📋 Скопировать оплату для родителя
+  </button>
+  <div class="pl-share__box" style="display:none;margin-top:10px;padding:12px;border-radius:12px;text-align:left;
+       background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);font-size:.88em;color:#b9c8de;line-height:1.5;">
+    <div class="pl-share__status" style="margin-bottom:8px;color:#34d399;font-weight:700;"></div>
+    <textarea class="pl-share__text" readonly rows="7"
+      style="width:100%;box-sizing:border-box;border-radius:8px;padding:8px;background:rgba(0,0,0,.25);color:#eaf3ff;border:1px solid rgba(255,255,255,.12);font-size:.95em;font-family:inherit;resize:none;"></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <button type="button" class="pl-share__again" style="flex:1;min-width:120px;padding:10px;border-radius:10px;border:none;cursor:pointer;font-weight:700;color:#fff;background:linear-gradient(135deg,#38bdf8,#8b5cf6);">Скопировать</button>
+      <button type="button" class="pl-share__send" style="flex:1;min-width:120px;padding:10px;border-radius:10px;cursor:pointer;font-weight:700;color:#eaf3ff;background:transparent;border:1px solid rgba(255,255,255,.25);display:none;">Отправить…</button>
+    </div>
+    <div style="margin-top:8px;font-size:.92em;color:#8fa3c0;">Это сама оплата ЮKassa (карта, СБП): родителю не нужно заходить на сайт. После оплаты Premium сразу откроется у тебя. Ссылка действует ограниченное время — если устарела, нажми кнопку ещё раз.</div>
+  </div>
+</div>
+<script>
+if (!window.plCopyPay) {
+  window.plCopyPay = function (id, plan, amount, btn) {
+    var root = document.getElementById('plShare-' + id);
+    var box = root.querySelector('.pl-share__box');
+    var ta = root.querySelector('.pl-share__text');
+    var st = root.querySelector('.pl-share__status');
+    var again = root.querySelector('.pl-share__again');
+    var send = root.querySelector('.pl-share__send');
+    var label = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Готовим оплату...';
+    function copy(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+      }
+      ta.focus(); ta.select();
+      try { return document.execCommand('copy') ? Promise.resolve() : Promise.reject(); }
+      catch (e) { return Promise.reject(e); }
+    }
+    fetch('/payments/premium/create', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: plan, mode: 'parent_link', expected_amount: amount })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      btn.disabled = false; btn.textContent = label;
+      if (!d || !d.pay_url) {
+        if (d && d.price_changed) { alert(d.error); location.reload(); return; }
+        alert((d && d.error) || 'Не удалось создать оплату'); return;
+      }
+      var text = 'Оплати, пожалуйста, мою подготовку на FORMYLA — ' + d.title + ', ' + d.amount +
+                 ' ₽ за 30 дней. Оплата картой или по СБП, вход на сайт не нужен:\n' + d.pay_url;
+      ta.value = text; box.style.display = 'block';
+      var done = function () { st.textContent = '✓ Оплата скопирована — вставь её в сообщение родителю'; };
+      var fail = function () { st.textContent = 'Выдели текст ниже и скопируй вручную'; ta.focus(); ta.select(); };
+      copy(text).then(done, fail);
+      again.onclick = function () { copy(text).then(done, fail); };
+      if (navigator.share) {
+        send.style.display = 'block';
+        send.onclick = function () { navigator.share({ text: text }).catch(function () {}); };
+      }
+    }).catch(function () {
+      btn.disabled = false; btn.textContent = label; alert('Ошибка сети');
+    });
+  };
+}
+</script>

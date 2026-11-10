@@ -606,6 +606,11 @@
           <span class="sp-btn sp-btn--primary" style="opacity:.5;cursor:default">Покупка откроется 3 ноября 2026</span>
           {% endif %}
         </div>
+        {% if (is_pilot or open_sales) and not is_parent_or_teacher %}
+        {% set pl_plan = 'premium_intense' %}{% set pl_id = 'sub-intense' %}
+        {% set _wp = wish_prices.get('premium_intense') %}{% set pl_amount = _wp.amount if _wp else 800 %}
+        {% include 'payments/_parent_paylink_button.html' %}
+        {% endif %}
       </article>
 
       <!-- Спокойный -->
@@ -635,6 +640,11 @@
           <span class="sp-btn sp-btn--primary" style="opacity:.5;cursor:default">Покупка откроется 3 ноября 2026</span>
           {% endif %}
         </div>
+        {% if (is_pilot or open_sales) and not is_parent_or_teacher %}
+        {% set pl_plan = 'premium_calm' %}{% set pl_id = 'sub-calm' %}
+        {% set _wp = wish_prices.get('premium_calm') %}{% set pl_amount = _wp.amount if _wp else 500 %}
+        {% include 'payments/_parent_paylink_button.html' %}
+        {% endif %}
       </article>
     </div>
 
