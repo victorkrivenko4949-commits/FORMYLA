@@ -95,7 +95,11 @@ class TestJoinTeacherGroup:
             assert r.status_code == 200
             assert 'уже состоите' in r.get_data(as_text=True)
 
-    def test_pending_invite_accepted_by_code(self, app, teacher_user, student_users):
+    def test_pending_invite_accepted_by_code(self, app, teacher_user, student_users,
+                                             grant_seats):
+        # SEAT_SUBSCRIPTION_V1: апгрейд pending→accepted тоже занимает место —
+        # у учителя должна быть активная подписка с местами.
+        grant_seats(teacher_user.id)
         g = self._make_group(teacher_user)
         gm = T10GroupMember(
             group_id=g.id, user_id=student_users[2].id,
@@ -166,7 +170,10 @@ class TestJoinParent:
         assert link is not None, 'ParentChildLink not created'
         assert link.status == 'accepted'
 
-    def test_pending_link_accepted_by_code(self, app, parent_user, student_users):
+    def test_pending_link_accepted_by_code(self, app, parent_user, student_users,
+                                          grant_seats):
+        # SEAT_SUBSCRIPTION_V1: апгрейд pending→accepted занимает место родителя.
+        grant_seats(parent_user.id)
         code = self._give_parent_code(parent_user)
         link = ParentChildLink(
             parent_id=parent_user.id, child_id=student_users[2].id,

@@ -35,6 +35,67 @@
         font-family: monospace;
         color: var(--accent-hi);
     }
+    /* INVITE_LINK_V1: карточка «Пригласить класс» с готовой ссылкой */
+    .invite-class-card {
+        background: linear-gradient(135deg, rgba(56,189,248,0.10), rgba(99,102,241,0.10));
+        border: 1px solid rgba(56,189,248,0.45);
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 24px;
+    }
+    .invite-class-card .ic-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 6px;
+    }
+    .invite-class-card .ic-sub {
+        font-size: 13.5px;
+        color: var(--muted);
+        line-height: 1.55;
+        margin-bottom: 14px;
+    }
+    .invite-class-card .ic-link-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .invite-class-card .ic-link {
+        flex: 1 1 260px;
+        min-width: 0;
+        background: rgba(15,23,42,0.55);
+        border: 1px solid rgba(56,189,248,0.3);
+        border-radius: 10px;
+        padding: 12px 14px;
+        color: #7dd3fc;
+        font-size: 14px;
+        font-family: monospace;
+        word-break: break-all;
+        user-select: all;
+        line-height: 1.45;
+    }
+    .invite-class-card .ic-code-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        font-size: 13.5px;
+        color: var(--muted);
+    }
+    .invite-class-card .ic-code {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-family: monospace;
+        font-size: 16px;
+        letter-spacing: 2px;
+        color: var(--accent-hi);
+        user-select: all;
+    }
+    .invite-class-card .copy-btn { min-height: 44px; font-size: 14px; padding: 10px 16px; }
     .group-actions {
         display: flex;
         gap: 12px;
@@ -250,8 +311,41 @@
     .copy-btn:hover { background: rgba(56,189,248,0.22); }
     @media (max-width: 600px) {
         .group-page { padding: 24px 16px 100px; }
-        .student-table { font-size: 13px; }
-        .student-table th, .student-table td { padding: 8px 10px; }
+        /* MOBILE_UX_V1: таблица учеников → карточки, без горизонтального скролла */
+        .student-table { font-size: 13px; border: none; background: transparent; }
+        .student-table thead { display: none; }
+        .student-table tbody { display: block; }
+        .student-table tr {
+            display: block;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .student-table td {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .student-table tr:last-child td { border-bottom: none; }
+        .student-table td:first-child { font-weight: 600; }
+        .student-table .stat-btn, .student-table .buy-btn { width: 100%; box-sizing: border-box; }
+        /* Крупные тапабельные элементы */
+        .group-actions { flex-direction: column; }
+        .group-actions .btn { width: 100%; min-height: 48px; justify-content: center; box-sizing: border-box; font-size: 15px; }
+        .rename-form { flex-direction: column; align-items: stretch; }
+        .rename-form input { width: 100%; box-sizing: border-box; min-height: 48px; }
+        .rename-form .btn { width: 100%; min-height: 48px; justify-content: center; }
+        .invite-class-card .ic-link-row { flex-direction: column; align-items: stretch; }
+        .invite-class-card .copy-btn { width: 100%; box-sizing: border-box; }
+        .invite-class-card .ic-code-row { flex-direction: column; align-items: stretch; }
+        .back-link { min-height: 44px; }
+        h1 { font-size: 22px; }
     }
 </style>
 {% endblock %}
@@ -260,9 +354,23 @@
 <div class="group-page">
     <a href="{{ url_for('parent_teacher.teacher_dashboard') }}" class="back-link">← Все группы</a>
     <h1>{{ group.name }}</h1>
-    <div class="group-invite">
-        Код приглашения: <span>{{ group.invite_code }}</span><button type="button" class="copy-btn" data-copy="{{ group.invite_code }}">Скопировать</button> — ученики могут вступать сами
-        через «Прочее → Присоединиться по коду»
+    {# INVITE_LINK_V1: готовая ссылка «Пригласить класс» — ученик открывает её
+       и попадает прямо на вступление в группу, без ввода кода. #}
+    <div class="invite-class-card">
+        <div class="ic-title">📣 Пригласить класс</div>
+        <div class="ic-sub">
+            Отправьте эту ссылку в классный чат или продиктуйте её — ученик откроет её,
+            нажмёт одну кнопку и сразу окажется в группе. Регистрироваться отдельно не нужно.
+        </div>
+        <div class="ic-link-row">
+            <code class="ic-link" id="inviteClassLink">{{ invite_link }}</code>
+            <button type="button" class="copy-btn" data-copy="{{ invite_link }}" title="Скопировать ссылку для учеников">📋 Скопировать ссылку</button>
+        </div>
+        <div class="ic-code-row">
+            <span>Или код для ввода вручную:</span>
+            <span class="ic-code">{{ group.invite_code }}</span>
+            <button type="button" class="copy-btn" data-copy="{{ group.invite_code }}">Скопировать код</button>
+        </div>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}

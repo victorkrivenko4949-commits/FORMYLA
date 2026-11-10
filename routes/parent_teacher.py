@@ -384,6 +384,10 @@ def teacher_group_view(gid: int):
     rejected_data = [_pending_info(m) for m in rejected_members]
 
     from routes.seat_pay import seat_gate
+    # INVITE_LINK_V1: готовая ссылка «Пригласить класс» — /join?code=...
+    invite_link = url_for(
+        'parent_teacher.join_by_code_page', code=g.invite_code, _external=True,
+    )
     return render_template(
         'teacher/group.html',
         group=g,
@@ -392,6 +396,7 @@ def teacher_group_view(gid: int):
         pending_students=pending_data,
         rejected_students=rejected_data,
         seat=seat_gate(current_user.id, 'teacher'),
+        invite_link=invite_link,
     )
 
 
@@ -521,6 +526,17 @@ def teacher_group_delete(gid: int):
 def _respond_teacher_invite(member: T10GroupMember, action: str) -> tuple[bool, str]:
     """Обработать ответ ученика на приглашение в группу. Возвращает (ok, message)."""
     if action == 'accept':
+        # SEAT_SUBSCRIPTION_V1: принятие приглашения занимает место учителя.
+        # Приглашение отправлялось при свободных местах, но к моменту ответа
+        # подписка могла закончиться или места могли занять другие ученики —
+        # проверяем лимит непосредственно перед записью 'accepted'.
+        g = T10Group.query.get(member.group_id)
+        teacher_id = g.teacher_id if g is not None else None
+        if teacher_id is None:
+            return False, 'Группа не найдена — обратитесь к учителю'
+        reason = _seat_block_reason(teacher_id, 'teacher')
+        if reason:
+            return False, reason
         member.accept()
         return True, 'Приглашение принято — вы в группе.'
     if action == 'reject':
@@ -552,6 +568,10 @@ def teacher_link_respond(member_id: int):
     if ok:
         db.session.commit()
         flash(message, 'success' if action == 'accept' else 'info')
+    else:
+        # SEAT_SUBSCRIPTION_V1: причина отказа (например, места исчерпаны) —
+        # показываем ученику, а не молча редиректим.
+        flash(message, 'error')
     return redirect(_safe_next())
 
 
@@ -586,6 +606,11 @@ def parent_dashboard():
     from routes.seat_pay import seat_gate
     seat = seat_gate(current_user.id, 'parent')
 
+    # INVITE_LINK_V1: готовая ссылка приглашения /join?code=...
+    invite_link = url_for(
+        'parent_teacher.join_by_code_page', code=invite_code, _external=True,
+    ) if invite_code else None
+
     if not children:
         # Привязанного ребёнка нет: форма добавления + статус pending-запросов.
         # Легаси-путь через User.child_email убран: без подтверждённой
@@ -594,6 +619,7 @@ def parent_dashboard():
         return render_template(
             'parent/dashboard.html',
             invite_code=invite_code if seat['sub'] else None,
+            invite_link=invite_link if seat['sub'] else None,
             children=[],
             pending_children=[
                 {'nickname': c.nickname, 'created_at': p.created_at}
@@ -619,6 +645,7 @@ def parent_dashboard():
     return render_template(
         'parent/dashboard.html',
         invite_code=invite_code if (seat['sub'] or child_cards) else None,
+        invite_link=invite_link if (seat['sub'] or child_cards) else None,
         children=child_cards,
         pending_children=[
             {'nickname': c.nickname, 'created_at': p.created_at}
@@ -931,6 +958,30 @@ _MONTHS_RU = ['Январь', 'Февраль', 'Март', 'Апрель', 'М�
 # JOIN_CODE_V1: единая страница «Присоединиться по коду» (/join)
 # ---------------------------------------------------------------------------
 
+def _seat_block_reason(owner_id: int, role: str) -> str | None:
+    """SEAT_SUBSCRIPTION_V1: причина, по которой новый участник НЕ может быть
+    принят (нет подписки / места исчерпаны), или None, если место есть.
+
+    Используется на всех путях, где участник становится 'accepted':
+    мест становится на одного больше, поэтому проверка обязательна
+    непосредственно перед записью статуса — подписка могла закончиться
+    или места могли занять другие ученики после отправки приглашения.
+    """
+    from routes.seat_pay import seat_gate
+    gate = seat_gate(owner_id, role)
+    if gate['sub'] is None:
+        if role == 'teacher':
+            return ('У учителя пока нет активной подписки на группу — '
+                    'попросите его оформить её на formyla.net')
+        return ('У родителя пока нет активной подписки — попросите его '
+                'оформить её на formyla.net')
+    if not gate['can_add']:
+        owner = 'учителя' if role == 'teacher' else 'родителя'
+        return (f'У {owner} закончились места в подписке — '
+                f'попросите расширить тариф на formyla.net')
+    return None
+
+
 def _join_teacher_group_by_code(user, code: str) -> tuple[bool, str]:
     """Вступить в группу учителя по 6-символьному коду.
 
@@ -951,20 +1002,21 @@ def _join_teacher_group_by_code(user, code: str) -> tuple[bool, str]:
     if existing:
         if existing.status == 'accepted':
             return False, f'Вы уже состоите в группе «{g.name}»'
-        # pending (приглашение от учителя) или rejected — ввод кода = согласие
+        # pending (приглашение от учителя) или rejected — ввод кода = согласие.
+        # SEAT_SUBSCRIPTION_V1: апгрейд до 'accepted' тоже занимает место —
+        # места могли закончиться уже после отправки приглашения.
+        reason = _seat_block_reason(g.teacher_id, 'teacher')
+        if reason:
+            return False, reason
         existing.accept()
         db.session.commit()
         return True, f'Вы вступили в группу «{g.name}»'
 
     # SEAT_SUBSCRIPTION_V1: новый участник по коду занимает место учителя —
-    # проверяем активную подписку и лимит (upgrade существующих не трогаем).
-    from routes.seat_pay import seat_gate
-    t_gate = seat_gate(g.teacher_id, 'teacher')
-    if t_gate['sub'] is None:
-        return False, ('У учителя пока нет активной подписки на группу — '
-                       'попросите его оформить её на formyla.net')
-    if not t_gate['can_add']:
-        return False, 'У учителя закончились места в подписке'
+    # проверяем активную подписку и лимит.
+    reason = _seat_block_reason(g.teacher_id, 'teacher')
+    if reason:
+        return False, reason
 
     gm = T10GroupMember(
         group_id=g.id, user_id=user.id, role='student', status='accepted',
@@ -1004,20 +1056,21 @@ def _link_parent_by_code(user, code: str) -> tuple[bool, str]:
             return False, 'Вы уже привязаны к этому родителю'
         if existing.status == 'blocked':
             return False, 'Эта привязка заблокирована — обратитесь к родителю'
-        # pending / rejected — ввод кода = согласие
+        # pending / rejected — ввод кода = согласие.
+        # SEAT_SUBSCRIPTION_V1: апгрейд до 'accepted' тоже занимает место —
+        # места могли закончиться уже после отправки запроса.
+        reason = _seat_block_reason(parent.id, 'parent')
+        if reason:
+            return False, reason
         existing.accept()
         db.session.commit()
         return True, f'Вы привязаны к родителю {_display(parent)}'
 
     # SEAT_SUBSCRIPTION_V1: новая привязка занимает место родителя —
-    # проверяем активную подписку и лимит (upgrade существующих не трогаем).
-    from routes.seat_pay import seat_gate
-    p_gate = seat_gate(parent.id, 'parent')
-    if p_gate['sub'] is None:
-        return False, ('У родителя пока нет активной подписки — попросите его '
-                       'оформить её на formyla.net')
-    if not p_gate['can_add']:
-        return False, 'У родителя закончились места в подписке'
+    # проверяем активную подписку и лимит.
+    reason = _seat_block_reason(parent.id, 'parent')
+    if reason:
+        return False, reason
 
     link = ParentChildLink(
         parent_id=parent.id, child_id=user.id, status='accepted',
@@ -1039,10 +1092,19 @@ def _ensure_parent_code(user) -> str:
 @parent_teacher_bp.route('/join', methods=['GET'])
 @login_required
 def join_by_code_page():
-    """Страница «Присоединиться по коду» — из раздела «Прочее»."""
+    """Страница «Присоединиться по коду» — из раздела «Прочее».
+
+    INVITE_LINK_V1: ссылка «Пригласить класс» ведёт на /join?code=XXXXXX —
+    код уже подставлен в форму, ученику не нужно вводить его руками.
+    """
     if getattr(current_user, 'is_guest', False):
         flash('Гостевым аккаунтам нужно зарегистрироваться, чтобы присоединяться к группам', 'error')
         return redirect('/register')
+
+    # INVITE_LINK_V1: код из ссылки (?code=...) — нормализуем как в POST.
+    prefill_code = (request.args.get('code', '') or '').strip().upper()
+    if not (len(prefill_code) == 6 and prefill_code.isalnum()):
+        prefill_code = ''
 
     my_groups = [
         m.group for m in current_user.teacher_group_memberships
@@ -1054,10 +1116,32 @@ def join_by_code_page():
         if l.status == 'accepted'
     ] if hasattr(current_user, 'parent_links') else []
 
+    # Для ссылки-приглашения показываем, куда именно приглашают,
+    # чтобы ученик видел это до нажатия кнопки.
+    invite_target = None
+    if prefill_code:
+        g = T10Group.query.filter_by(invite_code=prefill_code).first()
+        if g is not None:
+            invite_target = {
+                'kind': 'group',
+                'title': g.name,
+                'owner': _display(g.teacher) if g.teacher is not None else '',
+            }
+        else:
+            p = User.query.filter_by(parent_invite_code=prefill_code).first()
+            if p is not None:
+                invite_target = {
+                    'kind': 'parent',
+                    'title': '',
+                    'owner': _display(p),
+                }
+
     return render_template(
         'join_group.html',
         my_groups=my_groups,
         my_parents=my_parents,
+        prefill_code=prefill_code,
+        invite_target=invite_target,
     )
 
 
@@ -1211,6 +1295,12 @@ def parent_bind_child():
 def _respond_parent_link(link: ParentChildLink, action: str) -> tuple[bool, str]:
     """Обработать ответ ребёнка на запрос привязки. Возвращает (ok, message)."""
     if action == 'accept':
+        # SEAT_SUBSCRIPTION_V1: принятие запроса занимает место родителя —
+        # проверяем подписку и лимит в момент ответа (запрос мог быть
+        # отправлен до исчерпания мест).
+        reason = _seat_block_reason(link.parent_id, 'parent')
+        if reason:
+            return False, reason
         link.accept()
         # Легаси-совместимость: некоторые проверки читают User.child_email.
         parent_user = User.query.get(link.parent_id)
@@ -1249,6 +1339,10 @@ def parent_link_respond(link_id: int):
     if ok:
         db.session.commit()
         flash(message, 'success' if action == 'accept' else 'info')
+    else:
+        # SEAT_SUBSCRIPTION_V1: причина отказа (например, места исчерпаны) —
+        # показываем ученику, а не молча редиректим.
+        flash(message, 'error')
     return redirect(_safe_next())
 
 

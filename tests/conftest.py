@@ -262,6 +262,38 @@ def client(app):
 
 
 @pytest.fixture
+def grant_seats(app):
+    """SEAT_SUBSCRIPTION_V1: выдать пользователю подписку на места.
+
+    seat_subscriptions — raw-SQL таблица (в ORM-метаданных её нет), поэтому
+    фикстура сама вызывает _ensure_tables(). Возвращает функцию
+    (user_id, seats) -> None, по умолчанию 5 мест на 30 дней.
+    """
+    from datetime import datetime, timedelta
+
+    from sqlalchemy import text
+
+    from models import db
+    from routes.seat_pay import _ensure_tables
+
+    _ensure_tables()
+
+    def _grant(user_id: int, seats: int = 5) -> None:
+        db.session.execute(text(
+            "INSERT INTO seat_subscriptions"
+            " (user_id, plan, seats, activated_at, expires_at)"
+            " VALUES (:uid, 'seat_start', :seats, :now, :exp)"
+        ), {
+            'uid': user_id, 'seats': seats,
+            'now': datetime.utcnow(),
+            'exp': datetime.utcnow() + timedelta(days=30),
+        })
+        db.session.commit()
+
+    return _grant
+
+
+@pytest.fixture
 def test_user(app):
     """Create one ORM User record in the temporary DB.
 

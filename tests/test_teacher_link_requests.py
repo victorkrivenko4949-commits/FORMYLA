@@ -93,7 +93,10 @@ class TestTeacherInviteFlow:
             assert teacher_reqs[0]['id'] == gm.id
             assert teacher_reqs[0]['group'] == 'Test Group'
 
-    def test_student_accepts_via_api(self, app, teacher_user, student_users, group):
+    def test_student_accepts_via_api(self, app, teacher_user, student_users, group,
+                                     grant_seats):
+        # SEAT_SUBSCRIPTION_V1: принятие приглашения занимает место учителя.
+        grant_seats(teacher_user.id)
         gm = T10GroupMember(
             group_id=group.id, user_id=student_users[0].id,
             role='student', status='pending',
@@ -225,8 +228,11 @@ class TestTeacherInviteFlow:
             group_id=group.id, user_id=student_users[0].id,
         ).count() == 1
 
-    def test_join_group_accepts_pending_invite(self, app, teacher_user, student_users, group):
+    def test_join_group_accepts_pending_invite(self, app, teacher_user, student_users,
+                                              group, grant_seats):
         """Ученик приглашён учителем и подтверждает через код группы."""
+        # SEAT_SUBSCRIPTION_V1: апгрейд pending→accepted занимает место учителя.
+        grant_seats(teacher_user.id)
         gm = T10GroupMember(
             group_id=group.id, user_id=student_users[0].id,
             role='student', status='pending',
@@ -301,7 +307,7 @@ class TestParentLinkViaApi:
             assert len(parent_reqs) == 1
             assert parent_reqs[0]['id'] == link.id
 
-    def test_parent_accept_via_api(self, app, student_users):
+    def test_parent_accept_via_api(self, app, student_users, grant_seats):
         parent = User(
             email='parent_y@example.invalid',
             nickname='parent_y',
@@ -310,6 +316,8 @@ class TestParentLinkViaApi:
         )
         db.session.add(parent)
         db.session.commit()
+        # SEAT_SUBSCRIPTION_V1: принятие запроса занимает место родителя.
+        grant_seats(parent.id)
         link = ParentChildLink(
             parent_id=parent.id, child_id=student_users[0].id, status='pending',
         )

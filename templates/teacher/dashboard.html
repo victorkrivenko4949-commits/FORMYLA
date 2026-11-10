@@ -206,11 +206,19 @@
     @media (max-width: 600px) {
         .teacher-page { padding: 24px 16px 100px; }
         .form-row { flex-direction: column; align-items: stretch; }
+        .form-row input { width: 100%; box-sizing: border-box; min-height: 48px; font-size: 16px; }
+        .form-row .btn { width: 100%; min-height: 48px; justify-content: center; }
         .group-card { flex-direction: column; gap: 10px; align-items: stretch; }
-        .group-card .open-cta { justify-content: center; }
-        .quick-actions { width: 100%; }
-        .quick-actions .qa-btn { flex: 1 1 auto; }
+        .group-card .open-cta { justify-content: center; width: 100%; box-sizing: border-box; min-height: 48px; }
+        .group-card .group-link { font-size: 18px; }
+        /* MOBILE_UX_V1: код/ссылка в карточке группы — крупные кнопки, без обрезки */
+        .group-card .group-meta { line-height: 2.2; }
+        .group-card .copy-btn { min-height: 44px; margin: 4px 6px 0 0; }
+        .quick-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .quick-actions .qa-btn { flex: none; }
         .add-cta-card .btn-add-students { width: 100%; justify-content: center; }
+        .add-cta-card { flex-direction: column; align-items: stretch; }
+        .teacher-page h1 { font-size: 22px; }
     }
 </style>
 {% endblock %}
@@ -282,7 +290,9 @@
                     {{ gs.group.name }}
                 </a>
                 <div class="group-meta">
-                    🔑 Код: {{ gs.group.invite_code }}<button type="button" class="copy-btn" data-copy="{{ gs.group.invite_code }}" title="Скопировать код приглашения">Скопировать</button> |
+                    🔑 Код: {{ gs.group.invite_code }}<button type="button" class="copy-btn" data-copy="{{ gs.group.invite_code }}" title="Скопировать код приглашения">Скопировать код</button>
+                    {# INVITE_LINK_V1: готовая ссылка — ученик открывает и вступает без ввода кода #}
+                    <button type="button" class="copy-btn" data-copy="{{ url_for('parent_teacher.join_by_code_page', code=gs.group.invite_code, _external=True) }}" title="Скопировать ссылку для приглашения класса">🔗 Ссылка для класса</button> |
                     👥 Учеников: {{ gs.student_count }} |
                     📊 Среднее задач/день: {{ gs.group_avg }}
                     {% if gs.pending_count %}
