@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Маршрут подготовки: от осени через зиму к весенним финалам">
+<defs><radialGradient id="g" cx="60%" cy="40%" r="70%"><stop offset="0" stop-color="#1c2a4d"/><stop offset="1" stop-color="#0b1428"/></radialGradient><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#fff" stroke-opacity=".06"/></pattern></defs>
+<rect width="800" height="800" fill="url(#g)"/><rect width="800" height="800" fill="url(#grid)"/>
+<path d="M140 620H320Q450 620 450 500T320 380H260Q140 380 140 270T300 170H650" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="m615 140 40 30-40 30" fill="none" stroke="#f4a259" stroke-width="5"/>
+<g fill="#0b1428" stroke="#f4a259" stroke-width="5"><circle cx="200" cy="620" r="18"/><circle cx="450" cy="500" r="18"/><circle cx="200" cy="380" r="18"/></g>
+<g fill="#cbd5e1" font-size="30" font-family="Georgia,serif"><text x="130" y="680">Осень</text><text x="490" y="510">Зима</text><text x="240" y="350">Весна</text></g>
+<path d="M570 300v120m0-120 100 30-100 30" fill="none" stroke="#5eead4" stroke-width="4"/><text x="60" y="110" font-size="30" fill="#cbd5e1" font-family="Georgia,serif">Одна задача каждый день</text><text x="60" y="750" font-size="26" font-weight="800" fill="#f4a259" font-family="system-ui,sans-serif" letter-spacing="5">ПОДГОТОВКА · МАРШРУТ</text>
+</svg>

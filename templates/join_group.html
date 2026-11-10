@@ -13,6 +13,29 @@
     .join-btn { padding: 14px 24px; min-height: 48px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; border: none; border-radius: 10px; font-weight: 600; font-size: 16px; cursor: pointer; }
     .join-btn:hover { filter: brightness(1.1); }
     .join-hint { color: #64748b; font-size: 13px; margin-top: 14px; line-height: 1.5; }
+    /* INVITE_LINK_V1: карточка «вас пригласили» для ссылки /join?code=... */
+    .invite-banner {
+        background: linear-gradient(135deg, rgba(56,189,248,0.14), rgba(99,102,241,0.14));
+        border: 1px solid rgba(56,189,248,0.45);
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .invite-banner .invite-code-chip {
+        display: inline-block;
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: 6px;
+        color: #7dd3fc;
+        background: rgba(15,23,42,0.6);
+        border: 1px solid rgba(56,189,248,0.4);
+        border-radius: 10px;
+        padding: 10px 18px;
+        margin: 12px 0;
+        user-select: all;
+    }
+    .invite-banner .join-btn { width: 100%; font-size: 17px; padding: 16px; min-height: 52px; }
+    .invite-banner .join-btn:focus { outline: 2px solid #7dd3fc; outline-offset: 2px; }
     .join-list { margin-top: 20px; }
     .join-list-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; margin-bottom: 10px; }
     .join-list-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; background: rgba(30,41,59,0.6); border: 1px solid transparent; margin-bottom: 4px; color: #cbd5e1; font-size: 15px; }
@@ -39,13 +62,48 @@
         {% endif %}
     {% endwith %}
 
+    {% if prefill_code %}
+    <div class="invite-banner">
+        <h2 style="font-size: 20px; font-weight: 700; color: #f1f5f9; margin: 0 0 8px 0;">
+            🔗 Вас пригласили
+        </h2>
+        {% if invite_target and invite_target.kind == 'group' %}
+        <p style="color: #94a3b8; font-size: 14px; margin: 0; line-height: 1.55;">
+            Учитель <strong style="color: #e2e8f0;">{{ invite_target.owner }}</strong> приглашает вас в группу
+            <strong style="color: #7dd3fc;">«{{ invite_target.title }}»</strong>.
+            Нажмите кнопку — и вы в группе, вводить код не нужно.
+        </p>
+        {% elif invite_target and invite_target.kind == 'parent' %}
+        <p style="color: #94a3b8; font-size: 14px; margin: 0; line-height: 1.55;">
+            <strong style="color: #e2e8f0;">{{ invite_target.owner }}</strong> приглашает вас привязать свой аккаунт,
+            чтобы он видел ваш прогресс. Нажмите кнопку — и привязка готова, вводить код не нужно.
+        </p>
+        {% else %}
+        <p style="color: #94a3b8; font-size: 14px; margin: 0; line-height: 1.55;">
+            Вас пригласили по коду. Нажмите кнопку — и вы присоединитесь, вводить код не нужно.
+        </p>
+        {% endif %}
+        <form method="POST" action="{{ url_for('parent_teacher.join_by_code_submit') }}">
+            <span class="invite-code-chip">{{ prefill_code }}</span>
+            <input type="hidden" name="invite_code" value="{{ prefill_code }}">
+            <button type="submit" class="join-btn" autofocus>
+                {% if invite_target and invite_target.kind == 'parent' %}Привязаться{% else %}Вступить в группу{% endif %}
+            </button>
+        </form>
+        <p class="join-hint">
+            Присоединение — это ваше согласие: учитель или родитель увидит вашу статистику занятий.
+        </p>
+    </div>
+    {% endif %}
+
     <div class="join-card">
-        <h2>Введите код</h2>
+        <h2>{% if prefill_code %}Или введите другой код{% else %}Введите код{% endif %}</h2>
         <p>Код даёт учитель (группа класса или кружка) или родитель. Ввод кода — это ваше согласие: сразу после этого вы присоединитесь к группе или привяжетесь к родителю.</p>
         <form method="POST" action="{{ url_for('parent_teacher.join_by_code_submit') }}">
             <div class="join-form">
                 <input type="text" name="invite_code" required maxlength="6" autocomplete="off" autocapitalize="characters"
-                       placeholder="ABCDEF" class="join-input" pattern="[A-Za-z0-9]{6}" title="6 букв или цифр">
+                       placeholder="ABCDEF" class="join-input" pattern="[A-Za-z0-9]{6}" title="6 букв или цифр"
+                       {% if prefill_code %}value="{{ prefill_code }}"{% endif %}>
                 <button type="submit" class="join-btn">Присоединиться</button>
             </div>
         </form>

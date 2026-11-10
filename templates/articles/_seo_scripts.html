@@ -1,0 +1,21 @@
+<script>
+(function(){
+  var bar=document.getElementById('faBar'), article=document.getElementById('faArticle'), hdr=document.querySelector('.header'), root=document.querySelector('.fa');
+  function setHdr(){root.style.setProperty('--fa-hdr',(hdr?hdr.offsetHeight:0)+'px');}
+  setHdr();window.addEventListener('resize',setHdr);
+  var links=[].slice.call(document.querySelectorAll('#faHud a'));
+  var secs=[].slice.call(article.querySelectorAll('section[data-step]'));
+  function tick(){
+    var h=document.documentElement, max=h.scrollHeight-window.innerHeight;
+    bar.style.width=(max>0?Math.min(100,Math.max(0,window.scrollY/max*100)):0)+'%';
+    var line=window.innerHeight*0.4, cur=0;
+    secs.forEach(function(s){ if(s.getBoundingClientRect().top<line) cur=+s.getAttribute('data-step'); });
+    links.forEach(function(a){
+      var n=+a.getAttribute('data-step'), li=a.parentNode;
+      li.classList.toggle('fa-is-done',n<cur); li.classList.toggle('fa-is-active',n===cur);
+      if(n===cur)a.setAttribute('aria-current','step');else a.removeAttribute('aria-current');
+    });
+  }
+  window.addEventListener('scroll',tick,{passive:true});window.addEventListener('resize',tick);tick();
+})();
+</script>

@@ -191,10 +191,19 @@
     @media (max-width: 600px) {
         .parent-page { padding: 24px 16px 100px; }
         .stat-row { flex-direction: column; }
-        .quick-actions { width: 100%; }
-        .quick-actions .qa-btn { flex: 1 1 auto; }
+        .stat-item { width: 100%; box-sizing: border-box; min-height: 60px; }
+        /* MOBILE_UX_V1: быстрые действия — сетка, а не тесная строка */
+        .quick-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .quick-actions .qa-btn { flex: none; }
         .child-actions { width: 100%; align-items: stretch; }
-        .child-actions .open-btn, .child-actions .buy-btn { width: 100%; box-sizing: border-box; }
+        .child-actions .open-btn, .child-actions .buy-btn { width: 100%; box-sizing: border-box; min-height: 48px; }
+        .child-row { flex-direction: column; gap: 14px; }
+        /* Блок приглашения: ссылка и кнопки — во всю ширину, крупно */
+        .card .copy-btn, .card .muted-btn { width: 100%; box-sizing: border-box; }
+        #inviteCodeValue { font-size: 24px; letter-spacing: 4px; }
+        .anchor-badge { font-size: 12.5px; padding: 6px 10px; }
+        .parent-page h1 { font-size: 22px; }
+        .card h2 { font-size: 18px; }
     }
 </style>
 {% endblock %}
@@ -218,20 +227,28 @@
 
     {% if invite_code %}
     <div class="card">
-        <h2>Код для подключения ребёнка</h2>
+        <h2>Пригласить ребёнка</h2>
         <p style="color: var(--muted); margin-bottom: 12px;">
-            Покажите этот код ребёнку: он откроет «Прочее → Присоединиться по коду», введёт его —
-            и сразу привяжется к вам (с его согласия).
+            Отправьте ребёнку эту ссылку — он откроет её, нажмёт одну кнопку и сразу
+            привяжется к вам (с его согласия). Вводить код не нужно.
         </p>
+        {# INVITE_LINK_V1: готовая ссылка приглашения /join?code=... #}
+        <div style="display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;">
+            <code id="inviteLinkValue" style="flex: 1 1 240px; min-width: 0; background: rgba(15,23,42,0.55); border: 1px solid rgba(56,189,248,0.3); border-radius: 10px; padding: 12px 14px; color: #7dd3fc; font-size: 14px; font-family: monospace; word-break: break-all; user-select: all; line-height: 1.45;">{{ invite_link }}</code>
+            <button type="button" class="copy-btn" data-copy="{{ invite_link }}">📋 Скопировать ссылку</button>
+        </div>
+        <div style="color: var(--muted); font-size: 14px; margin-bottom: 12px;">
+            Или продиктуйте код вручную:
+        </div>
         <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
             <span id="inviteCodeValue" style="font-size: 28px; font-weight: 700; letter-spacing: 5px; color: #7dd3fc; background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.3); padding: 10px 18px; border-radius: 10px; user-select: all;">{{ invite_code }}</span>
-            <button type="button" class="copy-btn" data-copy="{{ invite_code }}">Скопировать</button>
+            <button type="button" class="copy-btn" data-copy="{{ invite_code }}">Скопировать код</button>
             <form method="POST" action="/parent/invite-code/regenerate" style="margin: 0;">
                 <button type="submit" class="muted-btn">Обновить код</button>
             </form>
         </div>
         <p style="color: var(--muted); margin-top: 10px; font-size: 13px;">
-            После обновления старый код перестанет работать. Ребёнок по-прежнему может принять ваш запрос, отправленный по никнейму.
+            После обновления старый код и ссылка перестанут работать. Ребёнок по-прежнему может принять ваш запрос, отправленный по никнейму.
         </p>
     </div>
     {% endif %}

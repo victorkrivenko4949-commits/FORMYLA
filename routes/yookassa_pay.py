@@ -662,6 +662,23 @@ def _yookassa_webhook_inner():
                 item_code_row_found = True
         except Exception:
             pass
+        # FUNNEL_PAY_V1: подписки premium_ и seat_ тоже пишут payment_success
+        # в funnel_events (раньше писал только значок 💎), чтобы сводка,
+        # воронка и когорты в /admin/stats считали реальные оплаты.
+        # Идемпотентно по payment_id, сбой логирования не влияет на выдачу доступа.
+        if item_code.startswith("premium_") or item_code.startswith("seat_"):
+            try:
+                from services.funnel import payment_success as _fe_payment_success
+                _amount = 0.0
+                try:
+                    _amount = float(((obj.get("amount") or {}).get("value")) or 0)
+                except Exception:  # noqa: BLE001
+                    pass
+                _fe_payment_success(
+                    user_id=int(user_id_raw), plan_code=item_code,
+                    amount=_amount, payment_id=payment_id)
+            except Exception as fe:  # noqa: BLE001
+                logger.warning("[yookassa_pay] funnel.payment_success warning: %r", fe)
         if item_code.startswith("premium_"):
             # FAIL-CLOSED: выдача Premium и сохранение способа оплаты — только
             # по платежу, подтверждённому прямым запросом в API ЮKassa,

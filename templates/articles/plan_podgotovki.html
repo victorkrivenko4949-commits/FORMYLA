@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Как подготовиться к олимпиаде по математике за год: план по сезонам | FORMYLA.net{% endblock %}
+{% block meta_description %}Годовой план подготовки к олимпиадам по математике: что делать осенью, зимой и весной, сколько задач решать в день, какие олимпиады писать и как связать подготовку с календарём сезона 2026/2027.{% endblock %}
+{% block extra_css %}{% include "articles/_seo_styles.html" %}{% endblock %}
+{% block content %}
+<div class="fa">
+<div class="fa-progress" aria-hidden="true"><div class="fa-progress__bar" id="faBar"></div></div>
+<section class="fa-hero fa-hero--ft">
+  <img class="fa-hero__img" src="{{ url_for('static', filename='articles/cover-plan-podgotovki.svg') }}" alt="Подготовка: меловая схема на тёмной доске" width="800" height="800">
+  <div class="fa-hero__shade"></div>
+  <div class="fa-hero__inner">
+    <p class="fa-kicker"><span>Подготовка</span> План по сезонам</p>
+    <h1>Как подготовиться к олимпиаде по математике за год: план по сезонам</h1>
+    <p class="fa-hero__lead">Олимпиадный год — это не «решать всё подряд с сентября по май», а последовательность понятных шагов. Ниже — рабочий план на учебный год, привязанный к реальному календарю олимпиад сезона 2026/2027. Если тебе ближе общая картина «зачем всё это и с чего начать» — сначала пройди наш гайд <a href="https://formyla.net/olympiad-start">«Как войти в олимпиадную математику»</a>; здесь — конкретика по месяцам.</p>
+  </div>
+</section>
+<div class="fa-hud" id="faHud" role="navigation" aria-label="Карта статьи"><ol>
+  <li><a href="#chapter-0" data-step="0"><i>0</i><span>Принцип</span></a></li>
+  <li><a href="#chapter-1" data-step="1"><i>1</i><span>Осень</span></a></li>
+  <li><a href="#chapter-2" data-step="2"><i>2</i><span>Зима</span></a></li>
+  <li><a href="#chapter-3" data-step="3"><i>3</i><span>Весна</span></a></li>
+  <li><a href="#chapter-4" data-step="4"><i>4</i><span>Норма</span></a></li>
+  <li><a href="#chapter-5" data-step="5"><i>5</i><span>Ошибки</span></a></li>
+  <li><a href="#chapter-6" data-step="6"><i>6</i><span>Прогресс</span></a></li>
+  <li><a href="#chapter-7" data-step="7"><i>7</i><span>Материалы</span></a></li>
+</ol></div>
+<div class="fa-page"><article id="faArticle">
+<section class="fa-chapter fa-chapter--wide" id="chapter-0" data-step="0">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 0 · Принцип</p>
+<h2>Главный принцип: регулярность бьёт объём</h2>
+</div>
+<ul class="fa-kpi">
+<li><b>1–2</b><span>задачи в день</span></li>
+<li><b>2–3</b><span>онлайн-отбора осенью</span></li>
+<li><b>102</b><span>метода в каталоге</span></li>
+<li><b>5</b><span>часов: тренировка полного тура</span></li>
+</ul>
+<div class="fa-col">
+<p>Олимпиадники выигрывают не количеством часов, а стабильностью. Одна-две задачи в день в течение года дают больше, чем недельный марафон перед туром. Почему это работает и почему школьные пятёрки сами по себе не помогают — разбираем в статье <a href="https://formyla.net/articles/ot-shkoly-k-olimpiadam">«Пятёрка по математике — а на олимпиаде ноль»</a>.</p>
+<p>Базовый инструмент — <a href="https://formyla.net/daily_tasks/">задачи дня</a>: платформа даёт задачу под твой уровень и класс, ты решаешь по одной в день.</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-1" data-step="1">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 1 · Осень</p>
+<h2>Осень (сентябрь – ноябрь): набор базы</h2>
+<p><strong>Что происходит в олимпиадах.</strong> Школьный этап ВсОШ (октябрь), осенние туры Турнира городов, отборы «Ломоносова» и «Высшей пробы», первый дистанционный тур олимпиады Эйлера (8 ноября). Полный список — в <a href="https://formyla.net/olympiad-prep/calendar">календаре</a>.</p>
+<p><strong>Что делать.</strong></p>
+<ol>
+<li>Сыграй школьный этап ВсОШ, даже если цель выше: это репетиция формата.</li>
+<li>Зарегистрируйся на 2–3 онлайн-отбора («Ломоносов», СПбГУ, Эйлер для 8 класса) — они бесплатны и дают турнильный опыт.</li>
+<li>Разбери «джентльменский набор» тем: чётность и делимость, принцип Дирихле, инвариант, неравенства, раскраски. Всё это есть в <a href="https://formyla.net/olympiads/methods">каталоге из 102 методов</a> — с теорией и разобранными примерами.</li>
+<li>После каждого тура — обязательный разбор: что не решил, почему, каким методом решалось. Неразобранная ошибка повторится на следующем туре.</li>
+</ol>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-2" data-step="2">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 2 · Зима</p>
+<h2>Зима (декабрь – февраль): пик сезона</h2>
+<p><strong>Что происходит.</strong> Второй тур Эйлера (6 декабря), заочный отбор СПбГУ (до 1 декабря), регистрация на ПВГ (с ~1 декабря), муниципальный этап ВсОШ, региональный этап ВсОШ (2–3 февраля 2027), финалы «Ломоносова» и «Высшей пробы», регистрация на Матпраздник (6–7 классы) и ММО.</p>
+<p><strong>Что делать.</strong></p>
+<ol>
+<li>Распиши декабрь по дням заранее — отборы идут параллельно, это самый плотный месяц.</li>
+<li>Перейди от методов к вариантам: решай прошлогодние задания именно тех олимпиад, куда записался.</li>
+<li>Пиши тренировочные туры на время. Пять часов — это отдельный навык: распределить силы, не застрять в первой задаче, записать решения так, чтобы их оценили.</li>
+<li>Не бросай разборы после финалов — показ работ и апелляции бывают полезнее самого тура.</li>
+</ol>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-3" data-step="3">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 3 · Весна</p>
+<h2>Весна (март – май): финалы и методическое закрепление</h2>
+<p><strong>Что происходит.</strong> ММО (середина марта), финалы «Физтеха», «Курчатова», «Формулы Единства», ПВГ, заключительный этап ВсОШ (апрель).</p>
+<p><strong>Что делать.</strong></p>
+<ol>
+<li>Доведи финалы, до которых дошёл.</li>
+<li>После сезона — «аудит»: какие темы проседают. Весна — лучшее время закрывать дыры, когда нет давления турниров.</li>
+<li>Сильным 9–10 классам: подавайся на Летнюю конференцию Турнира городов (приглашения — по результатам письменных туров).</li>
+<li>Летом — не решать олимпиадные задачи месяцами подряд, но и не бросать: режим «одна задача в день» отлично переживёт каникулы.</li>
+</ol>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-4" data-step="4">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 4 · Норма</p>
+<h2>Сколько задач в день — норма</h2>
+<ul>
+<li>Новичок: 1 задача в день (<a href="https://formyla.net/daily_tasks/">задачи дня</a>).</li>
+<li>Уверенный участник муниципального этапа: 1–2 задачи + разбор одного метода в неделю из <a href="https://formyla.net/olympiads/methods">каталога</a>.</li>
+<li>Цель — региональный этап: ежедневная практика + еженедельный полный вариант на время.</li>
+</ul>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-5" data-step="5">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 5 · Ошибки</p>
+<h2>Типичные ошибки в подготовке</h2>
+<ul>
+<li><strong>Готовиться «по темам школы».</strong> Олимпиады проверяют приёмы, а не программу: <a href="https://formyla.net/articles/ot-shkoly-k-olimpiadam">почему это разные игры</a>.</li>
+<li><strong>Решать только задачи, которые получаются.</strong> Рост — в зоне «непонятно, но интересно».</li>
+<li><strong>Не записывать решения.</strong> На очных турах без обоснования полный балл не ставят.</li>
+<li><strong>Регистрироваться в последний день</strong> — места на очных площадках и в онлайн-кабинетах кончаются.</li>
+</ul>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-6" data-step="6">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 6 · Прогресс</p>
+<h2>Признаки того, что план работает</h2>
+<ul>
+<li>Задачи из <a href="https://formyla.net/daily_tasks/">задач дня</a> решаются быстрее, чем месяц назад.</li>
+<li>На разборе тура ты понимаешь, к какому методу из <a href="https://formyla.net/olympiads/methods">каталога</a> сводилась «нерешённая» задача.</li>
+<li>Регистрации на все намеченные олимпиады закрыты вовремя, без паники в последний день.</li>
+</ul>
+<p>Если хотя бы два из трёх выполняются — сезон идёт правильно, и остаётся не менять систему, а добивать регулярность.</p>
+</div>
+</section>
+<section class="fa-chapter fa-chapter--wide" id="chapter-7" data-step="7">
+<div class="fa-col">
+<p class="fa-chapter__no">Глава 7 · Материалы</p>
+<h2>Куда идти за остальным</h2>
+<ul>
+<li>Даты и статусы всех олимпиад сезона: <a href="https://formyla.net/olympiad-prep/calendar">календарь</a>.</li>
+<li>Приёмы и теория: <a href="https://formyla.net/olympiads/methods">102 метода</a>.</li>
+<li>Разбор реального финала: <a href="https://formyla.net/articles/fiztech">все варианты «Физтеха» 2019–2026</a>.</li>
+<li>Мотивация и вход для новичков: <a href="https://formyla.net/olympiad-start">гайд</a>.</li>
+</ul>
+</div>
+</section>
+</article></div>
+</div>
+{% endblock %}
+{% block extra_js %}{% include "articles/_seo_scripts.html" %}{% endblock %}
