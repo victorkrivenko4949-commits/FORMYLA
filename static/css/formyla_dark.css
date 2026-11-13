@@ -106,3 +106,13 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(76,125,255,.14);
   outline: none;
 }
+
+/* ── DT_BODY_WIDTH_FIX (13.11.2026) ────────────────── */
+/* Класс page-daily-tasks висит и на <body>, и на обёртке контента.
+   Правило .page-daily-tasks{max-width:1140px !important} из
+   daily_tasks_about.css сжимало весь <body> до 1140px и прижимало
+   страницу к левому краю на широких экранах. Ширину ограничиваем
+   только у обёртки, с body ограничение снимаем. */
+body.page-daily-tasks {
+  max-width: none !important;
+}
