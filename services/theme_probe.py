@@ -6,8 +6,11 @@ Implements the "лесенка" (ladder) adaptive test:
   - 5 tasks from one subtopic, delivered one-by-one
   - Start level = max(start_level from questionnaire, 1), capped at route_ceiling
   - After each answer: correct -> +1, partial -> 0, wrong -> -2
-  - Level clamped [1, 5] and ≤ route_ceiling
-  - Final mu = level after 5th answer -> saved to level_by_theme
+    (the ladder only picks the difficulty of the NEXT task)
+  - Level clamped [1, 4] and ≤ route_ceiling
+  - Final mu = highest CONFIRMED level (see _final_level) -> saved to
+    level_by_theme. It is NOT the ladder position after the 5th answer:
+    one mistake in the last task must not drop a 4-level student to 2.
   - State is persisted AFTER EVERY OPERATION so user can close tab and resume
   - "Продолжить утренний срез" returns to the exact same question
 
@@ -525,12 +528,54 @@ def record_answer(user_id: int, task_id: int, verdict: str,
     return _select_and_advance(cs, probe, probe.get('grade', 9))
 
 
+def _final_level(probe: Dict[str, Any]) -> int:
+    """Итоговый уровень среза = высший ПОДТВЕРЖДЁННЫЙ уровень.
+
+    Уровень подтверждён, если на задачах этого уровня верных ответов
+    не меньше, чем неверных (и есть хотя бы один верный). Частичные
+    ответы не считаются ни верными, ни неверными.
+
+    Раньше итогом была позиция лесенки после 5-го ответа, поэтому
+    «4 верно + ошибка в последней» давало 2 (4 - 2), а те же ответы с
+    ошибкой в первой задаче — 4. Теперь порядок ответов на итог не влияет:
+      верно, верно, верно, верно, неверно (уровни 2,3,4,4,4) -> 4
+      неверно, верно, верно, верно, верно (уровни 2,1,2,3,4) -> 4
+
+    Если ни один уровень не подтверждён (нет верных ответов либо на
+    каждом уровне ошибок больше) — берём позицию лесенки, как раньше.
+    """
+    ceiling = min(MAX_LEVEL, ROUTE_CEILING)
+    try:
+        ladder = int(probe.get('current_level', MIN_LEVEL))
+    except (TypeError, ValueError):
+        ladder = MIN_LEVEL
+
+    ok: Dict[int, int] = {}
+    bad: Dict[int, int] = {}
+    for a in probe.get('answers', []) or []:
+        if not isinstance(a, dict):
+            continue
+        try:
+            lvl = int(a.get('level_shown'))
+        except (TypeError, ValueError):
+            continue
+        verdict = a.get('verdict')
+        if verdict == 'correct':
+            ok[lvl] = ok.get(lvl, 0) + 1
+        elif verdict != 'partial':
+            bad[lvl] = bad.get(lvl, 0) + 1
+
+    confirmed = [lvl for lvl, n in ok.items() if n >= bad.get(lvl, 0)]
+    level = max(confirmed) if confirmed else ladder
+    return max(MIN_LEVEL, min(ceiling, level))
+
+
 def _finish_probe(cs: CuratorState, probe: Dict[str, Any], user_id: int) -> Dict[str, Any]:
     """Finalize the probe: record mu and return result."""
     from services.theme_registry import section_of_theme as _sec
 
     theme_id = probe['theme_id']
-    final_mu = float(probe['current_level'])
+    final_mu = float(_final_level(probe))
     section = _sec(theme_id)
 
     # Save to level_by_theme
