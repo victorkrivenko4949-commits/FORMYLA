@@ -696,22 +696,35 @@ def send_welcome_message(user_id: int) -> bool:
 # ── Недельное сообщение (системный триггер) ────────────────────────────────
 
 def _subscription_started_at(user_id: int) -> Optional[datetime]:
-    """Дата начала активной подписки (для отсчёта недели)."""
+    """Дата начала активной подписки (для отсчёта недели).
+
+    Берём самую раннюю уже начавшуюся подписку среди active/superseded,
+    игнорируя будущие отложенные продления/бонусы.
+    """
     try:
-        row = db.session.execute(
+        rows = db.session.execute(
             __import__('sqlalchemy').text(
-                'SELECT started_at FROM subscriptions '
-                'WHERE user_id = :u AND status = :s ORDER BY id DESC LIMIT 1'),
-            {'u': user_id, 's': 'active'},
-        ).first()
-        if row and row[0]:
-            v = row[0]
+                "SELECT started_at FROM subscriptions "
+                "WHERE user_id = :u AND status IN ('active', 'superseded')"),
+            {'u': user_id},
+        ).fetchall()
+        grace_now = datetime.utcnow() + timedelta(seconds=5)
+        candidates = []
+        for r in rows:
+            v = r[0] if r else None
+            if not v:
+                continue
             if isinstance(v, datetime):
-                return v
-            try:
-                return datetime.fromisoformat(str(v))
-            except (ValueError, TypeError):
-                return None
+                dt = v.replace(tzinfo=None) if v.tzinfo else v
+            else:
+                try:
+                    dt = datetime.fromisoformat(str(v).replace('Z', '').replace(' ', 'T')[:19])
+                except (ValueError, TypeError):
+                    continue
+            if dt <= grace_now:
+                candidates.append(dt)
+        if candidates:
+            return min(candidates)
     except Exception as e:  # noqa: BLE001
         logger.warning('[curator_chat] sub lookup failed: %s', e)
     return None

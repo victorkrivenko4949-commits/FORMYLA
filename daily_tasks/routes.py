@@ -297,6 +297,17 @@ def _submit_bank_answer(task_id: int, issue):
         db.session.rollback()
         logger.exception("streak credit failed (bank answer)")
 
+    # P4 DEBT: если отвечена задача из вчерашнего/пропущенного дня —
+    # проверяем, не закрыт ли весь пропущенный урок-практика.
+    try:
+        if _saved_ok and getattr(issue, "issued_date", None):
+            from datetime import date as _date_cls
+            if issue.issued_date < _date_cls.today():
+                from curator.session_plan import resolve_skipped_practice_for_date
+                resolve_skipped_practice_for_date(current_user.id, issue.issued_date)
+    except Exception:
+        logger.exception("resolve_skipped_practice failed (bank answer)")
+
     # LATEX_FIX_V2: сырой текст решения (без md_render) — фронт экранирует
     # и рендерит LaTeX через KaTeX сам, как для сгенерированных задач.
     return jsonify({
@@ -367,12 +378,16 @@ def _serialize_bank_items(user_id: int, bank_items) -> list:
 def _attach_debt(data: dict, user_id: int) -> None:
     """P4 DEBT: положить блок долга в data дашборда задач дня.
 
-    Без data['debt'] шаблон не отрисует «Открыть долг: N задач».
-    Раньше долг собирали только в ветке pick_daily_set, а банк
-    (теперь основная ветка выдачи) возвращал страницу без долга —
-    блок пропал (владелец, 03.11: «верни долг»). Ошибки не роняют
-    страницу: debt=None означает «долга нет».
+    Без data['debt'] шаблон не отрисует «Открыть долги: N задач».
+    Обновляет долги (миграция просроченных + выдача задач за пропуски)
+    на ЛЮБОЙ ветке дашборда (включая выходной, день метода, blocked, no_set).
+    Ошибки не роняют страницу: debt=None означает «долга нет».
     """
+    try:
+        from services.daily_debt import refresh_debt_for_user
+        refresh_debt_for_user(user_id)
+    except Exception as _ref_err:
+        logger.warning("refresh_debt_for_user failed in _attach_debt: %s", _ref_err)
     try:
         # пропущенные занятия-практики → задачи из банка датой того дня,
         # чтобы долг можно было открыть (владелец, 05.11)
@@ -396,7 +411,7 @@ def _attach_debt(data: dict, user_id: int) -> None:
                     for d, tasks in sorted(by_date.items(), reverse=True)
                 ],
             }
-        # debt=None означает «долга нет» — шаблон его не отрисует
+        # debt=None означает «долга нет» — в JSON останется None
     except Exception as _debt_err:
         logger.warning("get_debt_items failed: %s", _debt_err)
 
@@ -431,7 +446,10 @@ def get_daily_tasks():
 
     def render_template(tpl, **kw):  # noqa: F811
         _d = kw.get("data")
-        if tpl == "daily_tasks/daily_tasks_dashboard.html" and isinstance(_d, dict) and not _d.get("debt"):
+        if (tpl == "daily_tasks/daily_tasks_dashboard.html"
+                and isinstance(_d, dict)
+                and _d.get("status") != "teacher"
+                and not _d.get("debt")):
             _attach_debt(_d, user_id)
         return _flask_render(tpl, **kw)
 
@@ -1970,6 +1988,10 @@ def submit_answer_ai(item_id: int):
         item.is_correct = is_correct
         item.answered_at = _dt.utcnow()
         item.ai_feedback = (feedback or "")[:8000]
+        # P4 DEBT: снимаем с активного долга при ответе
+        if item.debt_status == "active":
+            item.debt_status = None
+            item.debt_until = None
         # USERS_STATS_V2: сохраняем фото решений, чтобы админ видел их
         if images_b64:
             _photo_urls = _save_solution_photos(current_user.id, images_b64)
@@ -2020,6 +2042,20 @@ def submit_answer_ai(item_id: int):
     except Exception:
         db.session.rollback()
         logger.exception("streak credit failed (submit_ai)")
+
+    # SESSION_PLAN_V1 + P4 DEBT: закрываем сегодняшнюю практику или
+    # пропущенный урок-практику в плане куратора, когда все задачи сета отвечены.
+    try:
+        if _saved_ok and daily_set is not None:
+            from datetime import date as _date_cls
+            if daily_set.target_date == _date_cls.today():
+                from curator.session_plan import maybe_complete_practice
+                maybe_complete_practice(current_user.id, daily_set.id)
+            elif daily_set.target_date and daily_set.target_date < _date_cls.today():
+                from curator.session_plan import resolve_skipped_practice_for_date
+                resolve_skipped_practice_for_date(current_user.id, daily_set.target_date)
+    except Exception:
+        logger.exception("session_plan practice/debt completion failed (submit_ai)")
 
     # «Банк неточностей»: ставим решение в очередь на скрининг (фоновый анализ).
     try:

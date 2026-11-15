@@ -12,7 +12,7 @@ services/daily_debt.py — Двигатель долга задач дня.
 from __future__ import annotations
 
 import logging
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any, Dict, List
 
 from models import db
@@ -117,6 +117,139 @@ def refresh_debt_for_user(user_id: int) -> Dict[str, int]:
     return {'migrated': migrated, 'burned': burned}
 
 
+def _resolve_debt_grade_and_level(user_id: int) -> tuple[int, int]:
+    """Определить класс (5..11) и базовый уровень (1..4) для выдачи долга."""
+    grade = 9
+    try:
+        from services.daily_olympiad import user_cycle_grade as _ucg
+        g = _ucg(user_id)
+        if g and 5 <= int(g) <= 11:
+            grade = int(g)
+    except Exception:
+        pass
+    if grade == 9:
+        try:
+            from models_curator import CuratorState
+            cs = CuratorState.query.filter_by(user_id=user_id).first()
+            if cs and cs.grade and 5 <= int(cs.grade) <= 11:
+                grade = int(cs.grade)
+        except Exception:
+            pass
+
+    level = 3
+    try:
+        from services.daily_task_rotation import _get_level_state
+        st = _get_level_state(user_id)
+        by_sec = st.get('by_section') or {}
+        vals = [int(v) for v in by_sec.values() if isinstance(v, (int, float)) and 1 <= int(v) <= 4]
+        if vals:
+            level = max(1, min(4, round(sum(vals) / len(vals))))
+    except Exception:
+        pass
+    return grade, level
+
+
+def _issue_fallback_debt_set(user_id: int, day: date, lesson: Dict[str, Any]) -> bool:
+    """Fallback-выдача задач за пропущенную практику, когда build_daily_set
+    не смог подобрать задачи (plan_missing / bank_empty / bank_exhausted).
+
+    1) Пробует FORMYLA_BANK.jsonl по теме урока или доступной теме класса
+       (создаёт DailyTaskSet + DailyTaskItem с debt_status='active').
+    2) Если jsonl-банк пуст/отключён — пробует DailyTaskBank напрямую (BankIssue).
+    """
+    grade, level = _resolve_debt_grade_and_level(user_id)
+    raw_theme = (lesson.get('theme') or '').strip()
+
+    # 1) FORMYLA_BANK.jsonl
+    try:
+        from daily_tasks import formyla_bank
+        if formyla_bank.has_rows():
+            tasks = []
+            if raw_theme:
+                tasks = formyla_bank.get_tasks(
+                    grade=grade, topic=raw_theme, level=level, count=5,
+                    user_id=user_id, day_seed=day.toordinal(),
+                )
+            if not tasks:
+                topics = formyla_bank.available_topics(grade)
+                if topics:
+                    idx = (day.toordinal() + int(user_id) + int(lesson.get('seq') or 0)) % len(topics)
+                    tasks = formyla_bank.get_tasks(
+                        grade=grade, topic=topics[idx], level=level, count=5,
+                        user_id=user_id, day_seed=day.toordinal(),
+                    )
+            if tasks:
+                ds = DailyTaskSet(
+                    user_id=user_id,
+                    target_date=day,
+                    class_level=grade,
+                    status='ready',
+                    triggered_by='debt_skipped',
+                    generated_at=datetime.utcnow(),
+                )
+                db.session.add(ds)
+                db.session.flush()
+                debt_until = day + timedelta(days=DEBT_TTL_DAYS)
+                for pos, t in enumerate(tasks, 1):
+                    text_body = (t.get('task_text') or t.get('statement') or '').strip()
+                    if not text_body:
+                        continue
+                    topic_name = (t.get('topic') or raw_theme or 'Математика').strip()
+                    try:
+                        diff = int(t.get('level') or level)
+                    except (TypeError, ValueError):
+                        diff = level
+                    db.session.add(DailyTaskItem(
+                        daily_set_id=ds.id,
+                        position=pos,
+                        slot_kind='debt',
+                        subject='math',
+                        topic=topic_name,
+                        subtopic=topic_name,
+                        difficulty_level=diff,
+                        task_text=wrap_bare_math(text_body),
+                        correct_answer=str(t.get('answer') or ''),
+                        solution=wrap_bare_math(str(t.get('solution') or '')),
+                        status='approved',
+                        debt_status='active',
+                        debt_until=debt_until,
+                    ))
+                db.session.commit()
+                return True
+    except Exception as e:  # noqa: BLE001
+        db.session.rollback()
+        logger.warning("daily_debt: formyla_bank fallback failed user=%d day=%s: %s",
+                       user_id, day, e)
+
+    # 2) Прямой fallback на DailyTaskBank (если FORMYLA_BANK.jsonl отключён)
+    try:
+        from models import BankIssue, DailyTaskBank
+        q = DailyTaskBank.query
+        rows = []
+        if raw_theme:
+            rows = q.filter(DailyTaskBank.subtopic == raw_theme).limit(5).all()
+        if not rows:
+            rows = q.filter(DailyTaskBank.level == level).limit(5).all()
+        if not rows:
+            rows = q.limit(5).all()
+        if rows:
+            for t in rows:
+                db.session.add(BankIssue(
+                    user_id=user_id,
+                    task_id=t.id,
+                    subtopic=t.subtopic or raw_theme or 'math',
+                    level=t.level or level,
+                    issued_date=day,
+                ))
+            db.session.commit()
+            return True
+    except Exception as e:  # noqa: BLE001
+        db.session.rollback()
+        logger.warning("daily_debt: bank direct fallback failed user=%d day=%s: %s",
+                       user_id, day, e)
+    return False
+
+
 def issue_tasks_for_skipped_lessons(user_id: int) -> int:
     """Выдать задачи за пропущенные занятия-практики, чтобы их можно было
     открыть из блока «Открыть долг» (владелец, 05.11).
@@ -124,9 +257,8 @@ def issue_tasks_for_skipped_lessons(user_id: int) -> int:
     Раньше пропущенное занятие только попадало в плашку «В долгу», а задач
     по нему не было — открыть было нечего. Теперь за каждый пропущенный
     день практики (не старше DEBT_TTL_DAYS) выдаём набор из банка датой
-    того дня. Банковые выдачи прошлых дней без ответа get_debt_items сам
-    показывает как долг. build_daily_set идемпотентен по (user_id, дата),
-    поэтому повторный заход новых задач не создаёт.
+    того дня; если daily_task_bank пуст или не задан план — добираем
+    задачи из FORMYLA_BANK.jsonl. Идемпотентно по (user_id, дата).
 
     Возвращает число дней, за которые набор выдан впервые.
     """
@@ -145,19 +277,33 @@ def issue_tasks_for_skipped_lessons(user_id: int) -> int:
         day = _to_date(lesson.get('assigned_date'))
         if day is None or day >= today or day < floor:
             continue
-        # в этот день уже что-то выдавалось (банк или старый сет) — не дублируем
+        # в этот день уже что-то выдавалось (банк или непустой сет) — не дублируем
         if BankIssue.query.filter_by(user_id=user_id, issued_date=day).first():
             continue
-        if DailyTaskSet.query.filter_by(user_id=user_id, target_date=day).first():
-            continue
+        existing_set = DailyTaskSet.query.filter_by(user_id=user_id, target_date=day).first()
+        if existing_set:
+            if DailyTaskItem.query.filter_by(daily_set_id=existing_set.id).first():
+                continue
+            # пустой битый сет без задач (например failed) — убираем, чтобы не блокировал долг
+            try:
+                db.session.delete(existing_set)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                continue
+        got_tasks = False
         try:
             res = build_daily_set(user_id, day)
             if res.get('items'):
-                issued += 1
+                got_tasks = True
         except Exception as e:  # noqa: BLE001
             db.session.rollback()
             logger.warning("daily_debt: skipped-lesson set failed user=%d day=%s: %s",
                            user_id, day, e)
+        if not got_tasks:
+            got_tasks = _issue_fallback_debt_set(user_id, day, lesson)
+        if got_tasks:
+            issued += 1
     if issued:
         logger.info("daily_debt: user=%d выданы задачи за %d пропущенных занятий",
                     user_id, issued)

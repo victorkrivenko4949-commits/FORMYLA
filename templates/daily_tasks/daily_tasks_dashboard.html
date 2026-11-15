@@ -944,17 +944,26 @@
   </div>
   {% endif %}
 
-  <!-- P4 DEBT block: показываем всегда (в любой день, а не только когда
-       готовы задачи дня) — владелец, 05.11 -->
-    {% if data and data.debt and data.debt.total %}
-    <div class="dt-debt-block">
+  <!-- P4 DEBT block: кнопка «Открыть долги» всегда доступна (в любой день и даже при 0 долгах) -->
+    {% if not (data and data.status == 'teacher') %}
+    {% set _debt_tasks_total = (data.debt.total if data and data.debt and data.debt.total else 0) %}
+    {% set _debt_dates = (data.debt.by_date | map(attribute='date') | list) if (data and data.debt and data.debt.by_date) else [] %}
+    {% set _session_debts = (data.session.debts if data and data.session and data.session.active and data.session.debts else []) %}
+    {% set _extra_debts = [] %}
+    {% for _sd in _session_debts %}
+      {% if _sd.lesson_type != 'practice' or (_sd.assigned_date and _sd.assigned_date[:10] not in _debt_dates) %}
+        {% set _ = _extra_debts.append(_sd) %}
+      {% endif %}
+    {% endfor %}
+    <div class="dt-debt-block" id="dt-debt-block">
       <button type="button" class="dt-debt-toggle-btn" id="dt-debt-toggle" onclick="toggleDebt()">
-        <span>&#9203; Открыть долг: {{ data.debt.total }} задач</span>
+        <span id="dt-debt-toggle-label">&#9203; Открыть долги{% if _debt_tasks_total %}: {{ data.debt.total }} задач{% elif _extra_debts %}: {{ _extra_debts|length }} зан.{% endif %}</span>
         <span class="dt-debt-toggle-arrow" id="dt-debt-toggle-arrow">&#9660;</span>
       </button>
       <div class="dt-debt-body dt-hidden" id="dt-debt-body">
+        {% if _debt_tasks_total %}
         <div class="dt-debt-header">
-          <span class="dt-debt-title">Долг: {{ data.debt.total }} задач</span>
+          <span class="dt-debt-title" id="dt-debt-body-title">Долг: {{ data.debt.total }} задач</span>
           <span class="dt-debt-hint">Нерешённые задачи прошлых дней — реши, пока не сгорели</span>
         </div>
         {% for _grp in data.debt.by_date %}
@@ -963,7 +972,7 @@
           {% for _dt in _grp.tasks %}
           <div class="dt-debt-item" data-debt-item-id="{{ _dt.id }}">
             {% if _dt.figure_url %}<img class="dt-debt-item-figure" src="{{ _dt.figure_url }}" alt="Чертёж" loading="lazy">{% endif %}
-            <span class="dt-debt-item-topic">#{{ _dt.position }} {{ _dt.topic or '' }}</span>
+            <span class="dt-debt-item-topic">#{{ _dt.position or loop.index }} {{ _dt.topic or '' }}</span>
             {% if _dt.difficulty_level %}<span class="dt-debt-item-level">уровень {{ _dt.difficulty_level }}</span>{% endif %}
             {% if _dt.days_left is not none %}<span class="dt-debt-item-days">{% if _dt.days_left >= 0 %}{{ _dt.days_left }} дн.{% else %}сгорел{% endif %}</span>{% endif %}
             <button type="button" class="dt-debt-item-open" onclick="openDebtTask({{ _dt.id }})">Открыть задачу <span aria-hidden="true">&rarr;</span></button>
@@ -971,6 +980,28 @@
           {% endfor %}
         </div>
         {% endfor %}
+        {% endif %}
+        {% if _extra_debts %}
+        <div class="dt-debt-group"{% if _debt_tasks_total %} style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(229,172,58,0.15);"{% endif %}>
+          <div class="dt-debt-group-date">Пропущенные занятия</div>
+          {% for _sd in _extra_debts %}
+          <div class="dt-debt-item">
+            <span class="dt-debt-item-topic">{{ _sd.lesson_label }}{% if _sd.method_name %} · {{ _sd.method_name }}{% elif _sd.theme %} · {{ _sd.theme }}{% elif _sd.probnik_title %} · {{ _sd.probnik_title }}{% endif %}</span>
+            {% if _sd.assigned_date %}<span class="dt-debt-item-level">{{ _sd.assigned_date[:10] }}</span>{% endif %}
+            {% if _sd.lesson_type == 'method' and _sd.cta_url %}
+            <a class="dt-debt-item-open" href="{{ _sd.cta_url }}" style="text-decoration:none;">Изучить метод <span aria-hidden="true">&rarr;</span></a>
+            {% elif _sd.lesson_type == 'probnik' and _sd.cta_url %}
+            <a class="dt-debt-item-open" href="{{ _sd.cta_url }}" style="text-decoration:none;">Открыть пробник <span aria-hidden="true">&rarr;</span></a>
+            {% else %}
+            <span class="dt-debt-item-days">истёк срок</span>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if not _debt_tasks_total and not _extra_debts %}
+        <div class="dt-debt-empty" style="padding:8px 4px;color:var(--muted);font-size:13px;">Активных долгов сейчас нет — все задания выполнены.</div>
+        {% endif %}
       </div>
     </div>
     {% endif %}
@@ -2156,12 +2187,52 @@
                     break;
                   }
                 }
-                initDataEl.textContent = JSON.stringify(d);
                 if (a.set_progress && typeof a.set_progress.completed === 'number') {
                   d.progress = { completed: a.set_progress.completed, total: a.set_progress.total };
-                  try { initDataEl.textContent = JSON.stringify(d); } catch (_e5) {}
                 }
               }
+              if (d.debt && d.debt.by_date) {
+                var _debtUpdated = false;
+                var _debtRemaining = 0;
+                for (var _dg = 0; _dg < d.debt.by_date.length; _dg++) {
+                  var _dtasks = d.debt.by_date[_dg].tasks || [];
+                  for (var _dt2 = 0; _dt2 < _dtasks.length; _dt2++) {
+                    if (String(_dtasks[_dt2].id) === String(dtCurrentItem.id)) {
+                      _dtasks[_dt2].is_answered = true;
+                      _dtasks[_dt2].user_answer = raw;
+                      _dtasks[_dt2].is_correct = !!ok;
+                      _dtasks[_dt2].ai_feedback = a.feedback || '';
+                      if (a.solution) _dtasks[_dt2].solution = a.solution;
+                      _debtUpdated = true;
+                    }
+                    if (!_dtasks[_dt2].is_answered) _debtRemaining++;
+                  }
+                }
+                if (_debtUpdated) {
+                  d.debt.total = _debtRemaining;
+                  var _row = document.querySelector('.dt-debt-item[data-debt-item-id="' + dtCurrentItem.id + '"]');
+                  if (_row) {
+                    var _openBtn = _row.querySelector('.dt-debt-item-open');
+                    if (_openBtn) {
+                      _openBtn.textContent = ok ? '\u2713 Решено' : 'Отвечено';
+                      _openBtn.style.background = ok ? 'rgba(62, 207, 142, 0.2)' : 'rgba(232, 106, 98, 0.2)';
+                      _openBtn.style.color = ok ? '#3ECF8E' : '#E86A62';
+                      _openBtn.style.boxShadow = 'none';
+                    }
+                  }
+                  var _lbl = document.getElementById('dt-debt-toggle-label');
+                  if (_lbl) {
+                    _lbl.innerHTML = _debtRemaining > 0
+                      ? '&#9203; Открыть долги: ' + _debtRemaining + ' задач'
+                      : '&#9203; Открыть долги';
+                  }
+                  var _bt = document.getElementById('dt-debt-body-title');
+                  if (_bt) {
+                    _bt.textContent = _debtRemaining > 0 ? 'Долг: ' + _debtRemaining + ' задач' : 'Задачи долга решены';
+                  }
+                }
+              }
+              initDataEl.textContent = JSON.stringify(d);
             }
           } catch (_e3) {}
           // Счётчик «Выполнено X/Y» в шапке — сразу, без перезагрузки.
@@ -2298,9 +2369,10 @@
               correct_answer: it.correct_answer,
               solution: it.solution,
               figure_url: it.figure_url,
-              is_answered: false,
-              user_answer: null,
-              is_correct: null
+              is_answered: !!it.is_answered,
+              user_answer: it.user_answer || null,
+              is_correct: (typeof it.is_correct === 'boolean' ? it.is_correct : null),
+              ai_feedback: it.ai_feedback || ''
             });
             return;
           }

@@ -335,24 +335,29 @@ def pilot_session_today(user_id: int) -> dict:
             chosen = None
 
         started = None
+        now = datetime.utcnow()
         try:
-            row = None
             from sqlalchemy import text as _t
-            row = __import__('models').db.session.execute(_t(
-                'SELECT started_at FROM subscriptions '
-                'WHERE user_id = :u AND status = :s ORDER BY id DESC LIMIT 1'),
-                {'u': user_id, 's': 'active'}).first()
-            if row and row[0]:
-                started = row[0]
+            rows = __import__('models').db.session.execute(_t(
+                "SELECT started_at FROM subscriptions "
+                "WHERE user_id = :u AND status IN ('active', 'superseded')"),
+                {'u': user_id}).fetchall()
+            grace_now = now + timedelta(seconds=5)
+            candidates = []
+            for r in rows:
+                v = r[0] if r else None
+                if not v:
+                    continue
+                dt = v if isinstance(v, datetime) else datetime.fromisoformat(str(v).replace('Z', '').replace(' ', 'T')[:19])
+                if dt <= grace_now:
+                    candidates.append(dt)
+            if candidates:
+                started = min(candidates)
         except Exception:
             pass
         if started is None:
-            started = datetime.utcnow()
-        # Raw-SQL без типизации может вернуть строку (SQLite) — парсим
-        if isinstance(started, str):
-            started = datetime.fromisoformat(started[:19])
+            started = now
 
-        now = datetime.utcnow()
         days_in = max(0, (now - started).days)
         week = days_in // 7 + 1
         weekday = now.weekday()  # 0=Пн … 6=Вс
