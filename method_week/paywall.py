@@ -177,3 +177,13 @@ def install_paywall(app) -> None:
     logger.info("paywall installed: enabled=%s start=%s prefixes=%s",
                 _env_bool('PAYWALL_ENABLED', True),
                 os.environ.get('PAYWALL_START_DATE', '2026-10-01'), paid_prefixes())
+
+    # SEAT_PREMIUM_V1 (15.11.2026): подписка на места выдаёт привязанным
+    # ученикам Premium «Работяга». Хук ставится первым в before_request,
+    # поэтому guard выше уже видит выданный Premium. Сбой подключения
+    # не должен ронять старт приложения.
+    try:
+        from services.seat_premium import install_seat_premium
+        install_seat_premium(app)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("seat_premium: install failed: %r", exc)
