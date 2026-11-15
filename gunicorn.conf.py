@@ -15,6 +15,11 @@ USER_LAST_SEEN_V1 (18.10.2026): блок «Последний заход — к�
 раз» на /admin/users (Jinja-глобал user_last_seen_block) и страница /admin/users/last_seen.
 Живёт в том же services/user_returns.py и выключается тем же USER_RETURNS_DISABLED=1.
 
+METHODS_AUTH_GATE_V1 (15.11.2026): раздел «102 метода» (/olympiads/methods/* и
+/static/methods/*) открыт только зарегистрированным; анонимов и гостей перекидывает
+на /register. Логика — в services/methods_auth_gate.py.
+Отключение без деплоя кода: env METHODS_GATE_DISABLED=1.
+
 Если когда-нибудь строка
     from services.site_stats import register as _register_site_stats; _register_site_stats(app)
 появится в app.py — повторный вызов здесь безопасен (есть защита от двойной регистрации).
@@ -98,11 +103,26 @@ def _register_user_returns(app):
         _log.warning('USER_RETURNS_V1: register failed: %r', e)
 
 
+def _register_methods_gate(app):
+    if os.environ.get('METHODS_GATE_DISABLED') == '1':
+        _log.info('METHODS_AUTH_GATE_V1: disabled by env')
+        return
+    if getattr(app, '_methods_auth_gate_registered', False):
+        return
+    try:
+        from services.methods_auth_gate import register
+        register(app)
+        _log.info('METHODS_AUTH_GATE_V1: registered via gunicorn.conf.py')
+    except Exception as e:  # никогда не роняем воркер из-за гейта
+        _log.warning('METHODS_AUTH_GATE_V1: register failed: %r', e)
+
+
 def post_worker_init(worker):
     """Вызывается после того, как воркер загрузил app:app, но до первого запроса."""
     app = _flask_app(worker)
     if app is None or not hasattr(app, 'register_blueprint'):
         _log.warning('gunicorn.conf.py: Flask app not found on worker, skip hooks')
         return
+    _register_methods_gate(app)
     _register_section_stats(app)
     _register_user_returns(app)
