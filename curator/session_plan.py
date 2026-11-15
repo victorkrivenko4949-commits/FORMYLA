@@ -134,22 +134,57 @@ def _pilot(user_id: int) -> bool:
         return False
 
 
+def _parse_dt(val) -> Optional[datetime]:
+    """Безопасно разобрать datetime/date/ISO-строку из БД в naive UTC datetime."""
+    if val is None:
+        return None
+    if isinstance(val, datetime):
+        return val.replace(tzinfo=None) if val.tzinfo else val
+    if isinstance(val, date):
+        return datetime(val.year, val.month, val.day)
+    try:
+        s = str(val).strip()
+        if not s:
+            return None
+        s = s.replace('Z', '').replace(' ', 'T')
+        if '+' in s[10:]:
+            s = s.split('+', 1)[0]
+        return datetime.fromisoformat(s)
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def _pilot_variant(user_id: int) -> Optional[str]:
     """Активный пилотный тариф (premium_intense / premium_calm) или None.
 
-    Один лёгкий SQL-запрос к subscriptions (как _premium_started_at).
+    Предпочитает уже начавшуюся подписку (started_at <= now) над будущим
+    отложенным продлением, чтобы тариф не сбивался до даты начала продления.
     """
     try:
-        from datetime import datetime
-        row = db.session.execute(text(
-            "SELECT plan FROM subscriptions "
+        rows = db.session.execute(text(
+            "SELECT id, plan, started_at, expires_at FROM subscriptions "
             "WHERE user_id = :uid AND status = 'active' "
-            "  AND (expires_at IS NULL OR expires_at > :now) "
             "  AND plan IN ('premium_intense', 'premium_calm') "
-            "ORDER BY id DESC LIMIT 1"),
-            {'uid': int(user_id),
-             'now': datetime.utcnow().isoformat()}).fetchone()
-        return row[0] if row else None
+            "ORDER BY id DESC"),
+            {'uid': int(user_id)}).fetchall()
+        if not rows:
+            return None
+        now = datetime.utcnow()
+        grace_now = now + timedelta(seconds=5)
+        active_now = []
+        active_future = []
+        for r in rows:
+            exp = _parse_dt(r[3])
+            if exp is not None and exp <= now:
+                continue
+            st = _parse_dt(r[2])
+            if st is None or st <= grace_now:
+                active_now.append(r[1])
+            else:
+                active_future.append(r[1])
+        if active_now:
+            return active_now[0]
+        return active_future[0] if active_future else None
     except Exception as e:  # noqa: BLE001
         logger.warning('[session_plan] variant lookup failed: %r', e)
         return None
@@ -317,16 +352,26 @@ def _completed_count(user_id: int) -> int:
 
 
 def _premium_started_at(user_id: int):
-    """Дата начала активной premium-подписки (для правила «неделя 1»)."""
+    """Дата начала активной premium-подписки (для правила «неделя 1»).
+
+    Берём самую раннюю УЖЕ НАЧАВШУЮСЯ подписку (started_at <= now) среди
+    active/superseded, игнорируя будущие отложенные продления/бонусы, чтобы
+    не получать отрицательный «день -19 из 7» (баг 15.11.2026).
+    """
     try:
-        row = db.session.execute(text(
+        rows = db.session.execute(text(
             "SELECT started_at FROM subscriptions "
-            "WHERE user_id = :uid AND status = 'active' "
-            "AND plan IN ('premium_intense', 'premium_calm') "
-            "ORDER BY id DESC LIMIT 1"
-        ), {'uid': user_id}).fetchone()
-        if row and row[0]:
-            return row[0]
+            "WHERE user_id = :uid AND status IN ('active', 'superseded') "
+            "AND plan IN ('premium_intense', 'premium_calm')"
+        ), {'uid': int(user_id)}).fetchall()
+        grace_now = datetime.utcnow() + timedelta(seconds=5)
+        started_dates = []
+        for r in rows:
+            dt = _parse_dt(r[0]) if r else None
+            if dt is not None and dt <= grace_now:
+                started_dates.append(dt)
+        if started_dates:
+            return min(started_dates)
     except Exception as e:  # noqa: BLE001
         logger.warning('[session_plan] started_at lookup failed: %r', e)
     return None
@@ -358,8 +403,9 @@ def _week1_end_date(user_id: int) -> Optional[date]:
     if not started:
         return None
     try:
-        s = started if isinstance(started, datetime) else datetime.fromisoformat(
-            str(started).replace('Z', '').replace(' ', 'T'))
+        s = _parse_dt(started)
+        if not s:
+            return None
         return (s + timedelta(days=7)).date()
     except Exception:
         return None
@@ -368,7 +414,10 @@ def _week1_end_date(user_id: int) -> Optional[date]:
 def _is_diag_date(user_id: int, d: date) -> bool:
     """Диагностический день «недели 1»? (только тест и задачи дня)"""
     w1e = _week1_end_date(user_id)
-    return bool(w1e and d < w1e)
+    if not w1e:
+        return False
+    start_d = w1e - timedelta(days=7)
+    return start_d <= d < w1e
 
 
 def _diag_count(lessons: List[Dict[str, Any]], week1_end: Optional[date]) -> int:
@@ -783,12 +832,107 @@ def maybe_complete_practice(user_id: int, daily_set_id: int) -> bool:
     return False
 
 
+def resolve_skipped_practice_for_date(user_id: int, target_date: date) -> bool:
+    """Закрыть пропущенное занятие-практику (status='skipped'), если все
+    долговые задачи за эту дату (DailyTaskSet или BankIssue) отвечены."""
+    try:
+        if not _pilot(user_id) or not target_date:
+            return False
+        if isinstance(target_date, str):
+            target_date = _to_date(target_date)
+        if not target_date or target_date >= date.today():
+            return False
+        skipped = [
+            l for l in _lessons(user_id)
+            if l.get('status') == 'skipped'
+            and l.get('lesson_type') == 'practice'
+            and _to_date(l.get('assigned_date')) == target_date
+        ]
+        if not skipped:
+            return False
+        from daily_tasks.models import DailyTaskItem, DailyTaskSet
+        from models import BankIssue
+        ds = DailyTaskSet.query.filter_by(user_id=user_id, target_date=target_date).first()
+        bank_rows = BankIssue.query.filter_by(user_id=user_id, issued_date=target_date).all()
+        answered_any = False
+        if ds:
+            items = DailyTaskItem.query.filter_by(daily_set_id=ds.id).all()
+            if items:
+                if not all(it.user_answer is not None for it in items):
+                    return False
+                answered_any = True
+        if bank_rows:
+            if not all(bi.user_answer is not None for bi in bank_rows):
+                return False
+            answered_any = True
+        if not answered_any:
+            return False
+        now = datetime.utcnow()
+        for l in skipped:
+            db.session.execute(text(
+                f"UPDATE {TABLE_NAME} SET status = 'completed', completed_at = :now "
+                f"WHERE id = :lid AND status = 'skipped'"
+            ), {'now': now, 'lid': l['id']})
+        db.session.commit()
+        logger.info('[session_plan] resolved %d skipped practice lesson(s) user=%s date=%s',
+                    len(skipped), user_id, target_date)
+        return True
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[session_plan] resolve_skipped_practice failed: %r', e)
+        try:
+            db.session.rollback()
+        except Exception:  # noqa: BLE001
+            pass
+    return False
+
+
+def _resolve_skipped_method_for_set(user_id: int, s) -> bool:
+    """Закрыть пропущенный метод (status='skipped'), если его метод-сет решён."""
+    try:
+        from method_week.models import MethodWeekAnswer
+        import json as _json
+        set_method = getattr(s, 'method_code', None)
+        if not set_method:
+            return False
+        skipped = [
+            l for l in _lessons(user_id)
+            if l.get('status') == 'skipped'
+            and l.get('lesson_type') == 'method'
+            and l.get('method_code') == set_method
+        ]
+        if not skipped:
+            return False
+        tasks = _json.loads(s.tasks_json) if isinstance(s.tasks_json, str) else (s.tasks_json or [])
+        if not tasks:
+            return False
+        answered = {a.position for a in MethodWeekAnswer.query.filter_by(set_id=s.id).all() if a.user_answer}
+        if not all(int(t.get('position') or 0) in answered for t in tasks):
+            return False
+        now = datetime.utcnow()
+        for l in skipped:
+            db.session.execute(text(
+                f"UPDATE {TABLE_NAME} SET status = 'completed', completed_at = :now, "
+                f"completed_set_id = :sid WHERE id = :lid AND status = 'skipped'"
+            ), {'now': now, 'sid': s.id, 'lid': l['id']})
+        db.session.commit()
+        logger.info('[session_plan] resolved skipped method=%s user=%s', set_method, user_id)
+        return True
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[session_plan] resolve_skipped_method failed: %r', e)
+        try:
+            db.session.rollback()
+        except Exception:  # noqa: BLE001
+            pass
+    return False
+
+
 def maybe_complete_method(user_id: int) -> bool:
     """Метод завершён, если все задачи метод-сета отвечены.
 
     Проверяем, что отвечен именно тот метод, который назначен текущим
     занятием (lesson.method_code): метод-сет другой недели не должен
-    закрывать назначенное занятие.
+    закрывать назначенное занятие. Если закрыт метод из пропущенного
+    долга (status='skipped'), закрывает и этот долг.
     """
     try:
         if not _pilot(user_id):
@@ -804,13 +948,14 @@ def maybe_complete_method(user_id: int) -> bool:
             return False
         lesson = _current_assigned(user_id)
         if not lesson or lesson['lesson_type'] != 'method':
-            return False
+            return _resolve_skipped_method_for_set(user_id, s)
         set_method = getattr(s, 'method_code', None)
         if lesson['method_code'] and set_method and lesson['method_code'] != set_method:
-            # сет ДРУГОЙ недели не закрывает занятие (прошлая неделя и т.п.)
+            # сет ДРУГОЙ недели не закрывает текущее занятие (прошлая неделя и т.п.),
+            # но может закрывать одноимённый пропущенный урок в долгах
             _ws = date.today() - timedelta(days=date.today().weekday())
             if not s.week_start or s.week_start != _ws:
-                return False
+                return _resolve_skipped_method_for_set(user_id, s)
             # Неделя пересекла границу месяца после создания сета: кнопка и
             # задачи указывают на метод сета — переуказываем метод занятия
             # на фактический (прогресс и ответы не трогаем), иначе занятие
@@ -1065,12 +1210,25 @@ def session_info(user_id: int) -> Dict[str, Any]:
             'lesson_type': l['lesson_type'],
             'lesson_label': LESSON_LABELS.get(l['lesson_type'], l['lesson_type']),
             'theme': l['theme'],
+            'method_code': l.get('method_code'),
             'method_name': l['method_name'],
+            'probnik_code': l.get('probnik_code'),
             'probnik_title': l['probnik_title'],
+            'cta_url': (
+                (f"/olympiads/methods#/methods/{l['method_code']}"
+                 if l.get('method_code') else '/olympiads/methods')
+                if l['lesson_type'] == 'method'
+                else ('/daily_tasks' if l['lesson_type'] == 'practice' else '/probnik')
+            ),
             'assigned_date': (l['assigned_date'].isoformat()
                               if hasattr(l['assigned_date'], 'isoformat')
                               else str(l['assigned_date'] or '')),
         } for l in lessons if l['status'] == 'skipped']
+        _w1e_diag = _week1_end_date(user_id) if week_one else None
+        _diag_day_num = (
+            max(1, min(7, (date.today() - (_w1e_diag - timedelta(days=7))).days + 1))
+            if (week_one and _w1e_diag) else None
+        )
         return {
             'active': True,
             'seq': lesson['seq'],
@@ -1081,9 +1239,7 @@ def session_info(user_id: int) -> Dict[str, Any]:
             'completed_lessons': completed,
             'week_one': week_one,
             # день диагностики N из 7 (для текста «Сегодня — диагностика»)
-            'diag_day_num': (
-                (date.today() - (_week1_end_date(user_id) - timedelta(days=7))).days + 1
-                if week_one else None),
+            'diag_day_num': _diag_day_num,
             'theme': lesson['theme'],
             'method_name': lesson['method_name'],
             'probnik_code': lesson['probnik_code'],
