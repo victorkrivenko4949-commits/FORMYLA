@@ -273,7 +273,12 @@ def funnel_counts(d_from: date, d_to: date) -> dict:
         FROM funnel_events WHERE created_at >= :s AND created_at < :e
         GROUP BY CASE WHEN event = 'limit_shown' THEN 'limit_hit' ELSE event END
     """, s=start, e=end)
-    return {str(r[0]): int(r[1] or 0) for r in rows}
+    counts = {str(r[0]): int(r[1] or 0) for r in rows}
+    from services.payment_stats import payment_query
+    counts['payment_success'] = int(payment_query(
+        "COUNT(DISTINCT COALESCE(CAST(user_id AS TEXT), payment_id))",
+        'paid_at >= :s AND paid_at < :e', s=start, e=end)[0][0])
+    return counts
 
 
 def funnel_by_day(d_from: date, d_to: date):
@@ -286,23 +291,22 @@ def funnel_by_day(d_from: date, d_to: date):
     out = {}
     for day, ev, n in rows:
         out.setdefault(str(day), {})[str(ev)] = int(n or 0)
+    from services.payment_stats import payment_query
+    from routes.admin_stats_sections import _day_expr as payment_day
+    for values in out.values():
+        values.pop('payment_success', None)
+    for day, n in payment_query(f"{payment_day('paid_at')}, COUNT(*)",
+                               'paid_at >= :s AND paid_at < :e',
+                               'GROUP BY 1', s=start, e=end):
+        out.setdefault(str(day), {})['payment_success'] = int(n)
     return out
 
 
 def revenue(d_from: date, d_to: date) -> float:
     start, end = _utc_bounds(d_from, d_to)
-    pg = False
-    try:
-        pg = _db().engine.dialect.name == 'postgresql'
-    except Exception:
-        pass
-    expr = "COALESCE((props->>'amount')::numeric, 0)" if pg else "COALESCE(CAST(json_extract(props, '$.amount') AS REAL), 0)"
-    rows = _q(f"SELECT COALESCE(SUM({expr}), 0) FROM funnel_events "
-              f"WHERE event = 'payment_success' AND created_at >= :s AND created_at < :e", s=start, e=end)
-    try:
-        return float(rows[0][0] or 0) if rows else 0.0
-    except Exception:
-        return 0.0
+    from services.payment_stats import payment_query
+    return float(payment_query('COALESCE(SUM(amount_rub), 0)',
+                               'paid_at >= :s AND paid_at < :e', s=start, e=end)[0][0])
 
 
 def dau(d: date) -> int:
@@ -330,12 +334,21 @@ def sources_table(d_from: date, d_to: date):
           AND fe.created_at >= :s AND fe.created_at < :e
         GROUP BY 1, 2
     """, s=start, e=end)
+    from services.payment_stats import payment_query
+    from routes.admin_stats_sections import _has_column
+    source_expr = ("(SELECT u.acq_source FROM users u WHERE u.id = payments.user_id)"
+                   if _has_column('users', 'acq_source') else 'NULL')
+    paid = {str(src or ''): int(n) for src, n in payment_query(
+        f"COALESCE({source_expr}, ''), COUNT(DISTINCT user_id)",
+        'paid_at >= :s AND paid_at < :e', 'GROUP BY 1', s=start, e=end)}
     table = {}
-    for src in set(list(visits.keys()) + [str(r[0] or '') for r in by_user]):
+    for src in set(list(visits.keys()) + [str(r[0] or '') for r in by_user] + list(paid)):
         table[src] = {'visit': visits.get(src, 0), 'signup': 0, 'intake_done': 0,
                       'first_task_solved': 0, 'payment_success': 0}
     for src, ev, n in by_user:
         table[str(src or '')][str(ev)] = int(n or 0)
+    for src, values in table.items():
+        values['payment_success'] = paid.get(src, 0)
     rows = []
     for src, d in table.items():
         rows.append({'source': src, 'title': SOURCE_TITLES.get(src, src or 'Не определён'), **d,
@@ -508,14 +521,14 @@ def subscription_rows(now: datetime | None = None):
     """По одной строке на пользователя: текущая подписка + суммы оплат."""
     from routes.admin_stats_sections import PLAN_PRICES, PLAN_TITLES
     now = now or datetime.utcnow()
-    from routes.admin_stats_sections import _has_column
-    nick = 'u.nickname' if _has_column('users', 'nickname') else "''"
+    from routes.admin_stats_sections import _has_column, _has_table
+    nick_expr = 'u.nickname' if _has_column('users', 'nickname') else "''"
     beta = 's.is_beta_access' if _has_column('subscriptions', 'is_beta_access') else '0'
     col = lambda c: f's.{c}' if _has_column('subscriptions', c) else 'NULL'
-    subs = _q(f"""SELECT s.id, s.user_id, {nick}, s.plan, s.status, {col('started_at')}, {col('expires_at')},
+    subs = _q(f"""SELECT s.id, s.user_id, {nick_expr}, s.plan, s.status, {col('started_at')}, {col('expires_at')},
                          {col('payment_id')}, {col('amount_rub')}, {beta}, {col('created_at')}
                   FROM subscriptions s LEFT JOIN users u ON u.id = s.user_id
-                  ORDER BY s.id LIMIT 50000""") or []
+                  ORDER BY s.id""") or []
     trials = {}
     if _has_column('subscriptions', 'is_trial'):
         trials = {int(r[0]): bool(r[1]) for r in (_q("SELECT id, is_trial FROM subscriptions") or [])}
@@ -527,12 +540,33 @@ def subscription_rows(now: datetime | None = None):
         d['subs'].append(dict(id=int(sid), plan=str(plan), status=str(status), started=_dt(started or created),
                               expires=_dt(expires), pay_id=pay_id, amount=int(amount or 0),
                               beta=bool(beta), trial=trials.get(int(sid), False)))
+    # Seat subscriptions belong to the paying parent/teacher. Keep them beside
+    # Premium, including when the same person also has a personal subscription.
+    if _has_table('seat_subscriptions'):
+        seat_subs = _q(f"""SELECT s.id, s.user_id, {nick_expr}, s.plan, s.activated_at,
+                                 s.expires_at, s.payment_id
+                          FROM seat_subscriptions s LEFT JOIN users u ON u.id = s.user_id
+                          ORDER BY s.id""")
+        for sid, uid, nickname, plan, started, expires, pay_id in seat_subs:
+            d = by_user.setdefault((int(uid), 'seats'), {'nick': nickname, 'subs': []})
+            d['subs'].append(dict(id=int(sid), plan=str(plan), status='active',
+                                 started=_dt(started), expires=_dt(expires), pay_id=pay_id,
+                                 amount=0, beta=False, trial=False))
+    from services.payment_stats import payment_query
+    paid_by_user = {}
+    for uid, plan, amount, count in payment_query(
+            'user_id, plan, SUM(amount_rub), COUNT(*)', suffix='GROUP BY user_id, plan'):
+        key = (int(uid), str(plan).startswith('seat_')) if uid is not None else None
+        total, n = paid_by_user.get(key, (0, 0))
+        paid_by_user[key] = (total + float(amount or 0), n + int(count))
     rows = []
-    for uid, d in by_user.items():
+    for user_key, d in by_user.items():
+        uid = user_key[0] if isinstance(user_key, tuple) else user_key
+        is_seat = isinstance(user_key, tuple)
         lst = d['subs']
         live = [x for x in lst if x['status'] == 'active' and (x['expires'] is None or x['expires'] > now)]
         cur = max(live, key=lambda x: x['id']) if live else max(lst, key=lambda x: x['id'])
-        paid = [x for x in lst if x['pay_id'] and not x['beta'] and not x['trial']]
+        paid_total, paid_count = paid_by_user.get((uid, is_seat), (0, 0))
         if live:
             left = (cur['expires'] - now).days if cur['expires'] else None
             state = 'expiring' if (cur['expires'] and cur['expires'] <= now + timedelta(days=7)) else 'active'
@@ -544,7 +578,7 @@ def subscription_rows(now: datetime | None = None):
         rows.append(dict(user_id=uid, nick=d['nick'] or '', plan=cur['plan'], plan_title=PLAN_TITLES.get(cur['plan'], cur['plan']),
                          kind=kind, kind_title=SUB_KINDS[kind], state=state, state_title=SUB_STATES[state],
                          started=cur['started'], expires=cur['expires'], days_left=left,
-                         paid_total=sum(x['amount'] for x in paid), paid_count=len(paid),
+                         paid_total=paid_total, paid_count=paid_count,
                          mrr=price if (kind == 'paid' and state in ('active', 'expiring')) else 0))
     # триал, выданный через users.trial_until без строки в subscriptions
     trial_sql = ("SELECT id, nickname, trial_until FROM users WHERE trial_until IS NOT NULL"
@@ -563,6 +597,7 @@ def subscription_rows(now: datetime | None = None):
 
 
 def view_subscriptions(s):
+    from services.payment_stats import payment_query
     d_from, d_to, _ = period_from_request()
     now = datetime.utcnow()
     rows = subscription_rows(now)
@@ -585,7 +620,7 @@ def view_subscriptions(s):
         mrr=sum(r['mrr'] for r in rows),
         new=sum(1 for r in rows if r['started'] and start <= r['started'] < end),
         churn=sum(1 for r in rows if r['state'] in ('expired', 'cancelled') and r['expires'] and start <= r['expires'] < end),
-        revenue=sum(r['paid_total'] for r in rows),
+        revenue=payment_query('COALESCE(SUM(amount_rub), 0)')[0][0],
     )
     shown = [r for r in rows if (live(r) if flt == 'active' else (r['state'] == flt if flt != 'all' else True))]
     if q:
