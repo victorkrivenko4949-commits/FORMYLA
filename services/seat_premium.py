@@ -196,6 +196,39 @@ def sync_child_seat_premium(child_id: int) -> str:
         return 'error'
 
 
+def sync_all_seat_premiums() -> int:
+    """Разовая синхронизация всех уже привязанных учеников с активными местами.
+
+    Нужна, чтобы ученики, привязанные до выката SEAT_PREMIUM_V1 или
+    не заходившие после привязки, сразу получили seat-Premium в БД.
+    Никогда не бросает.
+    """
+    now = datetime.utcnow()
+    ids = set()
+    queries = (
+        "SELECT DISTINCT l.child_id FROM parent_child_links l"
+        " JOIN seat_subscriptions s ON s.user_id = l.parent_id"
+        " WHERE l.status = 'accepted' AND s.expires_at > :now",
+        "SELECT DISTINCT m.user_id FROM teacher_group_members m"
+        " JOIN teacher_groups g ON g.id = m.group_id"
+        " JOIN seat_subscriptions s ON s.user_id = g.teacher_id"
+        " WHERE m.status = 'accepted' AND s.expires_at > :now",
+    )
+    for q in queries:
+        try:
+            for r in db.session.execute(text(q), {'now': now}).fetchall():
+                if r[0]:
+                    ids.add(int(r[0]))
+        except Exception as exc:  # noqa: BLE001
+            db.session.rollback()
+            logger.warning('[seat_premium] backfill query failed: %r', exc)
+    count = 0
+    for cid in sorted(ids):
+        if sync_child_seat_premium(cid) in ('activated', 'extended'):
+            count += 1
+    return count
+
+
 def install_seat_premium(app) -> None:
     """before_request-хук: ленивая синхронизация seat-Premium для учеников.
 
@@ -210,10 +243,13 @@ def install_seat_premium(app) -> None:
         try:
             if not seat_premium_enabled():
                 return None
-            from flask import request
+            from flask import current_app, request
             path = request.path or ''
             if path.startswith('/static') or path == '/healthz':
                 return None
+            if not current_app.extensions.get('seat_premium_backfilled'):
+                current_app.extensions['seat_premium_backfilled'] = True
+                sync_all_seat_premiums()
             from flask_login import current_user
             if not getattr(current_user, 'is_authenticated', False):
                 return None

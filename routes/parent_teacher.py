@@ -229,6 +229,12 @@ def _premium_brief(user_id: int):
     Кэш-запросов нет — страниц с детьми/группами немного, запрос лёгкий.
     """
     try:
+        from services.seat_premium import seat_premium_enabled, sync_child_seat_premium
+        if seat_premium_enabled():
+            sync_child_seat_premium(int(user_id))
+    except Exception:
+        pass
+    try:
         from services.subscription import get_subscription_service
         plan = get_subscription_service().get_user_plan(user_id)
         if plan.get('is_premium'):
