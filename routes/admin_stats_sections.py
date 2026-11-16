@@ -29,6 +29,9 @@ PLAN_PRICES = {  # ₽ в месяц для MRR
     'premium_intense': 800, 'premium_calm': 500,
     'student_month': 490, 'student_year': 2990 / 12,
     'family_month': 890, 'teacher_month': 1990,
+    'seat_one': 800, 'seat_start': 1500, 'seat_group': 3000, 'seat_kruzhok': 5000,
+    'seat_parent_one': 800, 'seat_parent_family': 1500, 'seat_parent_big': 1500,
+    'seat_teacher_start': 1500, 'seat_teacher_group': 3000, 'seat_teacher_kruzhok': 5000,
 }
 PLAN_TITLES = {
     'premium_intense': 'Работяга / мес (800 ₽)', 'premium_calm': 'Спокойный / мес (500 ₽)',
@@ -36,6 +39,12 @@ PLAN_TITLES = {
     'student_month': 'Ученик / мес', 'student_year': 'Ученик / год', 'family_month': 'Семья / мес',
     'teacher_month': 'Учитель / мес', 'probe_once': 'Пробник (разово)', 'sheet_once': 'PDF-листок (разово)',
     'method_week_once': 'Неделя метода (разово)', 'free': 'Бесплатный',
+    'diamond_badge': 'Значок «Алмаз»',
+    'seat_one': '1 место / мес (800 ₽)', 'seat_start': '5 мест / мес (1500 ₽)',
+    'seat_group': '15 мест / мес (3000 ₽)', 'seat_kruzhok': '50 мест / мес (5000 ₽)',
+    'seat_parent_one': 'Родитель: 1 место', 'seat_parent_family': 'Родитель: семья',
+    'seat_parent_big': 'Родитель: большая семья', 'seat_teacher_start': 'Учитель: старт',
+    'seat_teacher_group': 'Учитель: группа', 'seat_teacher_kruzhok': 'Учитель: кружок',
 }
 MRR_TARGET = 100_000
 FOUNDER_DEADLINE = date(2027, 1, 31)
@@ -222,34 +231,36 @@ def subscriptions(d_from: date, d_to: date):
 
 
 def payments(d_from: date, d_to: date):
+    from services.payment_stats import payment_query
     blocks = []
     start, end = _utc_bounds(d_from, d_to)
-    amt, plan, pid = _json_get('props', 'amount'), _json_get('props', 'plan'), _json_get('props', 'payment_id')
-    cast_amt = f"CAST({amt} AS NUMERIC)" if _pg() else f"CAST({amt} AS REAL)"
-    totals = _q(f"""SELECT COALESCE({plan}, '—'), COUNT(*), COALESCE(SUM({cast_amt}), 0)
-                    FROM funnel_events WHERE event = 'payment_success' AND created_at >= :s AND created_at < :e
-                    GROUP BY 1 ORDER BY 3 DESC""", s=start, e=end) or []
+    period = 'paid_at >= :s AND paid_at < :e'
+    totals = payment_query("COALESCE(plan, '—'), COUNT(*), COALESCE(SUM(amount_rub), 0)",
+                           period, 'GROUP BY 1 ORDER BY 3 DESC', s=start, e=end)
     total_sum = sum(float(r[2] or 0) for r in totals)
     total_n = sum(int(r[1] or 0) for r in totals)
     blocks.append({'type': 'cards', 'items': [
-        {'title': 'Оплат за период', 'value': total_n, 'sub': 'payment_success'},
+        {'title': 'Оплат за период', 'value': total_n, 'sub': 'подтверждённые покупки без повторов'},
         {'title': 'Выручка, ₽', 'value': f'{total_sum:,.0f}'.replace(',', ' '), 'sub': 'сумма оплат'},
         {'title': 'Средний чек, ₽', 'value': f'{(total_sum / total_n) if total_n else 0:,.0f}'.replace(',', ' '), 'sub': ''},
     ]})
     blocks.append({'type': 'table', 'title': 'По тарифам', 'header': ['Тариф', 'Оплат', 'Сумма, ₽'],
                    'rows': [[PLAN_TITLES.get(str(p), str(p)), int(n), f'{float(s or 0):,.0f}'.replace(',', ' ')] for p, n, s in totals],
                    'empty': 'Оплат пока нет.'})
-    last = _q(f"""SELECT created_at, user_id, {plan}, {amt}, {pid}
-                  FROM funnel_events WHERE event = 'payment_success' ORDER BY created_at DESC LIMIT 100""") or []
-    blocks.append({'type': 'table', 'title': 'Последние 100 платежей', 'header': ['Когда (по Москве)', 'Пользователь', 'Тариф', 'Сумма, ₽', 'Номер платежа'],
-                   'rows': [[_msk_str(c), _user_link(u), PLAN_TITLES.get(str(p), p), a, i] for c, u, p, a, i in last], 'empty': 'Пусто.'})
-    if _has_table('subscriptions'):
-        subs = _q("""SELECT created_at, user_id, plan, amount_rub, payment_id, status FROM subscriptions
-                     WHERE payment_id IS NOT NULL ORDER BY id DESC LIMIT 50""") or []
-        blocks.append({'type': 'table', 'title': 'Оплаченные подписки (последние 50)',
-                       'header': ['Создана (по Москве)', 'Пользователь', 'Тариф', 'Сумма, ₽', 'Номер платежа', 'Статус'],
-                       'rows': [[_msk_str(c), _user_link(u), PLAN_TITLES.get(str(p), p), a, i, _status(s)] for c, u, p, a, i, s in subs],
-                       'empty': 'Оплаченных подписок пока нет.'})
+    csv = request.args.get('csv') == '1'
+    last = payment_query('paid_at, user_id, beneficiary_user_id, plan, amount_rub, payment_id',
+                         period, 'ORDER BY paid_at DESC' + ('' if csv else ' LIMIT 100'), s=start, e=end)
+    if csv:
+        from routes.admin_stats import csv_response
+        return csv_response(last, ('paid_at_utc', 'payer_id', 'beneficiary_id', 'plan', 'amount_rub', 'payment_id'),
+                            'payments.csv')
+    blocks.append({'type': 'table', 'title': 'Последние 100 платежей за период',
+                   'header': ['Когда (по Москве)', 'Кто оплатил', 'Получатель', 'Тариф', 'Сумма, ₽', 'Номер платежа'],
+                   'rows': [[_msk_str(c), _user_link(u), _user_link(b), PLAN_TITLES.get(str(p), p), a, i]
+                            for c, u, b, p, a, i in last], 'empty': 'Пусто.'})
+    blocks.append({'type': 'note', 'text': 'Все подтверждённые покупки: подписки учеников, родителей и учителей, '
+                   'подарки, продления и разовые покупки. Один платёж учитывается один раз. '
+                   'Демонстрационные и известные тестовые оплаты исключены. Полный список за период — в CSV.'})
     return blocks
 
 
@@ -336,6 +347,10 @@ def _page_users(paths, start, end) -> set:
 
 
 def _event_user_set(events_sql: str, start, end) -> set:
+    if events_sql == "'payment_success'":
+        from services.payment_stats import payment_query
+        return {int(r[0]) for r in payment_query('DISTINCT user_id',
+                'user_id IS NOT NULL AND paid_at >= :s AND paid_at < :e', s=start, e=end)}
     return {int(r[0]) for r in (_q(f"SELECT DISTINCT user_id FROM funnel_events WHERE user_id IS NOT NULL AND event IN ({events_sql}) "
                                     "AND created_at >= :s AND created_at < :e", s=start, e=end) or [])}
 
@@ -355,7 +370,7 @@ def paywall(d_from: date, d_to: date):
                 paid_try.add(int(uid))
         statuses = _q("SELECT COALESCE(item_code, '—'), status, COUNT(*) FROM yookassa_payments "
                       "WHERE created_at >= :s AND created_at < :e GROUP BY 1, 2 ORDER BY 3 DESC", s=start, e=end) or []
-    paid = _event_user_set("'payment_success'", start, end) | paid_try
+    paid = _event_user_set("'payment_success'", start, end)
     steps = [('Упёрлись в лимит', limit), ('Открыли витрину /subscribe', shop), ('Открыли оформление тарифа', checkout),
              ('Нажали «Оплатить» (создан платёж)', tried), ('Оплатили', paid)]
     rows, prev = [], None
