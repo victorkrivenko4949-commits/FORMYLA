@@ -652,11 +652,16 @@ def _resolve_probe_task(task_id):
                     _srez_svg = load_figure_svg(str(raw.get('task_uid') or ''))
                 except Exception:
                     _srez_svg = None
+                def _as_str(val):
+                    if isinstance(val, list):
+                        return "\n".join(str(x) for x in val if x is not None).strip()
+                    return str(val or '').strip()
+
                 return SimpleNamespace(
                     id=tid,
-                    task_text=(raw.get('text') or raw.get('statement') or '').strip(),
-                    correct_answer=(raw.get('answer') or '').strip(),
-                    solution=(raw.get('solution') or '').strip(),
+                    task_text=_as_str(raw.get('text') or raw.get('statement')),
+                    correct_answer=_as_str(raw.get('answer')),
+                    solution=_as_str(raw.get('solution')),
                     difficulty_level=int(raw.get('level', 1) or 1),
                     task_uid=str(raw.get('task_uid') or ''),
                     figure_svg=_srez_svg,
@@ -2218,14 +2223,19 @@ def _prep_answer_impl():
     # после ответа ученик видел ПОЛНЫЙ разбор (правильный ответ + решение),
     # даже если AI-проверка недоступна (feedback пустой) или srez-задача
     # без эталонного решения.
-    _ref_answer = (feedback.get('correct_answer') or '').strip()
-    _ref_solution = (feedback.get('solution') or '').strip()
+    def _norm_str(val):
+        if isinstance(val, list):
+            return "\n".join(str(x) for x in val if x is not None).strip()
+        return str(val or '').strip()
+
+    _ref_answer = _norm_str(feedback.get('correct_answer'))
+    _ref_solution = _norm_str(feedback.get('solution'))
     if not _ref_answer:
-        _ref_answer = (getattr(task, 'correct_answer', None) or '').strip()
+        _ref_answer = _norm_str(getattr(task, 'correct_answer', None))
     if not _ref_solution:
-        _ref_solution = (getattr(task, 'solution', None) or '').strip()
+        _ref_solution = _norm_str(getattr(task, 'solution', None))
         if not _ref_solution and isinstance(task, dict):
-            _ref_solution = (task.get('solution') or '').strip()
+            _ref_solution = _norm_str(task.get('solution'))
 
     result['ai_feedback'] = {
         'verdict': verdict,

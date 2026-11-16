@@ -1,52 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="600" height="500" viewBox="0 0 600 500" style="background-color: #0F1729;">
-<rect x="0" y="0" width="600" height="500" fill="#0F1729" />
-<circle cx="130.00" cy="400.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="116.00" y="412.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">A</text>
-<circle cx="570.00" cy="400.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="584.00" y="412.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">B</text>
-<circle cx="570.00" cy="100.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="584.00" y="88.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">C</text>
-<circle cx="130.00" cy="100.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="116.00" y="88.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">D</text>
-<line x1="130.00" y1="400.00" x2="570.00" y2="400.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
-<line x1="570.00" y1="400.00" x2="570.00" y2="100.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
-<line x1="570.00" y1="100.00" x2="130.00" y2="100.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
-<line x1="130.00" y1="100.00" x2="130.00" y2="400.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
-<line x1="130.00" y1="400.00" x2="570.00" y2="100.00" stroke="#A6B7CC" stroke-width="1.2" stroke-linecap="round" />
-<line x1="295.00" y1="400.00" x2="570.00" y2="340.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
-<line x1="570.00" y1="340.00" x2="472.22" y2="100.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
-<line x1="295.00" y1="400.00" x2="40.98" y2="455.42" stroke="#A6B7CC" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="5 4" />
-<circle cx="295.00" cy="400.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="295.00" y="386.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">K</text>
-<circle cx="570.00" cy="340.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="586.00" y="340.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">L</text>
-<circle cx="472.22" cy="100.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="472.22" y="86.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">M</text>
-<circle cx="52.35" cy="452.94" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="52.35" y="472.94" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">P</text>
-<circle cx="493.48" cy="152.17" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="476.48" y="146.17" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">Q</text>
-<line x1="205.00" y1="395.50" x2="205.00" y2="404.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="212.50" y1="395.50" x2="212.50" y2="404.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="220.00" y1="395.50" x2="220.00" y2="404.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="417.50" y1="395.50" x2="417.50" y2="404.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="425.00" y1="395.50" x2="425.00" y2="404.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="432.50" y1="395.50" x2="432.50" y2="404.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="440.00" y1="395.50" x2="440.00" y2="404.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="447.50" y1="395.50" x2="447.50" y2="404.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="565.50" y1="370.00" x2="574.50" y2="370.00" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="565.50" y1="231.25" x2="574.50" y2="231.25" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="565.50" y1="223.75" x2="574.50" y2="223.75" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="565.50" y1="216.25" x2="574.50" y2="216.25" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="565.50" y1="208.75" x2="574.50" y2="208.75" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="524.86" y1="104.50" x2="524.86" y2="95.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="517.36" y1="104.50" x2="517.36" y2="95.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="323.61" y1="104.50" x2="323.61" y2="95.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="316.11" y1="104.50" x2="316.11" y2="95.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="308.61" y1="104.50" x2="308.61" y2="95.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="301.11" y1="104.50" x2="301.11" y2="95.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="293.61" y1="104.50" x2="293.61" y2="95.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="286.11" y1="104.50" x2="286.11" y2="95.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="278.61" y1="104.50" x2="278.61" y2="95.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="500" viewBox="0 0 620 500" style="background-color: #0F1729;">
+<rect x="0" y="0" width="620" height="500" fill="#0F1729" />
+<polygon points="305.00,390.00 560.00,328.80 489.04,137.22" fill="#F6B44C" fill-opacity="0.14" stroke="none" />
+<line x1="560.00" y1="328.80" x2="233.60" y2="328.80" stroke="#73B6E6" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="6,4" />
+<line x1="152.00" y1="390.00" x2="80.00" y2="444.00" stroke="#A6B7CC" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="6,4" />
+<line x1="305.00" y1="390.00" x2="80.00" y2="444.00" stroke="#A6B7CC" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="6,4" />
+<line x1="152.00" y1="390.00" x2="560.00" y2="84.00" stroke="#A6B7CC" stroke-width="1.6" stroke-linecap="round" />
+<line x1="305.00" y1="390.00" x2="489.04" y2="137.22" stroke="#F6B44C" stroke-width="1.7" stroke-linecap="round" />
+<line x1="305.00" y1="390.00" x2="469.33" y2="84.00" stroke="#A6B7CC" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="5,4" />
+<line x1="305.00" y1="390.00" x2="560.00" y2="328.80" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
+<line x1="560.00" y1="328.80" x2="469.33" y2="84.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
+<polygon points="152.00,390.00 560.00,390.00 560.00,84.00 152.00,84.00" fill="none" stroke="#D9E5F5" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" />
+<circle cx="152.00" cy="390.00" r="3.50" fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.5" />
+<circle cx="560.00" cy="390.00" r="3.50" fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.5" />
+<circle cx="560.00" cy="84.00" r="3.50" fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.5" />
+<circle cx="152.00" cy="84.00" r="3.50" fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.5" />
+<circle cx="305.00" cy="390.00" r="3.50" fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.5" />
+<circle cx="560.00" cy="328.80" r="3.50" fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.5" />
+<circle cx="469.33" cy="84.00" r="3.50" fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.5" />
+<circle cx="80.00" cy="444.00" r="3.50" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.5" />
+<circle cx="489.04" cy="137.22" r="3.60" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.5" />
+<circle cx="233.60" cy="328.80" r="3.40" fill="#73B6E6" stroke="#73B6E6" stroke-width="1.5" />
+<text x="139.00" y="377.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">A</text>
+<text x="575.00" y="402.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">B</text>
+<text x="575.00" y="72.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">C</text>
+<text x="137.00" y="72.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">D</text>
+<text x="309.00" y="407.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">K</text>
+<text x="576.00" y="330.80" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">L</text>
+<text x="469.33" y="68.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">M</text>
+<text x="65.00" y="452.00" fill="#F6B44C" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">P</text>
+<text x="471.04" y="128.22" fill="#F6B44C" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">Q</text>
+<text x="219.60" y="318.80" fill="#73B6E6" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">R</text>
 </svg>

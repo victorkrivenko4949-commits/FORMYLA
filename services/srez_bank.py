@@ -79,6 +79,12 @@ def load() -> None:
         level = d.get("level")
         if grade is None or not theme_id or level is None:
             continue
+        sol = d.get("solution")
+        if isinstance(sol, list):
+            d["solution"] = "\n".join(str(x) for x in sol if x is not None).strip()
+        ans = d.get("answer")
+        if isinstance(ans, list):
+            d["answer"] = ", ".join(str(x) for x in ans if x is not None).strip()
         key = (int(grade), theme_id, int(level))
         _index.setdefault(key, []).append(d)
 
