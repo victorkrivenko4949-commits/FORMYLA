@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="500" viewBox="0 0 600 500" style="background-color: #0F1729;">
 <rect x="0" y="0" width="600" height="500" fill="#0F1729" />
-<line x1="436.89" y1="221.61" x2="140.00" y2="400.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
-<line x1="140.00" y1="400.00" x2="440.00" y2="400.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
-<line x1="440.00" y1="400.00" x2="436.89" y2="221.61" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
-<circle cx="290.00" cy="313.40" r="173.21" fill="none" stroke="#73B6E6" stroke-width="1.4" />
-<line x1="436.89" y1="221.61" x2="290.00" y2="486.60" stroke="#A6B7CC" stroke-width="1.3" stroke-linecap="round" />
-<polyline points="414.60,235.00 415.85,236.90 417.26,238.67 418.83,240.32 420.52,241.82 422.35,243.17 424.28,244.35 426.31,245.36 428.42,246.20 430.60,246.84 432.82,247.29 435.07,247.55 437.34,247.61" stroke="#A6B7CC" stroke-width="1.2" fill="none" stroke-linecap="round" />
-<text x="416.52" y="258.35" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">60°</text>
-<text x="375.00" y="244.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="11" text-anchor="middle" dominant-baseline="central">AI = 3</text>
-<text x="353.00" y="423.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="11" text-anchor="middle" dominant-baseline="central">IM = 4</text>
-<circle cx="436.89" cy="221.61" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="450.89" y="215.61" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">A</text>
-<circle cx="140.00" cy="400.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="126.00" y="410.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">B</text>
-<circle cx="440.00" cy="400.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="454.00" y="410.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">C</text>
-<circle cx="373.97" cy="335.11" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="355.97" y="335.11" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">I</text>
-<circle cx="290.00" cy="486.60" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="272.00" y="490.60" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">M</text>
+<circle cx="300.00" cy="240.00" r="160.00" fill="none" stroke="#73B6E6" stroke-width="1.5" />
+<circle cx="377.46" cy="260.00" r="60.00" fill="none" stroke="#7FD18A" stroke-width="1.2" stroke-dasharray="5,4" />
+<line x1="300.00" y1="400.00" x2="161.44" y2="320.00" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="6,4" />
+<line x1="300.00" y1="400.00" x2="438.56" y2="320.00" stroke="#F6B44C" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="6,4" />
+<polygon points="435.55,155.00 161.44,320.00 438.56,320.00" fill="none" stroke="#D9E5F5" stroke-width="1.9" stroke-linejoin="round" />
+<line x1="435.55" y1="155.00" x2="300.00" y2="400.00" stroke="#F6B44C" stroke-width="1.8" stroke-linecap="round" />
+<polyline points="406.42,172.53 407.00,173.45 407.60,174.35 408.22,175.22 408.88,176.08 409.56,176.92 410.27,177.73 411.00,178.52 411.76,179.29 412.54,180.03 413.35,180.75 414.18,181.44 415.03,182.10 415.90,182.74 416.79,183.35 417.70,183.93 418.62,184.49 419.57,185.01 420.53,185.50 421.50,185.96 422.49,186.39 423.50,186.79 424.51,187.16 425.54,187.49 426.57,187.79 427.62,188.06 428.67,188.30 429.73,188.50 430.80,188.67 431.87,188.80 432.94,188.90 434.02,188.97 435.10,189.00 436.17,188.99" fill="none" stroke="#A6B7CC" stroke-width="1.3" stroke-linecap="round" />
+<text x="399.46" y="192.43" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">60°</text>
+<circle cx="435.55" cy="155.00" r="3.50" fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.5" />
+<circle cx="161.44" cy="320.00" r="3.50" fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.5" />
+<circle cx="438.56" cy="320.00" r="3.50" fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.5" />
+<circle cx="377.46" cy="260.00" r="3.50" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.5" />
+<circle cx="300.00" cy="400.00" r="3.50" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.5" />
+<text x="451.55" y="145.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">A</text>
+<text x="144.44" y="330.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">B</text>
+<text x="455.56" y="330.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">C</text>
+<text x="359.46" y="255.00" fill="#F6B44C" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">I</text>
+<text x="300.00" y="419.00" fill="#F6B44C" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">M</text>
+<text x="410.79" y="228.25" fill="#F6B44C" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">3</text>
+<text x="352.18" y="337.80" fill="#F6B44C" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">4</text>
 </svg>

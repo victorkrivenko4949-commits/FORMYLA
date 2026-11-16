@@ -1,21 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="600" height="500" viewBox="0 0 600 500" style="background-color: #0F1729;">
-<rect x="0" y="0" width="600" height="500" fill="#0F1729" />
-<line x1="300.00" y1="70.00" x2="520.00" y2="430.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
-<line x1="520.00" y1="430.00" x2="100.00" y2="430.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
-<line x1="100.00" y1="430.00" x2="300.00" y2="70.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
-<line x1="300.00" y1="70.00" x2="310.00" y2="430.00" stroke="#73B6E6" stroke-width="1.6" stroke-linecap="round" />
-<circle cx="300.00" cy="70.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="300.00" y="56.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">A</text>
-<circle cx="520.00" cy="430.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="534.00" y="440.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">B</text>
-<circle cx="100.00" cy="430.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="86.00" y="440.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">C</text>
-<circle cx="310.00" cy="430.00" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
-<text x="310.00" y="450.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central">M</text>
-<line x1="467.50" y1="434.50" x2="467.50" y2="425.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="362.50" y1="434.50" x2="362.50" y2="425.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="257.50" y1="434.50" x2="257.50" y2="425.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<line x1="152.50" y1="434.50" x2="152.50" y2="425.50" stroke="#A6B7CC" stroke-width="1.8" stroke-linecap="round" />
-<text x="300.00" y="470.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central">AB = 13, BC = 14, CA = 15</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="520" viewBox="0 0 600 520" style="background-color: #0F1729;">
+<rect x="0" y="0" width="600" height="520" fill="#0F1729" />
+<line x1="165.00" y1="260.00" x2="318.00" y2="464.00" stroke="#A6B7CC" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="6,4" />
+<line x1="403.00" y1="260.00" x2="318.00" y2="464.00" stroke="#A6B7CC" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="6,4" />
+<line x1="284.00" y1="260.00" x2="318.00" y2="464.00" stroke="#F6B44C" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="6,4" />
+<line x1="250.00" y1="56.00" x2="284.00" y2="260.00" stroke="#F6B44C" stroke-width="2.0" stroke-linecap="round" />
+<line x1="224.50" y1="254.50" x2="224.50" y2="265.50" stroke="#73B6E6" stroke-width="1.4" stroke-linecap="round" />
+<line x1="343.50" y1="254.50" x2="343.50" y2="265.50" stroke="#73B6E6" stroke-width="1.4" stroke-linecap="round" />
+<polygon points="250.00,56.00 165.00,260.00 403.00,260.00" fill="none" stroke="#D9E5F5" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" />
+<circle cx="250.00" cy="56.00" r="3.50" fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.5" />
+<circle cx="165.00" cy="260.00" r="3.50" fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.5" />
+<circle cx="403.00" cy="260.00" r="3.50" fill="#D9E5F5" stroke="#D9E5F5" stroke-width="1.5" />
+<circle cx="284.00" cy="260.00" r="3.50" fill="#F6B44C" stroke="#F6B44C" stroke-width="1.5" />
+<circle cx="318.00" cy="464.00" r="3.20" fill="#A6B7CC" stroke="#A6B7CC" stroke-width="1.5" />
+<text x="250.00" y="40.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">A</text>
+<text x="149.00" y="260.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">B</text>
+<text x="419.00" y="260.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">C</text>
+<text x="298.00" y="247.00" fill="#F6B44C" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">M</text>
+<text x="318.00" y="481.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">D</text>
+<text x="189.50" y="152.00" fill="#73B6E6" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">13</text>
+<text x="344.50" y="152.00" fill="#73B6E6" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">15</text>
+<text x="224.50" y="277.00" fill="#73B6E6" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">7</text>
+<text x="343.50" y="277.00" fill="#73B6E6" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3" stroke-linejoin="round">7</text>
 </svg>

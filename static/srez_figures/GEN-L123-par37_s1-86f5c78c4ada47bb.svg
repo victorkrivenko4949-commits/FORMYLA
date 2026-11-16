@@ -1,39 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="500" viewBox="0 0 600 500" style="background-color: #0F1729;">
-<rect x="0" y="0" width="600" height="500" fill="#0F1729" />
-<line x1="160.00" y1="55.00" x2="160.00" y2="391.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
-<line x1="160.00" y1="55.00" x2="496.00" y2="55.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
-<line x1="208.00" y1="55.00" x2="208.00" y2="391.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="160.00" y1="103.00" x2="496.00" y2="103.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="256.00" y1="55.00" x2="256.00" y2="391.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="160.00" y1="151.00" x2="496.00" y2="151.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="304.00" y1="55.00" x2="304.00" y2="391.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="160.00" y1="199.00" x2="496.00" y2="199.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="352.00" y1="55.00" x2="352.00" y2="391.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="160.00" y1="247.00" x2="496.00" y2="247.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="400.00" y1="55.00" x2="400.00" y2="391.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="160.00" y1="295.00" x2="496.00" y2="295.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="448.00" y1="55.00" x2="448.00" y2="391.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="160.00" y1="343.00" x2="496.00" y2="343.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" />
-<line x1="496.00" y1="55.00" x2="496.00" y2="391.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
-<line x1="160.00" y1="391.00" x2="496.00" y2="391.00" stroke="#D9E5F5" stroke-width="2.0" stroke-linecap="round" />
-<rect x="160.00" y="55.00" width="48.00" height="48.00" fill="#0F1729" stroke="#0F1729" stroke-width="1.4" fill-opacity="0.9" />
-<text x="184.00" y="79.00" fill="#0F1729" font-family="Arial, Helvetica, sans-serif" font-size="18" text-anchor="middle" dominant-baseline="central">×</text>
-<rect x="160.00" y="103.00" width="48.00" height="144.00" fill="none" stroke="#73B6E6" stroke-width="2.0" />
-<rect x="160.00" y="247.00" width="48.00" height="144.00" fill="none" stroke="#F6B44C" stroke-width="2.0" />
-<rect x="208.00" y="55.00" width="144.00" height="48.00" fill="none" stroke="#7FD18A" stroke-width="2.0" />
-<rect x="352.00" y="55.00" width="144.00" height="48.00" fill="none" stroke="#C79BE8" stroke-width="2.0" />
-<rect x="208.00" y="103.00" width="144.00" height="48.00" fill="none" stroke="#C79BE8" stroke-width="2.0" />
-<rect x="352.00" y="103.00" width="144.00" height="48.00" fill="none" stroke="#E88AA0" stroke-width="2.0" />
-<rect x="208.00" y="151.00" width="144.00" height="48.00" fill="none" stroke="#E88AA0" stroke-width="2.0" />
-<rect x="352.00" y="151.00" width="144.00" height="48.00" fill="none" stroke="#8AE8D8" stroke-width="2.0" />
-<rect x="208.00" y="199.00" width="144.00" height="48.00" fill="none" stroke="#8AE8D8" stroke-width="2.0" />
-<rect x="352.00" y="199.00" width="144.00" height="48.00" fill="none" stroke="#E8C98A" stroke-width="2.0" />
-<rect x="208.00" y="247.00" width="144.00" height="48.00" fill="none" stroke="#E8C98A" stroke-width="2.0" />
-<rect x="352.00" y="247.00" width="144.00" height="48.00" fill="none" stroke="#73B6E6" stroke-width="2.0" />
-<rect x="208.00" y="295.00" width="144.00" height="48.00" fill="none" stroke="#73B6E6" stroke-width="2.0" />
-<rect x="352.00" y="295.00" width="144.00" height="48.00" fill="none" stroke="#F6B44C" stroke-width="2.0" />
-<rect x="208.00" y="343.00" width="144.00" height="48.00" fill="none" stroke="#F6B44C" stroke-width="2.0" />
-<rect x="352.00" y="343.00" width="144.00" height="48.00" fill="none" stroke="#7FD18A" stroke-width="2.0" />
-<text x="300.00" y="470.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central">7×7 без угловой клетки = 16 прямоугольников 1×3</text>
+  <rect x="0" y="0" width="600" height="500" fill="#0F1729" />
+  <polygon points="111.00,71.00 165.00,71.00 165.00,125.00 111.00,125.00" fill="none" stroke="#A6B7CC" stroke-width="1.4" stroke-linejoin="round" stroke-dasharray="5,4" />
+  <line x1="125.00" y1="85.00" x2="151.00" y2="111.00" stroke="#E06C75" stroke-width="2.4" stroke-linecap="round" />
+  <line x1="151.00" y1="85.00" x2="125.00" y2="111.00" stroke="#E06C75" stroke-width="2.4" stroke-linecap="round" />
+  <polygon points="111.00,125.00 165.00,125.00 165.00,287.00 111.00,287.00" fill="#7FD18A" fill-opacity="0.22" />
+  <line x1="111.00" y1="179.00" x2="165.00" y2="179.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="111.00" y1="233.00" x2="165.00" y2="233.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="111.00,125.00 165.00,125.00 165.00,287.00 111.00,287.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="111.00,287.00 165.00,287.00 165.00,449.00 111.00,449.00" fill="#F6B44C" fill-opacity="0.22" />
+  <line x1="111.00" y1="341.00" x2="165.00" y2="341.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="111.00" y1="395.00" x2="165.00" y2="395.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="111.00,287.00 165.00,287.00 165.00,449.00 111.00,449.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="165.00,71.00 327.00,71.00 327.00,125.00 165.00,125.00" fill="#73B6E6" fill-opacity="0.22" />
+  <line x1="219.00" y1="71.00" x2="219.00" y2="125.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="273.00" y1="71.00" x2="273.00" y2="125.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="165.00,71.00 327.00,71.00 327.00,125.00 165.00,125.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="327.00,71.00 489.00,71.00 489.00,125.00 327.00,125.00" fill="#F6B44C" fill-opacity="0.22" />
+  <line x1="381.00" y1="71.00" x2="381.00" y2="125.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="435.00" y1="71.00" x2="435.00" y2="125.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="327.00,71.00 489.00,71.00 489.00,125.00 327.00,125.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="165.00,125.00 327.00,125.00 327.00,179.00 165.00,179.00" fill="#F6B44C" fill-opacity="0.22" />
+  <line x1="219.00" y1="125.00" x2="219.00" y2="179.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="273.00" y1="125.00" x2="273.00" y2="179.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="165.00,125.00 327.00,125.00 327.00,179.00 165.00,179.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="327.00,125.00 489.00,125.00 489.00,179.00 327.00,179.00" fill="#7FD18A" fill-opacity="0.22" />
+  <line x1="381.00" y1="125.00" x2="381.00" y2="179.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="435.00" y1="125.00" x2="435.00" y2="179.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="327.00,125.00 489.00,125.00 489.00,179.00 327.00,179.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="165.00,179.00 327.00,179.00 327.00,233.00 165.00,233.00" fill="#73B6E6" fill-opacity="0.22" />
+  <line x1="219.00" y1="179.00" x2="219.00" y2="233.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="273.00" y1="179.00" x2="273.00" y2="233.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="165.00,179.00 327.00,179.00 327.00,233.00 165.00,233.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="327.00,179.00 489.00,179.00 489.00,233.00 327.00,233.00" fill="#F6B44C" fill-opacity="0.22" />
+  <line x1="381.00" y1="179.00" x2="381.00" y2="233.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="435.00" y1="179.00" x2="435.00" y2="233.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="327.00,179.00 489.00,179.00 489.00,233.00 327.00,233.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="165.00,233.00 327.00,233.00 327.00,287.00 165.00,287.00" fill="#7FD18A" fill-opacity="0.22" />
+  <line x1="219.00" y1="233.00" x2="219.00" y2="287.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="273.00" y1="233.00" x2="273.00" y2="287.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="165.00,233.00 327.00,233.00 327.00,287.00 165.00,287.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="327.00,233.00 489.00,233.00 489.00,287.00 327.00,287.00" fill="#73B6E6" fill-opacity="0.22" />
+  <line x1="381.00" y1="233.00" x2="381.00" y2="287.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="435.00" y1="233.00" x2="435.00" y2="287.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="327.00,233.00 489.00,233.00 489.00,287.00 327.00,287.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="165.00,287.00 327.00,287.00 327.00,341.00 165.00,341.00" fill="#73B6E6" fill-opacity="0.22" />
+  <line x1="219.00" y1="287.00" x2="219.00" y2="341.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="273.00" y1="287.00" x2="273.00" y2="341.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="165.00,287.00 327.00,287.00 327.00,341.00 165.00,341.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="327.00,287.00 489.00,287.00 489.00,341.00 327.00,341.00" fill="#7FD18A" fill-opacity="0.22" />
+  <line x1="381.00" y1="287.00" x2="381.00" y2="341.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="435.00" y1="287.00" x2="435.00" y2="341.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="327.00,287.00 489.00,287.00 489.00,341.00 327.00,341.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="165.00,341.00 327.00,341.00 327.00,395.00 165.00,395.00" fill="#7FD18A" fill-opacity="0.22" />
+  <line x1="219.00" y1="341.00" x2="219.00" y2="395.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="273.00" y1="341.00" x2="273.00" y2="395.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="165.00,341.00 327.00,341.00 327.00,395.00 165.00,395.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="327.00,341.00 489.00,341.00 489.00,395.00 327.00,395.00" fill="#F6B44C" fill-opacity="0.22" />
+  <line x1="381.00" y1="341.00" x2="381.00" y2="395.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="435.00" y1="341.00" x2="435.00" y2="395.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="327.00,341.00 489.00,341.00 489.00,395.00 327.00,395.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="165.00,395.00 327.00,395.00 327.00,449.00 165.00,449.00" fill="#73B6E6" fill-opacity="0.22" />
+  <line x1="219.00" y1="395.00" x2="219.00" y2="449.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="273.00" y1="395.00" x2="273.00" y2="449.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="165.00,395.00 327.00,395.00 327.00,449.00 165.00,449.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <polygon points="327.00,395.00 489.00,395.00 489.00,449.00 327.00,449.00" fill="#7FD18A" fill-opacity="0.22" />
+  <line x1="381.00" y1="395.00" x2="381.00" y2="449.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <line x1="435.00" y1="395.00" x2="435.00" y2="449.00" stroke="#A6B7CC" stroke-width="1.0" stroke-linecap="round" stroke-dasharray="4,4" stroke-opacity="0.45" />
+  <polygon points="327.00,395.00 489.00,395.00 489.00,449.00 327.00,449.00" fill="none" stroke="#D9E5F5" stroke-width="2.1" stroke-linejoin="round" />
+  <text x="138.00" y="53.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">1</text>
+  <text x="93.00" y="98.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">1</text>
+  <text x="192.00" y="53.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">2</text>
+  <text x="93.00" y="152.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">2</text>
+  <text x="246.00" y="53.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">3</text>
+  <text x="93.00" y="206.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">3</text>
+  <text x="300.00" y="53.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">4</text>
+  <text x="93.00" y="260.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">4</text>
+  <text x="354.00" y="53.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">5</text>
+  <text x="93.00" y="314.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">5</text>
+  <text x="408.00" y="53.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">6</text>
+  <text x="93.00" y="368.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">6</text>
+  <text x="462.00" y="53.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">7</text>
+  <text x="93.00" y="422.00" fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="3.5" stroke-linejoin="round">7</text>
 </svg>
