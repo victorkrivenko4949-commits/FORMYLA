@@ -1286,13 +1286,14 @@ function showResult(result) {
     // Формируем вердикт
     let verdictHTML = '';
     const prevLevel = (result.prev_level !== undefined) ? result.prev_level : result.new_level - result.score;
-    const levelChanged = result.new_level !== prevLevel;
     const levelDelta = result.new_level - prevLevel;
+    const levelChangeText = levelDelta > 0 ? '+1 уровень' :
+        levelDelta < 0 ? '−1 уровень' : 'уровень без изменений';
 
     if (result.score === 1) {
         verdictHTML = `
             <div class="verdict-success">
-                ✓ Верно! +1 уровень, уровень: ${result.new_level}/8
+                ✓ Верно! ${levelChangeText}
                 <div class="level-badge">Уровень: ${result.new_level}/8</div>
             </div>
         `;
@@ -1307,7 +1308,7 @@ function showResult(result) {
     } else {
         verdictHTML = `
             <div class="verdict-error">
-                ✗ Неверно — -1 уровень
+                ✗ Неверно: ${levelChangeText}
                 <div class="level-badge">Уровень: ${result.new_level}/8</div>
             </div>
         `;

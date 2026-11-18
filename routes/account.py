@@ -250,6 +250,8 @@ def _delete_related_records(user_id):
         'daily_task_sets', 'user_task_assignments', 'thematic_day_sets',
         'pre_gen_queue', 'gen_conveyor', 'bank_issues',
         'daily_generation_jobs',
+        # Ответы удаляем до недельных наборов; обе таблицы ссылаются на users.
+        'method_week_answers', 'method_week_sets',
         # ── Олимпиады / тесты ──
         'olympiad_generation_log', 'olympiad_variants',
         'olympiad_task_attempts', 'olympiad_stage_attempts',

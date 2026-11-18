@@ -693,8 +693,8 @@ def _current_assigned(user_id: int) -> Optional[Dict[str, Any]]:
     return assigned[0] if assigned else None
 
 
-def is_method_day(user_id: int) -> bool:
-    """Сегодняшнее занятие по плану — изучение метода? Пилот-гейт, не бросает.
+def method_lesson_today(user_id: int) -> Optional[Dict[str, Any]]:
+    """Вернуть назначенный урок метода без создания занятия.
 
     ЧИТАЮЩАЯ проверка: не создаёт занятия и не начисляет долги — безопасна
     для вызова из глобального контекст-процессора баннера на любой странице.
@@ -704,17 +704,21 @@ def is_method_day(user_id: int) -> bool:
     (владелец, 26.10.2026). Проверяем урок, датированный сегодня, ЛЮБОГО статуса.
     """
     if not _pilot(user_id):
-        return False
+        return None
     try:
         lessons = _lessons(user_id)
-        for l in reversed(lessons):
-            if _to_date(l.get('assigned_date')) == date.today():
-                return l.get('lesson_type') == 'method'
-            return False
-        return False
+        if lessons:
+            lesson = lessons[-1]
+            if (_to_date(lesson.get('assigned_date')) == date.today()
+                    and lesson.get('lesson_type') == 'method'):
+                return lesson
     except Exception as e:  # noqa: BLE001
         logger.warning('[session_plan] is_method_day failed: %r', e)
-        return False
+    return None
+
+
+def is_method_day(user_id: int) -> bool:
+    return method_lesson_today(user_id) is not None
 
 
 def current_lesson(user_id: int) -> Optional[Dict[str, Any]]:

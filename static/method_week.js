@@ -4,6 +4,11 @@
 (function () {
   'use strict';
   var root = document.getElementById('mw-root');
+  var readOnly = document.querySelectorAll('[data-mw-readonly-markdown]');
+  readOnly.forEach(function (el) {
+    el.innerHTML = md(el.textContent);
+    if (document.readyState !== 'loading') katex(el);
+  });
   if (!root) return;
 
   // Режим виджета: '' — весь блок (куратор + метод), 'method' — только метод

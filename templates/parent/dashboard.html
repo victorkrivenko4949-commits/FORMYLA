@@ -352,6 +352,7 @@
                 {% if not c.hidden %}
                 <div class="child-actions">
                     <a href="{{ url_for('parent_teacher.student_detail', sid=c.id) }}" class="open-btn">📂 Вся статистика</a>
+                    <a href="{{ url_for('parent_teacher.student_daily', sid=c.id) }}" class="open-btn">📅 Задачи дня</a>
                     {% if c.premium %}
                     <span class="premium-active-badge" title="Premium уже активен">
                         ⭐ Premium активен{% if c.premium.expires_at %} до {{ c.premium.expires_at }}{% endif %}

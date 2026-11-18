@@ -1,0 +1,31 @@
+{% extends "student/_daily.html" %}
+{% block daily_body %}
+{% set kinds = {
+    'weakness': 'Слабая тема', 'review': 'Повторение', 'new_topic': 'Новая тема',
+    'mixed': 'Смешанная задача', 'weak_base': 'База', 'weak_main': 'Практика',
+    'weak_challenge': 'Повышенная сложность', 'strong_review': 'Повторение',
+    'strong_challenge': 'Повышенная сложность', 'calibration': 'Калибровка'
+} %}
+{% for task in tasks %}
+<article class="card daily-card">
+    <h2>Задача {{ task.position }}</h2>
+    {% if task.difficulty or task.topic or task.slot_kind in kinds %}
+    <p class="daily-meta">{{ [task.topic, kinds.get(task.slot_kind), ('Уровень ' ~ task.difficulty) if task.difficulty else none]|select|join(' · ') }}</p>
+    {% endif %}
+    <p class="daily-text">{{ task.text }}</p>
+    {% if task.figure_url %}
+    <figure><img src="{{ task.figure_url }}" alt="Чертёж к задаче {{ task.position }}" loading="lazy"></figure>
+    {% endif %}
+    {% include 'student/_daily_result.html' %}
+    {% if task.correct_answer or task.solution %}
+    <details>
+        <summary>Ответ и решение</summary>
+        {% if task.correct_answer %}<p class="daily-text">Правильный ответ: {{ task.correct_answer }}</p>{% endif %}
+        {% if task.solution %}<p class="daily-text">{{ task.solution }}</p>{% endif %}
+    </details>
+    {% endif %}
+</article>
+{% else %}
+<p class="card daily-card">Сегодня задачи ещё не выданы.</p>
+{% endfor %}
+{% endblock %}
