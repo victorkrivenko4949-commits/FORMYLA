@@ -147,6 +147,17 @@ def _on_before_flush(session, flush_context, instances):
                 spent = int(obj.time_spent_seconds or 0)
                 if hist.has_changes() and hist.deleted and hist.deleted[0]:
                     spent = max(0, spent - int(hist.deleted[0] or 0))
+                elif hist.has_changes():
+                    # Атрибут установлен на истёкшем (не загруженном) объекте —
+                    # история не знает старого значения, берём его из БД,
+                    # иначе дельта времени задвоится (40 + 65 вместо 40 + 25).
+                    from sqlalchemy import select
+                    old = session.execute(
+                        select(DailyTaskItem.time_spent_seconds)
+                        .where(DailyTaskItem.id == obj.id)
+                    ).scalar()
+                    if old is not None:
+                        spent = max(0, spent - int(old))
                 apply_attempt(mark, bool(obj.is_correct), due_at=a.due_at, now=obj.answered_at,
                               time_spent_sec=spent)
             except Exception as e:  # noqa: BLE001

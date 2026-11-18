@@ -84,7 +84,9 @@ def test_generate_contract(api_app, bank, teacher_user, group):
 def test_generate_requires_teacher(api_app, bank, student_users):
     c = api_app.test_client(); _login(c, student_users[0])
     assert _gen(c).status_code == 403
-    assert api_app.test_client().post("/api/teacher/worksheet/generate", json={"grade": 8}).status_code in (401, 302)
+    # Анонимный запрос: ensure_guest_user(main) авторизует гостя ролью student,
+    # поэтому вместо 401/302 прилетает 403 — тоже «доступ запрещён».
+    assert api_app.test_client().post("/api/teacher/worksheet/generate", json={"grade": 8}).status_code in (401, 302, 403)
 
 
 def test_generate_rejects_foreign_group(api_app, bank, teacher_user, student_users):
@@ -153,6 +155,17 @@ def test_foreign_worksheet_403(api_app, bank, teacher_user, student_users):
         u = db.session.get(type(student_users[0]), student_users[0].id)
         old = u.role; u.role = "teacher"; db.session.commit()
     try:
+        # Фикстура app держит app context всё время теста, и Flask
+        # переиспользует его для запросов тест-клиентов: закешированный
+        # в g._login_user пользователь первого клиента «протекает» ко
+        # второму. Сбрасываем кеш перед входом другим пользователем.
+        from flask import g as _g
+        _g.pop("_login_user", None)
+        # Смена роли коммитилась в сессии другого app context — сессия
+        # контекста фикстуры держит пользователя со старой ролью в
+        # identity map. Сбрасываем, чтобы загрузчик увидел 'teacher'.
+        from models import db as _db
+        _db.session.expire_all()
         c2 = api_app.test_client(); _login(c2, student_users[0])
         assert c2.get(f"/api/teacher/worksheet/{wid}").status_code == 403
         assert c2.patch(f"/api/teacher/worksheet/{wid}", json={"title": "x"}).status_code == 403
