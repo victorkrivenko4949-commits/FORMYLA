@@ -6,8 +6,9 @@ services/bank_daily.py — выдача задач дня из предзапо�
 Этот модуль НЕ генерирует задачи и не обращается к внешним моделям: только
 SQLAlchemy-чтение daily_task_bank и запись в bank_issues.
 
-Это ЕДИНСТВЕННЫЙ источник задач дня. Запасной FORMYLA_BANK.jsonl отключён
-(см. daily_tasks/formyla_bank.py, FORMYLA_JSONL_FALLBACK).
+Шаг 8 (вариант Б): ключ подтемы — theme_id вида G9_T16 (services/daily_bank_keys.py).
+Запасной FORMYLA_BANK.jsonl включён (daily_tasks/formyla_bank.py) и остаётся страховкой:
+этот модуль НЕ единственный источник задач дня.
 """
 
 from __future__ import annotations
@@ -46,17 +47,29 @@ _SECTION_ALIASES: Dict[str, str] = {
 
 
 def _section_for_subtopic(subtopic: str) -> str:
-    """Определить раздел подтемы по slug.
+    """Определить раздел подтемы по ключу.
 
-    Порядок: подтема сама по себе канонический раздел; подтема входит в
-    data/theme_to_section.json как theme_id; иначе угадывание по префиксу
-    латинских ключей подтем из таксономии. Fallback — 'algebra' (значение
-    по умолчанию для неклассифицируемого slug, как в старых движках).
+    Порядок: theme_id (G9_T16) в исходном регистре через data/theme_to_section.json;
+    подтема сама по себе канонический раздел; русский алиас; эвристика по префиксу
+    латинских ключей старой таксономии. Fallback — 'algebra'.
+
+    Исправление дефекта D1 (этап 2): раньше ключ приводился к нижнему регистру ДО
+    поиска в справочнике, где все ключи в верхнем регистре, поэтому для любого
+    theme_id раздел получался 'algebra', а уровень по геометрии считался по алгебре.
     """
-    s = (subtopic or "").strip().lower()
-    if not s:
+    raw = (subtopic or "").strip()
+    if not raw:
         return "algebra"
 
+    try:
+        from services.daily_bank_keys import section_of_theme as _sec_by_key
+        sec = _sec_by_key(raw)
+        if sec in CANONICAL_SECTIONS:
+            return sec
+    except Exception:
+        pass
+
+    s = raw.lower()
     if s in CANONICAL_SECTIONS:
         return s
     if s in _SECTION_ALIASES:
@@ -64,7 +77,7 @@ def _section_for_subtopic(subtopic: str) -> str:
 
     try:
         from services.theme_registry import section_of_theme
-        sec = section_of_theme(s)
+        sec = section_of_theme(raw)
         if sec in CANONICAL_SECTIONS:
             return sec
     except Exception:
