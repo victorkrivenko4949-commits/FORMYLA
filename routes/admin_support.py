@@ -271,6 +271,65 @@ def admin_support_inbox():
     return render_template('admin/support_inbox.html', tickets=tickets)
 
 
+def store_admin_reply(msg_id, admin_user_id, reply_text, photo_meta=None):
+    """Сохранить ответ поддержки и отправить письмо пользователю.
+
+    Общий путь для веб-админки (/admin/support) и ответа из Telegram.
+    Возвращает False, если обращения с таким id нет, иначе True.
+    При ошибке БД откатывает транзакцию и пробрасывает исключение.
+    """
+    ensure_support_replies_table()
+    src = db.session.execute(text(
+        'SELECT id, user_id, user_email, user_nickname, message '
+        'FROM support_messages WHERE id = :i'
+    ), {'i': msg_id}).mappings().first()
+    if not src:
+        return False
+
+    try:
+        if photo_meta:
+            db.session.execute(text('''
+                INSERT INTO support_replies
+                    (support_message_id, admin_user_id, reply_text, sender_kind,
+                     attachment_url, attachment_kind, attachment_name, attachment_size)
+                VALUES (:smid, :aid, :txt, 'admin', :aurl, :akind, :aname, :asize)
+            '''), {
+                'smid': msg_id, 'aid': admin_user_id, 'txt': reply_text,
+                'aurl': photo_meta['url'], 'akind': photo_meta['kind'],
+                'aname': photo_meta['name'], 'asize': photo_meta['size'],
+            })
+        else:
+            db.session.execute(text('''
+                INSERT INTO support_replies (support_message_id, admin_user_id, reply_text, sender_kind)
+                VALUES (:smid, :aid, :txt, 'admin')
+            '''), {'smid': msg_id, 'aid': admin_user_id, 'txt': reply_text})
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+
+    if src['user_email']:
+        try:
+            from utils.mail import send_email as resend_send, is_configured as resend_ready
+            if resend_ready():
+                subject = 'Ответ от поддержки FORMYLA.net'
+                html = (
+                    f'<p>Привет!</p>'
+                    f'<p>На твоё обращение ответили:</p>'
+                    f'<blockquote style="border-left:3px solid #38bdf8;padding-left:12px;color:#334155;">'
+                    f'{_escape(reply_text)}'
+                    f'</blockquote>'
+                    f'<hr><p style="color:#64748b;font-size:12px;">Твой исходный вопрос: '
+                    f'<em>{_escape((src["message"] or "")[:200])}</em></p>'
+                    f'<p>Ответить можно прямо на сайте: <a href="{request.url_root}my/support">'
+                    f'формыла.com/my/support</a></p>'
+                )
+                resend_send(src['user_email'], subject, html)
+        except Exception as e:
+            logger.warning('Failed to email user about reply: %r', e)
+    return True
+
+
 @admin_support_bp.route('/admin/support/<int:msg_id>/reply', methods=['POST'])
 @login_required
 def admin_support_reply(msg_id):
@@ -296,51 +355,9 @@ def admin_support_reply(msg_id):
         flash('Ответ слишком длинный (макс 5000)', 'error')
         return redirect(url_for('admin_support.admin_support_inbox'))
 
-    src = db.session.execute(text(
-        'SELECT id, user_id, user_email, user_nickname, message '
-        'FROM support_messages WHERE id = :i'
-    ), {'i': msg_id}).mappings().first()
-    if not src:
+    if not store_admin_reply(msg_id, current_user.id, reply_text, photo_meta):
         flash('Сообщение не найдено', 'error')
         return redirect(url_for('admin_support.admin_support_inbox'))
-
-    if photo_meta:
-        db.session.execute(text('''
-            INSERT INTO support_replies
-                (support_message_id, admin_user_id, reply_text, sender_kind,
-                 attachment_url, attachment_kind, attachment_name, attachment_size)
-            VALUES (:smid, :aid, :txt, 'admin', :aurl, :akind, :aname, :asize)
-        '''), {
-            'smid': msg_id, 'aid': current_user.id, 'txt': reply_text,
-            'aurl': photo_meta['url'], 'akind': photo_meta['kind'],
-            'aname': photo_meta['name'], 'asize': photo_meta['size'],
-        })
-    else:
-        db.session.execute(text('''
-            INSERT INTO support_replies (support_message_id, admin_user_id, reply_text, sender_kind)
-            VALUES (:smid, :aid, :txt, 'admin')
-        '''), {'smid': msg_id, 'aid': current_user.id, 'txt': reply_text})
-    db.session.commit()
-
-    if src['user_email']:
-        try:
-            from utils.mail import send_email as resend_send, is_configured as resend_ready
-            if resend_ready():
-                subject = 'Ответ от поддержки FORMYLA.net'
-                html = (
-                    f'<p>Привет!</p>'
-                    f'<p>На твоё обращение ответили:</p>'
-                    f'<blockquote style="border-left:3px solid #38bdf8;padding-left:12px;color:#334155;">'
-                    f'{_escape(reply_text)}'
-                    f'</blockquote>'
-                    f'<hr><p style="color:#64748b;font-size:12px;">Твой исходный вопрос: '
-                    f'<em>{_escape((src["message"] or "")[:200])}</em></p>'
-                    f'<p>Ответить можно прямо на сайте: <a href="{request.url_root}my/support">'
-                    f'формыла.com/my/support</a></p>'
-                )
-                resend_send(src['user_email'], subject, html)
-        except Exception as e:
-            logger.warning('Failed to email user about reply: %r', e)
 
     flash('Ответ отправлен', 'success')
     return redirect(url_for('admin_support.admin_support_inbox'))
