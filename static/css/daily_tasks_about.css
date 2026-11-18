@@ -144,7 +144,7 @@
 /* ── Долг ── */
 .page-daily-tasks .dt-debt-block{
   background:transparent !important; border:1px solid rgba(251,191,36,.28) !important; border-radius:6px !important;
-  padding:0 !important; margin:18px 0 0 !important; overflow:hidden;
+  padding:0 !important; margin:18px 0 22px !important; overflow:hidden;
 }
 .page-daily-tasks .dt-debt-toggle-btn{padding:14px 18px !important;font-family:var(--font-body) !important;font-size:.95rem !important;font-weight:600 !important;color:var(--warn) !important}
 .page-daily-tasks .dt-debt-toggle-btn::before{content:"§ Д";font-family:var(--font-mono);font-size:.68rem;letter-spacing:.14em;color:rgba(251,191,36,.7);margin-right:12px;font-weight:400}
@@ -320,6 +320,18 @@
 .page-daily-tasks .dt-subtopic-strip-grade,.page-daily-tasks .dt-subtopic-strip-today-badge,.page-daily-tasks .dt-yearly-month-badge{font-family:var(--font-mono);border-radius:3px !important;letter-spacing:.08em}
 .page-daily-tasks .dt-calibration-banner{border-radius:6px !important;background:transparent !important}
 .page-daily-tasks .dt-cal-banner-btn{border-radius:4px !important;font-family:var(--font-body) !important}
+
+/* ── Широкие экраны: растягиваем контент, чтобы по бокам не оставалось огромных полей ── */
+@media (min-width:1440px){
+  .page-daily-tasks{max-width:1280px !important}
+  .page-daily-tasks .dt-layout{max-width:none !important}
+}
+@media (min-width:1660px){
+  .page-daily-tasks{max-width:1440px !important}
+}
+@media (min-width:1900px){
+  .page-daily-tasks{max-width:1600px !important}
+}
 
 /* ── Адаптив ── */
 @media (max-width:1080px){
