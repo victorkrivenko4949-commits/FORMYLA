@@ -90,8 +90,8 @@ function _buildMath(){
   out += _key('\\ge','\\geq','math-command')+_key('\\ne','\\neq','math-command');
   out += '</div>';
   out += '<div class="dt-kb-row">';
-  for(var i=0;i<10;i++) out += _key(String(i), String(i));
-  out += _key('.','.')+_key(',',',');
+  for(var i=1;i<=9;i++) out += _key(String(i), String(i));
+  out += _key('0','0')+_key('.','.')+_key(',',',');
   out += '</div>';
   out += '<div class="dt-kb-row">';
   out += _key('(','(')+_key(')',')')+_key('[','[')+_key(']',']');
