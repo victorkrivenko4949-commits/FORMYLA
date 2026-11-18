@@ -76,7 +76,7 @@
                     setTimeout(function() {
                         var input = document.getElementById('tutorInput');
                         if (input) {
-                            var taskPreview = 'Помоги решить задачу: {{ task.text[:200] | escape }}...';
+                            var taskPreview = 'Помоги решить задачу: {{ task.text | preview_text(200) | escape }}';
                             input.value = taskPreview;
                             input.focus();
                             input.style.height = 'auto';
@@ -98,7 +98,7 @@
                         setTimeout(function() {
                             var input = document.getElementById('tutorInput');
                             if (input) {
-                                var taskPreview = 'Помоги решить задачу: {{ task.text[:200] | escape }}...';
+                                var taskPreview = 'Помоги решить задачу: {{ task.text | preview_text(200) | escape }}';
                                 input.value = taskPreview;
                                 input.focus();
                                 if (typeof sendToTutor === 'function') {

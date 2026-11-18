@@ -2419,6 +2419,18 @@ try:
 except Exception as _e:
     print(f"[JINJA] inject_geometry filter NOT registered: {_e}")
 
+# preview_text — безопасное усечение текста задачи для карточек-превью.
+# Снимает LaTeX-разметку ($...$, \(...\)) ДО обрезки и режет по границе
+# слова, чтобы условие никогда не рвалось посреди формулы/числа и всегда
+# получало «…» при обрезке. Заменяет старые truncate()/[:100] в шаблонах.
+try:
+    from services.task_preview import preview_text as _preview_text_filter
+    app.jinja_env.filters['preview_text'] = _preview_text_filter
+    print("[JINJA] filter preview_text registered")
+except Exception as _e:
+    print(f"[JINJA] preview_text filter NOT registered: {_e}")
+
+# Limit upload size: 12 MB (for solution photos).
 # Limit upload size: 55 MB (covers solution photos and chat video attachments up to 50 MB).
 app.config['MAX_CONTENT_LENGTH'] = 55 * 1024 * 1024
 
