@@ -316,6 +316,17 @@ def _install_probnik_assign(app) -> None:
             _ORIG_REGISTER(app, probnik_assign_bp)
     except Exception as e:  # noqa: BLE001
         logger.exception("[probnik_assign] auto-register failed: %r", e)
+def _install_atlas_text_fixes(app) -> None:
+    """ATLAS_TEXT_FIXES_V1: текстовые правки атласа методов на лету (lavrik-bugs)."""
+    if os.environ.get("ATLAS_TEXT_FIXES", "1") == "0":
+        return
+    if getattr(app, "_atlas_text_fixes_installed", False):
+        return
+    try:
+        from routes.atlas_text_fixes import install_atlas_text_fixes
+        install_atlas_text_fixes(app)
+    except Exception as e:  # noqa: BLE001
+        logger.exception("[atlas_text_fixes] auto-register failed: %r", e)
 
 
 def _install(app) -> None:
@@ -335,6 +346,7 @@ def _install(app) -> None:
     _install_premium_pay(app)
     _install_seat_pay(app)
     _install_curator_chat(app)
+    _install_atlas_text_fixes(app)
     if os.environ.get("SURVEYS_AUTOREG", "1") != "0":
         from routes.surveys import install_surveys
         install_surveys(app, register=_ORIG_REGISTER)
@@ -353,6 +365,7 @@ def _install(app) -> None:
             import_module(module_name).install(app)
         except Exception:
             logger.exception("Analytics auto-register failed: %s", module_name)
+    _install_atlas_text_fixes(app)
 
     if getattr(app, "_admin_base_installed", False):
         return
