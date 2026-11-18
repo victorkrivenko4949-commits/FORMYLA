@@ -273,6 +273,25 @@ def _theme_for_user(user_id: int) -> Optional[str]:
         return None
 
 
+def _theme_title_safe(theme_id: Optional[str]) -> Optional[str]:
+    """Человекочитаемое название темы (theme_registry), None при сбоях.
+
+    Тема в curator_lessons хранится слагом (G9_T05); интерфейс и контекст
+    ИИ-куратора должны показывать название («Многочлены и алгебраические
+    тождества»), а не слаг.
+    """
+    if not theme_id:
+        return None
+    try:
+        from services.theme_registry import theme_title as _theme_title
+        title = _theme_title(str(theme_id))
+        return str(title) if title else None
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[session_plan] theme title failed for %r: %r',
+                       theme_id, e)
+        return None
+
+
 # ── Подбор метода и пробника ─────────────────────────────────────────────
 
 def _pick_method(user_id: int) -> Dict[str, str]:
@@ -1180,6 +1199,7 @@ def session_info(user_id: int) -> Dict[str, Any]:
                 }
                 if i == 0 and not today_done and not today_rest:
                     entry['theme'] = lesson['theme']
+                    entry['theme_title'] = _theme_title_safe(lesson['theme'])
                     entry['method_name'] = lesson['method_name']
                     entry['probnik_title'] = lesson['probnik_title']
                 plan.append(entry)
@@ -1205,6 +1225,7 @@ def session_info(user_id: int) -> Dict[str, Any]:
                 }
                 if i == 0 and not today_done:
                     entry['theme'] = lesson['theme']
+                    entry['theme_title'] = _theme_title_safe(lesson['theme'])
                     entry['method_name'] = lesson['method_name']
                     entry['probnik_title'] = lesson['probnik_title']
                 plan.append(entry)
@@ -1215,6 +1236,7 @@ def session_info(user_id: int) -> Dict[str, Any]:
             'lesson_label': LESSON_LABELS.get(l['lesson_type'], l['lesson_type']),
             'theme': l['theme'],
             'method_code': l.get('method_code'),
+            'theme_title': _theme_title_safe(l['theme']),
             'method_name': l['method_name'],
             'probnik_code': l.get('probnik_code'),
             'probnik_title': l['probnik_title'],
@@ -1245,6 +1267,7 @@ def session_info(user_id: int) -> Dict[str, Any]:
             # день диагностики N из 7 (для текста «Сегодня — диагностика»)
             'diag_day_num': _diag_day_num,
             'theme': lesson['theme'],
+            'theme_title': _theme_title_safe(lesson['theme']),
             'method_name': lesson['method_name'],
             'probnik_code': lesson['probnik_code'],
             'probnik_title': lesson['probnik_title'],
