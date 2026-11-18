@@ -321,6 +321,18 @@
 .page-daily-tasks .dt-calibration-banner{border-radius:6px !important;background:transparent !important}
 .page-daily-tasks .dt-cal-banner-btn{border-radius:4px !important;font-family:var(--font-body) !important}
 
+/* ── Широкие экраны: растягиваем контент, чтобы по бокам не оставалось огромных полей ── */
+@media (min-width:1440px){
+  .page-daily-tasks{max-width:1280px !important}
+  .page-daily-tasks .dt-layout{max-width:none !important}
+}
+@media (min-width:1660px){
+  .page-daily-tasks{max-width:1440px !important}
+}
+@media (min-width:1900px){
+  .page-daily-tasks{max-width:1600px !important}
+}
+
 /* ── Адаптив ── */
 @media (max-width:1080px){
   .page-daily-tasks .dt-layout{grid-template-columns:1fr !important}
