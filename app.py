@@ -1274,6 +1274,14 @@ try:
         except Exception:
             db.session.rollback()
 
+        # --- cancelled_at: отмена подписки действует до конца оплаченного периода ---
+        try:
+            db.session.execute(db.text("ALTER TABLE subscriptions ADD COLUMN cancelled_at TIMESTAMP"))
+            db.session.commit()
+            print("[migration] Added cancelled_at to subscriptions")
+        except Exception:
+            db.session.rollback()
+
         # --- onboarded_at: marks first visit to /about?onboarding=1 ---
         try:
             db.session.execute(db.text("ALTER TABLE users ADD COLUMN onboarded_at TIMESTAMP"))
@@ -13496,8 +13504,17 @@ def subscribe_page():
     trial_active_until = None
     trial_active_until_iso = None
     trial_used = False
+    # Подписка отменена, но оплаченный период ещё идёт
+    sub_cancelled = False
     try:
         from sqlalchemy import text as _text
+        # Ленивая финализация истёкших отмен (доступ до конца периода)
+        try:
+            from services.subscription import get_subscription_service
+            get_subscription_service().finalize_expired_cancellations(current_user.id)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
         row = db.session.execute(_text(
             "SELECT expires_at FROM subscriptions WHERE user_id = :u "
             "AND plan IN ('premium_intense','premium_calm') "
@@ -13513,6 +13530,12 @@ def subscribe_page():
             "AND COALESCE(CAST(is_trial AS INTEGER),0) = 1 LIMIT 1"
         ), {'u': current_user.id}).first()
         trial_used = bool(used)
+        row = db.session.execute(_text(
+            "SELECT 1 FROM subscriptions WHERE user_id = :u "
+            "AND status = 'active' AND cancelled_at IS NOT NULL "
+            "AND expires_at > NOW() LIMIT 1"
+        ), {'u': current_user.id}).first()
+        sub_cancelled = bool(row)
     except Exception:
         pass
     # WISH_SURVEY_V1: скидка 30% за ответ в опросе — цены те же, что уйдут в ЮKassa.
@@ -13535,6 +13558,7 @@ def subscribe_page():
                            current_plan=current_plan,
                            is_parent_or_teacher=is_parent_or_teacher,
                            plan_expires_at=plan_expires_at,
+                           sub_cancelled=sub_cancelled,
                            trial_active_until=trial_active_until,
                            trial_active_until_iso=trial_active_until_iso,
                            trial_used=trial_used,
@@ -13820,11 +13844,12 @@ def api_cancel_subscription():
     if not ar_disabled:
         return jsonify({'error': 'Не удалось отключить автопродление — повторите отмену, иначе подписка продлится автоматически.'}), 500
 
-    # Синхронизируем таблицу subscriptions (mark superseded), чтобы
-    # users.current_plan и subscriptions не расходились.
+    # Синхронизируем таблицу subscriptions: отмена «до конца оплаченного
+    # периода» — статус остаётся active, доступ работает до expires_at.
+    cancelled = False
     try:
         from services.subscription import get_subscription_service
-        get_subscription_service().cancel_subscription(current_user.id)
+        cancelled = get_subscription_service().cancel_subscription(current_user.id)
         db.session.commit()
     except Exception:
         try:
@@ -13832,6 +13857,34 @@ def api_cancel_subscription():
         except Exception:
             pass
 
+    # До какого числа сохраняется доступ (null — оплаченный период истёк).
+    expires_str = None
+    try:
+        from services.subscription import get_subscription_service
+        plan = get_subscription_service().get_user_plan(current_user.id)
+        if plan.get('is_premium') and plan.get('expires_at'):
+            expires_str = str(plan['expires_at'])[:10]
+    except Exception:
+        expires_str = None
+
+    if cancelled and expires_str:
+        # Доступ сохраняется до конца оплаченного периода.
+        return jsonify({
+            'ok': True,
+            'message': ('Подписка отменена. Доступ к Premium сохранится до конца '
+                        f'оплаченного периода — до {expires_str}. '
+                        'Автопродление выключено.')
+        })
+
+    if cancelled:
+        # Подписка была, но оплаченный период уже истёк.
+        return jsonify({
+            'ok': True,
+            'message': 'Подписка отменена. Оплаченный период уже истёк — вы переведены на бесплатный тариф.'
+        })
+
+    # Активной подписки в subscriptions нет — немедленное понижение
+    # (прежнее поведение для ручного/legacy-выдачи Premium).
     current_user.current_plan = 'free'
     current_user.plan_expires_at = None
     db.session.commit()

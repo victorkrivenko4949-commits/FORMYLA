@@ -167,6 +167,12 @@ class SubscriptionService:
     # ── Get user plan ─────────────────────────────────────────────────────────
 
     def get_user_plan(self, user_id: int) -> dict:
+        # Ленивая финализация: отменённые подписки с истёкшим периодом
+        # переводятся в 'cancelled' (доступ до конца оплаченного периода).
+        try:
+            self.finalize_expired_cancellations(user_id)
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f'[SUBSCRIPTION] finalize skipped: {e}')
         now_iso = datetime.utcnow().isoformat()
         row = self._fetchone("""
             SELECT plan, status, expires_at, is_beta_access, is_trial
@@ -337,11 +343,59 @@ class SubscriptionService:
             'is_beta': is_beta,
         }
 
-    # ── Cancel subscription ───────────────────────────────────────────────────
+    # ── Cancel subscription (доступ до конца оплаченного периода) ─────────────
+
+    def _ensure_cancelled_at_column(self):
+        """Гарантирует колонку subscriptions.cancelled_at (SQLite и PostgreSQL).
+
+        В production её добавляет авто-миграция app.py; здесь — защита для
+        тестовых/свежих БД, где таблица создана старым скриптом.
+        """
+        if self._is_raw_sqlite:
+            cols = {r[1] for r in self._db_raw.execute(
+                "PRAGMA table_info(subscriptions)").fetchall()}
+            if not cols or 'cancelled_at' in cols:
+                return
+            self._db_raw.execute(
+                "ALTER TABLE subscriptions ADD COLUMN cancelled_at TIMESTAMP")
+            self._db_raw.commit()
+        else:
+            from sqlalchemy import inspect as _sa_inspect
+            from sqlalchemy import text as _text
+            bind = self.db.get_bind()
+            cols = {c['name'] for c in _sa_inspect(bind).get_columns('subscriptions')}
+            if not cols or 'cancelled_at' in cols:
+                return
+            self.db.execute(_text(
+                "ALTER TABLE subscriptions ADD COLUMN cancelled_at TIMESTAMP"))
+            self.db.commit()
+
+    def _has_active_premium(self, user_id: int) -> bool:
+        """Есть ли у пользователя действующая premium-подписка (не истекла)."""
+        now_s = datetime.utcnow().isoformat(sep=' ')
+        if self._is_raw_sqlite:
+            q = ("SELECT 1 FROM subscriptions WHERE user_id = ? AND status = 'active' "
+                 "AND plan LIKE 'premium%' "
+                 "AND (expires_at IS NULL OR datetime(expires_at) > datetime(?)) LIMIT 1")
+        else:
+            q = ("SELECT 1 FROM subscriptions WHERE user_id = ? AND status = 'active' "
+                 "AND plan LIKE 'premium%' "
+                 "AND (expires_at IS NULL OR expires_at > ?) LIMIT 1")
+        return bool(self._fetchone(q, (user_id, now_s)))
 
     def cancel_subscription(self, user_id: int) -> bool:
+        """Отмена «до конца оплаченного периода», а не мгновенная.
+
+        Подписка помечается cancelled_at, статус остаётся 'active' — все
+        проверки доступа (get_user_plan, resolve_access, require_feature)
+        продолжают работать до expires_at. Когда период истечёт,
+        finalize_expired_cancellations переведёт строку в 'cancelled' и
+        понизит users.current_plan до 'free'. Если на момент отмены период
+        уже истёк — финализируем сразу. Повторная отмена идемпотентна.
+        """
+        self._ensure_cancelled_at_column()
         row = self._fetchone("""
-            SELECT id, expires_at FROM subscriptions
+            SELECT id, expires_at, cancelled_at FROM subscriptions
             WHERE user_id = ? AND status = 'active'
             ORDER BY id DESC LIMIT 1
         """, (user_id,))
@@ -351,14 +405,97 @@ class SubscriptionService:
 
         sub_id = self._row_get(row, 'id')
         expires = self._row_get(row, 'expires_at')
+        already_cancelled = self._row_get(row, 'cancelled_at')
 
-        self._execute("""
-            UPDATE subscriptions SET status = 'cancelled' WHERE id = ?
-        """, (sub_id,))
+        now = datetime.utcnow()
+        expired = True
+        if expires is not None:
+            exp_dt = expires if isinstance(expires, datetime) else None
+            if exp_dt is None:
+                try:
+                    exp_dt = datetime.fromisoformat(str(expires).replace(' ', 'T'))
+                except ValueError:
+                    exp_dt = None
+            if exp_dt is not None:
+                expired = exp_dt <= now
+
+        if expired:
+            # Оплаченный период закончился — финализируем сразу.
+            self._execute("""
+                UPDATE subscriptions
+                SET status = 'cancelled', cancelled_at = ?
+                WHERE id = ?
+            """, (now.isoformat(sep=' '), sub_id))
+            if not self._has_active_premium(user_id):
+                try:
+                    self._execute("""
+                        UPDATE users
+                        SET current_plan = 'free', plan_expires_at = NULL
+                        WHERE id = ? AND current_plan != 'free'
+                    """, (user_id,))
+                except Exception:  # noqa: BLE001 — users может не быть в тестах
+                    pass
+        elif not already_cancelled:
+            # Доступ сохраняется до конца оплаченного периода.
+            self._execute("""
+                UPDATE subscriptions SET cancelled_at = ? WHERE id = ?
+            """, (now.isoformat(sep=' '), sub_id))
 
         self._commit()
-        logger.info(f'[SUBSCRIPTION] User {user_id} cancelled (access until {expires})')
+        logger.info(f'[SUBSCRIPTION] User {user_id} cancelled '
+                    f'(access until {expires})')
         return True
+
+    def finalize_expired_cancellations(self, user_id: int = None) -> int:
+        """Финализирует истёкшие отменённые подписки.
+
+        Подписки со статусом 'active', cancelled_at и истёкшим expires_at
+        переводятся в 'cancelled'; их владельцы без других действующих
+        premium-подписок понижаются до 'free' в users. Вызывается лениво
+        из get_user_plan — отдельный планировщик не нужен.
+        """
+        self._ensure_cancelled_at_column()
+        now_s = datetime.utcnow().isoformat(sep=' ')
+        if self._is_raw_sqlite:
+            base = ("SELECT id, user_id FROM subscriptions "
+                    "WHERE status = 'active' AND cancelled_at IS NOT NULL "
+                    "AND datetime(expires_at) <= datetime(?)")
+        else:
+            base = ("SELECT id, user_id FROM subscriptions "
+                    "WHERE status = 'active' AND cancelled_at IS NOT NULL "
+                    "AND expires_at <= ?")
+        params = [now_s]
+        if user_id is not None:
+            base += " AND user_id = ?"
+            params.append(user_id)
+        try:
+            rows = self._fetchall(base, tuple(params))
+        except Exception:  # noqa: BLE001 — колонки может не быть
+            logger.warning('[SUBSCRIPTION] finalize query failed')
+            return 0
+
+        finalized = 0
+        for r in rows:
+            sub_id = self._row_get(r, 'id')
+            uid = self._row_get(r, 'user_id')
+            self._execute(
+                "UPDATE subscriptions SET status = 'cancelled' WHERE id = ?",
+                (sub_id,))
+            finalized += 1
+            if not self._has_active_premium(uid):
+                try:
+                    self._execute("""
+                        UPDATE users
+                        SET current_plan = 'free', plan_expires_at = NULL
+                        WHERE id = ? AND current_plan != 'free'
+                    """, (uid,))
+                except Exception:  # noqa: BLE001
+                    pass
+        if finalized:
+            self._commit()
+            logger.info('[SUBSCRIPTION] Finalized %s expired cancelled '
+                        'subscription(s)', finalized)
+        return finalized
 
     # ── Usage tracking ────────────────────────────────────────────────────────
 

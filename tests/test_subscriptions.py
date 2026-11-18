@@ -294,19 +294,88 @@ def test_yearly_premium_max_tokens(service, sub_test_user):
     assert plan['ai_max_tokens'] == 8000
 
 
-# ── Cancel subscription ───────────────────────────────────────────────────────
+# ── Cancel subscription (доступ до конца оплаченного периода) ─────────────────
 
 def test_cancel_active_subscription(service, sub_test_user, db):
+    """Отмена сохраняет доступ до конца оплаченного периода."""
     service.activate_premium(sub_test_user, plan='premium_monthly', is_beta=True)
 
     result = service.cancel_subscription(sub_test_user)
     assert result is True
 
     row = db.execute(
+        "SELECT status, cancelled_at FROM subscriptions WHERE user_id=? ORDER BY id DESC LIMIT 1",
+        (sub_test_user,)
+    ).fetchone()
+    # Статус остаётся active — доступ работает до expires_at.
+    assert row['status'] == 'active'
+    assert row['cancelled_at'] is not None
+    # Доступ сохранён: план всё ещё Premium.
+    plan = service.get_user_plan(sub_test_user)
+    assert plan['is_premium'] is True
+    assert plan['expires_at'] is not None
+
+
+def test_cancel_is_idempotent(service, sub_test_user, db):
+    """Повторная отмена не меняет отметку cancelled_at."""
+    service.activate_premium(sub_test_user, plan='premium_monthly', is_beta=True)
+    assert service.cancel_subscription(sub_test_user) is True
+    first = db.execute(
+        "SELECT cancelled_at FROM subscriptions WHERE user_id=? ORDER BY id DESC LIMIT 1",
+        (sub_test_user,)).fetchone()['cancelled_at']
+    assert service.cancel_subscription(sub_test_user) is True
+    second = db.execute(
+        "SELECT cancelled_at FROM subscriptions WHERE user_id=? ORDER BY id DESC LIMIT 1",
+        (sub_test_user,)).fetchone()['cancelled_at']
+    assert first == second
+
+
+def test_cancelled_subscription_expires_at_period_end(service, sub_test_user, db):
+    """После конца оплаченного периода доступ пропадает, подписка финализируется."""
+    service.activate_premium(sub_test_user, plan='premium_monthly', is_beta=True)
+    service.cancel_subscription(sub_test_user)
+    # Имитируем наступление конца периода.
+    db.execute(
+        "UPDATE subscriptions SET expires_at = datetime('now', '-1 day') WHERE user_id=?",
+        (sub_test_user,))
+    db.commit()
+
+    plan = service.get_user_plan(sub_test_user)
+    assert plan['is_premium'] is False
+    assert plan['plan'] == 'free'
+
+    row = db.execute(
         "SELECT status FROM subscriptions WHERE user_id=? ORDER BY id DESC LIMIT 1",
         (sub_test_user,)
     ).fetchone()
     assert row['status'] == 'cancelled'
+    # users.current_plan понижен до free.
+    u = db.execute(
+        "SELECT current_plan FROM users WHERE id=?", (sub_test_user,)).fetchone()
+    assert u['current_plan'] == 'free'
+
+
+def test_cancel_expired_subscription_finalizes_immediately(service, sub_test_user, db):
+    """Отмена уже истёкшей подписки сразу переводит в free."""
+    service.activate_premium(sub_test_user, plan='premium_monthly', is_beta=True)
+    # Имитируем подписку, у которой оплаченный период уже закончился.
+    db.execute(
+        "UPDATE subscriptions SET expires_at = datetime('now', '-1 day') "
+        "WHERE user_id=?", (sub_test_user,))
+    db.commit()
+
+    result = service.cancel_subscription(sub_test_user)
+    assert result is True
+    row = db.execute(
+        "SELECT status FROM subscriptions WHERE user_id=? ORDER BY id DESC LIMIT 1",
+        (sub_test_user,)
+    ).fetchone()
+    assert row['status'] == 'cancelled'
+    plan = service.get_user_plan(sub_test_user)
+    assert plan['is_premium'] is False
+    u = db.execute(
+        "SELECT current_plan FROM users WHERE id=?", (sub_test_user,)).fetchone()
+    assert u['current_plan'] == 'free'
 
 
 def test_cancel_no_subscription(service, sub_test_user):
