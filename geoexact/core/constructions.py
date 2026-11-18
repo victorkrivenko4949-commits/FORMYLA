@@ -406,6 +406,47 @@ OPS = {
 
 assert set(OPS) | {"free_point"} == set(CONSTRUCTIONS), "реализованы не все конструкции"
 
+# ------------------------------------------------------------------ расширения
+# Новые операции добавляются модулями пакета core/ops (по файлу на направление),
+# без правки общих словарей: register_op заносит операцию в схему (промпт и
+# валидация), в исполнитель и — если aux=True — в язык доп. построений.
+EXT_DOCS: dict[str, str] = {}      # op -> строка для OP_DOC доп. построений
+AUX_EXT: dict[str, tuple] = {}     # op -> (число точек, нужен value)
+AUX_ROOTS: dict[str, tuple] = {}   # op -> допустимые value (выбор ветви)
+
+
+def register_op(name: str, fn, args: int, doc: str, value: bool = False,
+                choices: tuple | None = None, aux: bool = True,
+                aux_doc: str | None = None) -> None:
+    """Зарегистрировать операцию fn(*points, value=None) -> np.ndarray(2).
+
+    choices — допустимые значения value (ветви корня), проверяются схемой.
+    Повторная регистрация того же имени заменяет операцию (идемпотентно)."""
+    spec = {"args": int(args), "doc": doc}
+    if value:
+        spec["value"] = True
+    if choices is not None:
+        spec["choices"] = tuple(choices)
+    CONSTRUCTIONS[name] = spec
+    OPS[name] = fn
+    if aux:
+        AUX_EXT[name] = (int(args), bool(value))
+        if choices is not None:
+            AUX_ROOTS[name] = tuple(choices)
+        EXT_DOCS[name] = aux_doc or f"{name}({args} точк.{', value' if value else ''}) — {doc}"
+
+
+def _load_extensions() -> None:
+    import importlib
+    import pkgutil
+    from . import ops as _ops_pkg
+    for mod in sorted(m.name for m in pkgutil.iter_modules(_ops_pkg.__path__)):
+        if not mod.startswith("_"):
+            importlib.import_module(f"{_ops_pkg.__name__}.{mod}")
+
+
+_load_extensions()
+
 
 # ------------------------------------------------------------------ исполнение
 def count_free_points(plan: FigurePlan) -> int:

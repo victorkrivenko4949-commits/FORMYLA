@@ -21,7 +21,7 @@ import re
 
 import numpy as np
 
-from .constructions import OPS
+from .constructions import AUX_EXT, AUX_ROOTS, EXT_DOCS, OPS
 from .schema import Construction
 
 # op -> (number of point arguments, needs numeric value)
@@ -38,6 +38,9 @@ ALLOWED = {
     "tangent_point": (3, True), "excenter": (3, True),
 }
 _ROOT_OPS = {"line_circle": (0, 1), "circle_circle": (0, 1), "tangent_point": (0, 1), "excenter": (0, 1, 2)}
+# операции-расширения из core/ops (register_op(..., aux=True))
+ALLOWED.update({k: v for k, v in AUX_EXT.items() if k not in ALLOWED})
+_ROOT_OPS.update({k: v for k, v in AUX_ROOTS.items() if k not in _ROOT_OPS})
 MAX_NEW_POINTS = 6
 # A', A'' (the reflected/translated point of a textbook) are ordinary names too.
 _NAME = re.compile(r"^[A-Z](?:_?\d{1,2}|'{1,2})?$")
@@ -76,7 +79,8 @@ external_bisector_point(A,B,C) — пересечение внешней бис�
 line_circle_other(A,B,C,D) — второе пересечение прямой AB с окружностью (центр C, радиус CD), A на окружности;
 line_circle(A,B,C,D,value=0|1), circle_circle(A,B,C,D,value=0|1) — пересечения с окружностями;
 tangent_point(A,B,C,value=0|1) — точка касания из A к окружности (центр B, радиус BC);
-excenter(A,B,C,value=0|1|2) — центр вневписанной окружности напротив A/B/C."""
+excenter(A,B,C,value=0|1|2) — центр вневписанной окружности напротив A/B/C.""" + "".join(
+    ";\n" + d for d in EXT_DOCS.values())
 
 SYS_AUXPLAN = """Ты помогаешь оформить чертёж школьной или олимпиадной геометрической задачи.
 Основной чертёж по условию УЖЕ построен и проверен. Если в описании чертежа приведено

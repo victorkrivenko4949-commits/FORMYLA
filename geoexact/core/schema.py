@@ -252,6 +252,8 @@ def validate_construction_value(op: str, value: Any) -> None:
         finite = False
     if not finite:
         raise PlanError("NON_FINITE_VALUE", f"{op}.value должно быть конечным")
+    if spec.get("choices") is not None and value not in spec["choices"]:
+        raise PlanError("BAD_VALUE", f"{op}: value должно быть одним из {list(spec['choices'])}")
     if op in ("line_circle", "circle_circle", "tangent_point") and value not in (0, 1):
         raise PlanError("BAD_VALUE", f"{op}: value должно быть точно 0 или 1")
     if op == "excenter" and value not in (0, 1, 2):
@@ -456,6 +458,7 @@ def validate_plan(plan: FigurePlan) -> list[str]:
 
 def plan_json_schema() -> str:
     """Компактное описание схемы для промпта LLM (кэшируемая статика)."""
+    from . import constructions  # noqa: F401  (регистрация операций-расширений)
     cons = "\n".join(
         f"  {op}(out, {spec['args']} точк{'и' if spec['args'] != 1 else 'а'}"
         + (", value" if spec.get("value") else "") + ") — " + spec["doc"]

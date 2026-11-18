@@ -152,7 +152,8 @@ def bisector_failures(text: str, coords: dict) -> list[str]:
                     if lp is None or lq is None or np.linalg.norm(P[lq] - P[lp]) <= 1e-12:
                         continue
                     d = P[lq] - P[lp]
-                    off = float(np.cross(P[t] - P[lp], d)) / float(np.linalg.norm(d))
+                    _w = P[t] - P[lp]
+                    off = float(_w[0] * d[1] - _w[1] * d[0]) / float(np.linalg.norm(d))
                     if abs(off) > 1e-6 * max(1.0, float(np.linalg.norm(d))):
                         fails.append(
                             f"точка {name} не лежит на прямой {line_p}{line_q}, "
