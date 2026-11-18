@@ -270,6 +270,9 @@
         <div>
             <h1>{{ student_display }}</h1>
             <div class="student-subtitle">Статистика ученика · обновляется после каждой решённой задачи</div>
+            {% if viewer_role in ('teacher', 'parent') %}
+            <a class="back-link" href="{{ url_for('parent_teacher.student_daily', sid=student.id) }}">📅 Задачи дня ученика</a>
+            {% endif %}
         </div>
         <span class="status-pill {{ status_cls }}">{{ status_txt }}</span>
     </div>

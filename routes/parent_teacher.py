@@ -860,13 +860,8 @@ def _month_calendar(student_id: int) -> list:
     return days
 
 
-@parent_teacher_bp.route('/student/<int:sid>')
-@login_required
-def student_detail(sid: int):
-    student = User.query.get(sid)
-    if student is None:
-        abort(404)
-
+def _check_student_access(student: User) -> str | None:
+    sid = student.id
     role = _user_role()
     back_url = None
 
@@ -913,6 +908,17 @@ def student_detail(sid: int):
     if not is_self and getattr(student, 'share_progress', True) in (False, 0):
         abort(403)
 
+    return back_url
+
+
+@parent_teacher_bp.route('/student/<int:sid>')
+@login_required
+def student_detail(sid: int):
+    student = db.get_or_404(User, sid)
+    back_url = _check_student_access(student)
+    role = _user_role()
+    is_self = current_user.id == sid
+
     today = date.today()
     task_stats = _daily_task_stats(student.id)
     tests = _test_stats(student.id)
@@ -950,6 +956,89 @@ def student_detail(sid: int):
         days_since_active=((today - task_stats['last_active']).days
                            if task_stats.get('last_active') else None),
     )
+
+
+@parent_teacher_bp.route('/student/<int:sid>/daily')
+@login_required
+def student_daily(sid: int):
+    from curator.session_plan import method_lesson_today
+    from daily_tasks.models import DailyTaskItem, DailyTaskSet
+    from daily_tasks.services import (
+        _get_daily_count_for_user, _get_item_figure_url, _select_best_task_indices,
+        today_in_user_tz,
+    )
+    from utils.math_text_fixer import wrap_bare_math
+
+    student = db.get_or_404(User, sid)
+    back_url = _check_student_access(student)
+    _require_role('teacher', 'parent')
+    today = today_in_user_tz()
+    context = dict(student=student, student_display=_display(student),
+                   back_url=back_url, today=today)
+
+    lesson = method_lesson_today(sid)
+    if lesson is not None:
+        from sqlalchemy import inspect
+        from method_week.catalog import method_by_code, week_start
+        from method_week.models import MethodWeekAnswer, MethodWeekSet
+
+        monday = week_start(today)
+        # These tables are created lazily by the student workflow. Do not
+        # initialise them or generate a set while somebody is only viewing.
+        schema = inspect(db.session.connection())
+        week_set = None
+        if schema.has_table(MethodWeekSet.__tablename__):
+            week_set = MethodWeekSet.query.filter_by(user_id=sid, week_start=monday).first()
+        code = week_set.method_code if week_set else lesson.get('method_code')
+        method = method_by_code(code) or {}
+        name = (week_set.method_name if week_set else
+                method.get('method_name') or lesson.get('method_name'))
+        explanation = week_set.lesson_md if week_set and week_set.status == 'ready' else None
+        if not explanation:
+            headings = (
+                ('Определение', 'definition_md'), ('Основные факты', 'main_theorems_md'),
+                ('Типичные приёмы', 'typical_techniques_md'),
+                ('Пример', 'worked_example_md'), ('Типичные ошибки', 'pitfalls_md'),
+            )
+            explanation = '\n\n'.join(
+                f'### {title}\n{method[key]}' for title, key in headings if method.get(key)
+            )
+        tasks = []
+        if week_set and week_set.status == 'ready':
+            answers = {}
+            if schema.has_table(MethodWeekAnswer.__tablename__):
+                answers = {a.position: a for a in MethodWeekAnswer.query.filter_by(
+                    set_id=week_set.id, user_id=sid)}
+            for position, task in enumerate(week_set.tasks, 1):
+                if isinstance(task, dict):
+                    answer = answers.get(position)
+                    tasks.append(dict(
+                        position=position, text=task.get('statement') or '',
+                        answer=answer.user_answer if answer else None,
+                        is_correct=answer.is_correct if answer else None,
+                    ))
+        return render_template('student/daily_method.html', **context,
+                               method_name=name, explanation=explanation, tasks=tasks)
+
+    daily_set = DailyTaskSet.query.filter_by(user_id=sid, target_date=today).first()
+    tasks = []
+    if daily_set:
+        items = daily_set.items.order_by(DailyTaskItem.position).all()
+        # As on the student's dashboard, do not expose unused slots in a set.
+        selected = _select_best_task_indices(
+            [dict(task_text=item.task_text, is_flagged=item.is_flagged) for item in items],
+            n=_get_daily_count_for_user(sid),
+        )
+        for idx in sorted(selected):
+            item = items[idx]
+            tasks.append(dict(
+                position=item.position, text=wrap_bare_math(item.task_text),
+                figure_url=_get_item_figure_url(item), difficulty=item.difficulty_level,
+                topic=item.topic, slot_kind=item.slot_kind, answer=item.user_answer,
+                is_correct=item.is_correct, correct_answer=item.correct_answer,
+                solution=item.solution,
+            ))
+    return render_template('student/daily_tasks.html', **context, tasks=tasks)
 
 
 _MONTHS_RU = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль',

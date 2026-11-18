@@ -14,8 +14,7 @@ def _call_check_answer(client, user_answer, mock_review_return,
                        difficulty=1, streak=0):
     """Simulate a POST to /api/check_adaptive_answer with given patches.
 
-    Also patches the local answer checker (check_answer) so it returns
-    (False, "parse_error") — forcing the AI review path to be exercised.
+    Replaces the solution-check pipeline so no external AI call is made.
 
     Parameters
     ----------
@@ -41,7 +40,6 @@ def _call_check_answer(client, user_answer, mock_review_return,
     mock_task.task_text = "Solve for x: 2x + 3 = 13"
 
     mock_review = MagicMock(return_value=mock_review_return)
-    mock_checker = MagicMock(return_value=(False, "parse_error"))
 
     # ── Initialise adaptive test session ────────────────────────────
     # The check_adaptive_answer endpoint requires these session keys.
@@ -51,15 +49,11 @@ def _call_check_answer(client, user_answer, mock_review_return,
         sess["partial_correct_streak"] = streak
         # adaptive_slots will be lazy-initialised by _adaptive_get_slots()
 
-    # ── Apply patches ───────────────────────────────────────────────
-    # Also patch the local answer checker so it falls through to AI
     with patch(
-        "services.ai_tutor_review.review_attempt", mock_review
+        "services.solution_check_pipeline.check_solution", mock_review
     ), patch(
         "models.AdaptiveTask",
-    ) as MockAdaptiveTask, patch(
-        "services.answer_checker.check_answer", mock_checker
-    ):
+    ) as MockAdaptiveTask:
         MockAdaptiveTask.query.get.return_value = mock_task
 
         resp = client.post(
@@ -86,6 +80,7 @@ def client():
     """
     from app import app as flask_app
     from models import db, User
+    from models_curator import CuratorState
 
     flask_app.config["TESTING"] = True
 
@@ -100,7 +95,13 @@ def client():
                 is_guest=False,
             )
             db.session.add(user)
-            db.session.commit()
+            db.session.flush()
+        state = CuratorState.query.filter_by(user_id=user.id).first()
+        if state is None:
+            state = CuratorState(user_id=user.id)
+            db.session.add(state)
+        state.prep_state = {"intake": {"completed": True}}
+        db.session.commit()
 
     with flask_app.test_client() as c:
         with c.session_transaction() as sess:
@@ -322,21 +323,27 @@ def test_correct_answer_at_level_7_advances_to_8(client):
     )
 
 
-def test_correct_answer_at_level_8_stays_at_8(client):
-    """Регрессия: на максимуме 8 верный ответ -> остаётся 8 (clamp сверху)."""
+@pytest.mark.parametrize(("level", "correct", "points", "hint"), [
+    (8, True, 1, "+1 балл, уровень +1"),
+    (1, False, -1, "−1 балл, уровень −1"),
+])
+def test_score_does_not_claim_level_changes_at_bounds(client, level, correct, points, hint):
+    """Баллы сохраняются на границе шкалы, но уровень не меняется."""
     mock_return = {
-        "score": 1.0,
-        "feedback": "[OK]",
-        "category": "correct",
+        "score": float(points),
+        "feedback": f"**Оценка тьютора: {hint}**\n\n[Разбор]",
+        "category": "correct" if correct else "incorrect",
         "confidence": 1.0,
-        "answer_correct": True,
+        "answer_correct": correct,
         "method_correct": True,
     }
-    resp = _call_check_answer(client, "5", mock_return, difficulty=8)
+    resp = _call_check_answer(client, "5", mock_return, difficulty=level)
     data = resp.get_json()
     assert resp.status_code == 200
-    assert data["score"] == 1
-    assert data["new_level"] == 8  # clamp(1, 8, 8+1) = 8
+    assert data["score"] == points
+    assert data["prev_level"] == data["new_level"] == level
+    assert "уровень без изменений" in data["feedback"] and hint not in data["feedback"]
+    assert "[Разбор]" in data["feedback"]
 
 
 def test_stale_pending_slot_reassigned_after_level_change(client):

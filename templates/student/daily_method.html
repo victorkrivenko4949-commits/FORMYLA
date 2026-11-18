@@ -1,0 +1,20 @@
+{% extends "student/_daily.html" %}
+{% block daily_body %}
+<section class="card daily-card">
+    <h2>День метода{% if method_name %}: {{ method_name }}{% endif %}</h2>
+    {% if explanation %}<div data-mw-readonly-markdown class="daily-text">{{ explanation }}</div>
+    {% else %}<p>Разбор метода пока недоступен.</p>{% endif %}
+</section>
+{% for task in tasks %}
+<article class="card daily-card">
+    <h2>Задача {{ task.position }}</h2>
+    <p class="daily-text">{{ task.text }}</p>
+    {% include 'student/_daily_result.html' %}
+</article>
+{% else %}
+<p class="card daily-card">Задачи по методу ещё не выданы.</p>
+{% endfor %}
+{% endblock %}
+{% block extra_js %}
+<script defer src="{{ url_for('static', filename='method_week.js') }}?v={{ asset_version }}"></script>
+{% endblock %}

@@ -4,6 +4,13 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmtTime = s => `${String(Math.floor(s / 3600)).padStart(2, '0')}:${String(Math.floor(s % 3600 / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
   const now = () => new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  const previewableImage = /^image\/(?:png|jpe?g|gif|webp|avif|bmp)$/i;
+
+  function chatContent(m, index) {
+    if (!m.file) return App.linkify(esc(m.text));
+    const download = `<a class="file" href="${esc(m.fileUrl)}" download="${esc(m.fileName)}">${icon('file')} ${esc(m.file)} · скачать</a>`;
+    return m.image ? `<button type="button" class="chat-photo" data-chat-photo="${index}" aria-label="Открыть фото: ${esc(m.fileName)}"><img src="${esc(m.fileUrl)}" alt="${esc(m.fileName)}"></button>${download}` : download;
+  }
 
   const M = {
     layer: null, S: null, selfVideo: null, shareVideo: null, timers: [],
@@ -744,7 +751,7 @@
         foot = S.isHost ? `<button class="btn-ghost btn-sm" data-pa="invite">${icon('link')} Пригласить</button><button class="btn-ghost btn-sm" data-pa="muteAll">${icon('micOff')} Выкл. звук всем</button><button class="btn-ghost btn-sm" data-pa="lowerAll">${icon('hand')} Опустить руки</button>` : `<button class="btn-ghost btn-sm" data-pa="invite">${icon('link')} Пригласить</button>`;
       }
       if (S.panel === 'chat') {
-        body = `<div id="chatList" style="display:flex;flex-direction:column;gap:12px">${S.chat.map(m => m.sys ? `<div class="chat-msg system"><div class="bubble"><div class="text">${esc(m.text)}</div></div></div>` : `<div class="chat-msg ${m.me ? 'me' : ''}"><span class="avatar" style="background:${m.color}">${m.initials}</span><div class="bubble"><div class="meta"><b>${esc(m.from)}</b>${m.to && m.to !== 'all' ? `<span class="private">→ ${esc(m.toName)} (лично)</span>` : ''}<span>${m.time}</span></div><div class="text">${m.file ? `<span class="file">${icon('file')} ${esc(m.file)}</span>` : App.linkify(esc(m.text))}</div></div></div>`).join('')}</div><div class="typing" id="typing"></div>`;
+        body = `<div id="chatList" style="display:flex;flex-direction:column;gap:12px">${S.chat.map((m, index) => m.sys ? `<div class="chat-msg system"><div class="bubble"><div class="text">${esc(m.text)}</div></div></div>` : `<div class="chat-msg ${m.me ? 'me' : ''}"><span class="avatar" style="background:${m.color}">${m.initials}</span><div class="bubble"><div class="meta"><b>${esc(m.from)}</b>${m.to && m.to !== 'all' ? `<span class="private">→ ${esc(m.toName)} (лично)</span>` : ''}<span>${m.time}</span></div><div class="text">${chatContent(m, index)}</div></div></div>`).join('')}</div><div class="typing" id="typing"></div>`;
         foot = `<div class="chat-input"><div class="to">Кому: <select id="chatTo">${[['all', 'Все'], ...S.participants.map(p => [p.id, p.name])].map(([v, l]) => `<option value="${v}" ${S.chatTo === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select><label class="btn-icon" title="Прикрепить файл" style="margin-left:auto">${icon('file')}<input type="file" class="sr-only" id="chatFile"></label><button class="btn-icon" id="chatEmoji" title="Эмодзи">${icon('smile')}</button></div><div class="row"><textarea id="chatText" placeholder="${S.allowChat || S.isHost ? 'Введите сообщение… (Enter — отправить)' : 'Чат отключён организатором'}" ${S.allowChat || S.isHost ? '' : 'disabled'}></textarea><button class="btn-gradient" id="chatSend" style="padding:0 14px">${icon('send')}</button></div></div>`;
       }
       if (S.panel === 'polls') {
@@ -824,6 +831,13 @@
     bindChat(sp) {
       const S = this.S, ta = $('#chatText', sp), list = $('#chatList', sp);
       if (list) list.parentElement.scrollTop = list.parentElement.scrollHeight;
+      sp.querySelectorAll('[data-chat-photo]').forEach(button => {
+        const img = $('img', button);
+        img.addEventListener('error', () => { button.hidden = true; });
+        if (img.complete && !img.naturalWidth) button.hidden = true;
+        img.addEventListener('load', () => { list.parentElement.scrollTop = list.parentElement.scrollHeight; });
+        button.addEventListener('click', () => this.openChatPhoto(S.chat[Number(button.dataset.chatPhoto)]));
+      });
       $('#chatTo', sp).addEventListener('change', e => S.chatTo = e.target.value);
       const send = () => {
         const t = ta.value.trim(); if (!t) return;
@@ -834,9 +848,47 @@
       };
       $('#chatSend', sp).addEventListener('click', send);
       ta && ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
-      $('#chatFile', sp).addEventListener('change', e => { const f = e.target.files[0]; if (f) { S.chat.push({ from: S.name, me: true, initials: App.user.initials, color: App.user.color, file: `${f.name} · ${(f.size / 1024).toFixed(0)} КБ`, time: now(), to: S.chatTo }); this.renderPanel(); } });
+      $('#chatFile', sp).addEventListener('change', e => {
+        const f = e.target.files[0];
+        if (!f || (!S.allowChat && !S.isHost)) return;
+        if (f.size > 3 * 1048576) return toast('Файл больше 3 МБ — отправьте ссылку на него', 'bad');
+        const to = S.chatTo, recipient = S.participants.find(p => p.id === to);
+        if (to !== 'all' && !recipient) return toast('Этот участник уже вышел', 'bad');
+        S.chat.push({
+          from: S.name, me: true, initials: App.user.initials, color: App.user.color,
+          file: `${f.name} · ${Math.max(1, Math.round(f.size / 1024))} КБ`,
+          fileUrl: URL.createObjectURL(f), fileName: f.name, image: previewableImage.test(f.type),
+          time: now(), to, toName: recipient?.name || '',
+        });
+        this.renderPanel();
+      });
       $('#chatEmoji', sp).addEventListener('click', e => { this.popover(e.currentTarget, `<div class="emoji-row">${['😀', '👍', '❤️', '🎉', '🤔', '👏', '🔥', '✅', '📐', '📏', '✏️', '🧮'].map(x => `<button data-e="${x}">${x}</button>`).join('')}</div>`, m => m.querySelectorAll('[data-e]').forEach(b => b.addEventListener('click', () => { ta.value += b.dataset.e; this.closePop(); ta.focus(); }))); e.currentTarget.closest('.chat-input').style.position = 'relative'; });
       ta && ta.focus();
+    },
+    openChatPhoto(message) {
+      const dialog = document.createElement('dialog');
+      dialog.className = 'chat-photo-dialog';
+      dialog.setAttribute('aria-label', message.fileName);
+      dialog.innerHTML = '<img alt=""><div><a download>Скачать</a><button type="button" autofocus>Закрыть</button></div>';
+      const img = $('img', dialog);
+      img.src = message.fileUrl;
+      img.alt = message.fileName;
+      const download = $('a', dialog);
+      download.href = message.fileUrl;
+      download.download = message.fileName;
+      $('button', dialog).addEventListener('click', () => dialog.close());
+      dialog.addEventListener('keydown', e => e.stopPropagation());
+      dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
+      dialog.addEventListener('close', () => dialog.remove(), { once: true });
+      this.layer.append(dialog);
+      dialog.showModal();
+    },
+    releaseChatFiles(S) {
+      for (const message of S.chat) {
+        if (!message.fileUrl) continue;
+        URL.revokeObjectURL(message.fileUrl);
+        message.fileUrl = null;
+      }
     },
     incomingChat(p, text, to = 'all', toName = '') {
       const S = this.S;
@@ -898,6 +950,7 @@
     /* =============== ВЫХОД =============== */
     end(forAll) {
       const S = this.S; S.ended = true;
+      this.releaseChatFiles(S);
       if (S.recording) this.stopRecording();
       if (S.displayStream) S.displayStream.getTracks().forEach(t => t.stop());
       if (S.rec) { S.rec.onend = null; try { S.rec.stop(); } catch (e) { } }
@@ -924,6 +977,7 @@
     },
     close() {
       const S = this.S;
+      if (S) this.releaseChatFiles(S);
       if (S) { if (S.stream) S.stream.getTracks().forEach(t => t.stop()); if (S.displayStream) S.displayStream.getTracks().forEach(t => t.stop()); if (S.wb) S.wb.destroy(); if (S.audioCtx) S.audioCtx.close().catch(() => { }); }
       this.timers.forEach(t => { clearInterval(t); clearTimeout(t); }); this.timers = [];
       document.onkeydown = null; document.onkeyup = null;

@@ -1,0 +1,10 @@
+{% if task.is_correct is sameas true %}
+<p class="daily-status correct">Верно</p>
+{% elif task.is_correct is sameas false %}
+<p class="daily-status incorrect">Неверно</p>
+{% elif task.answer %}
+<p class="daily-status">Ответ ещё не оценён</p>
+{% else %}
+<p class="daily-status daily-meta">Не решал</p>
+{% endif %}
+{% if task.answer %}<p>Ответ ученика: <span class="daily-text">{{ task.answer }}</span></p>{% endif %}

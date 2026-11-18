@@ -3477,6 +3477,10 @@ def parent_only_account():
     if (getattr(current_user, 'role', 'student') or 'student') != 'parent':
         return
 
+    # These routes do their own per-student consent and privacy checks.
+    if request.endpoint in ('parent_teacher.student_detail', 'parent_teacher.student_daily'):
+        return
+
     # Разрешённые родителю пути
     for _p in (
         '/parent',            # кабинет родителя (+ bind-child, invite-code, student)
@@ -9904,6 +9908,12 @@ def check_adaptive_answer():
         partial_streak = session.get('partial_correct_streak', 0)
         delta = score  # +1 / 0 / -1
         new_level = max(1, min(8, current_difficulty + delta))
+        if score and new_level == current_difficulty:
+            # A point still counts, but at either bound it cannot move the level.
+            feedback = re.sub(
+                r'(\*\*Оценка тьютора: [^,\n]+), уровень [^*\n]+\*\*',
+                r'\1, уровень без изменений**', feedback, count=1,
+            )
 
         # partial_streak: сбрасываем при любом не-нейтральном вердикте;
         # сохраняем при AI failure и при score==0 (нейтрально).

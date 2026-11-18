@@ -223,7 +223,7 @@
   const base = cs && cs.src ? cs.src.replace(/[^/]*$/, '') : '';
   const ver = '?v=2.0.1';
   if (document.readyState === 'loading' && cs && !cs.async && !cs.defer) {
-    PARTS.forEach(p => document.write('<script src="' + base + p + ver + '"><\\/script>'));
+    PARTS.forEach(p => document.write('<script src="' + base + p + ver + '"></script>'));
   } else {
     (function next(i) { if (i >= PARTS.length) return; const s = document.createElement('script'); s.src = base + PARTS[i] + ver; s.onload = () => next(i + 1); document.head.appendChild(s); })(0);
   }

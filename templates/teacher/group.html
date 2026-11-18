@@ -514,6 +514,9 @@
                        class="stat-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 10px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; text-decoration: none; font-weight: 600; font-size: 14px; white-space: nowrap;">
                         📂 Статистика
                     </a>
+                    {% if not s.progress_hidden %}
+                    <a href="{{ url_for('parent_teacher.student_daily', sid=s.id) }}" class="stat-btn">📅 Задачи дня</a>
+                    {% endif %}
                     {% if s.premium %}
                     <div class="premium-active-badge" title="Premium уже активен">
                         ⭐ Premium{% if s.premium.expires_at %} до {{ s.premium.expires_at }}{% endif %}
