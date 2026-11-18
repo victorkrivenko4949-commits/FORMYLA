@@ -14,9 +14,6 @@ bp = Blueprint("geoexact", __name__, url_prefix="/geometry/draw",
 # In-memory rate-limit для распознавания фото: ≤ 20 фото/час на пользователя.
 _PHOTO_RATE_LIMIT = {}
 
-# Vision-модели, для которых провайдер не принял параметр thinking
-# (HTTP 400 с упоминанием «thinking») — повтор идёт без параметра.
-_VISION_THINKING_UNSUPPORTED: set[str] = set()
 
 # Промпт распознавания: полный текст условия, формулы в LaTeX.
 # В конвейер уходит эта версия, а пользователь видит её без LaTeX
