@@ -869,8 +869,25 @@
       </div>
     {% endif %}
   {% endif %}
+  <style>
+    /* Кастомный чекбокс «обещания»: нативная галочка (accent-color) в части
+       браузеров прижата к левому краю — рисуем свою, строго по центру. */
+    #dt-pledge{
+      -webkit-appearance:none;appearance:none;
+      width:18px;height:18px;margin-top:2px;flex:none;cursor:pointer;
+      border-radius:5px;border:1.5px solid var(--border);
+      background:var(--surface);
+      transition:background .15s,border-color .15s;
+      flex-shrink:0;
+    }
+    #dt-pledge:checked{
+      background:#4f6cff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 13l4 4 10-10' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center center / 12px 12px no-repeat;
+      border-color:#4f6cff;
+    }
+    #dt-pledge:focus-visible{outline:2px solid #4f6cff;outline-offset:2px;}
+  </style>
   <label class="dt-pledge" style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;margin-bottom:16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:14px;line-height:1.45;cursor:pointer;">
-    <input type="checkbox" id="dt-pledge" style="width:18px;height:18px;margin-top:2px;flex:none;accent-color:#4f6cff;cursor:pointer;">
+    <input type="checkbox" id="dt-pledge">
     <span>Согласен: постараюсь заходить как можно чаще, ведь успех — в стабильности.</span>
   </label>
   <script>(function(){var c=document.getElementById('dt-pledge'),k='dt_pledge';try{c.checked=localStorage.getItem(k)==='1';c.addEventListener('change',function(){localStorage.setItem(k,c.checked?'1':'0');if(c.checked){try{fetch('/daily_tasks/pledge',{method:'POST',credentials:'include'}).catch(function(){});}catch(e){}}});}catch(e){}})();</script>
