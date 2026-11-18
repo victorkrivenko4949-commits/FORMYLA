@@ -150,15 +150,21 @@
     document.body.style.overflow = 'hidden';
     var chosen = 0, sending = false;
     var stars = ov.querySelectorAll('#ft-sfb-stars button');
+    // Наведение: загораются все звёзды по порядку — до наведённой включительно.
+    function setStars(n) {
+      stars.forEach(function (s) { s.style.setProperty('color', parseInt(s.dataset.star, 10) <= n ? '#F4B942' : '#5c6478', 'important'); });
+    }
     stars.forEach(function (b) {
+      b.addEventListener('mouseenter', function () { setStars(parseInt(b.dataset.star, 10)); });
       b.addEventListener('click', function () {
         chosen = parseInt(b.dataset.star, 10);
         // ВАЖНО: глобальное правило `button { color: #fff !important }` в static/style.css
         // перекрывает обычный color — ставим inline-стиль с приоритетом 'important'.
-        stars.forEach(function (s) { s.style.setProperty('color', parseInt(s.dataset.star, 10) <= chosen ? '#F4B942' : '#5c6478', 'important'); });
+        setStars(chosen);
         ov.querySelector('#ft-sfb-hint').style.display = 'none';
       });
     });
+    ov.querySelector('#ft-sfb-stars').addEventListener('mouseleave', function () { setStars(chosen); });
     document.addEventListener('keydown', function (e) { if (ov.parentNode && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); } }, true);
     var btn = ov.querySelector('#ft-sfb-submit');
     btn.addEventListener('click', function () {
