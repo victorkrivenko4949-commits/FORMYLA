@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} | FORMYLA.net{% endblock %}
+{% block extra_css %}
+<style>
+  .ws{max-width:1180px;margin:0 auto;padding:20px 12px 80px;color:#fff}
+  .ws h1{margin:0 0 14px;font-size:clamp(1.4em,3.5vw,2em);font-weight:800}
+  .ws-grid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:18px;align-items:start}
+  .ws-panel{background:rgba(30,41,59,.94);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:16px}
+  .ws-panel label{display:block;font-size:.85em;color:#94a3b8;margin:10px 0 4px;font-weight:700}
+  .ws-panel select,.ws-panel input[type=number],.ws-panel input[type=text],.ws-panel input[type=datetime-local]{width:100%;min-height:44px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:#0f172a;color:#fff;padding:8px 10px;font:inherit}
+  .ws-seg{display:flex;gap:6px}.ws-seg button{flex:1;min-height:44px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:#0f172a;color:#cbd5e1;font-weight:700;cursor:pointer}
+  .ws-seg button[aria-pressed=true]{background:#f4a259;color:#14213d;border-color:#f4a259}
+  .ws-topics{max-height:220px;overflow:auto;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:6px;background:#0f172a}
+  .ws-topics label{display:flex;gap:8px;align-items:center;margin:0;padding:8px 6px;color:#e2e8f0;font-weight:500;font-size:.95em;border-radius:8px}
+  .ws-topics label:hover{background:rgba(255,255,255,.05)}
+  .ws-topics small{margin-left:auto;color:#94a3b8}
+  .ws-check{display:flex;gap:10px;align-items:center;margin-top:12px;color:#e2e8f0}
+  .ws-check input{width:20px;height:20px}
+  .ws-range{display:flex;gap:8px;align-items:center}.ws-range select{flex:1}
+  .ws-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:12px;border:0;font:inherit;font-weight:800;cursor:pointer}
+  .ws-btn-amber{background:#f4a259;color:#14213d;width:100%;margin-top:16px}
+  .ws-btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff}
+  .ws-btn:disabled{opacity:.5;cursor:default}
+  .ws-warn{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(244,162,89,.12);border:1px solid rgba(244,162,89,.45);color:#ffc98f;font-size:.9em}
+  .ws-warn:empty{display:none}
+  .ws-empty{padding:40px 16px;text-align:center;color:#94a3b8}
+  .ws-card{background:rgba(30,41,59,.94);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:14px 14px 10px;margin-bottom:10px;position:relative}
+  .ws-card.dragging{opacity:.4}.ws-card.over{border-color:#f4a259}
+  .ws-card-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  .ws-num{width:30px;height:30px;border-radius:50%;background:#f4a259;color:#14213d;display:grid;place-items:center;font-weight:800}
+  .ws-lvl{padding:3px 9px;border-radius:8px;font-size:.78em;font-weight:800;letter-spacing:.04em}
+  .ws-lvl-1{background:rgba(56,239,125,.18);color:#86efac}.ws-lvl-2{background:rgba(94,234,212,.18);color:#5eead4}
+  .ws-lvl-3{background:rgba(244,162,89,.18);color:#ffc98f}.ws-lvl-4{background:rgba(248,113,113,.18);color:#fca5a5}
+  .ws-src{color:#94a3b8;font-size:.85em}.ws-fig{color:#94a3b8;font-size:.9em}
+  .ws-handle{margin-left:auto;cursor:grab;color:#64748b;font-size:1.2em;user-select:none;touch-action:none}
+  .ws-stmt{line-height:1.6;color:#e2e8f0;word-break:break-word}
+  .ws-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.ws-tag{padding:2px 8px;border-radius:6px;background:rgba(255,255,255,.07);color:#cbd5e1;font-size:.78em}
+  .ws-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .ws-actions button{min-height:36px;padding:0 10px;border-radius:8px;border:1px solid rgba(255,255,255,.16);background:transparent;color:#e2e8f0;font:inherit;font-size:.85em;cursor:pointer}
+  .ws-actions button:hover{border-color:#f4a259}.ws-actions .danger{color:#fca5a5}
+  .ws-footer{position:sticky;bottom:0;margin-top:14px;padding:12px;background:rgba(7,12,24,.92);backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,.09);display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-radius:12px}
+  .ws-footer input[type=text]{flex:1 1 180px;min-height:44px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:#0f172a;color:#fff;padding:0 10px;font:inherit}
+  .ws-assign{display:none;gap:8px;flex-wrap:wrap;width:100%;margin-top:8px}.ws-assign.open{display:flex}
+  .ws-assign select,.ws-assign input{flex:1 1 160px;min-height:44px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:#0f172a;color:#fff;padding:0 10px;font:inherit}
+  .ws-toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#1e293b;border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px 16px;border-radius:12px;z-index:9999;display:none;max-width:90vw}
+  @media(max-width:860px){.ws-grid{grid-template-columns:1fr}.ws{padding:12px 8px 100px}.ws-footer{position:fixed;left:8px;right:8px;bottom:8px;margin:0}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="ws" id="ws" data-groups='{{ groups|tojson }}'>
+  <h1>📝 {{ page_title }} <a href="/teacher/worksheets" class="ws-btn ws-btn-ghost" style="font-size:.6em;vertical-align:middle;margin-left:8px">Мои листки</a></h1>
+  <div class="ws-grid">
+    <aside class="ws-panel" id="wsForm">
+      <label>Класс</label>
+      <select id="fGrade">{% for g in range(5,12) %}<option value="{{ g }}" {% if g==8 %}selected{% endif %}>{{ g }} класс</option>{% endfor %}</select>
+      <label>Режим</label>
+      <div class="ws-seg" id="fMode"><button type="button" data-v="topic" aria-pressed="true">По теме</button><button type="button" data-v="mixed" aria-pressed="false">Разнобой</button></div>
+      <div id="fTopicsWrap"><label>Темы <small id="fTopicsHint" style="color:#64748b;font-weight:400"></small></label><div class="ws-topics" id="fTopics"></div></div>
+      <label>Количество задач</label>
+      <div class="ws-seg" id="fN">{% for n in (6,7,8,9,10) %}<button type="button" data-v="{{ n }}" aria-pressed="{{ 'true' if n==8 else 'false' }}">{{ n }}</button>{% endfor %}</div>
+      <label>Уровни</label>
+      <div class="ws-range"><select id="fLmin"><option>1</option><option>2</option><option>3</option><option>4</option></select><span>—</span><select id="fLmax"><option>1</option><option>2</option><option>3</option><option selected>4</option></select></div>
+      <label>Группа (для исключения решённых)</label>
+      <select id="fGroup"><option value="">— без группы —</option>{% for g in groups %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}</select>
+      <label class="ws-check"><input type="checkbox" id="fOly"> Только олимпиадные</label>
+      <label class="ws-check"><input type="checkbox" id="fTheory"> Теория после задач</label>
+      <button type="button" class="ws-btn ws-btn-amber" id="btnGenerate">⚡ Собрать листок</button>
+      <div class="ws-warn" id="wsWarnings"></div>
+    </aside>
+    <section>
+      <div id="wsPreview"><div class="ws-empty">Выберите класс и темы, затем нажмите «Собрать листок».</div></div>
+      <div class="ws-footer" id="wsFooter" style="display:none">
+        <input type="text" id="fTitle" placeholder="Название листка">
+        <button type="button" class="ws-btn ws-btn-ghost" id="btnSave">💾 Сохранить</button>
+        <a class="ws-btn ws-btn-ghost" id="btnPdf" href="#" target="_blank">📄 PDF</a>
+        <button type="button" class="ws-btn ws-btn-amber" style="width:auto;margin:0" id="btnAssignToggle">📤 Выдать группе</button>
+        <div class="ws-assign" id="wsAssign">
+          <select id="aGroup"><option value="">Группа…</option>{% for g in groups %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}</select>
+          <input type="datetime-local" id="aDue">
+          <button type="button" class="ws-btn ws-btn-amber" style="width:auto;margin:0" id="btnAssign">Выдать</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+<div class="ws-toast" id="wsToast"></div>
+<script id="wsInitial" type="application/json">{{ worksheet_json|safe }}</script>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+  var S = { ws: JSON.parse(document.getElementById('wsInitial').textContent), topics: [] };
+  var $ = function(id){ return document.getElementById(id); };
+  function toast(m){ var t=$('wsToast'); t.textContent=m; t.style.display='block'; clearTimeout(t._h); t._h=setTimeout(function(){t.style.display='none';},2600); }
+  function seg(id){ return document.querySelector('#'+id+' button[aria-pressed=true]').dataset.v; }
+  document.querySelectorAll('.ws-seg').forEach(function(s){ s.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; s.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed','false');}); b.setAttribute('aria-pressed','true'); if(s.id==='fMode') $('fTopicsWrap').style.display = b.dataset.v==='mixed'?'none':''; }); });
+  function api(method,url,body){ return fetch(url,{method:method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,credentials:'same-origin'}).then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||j.description||('HTTP '+r.status)); return j; }); }); }
+  function loadTopics(){ var g=$('fGrade').value; $('fTopics').innerHTML='<div style="padding:8px;color:#64748b">Загрузка…</div>';
+    api('GET','/api/teacher/worksheet/topics?grade='+g).then(function(d){ S.topics=d.topics; $('fTopicsHint').textContent='('+d.topics.length+')';
+      $('fTopics').innerHTML = d.topics.length ? d.topics.map(function(t){ return '<label><input type="checkbox" value="'+esc(t.name)+'"> '+esc(t.name)+'<small>'+t.count+'</small></label>'; }).join('') : '<div style="padding:8px;color:#64748b">В банке нет задач для этого класса</div>';
+      if(S.ws && S.ws.grade==g) (S.ws.topics||[]).forEach(function(t){ var c=$('fTopics').querySelector('input[value="'+CSS.escape(t)+'"]'); if(c) c.checked=true; });
+    }).catch(function(e){ $('fTopics').innerHTML='<div style="padding:8px;color:#fca5a5">'+esc(e.message)+'</div>'; }); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function params(){ return { grade:+$('fGrade').value, mode:seg('fMode'), n:+seg('fN'), level_min:+$('fLmin').value, level_max:+$('fLmax').value, only_olympiad:$('fOly').checked, theory_after:$('fTheory').checked, group_id:$('fGroup').value?+$('fGroup').value:null, topics:[].map.call($('fTopics').querySelectorAll('input:checked'),function(c){return c.value;}), title:$('fTitle').value||undefined }; }
+  function srcLine(s){ if(!s) return ''; var p=[]; if(s.olympiad) p.push(s.olympiad); if(s.stage) p.push(s.stage); if(s.year) p.push(s.year); if(s.grade) p.push(s.grade+' класс'); if(s.number) p.push('№'+s.number); return p.join(', '); }
+  function render(){ var ws=S.ws, box=$('wsPreview'); if(!ws){ box.innerHTML='<div class="ws-empty">Выберите класс и темы, затем нажмите «Собрать листок».</div>'; $('wsFooter').style.display='none'; return; }
+    $('wsFooter').style.display=''; $('fTitle').value=ws.title||''; $('btnPdf').href='/teacher/worksheet/'+ws.worksheet_id+'.pdf';
+    $('wsWarnings').textContent=(ws.warnings||[]).join(' · ');
+    box.innerHTML = ws.tasks.map(function(t){ var src=srcLine(t.source); return '<article class="ws-card" draggable="true" data-id="'+t.task_id+'">'
+      +'<div class="ws-card-head"><span class="ws-num">'+t.position+'</span><span class="ws-lvl ws-lvl-'+t.level+'">уровень '+t.level+'</span>'
+      +(src?'<span class="ws-src">'+esc(src)+'</span>':'<span class="ws-src">без источника</span>')+(t.has_figure?'<span class="ws-fig" title="есть чертёж">📐</span>':'')
+      +(t.added_by==='teacher'?'<span class="ws-tag">заменена</span>':'')+'<span class="ws-handle" title="перетащить">⋮⋮</span></div>'
+      +'<div class="ws-stmt katex-content">'+t.statement_html+'</div>'
+      +(t.methods&&t.methods.length?'<div class="ws-tags">'+t.methods.map(function(m){return '<span class="ws-tag">'+esc(m)+'</span>';}).join('')+'</div>':'')
+      +'<div class="ws-actions"><button data-act="same">🔄 Заменить</button><button data-act="harder">⬆ Сложнее</button><button data-act="easier">⬇ Проще</button><button data-act="remove" class="danger">✕ Удалить</button></div></article>'; }).join('') || '<div class="ws-empty">В листке нет задач</div>';
+    if(window.renderMathInElement){ try{ renderMathInElement(box,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true},{left:'$',right:'$',display:false}],throwOnError:false}); }catch(e){} }
+    bindDnD(); }
+  $('btnGenerate').addEventListener('click',function(){ var p=params(); if(p.mode==='topic'&&!p.topics.length){ toast('Выберите хотя бы одну тему'); return; } if(p.mode==='mixed'&&!p.group_id){ toast('Для «разнобоя» нужна группа'); return; }
+    $('btnGenerate').disabled=true; var t0=performance.now();
+    api('POST','/api/teacher/worksheet/generate',p).then(function(d){ S.ws=d; render(); toast('Собрано за '+Math.round(performance.now()-t0)+' мс'); }).catch(function(e){ toast(e.message); }).finally(function(){ $('btnGenerate').disabled=false; }); });
+  $('wsPreview').addEventListener('click',function(e){ var b=e.target.closest('button[data-act]'); if(!b||!S.ws) return; var card=b.closest('.ws-card'), id=+card.dataset.id, act=b.dataset.act; b.disabled=true;
+    var req = act==='remove' ? api('PATCH','/api/teacher/worksheet/'+S.ws.worksheet_id,{remove_task_id:id}).then(function(d){ d.warnings=S.ws.warnings; S.ws=d; })
+      : api('POST','/api/teacher/worksheet/'+S.ws.worksheet_id+'/replace_task',{task_id:id,direction:act}).then(function(d){ var i=S.ws.tasks.findIndex(function(t){return t.task_id===id;}); d.task.position=S.ws.tasks[i].position; S.ws.tasks[i]=d.task; if(d.warnings.length) toast(d.warnings.join(' · ')); });
+    req.then(render).catch(function(e){ toast(e.message); b.disabled=false; }); });
+  $('btnSave').addEventListener('click',function(){ if(!S.ws) return; api('PATCH','/api/teacher/worksheet/'+S.ws.worksheet_id,{title:$('fTitle').value,theory_after:$('fTheory').checked,order:S.ws.tasks.map(function(t){return t.task_id;})}).then(function(d){ d.warnings=S.ws.warnings; S.ws=d; render(); toast('Сохранено'); history.replaceState(null,'','/teacher/worksheet/'+d.worksheet_id); }).catch(function(e){toast(e.message);}); });
+  $('btnAssignToggle').addEventListener('click',function(){ $('wsAssign').classList.toggle('open'); if(!$('aDue').value){ var d=new Date(Date.now()+7*864e5); d.setHours(23,59,0,0); $('aDue').value=d.toISOString().slice(0,16); } if($('fGroup').value) $('aGroup').value=$('fGroup').value; });
+  $('btnAssign').addEventListener('click',function(){ if(!S.ws) return; var g=$('aGroup').value, due=$('aDue').value; if(!g||!due){ toast('Укажите группу и срок'); return; }
+    api('POST','/api/teacher/worksheet/'+S.ws.worksheet_id+'/assign',{group_id:+g,due_at:due}).then(function(d){ S.ws.status='assigned'; toast('Выдано: '+d.assigned+' уч., до '+due.replace('T',' ')); $('wsAssign').classList.remove('open'); }).catch(function(e){toast(e.message);}); });
+  var drag=null;
+  function bindDnD(){ document.querySelectorAll('.ws-card').forEach(function(c){
+    c.addEventListener('dragstart',function(e){ drag=c; c.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+    c.addEventListener('dragend',function(){ c.classList.remove('dragging'); document.querySelectorAll('.ws-card.over').forEach(function(x){x.classList.remove('over');}); });
+    c.addEventListener('dragover',function(e){ e.preventDefault(); if(c!==drag) c.classList.add('over'); });
+    c.addEventListener('dragleave',function(){ c.classList.remove('over'); });
+    c.addEventListener('drop',function(e){ e.preventDefault(); if(!drag||drag===c) return; var ids=S.ws.tasks.map(function(t){return t.task_id;}); var from=ids.indexOf(+drag.dataset.id), to=ids.indexOf(+c.dataset.id); var mv=S.ws.tasks.splice(from,1)[0]; S.ws.tasks.splice(to,0,mv); S.ws.tasks.forEach(function(t,i){t.position=i+1;}); render(); toast('Порядок изменён — нажмите «Сохранить»'); });
+  }); }
+  $('fGrade').addEventListener('change',loadTopics);
+  if(S.ws){ $('fGrade').value=S.ws.grade; $('fLmin').value=S.ws.level_min; $('fLmax').value=S.ws.level_max; $('fTheory').checked=!!S.ws.theory_after; if(S.ws.group_id) $('fGroup').value=S.ws.group_id;
+    document.querySelectorAll('#fMode button').forEach(function(b){b.setAttribute('aria-pressed', b.dataset.v===S.ws.mode?'true':'false');});
+    document.querySelectorAll('#fN button').forEach(function(b){b.setAttribute('aria-pressed', +b.dataset.v===S.ws.tasks.length?'true':'false');}); }
+  loadTopics(); render();
+})();
+</script>
+{% endblock %}
