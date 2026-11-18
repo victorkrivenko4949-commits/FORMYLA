@@ -79,3 +79,33 @@ def title_of_theme(theme_id: Optional[str]) -> Optional[str]:
 
 def is_known_theme(theme_id: Optional[str]) -> bool:
     return parse_theme_id(theme_id) is not None and theme_id.strip() in _theme_to_section()
+
+
+def title_section_map() -> Dict[str, str]:
+    """Русское название темы -> канонический раздел (по theme_titles + theme_to_section).
+
+    Нужно для записи ответов в движок уровня: у задач дня item.topic — это название
+    темы, а не раздел (дефект U6 этапа 4). Названия, которые в разных классах
+    относятся к разным разделам, НЕ включаются (неоднозначность -> пусть решает
+    вызывающий код), поэтому карта безопасна для подмешивания в SECTION_RU_TO_SLUG.
+    """
+    sections = _theme_to_section()
+    out: Dict[str, str] = {}
+    conflict: set = set()
+    for tid, title in _theme_titles().items():
+        sec = sections.get(tid)
+        t = (title or "").strip()
+        if not t or sec not in CANONICAL_SECTIONS:
+            continue
+        if t in out and out[t] != sec:
+            conflict.add(t)
+        out.setdefault(t, sec)
+    for t in conflict:
+        out.pop(t, None)
+    return out
+
+
+def section_of_title(title: Optional[str]) -> Optional[str]:
+    if not title:
+        return None
+    return title_section_map().get(title.strip())
