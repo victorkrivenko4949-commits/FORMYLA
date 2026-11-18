@@ -476,23 +476,29 @@
         {% endif %}
     </nav>
 
-    <main class="main">
-        {% if is_pilot and pilot_session and pilot_session.enabled %}
-        <style>
-          /* PILOT_BAR_V2: стеклянная плашка пилота с градиентной обводкой.
-             Наследует дизайн-систему: сланцевый фон, янтарный акцент пилота. */
-          .pilot-bar-wrap { max-width:1100px; margin:14px auto 0; padding:0 16px; }
-          .pilot-bar {
-            display:flex; align-items:center; gap:12px; flex-wrap:wrap;
-            padding:10px 14px; border-radius:14px;
-            background:
-              linear-gradient(135deg, rgba(244,185,66,.07), rgba(56,189,248,.07)) padding-box,
-              linear-gradient(135deg, rgba(244,185,66,.45), rgba(56,189,248,.35)) border-box;
-            border:1px solid transparent;
-            backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-            box-shadow:0 4px 20px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.05);
-            font-size:13px; color:#e2e8f0;
-          }
+    {% if is_pilot and pilot_session and pilot_session.enabled %}
+    <style>
+      /* PILOT_BAR_V3: полноширинная плашка пилота у верхнего края.
+         Стоит вне .main (перед ним), поэтому тянется до краёв окна
+         и прижата к низу шапки. Градиентная обводка — до краёв. */
+      .pilot-bar-wrap { max-width:none; margin:0; padding:0; }
+      /* На /daily_tasks у <body> есть боковые поля (daily_tasks_about.css) —
+         компенсируем их, чтобы плашка тянулась до краёв окна.
+         На ≤768px поля body уже обнулены (MOBILE_FULLBLEED_V1). */
+      body.page-daily-tasks .pilot-bar-wrap { margin-left:-1.5rem; margin-right:-1.5rem; }
+      @media (max-width:768px){ body.page-daily-tasks .pilot-bar-wrap { margin-left:0; margin-right:0; } }
+      .pilot-bar {
+        display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+        padding:10px 22px; border-radius:0;
+        background:
+          linear-gradient(135deg, rgba(244,185,66,.07), rgba(56,189,248,.07)) padding-box,
+          linear-gradient(135deg, rgba(244,185,66,.45), rgba(56,189,248,.35)) border-box;
+        border:1px solid transparent;
+        border-left:none; border-right:none;
+        backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+        box-shadow:0 4px 20px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.05);
+        font-size:13px; color:#e2e8f0;
+      }
           .pilot-badge {
             display:inline-flex; align-items:center; gap:6px;
             padding:4px 11px; border-radius:999px;
@@ -525,8 +531,7 @@
             box-shadow:0 4px 14px rgba(244,185,66,.18);
           }
           @media (max-width:640px){
-            .pilot-bar-wrap { margin-top:10px; padding:0 10px; }
-            .pilot-bar { gap:8px; padding:9px 12px; font-size:12.5px; border-radius:12px; }
+            .pilot-bar { gap:8px; padding:9px 12px; font-size:12.5px; }
             .pilot-curator { margin-left:0; }
             .pilot-divider { display:none; }
           }
@@ -548,7 +553,9 @@
             <a href="/curator" class="pilot-curator">💬 Куратор</a>
           </div>
         </div>
-        {% endif %}
+    {% endif %}
+
+    <main class="main">
         {# PROBNIK_ASSIGN_V1: уведомление — куратор разобрал пробник (гаснет после открытия) #}
         {% if probnik_review_unseen and request.path != '/probnik-assign/' ~ probnik_review_unseen.id %}
         <div style="max-width:1100px;margin:12px auto 0;padding:0 16px;">
