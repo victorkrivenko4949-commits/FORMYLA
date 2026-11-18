@@ -102,8 +102,8 @@ return Array.isArray(lbl) ? lbl.join(' ') : lbl;
 },
 label: (ctx) => {
 const v = ctx.parsed.r;
-if (v === 0) return 'Ne proydeno';
-return `${v.toFixed(0)}%`;
+if (v === 0) return 'Не пройдено';
+return `Уровень ${v.toFixed(0)}`;
 }
 }
 }
