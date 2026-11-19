@@ -69,10 +69,8 @@
   cursor:pointer; transition:all .18s var(--ease);
 }
 .page-daily-tasks .dt-pledge input[type=checkbox]:checked{background:var(--grad);border-color:transparent}
-.page-daily-tasks .dt-pledge input[type=checkbox]:checked::after{
-  content:""; position:absolute; left:5px; top:1px; width:5px; height:10px;
-  border:solid #fff; border-width:0 2px 2px 0; transform:rotate(45deg);
-}
+/* Галочку рисует инлайн-стиль шаблона (#dt-pledge:checked — SVG по центру).
+   Здесь ::after не добавляем: получалась вторая галочка, прижатая к левому краю. */
 
 /* ── Раскладка ── */
 .page-daily-tasks .dt-layout{grid-template-columns:minmax(0,1fr) 340px !important; gap:2.5rem !important}
