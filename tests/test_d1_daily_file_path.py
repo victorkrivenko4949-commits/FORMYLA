@@ -73,5 +73,44 @@ def test_daily_photo_file_saved_to_correct_path(auth_client, daily_set_with_item
         f"file_path must be the storage URL, got: {file_path}"
     )
 
+
+def test_daily_photo_submit_works_without_s3_config(auth_client, daily_set_with_items, monkeypatch, tmp_path):
+    """Прод-инцидент 2026-11-19: ответ с фото в тесте «Задачи дня» падал с
+    «Хранилище фото не настроено. Обратитесь к администратору.», потому что
+    без R2-ключей локальный фолбэк был выключен по умолчанию. Теперь без
+    R2 фото сохраняется на диск и ответ отправляется успешно."""
+    import services.storage as storage
+
+    items = DailyTaskItem.query.filter_by(daily_set_id=daily_set_with_items.id
+                                          ).order_by(DailyTaskItem.position).all()
+    item = items[0]
+
+    monkeypatch.setattr(storage, 'R2_ACCOUNT_ID', '')
+    monkeypatch.setattr(storage, 'R2_ACCESS_KEY_ID', '')
+    monkeypatch.setattr(storage, 'R2_SECRET_ACCESS_KEY', '')
+    monkeypatch.setattr(storage, 'PHOTO_LOCAL_FALLBACK', '1')
+    monkeypatch.setattr(storage, 'LOCAL_PHOTO_DIR', str(tmp_path))
+
+    jpeg_bytes = _make_jpeg_bytes()
+    resp = auth_client.post(
+        f"/daily_tasks/{item.id}/submit",
+        data={
+            "answer": "99",
+            "solution_method": "photo",
+            "solution_photo": (BytesIO(jpeg_bytes), "test_solution.jpg"),
+        },
+        content_type="multipart/form-data",
+    )
+
+    assert resp.status_code == 200, (
+        f"Expected 200, got {resp.status_code}: {resp.get_data(as_text=True)}"
+    )
+    body = resp.get_json() or {}
+    assert not body.get("error"), f"Unexpected error: {body.get('error')}"
+
+    attempt = SolutionAttempt.query.order_by(SolutionAttempt.id.desc()).first()
+    assert attempt is not None, "SolutionAttempt must be created for photo upload"
+    assert (attempt.file_path or "").startswith("/uploads/photos/")
+
     assert attempt.file_size is not None, "file_size must be non-null"
     assert attempt.file_size > 0, f"file_size must be >0, got {attempt.file_size}"

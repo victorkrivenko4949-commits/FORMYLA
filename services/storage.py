@@ -10,6 +10,10 @@ Environment variables:
   R2_PUBLIC_URL       — public URL prefix (e.g. https://photos.formyla.ru)
 
 Falls back to local filesystem storage if R2 is not configured.
+PHOTO_LOCAL_FALLBACK — '0'/'false' disables the local fallback
+(default: enabled). Without it, answering a test with a photo
+fails with «Хранилище фото не настроено» on any deployment
+where the R2 env vars are absent.
 """
 import hashlib
 import os
@@ -28,7 +32,17 @@ R2_ACCESS_KEY_ID = os.environ.get('R2_ACCESS_KEY_ID', '')
 R2_SECRET_ACCESS_KEY = os.environ.get('R2_SECRET_ACCESS_KEY', '')
 R2_BUCKET_NAME = os.environ.get('R2_BUCKET_NAME', 'formyla-photos')
 R2_PUBLIC_URL = os.environ.get('R2_PUBLIC_URL', '')
-PHOTO_LOCAL_FALLBACK = os.environ.get('PHOTO_LOCAL_FALLBACK', '').strip()
+# Локальный фолбэк включён ПО УМОЛЧАНИЮ: без R2-ключей фото решений всё равно
+# сохраняется на диск и раздаётся маршрутом /uploads/<path> в app.py.
+# Раньше дефолт был «выключен», и на проде без переменных R2 ответ с фото
+# в тесте падал с «Хранилище фото не настроено. Обратитесь к администратору.»
+# Явно отключить можно только PHOTO_LOCAL_FALLBACK=0/false/no/off.
+PHOTO_LOCAL_FALLBACK = os.environ.get('PHOTO_LOCAL_FALLBACK', '1').strip().lower()
+
+
+def _local_fallback_enabled():
+    """Local-disk fallback is on unless explicitly disabled."""
+    return PHOTO_LOCAL_FALLBACK not in ('0', 'false', 'no', 'off')
 
 # Local fallback directory (key already contains 'photos/' prefix)
 LOCAL_PHOTO_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -72,7 +86,7 @@ def upload_photo(photo_bytes, user_id, content_type='image/jpeg'):
 
     if _r2_configured():
         url = _upload_to_r2(photo_bytes, key, content_type)
-    elif PHOTO_LOCAL_FALLBACK == '1':
+    elif _local_fallback_enabled():
         url = _upload_to_local(photo_bytes, key)
     else:
         logger.error(
@@ -161,7 +175,7 @@ def _upload_to_r2(photo_bytes, key, content_type):
 
     except Exception as e:
         logger.error("Не удалось загрузить фото в S3/R2: %s", e)
-        if PHOTO_LOCAL_FALLBACK == '1':
+        if _local_fallback_enabled():
             return _upload_to_local(photo_bytes, key)
         raise StorageError("Не удалось сохранить фото. Обратитесь к администратору.")
 

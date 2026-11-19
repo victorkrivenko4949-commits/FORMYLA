@@ -76,14 +76,14 @@ def test_recognize_photo_eleventh_request_429(app, auth_client, test_user):
     assert body.get('error')
 
 
-def test_upload_fails_without_s3_config(monkeypatch, tmp_path):
+def test_upload_fails_when_local_fallback_disabled(monkeypatch, tmp_path):
     import services.storage as storage
     from services.storage import StorageError
 
     monkeypatch.setattr(storage, 'R2_ACCOUNT_ID', '')
     monkeypatch.setattr(storage, 'R2_ACCESS_KEY_ID', '')
     monkeypatch.setattr(storage, 'R2_SECRET_ACCESS_KEY', '')
-    monkeypatch.setattr(storage, 'PHOTO_LOCAL_FALLBACK', '')
+    monkeypatch.setattr(storage, 'PHOTO_LOCAL_FALLBACK', '0')
     monkeypatch.setattr(storage, 'LOCAL_PHOTO_DIR', str(tmp_path))
 
     with pytest.raises(StorageError):
@@ -92,6 +92,28 @@ def test_upload_fails_without_s3_config(monkeypatch, tmp_path):
     # Nothing must be written to local disk.
     written = list(tmp_path.rglob('*'))
     assert written == []
+
+
+def test_upload_falls_back_to_local_disk_by_default(monkeypatch, tmp_path):
+    """Без R2-ключей фото сохраняется локально (дефолт), а не падает
+    с «Хранилище фото не настроено» — иначе ответ с фото в тесте
+    не отправляется (прод-инцидент 2026-11-19)."""
+    import services.storage as storage
+
+    monkeypatch.setattr(storage, 'R2_ACCOUNT_ID', '')
+    monkeypatch.setattr(storage, 'R2_ACCESS_KEY_ID', '')
+    monkeypatch.setattr(storage, 'R2_SECRET_ACCESS_KEY', '')
+    monkeypatch.setattr(storage, 'PHOTO_LOCAL_FALLBACK', '1')
+    monkeypatch.setattr(storage, 'LOCAL_PHOTO_DIR', str(tmp_path))
+
+    url, photo_hash = storage.upload_photo(
+        _jpeg_bytes(), user_id=42, content_type='image/jpeg')
+
+    assert url.startswith('/uploads/photos/42/')
+    assert len(photo_hash) == 64
+    written = [p for p in tmp_path.rglob('*') if p.is_file()]
+    assert len(written) == 1
+    assert written[0].read_bytes() == _jpeg_bytes()
 
 
 def test_heic_rejected_when_converter_unavailable(monkeypatch):
