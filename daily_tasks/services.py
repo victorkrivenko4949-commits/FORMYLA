@@ -640,6 +640,137 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
     }
 
 
+def top_up_undersized_set_for_paid(user) -> int:
+    """Пробный день / Premium: досадать недостающие задачи в сегодняшний сет.
+
+    Прод-инцидент 2026-11-19: сет «Задач дня» создаётся при первом заходе
+    на /daily_tasks. Если аккаунт в этот момент бесплатный, сет выдаётся
+    по капу Free (1 задача). После активации пробного дня / Premium
+    урезанный сет оставался урезанным до конца дня: сеты с ответами
+    никогда не пересоздаются (см. maybe_upgrade_undersized_sets), и
+    ученик весь премиум-день видел «ВЫПОЛНЕНО 1/1» вместо полной нормы.
+
+    Здесь: если лимиты Free НЕ активны (paid / trial / founder), а в
+    сегодняшнем сете задач меньше дневной нормы — добавляем недостающие
+    из того же банка formyla_bank по теме/уровню/классу сета. Существующие
+    задачи и ответы не трогаем, позиции продолжаем дальше.
+
+    Возвращает число добавленных задач. Никогда не бросает.
+    """
+    added = 0
+    try:
+        from services import limits as _limits_svc
+        # лимиты Free действуют только на free-доступе: у paid/trial их нет
+        if _limits_svc.limits_active(user):
+            return 0
+        if user is None or getattr(user, 'id', None) is None:
+            return 0
+
+        from services.daily_task_rotation import get_daily_task_count
+        norm = get_daily_task_count(user.id)
+        if not norm or norm <= 0:
+            return 0
+
+        today = today_in_user_tz()
+        s = DailyTaskSet.query.filter_by(
+            user_id=user.id, target_date=today).first()
+        if s is None or s.status not in ('ready', 'partial'):
+            return 0
+
+        items = (DailyTaskItem.query
+                 .filter_by(daily_set_id=s.id)
+                 .order_by(DailyTaskItem.position)
+                 .all())
+        if len(items) >= norm:
+            return 0
+
+        missing = norm - len(items)
+        logger.info(
+            '[daily_tasks] top-up set #%s: user=%s has %d items < norm %d '
+            '(paid/trial) -> adding %d',
+            s.id, user.id, len(items), norm, missing)
+
+        # параметры выдачи берём из существующих задач сета
+        first = items[0]
+        grade = s.class_level or 9
+        topic_slug = first.topic or ''
+        bank_level = int(first.difficulty_level or 1)
+        try:
+            spec = json.loads(first.gemini_spec_json or '{}')
+            grade = int(spec.get('grade') or grade)
+            topic_slug = spec.get('topic') or topic_slug
+            bank_level = int(spec.get('level') or bank_level)
+        except Exception:
+            pass
+
+        # банк индексируется по человеческому названию темы
+        # («Числовые ребусы»), а в сете лежит slug (G9_T03) — переводим
+        bank_topic = topic_slug
+        if topic_slug:
+            try:
+                from services.theme_registry import theme_title as _tt
+                _title = _tt(topic_slug)
+                if _title and _title != topic_slug:
+                    bank_topic = _title
+            except Exception:
+                pass
+
+        # anti-repeat: не повторяем уже выданные этому ученику задачи
+        exclude_texts = {
+            (it.task_text or '').strip()
+            for it in DailyTaskItem.query
+            .join(DailyTaskSet, DailyTaskItem.daily_set_id == DailyTaskSet.id)
+            .filter(DailyTaskSet.user_id == user.id).all()
+            if (it.task_text or '').strip()
+        }
+
+        from daily_tasks.formyla_bank import get_tasks as _fb_get
+        new_tasks = _fb_get(grade, bank_topic, bank_level, count=missing,
+                            user_id=user.id, exclude_texts=exclude_texts)
+        if not new_tasks:
+            logger.warning(
+                '[daily_tasks] top-up set #%s: банк пуст для grade=%s '
+                'topic=%s level=%s', s.id, grade, bank_topic, bank_level)
+            return 0
+
+        pos = max((it.position or 0) for it in items) if items else 0
+        for t in new_tasks[:missing]:
+            pos += 1
+            db.session.add(DailyTaskItem(
+                daily_set_id=s.id, position=pos,
+                slot_kind='formyla_bank', subject='math',
+                topic=t.get('topic', topic_slug),
+                difficulty_level=int(t.get('level', bank_level)),
+                task_text=t.get('task_text', ''),
+                correct_answer=t.get('correct_answer', ''),
+                solution=t.get('solution', '') or '',
+                hints=json.dumps([], ensure_ascii=False),
+                gemini_spec_json=json.dumps({
+                    'source': 'formyla_bank', 'grade': grade,
+                    'topic': topic_slug, 'level': bank_level,
+                    'topup': True}, ensure_ascii=False),
+                status='approved',
+                figure_svg_path=(t.get('figure_svg_path') or '').strip() or None,
+            ))
+            added += 1
+        if added:
+            s.reason_summary = (
+                (s.reason_summary or '') +
+                f' · +{added} после активации Premium/пробного дня')
+            db.session.commit()
+            logger.info('[daily_tasks] top-up set #%s: +%d задач для user=%s',
+                        s.id, added, user.id)
+        return added
+    except Exception as e:  # noqa: BLE001 — никогда не блокируем дашборд
+        logger.warning('[daily_tasks] top-up failed for user=%s: %s',
+                       getattr(user, 'id', None), e)
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return 0
+
+
 def maybe_upgrade_undersized_sets() -> int:
     """Пересоздать сегодняшние «урезанные» сеты задач (2026-10-23).
 

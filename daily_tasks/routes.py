@@ -934,6 +934,23 @@ def get_daily_tasks():
             db.session.rollback()
         daily_set = None
 
+    # ── Пробный день / Premium: сет выдан по капу Free (1 задача),
+    #    после активации платного доступа досдаём недостающие задачи.
+    #    Ответы/прогресс не трогаем (прод-инцидент 2026-11-19: весь
+    #    пробный день ученик видел «ВЫПОЛНЕНО 1/1» вместо нормы).
+    if daily_set is not None:
+        try:
+            _added = services.top_up_undersized_set_for_paid(current_user)
+            if _added:
+                logger.info(
+                    "daily_tasks: top-up +%d задач для user=%d (paid/trial)",
+                    _added, user_id)
+                daily_set = DailyTaskSet.query.filter_by(
+                    user_id=user_id, target_date=today).first()
+        except Exception as _topup_err:
+            logger.warning("daily_tasks: top-up failed user=%d: %s",
+                           user_id, _topup_err)
+
     # ── BLOCKED: morning probe not done ─────────────────────────────────
     # Проверяем monthly cycle: если probe ещё не пройден — блокируем задачи дня
     blocked = False
