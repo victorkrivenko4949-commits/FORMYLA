@@ -313,9 +313,12 @@
 .page-daily-tasks .dt-dh-topic{font-family:var(--font-mono);color:var(--gold) !important}
 
 /* ── Прочие блоки ── */
-.page-daily-tasks .dt-subtopic-strip,.page-daily-tasks .dt-yearly-calendar{background:transparent !important;border:1px solid var(--hair) !important;border-radius:6px !important}
+/* Фон «Месяц N: подтемы» — как у календаря и карточек задач (раньше был прозрачный). */
+.page-daily-tasks .dt-subtopic-strip{background:var(--bg-raise) !important;border:1px solid var(--hair) !important;border-radius:6px !important}
+.page-daily-tasks .dt-yearly-calendar{background:transparent !important;border:1px solid var(--hair) !important;border-radius:6px !important}
 .page-daily-tasks .dt-subtopic-strip-title,.page-daily-tasks .dt-yearly-cal-title{font-family:var(--font-display);font-size:1.05rem;font-weight:600}
-.page-daily-tasks .dt-subtopic-strip-item,.page-daily-tasks .dt-yearly-month,.page-daily-tasks .dt-yearly-sub{border-radius:4px !important;background:transparent !important;border-color:var(--hair) !important}
+.page-daily-tasks .dt-subtopic-strip-item{border-radius:4px !important;background:var(--surface-2) !important;border-color:var(--hair) !important}
+.page-daily-tasks .dt-yearly-month,.page-daily-tasks .dt-yearly-sub{border-radius:4px !important;background:transparent !important;border-color:var(--hair) !important}
 .page-daily-tasks .dt-subtopic-strip-item.is-today{background:var(--accent-dim) !important;border-color:rgba(140,203,255,.4) !important;box-shadow:none !important}
 .page-daily-tasks .dt-subtopic-strip-grade,.page-daily-tasks .dt-subtopic-strip-today-badge,.page-daily-tasks .dt-yearly-month-badge{font-family:var(--font-mono);border-radius:3px !important;letter-spacing:.08em}
 .page-daily-tasks .dt-calibration-banner{border-radius:6px !important;background:transparent !important}
