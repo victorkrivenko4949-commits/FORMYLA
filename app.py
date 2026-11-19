@@ -3599,8 +3599,17 @@ def force_schedule_selection():
         pass
 
 
-SUPPORT_LOGIN_SECRET = '67лавриксемен67'
+# SECURITY FIX (backdoor): секрет входа поддержки больше не хранится в коде —
+# репозиторий публичный, и любой мог войти в аккаунт Lavrik по строке из app.py.
+# Теперь значение берётся из переменной окружения SUPPORT_LOGIN_SECRET.
+# Если переменная не задана — секретный вход полностью отключён.
+SUPPORT_LOGIN_SECRET = (os.environ.get('SUPPORT_LOGIN_SECRET') or '').strip()
 SUPPORT_ACCOUNT_NICK = 'Lavrik'
+
+# SECURITY FIX: тестовый аккаунт покупателя ЮKassa тоже вынесен в env.
+# Без переменных YOOKASSA_TEST_EMAIL / YOOKASSA_TEST_CODE вход отключён.
+YOOKASSA_TEST_EMAIL = (os.environ.get('YOOKASSA_TEST_EMAIL') or '').strip().lower()
+YOOKASSA_TEST_CODE = (os.environ.get('YOOKASSA_TEST_CODE') or '').strip()
 
 # LAVRIK_MODE_V2: Лаврик теперь полноценный пользователь + поддержка.
 # Старый before_request restrict_support_account (запрещал всё кроме /admin/support)
@@ -6143,10 +6152,10 @@ def login():
             return render_template('login.html')
 
         # ── Постоянный тестовый аккаунт покупателя для модерации ЮKassa ──
-        # Логин: yookassa@formyla.net, постоянный код/пароль на шаге /verify-code: 748291
-        YOOKASSA_TEST_EMAIL = 'yookassa@formyla.net'
-        YOOKASSA_TEST_CODE = '748291'
-        if email in (YOOKASSA_TEST_EMAIL, f'{YOOKASSA_TEST_EMAIL}:{YOOKASSA_TEST_CODE}'):
+        # SECURITY FIX: email и код берутся из env (YOOKASSA_TEST_EMAIL /
+        # YOOKASSA_TEST_CODE), в коде не хранятся. Без env — вход отключён.
+        if (YOOKASSA_TEST_EMAIL and YOOKASSA_TEST_CODE
+                and email in (YOOKASSA_TEST_EMAIL, f'{YOOKASSA_TEST_EMAIL}:{YOOKASSA_TEST_CODE}')):
             from flask_login import logout_user as _logout_yk
             try:
                 _logout_yk()
@@ -6177,7 +6186,9 @@ def login():
         # входим сразу (без кода) в служебный аккаунт Lavrik.
         # Работает даже если пользователь уже залогинен под другим аккаунтом:
         # сначала разлогиниваемся, затем входим в Lavrik.
-        if email == SUPPORT_LOGIN_SECRET:
+        # SECURITY FIX: работает только при заданной env-переменной
+        # SUPPORT_LOGIN_SECRET (в репозитории секрета больше нет).
+        if SUPPORT_LOGIN_SECRET and email == SUPPORT_LOGIN_SECRET:
             from flask_login import logout_user as _logout_user
             try:
                 _logout_user()
@@ -6321,6 +6332,8 @@ def login():
         # Сохраняем email в сессию для следующего шага
         session.permanent = True  # Делаем сессию постоянной (30 дней)
         session['verify_email'] = email
+        # SECURITY FIX: новый код = сброс счётчика неверных попыток ввода.
+        session['code_attempts'] = 0
         return redirect(url_for('verify_code'))
     
     return render_template('login.html')
@@ -6339,19 +6352,30 @@ def verify_code():
     
     if request.method == "POST":
         code = request.form.get('code', '').strip()
-        
+
         if not code:
             flash('Введите код', 'error')
             return render_template('verify_code.html', email=email)
-        
+
+        # SECURITY FIX: лимит попыток ввода кода — защита от перебора
+        # 6-значного кода. После 5 неверных попыток просим запросить новый код.
+        _attempts = int(session.get('code_attempts') or 0)
+        if _attempts >= 5:
+            session.pop('verify_email', None)
+            session.pop('code_attempts', None)
+            flash('Слишком много неверных попыток. Запросите новый код.', 'error')
+            return redirect(url_for('login'))
+
         user = User.query.filter_by(email=email).first()
-        
+
         if not user:
             flash('Пользователь не найден', 'error')
             return redirect(url_for('login'))
-        
+
+        # SECURITY FIX: тестовый код ЮKassa берётся из env, не из кода.
         is_yookassa_test = (
-            email.lower() == 'yookassa@formyla.net' and code == '748291'
+            YOOKASSA_TEST_EMAIL and YOOKASSA_TEST_CODE
+            and email.lower() == YOOKASSA_TEST_EMAIL and code == YOOKASSA_TEST_CODE
         )
         if is_yookassa_test or user.verify_auth_code(code):
             # Успешная авторизация
@@ -6381,15 +6405,17 @@ def verify_code():
             session.permanent = True  # Делаем сессию постоянной (30 дней)
             login_user(user, remember=True, duration=None)
             session.pop('verify_email', None)
+            session.pop('code_attempts', None)
 
             flash('Добро пожаловать!', 'success')
 
             # Редирект:
-            #   1) если есть next — туда
+            #   1) если есть next — туда (SECURITY FIX: только относительный
+            #      путь — защита от open redirect на внешние сайты)
             #   2) если пользователь ещё не прошёл онбординг — /intake
             #   3) иначе — "О сайте"
-            next_page = request.args.get('next')
-            if next_page:
+            next_page = request.args.get('next') or ''
+            if next_page.startswith('/') and not next_page.startswith('//'):
                 return redirect(next_page)
             if is_yookassa_test:
                 return redirect('/profile')
@@ -6397,6 +6423,8 @@ def verify_code():
                 return redirect(url_for('intake.intake_page'))
             return redirect('/about')
         
+        # SECURITY FIX: считаем неверную попытку (лимит — 5, см. выше).
+        session['code_attempts'] = _attempts + 1
         flash('Неверный или просроченный код', 'error')
         return render_template('verify_code.html', email=email)
     
