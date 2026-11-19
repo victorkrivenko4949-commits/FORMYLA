@@ -174,11 +174,15 @@ app.logger.addHandler(_file_handler)
 app.logger.setLevel(logging.DEBUG)
 app.logger.info("=== App started, logging to %s", _log_file)
 
-# ─── Cloudflare ProxyFix (доверяем X-Forwarded-* за CF + Render) ───
+# ─── ProxyFix: доверяем X-Forwarded-* ровно одному доверенному прокси ───
+# ВАЖНО (security): реальная цепочка — клиент -> nginx -> приложение,
+# то есть ОДИН доверенный hop. Раньше стояло x_for=2, из-за чего
+# подставной первый IP в X-Forwarded-For клиента попадал в "доверенное
+# окно" и подменял request.remote_addr (обход IP-проверок, напр. dev_login).
 try:
     from werkzeug.middleware.proxy_fix import ProxyFix
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=2, x_proto=1, x_host=1, x_prefix=1)
-    print("[OK] ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)")
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+    print("[OK] ProxyFix applied (x_for=1, x_proto=1, x_host=1, x_prefix=1)")
 except Exception as _pf_err:
     print(f"[!]️  ProxyFix not applied: {_pf_err}")
 app.config['JSON_AS_ASCII'] = False
@@ -6120,8 +6124,14 @@ def send_auth_email(recipient_email, code):
 @app.route("/dev_login")
 def dev_login():
     """DEV-режим: мгновенный вход как user_id=1 (Victor) — обход SMTP-кода.
-    Работает только на localhost (127.0.0.1) для безопасности.
+    SECURITY: на проде полностью выключен (404) пока в env НЕ стоит
+    DEV_LOGIN_ENABLED=1. Раньше проверялся только remote_addr, но при
+    ProxyFix с лишним доверием X-Forwarded-For IP подделывался и dev_login
+    открывался снаружи (полный вход как админ одним запросом).
     """
+    import os as _os
+    if _os.environ.get('DEV_LOGIN_ENABLED') != '1':
+        return 'Not Found', 404
     from flask import request as _req
     from flask_login import login_user
     remote = _req.remote_addr or ''
@@ -6900,7 +6910,9 @@ def tutor_atlas_chat():
         data = {}
 
     user_id = getattr(current_user, "id", None) if current_user and getattr(current_user, "is_authenticated", False) else None
-    client_ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote_addr
+    # SECURITY: request.remote_addr уже вычислен ProxyFix по доверию к единственному прокси;
+    # сырой X-Forwarded-For от клиента подделывается и позволял обходить лимиты наставника.
+    client_ip = request.remote_addr or "unknown"
 
     try:
         result = atlas_tutor.handle_chat(data, user_id=user_id, client_ip=client_ip)
@@ -6937,7 +6949,9 @@ def tutor_atlas_chat_stream():
         data = {}
 
     user_id = getattr(current_user, "id", None) if current_user and getattr(current_user, "is_authenticated", False) else None
-    client_ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote_addr
+    # SECURITY: request.remote_addr уже вычислен ProxyFix по доверию к единственному прокси;
+    # сырой X-Forwarded-For от клиента подделывается и позволял обходить лимиты наставника.
+    client_ip = request.remote_addr or "unknown"
 
     def _sse(obj):
         import json as _json
