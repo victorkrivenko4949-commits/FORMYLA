@@ -11312,10 +11312,12 @@ def api_secrets():
 @app.route("/admin/tutor_stats")
 def admin_tutor_stats():
     """Дашборд AI-тьютора v2: статистика вызовов, fallback, битые задачи."""
-    # Простая защита: только для пользователя с email Виктора
-    # (или любого залогиненного — расширить при необходимости)
+    # SECURITY FIX: только админ. Раньше — любой залогиненный
+    # (экспорт CSV содержал ответы других пользователей).
     if not current_user.is_authenticated:
         return redirect(url_for('login'))
+    if not getattr(current_user, 'is_admin', False):
+        abort(403)
 
     # CSV-экспорт
     if request.args.get('export') == 'csv':
@@ -11411,8 +11413,11 @@ def admin_tutor_stats():
 @app.route("/admin/toggle_task_flag/<int:task_id>", methods=["POST"])
 def admin_toggle_task_flag(task_id):
     """Поставить / снять флаг is_flagged на задаче."""
+    # SECURITY FIX: только админ (раньше — любой залогиненный).
     if not current_user.is_authenticated:
         return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+    if not getattr(current_user, 'is_admin', False):
+        return jsonify({'status': 'error', 'message': 'Forbidden'}), 403
     try:
         data = request.get_json() or {}
         flag = bool(data.get('flag', True))
@@ -11436,8 +11441,11 @@ def admin_toggle_task_flag(task_id):
 @app.route("/admin/needs_review")
 def admin_needs_review():
     """Список задач, где AI-тьютор нашёл расхождение с БД-ответом."""
+    # SECURITY FIX: только админ (раньше — любой залогиненный).
     if not current_user.is_authenticated:
         return redirect(url_for('login'))
+    if not getattr(current_user, 'is_admin', False):
+        abort(403)
 
     tasks = db.session.execute(text("""
         SELECT id, class_level, topic, task_text,
@@ -11458,8 +11466,12 @@ def admin_needs_review():
 @app.route("/admin/needs_review/action/<int:task_id>", methods=["POST"])
 def admin_needs_review_action(task_id):
     """Обработка действий админа по задачам needs_review."""
+    # SECURITY FIX: только админ. Раньше любой залогиненный мог
+    # ПЕРЕЗАПИСАТЬ правильные ответы и решения задач (accept_llm).
     if not current_user.is_authenticated:
         return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+    if not getattr(current_user, 'is_admin', False):
+        return jsonify({'status': 'error', 'message': 'Forbidden'}), 403
 
     try:
         data = request.get_json() or {}
@@ -11510,9 +11522,11 @@ def admin_fix_latex_rac():
     GET  -> показывает сколько задач с битым LaTeX
     POST -> применяет починку
     """
-    # Простая защита: только если залогинен
+    # SECURITY FIX: только админ (раньше — любой залогиненный).
     if not current_user.is_authenticated:
         return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+    if not getattr(current_user, 'is_admin', False):
+        return jsonify({'status': 'error', 'message': 'Forbidden'}), 403
 
     try:
         from sqlalchemy import text as sa_text
