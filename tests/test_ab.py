@@ -447,7 +447,9 @@ def test_admin_preview_admin_only(abapp, monkeypatch):
     monkeypatch.setenv('PAYWALL_MODE', 'off')
     import services.ab as ab
     monkeypatch.setenv('PAYWALL_PREVIEW_ADMINS', '1')
-    admin = _mk_user(abapp, 'pv-admin@x.invalid', nickname='lavrik')
+    # SECURITY FIX: is_admin теперь только по id/email-whitelist (никнеймы
+    # больше не дают админа), поэтому админ здесь — с whitelisted-email.
+    admin = _mk_user(abapp, 'kr1venkovictor@yandex.ru')
     plain = _mk_user(abapp, 'pv-plain@x.invalid', nickname='plain')
     assert ab.apply_limits(admin) is True
     assert ab.apply_limits(plain) is False
@@ -461,7 +463,8 @@ def test_admin_preview_ignores_start_date(abapp, monkeypatch):
     from datetime import datetime, timezone
     monkeypatch.setenv('PAYWALL_PREVIEW_ADMINS', '1')
     monkeypatch.setenv('PAYWALL_START_AT', '2026-11-02T21:00:00Z')
-    admin = _mk_user(abapp, 'pv-early@x.invalid', nickname='lavrik')
+    # SECURITY FIX: админ по whitelisted-email (никнеймы больше не дают админа).
+    admin = _mk_user(abapp, 'kr1venkovictor@yandex.ru')
     now = datetime(2026, 10, 21, 12, 0, tzinfo=timezone.utc)   # до старта
     assert ab.apply_limits(admin, now=now) is True
 

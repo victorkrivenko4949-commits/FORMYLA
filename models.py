@@ -118,26 +118,27 @@ class User(UserMixin, db.Model):
 
     @property
     def is_admin(self):
-        """Админ — user_id == 1 (Victor), email в whitelist или nickname в whitelist.
+        """Админ — user_id == 1 (Victor) или email в whitelist.
         Используется в daily_tasks/routes.py для bypass лимита 1 регенерация/день
         и в routes/admin_support.py для доступа к /admin/support.
+
+        SECURITY FIX: whitelist по nickname УДАЛЁН. Раньше любой
+        зарегистрированный пользователь мог сменить свой ник на
+        'victor' / 'lavrik' / 'victorkrivenko' (регистр не важен) и
+        автоматически получить права администратора. Аккаунт поддержки
+        Lavrik переведён на email-whitelist.
         """
         if self.id == 1:
             return True
         admin_emails = {
             'kr1venkovictor@yandex.ru',
             'victor.krivenko.4949@gmail.com',
+            # Служебный аккаунт поддержки Lavrik (создаётся секретным входом)
+            'support-lavrik@formyla.internal',
+            # Фактический email прод-аккаунта поддержки Lavrik
+            'smnlvrka@yandex.ru',
         }
-        if (self.email or '').lower() in admin_emails:
-            return True
-        # Whitelist по nickname — для владельца и друзей-модераторов поддержки.
-        # Case-insensitive: Lavrik / lavrik / LAVRIK / victor все подходят.
-        admin_nicknames = {
-            'lavrik',
-            'victor',
-            'victorkrivenko',
-        }
-        return (self.nickname or '').lower() in admin_nicknames
+        return (self.email or '').lower() in admin_emails
 
     @property
     def display_name(self):
@@ -160,8 +161,10 @@ class User(UserMixin, db.Model):
     
     def generate_auth_code(self):
         """Генерировать 6-значный код авторизации"""
-        import random
-        self.auth_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        # SECURITY FIX: secrets вместо random — коды входа должны быть
+        # непредсказуемыми (random предсказуем по сиду процесса).
+        import secrets
+        self.auth_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
         # Код действителен 10 минут
         from datetime import timedelta
         self.code_expires = datetime.utcnow() + timedelta(minutes=10)

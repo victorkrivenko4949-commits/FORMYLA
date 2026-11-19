@@ -25,13 +25,14 @@ admin_olympiads_bp = Blueprint(
 
 
 def admin_required(f):
-    """Простая защита: только авторизованные пользователи.
-    В будущем можно добавить проверку роли / email."""
+    """SECURITY FIX: только администратор (User.is_admin).
+    Раньше здесь была «простая защита» — login_required, то есть
+    любой залогиненный ученик мог создавать/править/УДАЛЯТЬ олимпиады."""
     @wraps(f)
     @login_required
     def decorated(*args, **kwargs):
-        if not current_user.is_authenticated:
-            return redirect(url_for('login'))
+        if not getattr(current_user, 'is_admin', False):
+            abort(403)
         return f(*args, **kwargs)
     return decorated
 
