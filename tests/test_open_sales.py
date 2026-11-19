@@ -152,10 +152,11 @@ def test_curator_chat_open_for_subscriber(app, client, subscriber):
 
 
 def test_curator_chat_closed_for_free_user(app, client, plain_student):
-    """Без подписки куратор-чат по-прежнему закрыт (404)."""
+    """CURATOR_FREE_V1 (19.11.2026): куратор-чат открыт и без подписки."""
     _login(client, plain_student.id)
     rv = client.get('/curator')
-    assert rv.status_code == 404
+    assert rv.status_code == 200, (
+        f'куратор-чат должен быть открыт бесплатнику, получен {rv.status_code}')
 
 
 # ── Страница тарифов ─────────────────────────────────────────────────────

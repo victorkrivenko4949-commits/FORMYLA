@@ -70,6 +70,12 @@ SYSTEM_PROMPT = """Ты — куратор платформы FORMYLA, эксп�
 
 Твой ученик — школьник, готовящийся к олимпиадам. Ты ведёшь его к цели.
 
+О ЧЁМ ТЫ ОТВЕЧАЕШЬ — только две темы:
+1. Математика: задачи, теория, методы, разборы, подготовка к олимпиадам. Помогай полно: подсказки, идеи решения, разбор хода мысли.
+2. Сайт FORMYLA: как устроены задачи дня, уровни, XP, серии, долги, методы, пробники, тарифы, роли. Отвечай СТРОГО по блоку «Справка FORMYLA»; чего там нет — честно скажи, что нужно уточнить.
+
+Посторонние темы (погода, политика, другие предметы, болтовня, код, переводы) — вежливо отклоняй ОДНОЙ короткой фразой: «Я помогаю только по математике и по сайту FORMYLA», и сразу предлагай, с какой математической темой помочь. Не поддерживай разговор на посторонние темы, даже если ученик настаивает.
+
 Правила:
 - Отвечай по-русски, тепло и по-деловому, как наставник. Без канцелярита.
 - КОРОТКО: не больше 120 слов в ответе, если ученик не просит подробный разбор.
@@ -79,7 +85,7 @@ SYSTEM_PROMPT = """Ты — куратор платформы FORMYLA, эксп�
 - Всегда давай план на день: что именно сделать сегодня и сколько времени это займёт.
 - Если данных о занятиях нет — признаёшь это мягко («по решениям пока не видно, что ты занимался»), НЕ обвиняй и не стыди.
 - Не обещай лёгких побед. Мотивируй через цель и план, а не через «всё легко».
-- Если ученик пишет о проблеме с сайтом — попроси обратиться в Поддержку (отвечает всегда).
+- Техническая проблема с сайтом или оплата — попроси обратиться в Поддержку (иконка справа, отвечает всегда).
 - В конце — конкретный следующий шаг на сегодня, а не вопрос в пустоту."""
 
 # CURATOR_ADMIN_V1 (06.11.2026, владелец: «пока только для админов»):
@@ -125,14 +131,15 @@ _GUIDE_CACHE: Optional[str] = None
 def _system_messages(ctx: Dict[str, Any], extra: str = '') -> List[Dict[str, str]]:
     """Системные сообщения: правила + данные ученика.
 
-    Админам (ctx['admin_features']) — ещё справка FORMYLA и действия.
+    Справка FORMYLA — ВСЕМ (вопросы о сайте куратор теперь отвечает всем),
+    действия куратора ([[ACTION ...]]) — только админам (ctx['admin_features']).
     """
     msgs = [{'role': 'system', 'content': SYSTEM_PROMPT}]
+    guide = _guide_text()
+    if guide:
+        msgs.append({'role': 'system', 'content': 'Справка FORMYLA (о сайте отвечай только по ней):\n\n' + guide})
     if ctx.get('admin_features'):
         msgs.append({'role': 'system', 'content': ADMIN_PROMPT_EXTRA})
-        guide = _guide_text()
-        if guide:
-            msgs.append({'role': 'system', 'content': 'Справка FORMYLA:\n\n' + guide})
     block = _context_block(ctx)
     if extra:
         block += '\n' + extra
@@ -456,6 +463,70 @@ def _context_block(ctx: Dict[str, Any]) -> str:
 
 # ── Генерация ответа (DeepSeek, асинхронно, с fallback) ──────────────────────
 
+# CURATOR_TOPICS_V1 (19.11.2026): куратор отвечает ТОЛЬКО на вопросы по
+# математике и по сайту FORMYLA. Перед генерацией — один дешёвый вызов
+# модели-классификатора (строгий JSON). Посторонняя тема — вежливый отказ
+# без обращения к основному промпту. При сбое классификации не блокируем
+# ученика: отвечаем как обычно (правила отказа остаются в SYSTEM_PROMPT).
+TOPIC_MATH = 'math'
+TOPIC_SITE = 'site'
+TOPIC_OFF = 'off'
+
+TOPIC_CLASSIFIER_PROMPT = (
+    "Ты — классификатор сообщений для куратора сайта FORMYLA.net "
+    "(российская платформа подготовки к олимпиадам по математике).\n"
+    "Определи тему сообщения пользователя и верни СТРОГО JSON без markdown:\n"
+    '{"topic": "math"} — математика: задачи, уравнения, доказательства, '
+    "теория, методы, олимпиады по математике, подготовка к ним;\n"
+    '{"topic": "site"} — вопросы о сайте FORMYLA: как работает, разделы, '
+    "задачи дня, уровни, XP, серии, долги, методы, пробники, тарифы, роли, оплата;\n"
+    '{"topic": "off"} — всё остальное: погода, новости, политика, другие '
+    "школьные предметы, программирование, переводы, болтовня.\n"
+    "Сомневаешься между math и site — выбирай по главному смыслу вопроса. "
+    "Только JSON, без пояснений."
+)
+
+OFF_TOPIC_MESSAGE = (
+    "Я куратор FORMYLA и помогаю только по математике и по самому сайту: "
+    "разбор задач, теория, подготовка к олимпиадам, вопросы про задачи дня, "
+    "уровни, тарифы и разделы сайта.\n"
+    "С каким математическим вопросом тебе помочь?"
+)
+
+
+def _parse_topic(raw: Optional[str]) -> Optional[str]:
+    """Разобрать ответ классификатора: math / site / off или None."""
+    if not raw:
+        return None
+    import re as _re
+    cleaned = raw.strip()
+    if cleaned.startswith('```'):
+        cleaned = _re.sub(r'^```(?:json)?\s*', '', cleaned)
+        cleaned = _re.sub(r'\s*```$', '', cleaned)
+    m = _re.search(r'\{[^}]*\}', cleaned, _re.S)
+    if not m:
+        return None
+    try:
+        data = json.loads(m.group(0))
+    except Exception:  # noqa: BLE001
+        return None
+    topic = str((data or {}).get('topic', '')).strip().lower()
+    return topic if topic in (TOPIC_MATH, TOPIC_SITE, TOPIC_OFF) else None
+
+
+def classify_topic(user_text: str) -> Optional[str]:
+    """Тема сообщения: math / site / off. None — классификация не удалась."""
+    try:
+        raw = _call_deepseek(
+            [{'role': 'system', 'content': TOPIC_CLASSIFIER_PROMPT},
+             {'role': 'user', 'content': user_text}],
+            max_tokens=60)
+        return _parse_topic(raw)
+    except Exception as e:  # noqa: BLE001
+        logger.warning('[curator_chat] topic classification failed: %s', e)
+        return None
+
+
 def _call_deepseek(messages: List[Dict[str, str]], thinking: bool = False,
                    max_tokens: int = 1200) -> str:
     """Синхронная обёртка: async-вызов с таймаутом. Бросает при ошибке.
@@ -542,8 +613,15 @@ def generate_reply(user_id: int, user_text: str,
                    ctx: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Ответ куратора на сообщение ученика. Никогда не бросает.
 
-    Возвращает {'content': str, 'fallback': bool}.
+    Возвращает {'content': str, 'fallback': bool, 'off_topic': bool}.
+    Посторонняя тема (не математика и не сайт FORMYLA) — вежливый отказ
+    без генерации развёрнутого ответа.
     """
+    # CURATOR_TOPICS_V1: сначала дешёвая классификация темы сообщения.
+    topic = classify_topic(user_text)
+    if topic == TOPIC_OFF:
+        return {'content': OFF_TOPIC_MESSAGE, 'fallback': False, 'off_topic': True}
+
     ctx = ctx or build_context(user_id)
     try:
         history = get_history(user_id, limit=12)
@@ -577,10 +655,10 @@ def generate_reply(user_id: int, user_text: str,
             else:
                 text = _strip_actions(text)
             if text:
-                return {'content': text, 'fallback': False, 'actions': results}
+                return {'content': text, 'fallback': False, 'off_topic': False, 'actions': results}
     except Exception as e:  # noqa: BLE001
         logger.warning('[curator_chat] generation failed: %s', e)
-    return {'content': FALLBACK_MESSAGE, 'fallback': True}
+    return {'content': FALLBACK_MESSAGE, 'fallback': True, 'off_topic': False}
 
 
 # ── Приветствие на старте (сразу, не через неделю) ─────────────────────────

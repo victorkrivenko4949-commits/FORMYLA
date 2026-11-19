@@ -266,7 +266,9 @@ def test_non_admin_curator_unchanged(app, monkeypatch):
     monkeypatch.setattr(curator_chat, '_call_deepseek', fake)
     out = curator_chat.generate_reply(uid, 'подними уровень')
     joined = '\n'.join(m['content'] for m in seen['msgs'])
-    assert 'Справка FORMYLA' not in joined and 'raise_level' not in joined
+    # CURATOR_FREE_V1: справка о сайте теперь у всех, но админ-правила
+    # (действия [[ACTION]], план-ограничения) — только админам
+    assert 'ЗАПРЕЩЕНО придумывать' not in joined and 'raise_level' not in joined
     assert get_state(uid)['level'] == 1                       # действие НЕ выполнено
     assert '[[ACTION' not in out['content']
     assert 'Могу сам' not in out['content']                   # подсказка только админам
@@ -322,7 +324,9 @@ def test_plan_lines_in_context(app, monkeypatch):
     uid = _user('adm_plan3@test.ru')
     calls = _fake_seq(monkeypatch, ['Ок.'])
     out = curator_chat.generate_reply(uid, 'привет')
-    joined = '\n'.join(m['content'] for m in calls[0])
+    # первый вызов — классификатор темы (CURATOR_TOPICS_V1), основной
+    # промпт куратора — последний
+    joined = '\n'.join(m['content'] for m in calls[-1])
     assert 'ПЛАН: задач дня сегодня —' in joined
     assert 'ЗАПРЕЩЕНО придумывать' in joined
     assert out['content'].endswith(ca.CAPABILITIES_HINT)
