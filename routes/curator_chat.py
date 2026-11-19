@@ -1,48 +1,38 @@
 # -*- coding: utf-8 -*-
-"""routes/curator_chat.py — чат с куратором и поддержкой (пилот Premium).
+"""routes/curator_chat.py — чат с куратором и поддержкой.
 
 Страница /curator — два аккуратных чата:
-  * Куратор — ИИ-эксперт по олимпиадам (DeepSeek), пишет первым через
-    неделю после старта подписки, с fallback-сообщением при сбоях;
+  * Куратор — ИИ-эксперт по олимпиадам (DeepSeek): отвечает на вопросы по
+    математике и по сайту FORMYLA; посторонние темы вежливо отклоняет.
+    Приветствие — сразу на старте, с fallback-сообщением при сбоях;
   * Поддержка — сообщения попадают в админ-инбокс (support_messages).
 
-Доступно только пилотным аккаунтам (victor, Lavrik — services/pilot.py);
-остальные получают 404.
+CURATOR_FREE_V1 (19.11.2026): куратор доступен ВСЕМ, включая бесплатный
+тариф — замок Premium снят.
 """
 from __future__ import annotations
 
 import logging
 
-from flask import (Blueprint, abort, jsonify, render_template, request)
+from flask import (Blueprint, jsonify, render_template, request)
 from flask_login import current_user, login_required
 
 from models import db
-from services.pilot import is_pilot_user
 
 logger = logging.getLogger('formyla.curator_chat_routes')
 
 curator_chat_bp = Blueprint('curator_chat', __name__)
 
 
-def _pilot_or_404():
-    # 03.11.2026, продажа открыта: куратор-чат — часть Premium-продукта,
-    # доступен всем с активным пилотным тарифом (не только пилотному списку)
-    from services.pilot import has_premium_access
-    if not has_premium_access(current_user):
-        abort(404)
-
-
 @curator_chat_bp.route('/curator')
 @login_required
 def curator_page():
-    _pilot_or_404()
     return render_template('curator_chat.html')
 
 
 @curator_chat_bp.route('/api/curator/chat/history')
 @login_required
 def chat_history():
-    _pilot_or_404()
     try:
         from services.curator_chat import get_history
         # Ленивый триггер: приветствие на старте + недельный отчёт — НЕ ждём
@@ -69,7 +59,6 @@ def chat_history():
 @curator_chat_bp.route('/api/curator/chat', methods=['POST'])
 @login_required
 def chat_send():
-    _pilot_or_404()
     payload = request.get_json(silent=True) or {}
     text = (payload.get('text') or '').strip()
     if not text:
@@ -112,7 +101,6 @@ def support_history():
     Читает support_messages (сообщения ученика) и support_replies
     (ответы команды) — тот же инбокс, что и в админке.
     """
-    _pilot_or_404()
     try:
         from sqlalchemy import text
         rows = db.session.execute(text(
@@ -155,7 +143,6 @@ def support_history():
 @login_required
 def support_send():
     """Вкладка «Поддержка»: сообщение уходит в админ-инбокс."""
-    _pilot_or_404()
     payload = request.get_json(silent=True) or {}
     text = (payload.get('text') or '').strip()
     if not text:
