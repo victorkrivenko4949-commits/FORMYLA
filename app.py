@@ -6145,6 +6145,35 @@ def dev_login():
     return redirect('/daily_tasks')
 
 
+# ── SECURITY: in-memory рейт-лимитер auth-эндпоинтов (per-IP, sliding window) ──
+# Лучший доступный вариант без Redis: защищает от молотков по одному IP.
+# Основная защита от спама письмами — per-email cooldown в БД (см. login).
+from collections import defaultdict as _dd, deque as _dq
+import time as _time
+import threading as _threading
+_AUTH_RATE: dict = _dd(lambda: _dd(_dq))
+_AUTH_RATE_LOCK = _threading.Lock()
+_AUTH_RATE_LIMITS = {
+    # bucket: (макс. запросов, окно секунд)
+    'login': (8, 600),    # POST /login — 8 запросов за 10 минут
+    'verify': (40, 600),  # POST /verify-code — 40 попыток за 10 минут
+}
+
+
+def _auth_rate_ok(ip: str, bucket: str) -> bool:
+    """True если запрос разрешён; иначе False. Потокобезопасно."""
+    limit, window = _AUTH_RATE_LIMITS.get(bucket, (10, 600))
+    now = _time.time()
+    with _AUTH_RATE_LOCK:
+        q = _AUTH_RATE[bucket][ip]
+        while q and now - q[0] > window:
+            q.popleft()
+        if len(q) >= limit:
+            return False
+        q.append(now)
+        return True
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Passwordless вход - шаг 1: ввод email.
@@ -6160,6 +6189,14 @@ def login():
         if not email:
             flash('Email обязателен', 'error')
             return render_template('login.html')
+
+        # SECURITY: per-IP лимит на запросы кода — защита от молотка
+        # (перебор email'ов, спам запросами). per-email cooldown ниже.
+        if not _auth_rate_ok(request.remote_addr or 'unknown', 'login'):
+            app.logger.warning(
+                f"[RATE LIMIT] POST /login отклонён для IP {request.remote_addr}")
+            flash('Слишком много запросов кода. Подождите немного и попробуйте снова.', 'error')
+            return render_template('login.html'), 429
 
         # ── Постоянный тестовый аккаунт покупателя для модерации ЮKassa ──
         # SECURITY FIX: email и код берутся из env (YOOKASSA_TEST_EMAIL /
@@ -6297,8 +6334,10 @@ def login():
         # атаке это громкий шум, а легитимный пользователь сразу
         # разблокируется).
         _blocked = int(getattr(user, 'failed_code_attempts', 0) or 0) >= 5
+        _reused = False
         if _existing and _expires and _expires > _dt.utcnow() + _td(minutes=1) and not _blocked:
             code = _existing
+            _reused = True
         else:
             code = user.generate_auth_code()
             # SECURITY: новый код — сброс серверного счётчика неверных попыток.
@@ -6323,30 +6362,42 @@ def login():
         app.logger.warning(f"Mail configured = {mail_configured}")
         
         if mail_configured:
-            try:
-                send_auth_email(email, code)
-                
-                # Дублируем в консоль для отладки (без самого кода — см. SECURITY выше)
-                app.logger.warning(f"EMAIL ОТПРАВЛЕН: {email}")
-                
-                flash(f'Код отправлен на {email}. Проверьте почту!', 'success')
-                
-            except Exception as e:
-                error_message = str(e)
-                app.logger.error(f"ОШИБКА EMAIL: {error_message}")
-                
-                # Fallback - выводим код в консоль
-                
-                # Показываем понятное сообщение пользователю
-                if "аутентификации" in error_message.lower() or "authentication" in error_message.lower():
-                    flash(f'Ошибка настройки email-сервера. Обратитесь к администратору.', 'error')
-                elif "подключиться" in error_message.lower() or "connect" in error_message.lower():
-                    flash(f'Не удалось подключиться к почтовому серверу. Попробуйте позже.', 'error')
-                else:
-                    flash(f'Ошибка отправки email: {error_message}', 'error')
+            # SECURITY: per-email cooldown 60с на ОТПРАВКУ письма. Раньше каждый
+            # POST /login слал письмо (даже с тем же кодом) — мошенник мог
+            # заспамить ящик жертвы запросами кода. Теперь повторная отправка
+            # живого кода не чаще раза в минуту.
+            _sent_at = getattr(user, 'code_sent_at', None)
+            _in_cooldown = (_reused and _sent_at
+                            and (_dt.utcnow() - _sent_at).total_seconds() < 60)
+            if _in_cooldown:
+                flash('Код уже отправлен на почту и ещё действует — проверьте письма (включая папку «Спам»). Повторная отправка возможна через минуту.', 'info')
+            else:
+                try:
+                    send_auth_email(email, code)
+                    user.code_sent_at = _dt.utcnow()
+                    db.session.commit()
+
+                    # Дублируем в консоль для отладки (без самого кода — см. SECURITY выше)
+                    app.logger.warning(f"EMAIL ОТПРАВЛЕН: {email}")
+
+                    flash(f'Код отправлен на {email}. Проверьте почту!', 'success')
+
+                except Exception as e:
+                    error_message = str(e)
+                    app.logger.error(f"ОШИБКА EMAIL: {error_message}")
+
+                    # Fallback - выводим код в консоль
+
+                    # Показываем понятное сообщение пользователю
+                    if "аутентификации" in error_message.lower() or "authentication" in error_message.lower():
+                        flash(f'Ошибка настройки email-сервера. Обратитесь к администратору.', 'error')
+                    elif "подключиться" in error_message.lower() or "connect" in error_message.lower():
+                        flash(f'Не удалось подключиться к почтовому серверу. Попробуйте позже.', 'error')
+                    else:
+                        flash(f'Ошибка отправки email: {error_message}', 'error')
         else:
             # Email не настроен
-            app.logger.warning(f"EMAIL НЕ НАСТРОЕН - КОД: {code}")
+            app.logger.warning("EMAIL НЕ НАСТРОЕН — код не отправлен")
             
             flash(f'Код отправлен на {email}', 'success')
         
@@ -6377,6 +6428,15 @@ def verify_code():
         if not code:
             flash('Введите код', 'error')
             return render_template('verify_code.html', email=email)
+
+        # SECURITY: per-IP лимит на POST /verify-code — дополнительный слой
+        # поверх per-email лимита (см. failed_code_attempts): не даёт
+        # молотить эндпоинт с одного IP даже разными email.
+        if not _auth_rate_ok(request.remote_addr or 'unknown', 'verify'):
+            app.logger.warning(
+                f"[RATE LIMIT] POST /verify-code отклонён для IP {request.remote_addr}")
+            flash('Слишком много попыток. Подождите немного.', 'error')
+            return render_template('verify_code.html', email=email), 429
 
         # SECURITY FIX: серверный лимит попыток ввода кода (per-email, в БД) —
         # защита от перебора 6-значного кода. Раньше счётчик был в session

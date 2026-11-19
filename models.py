@@ -28,6 +28,9 @@ class User(UserMixin, db.Model):
     # и код можно было перебирать неограниченно. Теперь сбрасывается только
     # генерацией НОВОГО кода (что шлёт email владельцу — детектируемый шум).
     failed_code_attempts = db.Column(db.Integer, default=0)
+    # SECURITY: когда последний раз реально отправлялось письмо с кодом.
+    # cooldown 60с — защита от почтового спама жертвы через POST /login.
+    code_sent_at = db.Column(db.DateTime)
     
     # AI Онбординг
     math_level = db.Column(db.String(20))  # beginner, intermediate, advanced
