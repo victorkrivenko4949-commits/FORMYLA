@@ -49,6 +49,8 @@
   }
   .ft-fb-star:hover { transform: scale(1.25); color: #F4B942 !important; }
   .ft-fb-star.on { color: #F4B942 !important; }
+  /* Наведение: загораются все звёзды по порядку — от первой до наведённой. */
+  .ft-fb-star.pre { color: #F4B942 !important; }
 </style>
 <script>
 var ftFb = { chosen: 0, shown: false, sending: false };
@@ -122,6 +124,25 @@ window.ftFbSubmit = function (ev) {
 };
 
 (function () {
+  // Наведение: загораются все звёзды по порядку — если навёл на 3-ю,
+  // подсвечиваются 1-я, 2-я и 3-я. Ушли мышью — остаётся только выбранная.
+  var fbBox = document.getElementById('ft-fb-stars');
+  if (fbBox) {
+    var fbStars = fbBox.querySelectorAll('.ft-fb-star');
+    for (var i = 0; i < fbStars.length; i++) {
+      fbStars[i].addEventListener('mouseenter', function () {
+        var n = parseInt(this.getAttribute('data-star'), 10);
+        for (var j = 0; j < fbStars.length; j++) {
+          var s = parseInt(fbStars[j].getAttribute('data-star'), 10);
+          if (s <= n) { fbStars[j].classList.add('pre'); } else { fbStars[j].classList.remove('pre'); }
+        }
+      });
+    }
+    fbBox.addEventListener('mouseleave', function () {
+      for (var j = 0; j < fbStars.length; j++) fbStars[j].classList.remove('pre');
+    });
+  }
+
   // «Нельзя закрыть»: ни крестика, ни ESC, ни клика по фону.
   document.addEventListener('keydown', function (e) {
     if (ftFb.shown && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); }
