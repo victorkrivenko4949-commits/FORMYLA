@@ -6291,13 +6291,24 @@ def login():
         from datetime import datetime as _dt, timedelta as _td
         _existing = getattr(user, 'auth_code', None)
         _expires = getattr(user, 'code_expires', None)
-        if _existing and _expires and _expires > _dt.utcnow() + _td(minutes=1):
+        # SECURITY: переиспользуем живой код, только если владелец ещё НЕ
+        # заблокирован за неверные попытки. Если счётчик дошёл до лимита —
+        # всегда генерируем НОВЫЙ код (он уходит email'ом владельцу — при
+        # атаке это громкий шум, а легитимный пользователь сразу
+        # разблокируется).
+        _blocked = int(getattr(user, 'failed_code_attempts', 0) or 0) >= 5
+        if _existing and _expires and _expires > _dt.utcnow() + _td(minutes=1) and not _blocked:
             code = _existing
         else:
             code = user.generate_auth_code()
+            # SECURITY: новый код — сброс серверного счётчика неверных попыток.
+            user.failed_code_attempts = 0
             db.session.commit()
         
-        app.logger.warning(f"КОД СГЕНЕРИРОВАН: {code} для {email}")
+        # SECURITY: сам код в логи не пишем (утечка через доступ к логам = вход
+        # в аккаунт). Пишем только факт генерации. Для локальной отладки код
+        # виден в консоли генератора — DEBUG-режим.
+        app.logger.warning(f"КОД СГЕНЕРИРОВАН для {email}")
         
         # Отправляем код на email.
         # Резолюция настроек: либо Resend (API key), либо классический SMTP.
@@ -6315,8 +6326,8 @@ def login():
             try:
                 send_auth_email(email, code)
                 
-                # Дублируем в консоль для отладки
-                app.logger.warning(f"EMAIL ОТПРАВЛЕН: {email}, код: {code}")
+                # Дублируем в консоль для отладки (без самого кода — см. SECURITY выше)
+                app.logger.warning(f"EMAIL ОТПРАВЛЕН: {email}")
                 
                 flash(f'Код отправлен на {email}. Проверьте почту!', 'success')
                 
@@ -6367,19 +6378,21 @@ def verify_code():
             flash('Введите код', 'error')
             return render_template('verify_code.html', email=email)
 
-        # SECURITY FIX: лимит попыток ввода кода — защита от перебора
-        # 6-значного кода. После 5 неверных попыток просим запросить новый код.
-        _attempts = int(session.get('code_attempts') or 0)
-        if _attempts >= 5:
-            session.pop('verify_email', None)
-            session.pop('code_attempts', None)
-            flash('Слишком много неверных попыток. Запросите новый код.', 'error')
-            return redirect(url_for('login'))
-
+        # SECURITY FIX: серверный лимит попыток ввода кода (per-email, в БД) —
+        # защита от перебора 6-значного кода. Раньше счётчик был в session
+        # cookie: мошенник просто сбрасывал куки и получал новые 5 попыток
+        # против того же кода без ограничений. Теперь лимит живёт на сервере
+        # и сбрасывается ТОЛЬКО генерацией нового кода (приходит email
+        # владельцу — заметный шум при атаке).
         user = User.query.filter_by(email=email).first()
 
         if not user:
             flash('Пользователь не найден', 'error')
+            return redirect(url_for('login'))
+
+        _server_attempts = int(getattr(user, 'failed_code_attempts', 0) or 0)
+        if _server_attempts >= 5:
+            flash('Слишком много неверных попыток для этого email. Запросите новый код.', 'error')
             return redirect(url_for('login'))
 
         # SECURITY FIX: тестовый код ЮKassa берётся из env, не из кода.
@@ -6416,6 +6429,9 @@ def verify_code():
             login_user(user, remember=True, duration=None)
             session.pop('verify_email', None)
             session.pop('code_attempts', None)
+            # Успешный вход — сбрасываем серверный счётчик попыток
+            user.failed_code_attempts = 0
+            db.session.commit()
 
             flash('Добро пожаловать!', 'success')
 
@@ -6433,9 +6449,16 @@ def verify_code():
                 return redirect(url_for('intake.intake_page'))
             return redirect('/about')
         
-        # SECURITY FIX: считаем неверную попытку (лимит — 5, см. выше).
-        session['code_attempts'] = _attempts + 1
-        flash('Неверный или просроченный код', 'error')
+        # SECURITY FIX: неверная попытка — инкремент СЕРВЕРНОГО счётчика
+        # (в БД, per-email). Новая сессия больше не даёт новых попыток.
+        user.failed_code_attempts = _server_attempts + 1
+        db.session.commit()
+        _left = max(0, 5 - (_server_attempts + 1))
+        if _left > 0:
+            flash(f'Неверный или просроченный код. Осталось попыток: {_left}', 'error')
+        else:
+            flash('Слишком много неверных попыток. Запросите новый код.', 'error')
+            return redirect(url_for('login'))
         return render_template('verify_code.html', email=email)
     
     return render_template('verify_code.html', email=email)

@@ -23,6 +23,11 @@ class User(UserMixin, db.Model):
     # Passwordless Auth
     auth_code = db.Column(db.String(6))  # 6-значный код
     code_expires = db.Column(db.DateTime)  # Срок действия кода
+    # SECURITY: серверный счётчик неверных попыток ввода кода (per-email).
+    # Раньше лимит жил в session cookie — новая сессия давала новые 5 попыток
+    # и код можно было перебирать неограниченно. Теперь сбрасывается только
+    # генерацией НОВОГО кода (что шлёт email владельцу — детектируемый шум).
+    failed_code_attempts = db.Column(db.Integer, default=0)
     
     # AI Онбординг
     math_level = db.Column(db.String(20))  # beginner, intermediate, advanced
