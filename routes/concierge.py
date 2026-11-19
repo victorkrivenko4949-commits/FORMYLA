@@ -37,11 +37,9 @@ _rate_lock = Lock()
 
 
 def _client_ip() -> str:
-    """Извлечь IP клиента c уважением к X-Forwarded-For (1 proxy hop)."""
-    xff = request.headers.get('X-Forwarded-For', '')
-    if xff:
-        # Первый IP в цепочке — оригинальный клиент.
-        return xff.split(',')[0].strip()
+    """IP клиента. SECURITY: берём request.remote_addr — ProxyFix уже вычислил
+    его по единственному доверенному прокси. Сырой X-Forwarded-For от клиента
+    подделывается (обход rate-limit консьержа ротацией фейковых IP)."""
     return request.remote_addr or 'unknown'
 
 
