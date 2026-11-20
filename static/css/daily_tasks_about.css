@@ -145,7 +145,7 @@
   padding:0 !important; margin:18px 0 22px !important; overflow:hidden;
 }
 .page-daily-tasks .dt-debt-toggle-btn{padding:14px 18px !important;font-family:var(--font-body) !important;font-size:.95rem !important;font-weight:600 !important;color:var(--warn) !important}
-.page-daily-tasks .dt-debt-toggle-btn::before{content:"§ Д";font-family:var(--font-mono);font-size:.68rem;letter-spacing:.14em;color:rgba(251,191,36,.7);margin-right:12px;font-weight:400}
+.page-daily-tasks .dt-debt-toggle-btn::before{content:"§ 03 · долги";font-family:var(--font-mono);font-size:.68rem;letter-spacing:.14em;color:rgba(251,191,36,.7);margin-right:12px;font-weight:400}
 .page-daily-tasks .dt-debt-toggle-arrow{font-family:var(--font-mono);color:rgba(251,191,36,.7) !important}
 .page-daily-tasks .dt-debt-body{margin:0 !important;padding:4px 18px 16px !important;border-top:1px solid rgba(251,191,36,.18)}
 .page-daily-tasks .dt-debt-title{font-family:var(--font-display) !important;font-weight:600 !important;font-size:1.1rem !important}
