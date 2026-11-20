@@ -115,4 +115,11 @@ select:focus {
    только у обёртки, с body ограничение снимаем. */
 body.page-daily-tasks {
   max-width: none !important;
+  /* DT_HEADER_FULLBLEED (19.11.2026): отступы из about.css
+     (.page-daily-tasks{padding:...!important} вешается и на body)
+     отрывали шапку от верха и краёв — на «Задачах дня» синяя плашка
+     навигации плавала «островком», в отличие от остальных страниц.
+     Обнуляем поля именно у body: контент внутри обёртки
+     .page-daily-tasks свои поля сохраняет. */
+  padding: 0 !important;
 }
