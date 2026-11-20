@@ -123,17 +123,17 @@ def test_system_prompt_has_topic_rules():
 
 
 def test_guide_included_for_everyone(free_user, monkeypatch):
-    """Справка FORMYLA попадает в промпт даже без admin_features."""
+    """Справка FORMYLA и действия куратора — в промпте у всех
+    (CURATOR_ACTIONS_ALL_V1: бесплатный куратор = платный)."""
     fn, calls = _fake_deepseek('math')
     monkeypatch.setattr(curator_chat, '_call_deepseek', fn)
 
     ctx = curator_chat.build_context(free_user.id)
-    assert ctx.get('admin_features') is not True
     msgs = curator_chat._system_messages(ctx)
     joined = '\n'.join(m['content'] for m in msgs)
     assert 'Справка FORMYLA' in joined
-    # действия куратора ([[ACTION) — только админам, бесплатнику их не даём
-    assert '[[ACTION' not in joined
+    # действия куратора ([[ACTION) теперь доступны и бесплатнику
+    assert '[[ACTION' in joined
 
 
 # ── Доступ на бесплатном тарифе ──────────────────────────────────────────────

@@ -240,19 +240,11 @@ def test_generate_reply_runs_action(app, monkeypatch):
     assert 'дни занятий' in ctx_block
 
 
-# ─── Не-админам — всё по-старому ─────────────────────────────────────────
+# ─── Бесплатник: куратор такой же, как на платном (CURATOR_ACTIONS_ALL_V1) ──
 
-def test_non_admin_gets_old_profiles(app):
-    from services.daily_olympiad import profile_for, PROFILE_VERSION
-    uid = _user('kid@test.ru', grade=11, plan=None)
-    assert profile_for('rosatom', 11, user_id=uid) is None    # как раньше: нет профиля
-    prof = profile_for('vsosh', 9, user_id=uid)
-    assert prof['source'] == 'editorial' and prof['version'] == PROFILE_VERSION
-    adm = _user('adm_x@test.ru', grade=11, plan=None)
-    assert profile_for('rosatom', 11, user_id=adm)['source'] == 'catalog_frequency'
-
-
-def test_non_admin_curator_unchanged(app, monkeypatch):
+def test_non_admin_curator_same_as_paid(app, monkeypatch):
+    """Действия куратора выполняются и у бесплатника, план-правила и
+    подсказка о возможностях — тоже (раньше было только у админов)."""
     from services.level_engine import get_state
     uid = _user('kid2@test.ru')
     cs = CuratorState.query.filter_by(user_id=uid).first()
@@ -266,12 +258,51 @@ def test_non_admin_curator_unchanged(app, monkeypatch):
     monkeypatch.setattr(curator_chat, '_call_deepseek', fake)
     out = curator_chat.generate_reply(uid, 'подними уровень')
     joined = '\n'.join(m['content'] for m in seen['msgs'])
-    # CURATOR_FREE_V1: справка о сайте теперь у всех, но админ-правила
-    # (действия [[ACTION]], план-ограничения) — только админам
-    assert 'ЗАПРЕЩЕНО придумывать' not in joined and 'raise_level' not in joined
-    assert get_state(uid)['level'] == 1                       # действие НЕ выполнено
+    # план-правила и действия — в промпте у всех
+    assert 'ЗАПРЕЩЕНО придумывать' in joined and 'raise_level' in joined
+    assert get_state(uid)['level'] == 2                       # действие выполнено
     assert '[[ACTION' not in out['content']
-    assert 'Могу сам' not in out['content']                   # подсказка только админам
+    assert 'Могу сам' in out['content']                       # подсказка о возможностях
+
+
+def test_free_user_daily_count_capped(app, monkeypatch):
+    """Бесплатнику с активными лимитами куратор говорит про 1 задачу
+    в день, а не про общую норму 10."""
+    uid = _user('free_kid@test.ru', plan=None)
+    # включаем лимиты Free для этого пользователя
+    monkeypatch.setenv('PAYWALL_MODE', 'experiment')
+    monkeypatch.setenv('PAYWALL_START_AT', '2026-10-01T00:00:00Z')
+    monkeypatch.setenv('PAYWALL_EXPERIMENT_ID', 'limits_v1')
+    monkeypatch.setenv('PAYWALL_AB', '50')
+    monkeypatch.setenv('FREE_TASKS_PER_DAY', '1')
+    monkeypatch.setenv('FREE_LIMITS_DISABLED', '0')
+    import services.ab as ab_mod
+    monkeypatch.setattr(ab_mod, 'cohort_for', lambda e, uid_, percent=None: 'limits')
+
+    from services import limits as limits_svc
+    from models import User
+    u = User.query.get(uid)
+    assert limits_svc.limits_active(u)
+
+    n = ca.daily_task_count(uid)
+    assert n == 1, f'бесплатнику куратор должен говорить про 1 задачу, got {n}'
+
+
+def test_paid_user_daily_count_full(app):
+    """На платном тарифе — полная норма (не кап Free)."""
+    uid = _user('paid_kid@test.ru')  # _user выдаёт premium_intense
+    n = ca.daily_task_count(uid)
+    assert n and n >= 5, f'на платном должна быть полная норма, got {n}'
+
+
+def test_non_admin_gets_old_profiles(app):
+    from services.daily_olympiad import profile_for, PROFILE_VERSION
+    uid = _user('kid@test.ru', grade=11, plan=None)
+    assert profile_for('rosatom', 11, user_id=uid) is None    # как раньше: нет профиля
+    prof = profile_for('vsosh', 9, user_id=uid)
+    assert prof['source'] == 'editorial' and prof['version'] == PROFILE_VERSION
+    adm = _user('adm_x@test.ru', grade=11, plan=None)
+    assert profile_for('rosatom', 11, user_id=adm)['source'] == 'catalog_frequency'
 
 
 # ─── Только по плану + всегда предлагать, что умеет ─────────────────────

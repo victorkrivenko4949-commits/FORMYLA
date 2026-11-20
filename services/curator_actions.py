@@ -36,7 +36,8 @@ MAX_ACTIONS_PER_REPLY = 3
 
 
 def is_admin_id(user_id: Optional[int]) -> bool:
-    """CURATOR_ADMIN_V1: новые функции куратора пока только для админов."""
+    """Был гейтом CURATOR_ADMIN_V1; с CURATOR_ACTIONS_ALL_V1 действия
+    доступны всем — функция остаётся для служебных проверок."""
     if not user_id:
         return False
     try:
@@ -228,10 +229,25 @@ def olympiads_for_grade(grade: Optional[int]) -> List[Tuple[str, str]]:
 
 
 def daily_task_count(user_id: int) -> Optional[int]:
-    """Сколько задач дня выдаётся ученику сегодня (единый источник правды)."""
+    """Сколько задач дня выдаётся ученику сегодня (единый источник правды).
+
+    CURATOR_ACTIONS_ALL_V1 (20.11.2026, владелец): для бесплатника с
+    активными лимитами Free куратор говорит ровно про его дневной кап
+    (1 задача), а не про общую норму (10) — иначе куратор советовал
+    «реши 10 задач», а в «Задачах дня» у бесплатника одна.
+    """
     try:
         from services.daily_task_rotation import get_daily_task_count
-        return int(get_daily_task_count(user_id))
+        n = int(get_daily_task_count(user_id))
+        try:
+            from models import User
+            from services import limits as _limits_svc
+            u = User.query.get(int(user_id))
+            if u is not None and _limits_svc.limits_active(u):
+                n = min(n, _limits_svc.free_tasks_per_day())
+        except Exception:  # noqa: BLE001
+            pass
+        return n
     except Exception:  # noqa: BLE001
         return None
 
@@ -277,7 +293,8 @@ def plan_lines(user_id: int) -> List[str]:
     return lines
 
 
-# Подсказка, что куратор умеет сам — дописывается к каждому ответу админам
+# Подсказка, что куратор умеет сам — дописывается к каждому ответу
+# (CURATOR_ACTIONS_ALL_V1: доступно всем, не только админам)
 CAPABILITIES_HINT = ('💡 Могу сам: поднять или снизить уровень задач, поменять дни '
                      'занятий, настроить задачи дня под олимпиаду — просто попроси.')
 
@@ -381,9 +398,12 @@ def run_actions(user_id: int, actions: List[Dict[str, Any]]) -> List[Dict[str, A
 
 
 def apply_reply(user_id: int, text: str) -> Tuple[str, List[Dict[str, Any]]]:
-    """Ответ модели → (текст для ученика с итогами действий, результаты)."""
+    """Ответ модели → (текст для ученика с итогами действий, результаты).
+
+    CURATOR_ACTIONS_ALL_V1 (20.11.2026): действия выполняются для всех
+    пользователей (раньше — только админам)."""
     clean, actions = extract_actions(text)
-    if not actions or not is_admin_id(user_id):
+    if not actions:
         return clean, []
     results = run_actions(user_id, actions)
     notes = '\n'.join(r['message'] for r in results)
