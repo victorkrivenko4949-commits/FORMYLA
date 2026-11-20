@@ -3605,10 +3605,35 @@ def force_schedule_selection():
 
 # SECURITY FIX (backdoor): секрет входа поддержки больше не хранится в коде —
 # репозиторий публичный, и любой мог войти в аккаунт Lavrik по строке из app.py.
-# Теперь значение берётся из переменной окружения SUPPORT_LOGIN_SECRET.
-# Если переменная не задана — секретный вход полностью отключён.
-SUPPORT_LOGIN_SECRET = (os.environ.get('SUPPORT_LOGIN_SECRET') or '').strip()
+# Порядок разрешения секрета: 1) env SUPPORT_LOGIN_SECRET (приоритет),
+# 2) таблица app_config в БД (ключ support_login_secret — задаётся через
+# POST /admin/support_secret, без SSH к серверу).
+# Если нигде не задан — секретный вход полностью отключён.
+SUPPORT_LOGIN_SECRET_ENV = (os.environ.get('SUPPORT_LOGIN_SECRET') or '').strip()
 SUPPORT_ACCOUNT_NICK = 'Lavrik'
+
+
+def _get_support_login_secret():
+    """Текущий секрет входа поддержки (env → БД). Сравнение регистронезависимое:
+    поле email на /login приводится к lower, секрет тоже нормализуем."""
+    if SUPPORT_LOGIN_SECRET_ENV:
+        return SUPPORT_LOGIN_SECRET_ENV.lower()
+    try:
+        from models import db
+        from sqlalchemy import text as _text
+        row = db.session.execute(_text(
+            "SELECT config_value FROM app_config "
+            "WHERE config_key = 'support_login_secret'"
+        )).fetchone()
+        if row and row[0] and str(row[0]).strip():
+            return str(row[0]).strip().lower()
+    except Exception:
+        try:
+            from models import db
+            db.session.rollback()
+        except Exception:
+            pass
+    return ''
 
 # SECURITY FIX: тестовый аккаунт покупателя ЮKassa тоже вынесен в env.
 # Без переменных YOOKASSA_TEST_EMAIL / YOOKASSA_TEST_CODE вход отключён.
@@ -6233,9 +6258,10 @@ def login():
         # входим сразу (без кода) в служебный аккаунт Lavrik.
         # Работает даже если пользователь уже залогинен под другим аккаунтом:
         # сначала разлогиниваемся, затем входим в Lavrik.
-        # SECURITY FIX: работает только при заданной env-переменной
-        # SUPPORT_LOGIN_SECRET (в репозитории секрета больше нет).
-        if SUPPORT_LOGIN_SECRET and email == SUPPORT_LOGIN_SECRET:
+        # SECURITY: секрет берётся из env или БД (см. _get_support_login_secret),
+        # в репозитории его нет. Сравнение регистронезависимое.
+        _support_secret = _get_support_login_secret()
+        if _support_secret and email == _support_secret:
             from flask_login import logout_user as _logout_user
             try:
                 _logout_user()
@@ -11505,6 +11531,56 @@ def admin_tutor_stats():
         error_distribution=error_distribution,
         flagged_tasks=flagged_tasks,
     )
+
+
+@app.route("/admin/support_secret", methods=["POST"])
+def admin_support_secret():
+    """Задать / удалить секрет входа в аккаунт поддержки (Lavrik).
+
+    Хранится в таблице app_config (БД), НЕ в коде и НЕ в репозитории.
+    Позволяет менять секрет без SSH к серверу. Только админ.
+    GET-запросом значение НЕ отдаётся (только факт «задан/не задан»).
+    """
+    if not current_user.is_authenticated:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+    if not getattr(current_user, 'is_admin', False):
+        return jsonify({'status': 'error', 'message': 'Forbidden'}), 403
+
+    from models import db
+    from sqlalchemy import text as _text
+
+    _json = request.get_json(silent=True) or {}
+    action = (request.form.get('action') or _json.get('action') or 'set').strip()
+    new_secret = (request.form.get('secret') or _json.get('secret') or '').strip()
+
+    try:
+        with db.engine.begin() as conn:
+            conn.execute(_text(
+                "CREATE TABLE IF NOT EXISTS app_config ("
+                "config_key VARCHAR(64) PRIMARY KEY, "
+                "config_value TEXT, "
+                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+            ))
+            if action == 'clear':
+                conn.execute(_text(
+                    "DELETE FROM app_config WHERE config_key = 'support_login_secret'"))
+                app.logger.info("[ADMIN] support_login_secret удалён админом id=%s",
+                                current_user.id)
+                return jsonify({'status': 'ok', 'message': 'Секрет входа поддержки удалён.'})
+            if len(new_secret) < 16:
+                return jsonify({'status': 'error',
+                                'message': 'Секрет слишком короткий — минимум 16 символов.'}), 400
+            conn.execute(_text(
+                "INSERT INTO app_config (config_key, config_value) "
+                "VALUES ('support_login_secret', :v) "
+                "ON CONFLICT (config_key) DO UPDATE "
+                "SET config_value = :v, updated_at = CURRENT_TIMESTAMP"
+            ), {"v": new_secret})
+        app.logger.info("[ADMIN] support_login_secret обновлён админом id=%s", current_user.id)
+        return jsonify({'status': 'ok', 'message': 'Секрет входа поддержки сохранён.'})
+    except Exception as e:
+        app.logger.exception("[ADMIN] support_secret error")
+        return jsonify({'status': 'error', 'message': f'Ошибка: {e}'}), 500
 
 
 @app.route("/admin/toggle_task_flag/<int:task_id>", methods=["POST"])
