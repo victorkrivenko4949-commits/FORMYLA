@@ -88,9 +88,9 @@ SYSTEM_PROMPT = """Ты — куратор платформы FORMYLA, эксп�
 - Техническая проблема с сайтом или оплата — попроси обратиться в Поддержку (иконка справа, отвечает всегда).
 - В конце — конкретный следующий шаг на сегодня, а не вопрос в пустоту."""
 
-# CURATOR_ADMIN_V1 (06.11.2026, владелец: «пока только для админов»):
-# справка о продукте и действия куратора включены только админам
-# (User.is_admin). Остальные получают прежний промпт без изменений.
+# CURATOR_ACTIONS_ALL_V1 (20.11.2026, владелец): блок ниже включён ВСЕМ
+# пользователям — куратор на бесплатном тарифе такой же, как на платном.
+# (До 06.11 справка и действия были только у админов — CURATOR_ADMIN_V1.)
 ADMIN_PROMPT_EXTRA = """Дополнительные правила:
 - Как устроена платформа (тарифы, задачи дня, уровни, серии, пробники, роли) — отвечай СТРОГО по блоку «Справка FORMYLA». Чего там нет — не выдумывай.
 - Если ученик пишет о проблеме с сайтом, об оплате, или просит то, что ты сделать не можешь, — скажи: «Нажми справа от меня на иконку поддержки 💬 и напиши свою просьбу или проблему».
@@ -131,8 +131,8 @@ _GUIDE_CACHE: Optional[str] = None
 def _system_messages(ctx: Dict[str, Any], extra: str = '') -> List[Dict[str, str]]:
     """Системные сообщения: правила + данные ученика.
 
-    Справка FORMYLA — ВСЕМ (вопросы о сайте куратор теперь отвечает всем),
-    действия куратора ([[ACTION ...]]) — только админам (ctx['admin_features']).
+    Справка FORMYLA и действия куратора ([[ACTION ...]]) — ВСЕМ
+    (CURATOR_ACTIONS_ALL_V1: бесплатный куратор = платный).
     """
     msgs = [{'role': 'system', 'content': SYSTEM_PROMPT}]
     guide = _guide_text()
@@ -383,15 +383,18 @@ def build_context(user_id: int, since: Optional[datetime] = None,
     ctx['inactive'] = bool(visits_ok and visits <= 2)
 
     # Уровень, дни занятий, олимпиада и её частые темы — то, что куратор
-    # может поменять сам (services/curator_actions.py)
-    # — только админам (CURATOR_ADMIN_V1)
+    # может поменять сам (services/curator_actions.py).
+    # CURATOR_ACTIONS_ALL_V1 (20.11.2026, владелец): куратор на бесплатном
+    # тарифе такой же, как на платном — действия и план-правила включены
+    # ВСЕМ (раньше — только админам, CURATOR_ADMIN_V1). Единственная
+    # разница free/paid — число задач дня в плане (см.
+    # curator_actions.daily_task_count: бесплатнику куратор говорит
+    # ровно про его 1 задачу, а не про норму 10).
     try:
-        from services.curator_actions import is_admin_id, state_lines
-        ctx['admin_features'] = is_admin_id(user_id)
-        if ctx['admin_features']:
-            from services.curator_actions import daily_task_count
-            ctx['state_lines'] = state_lines(user_id, grade)
-            ctx['daily_count'] = daily_task_count(user_id)
+        from services.curator_actions import state_lines, daily_task_count
+        ctx['admin_features'] = True
+        ctx['state_lines'] = state_lines(user_id, grade)
+        ctx['daily_count'] = daily_task_count(user_id)
     except Exception as e:  # noqa: BLE001
         logger.warning('[curator_chat] state lines failed: %r', e)
 
